@@ -23,6 +23,7 @@ namespace BiliBiliAssGenerator.Bilibili
             Cid = cid;
             Title = title;
             HttpWebRequest request = WebRequest.CreateHttp("http://comment.bilibili.com/\{cid}.xml");
+            request.AutomaticDecompression = DecompressionMethods.Deflate;
             var document = new XmlDocument();
             using (var s = request.GetResponse().GetResponseStream())
             {
