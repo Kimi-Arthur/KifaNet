@@ -42,7 +42,7 @@ namespace BiliBiliAssGenerator.Bilibili
             Text = text;
 
             var values = property.Split(',');
-            VideoTime = new TimeSpan((long)(double.Parse(values[0]) * 10000 * 1000));
+            VideoTime = TimeSpan.FromSeconds(double.Parse(values[0]));
             Mode = (ModeType)int.Parse(values[1]);
             FontSize = int.Parse(values[2]);
             TextColor = Color.FromArgb(int.Parse(values[3]));
