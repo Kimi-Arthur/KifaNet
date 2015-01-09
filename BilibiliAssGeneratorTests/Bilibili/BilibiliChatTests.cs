@@ -24,12 +24,15 @@ namespace BilibiliAssGeneratorTests.Bilibili
         [TestMethod]
         public void WithOffsetTest()
         {
-            var chat = new BilibiliChat("2862733", "测试标题")
-            {
-                ChatOffset = TimeSpan.FromSeconds(100)
-            };
+            var chat = new BilibiliChat("2862733", "测试标题");
 
+            Assert.AreEqual(TimeSpan.FromSeconds(163.708), chat.Comments.ElementAt(1).VideoTime);
+
+            chat.ChatOffset = TimeSpan.FromSeconds(100);
             Assert.AreEqual(TimeSpan.FromSeconds(163.708 + 100), chat.Comments.ElementAt(1).VideoTime);
+
+            chat.ChatOffset = TimeSpan.Zero;
+            Assert.AreEqual(TimeSpan.FromSeconds(163.708), chat.Comments.ElementAt(1).VideoTime);
         }
     }
 }
