@@ -55,7 +55,7 @@ namespace BiliBiliAssGenerator.Bilibili
         public BilibiliComment WithOffset(TimeSpan offset)
         {
             var result = this;
-            result.VideoTime.Add(offset);
+            result.VideoTime = result.VideoTime.Add(offset);
             return result;
         }
     }

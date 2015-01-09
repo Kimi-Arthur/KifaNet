@@ -23,5 +23,12 @@ namespace BilibiliAssGeneratorTests.Bilibili
             comment2.Text = "abc";
             Assert.AreEqual("听不懂也能跟着笑～～～", comment1.Text);
         }
+
+        [TestMethod]
+        public void WithOffsetTest()
+        {
+            var comment = new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841", "听不懂也能跟着笑～～～");
+            Assert.AreEqual(TimeSpan.FromSeconds(263.708), comment.WithOffset(TimeSpan.FromSeconds(100)).VideoTime);
+        }
     }
 }

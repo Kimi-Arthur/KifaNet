@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using BiliBiliAssGenerator.Bilibili;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,7 +11,25 @@ namespace BilibiliAssGeneratorTests.Bilibili
         [TestMethod]
         public void BasicTest()
         {
-            var chat = new BilibiliChat("2862733", "");
+            var chat = new BilibiliChat("2862733", "测试标题");
+            Assert.AreEqual("2862733", chat.Cid);
+            Assert.AreEqual(TimeSpan.Zero, chat.ChatOffset);
+            Assert.AreEqual("测试标题", chat.Title);
+            Assert.IsTrue(chat.Comments.Count() > 1000, "Comments count should > 1000");
+            Assert.AreEqual(
+                new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841", "听不懂也能跟着笑～～～"),
+                chat.Comments.ElementAt(1));
+        }
+
+        [TestMethod]
+        public void WithOffsetTest()
+        {
+            var chat = new BilibiliChat("2862733", "测试标题")
+            {
+                ChatOffset = TimeSpan.FromSeconds(100)
+            };
+
+            Assert.AreEqual(TimeSpan.FromSeconds(163.708 + 100), chat.Comments.ElementAt(1).VideoTime);
         }
     }
 }
