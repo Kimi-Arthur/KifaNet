@@ -52,6 +52,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Ass\AssLineTests.cs" />
     <Compile Include="Bilibili\BilibiliChatTests.cs" />
     <Compile Include="Bilibili\BilibiliCommentTests.cs" />
     <Compile Include="Bilibili\BilibiliVideoTests.cs" />
@@ -63,9 +64,7 @@
       <Name>BilibiliAssGenerator</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Ass\" />
-  </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

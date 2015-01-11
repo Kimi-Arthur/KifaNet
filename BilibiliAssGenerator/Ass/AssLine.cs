@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
@@ -11,10 +12,6 @@ namespace BilibiliAssGenerator.Ass
         public virtual string Key { get; set; }
         public virtual IEnumerable<string> Values { get; set; }
 
-        public AssLine()
-        {
-        }
-
         public AssLine(string key, IEnumerable<string> values)
         {
             Key = key;
@@ -22,6 +19,9 @@ namespace BilibiliAssGenerator.Ass
         }
 
         public override string GenerateText()
-            => "\{Key}: \{string.Join(",", Values)}";
+            => "\{Key}: \{string.Join(",", Values.Select(v => FormatValue(v)))}";
+
+        string FormatValue(string value)
+            => new Regex("[\r\n]+").Replace(value, @"\n");
     }
 }

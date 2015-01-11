@@ -15,7 +15,7 @@ namespace BilibiliAssGenerator.Ass
         {
             get
             {
-                yield return new AssLine { Key = "Format", Values = Format };
+                yield return new AssLine("Format", Format);
             }
         }
     }
