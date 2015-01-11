@@ -69,7 +69,6 @@
     <Compile Include="Ass\AssDocument.cs" />
     <Compile Include="Ass\AssElement.cs" />
     <Compile Include="Ass\AssEventsSection.cs" />
-    <Compile Include="Ass\AssKeyValueLine.cs" />
     <Compile Include="Ass\AssLine.cs" />
     <Compile Include="Ass\AssScriptInfoSection.cs" />
     <Compile Include="Ass\AssSection.cs" />

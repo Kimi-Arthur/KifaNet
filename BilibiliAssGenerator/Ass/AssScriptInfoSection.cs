@@ -17,17 +17,17 @@ namespace BilibiliAssGenerator.Ass
             {
                 if (!string.IsNullOrEmpty(Title))
                 {
-                    yield return new AssKeyValueLine("Title", Title);
+                    yield return new AssLine("Title", new List<string> { Title });
                 }
 
                 if (!string.IsNullOrEmpty(OriginalScript))
                 {
-                    yield return new AssKeyValueLine("Original Script", OriginalScript);
+                    yield return new AssLine("Original Script", new List<string> { OriginalScript });
                 }
 
                 if (!string.IsNullOrEmpty(ScriptType))
                 {
-                    yield return new AssKeyValueLine("Script Type", ScriptType);
+                    yield return new AssLine("Script Type", new List<string> { ScriptType });
                 }
             }
         }
