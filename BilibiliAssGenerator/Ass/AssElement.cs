@@ -8,6 +8,6 @@ namespace BilibiliAssGenerator.Ass
 {
     public abstract class AssElement
     {
-        public abstract string GenerateText();
+        public abstract string GenerateAssText();
     }
 }

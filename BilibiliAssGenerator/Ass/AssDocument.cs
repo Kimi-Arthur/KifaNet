@@ -9,7 +9,7 @@ namespace BilibiliAssGenerator.Ass
     public class AssDocument : AssElement
     {
         public AssSection Sections { get; set; }
-        public override string GenerateText()
+        public override string GenerateAssText()
         {
             throw new NotImplementedException();
         }

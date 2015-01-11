@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BiliBiliAssGenerator.Ass
+{
+    public static class AssExtensions
+    {
+        public static string GenerateAssText(this bool b)
+            => b ? "-1" : "0";
+
+        public static string GenerateAssText(this Color color)
+            => "&H\{color.A : X2}\{color.B : X2}\{color.G : X2}\{color.R : X2}";
+
+        public static string GenerateAssText(this int d)
+            => d.ToString();
+
+        public static string GenerateAssText(this string str)
+            => str;
+    }
+
+}

@@ -18,7 +18,7 @@ namespace BilibiliAssGenerator.Ass
             Values = values;
         }
 
-        public override string GenerateText()
+        public override string GenerateAssText()
             => "\{Key}: \{string.Join(",", Values.Select(v => FormatValue(v)))}";
 
         string FormatValue(string value)
