@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="Bilibili\BilibiliChatTests.cs" />
     <Compile Include="Bilibili\BilibiliCommentTests.cs" />
+    <Compile Include="Bilibili\BilibiliVideoTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

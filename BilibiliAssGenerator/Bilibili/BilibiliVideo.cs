@@ -12,44 +12,78 @@ namespace BiliBiliAssGenerator.Bilibili
 {
     public class BilibiliVideo
     {
-        static readonly Regex cidReg = new Regex(@"cid=\d+&");
+        static readonly Regex cidReg = new Regex(@"cid=(\d+)&");
 
         public string Aid { get; private set; }
         public string Title { get; set; }
-        public List<BilibiliChat> Parts { get; set; }
-        public string Description { get; private set; }
-        public List<string> Keywords { get; private set; }
+        public IEnumerable<BilibiliChat> Parts { get; set; }
+        public string Description { get; set; }
+        public IEnumerable<string> Keywords { get; set; }
 
         public BilibiliVideo(string aid)
         {
             Aid = aid;
             HttpWebRequest request = WebRequest.CreateHttp("http://www.bilibili.com/video/av\{aid}");
+            request.AutomaticDecompression = DecompressionMethods.GZip;
+            AddCookies(request);
+
             var document = new HtmlDocument();
             using (var stream = request.GetResponse().GetResponseStream())
             {
-                document.Load(stream);
+                document.Load(stream, Encoding.UTF8);
             }
 
-            var dn = document.DocumentNode;
-            Title = dn.SelectSingleNode("//meta[@name='title']/@content").InnerText;
-            Description = dn.SelectSingleNode("//meta[@name='description']/@content").InnerText;
-            Keywords = dn.SelectSingleNode("//meta[@name='keywords']/@content").InnerText.Split(',').ToList();
-            var options = dn.SelectNodes("//option").Select(n => new Tuple<string, string>(n.Attributes["value"].Value, n.InnerText));
-            if (options.Count() == 0)
+            var documentNode = document.DocumentNode;
+            Title = documentNode.SelectSingleNode("//meta[@name='title']").Attributes["content"].Value;
+            Description = documentNode.SelectSingleNode("//meta[@name='description']").Attributes["content"].Value;
+            Keywords = documentNode.SelectSingleNode("//meta[@name='keywords']").Attributes["content"].Value.Split(',').ToList();
+            var options = documentNode.SelectNodes("//option")?.Select(n => n.Attributes["value"].Value);
+
+            if (options == null)
             {
                 // Single page
-                Parts = new List<BilibiliChat>() { new BilibiliChat(FindCid(dn), "") };
+                Parts = new List<BilibiliChat>() { new BilibiliChat(FindCid(documentNode), "") };
             }
             else
             {
                 // Multiple pages
-                Parts = options.Select(option => new BilibiliChat(FindCid(dn), option.Item2)).ToList();
+
+                var titles = documentNode.SelectSingleNode("//select").InnerText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var parts = new List<BilibiliChat>() { new BilibiliChat(FindCid(documentNode), titles[0]) };
+                foreach (var option in options.Skip(1).Zip(titles.Skip(1), (x, y) => Tuple.Create(x, y)))
+                {
+                    HttpWebRequest subpageRequest = WebRequest.CreateHttp("http://www.bilibili.com\{option.Item1}");
+                    subpageRequest.AutomaticDecompression = DecompressionMethods.GZip;
+                    AddCookies(subpageRequest);
+
+                    var subpageDocument = new HtmlDocument();
+                    using (var stream = subpageRequest.GetResponse().GetResponseStream())
+                    {
+                        subpageDocument.Load(stream, Encoding.UTF8);
+                    }
+
+                    var subpageDocumentNode = subpageDocument.DocumentNode;
+                    parts.Add(new BilibiliChat(FindCid(subpageDocumentNode), option.Item2));
+                }
+
+                Parts = parts;
+            }
+        }
+
+        void AddCookies(HttpWebRequest request)
+        {
+            string cookies = "pgv_pvi=7139182592; sid=lwi4gq8b; tma=136533283.66239416.1418041709236.1418041709236.1418041709236.1; tmd=4.136533283.66239416.1418041709236.; DedeUserID=3888766; DedeUserID__ckMd5=7476605d2f1afaa1; SESSDATA=60e8e8eb%2C1423190202%2Cc0a30aff; sid=8464zjec; pgv_si=s346497024; _cnt_dyn=0; _cnt_pm=0; _cnt_notify=0; __track_isp_speed=1; CNZZDATA2724999=cnzz_eid%3D736815101-1418041708-%26ntime%3D1420973401";
+            request.CookieContainer = new CookieContainer();
+            foreach (var cookie in cookies.Split(';'))
+            {
+                var results = cookie.Split('=').Select(x => x.Trim()).ToList();
+                request.CookieContainer.Add(new Cookie(results[0], results[1], "/", ".bilibili.com"));
             }
         }
 
         string FindCid(HtmlNode documentNode)
             => cidReg.Match(documentNode.SelectNodes("//script")
                 .First(s => s.InnerText.StartsWith("EmbedPlayer"))
-                .InnerText).Groups[0].Value;
+                .InnerText).Groups[1].Value;
     }
 }

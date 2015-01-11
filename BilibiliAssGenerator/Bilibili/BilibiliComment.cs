@@ -37,6 +37,7 @@ namespace BiliBiliAssGenerator.Bilibili
         public long UserId { get; set; }
         public long CommentId { get; set; }
         public int FontSize { get; set; }
+
         public BilibiliComment(string property, string text)
         {
             Text = text;
