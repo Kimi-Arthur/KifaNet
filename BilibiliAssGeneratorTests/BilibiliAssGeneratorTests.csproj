@@ -53,6 +53,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Ass\AssLineTests.cs" />
+    <Compile Include="Ass\AssScriptInfoSectionTests.cs" />
     <Compile Include="Bilibili\BilibiliChatTests.cs" />
     <Compile Include="Bilibili\BilibiliCommentTests.cs" />
     <Compile Include="Bilibili\BilibiliVideoTests.cs" />

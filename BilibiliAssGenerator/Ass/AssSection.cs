@@ -8,7 +8,7 @@ namespace BilibiliAssGenerator.Ass
 {
     public abstract class AssSection : AssElement
     {
-        public virtual string SectionTitle { get; } = "Section Title";
+        public abstract string SectionTitle { get; }
         public virtual IEnumerable<AssLine> AssLines { get; } = new List<AssLine>();
         public override string GenerateText()
             => "[\{SectionTitle}]\n\{string.Join("\n", AssLines.Select(line => line.GenerateText()))}";
