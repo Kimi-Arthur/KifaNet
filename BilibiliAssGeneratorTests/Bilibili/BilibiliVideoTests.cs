@@ -20,6 +20,7 @@ namespace BilibiliAssGeneratorTests.Bilibili
             Assert.AreEqual(1, video.Parts.Count());
             Assert.AreEqual("2862733", video.Parts.ElementAt(0).Cid);
             Assert.AreEqual("", video.Parts.ElementAt(0).Title);
+            Assert.AreEqual(null, video.GenerateAssDocument());
         }
 
         [TestMethod]
@@ -69,6 +70,8 @@ namespace BilibiliAssGeneratorTests.Bilibili
                 Assert.AreEqual(item.Item2, item.Item3.Title);
                 Assert.IsTrue(item.Item3.Comments.Count() > 1000, "Comments should be > 1000");
             }
+
+            Assert.AreEqual(null, video.GenerateAssDocument());
         }
     }
 }
