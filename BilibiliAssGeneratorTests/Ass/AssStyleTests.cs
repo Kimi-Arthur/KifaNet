@@ -65,5 +65,15 @@ namespace BilibiliAssGeneratorTests.Ass
             Assert.IsInstanceOfType(Utils.GetException(() => style.Shadow = 5), typeof(ArgumentOutOfRangeException), "Property Shadow");
             Assert.AreEqual("Shadow", (Utils.GetException(() => style.Shadow = 123) as ArgumentOutOfRangeException).ParamName);
         }
+
+        [TestMethod]
+        public void ValidNameTest()
+        {
+            var style = new AssStyle();
+            style.Name = "staff";
+            Assert.AreEqual("staff", style.ValidName);
+            style.Name = "Default";
+            Assert.AreEqual("*Default", style.ValidName);
+        }
     }
 }

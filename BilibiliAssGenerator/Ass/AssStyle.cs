@@ -110,5 +110,7 @@ namespace BilibiliAssGenerator.Ass
                 Encoding.GenerateAssText()
             };
 
+        public string ValidName
+            => Name == "Default" ? "*Default" : Name;
     }
 }
