@@ -9,8 +9,12 @@ namespace BilibiliAssGenerator.Ass
 {
     public class AssLine : AssElement
     {
-        public virtual string Key { get; set; }
-        public virtual IEnumerable<string> Values { get; set; }
+        public virtual string Key { get; protected set; }
+        public virtual IEnumerable<string> Values { get; protected set; }
+
+        public AssLine()
+        {
+        }
 
         public AssLine(string key, IEnumerable<string> values)
         {
