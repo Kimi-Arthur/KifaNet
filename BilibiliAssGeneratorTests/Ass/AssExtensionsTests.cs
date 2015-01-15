@@ -42,5 +42,11 @@ namespace BilibiliAssGeneratorTests.Ass
         {
             Assert.AreEqual("abc", "abc".GenerateAssText());
         }
+
+        [TestMethod]
+        public void TimeSpanTextTest()
+        {
+            Assert.AreEqual("1:06:41.23", TimeSpan.FromSeconds(4001.234).GenerateAssText());
+        }
     }
 }

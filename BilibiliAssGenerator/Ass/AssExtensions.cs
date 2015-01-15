@@ -18,11 +18,17 @@ namespace BilibiliAssGenerator.Ass
         public static string GenerateAssText(this double f)
             => "\{f : f2}";
 
+        public static string GenerateAssText(this Enum f)
+            => "\{f : d}";
+
         public static string GenerateAssText(this int d)
             => d.ToString();
 
         public static string GenerateAssText(this string str)
             => str;
+
+        public static string GenerateAssText(this TimeSpan t)
+            => "\{t : "h\\:mm\\:ss\\.ff"}";
     }
 
 }

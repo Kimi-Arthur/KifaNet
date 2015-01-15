@@ -66,7 +66,11 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ass\AssDialogue.cs" />
+    <Compile Include="Ass\AssDialogueBannerEffect.cs" />
+    <Compile Include="Ass\AssDialogueText.cs" />
     <Compile Include="Ass\AssDocument.cs" />
+    <Compile Include="Ass\AssDialoguoEffect.cs" />
     <Compile Include="Ass\AssElement.cs" />
     <Compile Include="Ass\AssEventsSection.cs" />
     <Compile Include="Ass\AssExtensions.cs" />

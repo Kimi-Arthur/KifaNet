@@ -52,6 +52,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Ass\AssDialogueEffectTests.cs" />
     <Compile Include="Ass\AssExtensionsTests.cs" />
     <Compile Include="Ass\AssLineTests.cs" />
     <Compile Include="Ass\AssScriptInfoSectionTests.cs" />
