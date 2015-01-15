@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BiliBiliAssGenerator.Bilibili
+namespace BilibiliAssGenerator.Bilibili
 {
     public struct BilibiliComment
     {

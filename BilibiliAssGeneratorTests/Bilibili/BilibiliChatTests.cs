@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using BiliBiliAssGenerator.Bilibili;
+using BilibiliAssGenerator.Bilibili;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BilibiliAssGeneratorTests.Bilibili

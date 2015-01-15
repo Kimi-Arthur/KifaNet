@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using BilibiliAssGenerator.Ass;
 using HtmlAgilityPack;
 
-namespace BiliBiliAssGenerator.Bilibili
+namespace BilibiliAssGenerator.Bilibili
 {
     public class BilibiliVideo
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using BiliBiliAssGenerator.Ass;
+using BilibiliAssGenerator.Ass;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BilibiliAssGeneratorTests.Ass
@@ -19,6 +19,16 @@ namespace BilibiliAssGeneratorTests.Ass
         public void ColorTextTest()
         {
             Assert.AreEqual("&H3C141414", Color.FromArgb(0x3C141414).GenerateAssText());
+        }
+
+        [TestMethod]
+        public void DoubleTextTest()
+        {
+            Assert.AreEqual("0.12", 0.123.GenerateAssText());
+            Assert.AreEqual("12.12", 12.123.GenerateAssText());
+            Assert.AreEqual("-0.12", (-0.123).GenerateAssText());
+            Assert.AreEqual("123.00", 123.0.GenerateAssText());
+            Assert.AreEqual("0.12", 0.117.GenerateAssText());
         }
 
         [TestMethod]

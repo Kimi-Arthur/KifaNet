@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BiliBiliAssGenerator.Ass
+namespace BilibiliAssGenerator.Ass
 {
     public static class AssExtensions
     {
@@ -14,6 +14,9 @@ namespace BiliBiliAssGenerator.Ass
 
         public static string GenerateAssText(this Color color)
             => "&H\{color.A : X2}\{color.B : X2}\{color.G : X2}\{color.R : X2}";
+
+        public static string GenerateAssText(this double f)
+            => "\{f : f2}";
 
         public static string GenerateAssText(this int d)
             => d.ToString();
