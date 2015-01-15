@@ -55,6 +55,7 @@
     <Compile Include="Ass\AssExtensionsTests.cs" />
     <Compile Include="Ass\AssLineTests.cs" />
     <Compile Include="Ass\AssScriptInfoSectionTests.cs" />
+    <Compile Include="Ass\AssStylesSectionTests.cs" />
     <Compile Include="Ass\AssStyleTests.cs" />
     <Compile Include="Bilibili\BilibiliChatTests.cs" />
     <Compile Include="Bilibili\BilibiliCommentTests.cs" />
