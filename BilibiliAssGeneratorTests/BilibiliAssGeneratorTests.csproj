@@ -53,6 +53,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Ass\AssDialogueEffectTests.cs" />
+    <Compile Include="Ass\AssDialogueTextElementTests.cs" />
+    <Compile Include="Ass\AssDialogueTextTests.cs" />
     <Compile Include="Ass\AssExtensionsTests.cs" />
     <Compile Include="Ass\AssLineTests.cs" />
     <Compile Include="Ass\AssScriptInfoSectionTests.cs" />

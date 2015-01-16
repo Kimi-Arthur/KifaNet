@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
 {
-    class AssDialogueTextNormalElement : AssElement
+    public class AssDialogueTextNormalElement : AssDialogueTextElement
     {
         public string Content { get; set; }
 

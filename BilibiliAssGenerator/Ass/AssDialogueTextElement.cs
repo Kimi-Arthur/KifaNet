@@ -8,5 +8,7 @@ namespace BilibiliAssGenerator.Ass
 {
     public abstract class AssDialogueTextElement : AssElement
     {
+        public static implicit operator AssDialogueTextElement(string s)
+            => new AssDialogueTextNormalElement(s);
     }
 }
