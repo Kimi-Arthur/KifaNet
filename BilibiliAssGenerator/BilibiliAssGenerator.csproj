@@ -71,6 +71,8 @@
     <Compile Include="Ass\AssDialogueScrollDownEffect.cs" />
     <Compile Include="Ass\AssDialogueScrollUpEffect.cs" />
     <Compile Include="Ass\AssDialogueText.cs" />
+    <Compile Include="Ass\AssDialogueTextElement.cs" />
+    <Compile Include="Ass\AssDialogueTextNormalElement.cs" />
     <Compile Include="Ass\AssDocument.cs" />
     <Compile Include="Ass\AssDialogueEffect.cs" />
     <Compile Include="Ass\AssElement.cs" />

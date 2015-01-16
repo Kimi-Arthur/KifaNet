@@ -15,6 +15,7 @@ namespace BilibiliAssGenerator.Ass
         }
 
         public override string EffectType => "Banner";
+
         public override IEnumerable<string> EffectParameters
             => new List<string>
             {

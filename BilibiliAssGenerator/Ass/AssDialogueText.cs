@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
 {
-    class AssDialogueText : AssElement
+    public class AssDialogueText : AssElement
     {
+        public List<AssDialogueTextElement> TextElements { get; set; }
+
         public override string GenerateAssText()
-        {
-            throw new NotImplementedException();
-        }
+            => string.Join("", TextElements.Select(x => x.GenerateAssText()));
     }
 }
