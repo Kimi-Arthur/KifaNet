@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
 {
-    public abstract class AssDialoguoEffect : AssElement
+    public abstract class AssDialogueEffect : AssElement
     {
         public abstract string EffectType { get; }
         public abstract IEnumerable<string> EffectParameters { get; }

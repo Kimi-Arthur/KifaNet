@@ -16,7 +16,7 @@ namespace BilibiliAssGenerator.Ass
         public int MarginL { get; set; }
         public int MarginR { get; set; }
         public int MarginV { get; set; }
-        public AssDialoguoEffect Effect { get; set; }
+        public AssDialogueEffect Effect { get; set; }
         public AssDialogueText Text { get; set; }
         public override string Key => "Dialogue";
         public override IEnumerable<string> Values

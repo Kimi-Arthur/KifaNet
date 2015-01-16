@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
 {
-    public class AssDialogueBannerEffect : AssDialoguoEffect
+    public class AssDialogueBannerEffect : AssDialogueEffect
     {
         public enum LeftToRightType
         {
