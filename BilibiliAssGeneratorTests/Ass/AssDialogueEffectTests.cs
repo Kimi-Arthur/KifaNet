@@ -8,7 +8,7 @@ namespace BilibiliAssGeneratorTests.Ass
     public class AssDialogueEffectTests
     {
         [TestMethod]
-        public void BasicTest()
+        public void BannerEffectTest()
         {
             var effect = new AssDialogueBannerEffect();
             Assert.AreEqual("Banner;0;0;0", effect.GenerateAssText());
