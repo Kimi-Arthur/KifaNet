@@ -16,34 +16,36 @@ namespace BilibiliAssGenerator.Ass
             OpaqueBox = 3
         }
 
-        public enum AlignmentType
-        {
-            BottomLeft = 1,
-            BottomCenter = 2,
-            BottomRight = 3,
-            MiddleLeft = 4,
-            MiddleCenter = 5,
-            MiddleRight = 6,
-            TopLeft = 7,
-            TopCenter = 8,
-            TopRight = 9
-        }
-
         public string Name { get; set; }
+
         public string Fontname { get; set; }
+
         public int Fontsize { get; set; }
+
         public Color PrimaryColour { get; set; }
+
         public Color SecondaryColour { get; set; }
+
         public Color OutlineColour { get; set; }
+
         public Color BackColour { get; set; }
+
         public bool Bold { get; set; }
+
         public bool Italic { get; set; }
+
         public bool Underline { get; set; }
+
         public bool StrikeOut { get; set; }
+
         public int ScaleX { get; set; }
+
         public int ScaleY { get; set; }
+
         public int Spacing { get; set; }
+
         public double Angle { get; set; }
+
         public BorderStyleType BorderStyle { get; set; }
 
         int outline;
@@ -76,12 +78,18 @@ namespace BilibiliAssGenerator.Ass
             }
         }
 
-        public AlignmentType Alignment { get; set; }
+        public AssAlignment Alignment { get; set; }
+
         public int MarginL { get; set; }
+
         public int MarginR { get; set; }
+
         public int MarginV { get; set; }
+
         public int Encoding { get; set; }
+
         public override string Key => "Style";
+
         public override IEnumerable<string> Values
             => new List<string>
             {

@@ -31,7 +31,7 @@ namespace BilibiliAssGeneratorTests.Ass
                 BorderStyle = AssStyle.BorderStyleType.OutlineWithDropShadow,
                 Outline = 2,
                 Shadow = 0,
-                Alignment = AssStyle.AlignmentType.BottomCenter,
+                Alignment = AssAlignment.BottomCenter,
                 MarginL = 30,
                 MarginR = 30,
                 MarginV = 10,

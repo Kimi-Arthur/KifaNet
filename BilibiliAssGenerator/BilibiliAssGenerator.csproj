@@ -66,6 +66,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Ass\AssAlignment.cs" />
     <Compile Include="Ass\AssDialogue.cs" />
     <Compile Include="Ass\AssDialogueBannerEffect.cs" />
     <Compile Include="Ass\AssDialogueScrollDownEffect.cs" />

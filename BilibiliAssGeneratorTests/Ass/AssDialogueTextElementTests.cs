@@ -10,10 +10,10 @@ namespace BilibiliAssGeneratorTests.Ass
         [TestMethod]
         public void NormalElementTest()
         {
-            AssDialogueTextNormalElement e1 = "test1";
+            AssDialogueTextElement e1 = "test1";
             Assert.AreEqual("test1", e1.GenerateAssText());
 
-            AssDialogueTextNormalElement e2 = new AssDialogueTextNormalElement();
+            AssDialogueTextElement e2 = new AssDialogueTextElement();
             Assert.AreEqual("", e2.GenerateAssText());
         }
     }
