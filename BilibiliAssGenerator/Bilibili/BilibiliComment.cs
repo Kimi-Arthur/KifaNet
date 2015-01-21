@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BilibiliAssGenerator.Ass;
 
 namespace BilibiliAssGenerator.Bilibili
 {
@@ -28,14 +29,24 @@ namespace BilibiliAssGenerator.Bilibili
             Special
         }
 
+        static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(10);
+
         public string Text { get; set; }
+
         public TimeSpan VideoTime { get; set; }
+
         public DateTime PostTime { get; set; }
+
         public Color TextColor { get; set; }
+
         public ModeType Mode { get; set; }
+
         public PoolType Pool { get; set; }
+
         public long UserId { get; set; }
+
         public long CommentId { get; set; }
+
         public int FontSize { get; set; }
 
         public BilibiliComment(string property, string text)
@@ -59,5 +70,14 @@ namespace BilibiliAssGenerator.Bilibili
             result.VideoTime = result.VideoTime.Add(offset);
             return result;
         }
+
+        public AssDialogue GenerateAssDialogue()
+            => new AssDialogue()
+            {
+                Start = VideoTime,
+                End = VideoTime + DefaultDuration,
+                Text = new AssDialogueText(Text),
+                Effect = new AssDialogueBannerEffect()
+            };
     }
 }

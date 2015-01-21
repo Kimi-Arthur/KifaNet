@@ -20,7 +20,8 @@ namespace BilibiliAssGeneratorTests.Bilibili
             Assert.AreEqual(1, video.Parts.Count());
             Assert.AreEqual("2862733", video.Parts.ElementAt(0).Cid);
             Assert.AreEqual("", video.Parts.ElementAt(0).Title);
-            Assert.AreEqual(null, video.GenerateAssDocument());
+            var doc = video.GenerateAssDocument();
+            Assert.AreEqual("[Script Info]\r\nTitle: Die Mannschaft\r\nOriginal Script: Bilibili\r\nScript Type: V4.00+\r\n", doc.GenerateAssText());
         }
 
         [TestMethod]

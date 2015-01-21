@@ -8,10 +8,9 @@ namespace BilibiliAssGenerator.Ass
 {
     public class AssDocument : AssElement
     {
-        public AssSection Sections { get; set; }
+        public List<AssSection> Sections { get; set; } = new List<AssSection>();
+
         public override string GenerateAssText()
-        {
-            throw new NotImplementedException();
-        }
+            => string.Join("\r\n", Sections.Select(s => s.GenerateAssText()));
     }
 }

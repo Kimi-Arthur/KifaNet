@@ -16,9 +16,13 @@ namespace BilibiliAssGenerator.Ass
             OpaqueBox = 3
         }
 
+        public static string DefaultFontname = "Simhei";
+
+        public static AssStyle DefaultStyle = null;
+
         public string Name { get; set; }
 
-        public string Fontname { get; set; }
+        public string Fontname { get; set; } = DefaultFontname;
 
         public int Fontsize { get; set; }
 

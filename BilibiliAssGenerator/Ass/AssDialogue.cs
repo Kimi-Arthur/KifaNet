@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
 {
-    class AssDialogue : AssLine
+    public class AssDialogue : AssLine
     {
-        public int Layer { get; set; }
+        public int Layer { get; set; } = 0;
 
         public TimeSpan Start { get; set; }
 
         public TimeSpan End { get; set; }
 
-        public AssStyle Style { get; set; }
+        public AssStyle Style { get; set; } = AssStyle.DefaultStyle;
 
         public string Name { get; set; } = "NTP";
 

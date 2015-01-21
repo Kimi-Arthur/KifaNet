@@ -13,12 +13,25 @@ namespace BilibiliAssGenerator.Bilibili
 {
     public class BilibiliVideo
     {
+        public enum PartModeType
+        {
+            SinglePartMode,
+            ContinuousPartMode,
+            ParallelPartMode
+        }
+
         static readonly Regex cidReg = new Regex(@"cid=(\d+)&");
 
         public string Aid { get; private set; }
+
         public string Title { get; set; }
+
+        public PartModeType PartMode { get; set; }
+
         public IEnumerable<BilibiliChat> Parts { get; set; }
+
         public string Description { get; set; }
+
         public IEnumerable<string> Keywords { get; set; }
 
         public BilibiliVideo(string aid)
@@ -44,13 +57,14 @@ namespace BilibiliAssGenerator.Bilibili
             {
                 // Single page
                 Parts = new List<BilibiliChat>() { new BilibiliChat(FindCid(documentNode), "") };
+                PartMode = PartModeType.SinglePartMode;
             }
             else
             {
                 // Multiple pages
-
                 var titles = documentNode.SelectSingleNode("//select").InnerText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
                 var parts = new List<BilibiliChat>() { new BilibiliChat(FindCid(documentNode), titles[0]) };
+                PartMode = PartModeType.ContinuousPartMode;
                 foreach (var option in options.Skip(1).Zip(titles.Skip(1), (x, y) => Tuple.Create(x, y)))
                 {
                     HttpWebRequest subpageRequest = WebRequest.CreateHttp("http://www.bilibili.com\{option.Item1}");
@@ -73,7 +87,25 @@ namespace BilibiliAssGenerator.Bilibili
 
         public AssDocument GenerateAssDocument()
         {
-            throw new NotImplementedException();
+            AssDocument result = new AssDocument();
+            result.Sections.Add(new AssScriptInfoSection() { Title = Title, OriginalScript = "Bilibili" });
+            TimeSpan timeOffset = TimeSpan.Zero;
+
+            foreach (var part in Parts)
+            {
+                part.ChatOffset = timeOffset;
+                foreach (var comment in part.Comments)
+                {
+                    comment.GenerateAssDialogue();
+                }
+
+                if (PartMode == PartModeType.ContinuousPartMode)
+                {
+                    timeOffset = timeOffset.Add(part.ChatLength);
+                }
+            }
+
+            return result;
         }
 
         void AddCookies(HttpWebRequest request)

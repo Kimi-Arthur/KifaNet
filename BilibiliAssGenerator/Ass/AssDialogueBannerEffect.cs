@@ -41,6 +41,6 @@ namespace BilibiliAssGenerator.Ass
 
         public LeftToRightType LeftToRight { get; set; } = LeftToRightType.RightToLeft;
 
-        public int FadeAwayWidth { get; set; }
+        public int FadeAwayWidth { get; set; } = 0;
     }
 }
