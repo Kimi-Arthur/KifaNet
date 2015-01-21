@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BilibiliAssGenerator.Ass
 {
-    public static class AssExtensions
+    public static class AssElementExtensions
     {
         public static string GenerateAssText(this bool b)
             => b ? "-1" : "0";

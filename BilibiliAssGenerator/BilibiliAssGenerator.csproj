@@ -76,7 +76,7 @@
     <Compile Include="Ass\AssDialogueEffect.cs" />
     <Compile Include="Ass\AssElement.cs" />
     <Compile Include="Ass\AssEventsSection.cs" />
-    <Compile Include="Ass\AssExtensions.cs" />
+    <Compile Include="Ass\AssElementExtensions.cs" />
     <Compile Include="Ass\AssLine.cs" />
     <Compile Include="Ass\AssScriptInfoSection.cs" />
     <Compile Include="Ass\AssSection.cs" />
