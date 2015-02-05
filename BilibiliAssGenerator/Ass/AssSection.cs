@@ -11,6 +11,6 @@ namespace BilibiliAssGenerator.Ass
         public abstract string SectionTitle { get; }
         public virtual IEnumerable<AssLine> AssLines { get; } = new List<AssLine>();
         public override string GenerateAssText()
-            => "[\{SectionTitle}]\r\n\{string.Join("\r\n", AssLines.Select(line => line.GenerateAssText()))}\r\n";
+            => $"[{SectionTitle}]\r\n{(string.Join("\r\n", AssLines.Select(line => line.GenerateAssText())))}\r\n";
     }
 }

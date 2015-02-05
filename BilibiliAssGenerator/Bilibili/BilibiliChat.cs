@@ -27,7 +27,7 @@ namespace BilibiliAssGenerator.Bilibili
         {
             Cid = cid;
             Title = title;
-            HttpWebRequest request = WebRequest.CreateHttp("http://comment.bilibili.com/\{cid}.xml");
+            HttpWebRequest request = WebRequest.CreateHttp($"http://comment.bilibili.com/{cid}.xml");
             request.AutomaticDecompression = DecompressionMethods.Deflate;
             var document = new XmlDocument();
             using (var s = request.GetResponse().GetResponseStream())
@@ -46,7 +46,7 @@ namespace BilibiliAssGenerator.Bilibili
 
         static TimeSpan GetVideoLength(string cid)
         {
-            HttpWebRequest request = WebRequest.CreateHttp("http://interface.bilibili.tv/playurl?cid=\{cid}&appkey=0f38c1b83b2de0a0");
+            HttpWebRequest request = WebRequest.CreateHttp($"http://interface.bilibili.tv/playurl?cid={cid}&appkey=0f38c1b83b2de0a0");
             request.AutomaticDecompression = DecompressionMethods.Deflate;
             var document = new XmlDocument();
             using (var s = request.GetResponse().GetResponseStream())

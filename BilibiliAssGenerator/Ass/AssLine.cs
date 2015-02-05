@@ -23,7 +23,7 @@ namespace BilibiliAssGenerator.Ass
         }
 
         public override string GenerateAssText()
-            => "\{Key}: \{string.Join(",", Values.Select(v => FormatValue(v)))}";
+            => $"{Key}: {string.Join(",", Values.Select(v => FormatValue(v)))}";
 
         string FormatValue(string value)
             => new Regex("[\r\n]+").Replace(value, @"\n");

@@ -11,7 +11,7 @@ namespace BilibiliAssGeneratorTests.Ass
         public void BasicTest()
         {
             AssElement section = new AssScriptInfoSection();
-            Assert.AreEqual("[Script Info]\r\nScript Type: V4.00+", section.GenerateAssText());
+            Assert.AreEqual("[Script Info]\r\nScript Type: V4.00+\r\n", section.GenerateAssText());
         }
 
         [TestMethod]
@@ -19,7 +19,7 @@ namespace BilibiliAssGeneratorTests.Ass
         {
             AssElement section = new AssScriptInfoSection() { OriginalScript = "Kimi", Title = "Great!", ScriptType = "Special type" };
             Assert.AreEqual(
-                "[Script Info]\r\nTitle: Great!\r\nOriginal Script: Kimi\r\nScript Type: Special type",
+                "[Script Info]\r\nTitle: Great!\r\nOriginal Script: Kimi\r\nScript Type: Special type\r\n",
                 section.GenerateAssText());
         }
     }

@@ -12,6 +12,6 @@ namespace BilibiliAssGenerator.Ass
         public abstract IEnumerable<string> EffectParameters { get; }
 
         public override string GenerateAssText()
-            => "\{EffectType};\{string.Join(";", EffectParameters)}";
+            => $"{EffectType};{string.Join(";", EffectParameters)}";
     }
 }

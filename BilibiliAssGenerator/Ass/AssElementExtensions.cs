@@ -13,13 +13,13 @@ namespace BilibiliAssGenerator.Ass
             => b ? "-1" : "0";
 
         public static string GenerateAssText(this Color color)
-            => "&H\{color.A : X2}\{color.B : X2}\{color.G : X2}\{color.R : X2}";
+            => $"&H{color.A :X2}{color.B :X2}{color.G :X2}{color.R :X2}";
 
         public static string GenerateAssText(this double f)
-            => "\{f : f2}";
+            => $"{f :f2}";
 
         public static string GenerateAssText(this Enum f)
-            => "\{f : d}";
+            => $"{f :d}";
 
         public static string GenerateAssText(this int d)
             => d.ToString();
@@ -28,7 +28,7 @@ namespace BilibiliAssGenerator.Ass
             => str;
 
         public static string GenerateAssText(this TimeSpan t)
-            => "\{t : "h\\:mm\\:ss\\.ff"}";
+            => $"{t :h\\:mm\\:ss\\.ff}";
     }
 
 }

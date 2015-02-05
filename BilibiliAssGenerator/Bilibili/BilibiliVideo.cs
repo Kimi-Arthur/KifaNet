@@ -37,7 +37,7 @@ namespace BilibiliAssGenerator.Bilibili
         public BilibiliVideo(string aid)
         {
             Aid = aid;
-            HttpWebRequest request = WebRequest.CreateHttp("http://www.bilibili.com/video/av\{aid}");
+            HttpWebRequest request = WebRequest.CreateHttp($"http://www.bilibili.com/video/av{aid}");
             request.AutomaticDecompression = DecompressionMethods.GZip;
             AddCookies(request);
 
@@ -67,7 +67,7 @@ namespace BilibiliAssGenerator.Bilibili
                 PartMode = PartModeType.ContinuousPartMode;
                 foreach (var option in options.Skip(1).Zip(titles.Skip(1), (x, y) => Tuple.Create(x, y)))
                 {
-                    HttpWebRequest subpageRequest = WebRequest.CreateHttp("http://www.bilibili.com\{option.Item1}");
+                    HttpWebRequest subpageRequest = WebRequest.CreateHttp($"http://www.bilibili.com{option.Item1}");
                     subpageRequest.AutomaticDecompression = DecompressionMethods.GZip;
                     AddCookies(subpageRequest);
 
