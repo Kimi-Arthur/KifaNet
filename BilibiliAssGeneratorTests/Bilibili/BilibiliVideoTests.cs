@@ -20,6 +20,7 @@ namespace BilibiliAssGeneratorTests.Bilibili
             Assert.AreEqual(1, video.Parts.Count());
             Assert.AreEqual("2862733", video.Parts.ElementAt(0).Cid);
             Assert.AreEqual("", video.Parts.ElementAt(0).Title);
+            Assert.AreEqual(BilibiliVideo.PartModeType.SinglePartMode, video.PartMode);
             var doc = video.GenerateAssDocument();
             Assert.AreEqual("[Script Info]\r\nTitle: Die Mannschaft\r\nOriginal Script: Bilibili\r\nScript Type: V4.00+\r\n", doc.GenerateAssText());
         }
@@ -65,14 +66,21 @@ namespace BilibiliAssGeneratorTests.Bilibili
                     "5、AKB48|福山雅治|中島みゆき|美輪明宏|南天群星|岚|松田聖子|合唱故乡"),
             };
 
+            TimeSpan offset = TimeSpan.Zero;
             foreach (var item in data.Zip(video.Parts, (x, y) => Tuple.Create(x.Item1, x.Item2, y)))
             {
                 Assert.AreEqual(item.Item1, item.Item3.Cid);
                 Assert.AreEqual(item.Item2, item.Item3.Title);
                 Assert.IsTrue(item.Item3.Comments.Count() > 1000, "Comments should be > 1000");
+                Assert.AreEqual(offset, item.Item3.ChatOffset);
+                offset += item.Item3.ChatLength;
             }
 
-            Assert.AreEqual(null, video.GenerateAssDocument());
+            video.PartMode = BilibiliVideo.PartModeType.ParallelPartMode;
+            foreach (var item in video.Parts)
+            {
+                Assert.AreEqual(TimeSpan.Zero, item.ChatOffset);
+            }
         }
     }
 }
