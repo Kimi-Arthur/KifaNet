@@ -26,7 +26,34 @@ namespace BilibiliAssGenerator.Bilibili
 
         public string Title { get; set; }
 
-        public PartModeType PartMode { get; set; }
+        PartModeType partMode;
+        public PartModeType PartMode
+        {
+            get
+            {
+                return partMode;
+            }
+            set
+            {
+                partMode = value;
+                if (partMode == PartModeType.ContinuousPartMode)
+                {
+                    TimeSpan offset = TimeSpan.Zero;
+                    foreach (var part in Parts)
+                    {
+                        part.ChatOffset = offset;
+                        offset += part.ChatLength;
+                    }
+                }
+                else
+                {
+                    foreach (var part in Parts)
+                    {
+                        part.ChatOffset = TimeSpan.Zero;
+                    }
+                }
+            }
+        }
 
         public IEnumerable<BilibiliChat> Parts { get; set; }
 
@@ -64,7 +91,6 @@ namespace BilibiliAssGenerator.Bilibili
                 // Multiple pages
                 var titles = documentNode.SelectSingleNode("//select").InnerText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
                 var parts = new List<BilibiliChat>() { new BilibiliChat(FindCid(documentNode), titles[0]) };
-                PartMode = PartModeType.ContinuousPartMode;
                 foreach (var option in options.Skip(1).Zip(titles.Skip(1), (x, y) => Tuple.Create(x, y)))
                 {
                     HttpWebRequest subpageRequest = WebRequest.CreateHttp($"http://www.bilibili.com{option.Item1}");
@@ -82,6 +108,7 @@ namespace BilibiliAssGenerator.Bilibili
                 }
 
                 Parts = parts;
+                PartMode = PartModeType.ContinuousPartMode;
             }
         }
 
