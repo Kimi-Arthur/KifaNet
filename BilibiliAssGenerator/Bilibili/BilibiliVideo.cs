@@ -120,15 +120,9 @@ namespace BilibiliAssGenerator.Bilibili
 
             foreach (var part in Parts)
             {
-                part.ChatOffset = timeOffset;
                 foreach (var comment in part.Comments)
                 {
                     comment.GenerateAssDialogue();
-                }
-
-                if (PartMode == PartModeType.ContinuousPartMode)
-                {
-                    timeOffset = timeOffset.Add(part.ChatLength);
                 }
             }
 
