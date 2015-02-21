@@ -49,8 +49,6 @@ namespace BilibiliAssGenerator.Ass
 
         public Color? BackColour { get; set; }
 
-        public AssAlignment? Alignment { get; set; }
-
         public AssDialogueTextElement()
             : this("")
         {
@@ -86,7 +84,6 @@ namespace BilibiliAssGenerator.Ass
             styleText += GenerateAssTextForAttribute("2", SecondaryColour);
             styleText += GenerateAssTextForAttribute("3", OutlineColour);
             styleText += GenerateAssTextForAttribute("4", BackColour);
-            styleText += GenerateAssTextForAttribute("an", Alignment);
             return (!string.IsNullOrEmpty(styleText) ? $"{{{styleText}}}" : "") + Content;
         }
 
@@ -104,8 +101,5 @@ namespace BilibiliAssGenerator.Ass
             ? $"\\{name}a&H{value.Value.A :X2}&"
                 + $"\\{name}c&H{value.Value.B :X2}{value.Value.G :X2}{value.Value.R :X2}&"
             : "";
-
-        static string GenerateAssTextForAttribute(string name, Enum value)
-            => value != null ? $"\\{name}{value :d}" : "";
     }
 }

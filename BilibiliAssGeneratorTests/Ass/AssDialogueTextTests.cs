@@ -27,15 +27,13 @@ namespace BilibiliAssGeneratorTests.Ass
             element.Italic = true;
             element.Underline = true;
             element.StrikeOut = null;
-            AssElement text = new AssDialogueText(element);
+            var text = new AssDialogueText(element);
             Assert.AreEqual(@"{\b0\i1\u1}two2", text.GenerateAssText());
 
-            element.Alignment = AssAlignment.BottomCenter;
-            text = new AssDialogueText(element);
-            Assert.AreEqual(@"{\b0\i1\u1\an2}two2", text.GenerateAssText());
+            text.Alignment = AssAlignment.BottomCenter;
+            Assert.AreEqual(@"{\an2}{\b0\i1\u1}two2", text.GenerateAssText());
 
-            element.Alignment = null;
-            text = new AssDialogueText(element);
+            text.Alignment = null;
             Assert.AreEqual(@"{\b0\i1\u1}two2", text.GenerateAssText());
         }
     }
