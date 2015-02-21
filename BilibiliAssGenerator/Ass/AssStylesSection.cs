@@ -9,6 +9,7 @@ namespace BilibiliAssGenerator.Ass
     public class AssStylesSection : AssSection
     {
         public override string SectionTitle => "V4+ Styles";
+
         public List<string> Format
             => new List<string>
             {
@@ -36,7 +37,9 @@ namespace BilibiliAssGenerator.Ass
                 "MarginV",
                 "Encoding"
             };
+
         public List<AssStyle> Styles { get; set; }
+
         public override IEnumerable<AssLine> AssLines
         {
             get

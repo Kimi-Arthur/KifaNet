@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>KimiRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -76,6 +77,7 @@
     <Compile Include="Ass\AssDocument.cs" />
     <Compile Include="Ass\AssDialogueEffect.cs" />
     <Compile Include="Ass\AssElement.cs" />
+    <Compile Include="Ass\AssEvent.cs" />
     <Compile Include="Ass\AssEventsSection.cs" />
     <Compile Include="Ass\AssElementExtensions.cs" />
     <Compile Include="Ass\AssLine.cs" />
@@ -109,6 +111,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="KimiRules.ruleset" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
