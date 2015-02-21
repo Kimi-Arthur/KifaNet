@@ -27,7 +27,7 @@ namespace BilibiliAssGenerator.Ass
 
         public string FontName { get; set; }
 
-        public int FontSize { get; set; }
+        public int? FontSize { get; set; }
 
         public int? FontSizePercentX { get; set; }
 
@@ -41,7 +41,15 @@ namespace BilibiliAssGenerator.Ass
 
         public int? FontRotationZ { get; set; }
 
-        public Color? TextColor { get; set; }
+        public Color? PrimaryColour { get; set; } = null;
+
+        public Color? SecondaryColour { get; set; }
+
+        public Color? OutlineColour { get; set; }
+
+        public Color? BackColour { get; set; }
+
+        public AssAlignment? Alignment { get; set; }
 
         public AssDialogueTextElement()
             : this("")
@@ -59,14 +67,45 @@ namespace BilibiliAssGenerator.Ass
         public override string GenerateAssText()
         {
             string styleText = "";
-            styleText += GenerateAssTextForNullableBoolAttribute("b", Bold);
-            styleText += GenerateAssTextForNullableBoolAttribute("i", Italic);
-            styleText += GenerateAssTextForNullableBoolAttribute("u", Underline);
-            styleText += GenerateAssTextForNullableBoolAttribute("s", StrikeOut);
-            return (string.IsNullOrEmpty(styleText) ? "" : $"{{{styleText}}}") + Content;
+            styleText += GenerateAssTextForAttribute("b", Bold);
+            styleText += GenerateAssTextForAttribute("i", Italic);
+            styleText += GenerateAssTextForAttribute("u", Underline);
+            styleText += GenerateAssTextForAttribute("s", StrikeOut);
+            styleText += GenerateAssTextForAttribute("bord", Border);
+            styleText += GenerateAssTextForAttribute("shad", Shadow);
+            styleText += GenerateAssTextForAttribute("be", BlurEdges);
+            styleText += GenerateAssTextForAttribute("fn", FontName);
+            styleText += GenerateAssTextForAttribute("fs", FontSize);
+            styleText += GenerateAssTextForAttribute("fscx", FontSizePercentX);
+            styleText += GenerateAssTextForAttribute("fscy", FontSizePercentY);
+            styleText += GenerateAssTextForAttribute("fsp", FontSpace);
+            styleText += GenerateAssTextForAttribute("frx", FontRotationX);
+            styleText += GenerateAssTextForAttribute("fry", FontRotationY);
+            styleText += GenerateAssTextForAttribute("frz", FontRotationZ);
+            styleText += GenerateAssTextForAttribute("1", PrimaryColour);
+            styleText += GenerateAssTextForAttribute("2", SecondaryColour);
+            styleText += GenerateAssTextForAttribute("3", OutlineColour);
+            styleText += GenerateAssTextForAttribute("4", BackColour);
+            styleText += GenerateAssTextForAttribute("an", Alignment);
+            return (!string.IsNullOrEmpty(styleText) ? $"{{{styleText}}}" : "") + Content;
         }
 
-        static string GenerateAssTextForNullableBoolAttribute(string name, bool? value)
+        static string GenerateAssTextForAttribute(string name, bool? value)
             => value.HasValue ? $"\\{name}{(value.Value ? "1" : "0")}" : "";
+
+        static string GenerateAssTextForAttribute(string name, int? value)
+            => value.HasValue ? $"\\{name}{value.Value}" : "";
+
+        static string GenerateAssTextForAttribute(string name, string value)
+            => !string.IsNullOrEmpty(value) ? $"\\{name}{value}" : "";
+
+        static string GenerateAssTextForAttribute(string name, Color? value)
+            => value.HasValue
+            ? $"\\{name}a&H{value.Value.A :X2}&"
+                + $"\\{name}c&H{value.Value.B :X2}{value.Value.G :X2}{value.Value.R :X2}&"
+            : "";
+
+        static string GenerateAssTextForAttribute(string name, Enum value)
+            => value != null ? $"\\{name}{value :d}" : "";
     }
 }

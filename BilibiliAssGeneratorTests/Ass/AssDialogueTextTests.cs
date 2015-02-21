@@ -29,6 +29,14 @@ namespace BilibiliAssGeneratorTests.Ass
             element.StrikeOut = null;
             AssElement text = new AssDialogueText(element);
             Assert.AreEqual(@"{\b0\i1\u1}two2", text.GenerateAssText());
+
+            element.Alignment = AssAlignment.BottomCenter;
+            text = new AssDialogueText(element);
+            Assert.AreEqual(@"{\b0\i1\u1\an2}two2", text.GenerateAssText());
+
+            element.Alignment = null;
+            text = new AssDialogueText(element);
+            Assert.AreEqual(@"{\b0\i1\u1}two2", text.GenerateAssText());
         }
     }
 }
