@@ -15,6 +15,8 @@ namespace BilibiliAssGenerator.Ass
 
         public bool? Italic { get; set; }
 
+        public bool? Underline { get; set; }
+
         public bool? StrikeOut { get; set; }
 
         public int? Border { get; set; }
@@ -42,8 +44,8 @@ namespace BilibiliAssGenerator.Ass
         public Color? TextColor { get; set; }
 
         public AssDialogueTextElement()
+            : this("")
         {
-            Content = "";
         }
 
         public AssDialogueTextElement(string s)
@@ -56,7 +58,15 @@ namespace BilibiliAssGenerator.Ass
 
         public override string GenerateAssText()
         {
-            throw new NotImplementedException();
+            string styleText = "";
+            styleText += GenerateAssTextForNullableBoolAttribute("b", Bold);
+            styleText += GenerateAssTextForNullableBoolAttribute("i", Italic);
+            styleText += GenerateAssTextForNullableBoolAttribute("u", Underline);
+            styleText += GenerateAssTextForNullableBoolAttribute("s", StrikeOut);
+            return (string.IsNullOrEmpty(styleText) ? "" : $"{{{styleText}}}") + Content;
         }
+
+        static string GenerateAssTextForNullableBoolAttribute(string name, bool? value)
+            => value.HasValue ? $"\\{name}{(value.Value ? "1" : "0")}" : "";
     }
 }
