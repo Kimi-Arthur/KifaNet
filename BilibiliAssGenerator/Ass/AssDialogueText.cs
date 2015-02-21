@@ -8,7 +8,7 @@ namespace BilibiliAssGenerator.Ass
 {
     public class AssDialogueText : AssElement
     {
-        public AssAlignment Alignment { get; set; }
+        public AssAlignment? Alignment { get; set; }
 
         public List<AssDialogueTextElement> TextElements { get; set; }
 
@@ -22,6 +22,14 @@ namespace BilibiliAssGenerator.Ass
         }
 
         public override string GenerateAssText()
-            => string.Join("", TextElements.Select(x => x.GenerateAssText()));
+        {
+            string stylePrefix = "";
+            stylePrefix += GenerateAssTextForAttribute("an", Alignment);
+
+            return (!string.IsNullOrEmpty(stylePrefix) ? $"{{{stylePrefix}}}" : "") + string.Concat(TextElements.Select(x => x.GenerateAssText()));
+        }
+
+        static string GenerateAssTextForAttribute(string name, Enum value)
+            => value != null ? $"\\{name}{value :d}" : "";
     }
 }

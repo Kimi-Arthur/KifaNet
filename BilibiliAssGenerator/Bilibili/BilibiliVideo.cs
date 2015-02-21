@@ -116,19 +116,12 @@ namespace BilibiliAssGenerator.Bilibili
         {
             AssDocument result = new AssDocument();
             result.Sections.Add(new AssScriptInfoSection() { Title = Title, OriginalScript = "Bilibili" });
-            TimeSpan timeOffset = TimeSpan.Zero;
 
             foreach (var part in Parts)
             {
-                part.ChatOffset = timeOffset;
                 foreach (var comment in part.Comments)
                 {
                     comment.GenerateAssDialogue();
-                }
-
-                if (PartMode == PartModeType.ContinuousPartMode)
-                {
-                    timeOffset = timeOffset.Add(part.ChatLength);
                 }
             }
 
