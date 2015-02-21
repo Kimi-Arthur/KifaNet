@@ -116,7 +116,6 @@ namespace BilibiliAssGenerator.Bilibili
         {
             AssDocument result = new AssDocument();
             result.Sections.Add(new AssScriptInfoSection() { Title = Title, OriginalScript = "Bilibili" });
-            TimeSpan timeOffset = TimeSpan.Zero;
 
             foreach (var part in Parts)
             {
