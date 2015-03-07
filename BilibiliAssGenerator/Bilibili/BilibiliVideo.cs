@@ -116,12 +116,15 @@ namespace BilibiliAssGenerator.Bilibili
         {
             AssDocument result = new AssDocument();
             result.Sections.Add(new AssScriptInfoSection() { Title = Title, OriginalScript = "Bilibili" });
+            result.Sections.Add(new AssStylesSection() { Styles = new List<AssStyle> { AssStyle.DefaultStyle } });
+            AssEventsSection events = new AssEventsSection();
+            result.Sections.Add(events);
 
             foreach (var part in Parts)
             {
                 foreach (var comment in part.Comments)
                 {
-                    comment.GenerateAssDialogue();
+                    events.Events.Add(comment.GenerateAssDialogue());
                 }
             }
 
@@ -130,7 +133,7 @@ namespace BilibiliAssGenerator.Bilibili
 
         void AddCookies(HttpWebRequest request)
         {
-            string cookies = "DedeUserID=3888766; DedeUserID__ckMd5=7476605d2f1afaa1; SESSDATA=60e8e8eb%2C1427051385%2C589cf86d";
+            string cookies = "DedeUserID=3888766; DedeUserID__ckMd5=7476605d2f1afaa1; SESSDATA=60e8e8eb%2C1425749267%2Cfe183f71";
             request.CookieContainer = new CookieContainer();
             foreach (var cookie in cookies.Split(';'))
             {

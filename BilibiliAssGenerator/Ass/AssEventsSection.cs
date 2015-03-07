@@ -17,7 +17,7 @@ namespace BilibiliAssGenerator.Ass
                 "Start",
                 "End",
                 "Style",
-                "Actor",
+                "Name",
                 "MarginL",
                 "MarginR",
                 "MarginV",
@@ -25,13 +25,17 @@ namespace BilibiliAssGenerator.Ass
                 "Text"
             };
 
-        public List<AssEvent> Events { get; set; }
+        public List<AssEvent> Events { get; set; } = new List<AssEvent>();
 
         public override IEnumerable<AssLine> AssLines
         {
             get
             {
                 yield return new AssLine("Format", Format);
+                foreach (var evt in Events)
+                {
+                    yield return evt;
+                }
             }
         }
     }

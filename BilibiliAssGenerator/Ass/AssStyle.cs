@@ -18,7 +18,12 @@ namespace BilibiliAssGenerator.Ass
 
         public static string DefaultFontname = "Simhei";
 
-        public static AssStyle DefaultStyle = null;
+        public static AssStyle DefaultStyle
+            = new AssStyle()
+            {
+                // TODO: Finish default style
+                Name = "Default"
+            };
 
         public string Name { get; set; }
 

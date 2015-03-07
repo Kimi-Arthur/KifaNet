@@ -35,9 +35,10 @@ namespace BilibiliAssGenerator.Ass
                 Start.GenerateAssText(),
                 End.GenerateAssText(),
                 Style.ValidName.GenerateAssText(),
-                MarginL.HasValue ? "0000" : $"{MarginL : D4}",
-                MarginR.HasValue ? "0000" : $"{MarginR : D4}",
-                MarginV.HasValue ? "0000" : $"{MarginV : D4}",
+                Name.GenerateAssText(),
+                MarginL.HasValue ? $"{MarginL : D4}" : "0000",
+                MarginR.HasValue ? $"{MarginR : D4}" : "0000",
+                MarginV.HasValue ? $"{MarginV : D4}" : "0000",
                 Effect.GenerateAssText(),
                 Text.GenerateAssText()
             };
