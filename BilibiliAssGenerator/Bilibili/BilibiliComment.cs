@@ -78,6 +78,9 @@ namespace BilibiliAssGenerator.Bilibili
                 End = VideoTime + DefaultDuration,
                 Text = new AssDialogueText(Text),
                 Effect = new AssDialogueBannerEffect()
+                {
+                    Delay = 1500 / (100 + Text.Length)
+                }
             };
     }
 }

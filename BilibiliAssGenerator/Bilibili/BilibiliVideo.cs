@@ -133,7 +133,7 @@ namespace BilibiliAssGenerator.Bilibili
 
         void AddCookies(HttpWebRequest request)
         {
-            string cookies = "DedeUserID=3888766; DedeUserID__ckMd5=7476605d2f1afaa1; SESSDATA=60e8e8eb%2C1425749267%2Cfe183f71";
+            string cookies = "DedeUserID=3888766; DedeUserID__ckMd5=7476605d2f1afaa1; SESSDATA=60e8e8eb%2C1426517170%2C25bbc20b";
             request.CookieContainer = new CookieContainer();
             foreach (var cookie in cookies.Split(';'))
             {
