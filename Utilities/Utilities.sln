@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22609.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUtility", "FileUtility\FileUtility.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUtilityTests", "FileUtilityTests\FileUtilityTests.csproj", "{AE5F5382-89CD-43E0-9221-AF125A2DB32A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE5F5382-89CD-43E0-9221-AF125A2DB32A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE5F5382-89CD-43E0-9221-AF125A2DB32A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE5F5382-89CD-43E0-9221-AF125A2DB32A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE5F5382-89CD-43E0-9221-AF125A2DB32A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
