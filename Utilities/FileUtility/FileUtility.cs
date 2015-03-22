@@ -27,7 +27,7 @@ namespace Pimix.Utilities
 
             if (requiredProperties.HasFlag(FileProperties.Path))
             {
-                info.Path = path;
+                info.Path = Path.GetFullPath(path).Replace(Path.DirectorySeparatorChar, '/');
             }
 
             return info;
