@@ -9,10 +9,23 @@ namespace Pimix.Utilities
 {
     public class FileInformation
     {
+        [JsonProperty("$id")]
+        public string Id
+            => $"{Path}:{SHA256}";
+
         [JsonProperty("size")]
         public long? Size { get; set; }
 
         [JsonProperty("file_path")]
         public string Path { get; set; }
+
+        [JsonProperty]
+        public string MD5 { get; set; }
+
+        [JsonProperty]
+        public string SHA1 { get; set; }
+
+        [JsonProperty]
+        public string SHA256 { get; set; }
     }
 }
