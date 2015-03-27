@@ -19,34 +19,34 @@ namespace Pimix.Utilities
                 info.Size = stream.Length;
             }
 
-            if (requiredProperties.HasFlag(FileProperties.MD5))
+            if ((requiredProperties | FileProperties.AllHashes) != FileProperties.None)
             {
-                using (MD5 hasher = new MD5CryptoServiceProvider())
+                List<HashAlgorithm> hashers = new List<HashAlgorithm>
                 {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    byte[] hash = hasher.ComputeHash(stream);
-                    info.MD5 = BitConverter.ToString(hash).Replace("-", "");
-                }
-            }
+                    requiredProperties.HasFlag(FileProperties.MD5) ? new MD5CryptoServiceProvider() : null,
+                    requiredProperties.HasFlag(FileProperties.SHA1) ? new SHA1CryptoServiceProvider() : null,
+                    requiredProperties.HasFlag(FileProperties.SHA256) ? new SHA256CryptoServiceProvider() : null
+                };
 
-            if (requiredProperties.HasFlag(FileProperties.SHA1))
-            {
-                using (SHA1 hasher = new SHA1CryptoServiceProvider())
+                stream.Seek(0, SeekOrigin.Begin);
+                int blockSize = 32 << 20, len;
+                byte[] buffer = new byte[blockSize];
+                while ((len = stream.Read(buffer, 0, blockSize)) != 0)
                 {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    byte[] hash = hasher.ComputeHash(stream);
-                    info.SHA1 = BitConverter.ToString(hash).Replace("-", "");
+                    foreach (var hasher in hashers)
+                    {
+                        hasher?.TransformBlock(buffer, 0, len, buffer, 0);
+                    }
                 }
-            }
 
-            if (requiredProperties.HasFlag(FileProperties.SHA256))
-            {
-                using (SHA256 hasher = new SHA256CryptoServiceProvider())
+                foreach (var hasher in hashers)
                 {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    byte[] hash = hasher.ComputeHash(stream);
-                    info.SHA256 = BitConverter.ToString(hash).Replace("-", "");
+                    hasher?.TransformFinalBlock(buffer, 0, 0);
                 }
+
+                info.MD5 = hashers[0]?.Hash.Dump();
+                info.SHA1 = hashers[1]?.Hash.Dump();
+                info.SHA256 = hashers[2]?.Hash.Dump();
             }
 
             return info;

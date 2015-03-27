@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ByteArrayExtensions.cs" />
     <Compile Include="FileInformation.cs" />
     <Compile Include="FileProperties.cs" />
     <Compile Include="FileUtility.cs" />
