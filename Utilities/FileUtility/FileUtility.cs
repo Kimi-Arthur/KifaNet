@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pimix.Utilities
+namespace Pimix.Storage
 {
     public static class FileUtility
     {

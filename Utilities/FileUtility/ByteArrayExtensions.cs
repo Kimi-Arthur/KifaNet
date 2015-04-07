@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Pimix.Utilities
+namespace Pimix.Storage
 {
     static class ByteArrayExtensions
     {

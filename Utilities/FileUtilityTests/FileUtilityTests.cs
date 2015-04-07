@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Utilities;
+using Pimix.Storage;
 
 namespace FileUtilityTests
 {

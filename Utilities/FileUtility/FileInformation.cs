@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Pimix.Utilities
+namespace Pimix.Storage
 {
     public class FileInformation
     {
