@@ -1,4 +1,5 @@
-﻿using Pimix.Storage;
+﻿using Newtonsoft.Json;
+using Pimix.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace FileInformationGenerator
         static void Main(string[] args)
         {
             var info = FileUtility.GetInformation(args[0], FileProperties.All);
-            Console.WriteLine(info.SHA1);
+            Console.WriteLine(JsonConvert.SerializeObject(info));
         }
     }
 }
