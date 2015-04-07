@@ -10,8 +10,7 @@ namespace Pimix.Storage
     public class FileInformation
     {
         [JsonProperty("$id")]
-        public string Id
-            => $"{Path}:{SHA256}";
+        public string Id { get; set; }
 
         [JsonProperty("size")]
         public long? Size { get; set; }
