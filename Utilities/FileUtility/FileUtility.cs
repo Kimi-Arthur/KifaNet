@@ -14,12 +14,21 @@ namespace Pimix.Storage
         {
             FileInformation info = new FileInformation();
 
-            if (requiredProperties.HasFlag(FileProperties.Size))
+            if (requiredProperties.HasFlag(FileProperties.Size)
+                || requiredProperties.HasFlag(FileProperties.BlockSize)
+                || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None
+                || (requiredProperties & FileProperties.AllHashes) != FileProperties.None)
             {
                 info.Size = stream.Length;
             }
 
-            if ((requiredProperties | FileProperties.AllHashes) != FileProperties.None)
+            if (requiredProperties.HasFlag(FileProperties.BlockSize)
+                || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None)
+            {
+                info.BlockSize = GetBlockSize(info.Size.Value);
+            }
+
+            if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None)
             {
                 List<HashAlgorithm> hashers = new List<HashAlgorithm>
                 {
@@ -28,15 +37,31 @@ namespace Pimix.Storage
                     requiredProperties.HasFlag(FileProperties.SHA256) ? new SHA256CryptoServiceProvider() : null
                 };
 
+                info.BlockMD5 = requiredProperties.HasFlag(FileProperties.BlockMD5) ? new List<string>() : null;
+                info.BlockSHA1 = requiredProperties.HasFlag(FileProperties.BlockSHA1) ? new List<string>() : null;
+                info.BlockSHA256 = requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new List<string>() : null;
+
+                List<HashAlgorithm> blockHashers = new List<HashAlgorithm>
+                {
+                    requiredProperties.HasFlag(FileProperties.BlockMD5) ? new MD5CryptoServiceProvider() : null,
+                    requiredProperties.HasFlag(FileProperties.BlockSHA1) ? new SHA1CryptoServiceProvider() : null,
+                    requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new SHA256CryptoServiceProvider() : null
+                };
+
                 stream.Seek(0, SeekOrigin.Begin);
-                int blockSize = 32 << 20, len;
+                int blockSize = info.BlockSize ?? GetBlockSize(stream.Length);
+                int readLength;
                 byte[] buffer = new byte[blockSize];
-                while ((len = stream.Read(buffer, 0, blockSize)) != 0)
+                while ((readLength = stream.Read(buffer, 0, blockSize)) != 0)
                 {
                     foreach (var hasher in hashers)
                     {
-                        hasher?.TransformBlock(buffer, 0, len, buffer, 0);
+                        hasher?.TransformBlock(buffer, 0, readLength, buffer, 0);
                     }
+
+                    info.BlockMD5?.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).Dump());
+                    info.BlockSHA1?.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).Dump());
+                    info.BlockSHA256?.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).Dump());
                 }
 
                 foreach (var hasher in hashers)
@@ -74,6 +99,11 @@ namespace Pimix.Storage
             }
 
             return info;
+        }
+
+        static int GetBlockSize(long size)
+        {
+            return 32 << 20;
         }
     }
 }

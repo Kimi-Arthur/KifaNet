@@ -12,19 +12,31 @@ namespace Pimix.Storage
         [JsonProperty("$id")]
         public string Id { get; set; }
 
+        [JsonProperty("path")]
+        public string Path { get; set; }
+
         [JsonProperty("size")]
         public long? Size { get; set; }
 
-        [JsonProperty("file_path")]
-        public string Path { get; set; }
-
-        [JsonProperty]
+        [JsonProperty("md5")]
         public string MD5 { get; set; }
 
-        [JsonProperty]
+        [JsonProperty("sha1")]
         public string SHA1 { get; set; }
 
-        [JsonProperty]
+        [JsonProperty("sha256")]
         public string SHA256 { get; set; }
+
+        [JsonProperty("block_size")]
+        public int? BlockSize { get; set; }
+
+        [JsonProperty("block_md5")]
+        public List<string> BlockMD5 { get; set; }
+
+        [JsonProperty("block_block_sha1")]
+        public List<string> BlockSHA1 { get; set; }
+
+        [JsonProperty("block_sha256")]
+        public List<string> BlockSHA256 { get; set; }
     }
 }
