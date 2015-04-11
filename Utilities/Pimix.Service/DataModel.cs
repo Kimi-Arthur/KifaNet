@@ -11,8 +11,9 @@ namespace Pimix.Service
 {
     public abstract class DataModel
     {
+        [JsonIgnore]
         public virtual string ModelId
-            => "invalid";
+            => null;
 
         public virtual string Id { get; set; }
 
@@ -23,7 +24,10 @@ namespace Pimix.Service
         public static void Init()
         {
             JsonConvert.DefaultSettings =
-                () => new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore };
+                () => new JsonSerializerSettings()
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                };
         }
 
         public static bool Patch<TDataModel>(TDataModel data, string id = null)

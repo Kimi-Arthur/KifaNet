@@ -37,10 +37,16 @@ namespace Pimix.Storage
         [JsonProperty("block_md5")]
         public List<string> BlockMD5 { get; set; }
 
-        [JsonProperty("block_block_sha1")]
+        [JsonProperty("block_sha1")]
         public List<string> BlockSHA1 { get; set; }
 
         [JsonProperty("block_sha256")]
         public List<string> BlockSHA256 { get; set; }
+
+        [JsonProperty("encryption_key")]
+        public string EncryptionKey { get; set; }
+
+        [JsonProperty("locations")]
+        public List<string> Locations { get; set; }
     }
 }
