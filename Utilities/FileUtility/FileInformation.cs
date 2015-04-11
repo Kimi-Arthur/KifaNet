@@ -10,6 +10,9 @@ namespace Pimix.Storage
 {
     public class FileInformation : DataModel
     {
+        public override string ModelId
+            => "universal";
+
         [JsonProperty("$id")]
         public override string Id { get; set; }
 
