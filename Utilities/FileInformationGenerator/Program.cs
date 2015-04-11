@@ -15,12 +15,11 @@ namespace FileInformationGenerator
         static void Main(string[] args)
         {
             string path = args[0];
-            string site = "mac";
+            string site = "cubie";
             var info = FileUtility.GetInformation($"\\\\{site}.pimix.org/files/{path}", FileProperties.All ^ FileProperties.Path);
             info.Id = path;
             info.Path = path;
             info.Locations = new List<string> { $"{site}:{path}" };
-            Console.WriteLine(JsonConvert.SerializeObject(info));
             DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
             DataModel.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
             DataModel.Patch(info);

@@ -38,6 +38,10 @@ namespace Pimix.Service
             string content = JsonConvert.SerializeObject(data);
             string address =
                 $"{PimixServerApiAddress}/{data.ModelId}/{Uri.EscapeDataString(Uri.EscapeDataString(id))}";
+
+            Console.WriteLine(address);
+            Console.WriteLine(content);
+
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "PATCH";
             request.Headers["Authorization"] = $"Basic {PimixServerCredential}";
