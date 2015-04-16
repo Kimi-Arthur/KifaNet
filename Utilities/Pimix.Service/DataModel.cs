@@ -37,7 +37,7 @@ namespace Pimix.Service
             id = id ?? data.Id;
             string content = JsonConvert.SerializeObject(data);
             string address =
-                $"{PimixServerApiAddress}/{data.ModelId}/{Uri.EscapeDataString(Uri.EscapeDataString(id))}";
+                $"{PimixServerApiAddress}/{data.ModelId}/{id}";
 
             Console.WriteLine(address);
             Console.WriteLine(content);
