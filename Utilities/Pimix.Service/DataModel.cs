@@ -11,6 +11,13 @@ namespace Pimix.Service
 {
     public abstract class DataModel
     {
+        public DataModel()
+        {
+            // Do not override, use property setting instead
+            // or create other ctors.
+            // This ctor does nothing. Used only for accessing ModelId.
+        }
+
         [JsonIgnore]
         public virtual string ModelId
             => null;
@@ -39,12 +46,10 @@ namespace Pimix.Service
             string address =
                 $"{PimixServerApiAddress}/{data.ModelId}/{id}";
 
-            Console.WriteLine(address);
-            Console.WriteLine(content);
-
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "PATCH";
-            request.Headers["Authorization"] = $"Basic {PimixServerCredential}";
+            request.Headers["Authorization"] =
+                $"Basic {PimixServerCredential}";
 
             using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
             {
@@ -54,6 +59,26 @@ namespace Pimix.Service
             using (var response = request.GetResponse())
             {
                 return response.GetDictionary()["status"].ToString() == "ok";
+            }
+        }
+
+        public static TDataModel Get<TDataModel>(string id)
+            where TDataModel : DataModel, new()
+        {
+            Init();
+
+            // Suppose new a TDataModel is cheap.
+            string address =
+                $"{PimixServerApiAddress}/{new TDataModel().ModelId}/{id}";
+
+            HttpWebRequest request = WebRequest.CreateHttp(address);
+            request.Method = "GET";
+            request.Headers["Authorization"] =
+                $"Basic {PimixServerCredential}";
+
+            using (var response = request.GetResponse())
+            {
+                return response.GetObject<TDataModel>();
             }
         }
     }
