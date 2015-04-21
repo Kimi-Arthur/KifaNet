@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using HashLib;
 
 namespace Pimix.Storage
 {
@@ -26,6 +27,15 @@ namespace Pimix.Storage
                 || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None)
             {
                 info.BlockSize = GetBlockSize(info.Size.Value);
+            }
+
+            if (requiredProperties.HasFlag(FileProperties.SliceMD5))
+            {
+                byte[] buffer = new byte[SliceLength];
+                stream.Seek(0, SeekOrigin.Begin);
+                info.SliceMD5 = (stream.Read(buffer, 0, SliceLength) == SliceLength)
+                    ? new MD5CryptoServiceProvider().ComputeHash(buffer, 0, SliceLength).Dump()
+                    : null;
             }
 
             if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None)
@@ -52,12 +62,19 @@ namespace Pimix.Storage
                 int blockSize = info.BlockSize ?? GetBlockSize(stream.Length);
                 int readLength;
                 byte[] buffer = new byte[blockSize];
+
+                var crc32 = requiredProperties.HasFlag(FileProperties.CRC32)
+                    ? HashFactory.Checksum.CreateAdler32() : null;
+                crc32?.Initialize();
+
                 while ((readLength = stream.Read(buffer, 0, blockSize)) != 0)
                 {
                     foreach (var hasher in hashers)
                     {
                         hasher?.TransformBlock(buffer, 0, readLength, buffer, 0);
                     }
+
+                    crc32?.TransformBytes(buffer, 0, readLength);
 
                     info.BlockMD5?.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).Dump());
                     info.BlockSHA1?.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).Dump());
@@ -72,6 +89,7 @@ namespace Pimix.Storage
                 info.MD5 = hashers[0]?.Hash.Dump();
                 info.SHA1 = hashers[1]?.Hash.Dump();
                 info.SHA256 = hashers[2]?.Hash.Dump();
+                info.CRC32 = crc32?.TransformFinal().GetBytes().Reverse().ToArray().Dump();
             }
 
             return info;
@@ -105,5 +123,8 @@ namespace Pimix.Storage
         {
             return 32 << 20;
         }
+
+        static int SliceLength
+            => 256 << 10;
     }
 }

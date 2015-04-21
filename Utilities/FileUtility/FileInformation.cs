@@ -31,6 +31,9 @@ namespace Pimix.Storage
         [JsonProperty("sha256")]
         public string SHA256 { get; set; }
 
+        [JsonProperty("crc32")]
+        public string CRC32 { get; set; }
+
         [JsonProperty("block_size")]
         public int? BlockSize { get; set; }
 
@@ -42,6 +45,9 @@ namespace Pimix.Storage
 
         [JsonProperty("block_sha256")]
         public List<string> BlockSHA256 { get; set; }
+
+        [JsonProperty("slice_md5")]
+        public string SliceMD5 { get; set; }
 
         [JsonProperty("encryption_key")]
         public string EncryptionKey { get; set; }
