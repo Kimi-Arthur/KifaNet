@@ -13,9 +13,6 @@ namespace Pimix.Storage
         public override string ModelId
             => "universal";
 
-        [JsonProperty("$id")]
-        public override string Id { get; set; }
-
         [JsonProperty("path")]
         public string Path { get; set; }
 

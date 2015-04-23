@@ -12,10 +12,7 @@ namespace Pimix.Cloud.Baidu
     {
         public override string ModelId
             => "cloud";
-
-        [JsonProperty("$id")]
-        public override string Id { get; set; }
-
+        
         [JsonProperty("accounts")]
         public Dictionary<string, AccountInfo> Accounts { get; private set; }
 
