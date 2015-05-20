@@ -15,8 +15,9 @@ namespace FileInformationGenerator
         static void Main(string[] args)
         {
             string path = args[0];
-            string site = "cubie";
-            var info = FileUtility.GetInformation($"\\\\{site}.pimix.org/files/{path}", FileProperties.All ^ FileProperties.Path);
+            string site = ConfigurationManager.AppSettings["Site"];
+            string pathPrefix = ConfigurationManager.AppSettings["PathPrefix"];
+            var info = FileUtility.GetInformation($"{pathPrefix}/{path}", FileProperties.All ^ FileProperties.Path);
             info.Id = path;
             info.Path = path;
             info.Locations = new List<string> { $"{site}:{path}" };
