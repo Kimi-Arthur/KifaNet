@@ -14,16 +14,21 @@ namespace FileInformationGenerator
     {
         static void Main(string[] args)
         {
-            string path = args[0];
-            string site = ConfigurationManager.AppSettings["Site"];
-            string pathPrefix = ConfigurationManager.AppSettings["PathPrefix"];
-            var info = FileUtility.GetInformation($"{pathPrefix}/{path}", FileProperties.All ^ FileProperties.Path);
-            info.Id = path;
-            info.Path = path;
-            info.Locations = new List<string> { $"{site}:{path}" };
-            DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
-            DataModel.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
-            DataModel.Patch(info);
+            foreach (var arg in args)
+            {
+                foreach (var path in arg.Split('\n'))
+                {
+                    string site = ConfigurationManager.AppSettings["Site"];
+                    string pathPrefix = ConfigurationManager.AppSettings["PathPrefix"];
+                    var info = FileUtility.GetInformation($"{pathPrefix}/{path}", FileProperties.All ^ FileProperties.Path);
+                    info.Id = path;
+                    info.Path = path;
+                    info.Locations = new List<string> { $"{site}:{path}" };
+                    DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
+                    DataModel.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
+                    DataModel.Patch(info);
+                }
+            }
         }
     }
 }
