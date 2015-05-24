@@ -8,10 +8,12 @@ namespace PimixTest.Service
     [TestClass]
     public class DataModelTests
     {
+        public string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
+
         [TestMethod]
         public void DataModelGetBasicTest()
         {
-            DataModel.PimixServerApiAddress = "http://cubie.pimix.org:8000/api";
+            DataModel.PimixServerApiAddress = PimixServerApiAddress;
             var data = DataModel.Get<FakeDataModel>("item0");
             Assert.AreEqual("item0", data.Id);
             Assert.AreEqual(1225, data.IntProp);
@@ -38,14 +40,6 @@ namespace PimixTest.Service
                     "sub prop 2 value 1",
                     "sub prop 2 value 2"
                 }, data.SubProp.SubProp2);
-        }
-
-        [TestMethod]
-        public void DataModelGetIntIdTest()
-        {
-            DataModel.PimixServerApiAddress = "http://cubie.pimix.org:8000/api";
-            var data = DataModel.Get<FakeDataModel>("item1");
-            Assert.AreEqual("12", data.Id);
         }
     }
 }
