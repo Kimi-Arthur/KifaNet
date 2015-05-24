@@ -28,6 +28,11 @@ namespace PimixTest.Service
         [JsonProperty("sub_prop")]
         public FakeSubDataModel SubProp { get; set; }
 
+        public static bool Reset()
+        {
+            var result = DataModel.Call<FakeDataModel, Dictionary<string, string>>("reset", methodType: "POST");
+            return result.Contains(new KeyValuePair<string, string>("status", "ok"));
+        }
     }
 
     class FakeSubDataModel

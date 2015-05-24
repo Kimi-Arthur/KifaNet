@@ -96,5 +96,37 @@ namespace Pimix.Service
                 return response.GetObject<TDataModel>();
             }
         }
+
+        public static ResponseType Call<TDataModel, ResponseType>(string action, string methodType = "GET",
+            string id = null, Dictionary<string, string> parameters = null, Object body = null)
+            where TDataModel : DataModel, new()
+        {
+            Init();
+
+            string address = $"{PimixServerApiAddress}/{new TDataModel().ModelId}{id?.Insert(0, "/")}/${action}";
+            if (parameters != null)
+            {
+                address += "?" + string.Join("&", parameters.Select(item => $"{item.Key}={item.Value}"));
+            }
+
+            HttpWebRequest request = WebRequest.CreateHttp(address);
+            request.Method = methodType;
+            request.Headers["Authorization"] =
+                $"Basic {PimixServerCredential}";
+
+            if (body != null)
+            {
+                using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
+                {
+                    string content = JsonConvert.SerializeObject(body);
+                    sw.Write(content);
+                }
+            }
+
+            using (var response = request.GetResponse())
+            {
+                return response.GetObject<ResponseType>();
+            }
+        }
     }
 }

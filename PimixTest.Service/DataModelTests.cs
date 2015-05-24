@@ -41,5 +41,32 @@ namespace PimixTest.Service
                     "sub prop 2 value 2"
                 }, data.SubProp.SubProp2);
         }
+
+        [TestMethod]
+        public void DataModelCallBasicTest()
+        {
+            DataModel.PimixServerApiAddress = PimixServerApiAddress;
+            Assert.IsTrue(FakeDataModel.Reset());
+        }
+
+        [TestMethod]
+        public void DataModelPatchBasicTest()
+        {
+            DataModel.PimixServerApiAddress = PimixServerApiAddress;
+
+            FakeDataModel.Reset();
+
+            var data = DataModel.Get<FakeDataModel>("item0");
+            Assert.AreEqual(1225, data.IntProp);
+            Assert.AreEqual("str prop value", data.StrProp);
+            DataModel.Patch(new FakeDataModel { IntProp = 19910123 }, "item0");
+            DataModel.Patch(new FakeDataModel { StrProp = "new str", Id = "item0" });
+            data = DataModel.Get<FakeDataModel>("item0");
+            Assert.AreEqual(19910123, data.IntProp);
+            Assert.AreEqual("new str", data.StrProp);
+
+            // Cleanup
+            FakeDataModel.Reset();
+        }
     }
 }
