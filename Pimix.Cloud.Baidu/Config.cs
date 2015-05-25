@@ -17,7 +17,7 @@ namespace Pimix.Cloud.Baidu
         public Dictionary<string, AccountInfo> Accounts { get; private set; }
 
         [JsonProperty("apis")]
-        public Dictionary<string, APIInfo> APIList { get; private set; }
+        public APIList APIList { get; private set; }
 
         [JsonProperty("client_id")]
         public string ClientId { get; set; }
@@ -30,6 +30,12 @@ namespace Pimix.Cloud.Baidu
     {
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
+    }
+
+    public class APIList
+    {
+        [JsonProperty("download_file")]
+        public APIInfo DownloadFile { get; set; }
     }
 
     public class APIInfo
