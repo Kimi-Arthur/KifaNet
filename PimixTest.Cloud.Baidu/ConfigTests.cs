@@ -10,7 +10,8 @@ namespace PimixTest.Cloud.Baidu
         [TestMethod]
         public void TestGetConfig()
         {
-            Config.
+            var config = DataModel.Get<Config>("baidu_cloud");
+            Assert.IsTrue(config.ClientId.startswith("Tk"));
         }
     }
 }
