@@ -52,7 +52,10 @@ namespace Pimix.Cloud.Baidu
 
             using (var response = request.GetResponse())
             {
-                response.GetResponseStream().CopyTo(output);
+                using (var stream = response.GetResponseStream())
+                {
+                    stream.CopyTo(output);
+                }
             }
         }
 
