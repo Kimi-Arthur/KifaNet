@@ -60,7 +60,7 @@ namespace PimixTest.Service
             Assert.AreEqual("new str", data.StrProp);
         }
 
-        [TestInitialize()]
+        [TestInitialize]
         public void Initialize()
         {
             DataModel.PimixServerApiAddress = PimixServerApiAddress;
@@ -68,7 +68,7 @@ namespace PimixTest.Service
             FakeDataModel.Reset();
         }
 
-        [TestCleanup()]
+        [TestCleanup]
         public void Cleanup()
         {
             FakeDataModel.Reset();
