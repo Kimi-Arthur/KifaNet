@@ -13,26 +13,21 @@ namespace PimixTest.Cloud.Baidu
         public string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
 
         [TestMethod]
-        public void TestGetConfig()
+        public void GetConfigTest()
         {
+            DataModel.PimixServerApiAddress = PimixServerApiAddress;
             var config = DataModel.Get<Config>("baidu_cloud");
             Assert.IsTrue(config.ClientId.StartsWith("Tk"));
         }
 
         [TestMethod]
-        public void TestGetConfigFromLocal()
+        public void GetConfigFromLocalTest()
         {
             using (StreamReader sr = new StreamReader("LocalConfig.json"))
             {
                 var config = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
                 Assert.IsTrue(config.ClientId.StartsWith("Tk"));
             }
-        }
-
-        [TestInitialize]
-        public void Initialize()
-        {
-            DataModel.PimixServerApiAddress = PimixServerApiAddress;
         }
     }
 }

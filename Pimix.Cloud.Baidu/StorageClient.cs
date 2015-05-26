@@ -48,7 +48,7 @@ namespace Pimix.Cloud.Baidu
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["path"] = path
+                    ["remote_path"] = path
                 });
 
             if (length >= 0)
@@ -71,7 +71,7 @@ namespace Pimix.Cloud.Baidu
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["path"] = path
+                    ["remote_path"] = path
                 });
             request.Method = "HEAD";
 
@@ -245,7 +245,7 @@ namespace Pimix.Cloud.Baidu
                     MemoryStream block = GetBlock(Position / BlockSize);
                     block.Seek(Math.Max(0, Position % BlockSize), SeekOrigin.Begin);
                     int blockLength = (int) Math.Min(block.Length - block.Position, count - readCount);
-                    block.Write(buffer, offset + readCount, blockLength);
+                    block.Read(buffer, offset + readCount, blockLength);
                     readCount += blockLength;
                     Position += blockLength;
                 }
