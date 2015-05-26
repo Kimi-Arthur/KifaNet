@@ -10,6 +10,8 @@ namespace Pimix.Cloud.Baidu
 {
     public class StorageClient
     {
+        private List<Stream> Streams { get; set; } = new List<Stream>();
+
         public static Config Config { get; set; }
 
         string accountId;
@@ -23,6 +25,14 @@ namespace Pimix.Cloud.Baidu
             {
                 accountId = value;
                 Account = Config.Accounts[accountId];
+
+                // Clear all current streams since they are all stale.
+                foreach (var stream in Streams)
+                {
+                    stream.Dispose();
+                }
+
+                Streams.Clear();
             }
         }
 
@@ -33,7 +43,7 @@ namespace Pimix.Cloud.Baidu
 
         }
 
-        public void DownloadFile(string path, Stream output, long offset = 0, long length = -1)
+        public void DownloadToStream(string path, Stream output, long offset = 0, long length = -1)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
@@ -58,8 +68,8 @@ namespace Pimix.Cloud.Baidu
 
         public Stream GetDownloadStream(string path)
         {
-            // Construct a stream and use the method above. Something like a wrapper.
-            return null;
+            Streams.Add(new DownloadStream(this, path));
+            return Streams.Last();
         }
 
         private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters)
@@ -75,6 +85,40 @@ namespace Pimix.Cloud.Baidu
             request.Method = api.Method;
 
             return request;
+        }
+
+        private class DownloadStream : Stream
+        {
+            private bool IsOpen = true;
+
+            private List<long> StreamBufferQueue { get; set; } = new List<long>();
+
+            private Dictionary<long, Tuple<MemoryStream, int>> StreamBuffer { get; set; } = new Dictionary<long, Tuple<MemoryStream, int>>();
+
+            public StorageClient Client { get; set; }
+
+            public string Path { get; set; }
+
+            public override bool CanRead
+                => IsOpen;
+
+            public override bool CanSeek
+                => IsOpen;
+
+            public override bool CanWrite
+                => false;
+
+            public DownloadStream(StorageClient client, string path)
+            {
+                Client = client;
+                Path = path;
+            }
+
+            private MemoryStream GetBlock(long blockId)
+            {
+                MemoryStream output = new MemoryStream();
+                Client.DownloadFile(path, output);
+            }
         }
     }
 }
