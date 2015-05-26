@@ -277,7 +277,9 @@ namespace Pimix.Cloud.Baidu
 
             private void RemoveBufferItem()
             {
-                StreamBuffer.Remove(StreamBuffer.First().Key);
+                var item = StreamBuffer.First();
+                item.Value.Dispose();
+                StreamBuffer.Remove(item.Key);
             }
         }
     }
