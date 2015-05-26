@@ -106,9 +106,28 @@ namespace Pimix.Cloud.Baidu
         {
             private bool IsOpen = true;
 
-            private List<long> StreamBufferQueue { get; set; } = new List<long>();
+            private int streamBufferLimit = 1;
+            private int StreamBufferLimit
+            {
+                get
+                {
+                    return streamBufferLimit;
+                }
+                set
+                {
+                    if (value < streamBufferLimit)
+                    {
+                        while (StreamBuffer.Count > value)
+                        {
+                            RemoveBufferItem();
+                        }
+                    }
 
-            private Dictionary<long, Tuple<MemoryStream, int>> StreamBuffer { get; set; } = new Dictionary<long, Tuple<MemoryStream, int>>();
+                    streamBufferLimit = value;
+                }
+            }
+
+            private Dictionary<long, MemoryStream> StreamBuffer { get; set; } = new Dictionary<long, MemoryStream>();
 
             public StorageClient Client { get; set; }
 
@@ -128,7 +147,10 @@ namespace Pimix.Cloud.Baidu
             {
                 get
                 {
-                    if (length == -1)
+                    if (!IsOpen)
+                        throw new ObjectDisposedException(null);
+
+                    if (length < 0)
                     {
                         length = Client.GetDownloadLength(Path);
                     }
@@ -136,6 +158,9 @@ namespace Pimix.Cloud.Baidu
                     return length;
                 }
             }
+
+            public int BlockSize
+                => 1 << 20;
 
             public override long Position { get; set; }
 
@@ -147,18 +172,35 @@ namespace Pimix.Cloud.Baidu
 
             private MemoryStream GetBlock(long blockId)
             {
+                if (StreamBuffer.ContainsKey(blockId))
+                {
+                    return StreamBuffer[blockId];
+                }
+
+                while (StreamBuffer.Count >= StreamBufferLimit)
+                {
+                    RemoveBufferItem();
+                }
+
                 MemoryStream output = new MemoryStream();
-                Client.DownloadToStream(Path, output);
+                Client.DownloadToStream(Path, output, blockId * BlockSize, BlockSize);
+                StreamBuffer.Add(blockId, output);
                 return output;
             }
 
             public override void Flush()
             {
-                throw new NotImplementedException();
+                if (!IsOpen)
+                    throw new ObjectDisposedException(null);
+
+                // Intentionally doing nothing.
             }
 
             public override long Seek(long offset, SeekOrigin origin)
             {
+                if (!IsOpen)
+                    throw new ObjectDisposedException(null);
+
                 switch (origin)
                 {
                     case SeekOrigin.Begin:
@@ -182,12 +224,60 @@ namespace Pimix.Cloud.Baidu
 
             public override int Read(byte[] buffer, int offset, int count)
             {
-                throw new NotImplementedException();
+                if (!IsOpen)
+                    throw new ObjectDisposedException(null);
+
+                if (buffer == null)
+                    throw new ArgumentNullException(nameof(buffer));
+
+                if (offset < 0)
+                    throw new ArgumentOutOfRangeException(nameof(offset));
+
+                if (offset < 0)
+                    throw new ArgumentOutOfRangeException(nameof(offset));
+
+                if (buffer.Length - offset < count)
+                    throw new ArgumentException();
+
+                int readCount = 0;
+                while (Position < Length && readCount < count)
+                {
+                    MemoryStream block = GetBlock(Position / BlockSize);
+                    block.Seek(Math.Max(0, Position % BlockSize), SeekOrigin.Begin);
+                    int blockLength = (int) Math.Min(block.Length - block.Position, count - readCount);
+                    block.Write(buffer, offset + readCount, blockLength);
+                    readCount += blockLength;
+                    Position += blockLength;
+                }
+
+                return readCount;
             }
 
             public override void Write(byte[] buffer, int offset, int count)
             {
                 throw new NotSupportedException("The Baidu download stream is not writable.");
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (!IsOpen)
+                    return;
+
+                if (disposing)
+                {
+                    IsOpen = false;
+                    foreach (var item in StreamBuffer)
+                    {
+                        item.Value.Dispose();
+                    }
+                }
+
+                base.Dispose(disposing);
+            }
+
+            private void RemoveBufferItem()
+            {
+                StreamBuffer.Remove(StreamBuffer.First().Key);
             }
         }
     }
