@@ -13,7 +13,6 @@ namespace PimixTest.Service
         [TestMethod]
         public void DataModelGetBasicTest()
         {
-            DataModel.PimixServerApiAddress = PimixServerApiAddress;
             var data = DataModel.Get<FakeDataModel>("item0");
             Assert.AreEqual("item0", data.Id);
             Assert.AreEqual(1225, data.IntProp);
@@ -45,17 +44,12 @@ namespace PimixTest.Service
         [TestMethod]
         public void DataModelCallBasicTest()
         {
-            DataModel.PimixServerApiAddress = PimixServerApiAddress;
             Assert.IsTrue(FakeDataModel.Reset());
         }
 
         [TestMethod]
         public void DataModelPatchBasicTest()
         {
-            DataModel.PimixServerApiAddress = PimixServerApiAddress;
-
-            FakeDataModel.Reset();
-
             var data = DataModel.Get<FakeDataModel>("item0");
             Assert.AreEqual(1225, data.IntProp);
             Assert.AreEqual("str prop value", data.StrProp);
@@ -64,8 +58,19 @@ namespace PimixTest.Service
             data = DataModel.Get<FakeDataModel>("item0");
             Assert.AreEqual(19910123, data.IntProp);
             Assert.AreEqual("new str", data.StrProp);
+        }
 
-            // Cleanup
+        [TestInitialize()]
+        public void Initialize()
+        {
+            DataModel.PimixServerApiAddress = PimixServerApiAddress;
+
+            FakeDataModel.Reset();
+        }
+
+        [TestCleanup()]
+        public void Cleanup()
+        {
             FakeDataModel.Reset();
         }
     }
