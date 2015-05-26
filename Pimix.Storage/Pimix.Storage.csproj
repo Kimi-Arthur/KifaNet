@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Pimix.Storage</RootNamespace>
-    <AssemblyName>Pimix.Storage.FileUtility</AssemblyName>
+    <AssemblyName>Pimix.Storage</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
