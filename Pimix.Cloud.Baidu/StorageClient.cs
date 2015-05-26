@@ -66,6 +66,21 @@ namespace Pimix.Cloud.Baidu
             }
         }
 
+        public long GetDownloadLength(string path)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
+                new Dictionary<string, string>
+                {
+                    ["path"] = path
+                });
+            request.Method = "HEAD";
+
+            using (var response = request.GetResponse())
+            {
+                return response.ContentLength;
+            }
+        }
+
         public Stream GetDownloadStream(string path)
         {
             Streams.Add(new DownloadStream(this, path));
@@ -108,6 +123,22 @@ namespace Pimix.Cloud.Baidu
             public override bool CanWrite
                 => false;
 
+            long length = -1;
+            public override long Length
+            {
+                get
+                {
+                    if (length == -1)
+                    {
+                        length = Client.GetDownloadLength(Path);
+                    }
+
+                    return length;
+                }
+            }
+
+            public override long Position { get; set; }
+
             public DownloadStream(StorageClient client, string path)
             {
                 Client = client;
@@ -117,7 +148,46 @@ namespace Pimix.Cloud.Baidu
             private MemoryStream GetBlock(long blockId)
             {
                 MemoryStream output = new MemoryStream();
-                Client.DownloadFile(path, output);
+                Client.DownloadToStream(Path, output);
+                return output;
+            }
+
+            public override void Flush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                switch (origin)
+                {
+                    case SeekOrigin.Begin:
+                        Position = offset;
+                        break;
+                    case SeekOrigin.Current:
+                        Position += offset;
+                        break;
+                    case SeekOrigin.End:
+                        Position = Length + offset;
+                        break;
+                }
+
+                return Position;
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotSupportedException("The Baidu download stream is not writable.");
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotSupportedException("The Baidu download stream is not writable.");
             }
         }
     }

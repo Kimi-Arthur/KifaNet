@@ -78,9 +78,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FileUtility\FileUtility.csproj">
+    <ProjectReference Include="..\FileUtility\Pimix.Storage.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
-      <Name>FileUtility</Name>
+      <Name>Pimix.Storage</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

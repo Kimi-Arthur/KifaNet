@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22609.0
+VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUtility", "FileUtility\FileUtility.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Storage", "FileUtility\Pimix.Storage.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUtilityTests", "FileUtilityTests\FileUtilityTests.csproj", "{AE5F5382-89CD-43E0-9221-AF125A2DB32A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Storage", "FileUtilityTests\PimixTest.Storage.csproj", "{AE5F5382-89CD-43E0-9221-AF125A2DB32A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileInformationGenerator", "FileInformationGenerator\FileInformationGenerator.csproj", "{E1FEE21E-C401-4CBC-BA49-43DD78EB0CE2}"
 EndProject

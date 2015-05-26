@@ -77,9 +77,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FileUtility\FileUtility.csproj">
+    <ProjectReference Include="..\FileUtility\Pimix.Storage.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
-      <Name>FileUtility</Name>
+      <Name>Pimix.Storage</Name>
     </ProjectReference>
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
       <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>
