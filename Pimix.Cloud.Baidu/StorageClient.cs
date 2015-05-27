@@ -106,33 +106,6 @@ namespace Pimix.Cloud.Baidu
         {
             private bool IsOpen = true;
 
-            private int streamBufferLimit = 1;
-            private int StreamBufferLimit
-            {
-                get
-                {
-                    return streamBufferLimit;
-                }
-                set
-                {
-                    if (value < streamBufferLimit)
-                    {
-                        while (StreamBuffer.Count > value)
-                        {
-                            RemoveBufferItem();
-                        }
-                    }
-
-                    streamBufferLimit = value;
-                }
-            }
-
-            private Dictionary<long, MemoryStream> StreamBuffer { get; set; } = new Dictionary<long, MemoryStream>();
-
-            public StorageClient Client { get; set; }
-
-            public string Path { get; set; }
-
             public override bool CanRead
                 => IsOpen;
 
@@ -159,10 +132,54 @@ namespace Pimix.Cloud.Baidu
                 }
             }
 
-            public int BlockSize
-                => 1 << 20;
-
             public override long Position { get; set; }
+
+            public StorageClient Client { get; set; }
+
+            public string Path { get; set; }
+
+            private bool useCache = false;
+
+            public bool UseCache
+            {
+                get
+                {
+                    return useCache;
+                }
+                set
+                {
+                    useCache = value;
+                    if (!value)
+                    {
+                        StreamBufferLimit = 0;
+                    }
+                }
+            }
+
+            public int BlockSize { get; set; } = 1 << 20;
+
+            private int streamBufferLimit = 0;
+            public int StreamBufferLimit
+            {
+                get
+                {
+                    return streamBufferLimit;
+                }
+                set
+                {
+                    if (value < streamBufferLimit)
+                    {
+                        while (StreamBuffer.Count > value)
+                        {
+                            RemoveBufferItem();
+                        }
+                    }
+
+                    streamBufferLimit = value;
+                }
+            }
+
+            private Dictionary<long, MemoryStream> StreamBuffer { get; set; } = new Dictionary<long, MemoryStream>();
 
             public DownloadStream(StorageClient client, string path)
             {
@@ -240,14 +257,30 @@ namespace Pimix.Cloud.Baidu
                     throw new ArgumentException();
 
                 int readCount = 0;
-                while (Position < Length && readCount < count)
+
+                if (UseCache)
                 {
-                    MemoryStream block = GetBlock(Position / BlockSize);
-                    block.Seek(Math.Max(0, Position % BlockSize), SeekOrigin.Begin);
-                    int blockLength = (int)Math.Min(block.Length - block.Position, count - readCount);
-                    block.Read(buffer, offset + readCount, blockLength);
-                    readCount += blockLength;
-                    Position += blockLength;
+                    while (Position < Length && readCount < count)
+                    {
+                        MemoryStream block = GetBlock(Position / BlockSize);
+                        block.Seek(Math.Max(0, Position % BlockSize), SeekOrigin.Begin);
+                        int blockLength = (int)Math.Min(block.Length - block.Position, count - readCount);
+                        block.Read(buffer, offset + readCount, blockLength);
+                        readCount += blockLength;
+                        Position += blockLength;
+                    }
+                }
+                else
+                {
+                    while (Position < Length && readCount < count)
+                    {
+                        var block = new MemoryStream();
+                        Client.DownloadToStream(Path, block, Position, Math.Min(count - readCount, BlockSize));
+                        block.Seek(0, SeekOrigin.Begin);
+                        int blockLength = block.Read(buffer, offset, count);
+                        Position += blockLength;
+                        readCount += blockLength;
+                    }
                 }
 
                 return readCount;
