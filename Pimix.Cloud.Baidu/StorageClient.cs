@@ -48,7 +48,7 @@ namespace Pimix.Cloud.Baidu
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path
+                    ["remote_path"] = path.TrimStart('/')
                 });
 
             if (length >= 0)
@@ -71,7 +71,7 @@ namespace Pimix.Cloud.Baidu
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path
+                    ["remote_path"] = path.TrimStart('/')
                 });
             request.Method = "HEAD";
 
