@@ -244,7 +244,7 @@ namespace Pimix.Cloud.Baidu
                 {
                     MemoryStream block = GetBlock(Position / BlockSize);
                     block.Seek(Math.Max(0, Position % BlockSize), SeekOrigin.Begin);
-                    int blockLength = (int) Math.Min(block.Length - block.Position, count - readCount);
+                    int blockLength = (int)Math.Min(block.Length - block.Position, count - readCount);
                     block.Read(buffer, offset + readCount, blockLength);
                     readCount += blockLength;
                     Position += blockLength;
