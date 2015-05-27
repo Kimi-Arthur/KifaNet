@@ -138,7 +138,7 @@ namespace Pimix.Cloud.Baidu
 
             public string Path { get; set; }
 
-            private bool useCache = false;
+            private bool useCache = true;
 
             public bool UseCache
             {
@@ -156,9 +156,9 @@ namespace Pimix.Cloud.Baidu
                 }
             }
 
-            public int BlockSize { get; set; } = 1 << 20;
+            public int BlockSize { get; set; } = 32 << 20;
 
-            private int streamBufferLimit = 0;
+            private int streamBufferLimit = 1;
             public int StreamBufferLimit
             {
                 get
