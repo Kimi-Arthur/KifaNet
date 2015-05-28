@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Pimix.Storage;
+using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Pimix.Service;
-using Pimix.Storage;
+using System.Configuration;
 
 namespace FileInformationGenerator
 {
@@ -14,12 +14,12 @@ namespace FileInformationGenerator
     {
         static void Main(string[] args)
         {
+            string site = ConfigurationManager.AppSettings["Site"];
+            string pathPrefix = ConfigurationManager.AppSettings["PathPrefix"];
             foreach (var arg in args)
             {
                 foreach (var path in arg.Split('\n'))
                 {
-                    string site = ConfigurationManager.AppSettings["Site"];
-                    string pathPrefix = ConfigurationManager.AppSettings["PathPrefix"];
                     var info = FileUtility.GetInformation($"{pathPrefix}/{path}", FileProperties.All ^ FileProperties.Path);
                     info.Id = path;
                     info.Path = path;
