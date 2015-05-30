@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Pimix.Storage;
 
 namespace Pimix.Cloud.Baidu
 {
@@ -43,12 +44,12 @@ namespace Pimix.Cloud.Baidu
 
         }
 
-        public void DownloadToStream(string path, Stream output, long offset = 0, long length = -1)
+        public void DownloadToStream(string remotePath, Stream output, long offset = 0, long length = -1)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = remotePath.TrimStart('/')
                 });
 
             if (length >= 0)
@@ -66,12 +67,71 @@ namespace Pimix.Cloud.Baidu
             }
         }
 
-        public long GetDownloadLength(string path)
+        /// <summary>
+        /// Upload data from stream with the optimized method.
+        /// </summary>
+        /// <param name="remotePath"></param>
+        /// <param name="input"></param>
+        /// <param name="tryRapid"></param>
+        /// <param name="blockInfo"></param>
+        /// <param name="fileInformation"></param>
+        public void UploadStream(string remotePath, Stream input = null, bool tryRapid = true, IEnumerable<int> blockInfo = null, FileInformation fileInformation = null)
+        {
+            if (tryRapid)
+            {
+                UploadStreamRapid(remotePath, input, fileInformation);
+                return;
+            }
+        }
+
+        void UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
+        {
+            FileProperties properties = FileProperties.None;
+
+            if (fileInformation.Size == null)
+            {
+                properties |= FileProperties.Size;
+            }
+
+            if (fileInformation.MD5 == null)
+            {
+                properties |= FileProperties.MD5;
+            }
+
+            if (fileInformation.SliceMD5 == null)
+            {
+                properties |= FileProperties.SliceMD5;
+            }
+
+            if (fileInformation.CRC32 == null)
+            {
+                properties |= FileProperties.CRC32;
+            }
+
+            FileInformation calculatedInfo = FileUtility.GetInformation(input, properties);
+
+            HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileRapid,
+                new Dictionary<string, string>
+                {
+                    ["remote_path"] = remotePath.TrimStart('/'),
+                    ["content_length"] = (fileInformation.Size ?? calculatedInfo.Size).ToString(),
+                    ["content_md5"] = fileInformation.MD5 ?? calculatedInfo.MD5,
+                    ["slice_md5"] = fileInformation.SliceMD5 ?? calculatedInfo.SliceMD5,
+                    ["content_crc32"] = fileInformation.CRC32 ?? calculatedInfo.CRC32
+                });
+
+            using (var response = request.GetResponse())
+            {
+
+            }
+        }
+
+        public long GetDownloadLength(string remotePath)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = remotePath.TrimStart('/')
                 });
             request.Method = "HEAD";
 
@@ -81,9 +141,9 @@ namespace Pimix.Cloud.Baidu
             }
         }
 
-        public Stream GetDownloadStream(string path)
+        public Stream GetDownloadStream(string remotePath)
         {
-            Streams.Add(new DownloadStream(this, path));
+            Streams.Add(new DownloadStream(this, remotePath));
             return Streams.Last();
         }
 
@@ -125,7 +185,7 @@ namespace Pimix.Cloud.Baidu
 
                     if (length < 0)
                     {
-                        length = Client.GetDownloadLength(Path);
+                        length = Client.GetDownloadLength(RemotePath);
                     }
 
                     return length;
@@ -136,7 +196,7 @@ namespace Pimix.Cloud.Baidu
 
             public StorageClient Client { get; set; }
 
-            public string Path { get; set; }
+            public string RemotePath { get; set; }
 
             private bool useCache = true;
 
@@ -181,10 +241,10 @@ namespace Pimix.Cloud.Baidu
 
             private Dictionary<long, MemoryStream> StreamBuffer { get; set; } = new Dictionary<long, MemoryStream>();
 
-            public DownloadStream(StorageClient client, string path)
+            public DownloadStream(StorageClient client, string remotePath)
             {
                 Client = client;
-                Path = path;
+                RemotePath = remotePath;
             }
 
             private MemoryStream GetBlock(long blockId)
@@ -200,7 +260,7 @@ namespace Pimix.Cloud.Baidu
                 }
 
                 MemoryStream output = new MemoryStream();
-                Client.DownloadToStream(Path, output, blockId * BlockSize, BlockSize);
+                Client.DownloadToStream(RemotePath, output, blockId * BlockSize, BlockSize);
                 StreamBuffer.Add(blockId, output);
                 return output;
             }
@@ -275,7 +335,7 @@ namespace Pimix.Cloud.Baidu
                     while (Position < Length && readCount < count)
                     {
                         var block = new MemoryStream();
-                        Client.DownloadToStream(Path, block, Position, Math.Min(count - readCount, BlockSize));
+                        Client.DownloadToStream(RemotePath, block, Position, Math.Min(count - readCount, BlockSize));
                         block.Seek(0, SeekOrigin.Begin);
                         int blockLength = block.Read(buffer, offset, count);
                         Position += blockLength;

@@ -36,6 +36,9 @@ namespace Pimix.Cloud.Baidu
     {
         [JsonProperty("download_file")]
         public APIInfo DownloadFile { get; set; }
+
+        [JsonProperty("upload_file_rapid")]
+        public APIInfo UploadFileRapid { get; set; }
     }
 
     public class APIInfo
