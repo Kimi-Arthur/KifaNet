@@ -10,6 +10,22 @@ namespace Pimix.Storage
 {
     public class FileInformation : DataModel
     {
+        static Dictionary<FileProperties, Func<FileInformation, object>> mapping
+            = new Dictionary<FileProperties, Func<FileInformation, object>>
+            {
+                [FileProperties.Path] = x => x.Path,
+                [FileProperties.Size] = x => x.Size,
+                [FileProperties.BlockSize] = x => x.BlockSize,
+                [FileProperties.MD5] = x => x.MD5,
+                [FileProperties.SHA1] = x => x.SHA1,
+                [FileProperties.SHA256] = x => x.SHA256,
+                [FileProperties.CRC32] = x => x.CRC32,
+                [FileProperties.BlockMD5] = x => x.BlockMD5,
+                [FileProperties.BlockSHA1] = x => x.BlockSHA1,
+                [FileProperties.BlockSHA256] = x => x.BlockSHA256,
+                [FileProperties.SliceMD5] = x => x.SliceMD5
+            };
+
         public override string ModelId
             => "universal";
 
@@ -51,5 +67,11 @@ namespace Pimix.Storage
 
         [JsonProperty("locations")]
         public List<string> Locations { get; set; }
+
+        public FileProperties GetProperties()
+            => mapping
+            .Where(x => x.Value(this) != null)
+            .Select(x => x.Key)
+            .Aggregate(FileProperties.None, (result, x) => result | x);
     }
 }

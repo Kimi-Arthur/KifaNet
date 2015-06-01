@@ -84,31 +84,22 @@ namespace Pimix.Cloud.Baidu
                     return;
                 }
             }
+
+            UploadStreamByBlock(remotePath, input, blockInfo, fileInformation);
+        }
+
+        void UploadStreamByBlock(string remotePath, Stream input, IEnumerable<int> blockInfo, FileInformation fileInformation)
+        {
+            fileInformation = fileInformation ?? new FileInformation();
+            FileProperties properties = FileProperties.Size;
+            properties -= properties & fileInformation.GetProperties();
         }
 
         bool UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
         {
-            FileProperties properties = FileProperties.None;
-
-            if (fileInformation.Size == null)
-            {
-                properties |= FileProperties.Size;
-            }
-
-            if (fileInformation.MD5 == null)
-            {
-                properties |= FileProperties.MD5;
-            }
-
-            if (fileInformation.SliceMD5 == null)
-            {
-                properties |= FileProperties.SliceMD5;
-            }
-
-            if (fileInformation.CRC32 == null)
-            {
-                properties |= FileProperties.CRC32;
-            }
+            fileInformation = fileInformation ?? new FileInformation();
+            FileProperties properties = FileProperties.AllBaiduCloudRapidHashes;
+            properties -= properties & fileInformation.GetProperties();
 
             FileInformation calculatedInfo = FileUtility.GetInformation(input, properties);
 

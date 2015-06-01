@@ -20,7 +20,7 @@ namespace Pimix.Storage
         Basic = Path | Size | BlockSize,
         AllHashes = MD5 | SHA1 | SHA256 | CRC32,
         AllBlockHashes = BlockMD5 | BlockSHA1 | BlockSHA256,
-        AllBaiduCloudRapid = Path | Size | MD5 | SliceMD5 | CRC32,
-        All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapid
+        AllBaiduCloudRapidHashes = Size | MD5 | SliceMD5 | CRC32,
+        All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes
     }
 }
