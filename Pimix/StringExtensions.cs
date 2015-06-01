@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pimix.Cloud.Baidu
+namespace Pimix
 {
-    static class StringExtensions
+    public static class StringExtensions
     {
         public static string Format(this string format, Dictionary<string, string> parameters)
         {

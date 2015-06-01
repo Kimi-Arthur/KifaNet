@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Pimix.Service
+namespace Pimix
 {
-    static class WebResponseExtensions
+    public static class WebResponseExtensions
     {
         public static T GetObject<T>(this WebResponse response)
         {

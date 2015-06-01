@@ -68,7 +68,7 @@ namespace Pimix.Cloud.Baidu
         }
 
         /// <summary>
-        /// Upload data from stream with the optimized method.
+        /// Upload data from stream with the optimal method.
         /// </summary>
         /// <param name="remotePath"></param>
         /// <param name="input"></param>
@@ -79,12 +79,14 @@ namespace Pimix.Cloud.Baidu
         {
             if (tryRapid)
             {
-                UploadStreamRapid(remotePath, input, fileInformation);
-                return;
+                if (UploadStreamRapid(remotePath, input, fileInformation))
+                {
+                    return;
+                }
             }
         }
 
-        void UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
+        bool UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
         {
             FileProperties properties = FileProperties.None;
 
@@ -122,7 +124,7 @@ namespace Pimix.Cloud.Baidu
 
             using (var response = request.GetResponse())
             {
-
+                return response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5 ?? calculatedInfo.MD5));
             }
         }
 

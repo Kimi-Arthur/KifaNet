@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.Baidu", "Pi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fileutil", "fileutil\fileutil.csproj", "{531CB29E-4A81-4379-AB90-04481E829ADE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix", "Pimix\Pimix.csproj", "{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,14 @@ Global
 		{531CB29E-4A81-4379-AB90-04481E829ADE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{531CB29E-4A81-4379-AB90-04481E829ADE}.Release|x64.ActiveCfg = Release|Any CPU
 		{531CB29E-4A81-4379-AB90-04481E829ADE}.Release|x64.Build.0 = Release|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Debug|x64.Build.0 = Debug|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|x64.ActiveCfg = Release|Any CPU
+		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
