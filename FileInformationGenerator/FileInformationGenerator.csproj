@@ -77,6 +77,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pimix.Cloud.Baidu\Pimix.Cloud.Baidu.csproj">
+      <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
+      <Name>Pimix.Cloud.Baidu</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Pimix.Storage\Pimix.Storage.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
       <Name>Pimix.Storage</Name>
