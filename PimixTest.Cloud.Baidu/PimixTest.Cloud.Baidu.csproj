@@ -68,6 +68,10 @@
       <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>
       <Name>Pimix.Service</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Pimix.Storage\Pimix.Storage.csproj">
+      <Project>{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}</Project>
+      <Name>Pimix.Storage</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="LocalConfig.json">

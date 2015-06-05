@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.Baidu;
 using Pimix.Service;
+using Pimix.Storage;
 
 namespace PimixTest.Cloud.Baidu
 {
@@ -19,6 +20,18 @@ namespace PimixTest.Cloud.Baidu
                 Assert.AreEqual(0x39, s.ReadByte());
                 Assert.AreEqual(0x6c, s.ReadByte());
             }
+        }
+
+        [TestMethod]
+        public void UploadRapidTest()
+        {
+            var client = new StorageClient() { AccountId = "PimixT" };
+
+            client.UploadStream("Test/xxx",
+                fileInformation: new FileInformation
+                {
+                    
+                });
         }
 
         [TestInitialize]

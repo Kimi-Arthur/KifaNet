@@ -70,13 +70,16 @@ namespace Pimix.Cloud.Baidu
         /// <summary>
         /// Upload data from stream with the optimal method.
         /// </summary>
-        /// <param name="remotePath"></param>
-        /// <param name="input"></param>
-        /// <param name="tryRapid"></param>
-        /// <param name="blockInfo"></param>
-        /// <param name="fileInformation"></param>
+        /// <param name="remotePath">Remote path for the uploaded file.</param>
+        /// <param name="input">Input stream to upload.</param>
+        /// <param name="tryRapid">If rapid upload is tried before normal upload.</param>
+        /// <param name="blockInfo">Contains block info as a series of lengths.</param>
+        /// <param name="fileInformation">
+        /// If specified, contains information about the file to be uploaded.
+        /// </param>
         public void UploadStream(string remotePath, Stream input = null, bool tryRapid = true, IEnumerable<int> blockInfo = null, FileInformation fileInformation = null)
         {
+            fileInformation = fileInformation ?? new FileInformation();
             if (tryRapid)
             {
                 if (UploadStreamRapid(remotePath, input, fileInformation))
@@ -90,14 +93,12 @@ namespace Pimix.Cloud.Baidu
 
         void UploadStreamByBlock(string remotePath, Stream input, IEnumerable<int> blockInfo, FileInformation fileInformation)
         {
-            fileInformation = fileInformation ?? new FileInformation();
             FileProperties properties = FileProperties.Size;
             properties -= properties & fileInformation.GetProperties();
         }
 
         bool UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
         {
-            fileInformation = fileInformation ?? new FileInformation();
             FileProperties properties = FileProperties.AllBaiduCloudRapidHashes;
             properties -= properties & fileInformation.GetProperties();
 
