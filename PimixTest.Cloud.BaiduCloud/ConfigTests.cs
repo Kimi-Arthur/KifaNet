@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using Pimix.Cloud.Baidu;
+using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
 
 namespace PimixTest.Cloud.Baidu

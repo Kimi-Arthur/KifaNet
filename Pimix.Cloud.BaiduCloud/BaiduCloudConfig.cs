@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.Cloud.Baidu
+namespace Pimix.Cloud.BaiduCloud
 {
     public class BaiduCloudConfig : DataModel
     {

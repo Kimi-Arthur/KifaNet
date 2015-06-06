@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Cloud.Baidu;
+using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
 using Pimix.Storage;
 

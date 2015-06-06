@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Pimix.Cloud.Baidu;
+using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
 using Pimix.Storage;
 

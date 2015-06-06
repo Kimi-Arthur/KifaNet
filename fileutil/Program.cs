@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pimix.Cloud.Baidu;
+using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
 
 namespace fileutil

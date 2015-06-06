@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Pimix.Storage;
 
-namespace Pimix.Cloud.Baidu
+namespace Pimix.Cloud.BaiduCloud
 {
     public class BaiduCloudStorageClient
     {
