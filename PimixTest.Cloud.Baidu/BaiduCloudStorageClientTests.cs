@@ -7,14 +7,14 @@ using Pimix.Storage;
 namespace PimixTest.Cloud.Baidu
 {
     [TestClass]
-    public class StorageClientTests
+    public class BaiduCloudStorageClientTests
     {
         public string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
 
         [TestMethod]
         public void DownloadTest()
         {
-            var client = new StorageClient() { AccountId = "PimixT" };
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
             using (var s = client.GetDownloadStream("Test/2010-11-25.bin"))
             {
                 Assert.AreEqual(0x39, s.ReadByte());
@@ -25,7 +25,7 @@ namespace PimixTest.Cloud.Baidu
         [TestMethod]
         public void UploadRapidAndRemoveTest()
         {
-            var client = new StorageClient() { AccountId = "PimixT" };
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
             client.UploadStream("Test/rapid.bin",
                 fileInformation: new FileInformation
@@ -49,13 +49,13 @@ namespace PimixTest.Cloud.Baidu
         public void Initialize()
         {
             DataModel.PimixServerApiAddress = PimixServerApiAddress;
-            StorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+            BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
         }
 
         [ClassCleanup]
         public static void ClassClenaup()
         {
-            var client = new StorageClient() { AccountId = "PimixT" };
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
             try
             {

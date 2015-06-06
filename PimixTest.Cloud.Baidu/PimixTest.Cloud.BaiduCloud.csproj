@@ -57,12 +57,12 @@
   <ItemGroup>
     <Compile Include="ConfigTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StorageClientTests.cs" />
+    <Compile Include="BaiduCloudStorageClientTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pimix.Cloud.Baidu\Pimix.Cloud.Baidu.csproj">
+    <ProjectReference Include="..\Pimix.Cloud.Baidu\Pimix.Cloud.BaiduCloud.csproj">
       <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
-      <Name>Pimix.Cloud.Baidu</Name>
+      <Name>Pimix.Cloud.BaiduCloud</Name>
     </ProjectReference>
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
       <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>

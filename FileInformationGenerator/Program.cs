@@ -20,7 +20,7 @@ namespace FileInformationGenerator
 
             DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
             DataModel.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
-            StorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+            BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
 
             foreach (var arg in args)
             {
@@ -28,7 +28,7 @@ namespace FileInformationGenerator
                 {
                     Uri uri = new Uri(path);
                     //var info = FileUtility.GetInformation($"{pathPrefix}/{path}", FileProperties.All ^ FileProperties.Path);
-                    var client = new StorageClient() { AccountId = uri.UserInfo };
+                    var client = new BaiduCloudStorageClient() { AccountId = uri.UserInfo };
                     using (var s = client.GetDownloadStream(uri.AbsolutePath))
                     {
                         var info = FileUtility.GetInformation(s, FileProperties.All ^ FileProperties.Path);

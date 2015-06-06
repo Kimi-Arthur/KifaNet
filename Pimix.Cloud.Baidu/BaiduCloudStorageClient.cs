@@ -9,7 +9,7 @@ using Pimix.Storage;
 
 namespace Pimix.Cloud.Baidu
 {
-    public class StorageClient
+    public class BaiduCloudStorageClient
     {
         private List<Stream> Streams { get; set; } = new List<Stream>();
 
@@ -39,7 +39,7 @@ namespace Pimix.Cloud.Baidu
 
         public AccountInfo Account { get; private set; }
 
-        public StorageClient()
+        public BaiduCloudStorageClient()
         {
 
         }
@@ -210,7 +210,7 @@ namespace Pimix.Cloud.Baidu
 
             public override long Position { get; set; }
 
-            public StorageClient Client { get; set; }
+            public BaiduCloudStorageClient Client { get; set; }
 
             public string RemotePath { get; set; }
 
@@ -257,7 +257,7 @@ namespace Pimix.Cloud.Baidu
 
             private Dictionary<long, MemoryStream> StreamBuffer { get; set; } = new Dictionary<long, MemoryStream>();
 
-            public DownloadStream(StorageClient client, string remotePath)
+            public DownloadStream(BaiduCloudStorageClient client, string remotePath)
             {
                 Client = client;
                 RemotePath = remotePath;
