@@ -13,7 +13,7 @@ namespace Pimix.Cloud.Baidu
     {
         private List<Stream> Streams { get; set; } = new List<Stream>();
 
-        public static Config Config { get; set; }
+        public static BaiduCloudConfig Config { get; set; }
 
         string accountId;
         public string AccountId

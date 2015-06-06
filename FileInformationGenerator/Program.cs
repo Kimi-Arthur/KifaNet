@@ -20,7 +20,7 @@ namespace FileInformationGenerator
 
             DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
             DataModel.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
-            StorageClient.Config = DataModel.Get<Config>("baidu_cloud");
+            StorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
 
             foreach (var arg in args)
             {

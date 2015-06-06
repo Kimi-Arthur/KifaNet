@@ -16,7 +16,7 @@ namespace PimixTest.Cloud.Baidu
         public void GetConfigTest()
         {
             DataModel.PimixServerApiAddress = PimixServerApiAddress;
-            var config = DataModel.Get<Config>("baidu_cloud");
+            var config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
             Assert.IsTrue(config.ClientId.StartsWith("Tk"));
         }
 
@@ -25,7 +25,7 @@ namespace PimixTest.Cloud.Baidu
         {
             using (StreamReader sr = new StreamReader("LocalConfig.json"))
             {
-                var config = JsonConvert.DeserializeObject<Config>(sr.ReadToEnd());
+                var config = JsonConvert.DeserializeObject<BaiduCloudConfig>(sr.ReadToEnd());
                 Assert.IsTrue(config.ClientId.StartsWith("Tk"));
             }
         }

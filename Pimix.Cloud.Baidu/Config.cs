@@ -8,7 +8,7 @@ using Pimix.Service;
 
 namespace Pimix.Cloud.Baidu
 {
-    public class Config : DataModel
+    public class BaiduCloudConfig : DataModel
     {
         public override string ModelId
             => "cloud";

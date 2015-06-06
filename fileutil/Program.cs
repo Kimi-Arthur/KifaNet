@@ -19,7 +19,7 @@ namespace fileutil
                     Uri input = new Uri(args[1]);
                     //Uri output = new Uri(args[2]);
                     DataModel.PimixServerApiAddress = "http://test.pimix.org/api";
-                    StorageClient.Config = DataModel.Get<Config>("baidu_cloud");
+                    StorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
                     var client = new StorageClient() { AccountId = input.UserInfo};
                     using (var stream = client.GetDownloadStream(input.AbsolutePath))
                     {
