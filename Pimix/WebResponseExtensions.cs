@@ -11,6 +11,9 @@ namespace Pimix
 {
     public static class WebResponseExtensions
     {
+        public static Dictionary<string, string> EncodingNameFixes { get; set; } =
+            new Dictionary<string, string> {["utf8"] = "UTF-8" };
+
         public static T GetObject<T>(this WebResponse response)
         {
             var resp = response as HttpWebResponse;
@@ -19,6 +22,9 @@ namespace Pimix
                 encodingName = resp.CharacterSet;
             if (string.IsNullOrEmpty(encodingName))
                 encodingName = "UTF-8";
+
+            // Wrongly encoding name handling.
+            encodingName = EncodingNameFixes.GetValueOrDefault(encodingName, encodingName);
 
             using (StreamReader sr = new StreamReader(resp.GetResponseStream(), Encoding.GetEncoding(encodingName)))
             {

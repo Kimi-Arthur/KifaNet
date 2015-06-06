@@ -114,6 +114,8 @@ namespace Pimix.Cloud.Baidu
                     ["content_crc32"] = fileInformation.CRC32 ?? calculatedInfo.CRC32
                 });
 
+            request.GetRequestStream().Close();
+
             using (var response = request.GetResponse())
             {
                 return response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5 ?? calculatedInfo.MD5));
