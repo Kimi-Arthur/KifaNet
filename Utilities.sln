@@ -11,11 +11,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileInformationGenerator", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Service", "Pimix.Service\Pimix.Service.csproj", "{61CBF740-D894-4F39-9071-BBB96CFD13A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.BaiduCloud", "Pimix.Cloud.Baidu\Pimix.Cloud.BaiduCloud.csproj", "{176E01DB-8DA9-4FE1-9271-411E00E3547A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.BaiduCloud", "Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj", "{176E01DB-8DA9-4FE1-9271-411E00E3547A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Service", "PimixTest.Service\PimixTest.Service.csproj", "{85164950-E508-4D30-8A28-1C4CCE6D1403}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.BaiduCloud", "PimixTest.Cloud.Baidu\PimixTest.Cloud.BaiduCloud.csproj", "{2FDC21E1-1349-4361-84F5-189198C44ABC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.BaiduCloud", "PimixTest.Cloud.BaiduCloud\PimixTest.Cloud.BaiduCloud.csproj", "{2FDC21E1-1349-4361-84F5-189198C44ABC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fileutil", "fileutil\fileutil.csproj", "{531CB29E-4A81-4379-AB90-04481E829ADE}"
 EndProject
