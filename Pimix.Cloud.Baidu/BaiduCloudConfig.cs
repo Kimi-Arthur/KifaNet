@@ -39,6 +39,9 @@ namespace Pimix.Cloud.Baidu
 
         [JsonProperty("upload_file_rapid")]
         public APIInfo UploadFileRapid { get; set; }
+
+        [JsonProperty("remove_path")]
+        public APIInfo RemovePath { get; set; }
     }
 
     public class APIInfo

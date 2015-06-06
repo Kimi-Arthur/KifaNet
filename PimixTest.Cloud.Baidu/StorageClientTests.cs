@@ -23,7 +23,7 @@ namespace PimixTest.Cloud.Baidu
         }
 
         [TestMethod]
-        public void UploadRapidTest()
+        public void UploadRapidAndRemoveTest()
         {
             var client = new StorageClient() { AccountId = "PimixT" };
 
@@ -41,6 +41,8 @@ namespace PimixTest.Cloud.Baidu
                 Assert.AreEqual(0x39, s.ReadByte());
                 Assert.AreEqual(0x6c, s.ReadByte());
             }
+
+            client.DeleteFile("Test/rapid.bin");
         }
 
         [TestInitialize]
@@ -48,6 +50,21 @@ namespace PimixTest.Cloud.Baidu
         {
             DataModel.PimixServerApiAddress = PimixServerApiAddress;
             StorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+        }
+
+        [ClassCleanup]
+        public static void ClassClenaup()
+        {
+            var client = new StorageClient() { AccountId = "PimixT" };
+
+            try
+            {
+                client.DeleteFile("Test/rapid.bin");
+            }
+            catch (Exception)
+            {
+                // Pass
+            }
         }
     }
 }

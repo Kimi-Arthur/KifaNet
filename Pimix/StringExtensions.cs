@@ -14,6 +14,10 @@ namespace Pimix
                 throw new ArgumentNullException(nameof(format));
 
             string result = format;
+
+            if (parameters == null)
+                return result;
+
             foreach (var p in parameters)
             {
                 result = result.Replace("{" + p.Key + "}", p.Value);

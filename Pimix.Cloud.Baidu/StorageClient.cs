@@ -91,6 +91,26 @@ namespace Pimix.Cloud.Baidu
             UploadStreamByBlock(remotePath, input, blockInfo, fileInformation);
         }
 
+        public void DeleteFile(string remotePath)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.RemovePath,
+                new Dictionary<string, string>
+                {
+                    ["remote_path"] = remotePath.TrimStart('/')
+                });
+
+            request.GetRequestStream().Close();
+
+            using (var response = request.GetResponse())
+            {
+                if (response.GetDictionary() == null)
+                {
+                    // TODO: Add appropriate exceptions.
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
         void UploadStreamByBlock(string remotePath, Stream input, IEnumerable<int> blockInfo, FileInformation fileInformation)
         {
             FileProperties properties = FileProperties.Size;
@@ -143,7 +163,7 @@ namespace Pimix.Cloud.Baidu
             return Streams.Last();
         }
 
-        private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters)
+        private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null)
         {
             string address = api.Url.Format(parameters).Format(
                 new Dictionary<string, string>

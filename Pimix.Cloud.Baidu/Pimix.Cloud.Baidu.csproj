@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config.cs" />
+    <Compile Include="BaiduCloudConfig.cs" />
     <Compile Include="StorageClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
