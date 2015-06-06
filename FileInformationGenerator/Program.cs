@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,14 +28,39 @@ namespace FileInformationGenerator
                 foreach (var path in arg.Split('\n'))
                 {
                     Uri uri = new Uri(path);
-                    //var info = FileUtility.GetInformation($"{pathPrefix}/{path}", FileProperties.All ^ FileProperties.Path);
-                    var client = new BaiduCloudStorageClient() { AccountId = uri.UserInfo };
-                    using (var s = client.GetDownloadStream(uri.AbsolutePath))
+                    Stream downloadStream = null;
+                    var schemes = uri.Scheme.Split('+').ToList();
+                    if (schemes[0] != "pimix")
+                        continue;
+
+                    if (schemes.Contains("cloud"))
+                    {
+                        switch (uri.Host)
+                        {
+                            case "pan.baidu.com":
+                                {
+                                    var client = new BaiduCloudStorageClient
+                                    {
+                                        AccountId = uri.UserInfo
+                                    };
+                                    downloadStream = client.GetDownloadStream(uri.AbsolutePath);
+                                    break;
+                                }
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        downloadStream = File.OpenRead($"\\\\{uri.UserInfo}@{uri.Host}/files{uri.AbsolutePath}");
+                    }
+
+                    using (var s = downloadStream)
                     {
                         var info = FileUtility.GetInformation(s, FileProperties.All ^ FileProperties.Path);
-                        info.Id = path;
-                        info.Path = path;
-                        info.Locations = new List<string> { $"{site}:{path}" };
+                        info.Id = uri.AbsolutePath;
+                        info.Path = uri.AbsolutePath;
+                        info.Locations = new List<string> { path };
                         DataModel.Patch(info);
                     }
                 }
