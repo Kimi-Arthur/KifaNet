@@ -25,7 +25,7 @@ namespace fileutil
                     {
                         using (FileStream fs = new FileStream(args[2], FileMode.Create))
                         {
-                            stream.CopyTo(fs);
+                            stream.CopyTo(fs, 32 << 20);
                         }
                     }
 

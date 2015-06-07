@@ -44,26 +44,29 @@ namespace Pimix.Cloud.BaiduCloud
 
         }
 
-        public void DownloadToStream(string remotePath, Stream output, long offset = 0, long length = -1)
+        int Download(byte[] buffer, string remotePath, int bufferOffset = 0, long offset = 0, int count = -1)
         {
+            // All data contracts are checked by public methods.
+            // All data here are expected to be correct.
+
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
                     ["remote_path"] = remotePath.TrimStart('/')
                 });
 
-            if (length >= 0)
+            if (count < 0)
             {
-                request.AddRange(offset, offset + length - 1);
+                count = buffer.Length - bufferOffset;
             }
-            else
-            {
-                request.AddRange(offset);
-            }
+
+            request.AddRange(offset, offset + count - 1);
 
             using (var response = request.GetResponse())
             {
-                response.GetResponseStream().CopyTo(output);
+                MemoryStream memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+                response.GetResponseStream().CopyTo(memoryStream, count);
+                return (int)memoryStream.Position;
             }
         }
 
@@ -214,71 +217,10 @@ namespace Pimix.Cloud.BaiduCloud
 
             public string RemotePath { get; set; }
 
-            private bool useCache = true;
-
-            public bool UseCache
-            {
-                get
-                {
-                    return useCache;
-                }
-                set
-                {
-                    useCache = value;
-                    if (!value)
-                    {
-                        StreamBufferLimit = 0;
-                    }
-                }
-            }
-
-            public int BlockSize { get; set; } = 32 << 20;
-
-            private int streamBufferLimit = 1;
-            public int StreamBufferLimit
-            {
-                get
-                {
-                    return streamBufferLimit;
-                }
-                set
-                {
-                    if (value < streamBufferLimit)
-                    {
-                        while (StreamBuffer.Count > value)
-                        {
-                            RemoveBufferItem();
-                        }
-                    }
-
-                    streamBufferLimit = value;
-                }
-            }
-
-            private Dictionary<long, MemoryStream> StreamBuffer { get; set; } = new Dictionary<long, MemoryStream>();
-
             public DownloadStream(BaiduCloudStorageClient client, string remotePath)
             {
                 Client = client;
                 RemotePath = remotePath;
-            }
-
-            private MemoryStream GetBlock(long blockId)
-            {
-                if (StreamBuffer.ContainsKey(blockId))
-                {
-                    return StreamBuffer[blockId];
-                }
-
-                while (StreamBuffer.Count >= StreamBufferLimit)
-                {
-                    RemoveBufferItem();
-                }
-
-                MemoryStream output = new MemoryStream();
-                Client.DownloadToStream(RemotePath, output, blockId * BlockSize, BlockSize);
-                StreamBuffer.Add(blockId, output);
-                return output;
             }
 
             public override void Flush()
@@ -332,32 +274,9 @@ namespace Pimix.Cloud.BaiduCloud
                 if (buffer.Length - offset < count)
                     throw new ArgumentException();
 
-                int readCount = 0;
 
-                if (UseCache)
-                {
-                    while (Position < Length && readCount < count)
-                    {
-                        MemoryStream block = GetBlock(Position / BlockSize);
-                        block.Seek(Math.Max(0, Position % BlockSize), SeekOrigin.Begin);
-                        int blockLength = (int)Math.Min(block.Length - block.Position, count - readCount);
-                        block.Read(buffer, offset + readCount, blockLength);
-                        readCount += blockLength;
-                        Position += blockLength;
-                    }
-                }
-                else
-                {
-                    while (Position < Length && readCount < count)
-                    {
-                        var block = new MemoryStream();
-                        Client.DownloadToStream(RemotePath, block, Position, Math.Min(count - readCount, BlockSize));
-                        block.Seek(0, SeekOrigin.Begin);
-                        int blockLength = block.Read(buffer, offset, count);
-                        Position += blockLength;
-                        readCount += blockLength;
-                    }
-                }
+                int readCount = Client.Download(buffer, RemotePath, offset, Position, count);
+                Position += readCount;
 
                 return readCount;
             }
@@ -365,30 +284,6 @@ namespace Pimix.Cloud.BaiduCloud
             public override void Write(byte[] buffer, int offset, int count)
             {
                 throw new NotSupportedException("The Baidu download stream is not writable.");
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                if (!IsOpen)
-                    return;
-
-                if (disposing)
-                {
-                    IsOpen = false;
-                    foreach (var item in StreamBuffer)
-                    {
-                        item.Value.Dispose();
-                    }
-                }
-
-                base.Dispose(disposing);
-            }
-
-            private void RemoveBufferItem()
-            {
-                var item = StreamBuffer.First();
-                item.Value.Dispose();
-                StreamBuffer.Remove(item.Key);
             }
         }
     }
