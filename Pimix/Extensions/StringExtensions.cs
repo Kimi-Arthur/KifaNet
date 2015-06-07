@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Pimix
@@ -32,6 +33,29 @@ namespace Pimix
                 throw new ArgumentNullException(nameof(format));
 
             return string.Format(format, args);
+        }
+
+        static Dictionary<string, long> SymbolMap;
+
+        public static long ParseSizeString(this string data)
+        {
+            if (string.IsNullOrEmpty(data))
+                throw new ArgumentNullException(nameof(data));
+
+            Match match = new Regex(@"^(\d+)[^B]B?$").Match(data.ToUpper());
+
+            if (SymbolMap == null)
+            {
+                SymbolMap = new Dictionary<string, long>();
+
+                long lastValue = SymbolMap[""] = 1;
+                foreach (var item in "KMGTPEZY")
+                {
+                    SymbolMap[item.ToString()] = lastValue = lastValue << 10;
+                }
+            }
+
+            return long.Parse(match.Groups[1].Value) * SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Pimix.Storage
                 byte[] buffer = new byte[SliceLength];
                 stream.Seek(0, SeekOrigin.Begin);
                 info.SliceMD5 = (stream.Read(buffer, 0, SliceLength) == SliceLength)
-                    ? new MD5CryptoServiceProvider().ComputeHash(buffer, 0, SliceLength).Dump()
+                    ? new MD5CryptoServiceProvider().ComputeHash(buffer, 0, SliceLength).ToHexString()
                     : null;
             }
 
@@ -76,9 +76,9 @@ namespace Pimix.Storage
 
                     crc32?.TransformBytes(buffer, 0, readLength);
 
-                    info.BlockMD5?.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).Dump());
-                    info.BlockSHA1?.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).Dump());
-                    info.BlockSHA256?.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).Dump());
+                    info.BlockMD5?.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).ToHexString());
+                    info.BlockSHA1?.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).ToHexString());
+                    info.BlockSHA256?.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).ToHexString());
                 }
 
                 foreach (var hasher in hashers)
@@ -86,10 +86,10 @@ namespace Pimix.Storage
                     hasher?.TransformFinalBlock(buffer, 0, 0);
                 }
 
-                info.MD5 = hashers[0]?.Hash.Dump();
-                info.SHA1 = hashers[1]?.Hash.Dump();
-                info.SHA256 = hashers[2]?.Hash.Dump();
-                info.CRC32 = crc32?.TransformFinal().GetBytes().Reverse().ToArray().Dump();
+                info.MD5 = hashers[0]?.Hash.ToHexString();
+                info.SHA1 = hashers[1]?.Hash.ToHexString();
+                info.SHA256 = hashers[2]?.Hash.ToHexString();
+                info.CRC32 = crc32?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
             }
 
             return info;
