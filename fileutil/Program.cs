@@ -21,7 +21,7 @@ namespace fileutil
                     DataModel.PimixServerApiAddress = "http://test.pimix.org/api";
                     BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
                     var client = new BaiduCloudStorageClient() { AccountId = input.UserInfo};
-                    using (var stream = client.GetDownloadStream(input.AbsolutePath))
+                    using (var stream = client.GetDownloadStream(input.LocalPath))
                     {
                         using (FileStream fs = new FileStream(args[2], FileMode.Create))
                         {
