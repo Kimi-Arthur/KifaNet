@@ -42,8 +42,6 @@ namespace Pimix
             if (string.IsNullOrEmpty(data))
                 throw new ArgumentNullException(nameof(data));
 
-            Match match = new Regex(@"^(\d+)[^B]B?$").Match(data.ToUpper());
-
             if (SymbolMap == null)
             {
                 SymbolMap = new Dictionary<string, long>();
@@ -54,6 +52,8 @@ namespace Pimix
                     SymbolMap[item.ToString()] = lastValue = lastValue << 10;
                 }
             }
+
+            Match match = new Regex(@"^(\d+)([^B])B?$").Match(data.ToUpper());
 
             return long.Parse(match.Groups[1].Value) * SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
         }
