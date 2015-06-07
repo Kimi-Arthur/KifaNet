@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -53,6 +54,10 @@ namespace FileInformationGenerator
                     else
                     {
                         downloadStream = File.OpenRead($"\\\\{uri.UserInfo}@{uri.Host}/files{uri.AbsolutePath}");
+                        // Use ftp stream first.
+                        //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.AbsolutePath}") as FtpWebRequest;
+                        //request.Credentials = new NetworkCredential("pimix", "P2015apr");
+                        //downloadStream = request.GetResponse().GetResponseStream();
                     }
 
                     using (var s = downloadStream)
