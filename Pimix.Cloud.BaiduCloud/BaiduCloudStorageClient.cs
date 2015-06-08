@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Pimix.Storage;
@@ -145,7 +146,22 @@ namespace Pimix.Cloud.BaiduCloud
             for (int position = 0; position < fileInformation.Size; position += blockLength)
             {
                 blockLength = input.Read(buffer, 0, blockInfo[blockIndex]);
-                blockIds.Add(UploadBlock(buffer, 0, blockLength));
+
+                bool done = false;
+                while (!done)
+                {
+                    try
+                    {
+                        blockIds.Add(UploadBlock(buffer, 0, blockLength));
+                        done = true;
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+                }
+
                 if (blockIndex < blockInfo.Count - 1)
                 {
                     // Stay at the last element.
