@@ -21,19 +21,33 @@ namespace fileutil
             switch (args[0])
             {
                 case "cp":
-                    Uri input = new Uri(args[1]);
-                    //Uri output = new Uri(args[2]);
-                    BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
-                    var client = new BaiduCloudStorageClient() { AccountId = input.UserInfo};
-                    using (var stream = client.GetDownloadStream(input.LocalPath))
                     {
-                        using (FileStream fs = new FileStream(args[2], FileMode.Create))
+                        Uri input = new Uri(args[1]);
+                        //Uri output = new Uri(args[2]);
+                        BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+                        var client = new BaiduCloudStorageClient() { AccountId = input.UserInfo };
+                        using (var stream = client.GetDownloadStream(input.LocalPath))
                         {
-                            stream.CopyTo(fs, bufferSize);
+                            using (FileStream fs = new FileStream(args[2], FileMode.Create))
+                            {
+                                stream.CopyTo(fs, bufferSize);
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                    }
+                case "upload":
+                    {
+                        Uri uploadTo = new Uri(args[2]);
+                        BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+                        var client = new BaiduCloudStorageClient() { AccountId = uploadTo.UserInfo };
+                        using (var stream = File.OpenRead(args[1]))
+                        {
+                            client.UploadStream(uploadTo.LocalPath, stream);
+                        }
+
+                        break;
+                    }
             }
         }
     }

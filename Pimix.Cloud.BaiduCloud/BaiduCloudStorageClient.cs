@@ -86,9 +86,13 @@ namespace Pimix.Cloud.BaiduCloud
             fileInformation = fileInformation ?? new FileInformation();
             if (tryRapid)
             {
-                if (UploadStreamRapid(remotePath, input, fileInformation))
+                try
                 {
+                    UploadStreamRapid(remotePath, input, fileInformation);
                     return;
+                }
+                catch (Exception)
+                {
                 }
             }
 
@@ -136,6 +140,7 @@ namespace Pimix.Cloud.BaiduCloud
             int blockLength = 0;
             byte[] buffer = new byte[blockInfo.Max()];
             List<string> blockIds = new List<string>();
+            input.Seek(0, SeekOrigin.Begin);
 
             for (int position = 0; position < fileInformation.Size; position += blockLength)
             {
@@ -154,7 +159,7 @@ namespace Pimix.Cloud.BaiduCloud
         string UploadBlock(byte[] buffer, int offset, int count)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadBlock);
-            // request.Timeout = 30 * 60 * 1000;
+            request.Timeout = 30 * 60 * 1000;
 
             request.GetRequestStream().Write(buffer, offset, count);
 
@@ -198,7 +203,7 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        bool UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
+        void UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
         {
             fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
@@ -216,7 +221,8 @@ namespace Pimix.Cloud.BaiduCloud
 
             using (var response = request.GetResponse())
             {
-                return response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5));
+                if (!response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5)))
+                    throw new Exception("Response is unexpected!");
             }
         }
 
