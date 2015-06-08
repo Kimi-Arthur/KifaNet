@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
 
-namespace PimixTest.Cloud.Baidu
+namespace PimixTest.Cloud.BaiduCloud
 {
     [TestClass]
     public class ConfigTests

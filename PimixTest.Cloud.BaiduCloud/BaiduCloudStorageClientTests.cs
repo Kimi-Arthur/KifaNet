@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
 using Pimix.Storage;
 
-namespace PimixTest.Cloud.Baidu
+namespace PimixTest.Cloud.BaiduCloud
 {
     [TestClass]
     public class BaiduCloudStorageClientTests
     {
-        public string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
+        public static string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
 
         [TestMethod]
         public void DownloadTest()
@@ -45,15 +47,43 @@ namespace PimixTest.Cloud.Baidu
             client.DeleteFile("Test/rapid.bin");
         }
 
-        [TestInitialize]
-        public void Initialize()
+        [TestMethod]
+        public void UploadByBlockTest()
+        {
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+
+            client.UploadStream(
+                "Test/block.bin",
+                File.OpenRead("data.bin"),
+                false,
+                new List<int> { 128 << 10 }
+            );
+
+            using (var s = client.GetDownloadStream("Test/block.bin"))
+            {
+                Assert.AreEqual(0x39, s.ReadByte());
+                Assert.AreEqual(0x6c, s.ReadByte());
+            }
+
+            client.DeleteFile("Test/block.bin");
+        }
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
             DataModel.PimixServerApiAddress = PimixServerApiAddress;
             BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+
+            DataCleanup();
         }
 
         [ClassCleanup]
         public static void ClassClenaup()
+        {
+            DataCleanup();
+        }
+
+        static void DataCleanup()
         {
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
@@ -63,7 +93,14 @@ namespace PimixTest.Cloud.Baidu
             }
             catch (Exception)
             {
-                // Pass
+            }
+
+            try
+            {
+                client.DeleteFile("Test/block.bin");
+            }
+            catch (Exception)
+            {
             }
         }
     }

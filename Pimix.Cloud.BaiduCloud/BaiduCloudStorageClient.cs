@@ -127,18 +127,20 @@ namespace Pimix.Cloud.BaiduCloud
         {
             fileInformation.AddProperties(input, FileProperties.Size | FileProperties.BlockSize);
 
+            if (blockInfo == null || blockInfo.Count == 0)
+            {
+                blockInfo = new List<int> { fileInformation.BlockSize.Value };
+            }
+
             int blockIndex = 0;
-
+            int blockLength = 0;
             byte[] buffer = new byte[blockInfo.Max()];
-
             List<string> blockIds = new List<string>();
 
-            for (int position = 0; position < fileInformation.Size; position += fileInformation.BlockSize.Value)
+            for (int position = 0; position < fileInformation.Size; position += blockLength)
             {
-                int blockLength = input.Read(buffer, 0, blockInfo[blockIndex]);
-
+                blockLength = input.Read(buffer, 0, blockInfo[blockIndex]);
                 blockIds.Add(UploadBlock(buffer, 0, blockLength));
-
                 if (blockIndex < blockInfo.Count - 1)
                 {
                     // Stay at the last element.
@@ -164,7 +166,7 @@ namespace Pimix.Cloud.BaiduCloud
 
         void MergeBlocks(string remotePath, List<string> blockList)
         {
-            HttpWebRequest request = ConstructRequest(Config.APIList.RemovePath,
+            HttpWebRequest request = ConstructRequest(Config.APIList.MergeBlocks,
                 new Dictionary<string, string>
                 {
                     ["remote_path"] = remotePath.TrimStart('/')
