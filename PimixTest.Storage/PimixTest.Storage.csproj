@@ -6,7 +6,7 @@
     <ProjectGuid>{AE5F5382-89CD-43E0-9221-AF125A2DB32A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FileUtilityTests</RootNamespace>
+    <RootNamespace>PimixTest.Storage</RootNamespace>
     <AssemblyName>PimixTest.Storage</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -69,7 +69,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="FileUtilityTests.cs" />
+    <Compile Include="FileInformationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +78,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
+      <Project>{61CBF740-D894-4F39-9071-BBB96CFD13A4}</Project>
+      <Name>Pimix.Service</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Pimix.Storage\Pimix.Storage.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
       <Name>Pimix.Storage</Name>

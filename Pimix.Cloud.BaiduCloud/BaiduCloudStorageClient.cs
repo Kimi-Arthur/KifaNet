@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Pimix.Storage;
 
 namespace Pimix.Cloud.BaiduCloud
@@ -80,7 +81,7 @@ namespace Pimix.Cloud.BaiduCloud
         /// <param name="fileInformation">
         /// If specified, contains information about the file to be uploaded.
         /// </param>
-        public void UploadStream(string remotePath, Stream input = null, bool tryRapid = true, IEnumerable<int> blockInfo = null, FileInformation fileInformation = null)
+        public void UploadStream(string remotePath, Stream input = null, bool tryRapid = true, List<int> blockInfo = null, FileInformation fileInformation = null)
         {
             fileInformation = fileInformation ?? new FileInformation();
             if (tryRapid)
@@ -90,6 +91,14 @@ namespace Pimix.Cloud.BaiduCloud
                     return;
                 }
             }
+
+            if (input == null)
+                throw new ArgumentNullException(nameof(input));
+
+            if (!input.CanSeek)
+                throw new ArgumentException(
+                    "Input stream needs to be seekable!",
+                    nameof(input));
 
             UploadStreamByBlock(remotePath, input, blockInfo, fileInformation);
         }
@@ -114,34 +123,98 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadStreamByBlock(string remotePath, Stream input, IEnumerable<int> blockInfo, FileInformation fileInformation)
+        void UploadStreamByBlock(string remotePath, Stream input, List<int> blockInfo, FileInformation fileInformation)
         {
-            FileProperties properties = FileProperties.Size;
-            properties -= properties & fileInformation.GetProperties();
+            fileInformation.AddProperties(input, FileProperties.Size | FileProperties.BlockSize);
+
+            int blockIndex = 0;
+
+            byte[] buffer = new byte[blockInfo.Max()];
+
+            List<string> blockIds = new List<string>();
+
+            for (int position = 0; position < fileInformation.Size; position += fileInformation.BlockSize.Value)
+            {
+                int blockLength = input.Read(buffer, 0, blockInfo[blockIndex]);
+
+                blockIds.Add(UploadBlock(buffer, 0, blockLength));
+
+                if (blockIndex < blockInfo.Count - 1)
+                {
+                    // Stay at the last element.
+                    blockIndex++;
+                }
+            }
+
+            MergeBlocks(remotePath, blockIds);
+        }
+
+        string UploadBlock(byte[] buffer, int offset, int count)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.UploadBlock);
+            // request.Timeout = 30 * 60 * 1000;
+
+            request.GetRequestStream().Write(buffer, offset, count);
+
+            using (var response = request.GetResponse())
+            {
+                return response.GetDictionary()["md5"].ToString();
+            }
+        }
+
+        void MergeBlocks(string remotePath, List<string> blockList)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.RemovePath,
+                new Dictionary<string, string>
+                {
+                    ["remote_path"] = remotePath.TrimStart('/')
+                });
+
+            request.ContentType = "application/x-www-form-urlencoded";
+            // request.Timeout = 30 * 60 * 1000;
+
+            using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
+            {
+                sw.Write("param=");
+                sw.Write(
+                    Uri.EscapeDataString(
+                        JsonConvert.SerializeObject(
+                            new Dictionary<string, List<string>>
+                            {
+                                ["block_list"] = blockList
+                            }
+                        )
+                    )
+                );
+            }
+
+            using (var response = request.GetResponse())
+            {
+                var result = response.GetDictionary();
+                if (!result["path"].ToString().EndsWith(remotePath))
+                    throw new Exception($"Merge may fail! Original path: {remotePath}, real path: {result["path"]}");
+            }
         }
 
         bool UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
         {
-            FileProperties properties = FileProperties.AllBaiduCloudRapidHashes;
-            properties -= properties & fileInformation.GetProperties();
-
-            FileInformation calculatedInfo = FileUtility.GetInformation(input, properties);
+            fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileRapid,
                 new Dictionary<string, string>
                 {
                     ["remote_path"] = remotePath.TrimStart('/'),
-                    ["content_length"] = (fileInformation.Size ?? calculatedInfo.Size).ToString(),
-                    ["content_md5"] = fileInformation.MD5 ?? calculatedInfo.MD5,
-                    ["slice_md5"] = fileInformation.SliceMD5 ?? calculatedInfo.SliceMD5,
-                    ["content_crc32"] = fileInformation.CRC32 ?? calculatedInfo.CRC32
+                    ["content_length"] = fileInformation.Size.ToString(),
+                    ["content_md5"] = fileInformation.MD5,
+                    ["slice_md5"] = fileInformation.SliceMD5,
+                    ["content_crc32"] = fileInformation.CRC32
                 });
 
             request.GetRequestStream().Close();
 
             using (var response = request.GetResponse())
             {
-                return response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5 ?? calculatedInfo.MD5));
+                return response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5));
             }
         }
 

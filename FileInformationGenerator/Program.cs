@@ -62,7 +62,7 @@ namespace FileInformationGenerator
 
                     using (var s = downloadStream)
                     {
-                        var info = FileUtility.GetInformation(s, FileProperties.All ^ FileProperties.Path);
+                        var info = FileInformation.GetInformation(s, FileProperties.All ^ FileProperties.Path);
                         info.Id = uri.LocalPath;
                         info.Path = uri.LocalPath;
                         info.Locations = new List<string> { path };

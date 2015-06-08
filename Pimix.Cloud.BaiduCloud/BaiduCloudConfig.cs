@@ -42,6 +42,12 @@ namespace Pimix.Cloud.BaiduCloud
 
         [JsonProperty("remove_path")]
         public APIInfo RemovePath { get; set; }
+
+        [JsonProperty("upload_block")]
+        public APIInfo UploadBlock { get; set; }
+
+        [JsonProperty("merge_blocks")]
+        public APIInfo MergeBlocks { get; set; }
     }
 
     public class APIInfo

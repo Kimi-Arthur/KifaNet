@@ -68,7 +68,6 @@
   <ItemGroup>
     <Compile Include="FileInformation.cs" />
     <Compile Include="FileProperties.cs" />
-    <Compile Include="FileUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
