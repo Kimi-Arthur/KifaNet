@@ -194,7 +194,7 @@ namespace Pimix.Cloud.BaiduCloud
                 });
 
             request.ContentType = "application/x-www-form-urlencoded";
-            // request.Timeout = 30 * 60 * 1000;
+            request.Timeout = 30 * 60 * 1000;
 
             using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
             {
