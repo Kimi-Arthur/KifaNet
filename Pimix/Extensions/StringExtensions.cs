@@ -57,5 +57,18 @@ namespace Pimix
 
             return long.Parse(match.Groups[1].Value) * SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
         }
+
+        public static byte[] ParseHexString(this string hexString)
+        {
+            if (hexString == null || hexString.Length % 2 == 1)
+                throw new ArgumentException("Not hex string");
+            byte[] hexBytes = new byte[hexString.Length / 2];
+            for (int i = 0; i < hexString.Length; i += 2)
+            {
+                hexBytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
+            }
+
+            return hexBytes;
+        }
     }
 }

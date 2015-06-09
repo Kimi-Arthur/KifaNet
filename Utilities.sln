@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fileutil", "fileutil\fileut
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix", "Pimix\Pimix.csproj", "{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cryptography", "Pimix.Cryptography\Pimix.Cryptography.csproj", "{ABF8A889-54F2-47B0-975D-8437A4129622}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cryptography", "PimixTest.Cryptography\PimixTest.Cryptography.csproj", "{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +105,22 @@ Global
 		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|x64.ActiveCfg = Release|Any CPU
 		{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}.Release|x64.Build.0 = Release|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Debug|x64.Build.0 = Debug|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Release|x64.ActiveCfg = Release|Any CPU
+		{ABF8A889-54F2-47B0-975D-8437A4129622}.Release|x64.Build.0 = Release|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Debug|x64.Build.0 = Debug|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Release|x64.ActiveCfg = Release|Any CPU
+		{8F2AB7AF-52AD-447C-92EF-25DAFD2974CA}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
