@@ -74,7 +74,7 @@ namespace Pimix.Storage
         public string EncryptionKey { get; set; }
 
         [JsonProperty("locations")]
-        public List<string> Locations { get; set; }
+        public Dictionary<string, string> Locations { get; set; }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties)
         {

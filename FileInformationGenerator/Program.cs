@@ -53,7 +53,7 @@ namespace FileInformationGenerator
                     }
                     else
                     {
-                        downloadStream = File.OpenRead($"\\\\{uri.UserInfo}@{uri.Host}/files{uri.LocalPath}");
+                        downloadStream = File.OpenRead($"/allfiles/{uri.Host}{uri.LocalPath}");
                         // Use ftp stream first.
                         //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.LocalPath}") as FtpWebRequest;
                         //request.Credentials = new NetworkCredential("pimix", "P2015apr");
@@ -62,11 +62,16 @@ namespace FileInformationGenerator
 
                     using (var s = downloadStream)
                     {
-                        var info = FileInformation.GetInformation(s, FileProperties.All ^ FileProperties.Path);
-                        info.Id = uri.LocalPath;
+                        long len = downloadStream.Length;
+                        var info = DataModel.Get<FileInformation>(uri.LocalPath).AddProperties(s, FileProperties.All ^ FileProperties.Path);
                         info.Path = uri.LocalPath;
-                        info.Locations = new List<string> { path };
-                        DataModel.Patch(info);
+                        if (info.Locations == null)
+                            info.Locations = new Dictionary<string, string>();
+                        info.Locations[uri.GetLeftPart(UriPartial.Authority)] = path;
+                        if (len == info.Size)
+                        {
+                            DataModel.Patch(info);
+                        }
                     }
                 }
             }
