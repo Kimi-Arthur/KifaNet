@@ -371,8 +371,26 @@ namespace Pimix.Cloud.BaiduCloud
                 if (buffer.Length - offset < count)
                     throw new ArgumentException();
 
+                if (Position >= Length)
+                {
+                    return 0;
+                }
 
-                int readCount = Client.Download(buffer, RemotePath, offset, Position, count);
+                bool done = false;
+                int readCount = 0;
+                while (!done)
+                {
+                    try
+                    {
+                        readCount = Client.Download(buffer, RemotePath, offset, Position, count);
+                        done = true;
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Failed once when downloading.");
+                    }
+                }
+
                 Position += readCount;
 
                 return readCount;
