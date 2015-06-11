@@ -16,7 +16,6 @@ namespace Pimix.Cryptography
         long streamOffset;
         ICryptoTransform transform;
         byte[] padBuffer;
-        bool prePadded;
 
         int BlockSize
             => transform.InputBlockSize;
@@ -60,7 +59,7 @@ namespace Pimix.Cryptography
             }
             set
             {
-                stream.Position = streamOffset + streamOffset;
+                stream.Position = value + streamOffset;
             }
         }
 
@@ -89,12 +88,6 @@ namespace Pimix.Cryptography
                 throw new ArgumentOutOfRangeException(nameof(offset));
 
             if (buffer.Length - offset < count)
-                throw new ArgumentException();
-
-            if (count % BlockSize != 0 && count >= 2 * BlockSize)
-                throw new ArgumentException();
-
-            if (Position % BlockSize != 0)
                 throw new ArgumentException();
 
             count = (int)Math.Min(count, Length - Position);
@@ -155,12 +148,14 @@ namespace Pimix.Cryptography
                 int internalToRead = (int) ((Position + count).RoundUp(BlockSize) - InternalPosition + BlockSize);
 
                 byte[] internalBuffer = new byte[internalToRead];
-                InternalPosition = Position + BlockSize;
                 int internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
+
+                if (internalReadCount % BlockSize != 0)
+                    throw new Exception("Unexpected");
 
                 // We don't care about the result for this since it's either empty or
                 // from somewhere of no concern.
-                transform.TransformBlock(internalBuffer, 0, BlockSize, null, 0);
+                transform.TransformBlock(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
 
                 byte[] tmp;
 
@@ -174,25 +169,13 @@ namespace Pimix.Cryptography
                     tmp = transform.TransformFinalBlock(internalBuffer, BlockSize, internalReadCount - BlockSize);
                 }
 
+                Buffer.BlockCopy(tmp, (int)(Position % BlockSize), buffer, offset + readCount, count - readCount);
 
-                Buffer.BlockCopy(tmp, 0, buffer, offset + readCount, count - readCount);
-
+                Position += count - readCount;
                 padBuffer = new byte[BlockSize];
                 Buffer.BlockCopy(tmp, tmp.Length.RoundDown(BlockSize), padBuffer, 0, tmp.Length - tmp.Length.RoundDown(BlockSize));
-                return count;
-            }
 
-            byte[] buf = new byte[count];
-            int readCount = stream.Read(buf, 0, count);
-            if (readCount != count)
-            {
-                buf = transform.TransformFinalBlock(buf, 0, readCount);
-                Buffer.BlockCopy(buf, 0, buffer, offset, buf.Length);
-                return buf.Length;
-            }
-            else
-            {
-                return transform.TransformBlock(buf, 0, count, buffer, offset);
+                return count;
             }
         }
 
