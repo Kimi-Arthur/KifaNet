@@ -84,9 +84,6 @@ namespace Pimix.Cryptography
             if (offset < 0)
                 throw new ArgumentOutOfRangeException(nameof(offset));
 
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException(nameof(offset));
-
             if (buffer.Length - offset < count)
                 throw new ArgumentException();
 
@@ -137,8 +134,9 @@ namespace Pimix.Cryptography
                 Buffer.BlockCopy(tmp, 0, buffer, offset + readCount, count - readCount);
 
                 Position += count - readCount;
-                padBuffer = new byte[BlockSize];
-                Buffer.BlockCopy(tmp, tmp.Length.RoundDown(BlockSize), padBuffer, 0, tmp.Length - tmp.Length.RoundDown(BlockSize));
+                int padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;
+                padBuffer = new byte[padCount];
+                Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
 
                 return count;
             }
@@ -172,8 +170,10 @@ namespace Pimix.Cryptography
                 Buffer.BlockCopy(tmp, (int)(Position % BlockSize), buffer, offset + readCount, count - readCount);
 
                 Position += count - readCount;
-                padBuffer = new byte[BlockSize];
-                Buffer.BlockCopy(tmp, tmp.Length.RoundDown(BlockSize), padBuffer, 0, tmp.Length - tmp.Length.RoundDown(BlockSize));
+
+                int padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;
+                padBuffer = new byte[padCount];
+                Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
 
                 return count;
             }
