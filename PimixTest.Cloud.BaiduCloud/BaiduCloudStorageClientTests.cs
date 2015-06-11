@@ -13,14 +13,15 @@ namespace PimixTest.Cloud.BaiduCloud
     {
         public static string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
 
+        string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+
         [TestMethod]
         public void DownloadTest()
         {
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
             using (var s = client.GetDownloadStream("Test/2010-11-25.bin"))
             {
-                Assert.AreEqual(0x39, s.ReadByte());
-                Assert.AreEqual(0x6c, s.ReadByte());
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
         }
 
@@ -40,8 +41,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
             using (var s = client.GetDownloadStream("Test/rapid.bin"))
             {
-                Assert.AreEqual(0x39, s.ReadByte());
-                Assert.AreEqual(0x6c, s.ReadByte());
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
 
             client.DeleteFile("Test/rapid.bin");
@@ -61,11 +61,29 @@ namespace PimixTest.Cloud.BaiduCloud
 
             using (var s = client.GetDownloadStream("Test/block.bin"))
             {
-                Assert.AreEqual(0x39, s.ReadByte());
-                Assert.AreEqual(0x6c, s.ReadByte());
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
 
             client.DeleteFile("Test/block.bin");
+        }
+
+        [TestMethod]
+        public void UploadDirectTest()
+        {
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+
+            client.UploadStream(
+                "Test/direct.bin",
+                File.OpenRead("data.bin"),
+                false
+            );
+
+            using (var s = client.GetDownloadStream("Test/direct.bin"))
+            {
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+
+            client.DeleteFile("Test/direct.bin");
         }
 
         [ClassInitialize]
@@ -98,6 +116,14 @@ namespace PimixTest.Cloud.BaiduCloud
             try
             {
                 client.DeleteFile("Test/block.bin");
+            }
+            catch (Exception)
+            {
+            }
+
+            try
+            {
+                client.DeleteFile("Test/direct.bin");
             }
             catch (Exception)
             {

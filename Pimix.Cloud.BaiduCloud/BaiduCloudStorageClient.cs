@@ -105,7 +105,7 @@ namespace Pimix.Cloud.BaiduCloud
                     "Input stream needs to be seekable!",
                     nameof(input));
 
-            UploadStreamByBlock(remotePath, input, blockInfo, fileInformation);
+            UploadNormal(remotePath, input, blockInfo, fileInformation);
         }
 
         public void DeleteFile(string remotePath)
@@ -128,9 +128,11 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadStreamByBlock(string remotePath, Stream input, List<int> blockInfo, FileInformation fileInformation)
+        void UploadNormal(string remotePath, Stream input, List<int> blockInfo, FileInformation fileInformation)
         {
             fileInformation.AddProperties(input, FileProperties.Size | FileProperties.BlockSize);
+
+            input.Seek(0, SeekOrigin.Begin);
 
             if (blockInfo == null || blockInfo.Count == 0)
             {
@@ -140,8 +142,15 @@ namespace Pimix.Cloud.BaiduCloud
             int blockIndex = 0;
             int blockLength = 0;
             byte[] buffer = new byte[blockInfo.Max()];
+
+            if (blockInfo[0] >= fileInformation.Size)
+            {
+                blockLength = input.Read(buffer, 0, blockInfo[0]);
+                UploadDirect(remotePath, buffer, 0, blockLength);
+                return;
+            }
+
             List<string> blockIds = new List<string>();
-            input.Seek(0, SeekOrigin.Begin);
 
             for (int position = 0; position < fileInformation.Size; position += blockLength)
             {
@@ -172,12 +181,37 @@ namespace Pimix.Cloud.BaiduCloud
             MergeBlocks(remotePath, blockIds);
         }
 
+        void UploadDirect(string remotePath, byte[] buffer, int offset, int count)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileDirect,
+                new Dictionary<string, string>
+                {
+                    ["remote_path"] = remotePath.TrimStart('/')
+                });
+            request.Timeout = 30 * 60 * 1000;
+
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(buffer, offset, count);
+            }
+
+            using (var response = request.GetResponse())
+            {
+                var result = response.GetDictionary();
+                if (!result["path"].ToString().EndsWith(remotePath.TrimStart('/')))
+                    throw new Exception($"Direct upload may fail: {remotePath}, real path: {result["path"]}");
+            }
+        }
+
         string UploadBlock(byte[] buffer, int offset, int count)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadBlock);
             request.Timeout = 30 * 60 * 1000;
 
-            request.GetRequestStream().Write(buffer, offset, count);
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(buffer, offset, count);
+            }
 
             using (var response = request.GetResponse())
             {
