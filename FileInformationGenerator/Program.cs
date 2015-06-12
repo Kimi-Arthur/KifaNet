@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
-using Pimix.Storage;
+using Pimix.IO;
 
 namespace FileInformationGenerator
 {

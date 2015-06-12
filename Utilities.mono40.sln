@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Storage", "Pimix.Storage\Pimix.Storage.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO", "Pimix.IO\Pimix.IO.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileInformationGenerator", "FileInformationGenerator\FileInformationGenerator.csproj", "{E1FEE21E-C401-4CBC-BA49-43DD78EB0CE2}"
 EndProject

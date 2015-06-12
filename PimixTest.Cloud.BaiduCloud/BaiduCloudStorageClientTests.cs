@@ -4,7 +4,7 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Service;
-using Pimix.Storage;
+using Pimix.IO;
 
 namespace PimixTest.Cloud.BaiduCloud
 {

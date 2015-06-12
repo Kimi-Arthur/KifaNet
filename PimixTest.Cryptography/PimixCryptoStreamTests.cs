@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix;
 using Pimix.Cryptography;
-using Pimix.Storage;
+using Pimix.IO;
 
 namespace PimixTest.Cryptography
 {

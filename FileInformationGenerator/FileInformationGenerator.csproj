@@ -81,9 +81,9 @@
       <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
       <Name>Pimix.Cloud.BaiduCloud</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Pimix.Storage\Pimix.Storage.csproj">
+    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
-      <Name>Pimix.Storage</Name>
+      <Name>Pimix.IO</Name>
     </ProjectReference>
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
       <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>

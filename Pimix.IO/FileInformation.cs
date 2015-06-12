@@ -9,7 +9,7 @@ using HashLib;
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.Storage
+namespace Pimix.IO
 {
     public class FileInformation : DataModel
     {

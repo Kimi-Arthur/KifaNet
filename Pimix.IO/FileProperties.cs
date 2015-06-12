@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Pimix.Storage
+namespace Pimix.IO
 {
     [Flags]
     public enum FileProperties

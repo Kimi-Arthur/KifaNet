@@ -7,8 +7,8 @@
     <ProjectGuid>{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Pimix.Storage</RootNamespace>
-    <AssemblyName>Pimix.Storage</AssemblyName>
+    <RootNamespace>Pimix.IO</RootNamespace>
+    <AssemblyName>Pimix.IO</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
