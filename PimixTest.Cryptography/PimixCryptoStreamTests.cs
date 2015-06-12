@@ -19,57 +19,69 @@ namespace PimixTest.Cryptography
             Mode = CipherMode.ECB
         };
 
-        string rawSHA256 = "8FFB7A1DFF0EDF9A670AAD939828357FB017D9C6526648BF2D31292DA983DFDF";
-        long rawSize = 13659;
+        List<Tuple<string, string, long>> raw = new List<Tuple<string, string, long>>
+        {
+            new Tuple<string, string, long>("encrypted.bin", "8FFB7A1DFF0EDF9A670AAD939828357FB017D9C6526648BF2D31292DA983DFDF", 13659),
+            new Tuple<string, string, long>("data-encrypted.bin", "0A43E6858977A39B861420FA31877030A0E683F1E25FFCF6A42098E6CB4C4948", 65536)
+        };
 
-        string encryptedSHA256 = "E1223699AFBDFBB5252D7CCEA23A40BFCE8DD4834A53E52A75C778BEC3C72706";
-        long encryptedSize = 13664;
+        List<Tuple<string, string, long>> encrypted = new List<Tuple<string, string, long>>
+        {
+            new Tuple<string, string, long>("raw.bin", "E1223699AFBDFBB5252D7CCEA23A40BFCE8DD4834A53E52A75C778BEC3C72706", 13664),
+            new Tuple<string, string, long>("data.bin", "2222C7B3D3D1896636DDC0642F8CC2F882D23CECCE1D2FEE7678B5B3587A3163", 65552)
+        };
 
         [TestMethod]
         public void PimixCryptoStreamDecryptionReadBasicTest()
         {
-            ICryptoTransform transform = aesAlgorithm.CreateDecryptor();
-
-            using (var stream = new PimixCryptoStream(File.OpenRead("encrypted.bin"), transform, rawSize, true))
+            foreach (var item in raw)
             {
-                var info = FileInformation.GetInformation(stream, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
-                Assert.AreEqual(rawSize, info.Size);
-                Assert.AreEqual(rawSHA256, info.SHA256);
-                Assert.AreEqual(rawSHA256, info.SHA256);
+                ICryptoTransform transform = aesAlgorithm.CreateDecryptor();
 
-                foreach (var b in new List<int> { 8, 10, 11, 12, 19, 33, 100 })
+                using (var stream = new PimixCryptoStream(File.OpenRead(item.Item1), transform, item.Item3, true))
                 {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    var output = new MemoryStream();
-                    stream.CopyTo(output, b);
+                    var info = FileInformation.GetInformation(stream, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                    Assert.AreEqual(item.Item3, info.Size);
+                    Assert.AreEqual(item.Item2, info.SHA256);
+                    Assert.AreEqual(item.Item2, info.SHA256);
 
-                    info = FileInformation.GetInformation(output, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
-                    Assert.AreEqual(rawSize, info.Size);
-                    Assert.AreEqual(rawSHA256, info.SHA256);
-                    Assert.AreEqual(rawSHA256, info.SHA256);
+                    foreach (var b in new List<int> { 8, 11, 12, 16, 33, 100 })
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                        var output = new MemoryStream();
+                        stream.CopyTo(output, b);
+
+                        info = FileInformation.GetInformation(output, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                        Assert.AreEqual(item.Item3, info.Size);
+                        Assert.AreEqual(item.Item2, info.SHA256);
+                        Assert.AreEqual(item.Item2, info.SHA256);
+                    }
+
                 }
-
             }
         }
 
         [TestMethod]
         public void PimixCryptoStreamDecryptionReadIncompleteEndTest()
         {
-            ICryptoTransform transform = aesAlgorithm.CreateDecryptor();
-
-            using (var stream = new PimixCryptoStream(File.OpenRead("encrypted.bin"), transform, rawSize, true))
+            foreach (var item in raw)
             {
-                var baseStream = new MemoryStream();
-                stream.CopyTo(baseStream);
+                ICryptoTransform transform = aesAlgorithm.CreateDecryptor();
 
-                foreach (var b in new List<int> { 8, 10, 11, 12, 19, 33, 100 })
+                using (var stream = new PimixCryptoStream(File.OpenRead(item.Item1), transform, item.Item3, true))
                 {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    stream.Seek(-b, SeekOrigin.End);
-                    baseStream.Seek(-b, SeekOrigin.End);
-                    for (int i = 0; i < b; i++)
+                    var baseStream = new MemoryStream();
+                    stream.CopyTo(baseStream);
+
+                    foreach (var b in new List<int> { 8, 11, 12, 16, 33, 100 })
                     {
-                        Assert.AreEqual(baseStream.ReadByte(), stream.ReadByte());
+                        stream.Seek(0, SeekOrigin.Begin);
+                        stream.Seek(-b, SeekOrigin.End);
+                        baseStream.Seek(-b, SeekOrigin.End);
+                        for (int i = 0; i < b; i++)
+                        {
+                            Assert.AreEqual(baseStream.ReadByte(), stream.ReadByte());
+                        }
                     }
                 }
             }
@@ -78,25 +90,28 @@ namespace PimixTest.Cryptography
         [TestMethod]
         public void PimixCryptoStreamEncryptionReadBasicTest()
         {
-            ICryptoTransform transform = aesAlgorithm.CreateEncryptor();
-
-            using (var stream = new PimixCryptoStream(File.OpenRead("raw.bin"), transform, encryptedSize, false))
+            foreach (var item in encrypted)
             {
-                var info = FileInformation.GetInformation(stream, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
-                Assert.AreEqual(encryptedSize, info.Size);
-                Assert.AreEqual(encryptedSHA256, info.SHA256);
-                Assert.AreEqual(encryptedSHA256, info.SHA256);
+                ICryptoTransform transform = aesAlgorithm.CreateEncryptor();
 
-                foreach (var b in new List<int> { 8, 10, 11, 12, 19, 33, 100 })
+                using (var stream = new PimixCryptoStream(File.OpenRead(item.Item1), transform, item.Item3, false))
                 {
-                    stream.Seek(0, SeekOrigin.Begin);
-                    var output = new MemoryStream();
-                    stream.CopyTo(output, b);
+                    var info = FileInformation.GetInformation(stream, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                    Assert.AreEqual(item.Item3, info.Size);
+                    Assert.AreEqual(item.Item2, info.SHA256);
+                    Assert.AreEqual(item.Item2, info.SHA256);
 
-                    info = FileInformation.GetInformation(output, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
-                    Assert.AreEqual(encryptedSize, info.Size);
-                    Assert.AreEqual(encryptedSHA256, info.SHA256);
-                    Assert.AreEqual(encryptedSHA256, info.SHA256);
+                    foreach (var b in new List<int> { 8, 11, 12, 16, 33, 100 })
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                        var output = new MemoryStream();
+                        stream.CopyTo(output, b);
+
+                        info = FileInformation.GetInformation(output, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                        Assert.AreEqual(item.Item3, info.Size);
+                        Assert.AreEqual(item.Item2, info.SHA256);
+                        Assert.AreEqual(item.Item2, info.SHA256);
+                    }
                 }
             }
         }
