@@ -12,6 +12,7 @@ namespace Pimix.Cryptography
     public class PimixCryptoStream : Stream
     {
         Stream stream;
+        bool needBlockAhead;
         long length;
         long streamOffset;
         ICryptoTransform transform;
@@ -63,10 +64,11 @@ namespace Pimix.Cryptography
             }
         }
 
-        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long length, long streamOffset = 0)
+        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long length, bool needBlockAhead, long streamOffset = 0)
         {
             this.stream = stream;
             this.length = length;
+            this.needBlockAhead = needBlockAhead;
             this.streamOffset = streamOffset;
             this.transform = transform;
         }
@@ -94,6 +96,8 @@ namespace Pimix.Cryptography
 
             int readCount = 0;
 
+            byte[] tmp;
+
             if (padBuffer != null)
             {
                 int leftOverCount = (int)Math.Min(Position.RoundUp(BlockSize) - Position, count);
@@ -107,19 +111,11 @@ namespace Pimix.Cryptography
                 if (Position % BlockSize != 0)
                     throw new Exception("Unexpected");
 
-                int internalToRead = count - readCount;
-                // No need to add a block since the current block is actually in pad buffer in
-                // transform object.
-                internalToRead = internalToRead.RoundUp(BlockSize);
+                int internalToRead = (count - readCount).RoundUp(BlockSize);
 
                 byte[] internalBuffer = new byte[internalToRead];
-                InternalPosition = Position + BlockSize;
+                InternalPosition = Position + (needBlockAhead ? BlockSize : 0);
                 int internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
-
-                if (internalReadCount % BlockSize != 0)
-                    throw new Exception("Unexpected");
-
-                byte[] tmp;
 
                 if (internalReadCount == internalToRead)
                 {
@@ -131,52 +127,42 @@ namespace Pimix.Cryptography
                     tmp = transform.TransformFinalBlock(internalBuffer, 0, internalReadCount);
                 }
 
-                Buffer.BlockCopy(tmp, 0, buffer, offset + readCount, count - readCount);
-
-                Position += count - readCount;
-                int padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;
-                padBuffer = new byte[padCount];
-                Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
-
-                return count;
             }
             else
             {
-                InternalPosition = Position.RoundDown(BlockSize);
-                int internalToRead = (int) ((Position + count).RoundUp(BlockSize) - InternalPosition + BlockSize);
-
+                int internalToRead = (int)((Position + count - readCount).RoundUp(BlockSize) - Position.RoundDown(BlockSize)) + (needBlockAhead ? BlockSize : 0);
                 byte[] internalBuffer = new byte[internalToRead];
+
+                InternalPosition = Position.RoundDown(BlockSize);
                 int internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
 
-                if (internalReadCount % BlockSize != 0)
-                    throw new Exception("Unexpected");
-
-                // We don't care about the result for this since it's either empty or
-                // from somewhere of no concern.
-                transform.TransformBlock(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
-
-                byte[] tmp;
+                if (needBlockAhead)
+                {
+                    // We don't care about the result for this since it's either empty or
+                    // from somewhere of no concern.
+                    transform.TransformBlock(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
+                }
 
                 if (internalReadCount == internalToRead)
                 {
-                    tmp = new byte[internalReadCount - BlockSize];
-                    transform.TransformBlock(internalBuffer, BlockSize, internalReadCount - BlockSize, tmp, 0);
+                    tmp = new byte[internalReadCount - (needBlockAhead ? BlockSize : 0)];
+                    transform.TransformBlock(internalBuffer, needBlockAhead ? BlockSize : 0, internalReadCount - (needBlockAhead ? BlockSize : 0), tmp, 0);
                 }
                 else
                 {
-                    tmp = transform.TransformFinalBlock(internalBuffer, BlockSize, internalReadCount - BlockSize);
+                    tmp = transform.TransformFinalBlock(internalBuffer, needBlockAhead ? BlockSize : 0, internalReadCount - (needBlockAhead ? BlockSize : 0));
                 }
 
-                Buffer.BlockCopy(tmp, (int)(Position % BlockSize), buffer, offset + readCount, count - readCount);
-
-                Position += count - readCount;
-
-                int padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;
-                padBuffer = new byte[padCount];
-                Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
-
-                return count;
             }
+
+            Buffer.BlockCopy(tmp, (int)(Position % BlockSize), buffer, offset + readCount, count - readCount);
+
+            Position += count - readCount;
+            int padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;
+            padBuffer = new byte[padCount];
+            Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
+
+            return count;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
