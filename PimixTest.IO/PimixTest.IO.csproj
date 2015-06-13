@@ -70,6 +70,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="FileInformationTests.cs" />
+    <Compile Include="PartialStreamTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
