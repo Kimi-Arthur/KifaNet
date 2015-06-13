@@ -43,7 +43,6 @@ namespace PimixTest.Cryptography
                     var info = FileInformation.GetInformation(stream, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
                     Assert.AreEqual(item.Item3, info.Size);
                     Assert.AreEqual(item.Item2, info.SHA256);
-                    Assert.AreEqual(item.Item2, info.SHA256);
 
                     foreach (var b in new List<int> { 8, 11, 12, 16, 33, 100 })
                     {
@@ -53,7 +52,6 @@ namespace PimixTest.Cryptography
 
                         info = FileInformation.GetInformation(output, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
                         Assert.AreEqual(item.Item3, info.Size);
-                        Assert.AreEqual(item.Item2, info.SHA256);
                         Assert.AreEqual(item.Item2, info.SHA256);
                     }
 
@@ -99,7 +97,6 @@ namespace PimixTest.Cryptography
                     var info = FileInformation.GetInformation(stream, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
                     Assert.AreEqual(item.Item3, info.Size);
                     Assert.AreEqual(item.Item2, info.SHA256);
-                    Assert.AreEqual(item.Item2, info.SHA256);
 
                     foreach (var b in new List<int> { 8, 11, 12, 16, 33, 100 })
                     {
@@ -109,7 +106,6 @@ namespace PimixTest.Cryptography
 
                         info = FileInformation.GetInformation(output, FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
                         Assert.AreEqual(item.Item3, info.Size);
-                        Assert.AreEqual(item.Item2, info.SHA256);
                         Assert.AreEqual(item.Item2, info.SHA256);
                     }
                 }
