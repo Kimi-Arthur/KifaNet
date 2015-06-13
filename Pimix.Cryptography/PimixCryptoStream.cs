@@ -13,8 +13,7 @@ namespace Pimix.Cryptography
     {
         Stream stream;
         bool needBlockAhead;
-        long length;
-        long streamOffset;
+        long outputLength;
         ICryptoTransform transform;
         byte[] padBuffer;
 
@@ -31,7 +30,7 @@ namespace Pimix.Cryptography
             => false;
 
         public override long Length
-            => length;
+            => outputLength;
 
         long position;
         public override long Position
@@ -56,20 +55,19 @@ namespace Pimix.Cryptography
         {
             get
             {
-                return stream.Position - streamOffset;
+                return stream.Position;
             }
             set
             {
-                stream.Position = value + streamOffset;
+                stream.Position = value;
             }
         }
 
-        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long length, bool needBlockAhead, long streamOffset = 0)
+        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength, bool needBlockAhead)
         {
             this.stream = stream;
-            this.length = length;
+            this.outputLength = outputLength;
             this.needBlockAhead = needBlockAhead;
-            this.streamOffset = streamOffset;
             this.transform = transform;
         }
 
