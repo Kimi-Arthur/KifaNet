@@ -47,14 +47,16 @@ namespace Pimix.IO.FileFormats
                 fileInformation.Size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
             }
 
-            Aes aesAlgorithm = new AesCryptoServiceProvider
+            ICryptoTransform decoder;
+            using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
-                Padding = PaddingMode.ANSIX923,
-                Key = fileInformation.EncryptionKey.ParseHexString(),
-                Mode = CipherMode.ECB
-            };
+                aesAlgorithm.Padding = PaddingMode.ANSIX923;
+                aesAlgorithm.Key = fileInformation.EncryptionKey.ParseHexString();
+                aesAlgorithm.Mode = CipherMode.ECB;
+                decoder = aesAlgorithm.CreateDecryptor();
+            }
 
-            return new PimixCryptoStream(new PartialStream(encodedStream, 0x1225), aesAlgorithm.CreateDecryptor(), fileInformation.Size.Value, true);
+            return new PimixCryptoStream(new PartialStream(encodedStream, 0x1225), decoder, fileInformation.Size.Value, true);
         }
 
         public override Stream GetEncodeStream(Stream rawStream, FileInformation fileInformation = null)
