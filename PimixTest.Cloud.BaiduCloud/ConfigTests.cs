@@ -3,7 +3,6 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
-using Pimix.Service;
 
 namespace PimixTest.Cloud.BaiduCloud
 {
@@ -15,8 +14,8 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void GetConfigTest()
         {
-            DataModel.PimixServerApiAddress = PimixServerApiAddress;
-            var config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+            BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
+            var config = BaiduCloudConfig.Get("baidu_cloud");
             Assert.IsTrue(config.ClientId.StartsWith("Tk"));
         }
 

@@ -36,7 +36,7 @@ namespace Pimix.IO.FileFormats
                     fileInformation.Id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
                 }
 
-                fileInformation = FileInformation.Get<FileInformation>(fileInformation.Id);
+                fileInformation = FileInformation.Get(fileInformation.Id);
             }
 
             if (fileInformation.Size == null)

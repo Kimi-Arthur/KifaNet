@@ -8,10 +8,11 @@ using Pimix.Service;
 
 namespace PimixTest.Service
 {
-    class FakeDataModel : DataModel
+    [DataModel("api_test")]
+    class FakeDataModel
     {
-        public override string ModelId
-            => "api_test";
+        [JsonProperty("$id")]
+        public string Id { get; set; }
 
         [JsonProperty("int_prop")]
         public int? IntProp { get; set; }
@@ -28,9 +29,43 @@ namespace PimixTest.Service
         [JsonProperty("sub_prop")]
         public FakeSubDataModel SubProp { get; set; }
 
+        #region PimixService Wrappers
+
+        public static string PimixServerApiAddress
+        {
+            get
+            {
+                return PimixService.PimixServerApiAddress;
+            }
+            set
+            {
+                PimixService.PimixServerApiAddress = value;
+            }
+        }
+
+        public static string PimixServerCredential
+        {
+            get
+            {
+                return PimixService.PimixServerCredential;
+            }
+            set
+            {
+                PimixService.PimixServerCredential = value;
+            }
+        }
+
+        public static bool Patch(FakeDataModel data, string id = null)
+            => PimixService.Patch<FakeDataModel>(data, id);
+
+        public static FakeDataModel Get(string id)
+            => PimixService.Get<FakeDataModel>(id);
+
+        #endregion
+
         public static bool Reset()
         {
-            var result = DataModel.Call<FakeDataModel, Dictionary<string, string>>("reset", methodType: "POST");
+            var result = PimixService.Call<FakeDataModel, Dictionary<string, string>>("reset", methodType: "POST");
             return result.Contains(new KeyValuePair<string, string>("status", "ok"));
         }
     }

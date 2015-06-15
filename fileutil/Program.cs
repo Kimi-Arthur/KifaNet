@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Pimix;
 using Pimix.Cloud.BaiduCloud;
-using Pimix.Service;
 
 namespace fileutil
 {
@@ -16,7 +15,7 @@ namespace fileutil
         static void Main(string[] args)
         {
             int bufferSize = (int)ConfigurationManager.AppSettings["BufferSize"].ParseSizeString();
-            DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
+            BaiduCloudConfig.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
 
             switch (args[0])
             {
@@ -24,7 +23,7 @@ namespace fileutil
                     {
                         Uri input = new Uri(args[1]);
                         //Uri output = new Uri(args[2]);
-                        BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+                        BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
                         var client = new BaiduCloudStorageClient() { AccountId = input.UserInfo };
                         using (var stream = client.GetDownloadStream(input.LocalPath))
                         {
@@ -39,7 +38,7 @@ namespace fileutil
                 case "upload":
                     {
                         Uri uploadTo = new Uri(args[2]);
-                        BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+                        BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
                         var client = new BaiduCloudStorageClient() { AccountId = uploadTo.UserInfo };
                         using (var stream = File.OpenRead(args[1]))
                         {

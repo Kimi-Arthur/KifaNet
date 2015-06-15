@@ -3,50 +3,31 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace Pimix.Service
 {
-    public abstract class DataModel
+    public static class PimixService
     {
-        public DataModel()
-        {
-            // Do not override, use property setting instead
-            // or create other ctors.
-            // This ctor does nothing. Used only for accessing ModelId.
-        }
-
-        [JsonIgnore]
-        public virtual string ModelId
-            => null;
-
-        [JsonProperty("$id")]
-        public string Id { get; set; }
+        static Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
+            = new Dictionary<Type, Tuple<PropertyInfo, string>>();
 
         public static string PimixServerApiAddress { get; set; }
 
         public static string PimixServerCredential { get; set; }
 
-        public static void Init()
-        {
-            JsonConvert.DefaultSettings =
-                () => new JsonSerializerSettings()
-                {
-                    NullValueHandling = NullValueHandling.Ignore,
-                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-                };
-        }
-
         public static bool Patch<TDataModel>(TDataModel data, string id = null)
-            where TDataModel : DataModel
         {
-            Init();
-            id = id ?? data.Id;
+            Init(typeof(TDataModel));
+            var typeInfo = typeCache[typeof(TDataModel)];
+
+            id = id ?? typeInfo.Item1.GetValue(data) as string;
             string content = JsonConvert.SerializeObject(data);
             string address =
-                $"{PimixServerApiAddress}/{data.ModelId}/{id}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "PATCH";
@@ -65,13 +46,12 @@ namespace Pimix.Service
         }
 
         public static TDataModel Get<TDataModel>(string id)
-            where TDataModel : DataModel, new()
         {
-            Init();
+            Init(typeof(TDataModel));
+            var typeInfo = typeCache[typeof(TDataModel)];
 
-            // Suppose new a TDataModel is cheap.
             string address =
-                $"{PimixServerApiAddress}/{new TDataModel().ModelId}/{id}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "GET";
@@ -86,11 +66,11 @@ namespace Pimix.Service
 
         public static ResponseType Call<TDataModel, ResponseType>(string action, string methodType = "GET",
             string id = null, Dictionary<string, string> parameters = null, Object body = null)
-            where TDataModel : DataModel, new()
         {
-            Init();
+            Init(typeof(TDataModel));
+            var typeInfo = typeCache[typeof(TDataModel)];
 
-            string address = $"{PimixServerApiAddress}/{new TDataModel().ModelId}{id?.Insert(0, "/")}/${action}";
+            string address = $"{PimixServerApiAddress}/{typeInfo.Item2}{id?.Insert(0, "/")}/${action}";
             if (parameters != null)
             {
                 address += "?" + string.Join("&", parameters.Select(item => $"{item.Key}={item.Value}"));
@@ -113,6 +93,24 @@ namespace Pimix.Service
             using (var response = request.GetResponse())
             {
                 return response.GetObject<ResponseType>();
+            }
+        }
+
+        static void Init(Type typeInfo)
+        {
+            JsonConvert.DefaultSettings =
+                () => new JsonSerializerSettings()
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+                };
+
+            if (!typeCache.ContainsKey(typeInfo))
+            {
+                // TODO: Will throw. Can add custom exceptions.
+                PropertyInfo idProp = typeInfo.GetProperty("Id");
+                DataModelAttribute dmAttr = typeInfo.GetCustomAttribute<DataModelAttribute>();
+                typeCache[typeInfo] = Tuple.Create(idProp, dmAttr.ModelId);
             }
         }
     }

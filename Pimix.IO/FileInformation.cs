@@ -11,7 +11,8 @@ using Pimix.Service;
 
 namespace Pimix.IO
 {
-    public class FileInformation : DataModel
+    [DataModel("universal")]
+    public class FileInformation
     {
         const long MaxBlockCount = 1L << 10;
         const long MaxBlockSize = 2L << 30;
@@ -34,8 +35,8 @@ namespace Pimix.IO
                 [FileProperties.SliceMD5] = x => x.SliceMD5
             };
 
-        public override string ModelId
-            => "universal";
+        [JsonProperty("$id")]
+        public string Id { get; set; }
 
         [JsonProperty("path")]
         public string Path { get; set; }
@@ -209,5 +210,39 @@ namespace Pimix.IO
 
             return (int)blockSize;
         }
+
+        #region PimixService Wrappers
+
+        public static string PimixServerApiAddress
+        {
+            get
+            {
+                return PimixService.PimixServerApiAddress;
+            }
+            set
+            {
+                PimixService.PimixServerApiAddress = value;
+            }
+        }
+
+        public static string PimixServerCredential
+        {
+            get
+            {
+                return PimixService.PimixServerCredential;
+            }
+            set
+            {
+                PimixService.PimixServerCredential = value;
+            }
+        }
+
+        public static bool Patch(FileInformation data, string id = null)
+            => PimixService.Patch<FileInformation>(data, id);
+
+        public static FileInformation Get(string id)
+            => PimixService.Get<FileInformation>(id);
+
+        #endregion
     }
 }

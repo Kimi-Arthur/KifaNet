@@ -79,10 +79,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
-      <Project>{61CBF740-D894-4F39-9071-BBB96CFD13A4}</Project>
-      <Name>Pimix.Service</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
       <Name>Pimix.IO</Name>

@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
-using Pimix.Service;
 using Pimix.IO;
 
 namespace FileInformationGenerator
@@ -20,9 +19,9 @@ namespace FileInformationGenerator
             string site = ConfigurationManager.AppSettings["Site"];
             string pathPrefix = ConfigurationManager.AppSettings["PathPrefix"];
 
-            DataModel.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
-            DataModel.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
-            BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+            BaiduCloudConfig.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
+            BaiduCloudConfig.PimixServerCredential = ConfigurationManager.AppSettings["PimixServerCredential"];
+            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
 
             foreach (var arg in args)
             {
@@ -63,14 +62,14 @@ namespace FileInformationGenerator
                     using (var s = downloadStream)
                     {
                         long len = downloadStream.Length;
-                        var info = DataModel.Get<FileInformation>(uri.LocalPath).AddProperties(s, FileProperties.All ^ FileProperties.Path);
+                        var info = FileInformation.Get(uri.LocalPath).AddProperties(s, FileProperties.All ^ FileProperties.Path);
                         info.Path = uri.LocalPath;
                         if (info.Locations == null)
                             info.Locations = new Dictionary<string, string>();
                         info.Locations[uri.GetLeftPart(UriPartial.Authority)] = path;
                         if (len == info.Size)
                         {
-                            DataModel.Patch(info);
+                            FileInformation.Patch(info);
                         }
                     }
                 }

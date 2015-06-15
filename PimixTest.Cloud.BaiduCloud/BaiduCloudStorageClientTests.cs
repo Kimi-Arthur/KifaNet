@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.BaiduCloud;
-using Pimix.Service;
 using Pimix.IO;
 
 namespace PimixTest.Cloud.BaiduCloud
@@ -89,8 +88,8 @@ namespace PimixTest.Cloud.BaiduCloud
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx)
         {
-            DataModel.PimixServerApiAddress = PimixServerApiAddress;
-            BaiduCloudStorageClient.Config = DataModel.Get<BaiduCloudConfig>("baidu_cloud");
+            BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
+            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
 
             DataCleanup();
         }

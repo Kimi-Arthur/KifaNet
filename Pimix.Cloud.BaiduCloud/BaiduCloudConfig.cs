@@ -8,10 +8,11 @@ using Pimix.Service;
 
 namespace Pimix.Cloud.BaiduCloud
 {
-    public class BaiduCloudConfig : DataModel
+    [DataModel("cloud")]
+    public class BaiduCloudConfig
     {
-        public override string ModelId
-            => "cloud";
+        [JsonProperty("$id")]
+        public string Id { get; set; }
 
         [JsonProperty("accounts")]
         public Dictionary<string, AccountInfo> Accounts { get; private set; }
@@ -24,6 +25,41 @@ namespace Pimix.Cloud.BaiduCloud
 
         [JsonProperty("remote_path_prefix")]
         public string RemotePathPrefix { get; set; }
+
+
+        #region PimixService Wrappers
+
+        public static string PimixServerApiAddress
+        {
+            get
+            {
+                return PimixService.PimixServerApiAddress;
+            }
+            set
+            {
+                PimixService.PimixServerApiAddress = value;
+            }
+        }
+
+        public static string PimixServerCredential
+        {
+            get
+            {
+                return PimixService.PimixServerCredential;
+            }
+            set
+            {
+                PimixService.PimixServerCredential = value;
+            }
+        }
+
+        public static bool Patch(BaiduCloudConfig data, string id = null)
+            => PimixService.Patch<BaiduCloudConfig>(data, id);
+
+        public static BaiduCloudConfig Get(string id)
+            => PimixService.Get<BaiduCloudConfig>(id);
+
+        #endregion
     }
 
     public class AccountInfo

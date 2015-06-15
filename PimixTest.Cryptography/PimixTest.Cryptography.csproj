@@ -59,10 +59,6 @@
       <Project>{abf8a889-54f2-47b0-975d-8437a4129622}</Project>
       <Name>Pimix.Cryptography</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
-      <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>
-      <Name>Pimix.Service</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
       <Name>Pimix.IO</Name>
