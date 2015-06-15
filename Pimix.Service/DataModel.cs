@@ -22,22 +22,8 @@ namespace Pimix.Service
         public virtual string ModelId
             => null;
 
-        // Use two id properties to handle special '$id' in json.net
         [JsonProperty("$id")]
         public string Id { get; set; }
-
-        [JsonProperty]
-        private string _id
-        {
-            get
-            {
-                return null;
-            }
-            set
-            {
-                Id = value;
-            }
-        }
 
         public static string PimixServerApiAddress { get; set; }
 
@@ -48,7 +34,8 @@ namespace Pimix.Service
             JsonConvert.DefaultSettings =
                 () => new JsonSerializerSettings()
                 {
-                    NullValueHandling = NullValueHandling.Ignore
+                    NullValueHandling = NullValueHandling.Ignore,
+                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
                 };
         }
 
@@ -84,7 +71,7 @@ namespace Pimix.Service
 
             // Suppose new a TDataModel is cheap.
             string address =
-                $"{PimixServerApiAddress}/{new TDataModel().ModelId}/{id}?no$";
+                $"{PimixServerApiAddress}/{new TDataModel().ModelId}/{id}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "GET";
