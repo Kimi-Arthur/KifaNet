@@ -211,6 +211,14 @@ namespace Pimix.IO
             return (int)blockSize;
         }
 
+        static string GenerateEncryptionKey()
+        {
+           using (var aes = new AesCryptoServiceProvider())
+           {
+               return aes.Key.ToHexString();
+           }
+        }
+
         #region PimixService Wrappers
 
         public static string PimixServerApiAddress
