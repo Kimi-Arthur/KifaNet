@@ -91,5 +91,28 @@ namespace Pimix.IO
         {
             throw new NotImplementedException();
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        Flush();
+                    }
+                    finally
+                    {
+                        stream.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                stream = null;
+                base.Dispose(disposing);
+            }
+        }
     }
 }

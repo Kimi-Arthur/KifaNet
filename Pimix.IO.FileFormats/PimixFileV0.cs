@@ -18,7 +18,7 @@ namespace Pimix.IO.FileFormats
     /// File size starts at 0x073e (1854) and will end with space.
     /// 
     /// </summary>
-    public class PimixFileFormatV0 : PimixFileFormat
+    public class PimixFileV0 : PimixFile
     {
         public override Stream GetDecodeStream(Stream encodedStream, FileInformation fileInformation = null)
         {

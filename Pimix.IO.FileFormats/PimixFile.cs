@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Pimix.IO.FileFormats
 {
-    public abstract class PimixFileFormat
+    public abstract class PimixFile
     {
         public abstract Stream GetEncodeStream(Stream rawStream, FileInformation fileInformation = null);
 

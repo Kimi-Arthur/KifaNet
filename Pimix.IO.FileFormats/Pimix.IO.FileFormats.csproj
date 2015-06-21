@@ -41,8 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PimixFileFormat.cs" />
-    <Compile Include="PimixFileFormatV0.cs" />
+    <Compile Include="PimixFile.cs" />
+    <Compile Include="PimixFileV0.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
