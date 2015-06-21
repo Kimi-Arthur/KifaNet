@@ -8,9 +8,17 @@ using CommandLine;
 
 namespace fileutil
 {
+    class CommandLineOptions
+    {
+        [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
+        public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
+
+        [Option('d', "dryrun", HelpText = "Whether to dry run the command.")]
+        public bool Dryrun { get; set; }
+    }
 
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
-    class CopyCommandOptions
+    class CopyCommandOptions : CommandLineOptions
     {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
@@ -23,7 +31,7 @@ namespace fileutil
     }
 
     [Verb("upload", HelpText = "Upload file baidu cloud.")]
-    class UploadCommandOptions
+    class UploadCommandOptions : CommandLineOptions
     {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
@@ -33,12 +41,9 @@ namespace fileutil
     }
 
     [Verb("info", HelpText = "Generate information of the specified file.")]
-    class InfoCommandOptions
+    class InfoCommandOptions : CommandLineOptions
     {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
-
-        [Option]
-        public bool Dryrun { get; set; }
     }
 }

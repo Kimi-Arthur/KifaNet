@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,23 +18,23 @@ namespace fileutil
         {
             var commands = new Dictionary<Type, Action<object>>()
             {
-                [typeof(InfoCommandOptions)] = (x) => GetInfo(x as InfoCommandOptions),
-                [typeof(CopyCommandOptions)] = (x) => CopyFile(x as CopyCommandOptions),
-                [typeof(UploadCommandOptions)] = (x) => UploadFile(x as UploadCommandOptions)
+                [typeof(InfoCommandOptions)] = x => GetInfo(x as InfoCommandOptions),
+                [typeof(CopyCommandOptions)] = x => CopyFile(x as CopyCommandOptions),
+                [typeof(UploadCommandOptions)] = x => UploadFile(x as UploadCommandOptions)
             };
 
             var result = Parser.Default.ParseArguments<CopyCommandOptions, InfoCommandOptions, UploadCommandOptions>(args);
             if (!result.Errors.Any())
             {
-                Initialize();
+                Initialize(result.Value as CommandLineOptions);
 
                 commands[result.Value.GetType()](result.Value);
             }
         }
 
-        static void Initialize()
+        static void Initialize(CommandLineOptions options)
         {
-            BaiduCloudConfig.PimixServerApiAddress = ConfigurationManager.AppSettings["PimixServerApiAddress"];
+            BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
         }
 
         static void CopyFile(CopyCommandOptions options)
