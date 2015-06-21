@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Pimix;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
+using Pimix.IO.FileFormats;
 
 namespace fileutil
 {
@@ -97,6 +98,11 @@ namespace fileutil
                 //downloadStream = request.GetResponse().GetResponseStream();
             }
 
+            if (uri.Scheme.Contains("v0"))
+            {
+                downloadStream = new PimixFileV0() { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(downloadStream);
+            }
+
             using (var s = downloadStream)
             {
                 long len = downloadStream.Length;
@@ -104,7 +110,7 @@ namespace fileutil
                 info.Path = uri.LocalPath;
                 if (info.Locations == null)
                     info.Locations = new Dictionary<string, string>();
-                info.Locations[uri.GetLeftPart(UriPartial.Authority)] = options.FileUri;
+                info.Locations[$"{uri.Scheme}://{uri.Host}"] = options.FileUri;
                 if (len == info.Size)
                 {
                     if (options.Dryrun)

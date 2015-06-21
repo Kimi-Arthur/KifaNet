@@ -20,46 +20,46 @@ namespace Pimix.IO.FileFormats
     /// </summary>
     public class PimixFileV0 : PimixFile
     {
-        public override Stream GetDecodeStream(Stream encodedStream, FileInformation fileInformation = null)
+        public override Stream GetDecodeStream(Stream encodedStream)
         {
-            fileInformation = fileInformation ?? new FileInformation();
-            if (fileInformation.EncryptionKey == null)
+            Info = Info ?? new FileInformation();
+            if (Info.EncryptionKey == null)
             {
                 // We have to get the data from server...
 
-                if (fileInformation.Id == null)
+                if (Info.Id == null)
                 {
                     // We need to get the secondary id from the stream as ":SHA256".
                     encodedStream.Seek(3728, SeekOrigin.Begin);
                     byte[] sha256Bytes = new byte[64];
                     encodedStream.Read(sha256Bytes, 0, 64);
-                    fileInformation.Id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
+                    Info.Id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
                 }
 
-                fileInformation = FileInformation.Get(fileInformation.Id);
+                Info = FileInformation.Get(Info.Id);
             }
 
-            if (fileInformation.Size == null)
+            if (Info.Size == null)
             {
                 // If we only miss the file size, we can get from the header.
                 encodedStream.Seek(1854, SeekOrigin.Begin);
                 byte[] sizeBytes = new byte[92];
-                fileInformation.Size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
+                Info.Size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
             }
 
             ICryptoTransform decoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
                 aesAlgorithm.Padding = PaddingMode.ANSIX923;
-                aesAlgorithm.Key = fileInformation.EncryptionKey.ParseHexString();
+                aesAlgorithm.Key = Info.EncryptionKey.ParseHexString();
                 aesAlgorithm.Mode = CipherMode.ECB;
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PartialStream(encodedStream, 0x1225), decoder, fileInformation.Size.Value, true);
+            return new PimixCryptoStream(new PartialStream(encodedStream, 0x1225), decoder, Info.Size.Value, true);
         }
 
-        public override Stream GetEncodeStream(Stream rawStream, FileInformation fileInformation = null)
+        public override Stream GetEncodeStream(Stream rawStream)
         {
             throw new NotImplementedException();
         }

@@ -67,6 +67,10 @@
       <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
       <Name>Pimix.Cloud.BaiduCloud</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj">
+      <Project>{2dd33390-1808-4f3d-82bb-5e65ab955f49}</Project>
+      <Name>Pimix.IO.FileFormats</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
       <Project>{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}</Project>
       <Name>Pimix.IO</Name>

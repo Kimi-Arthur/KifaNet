@@ -81,16 +81,18 @@ namespace Pimix.IO
         {
             requiredProperties -= requiredProperties & GetProperties();
 
-            if (requiredProperties.HasFlag(FileProperties.Size)
+            if (Size == null
+                && (requiredProperties.HasFlag(FileProperties.Size)
                 || requiredProperties.HasFlag(FileProperties.BlockSize)
                 || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None
-                || (requiredProperties & FileProperties.AllHashes) != FileProperties.None)
+                || (requiredProperties & FileProperties.AllHashes) != FileProperties.None))
             {
                 Size = stream.Length;
             }
 
-            if (requiredProperties.HasFlag(FileProperties.BlockSize)
-                || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None)
+            if (BlockSize == null
+                && (requiredProperties.HasFlag(FileProperties.BlockSize)
+                || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None))
             {
                 BlockSize = GetBlockSize(Size.Value);
             }
@@ -113,9 +115,9 @@ namespace Pimix.IO
                     requiredProperties.HasFlag(FileProperties.SHA256) ? new SHA256CryptoServiceProvider() : null
                 };
 
-                BlockMD5 = requiredProperties.HasFlag(FileProperties.BlockMD5) ? new List<string>() : null;
-                BlockSHA1 = requiredProperties.HasFlag(FileProperties.BlockSHA1) ? new List<string>() : null;
-                BlockSHA256 = requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new List<string>() : null;
+                BlockMD5 = requiredProperties.HasFlag(FileProperties.BlockMD5) ? new List<string>() : BlockMD5;
+                BlockSHA1 = requiredProperties.HasFlag(FileProperties.BlockSHA1) ? new List<string>() : BlockSHA1;
+                BlockSHA256 = requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new List<string>() : BlockSHA256;
 
                 List<HashAlgorithm> blockHashers = new List<HashAlgorithm>
                 {
@@ -142,9 +144,20 @@ namespace Pimix.IO
 
                     crc32?.TransformBytes(buffer, 0, readLength);
 
-                    BlockMD5?.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).ToHexString());
-                    BlockSHA1?.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).ToHexString());
-                    BlockSHA256?.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).ToHexString());
+                    if (requiredProperties.HasFlag(FileProperties.BlockMD5))
+                    {
+                        BlockMD5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).ToHexString());
+                    }
+
+                    if (requiredProperties.HasFlag(FileProperties.BlockSHA1))
+                    {
+                        BlockSHA1.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).ToHexString());
+                    }
+
+                    if (requiredProperties.HasFlag(FileProperties.BlockSHA256))
+                    {
+                        BlockSHA256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).ToHexString());
+                    }
                 }
 
                 foreach (var hasher in hashers)
@@ -152,10 +165,10 @@ namespace Pimix.IO
                     hasher?.TransformFinalBlock(buffer, 0, 0);
                 }
 
-                MD5 = hashers[0]?.Hash.ToHexString();
-                SHA1 = hashers[1]?.Hash.ToHexString();
-                SHA256 = hashers[2]?.Hash.ToHexString();
-                CRC32 = crc32?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+                MD5 = MD5 ?? hashers[0]?.Hash.ToHexString();
+                SHA1 = SHA1 ?? hashers[1]?.Hash.ToHexString();
+                SHA256 = SHA256 ?? hashers[2]?.Hash.ToHexString();
+                CRC32 = CRC32 ?? crc32?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
             }
 
             return this;
@@ -213,10 +226,10 @@ namespace Pimix.IO
 
         static string GenerateEncryptionKey()
         {
-           using (var aes = new AesCryptoServiceProvider())
-           {
-               return aes.Key.ToHexString();
-           }
+            using (var aes = new AesCryptoServiceProvider())
+            {
+                return aes.Key.ToHexString();
+            }
         }
 
         #region PimixService Wrappers
