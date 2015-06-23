@@ -56,7 +56,7 @@ namespace Pimix.IO.FileFormats
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PartialStream(encodedStream, 0x1225), decoder, Info.Size.Value, true);
+            return new PimixCryptoStream(new PatchedStream(encodedStream) { IgnoreBefore = 0x1225 }, decoder, Info.Size.Value, true);
         }
 
         public override Stream GetEncodeStream(Stream rawStream)

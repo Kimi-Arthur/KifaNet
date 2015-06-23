@@ -68,7 +68,7 @@
   <ItemGroup>
     <Compile Include="FileInformation.cs" />
     <Compile Include="FileProperties.cs" />
-    <Compile Include="PartialStream.cs" />
+    <Compile Include="PatchedStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
