@@ -164,8 +164,9 @@ namespace Pimix.Cloud.BaiduCloud
                         blockIds.Add(UploadBlock(buffer, 0, blockLength));
                         done = true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex);
                         Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
