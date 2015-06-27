@@ -17,6 +17,8 @@ namespace Pimix.IO.FileFormats
     /// SHA256 starts at 0x0e90 (3728) and is in hex string format (thus occupies 64 bytes)
     /// File size starts at 0x073e (1854) and will end with space.
     /// 
+    /// We only provide decoder for this format.
+    /// 
     /// </summary>
     public class PimixFileV0 : PimixFile
     {

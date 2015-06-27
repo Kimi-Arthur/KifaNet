@@ -17,6 +17,7 @@ namespace Pimix.IO
         BlockSHA1 = 0x2000,
         BlockSHA256 = 0x4000,
         SliceMD5 = 0x8000,
+        EncryptionKey = 0x10000,
         Basic = Path | Size | BlockSize,
         AllHashes = MD5 | SHA1 | SHA256 | CRC32,
         AllBlockHashes = BlockMD5 | BlockSHA1 | BlockSHA256,

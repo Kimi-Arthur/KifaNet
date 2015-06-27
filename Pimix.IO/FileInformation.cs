@@ -32,7 +32,8 @@ namespace Pimix.IO
                 [FileProperties.BlockMD5] = x => x.BlockMD5,
                 [FileProperties.BlockSHA1] = x => x.BlockSHA1,
                 [FileProperties.BlockSHA256] = x => x.BlockSHA256,
-                [FileProperties.SliceMD5] = x => x.SliceMD5
+                [FileProperties.SliceMD5] = x => x.SliceMD5,
+                [FileProperties.EncryptionKey] = x => x.EncryptionKey
             };
 
         [JsonProperty("$id")]
@@ -169,6 +170,11 @@ namespace Pimix.IO
                 SHA1 = SHA1 ?? hashers[1]?.Hash.ToHexString();
                 SHA256 = SHA256 ?? hashers[2]?.Hash.ToHexString();
                 CRC32 = CRC32 ?? crc32?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+            }
+
+            if (requiredProperties.HasFlag(FileProperties.EncryptionKey))
+            {
+                EncryptionKey = GenerateEncryptionKey();
             }
 
             return this;

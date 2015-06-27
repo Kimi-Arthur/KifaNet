@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="PimixFile.cs" />
     <Compile Include="PimixFileV0.cs" />
+    <Compile Include="PimixFileV1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
