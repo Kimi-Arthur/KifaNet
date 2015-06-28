@@ -14,7 +14,7 @@ namespace PimixTest.IO.FileFormats
         [TestMethod]
         public void RandomDataTest()
         {
-            string EncryptionKey ="C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795";
+            string EncryptionKey = "C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795";
 
             byte[] data = new byte[(64 << 20) + 100];
             new Random().NextBytes(data);
@@ -32,20 +32,16 @@ namespace PimixTest.IO.FileFormats
             foreach (var item in rangeList)
             {
                 using (MemoryStream ms = new MemoryStream(data, item.Item1, item.Item2))
+                using (MemoryStream encrypted = new MemoryStream())
+                using (Stream encryptionStream = new PimixFileV1 { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetEncodeStream(ms))
                 {
-                    using (MemoryStream encrypted = new MemoryStream())
+                    encryptionStream.CopyTo(encrypted);
+                    using (Stream output = new PimixFileV1 { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetDecodeStream(encrypted))
                     {
-                        using (Stream encryptionStream = new PimixFileV1 { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetEncodeStream(ms))
-                        {
-                            encryptionStream.CopyTo(encrypted);
-                            using (Stream output = new PimixFileV1 { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetDecodeStream(encrypted))
-                            {
-                                var fs1 = FileInformation.GetInformation(ms, FileProperties.Size | FileProperties.SHA256);
-                                var fs2 = FileInformation.GetInformation(output, FileProperties.Size | FileProperties.SHA256);
-                                Assert.AreEqual(fs1.Size, fs2.Size);
-                                Assert.AreEqual(fs1.SHA256, fs2.SHA256);
-                            }
-                        }
+                        var fs1 = FileInformation.GetInformation(ms, FileProperties.Size | FileProperties.SHA256);
+                        var fs2 = FileInformation.GetInformation(output, FileProperties.Size | FileProperties.SHA256);
+                        Assert.AreEqual(fs1.Size, fs2.Size);
+                        Assert.AreEqual(fs1.SHA256, fs2.SHA256);
                     }
                 }
             }
