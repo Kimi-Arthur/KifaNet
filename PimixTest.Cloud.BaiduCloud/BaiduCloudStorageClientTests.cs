@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
@@ -38,6 +39,8 @@ namespace PimixTest.Cloud.BaiduCloud
                     SliceMD5 = "70C2358C662FB2A7EAC51902FA398BA2"
                 });
 
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+
             using (var s = client.GetDownloadStream("Test/rapid.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
@@ -58,6 +61,8 @@ namespace PimixTest.Cloud.BaiduCloud
                 new List<int> { 128 << 10 }
             );
 
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+
             using (var s = client.GetDownloadStream("Test/block.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
@@ -76,6 +81,8 @@ namespace PimixTest.Cloud.BaiduCloud
                 File.OpenRead("data.bin"),
                 false
             );
+
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             using (var s = client.GetDownloadStream("Test/direct.bin"))
             {
