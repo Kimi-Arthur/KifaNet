@@ -33,6 +33,58 @@ namespace fileutil
             }
         }
 
+        static Stream GetStream(string DataUri)
+        {
+            Uri uri;
+            Stream stream;
+            if (Uri.TryCreate(DataUri, UriKind.Absolute, out uri))
+            {
+                var schemes = uri.Scheme.Split('+').ToList();
+                if (schemes[0] != "pimix")
+                    throw new ArgumentException(nameof(DataUri));
+
+                // Concerning file source
+                if (schemes.Contains("cloud"))
+                {
+                    switch (uri.Host)
+                    {
+                        case "pan.baidu.com":
+                            {
+                                stream = new BaiduCloudStorageClient { AccountId = uri.UserInfo }.GetDownloadStream(uri.LocalPath);
+                                break;
+                            }
+                        default:
+                            throw new ArgumentException(nameof(DataUri));
+                    }
+                }
+                else
+                {
+                    stream = File.OpenRead($"/allfiles/{uri.Host}{uri.LocalPath}");
+                    // Use ftp stream first.
+                    //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.LocalPath}") as FtpWebRequest;
+                    //request.Credentials = new NetworkCredential("pimix", "P2015apr");
+                    //downloadStream = request.GetResponse().GetResponseStream();
+                }
+
+                // Concerning file format
+                if (uri.Scheme.Contains("v0"))
+                {
+                    stream = new PimixFileV0() { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
+                }
+                else if (uri.Scheme.Contains("v1"))
+                {
+                    stream = new PimixFileV1() { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
+                }
+
+                return stream;
+            }
+            else
+            {
+                // Only paths supported by system is allowed.
+                return File.OpenRead(DataUri);
+            }
+        }
+
         static void Initialize(CommandLineOptions options)
         {
             BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
@@ -67,41 +119,7 @@ namespace fileutil
         {
             BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
             Uri uri = new Uri(options.FileUri);
-            Stream downloadStream = null;
-            var schemes = uri.Scheme.Split('+').ToList();
-            if (schemes[0] != "pimix")
-                return;
-
-            if (schemes.Contains("cloud"))
-            {
-                switch (uri.Host)
-                {
-                    case "pan.baidu.com":
-                        {
-                            var client = new BaiduCloudStorageClient
-                            {
-                                AccountId = uri.UserInfo
-                            };
-                            downloadStream = client.GetDownloadStream(uri.LocalPath);
-                            break;
-                        }
-                    default:
-                        break;
-                }
-            }
-            else
-            {
-                downloadStream = File.OpenRead($"/allfiles/{uri.Host}{uri.LocalPath}");
-                // Use ftp stream first.
-                //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.LocalPath}") as FtpWebRequest;
-                //request.Credentials = new NetworkCredential("pimix", "P2015apr");
-                //downloadStream = request.GetResponse().GetResponseStream();
-            }
-
-            if (uri.Scheme.Contains("v0"))
-            {
-                downloadStream = new PimixFileV0() { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(downloadStream);
-            }
+            Stream downloadStream = GetStream(options.FileUri);
 
             using (var s = downloadStream)
             {

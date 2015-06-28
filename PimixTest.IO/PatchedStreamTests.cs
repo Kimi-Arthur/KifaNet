@@ -6,7 +6,7 @@ using Pimix.IO;
 namespace PimixTest.IO
 {
     [TestClass]
-    public class PartialStreamTests
+    public class PatchedStreamTests
     {
         [TestMethod]
         public void PartialStreamBasicTest()

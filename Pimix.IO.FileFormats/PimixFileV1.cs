@@ -24,7 +24,7 @@ namespace Pimix.IO.FileFormats
     ///     B8~15: File Length (int64)
     ///     B16~47: SHA256 (256bit)
     /// </summary>
-    class PimixFileV1 : PimixFile
+    public class PimixFileV1 : PimixFile
     {
         public override Stream GetDecodeStream(Stream encodedStream)
         {
@@ -89,7 +89,7 @@ namespace Pimix.IO.FileFormats
                 encoder = aesAlgorithm.CreateEncryptor();
             }
 
-            return new PatchedStream(new PimixCryptoStream(rawStream, encoder, Info.Size.Value.RoundDown(8) + 8, false)) { BufferBefore = header };
+            return new PatchedStream(new PimixCryptoStream(rawStream, encoder, Info.Size.Value.RoundDown(16) + 16, false)) { BufferBefore = header };
         }
     }
 }

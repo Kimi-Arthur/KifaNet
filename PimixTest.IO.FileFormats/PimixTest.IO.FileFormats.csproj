@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AE5F5382-89CD-43E0-9221-AF125A2DB32A}</ProjectGuid>
+    <ProjectGuid>{466AC6D7-E3BC-406B-8D89-42D007D8D5A4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PimixTest.IO</RootNamespace>
-    <AssemblyName>PimixTest.IO</AssemblyName>
+    <RootNamespace>PimixTest.IO.FileFormats</RootNamespace>
+    <AssemblyName>PimixTest.IO.FileFormats</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,24 +35,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -69,16 +51,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="FileInformationTests.cs" />
-    <Compile Include="PatchedStreamTests.cs" />
+    <Compile Include="PimixFileV1Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Test1.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj">
+      <Project>{2dd33390-1808-4f3d-82bb-5e65ab955f49}</Project>
+      <Name>Pimix.IO.FileFormats</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
       <Name>Pimix.IO</Name>
