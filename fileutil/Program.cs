@@ -50,6 +50,7 @@ namespace fileutil
                     {
                         case "pan.baidu.com":
                             {
+                                BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
                                 stream = new BaiduCloudStorageClient { AccountId = uri.UserInfo }.GetDownloadStream(uri.LocalPath);
                                 break;
                             }
@@ -93,9 +94,7 @@ namespace fileutil
         static void CopyFile(CopyCommandOptions options)
         {
             Uri input = new Uri(options.SourceUri);
-            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-            var client = new BaiduCloudStorageClient() { AccountId = input.UserInfo };
-            using (var stream = client.GetDownloadStream(input.LocalPath))
+            using (var stream = GetStream(options.SourceUri))
             {
                 using (FileStream fs = new FileStream(options.DestinationUri, FileMode.Create))
                 {
@@ -109,7 +108,7 @@ namespace fileutil
             Uri uploadTo = new Uri(options.DestinationUri);
             BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
             var client = new BaiduCloudStorageClient() { AccountId = uploadTo.UserInfo };
-            using (var stream = File.OpenRead(options.SourceUri))
+            using (var stream = GetStream(options.SourceUri))
             {
                 client.UploadStream(uploadTo.LocalPath, stream);
             }
@@ -117,14 +116,12 @@ namespace fileutil
 
         static void GetInfo(InfoCommandOptions options)
         {
-            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
             Uri uri = new Uri(options.FileUri);
-            Stream downloadStream = GetStream(options.FileUri);
 
-            using (var s = downloadStream)
+            using (var stream = GetStream(options.FileUri))
             {
-                long len = downloadStream.Length;
-                var info = FileInformation.Get(uri.LocalPath).AddProperties(s, FileProperties.All ^ FileProperties.Path);
+                long len = stream.Length;
+                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All ^ FileProperties.Path);
                 info.Path = uri.LocalPath;
                 if (info.Locations == null)
                     info.Locations = new Dictionary<string, string>();
@@ -141,7 +138,6 @@ namespace fileutil
                     }
                 }
             }
-
         }
     }
 }
