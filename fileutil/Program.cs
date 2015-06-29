@@ -20,11 +20,10 @@ namespace fileutil
             var commands = new Dictionary<Type, Action<object>>()
             {
                 [typeof(InfoCommandOptions)] = x => GetInfo(x as InfoCommandOptions),
-                [typeof(CopyCommandOptions)] = x => CopyFile(x as CopyCommandOptions),
                 [typeof(UploadCommandOptions)] = x => UploadFile(x as UploadCommandOptions)
             };
 
-            var result = Parser.Default.ParseArguments<CopyCommandOptions, InfoCommandOptions, UploadCommandOptions>(args);
+            var result = Parser.Default.ParseArguments<InfoCommandOptions, UploadCommandOptions>(args);
             if (!result.Errors.Any())
             {
                 Initialize(result.Value as CommandLineOptions);
@@ -33,7 +32,70 @@ namespace fileutil
             }
         }
 
-        static Stream GetStream(string DataUri)
+        static void Initialize(CommandLineOptions options)
+        {
+            BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
+        }
+
+        static void UploadFile(UploadCommandOptions options)
+        {
+            Uri uploadTo = new Uri(options.DestinationUri);
+            var schemes = uploadTo.Scheme.Split('+').ToList();
+
+            using (var stream = GetDataStream(options.SourceUri))
+            using (var uploadStream = GetUploadStream(stream, options.DestinationUri))
+            {
+                if (schemes.Contains("cloud"))
+                {
+                    switch (uploadTo.Host)
+                    {
+                        case "pan.baidu.com":
+                            {
+                                BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
+                                new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
+                                break;
+                            }
+                        default:
+                            throw new ArgumentException(nameof(options));
+                    }
+                }
+                else
+                {
+                    using (FileStream fs = new FileStream(GetPath(options.DestinationUri), FileMode.Create))
+                    {
+                        stream.CopyTo(fs, (int)options.ChunkSize.ParseSizeString());
+                    }
+                }
+            }
+        }
+
+        static void GetInfo(InfoCommandOptions options)
+        {
+            Uri uri = new Uri(options.FileUri);
+
+            using (var stream = GetDataStream(options.FileUri))
+            {
+                long len = stream.Length;
+                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All ^ FileProperties.Path);
+                info.Path = uri.LocalPath;
+                if (info.Locations == null)
+                    info.Locations = new Dictionary<string, string>();
+                info.Locations[$"{uri.Scheme}://{uri.Host}"] = options.FileUri;
+                if (len == info.Size)
+                {
+                    if (options.Dryrun)
+                    {
+                        Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    }
+                    else
+                    {
+                        FileInformation.Patch(info);
+                    }
+                }
+            }
+        }
+
+        static Stream GetDataStream(string DataUri)
         {
             Uri uri;
             Stream stream;
@@ -60,7 +122,7 @@ namespace fileutil
                 }
                 else
                 {
-                    stream = File.OpenRead($"/allfiles/{uri.Host}{uri.LocalPath}");
+                    stream = File.OpenRead(GetPath(DataUri));
                     // Use ftp stream first.
                     //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.LocalPath}") as FtpWebRequest;
                     //request.Credentials = new NetworkCredential("pimix", "P2015apr");
@@ -70,11 +132,11 @@ namespace fileutil
                 // Concerning file format
                 if (uri.Scheme.Contains("v0"))
                 {
-                    stream = new PimixFileV0() { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
+                    stream = new PimixFileV0 { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
                 }
                 else if (uri.Scheme.Contains("v1"))
                 {
-                    stream = new PimixFileV1() { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
+                    stream = new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
                 }
 
                 return stream;
@@ -86,57 +148,34 @@ namespace fileutil
             }
         }
 
-        static void Initialize(CommandLineOptions options)
+        static Stream GetUploadStream(Stream stream, string uploadUri)
         {
-            BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
-        }
-
-        static void CopyFile(CopyCommandOptions options)
-        {
-            Uri input = new Uri(options.SourceUri);
-            using (var stream = GetStream(options.SourceUri))
+            Uri uri;
+            if (Uri.TryCreate(uploadUri, UriKind.Absolute, out uri))
             {
-                using (FileStream fs = new FileStream(options.DestinationUri, FileMode.Create))
+                var schemes = uri.Scheme.Split('+').ToList();
+                if (schemes[0] != "pimix")
+                    throw new ArgumentException(nameof(uploadUri));
+
+                if (schemes.Contains("v1"))
                 {
-                    stream.CopyTo(fs, (int)options.ChunkSize.ParseSizeString());
+                    return new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetEncodeStream(stream);
                 }
             }
+
+            return stream;
         }
 
-        static void UploadFile(UploadCommandOptions options)
+        static string GetPath(string uriString)
         {
-            Uri uploadTo = new Uri(options.DestinationUri);
-            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-            var client = new BaiduCloudStorageClient() { AccountId = uploadTo.UserInfo };
-            using (var stream = GetStream(options.SourceUri))
+            Uri uri;
+            if (Uri.TryCreate(uriString, UriKind.Absolute, out uri))
             {
-                client.UploadStream(uploadTo.LocalPath, stream);
+                return $"/allfiles/{uri.Host}{uri.LocalPath}";
             }
-        }
-
-        static void GetInfo(InfoCommandOptions options)
-        {
-            Uri uri = new Uri(options.FileUri);
-
-            using (var stream = GetStream(options.FileUri))
+            else
             {
-                long len = stream.Length;
-                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All ^ FileProperties.Path);
-                info.Path = uri.LocalPath;
-                if (info.Locations == null)
-                    info.Locations = new Dictionary<string, string>();
-                info.Locations[$"{uri.Scheme}://{uri.Host}"] = options.FileUri;
-                if (len == info.Size)
-                {
-                    if (options.Dryrun)
-                    {
-                        Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    }
-                    else
-                    {
-                        FileInformation.Patch(info);
-                    }
-                }
+                return uriString;
             }
         }
     }
