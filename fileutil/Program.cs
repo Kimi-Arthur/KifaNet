@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
@@ -76,7 +77,7 @@ namespace fileutil
             using (var stream = GetDataStream(options.FileUri))
             {
                 long len = stream.Length;
-                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All ^ FileProperties.Path);
+                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All);
                 info.Path = uri.LocalPath;
                 if (info.Locations == null)
                     info.Locations = new Dictionary<string, string>();
@@ -102,6 +103,15 @@ namespace fileutil
             if (Uri.TryCreate(DataUri, UriKind.Absolute, out uri))
             {
                 var schemes = uri.Scheme.Split('+').ToList();
+                if (schemes[0] == "http" || schemes[0] == "https")
+                {
+                    HttpWebRequest request = WebRequest.CreateHttp(uri);
+                    request.Method = "GET";
+
+                    var response = request.GetResponse();
+                    return response.GetResponseStream();
+                }
+
                 if (schemes[0] != "pimix")
                     throw new ArgumentException(nameof(DataUri));
 

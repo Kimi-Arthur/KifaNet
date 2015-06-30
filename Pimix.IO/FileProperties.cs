@@ -18,10 +18,10 @@ namespace Pimix.IO
         BlockSHA256 = 0x4000,
         SliceMD5 = 0x8000,
         EncryptionKey = 0x10000,
-        Basic = Path | Size | BlockSize,
+        Basic = Size | BlockSize,
         AllHashes = MD5 | SHA1 | SHA256 | CRC32,
         AllBlockHashes = BlockMD5 | BlockSHA1 | BlockSHA256,
         AllBaiduCloudRapidHashes = Size | MD5 | SliceMD5 | CRC32,
-        All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes
+        All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes | EncryptionKey
     }
 }
