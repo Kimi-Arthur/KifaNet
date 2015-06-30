@@ -195,7 +195,7 @@ namespace Pimix.Cryptography
         {
             try
             {
-                if (disposing)
+                if (disposing && stream != null)
                 {
                     try
                     {
