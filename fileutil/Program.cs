@@ -21,19 +21,20 @@ namespace fileutil
             var commands = new Dictionary<Type, Action<object>>()
             {
                 [typeof(InfoCommandOptions)] = x => GetInfo(x as InfoCommandOptions),
-                [typeof(UploadCommandOptions)] = x => UploadFile(x as UploadCommandOptions)
+                [typeof(UploadCommandOptions)] = x => UploadFile(x as UploadCommandOptions),
+                [typeof(VerifyCommand)] = x => (x as VerifyCommand).Execute()
             };
 
-            var result = Parser.Default.ParseArguments<InfoCommandOptions, UploadCommandOptions>(args);
+            var result = Parser.Default.ParseArguments<InfoCommandOptions, UploadCommandOptions, VerifyCommand>(args);
             if (!result.Errors.Any())
             {
-                Initialize(result.Value as CommandLineOptions);
+                Initialize(result.Value as Command);
 
                 commands[result.Value.GetType()](result.Value);
             }
         }
 
-        static void Initialize(CommandLineOptions options)
+        static void Initialize(Command options)
         {
             BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
         }
@@ -43,7 +44,7 @@ namespace fileutil
             Uri uploadTo = new Uri(options.DestinationUri);
             var schemes = uploadTo.Scheme.Split('+').ToList();
 
-            using (var stream = GetDataStream(options.SourceUri))
+            using (var stream = Helpers.GetDataStream(options.SourceUri))
             using (var uploadStream = GetUploadStream(stream, options.DestinationUri))
             {
                 if (schemes.Contains("cloud"))
@@ -62,7 +63,7 @@ namespace fileutil
                 }
                 else
                 {
-                    using (FileStream fs = new FileStream(GetPath(options.DestinationUri), FileMode.Create))
+                    using (FileStream fs = new FileStream(Helpers.GetPath(options.DestinationUri), FileMode.Create))
                     {
                         stream.CopyTo(fs, (int)options.ChunkSize.ParseSizeString());
                     }
@@ -74,7 +75,7 @@ namespace fileutil
         {
             Uri uri = new Uri(options.FileUri);
 
-            using (var stream = GetDataStream(options.FileUri))
+            using (var stream = Helpers.GetDataStream(options.FileUri))
             {
                 long len = stream.Length;
                 var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All);
@@ -96,68 +97,6 @@ namespace fileutil
             }
         }
 
-        static Stream GetDataStream(string DataUri)
-        {
-            Uri uri;
-            Stream stream;
-            if (Uri.TryCreate(DataUri, UriKind.Absolute, out uri))
-            {
-                var schemes = uri.Scheme.Split('+').ToList();
-                if (schemes[0] == "http" || schemes[0] == "https")
-                {
-                    HttpWebRequest request = WebRequest.CreateHttp(uri);
-                    request.Method = "GET";
-
-                    var response = request.GetResponse();
-                    return response.GetResponseStream();
-                }
-
-                if (schemes[0] != "pimix")
-                    throw new ArgumentException(nameof(DataUri));
-
-                // Concerning file source
-                if (schemes.Contains("cloud"))
-                {
-                    switch (uri.Host)
-                    {
-                        case "pan.baidu.com":
-                            {
-                                BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                stream = new BaiduCloudStorageClient { AccountId = uri.UserInfo }.GetDownloadStream(uri.LocalPath);
-                                break;
-                            }
-                        default:
-                            throw new ArgumentException(nameof(DataUri));
-                    }
-                }
-                else
-                {
-                    stream = File.OpenRead(GetPath(DataUri));
-                    // Use ftp stream first.
-                    //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.LocalPath}") as FtpWebRequest;
-                    //request.Credentials = new NetworkCredential("pimix", "P2015apr");
-                    //downloadStream = request.GetResponse().GetResponseStream();
-                }
-
-                // Concerning file format
-                if (uri.Scheme.Contains("v0"))
-                {
-                    stream = new PimixFileV0 { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
-                }
-                else if (uri.Scheme.Contains("v1"))
-                {
-                    stream = new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
-                }
-
-                return stream;
-            }
-            else
-            {
-                // Only paths supported by system is allowed.
-                return File.OpenRead(DataUri);
-            }
-        }
-
         static Stream GetUploadStream(Stream stream, string uploadUri)
         {
             Uri uri;
@@ -174,19 +113,6 @@ namespace fileutil
             }
 
             return stream;
-        }
-
-        static string GetPath(string uriString)
-        {
-            Uri uri;
-            if (Uri.TryCreate(uriString, UriKind.Absolute, out uri))
-            {
-                return $"/allfiles/{uri.Host}{uri.LocalPath}";
-            }
-            else
-            {
-                return uriString;
-            }
         }
     }
 }

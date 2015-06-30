@@ -114,7 +114,7 @@ namespace Pimix.IO
         {
             try
             {
-                if (disposing)
+                if (disposing && stream != null)
                 {
                     try
                     {
