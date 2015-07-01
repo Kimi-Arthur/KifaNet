@@ -16,7 +16,7 @@ namespace fileutil
         [Option('d', "dryrun", HelpText = "Whether to dry run the command.")]
         public bool Dryrun { get; set; }
 
-        public virtual void Execute()
+        public virtual int Execute()
         {
             throw new NotImplementedException();
         }

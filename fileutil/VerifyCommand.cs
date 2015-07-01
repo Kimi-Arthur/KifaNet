@@ -14,7 +14,7 @@ namespace fileutil
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        public override void Execute()
+        public override int Execute()
         {
             Uri uri = new Uri(FileUri);
 
@@ -27,13 +27,19 @@ namespace fileutil
                 if (infoFromServer.Size != infoGenerated.Size)
                 {
                     Console.WriteLine("Size Differ");
+
+                    return 1;
                 }
 
                 if (infoFromServer.SHA256 != infoGenerated.SHA256)
                 {
                     Console.WriteLine("SHA256 Differ");
+
+                    return 1;
                 }
             }
+
+            return 0;
         }
     }
 }

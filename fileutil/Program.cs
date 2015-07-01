@@ -16,9 +16,9 @@ namespace fileutil
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            var commands = new Dictionary<Type, Action<object>>()
+            var commands = new Dictionary<Type, Func<object, int>>()
             {
                 [typeof(InfoCommandOptions)] = x => GetInfo(x as InfoCommandOptions),
                 [typeof(UploadCommandOptions)] = x => UploadFile(x as UploadCommandOptions),
@@ -30,8 +30,18 @@ namespace fileutil
             {
                 Initialize(result.Value as Command);
 
-                commands[result.Value.GetType()](result.Value);
+                try
+                {
+                    return commands[result.Value.GetType()](result.Value);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return 1;
+                }
             }
+
+            return 1;
         }
 
         static void Initialize(Command options)
@@ -39,7 +49,7 @@ namespace fileutil
             BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
         }
 
-        static void UploadFile(UploadCommandOptions options)
+        static int UploadFile(UploadCommandOptions options)
         {
             Uri uploadTo = new Uri(options.DestinationUri);
             var schemes = uploadTo.Scheme.Split('+').ToList();
@@ -69,9 +79,11 @@ namespace fileutil
                     }
                 }
             }
+
+            return 0;
         }
 
-        static void GetInfo(InfoCommandOptions options)
+        static int GetInfo(InfoCommandOptions options)
         {
             Uri uri = new Uri(options.FileUri);
 
@@ -95,6 +107,8 @@ namespace fileutil
                     }
                 }
             }
+
+            return 0;
         }
 
         static Stream GetUploadStream(Stream stream, string uploadUri)
