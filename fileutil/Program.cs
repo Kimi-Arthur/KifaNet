@@ -18,115 +18,35 @@ namespace fileutil
     {
         static int Main(string[] args)
         {
-            var commands = new Dictionary<Type, Func<object, int>>()
-            {
-                [typeof(InfoCommandOptions)] = x => GetInfo(x as InfoCommandOptions),
-                [typeof(UploadCommandOptions)] = x => UploadFile(x as UploadCommandOptions),
-                [typeof(VerifyCommand)] = x => (x as VerifyCommand).Execute()
-            };
-
-            var result = Parser.Default.ParseArguments<InfoCommandOptions, UploadCommandOptions, VerifyCommand>(args);
+            var result = Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand>(args);
             if (!result.Errors.Any())
             {
                 Initialize(result.Value as Command);
 
                 try
                 {
-                    return commands[result.Value.GetType()](result.Value);
+                    return (result.Value as Command).Execute();
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
+                    while (ex.InnerException != null)
+                    {
+                        Console.WriteLine("Caused by:");
+                        ex = ex.InnerException;
+                        Console.WriteLine(ex);
+                    }
+
                     return 1;
                 }
             }
 
-            return 1;
+            return 2;
         }
 
         static void Initialize(Command options)
         {
             BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
-        }
-
-        static int UploadFile(UploadCommandOptions options)
-        {
-            Uri uploadTo = new Uri(options.DestinationUri);
-            var schemes = uploadTo.Scheme.Split('+').ToList();
-
-            using (var stream = Helpers.GetDataStream(options.SourceUri))
-            using (var uploadStream = GetUploadStream(stream, options.DestinationUri))
-            {
-                if (schemes.Contains("cloud"))
-                {
-                    switch (uploadTo.Host)
-                    {
-                        case "pan.baidu.com":
-                            {
-                                BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
-                                break;
-                            }
-                        default:
-                            throw new ArgumentException(nameof(options));
-                    }
-                }
-                else
-                {
-                    using (FileStream fs = new FileStream(Helpers.GetPath(options.DestinationUri), FileMode.Create))
-                    {
-                        stream.CopyTo(fs, (int)options.ChunkSize.ParseSizeString());
-                    }
-                }
-            }
-
-            return 0;
-        }
-
-        static int GetInfo(InfoCommandOptions options)
-        {
-            Uri uri = new Uri(options.FileUri);
-
-            using (var stream = Helpers.GetDataStream(options.FileUri))
-            {
-                long len = stream.Length;
-                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All);
-                info.Path = uri.LocalPath;
-                if (info.Locations == null)
-                    info.Locations = new Dictionary<string, string>();
-                info.Locations[$"{uri.Scheme}://{uri.Host}"] = options.FileUri;
-                if (len == info.Size)
-                {
-                    if (options.Dryrun)
-                    {
-                        Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    }
-                    else
-                    {
-                        FileInformation.Patch(info);
-                    }
-                }
-            }
-
-            return 0;
-        }
-
-        static Stream GetUploadStream(Stream stream, string uploadUri)
-        {
-            Uri uri;
-            if (Uri.TryCreate(uploadUri, UriKind.Absolute, out uri))
-            {
-                var schemes = uri.Scheme.Split('+').ToList();
-                if (schemes[0] != "pimix")
-                    throw new ArgumentException(nameof(uploadUri));
-
-                if (schemes.Contains("v1"))
-                {
-                    return new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetEncodeStream(stream);
-                }
-            }
-
-            return stream;
         }
     }
 }

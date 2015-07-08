@@ -88,5 +88,23 @@ namespace fileutil
                 return uriString;
             }
         }
+
+        public static Stream GetUploadStream(Stream stream, string uploadUri)
+        {
+            Uri uri;
+            if (Uri.TryCreate(uploadUri, UriKind.Absolute, out uri))
+            {
+                var schemes = uri.Scheme.Split('+').ToList();
+                if (schemes[0] != "pimix")
+                    throw new ArgumentException(nameof(uploadUri));
+
+                if (schemes.Contains("v1"))
+                {
+                    return new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetEncodeStream(stream);
+                }
+            }
+
+            return stream;
+        }
     }
 }

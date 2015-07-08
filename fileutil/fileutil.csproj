@@ -53,8 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command.cs" />
-    <Compile Include="CommandLineOptions.cs" />
+    <Compile Include="CopyCommand.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="InfoCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VerifyCommand.cs" />
