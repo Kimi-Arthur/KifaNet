@@ -29,12 +29,11 @@ namespace fileutil
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
-                    while (ex.InnerException != null)
+                    while (ex != null)
                     {
                         Console.WriteLine("Caused by:");
-                        ex = ex.InnerException;
                         Console.WriteLine(ex);
+                        ex = ex.InnerException;
                     }
 
                     return 1;
