@@ -68,7 +68,7 @@ namespace Pimix.IO
         static FileInformation()
         {
             Properties = new Dictionary<FileProperties, PropertyInfo>();
-            foreach (var prop in typeof(FileInformation).GetProperties())
+            foreach (var prop in typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 Properties[(FileProperties)Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
             }
