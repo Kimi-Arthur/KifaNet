@@ -40,7 +40,8 @@ namespace fileutil
                     info.Locations = new Dictionary<string, string>();
                 info.Locations[$"{uri.Scheme}://{uri.Host}"] = FileUri;
                 var old = FileInformation.Get(uri.LocalPath);
-                if (info.CompareProperties(old, FilePropertiesToVerify))
+                var compareResult = info.CompareProperties(old, FilePropertiesToVerify);
+                if (compareResult == FileProperties.None)
                 {
                     if (Update)
                     {
@@ -55,9 +56,15 @@ namespace fileutil
                 }
                 else
                 {
-                    Console.WriteLine("Verify failed!");
-                    Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    Console.WriteLine(JsonConvert.SerializeObject(old, Formatting.Indented));
+                    Console.Error.WriteLine("Verify failed! The following fields differ:");
+                    Console.Error.WriteLine("\t" + compareResult);
+                    Console.Error.WriteLine();
+                    Console.Error.WriteLine("Expected data:");
+                    Console.Error.WriteLine(JsonConvert.SerializeObject(old, Formatting.Indented));
+                    Console.Error.WriteLine();
+                    Console.Error.WriteLine("Actual data:");
+                    Console.Error.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    Console.Error.WriteLine();
                     return 1;
                 }
             }

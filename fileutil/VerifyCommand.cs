@@ -16,30 +16,7 @@ namespace fileutil
 
         public override int Execute()
         {
-            Uri uri = new Uri(FileUri);
-
-            using (var stream = Helpers.GetDataStream(FileUri))
-            {
-                var infoFromServer = FileInformation.Get(uri.LocalPath);
-                var infoGenerated = FileInformation.GetInformation(stream, infoFromServer.GetProperties());
-
-                // We will first manual test some fields for simplicity.
-                if (infoFromServer.Size != infoGenerated.Size)
-                {
-                    Console.WriteLine("Size Differ");
-
-                    return 1;
-                }
-
-                if (infoFromServer.SHA256 != infoGenerated.SHA256)
-                {
-                    Console.WriteLine("SHA256 Differ");
-
-                    return 1;
-                }
-            }
-
-            return 0;
+            return new InfoCommand() { FileUri = FileUri, VerifyAll = true }.Execute();
         }
     }
 }

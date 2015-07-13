@@ -195,18 +195,21 @@ namespace Pimix.IO
             .Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
-        public bool CompareProperties(FileInformation other, FileProperties propertiesToCompare)
+        public FileProperties CompareProperties(FileInformation other, FileProperties propertiesToCompare)
         {
+            FileProperties result = FileProperties.None;
             foreach (var p in Properties)
             {
                 if (propertiesToCompare.HasFlag(p.Key))
                 {
                     if (p.Value.GetValue(other) != null && !object.Equals(p.Value.GetValue(other), p.Value.GetValue(this)))
-                        return false;
+                    {
+                        result |= p.Key;
+                    }
                 }
             }
 
-            return true;
+            return result;
         }
 
         public static FileInformation GetInformation(Stream stream, FileProperties requiredProperties)
