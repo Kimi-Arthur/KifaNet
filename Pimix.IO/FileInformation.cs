@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,22 +20,7 @@ namespace Pimix.IO
         const long MinBlockSize = 32L << 20;
         const int SliceLength = 256 << 10;
 
-        static Dictionary<FileProperties, Func<FileInformation, object>> mapping
-            = new Dictionary<FileProperties, Func<FileInformation, object>>
-            {
-                [FileProperties.Path] = x => x.Path,
-                [FileProperties.Size] = x => x.Size,
-                [FileProperties.BlockSize] = x => x.BlockSize,
-                [FileProperties.MD5] = x => x.MD5,
-                [FileProperties.SHA1] = x => x.SHA1,
-                [FileProperties.SHA256] = x => x.SHA256,
-                [FileProperties.CRC32] = x => x.CRC32,
-                [FileProperties.BlockMD5] = x => x.BlockMD5,
-                [FileProperties.BlockSHA1] = x => x.BlockSHA1,
-                [FileProperties.BlockSHA256] = x => x.BlockSHA256,
-                [FileProperties.SliceMD5] = x => x.SliceMD5,
-                [FileProperties.EncryptionKey] = x => x.EncryptionKey
-            };
+        static Dictionary<FileProperties, PropertyInfo> Properties;
 
         [JsonProperty("$id")]
         public string Id { get; set; }
@@ -77,6 +63,16 @@ namespace Pimix.IO
 
         [JsonProperty("locations")]
         public Dictionary<string, string> Locations { get; set; }
+
+
+        static FileInformation()
+        {
+            Properties = new Dictionary<FileProperties, PropertyInfo>();
+            foreach (var prop in typeof(FileInformation).GetProperties())
+            {
+                Properties[(FileProperties)Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
+            }
+        }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties)
         {
@@ -180,12 +176,38 @@ namespace Pimix.IO
             return this;
         }
 
+        public FileInformation RemoveProperties(FileProperties removedProperties)
+        {
+            foreach (var p in Properties)
+            {
+                if (removedProperties.HasFlag(p.Key))
+                {
+                    p.Value.SetValue(this, null);
+                }
+            }
+
+            return this;
+        }
+
         public FileProperties GetProperties()
-            => mapping
-            .Where(x => x.Value(this) != null)
+            => Properties
+            .Where(x => x.Value.GetValue(this) != null)
             .Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
+        public bool CompareProperties(FileInformation other, FileProperties propertiesToCompare)
+        {
+            foreach (var p in Properties)
+            {
+                if (propertiesToCompare.HasFlag(p.Key))
+                {
+                    if (p.Value.GetValue(other) != null && p.Value.GetValue(other) != p.Value.GetValue(this))
+                        return false;
+                }
+            }
+
+            return true;
+        }
 
         public static FileInformation GetInformation(Stream stream, FileProperties requiredProperties)
             => new FileInformation().AddProperties(stream, requiredProperties);

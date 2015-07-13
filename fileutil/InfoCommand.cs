@@ -15,6 +15,18 @@ namespace fileutil
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
+        [Option('v', "verify-all", HelpText = "Verify all verifiable fields of the file along with updating info.")]
+        public bool VerifyAll { get; set; }
+
+        [Option('f', "fields-to-verify", HelpText = "Fields to verify. Only 'Size' is verified by default.")]
+        public string FieldsToVerify { get; set; } = "Size";
+
+        public FileProperties FilePropertiesToVerify
+            => VerifyAll ? FileProperties.AllVerifiable : FileProperties.AllVerifiable & (FileProperties)Enum.Parse(typeof(FileProperties), FieldsToVerify);
+
+        [Option('u', "update", HelpText = "Whether to update result to server.")]
+        public bool Update { get; set; } = false;
+
         public override int Execute()
         {
             Uri uri = new Uri(FileUri);
@@ -22,25 +34,33 @@ namespace fileutil
             using (var stream = Helpers.GetDataStream(FileUri))
             {
                 long len = stream.Length;
-                var info = FileInformation.Get(uri.LocalPath).AddProperties(stream, FileProperties.All);
+                var info = FileInformation.Get(uri.LocalPath).RemoveProperties(FilePropertiesToVerify).AddProperties(stream, FileProperties.All);
                 info.Path = uri.LocalPath;
                 if (info.Locations == null)
                     info.Locations = new Dictionary<string, string>();
                 info.Locations[$"{uri.Scheme}://{uri.Host}"] = FileUri;
-                if (len == info.Size)
+                var old = FileInformation.Get(uri.LocalPath);
+                if (info.CompareProperties(old, FilePropertiesToVerify))
                 {
-                    if (Dryrun)
-                    {
-                        Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    }
-                    else
+                    if (Update)
                     {
                         FileInformation.Patch(info);
                     }
+                    else
+                    {
+                        Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    }
+
+                    return 0;
+                }
+                else
+                {
+                    Console.WriteLine("Verify failed!");
+                    Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    Console.WriteLine(JsonConvert.SerializeObject(old, Formatting.Indented));
+                    return 1;
                 }
             }
-
-            return 0;
         }
     }
 }

@@ -13,9 +13,6 @@ namespace fileutil
         [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
 
-        [Option('d', "dryrun", HelpText = "Whether to dry run the command.")]
-        public bool Dryrun { get; set; }
-
         public virtual int Execute()
         {
             throw new NotImplementedException();

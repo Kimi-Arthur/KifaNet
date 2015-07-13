@@ -6,6 +6,7 @@ namespace Pimix.IO
     public enum FileProperties
     {
         None = 0x0,
+        Id = 0x1,
         Path = 0x1,
         Size = 0x2,
         BlockSize = 0x4,
@@ -22,6 +23,7 @@ namespace Pimix.IO
         AllHashes = MD5 | SHA1 | SHA256 | CRC32,
         AllBlockHashes = BlockMD5 | BlockSHA1 | BlockSHA256,
         AllBaiduCloudRapidHashes = Size | MD5 | SliceMD5 | CRC32,
-        All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes | EncryptionKey
+        All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes | EncryptionKey,
+        AllVerifiable = Basic | AllHashes | AllBlockHashes | SliceMD5
     }
 }

@@ -11,7 +11,7 @@ using Pimix.Cloud.BaiduCloud;
 
 namespace fileutil
 {
-    [Verb("cp", HelpText = "Upload file baidu cloud.")]
+    [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
     class CopyCommand : Command
     {
         [Value(0, Required = true)]
