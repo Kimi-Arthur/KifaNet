@@ -201,7 +201,7 @@ namespace Pimix.IO
             {
                 if (propertiesToCompare.HasFlag(p.Key))
                 {
-                    if (p.Value.GetValue(other) != null && p.Value.GetValue(other) != p.Value.GetValue(this))
+                    if (p.Value.GetValue(other) != null && !object.Equals(p.Value.GetValue(other), p.Value.GetValue(this)))
                         return false;
                 }
             }
