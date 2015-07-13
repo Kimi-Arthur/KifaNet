@@ -33,7 +33,6 @@ namespace fileutil
 
             using (var stream = Helpers.GetDataStream(FileUri))
             {
-                long len = stream.Length;
                 var info = FileInformation.Get(uri.LocalPath).RemoveProperties(FilePropertiesToVerify).AddProperties(stream, FileProperties.All);
                 info.Path = uri.LocalPath;
                 if (info.Locations == null)
