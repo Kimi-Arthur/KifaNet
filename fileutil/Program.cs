@@ -17,31 +17,33 @@ namespace fileutil
     class Program
     {
         static int Main(string[] args)
+            => Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand>(args)
+            .Return(
+                (Command x) => ExecuteCommand(x),
+                HandleParseFail);
+
+        static int ExecuteCommand(Command command)
         {
-            var result = Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand>(args);
-            if (!result.Errors.Any())
+            Initialize(command);
+
+            try
             {
-                Initialize(result.Value as Command);
-
-                try
-                {
-                    return (result.Value as Command).Execute();
-                }
-                catch (Exception ex)
-                {
-                    while (ex != null)
-                    {
-                        Console.WriteLine("Caused by:");
-                        Console.WriteLine(ex);
-                        ex = ex.InnerException;
-                    }
-
-                    return 1;
-                }
+                return command.Execute();
             }
+            catch (Exception ex)
+            {
+                while (ex != null)
+                {
+                    Console.WriteLine("Caused by:");
+                    Console.WriteLine(ex);
+                    ex = ex.InnerException;
+                }
 
-            return 2;
+                return 1;
+            }
         }
+
+        static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
         static void Initialize(Command options)
         {

@@ -8,14 +8,11 @@ using CommandLine;
 
 namespace fileutil
 {
-    class Command
+    abstract class Command
     {
         [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
 
-        public virtual int Execute()
-        {
-            throw new NotImplementedException();
-        }
+        public abstract int Execute();
     }
 }
