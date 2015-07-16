@@ -23,7 +23,7 @@ namespace jobutil
             proc.WaitForExit();
             string stdout = proc.StandardOutput.ReadToEnd();
             string stderr = proc.StandardError.ReadToEnd();
-            Job.AddInfo(JobId, new Dictionary<string, object> { ["stdout"] = stdout, ["stderr"] = stderr, ["exit_code"] = proc.ExitCode.ToString() });
+            Job.AddInfo(JobId, new Dictionary<string, object> { ["stdout"] = stdout, ["stderr"] = stderr, ["exit_code"] = proc.ExitCode });
             Job.FinishJob(JobId, proc.ExitCode != 0);
             // Even if the job fails, the runner is ok.
             return 0;
