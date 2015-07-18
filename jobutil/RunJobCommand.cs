@@ -8,6 +8,7 @@ using CommandLine;
 
 namespace jobutil
 {
+    [Verb("run", HelpText = "Run a specific job.")]
     class RunJobCommand : Command
     {
         [Value(0, Required = true)]
