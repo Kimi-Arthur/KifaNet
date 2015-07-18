@@ -15,10 +15,10 @@ namespace jobutil
 
         public override int Execute()
         {
-            string cmd = Job.StartJob(JobId).Command;
+            var job = Job.StartJob(JobId);
             Process proc = new Process();
-            proc.StartInfo.FileName = cmd;
-            proc.StartInfo.Arguments = cmd;
+            proc.StartInfo.FileName = job.Command;
+            proc.StartInfo.Arguments = string.Join(" ", job.Arguments);
             proc.Start();
             proc.WaitForExit();
             string stdout = proc.StandardOutput.ReadToEnd();

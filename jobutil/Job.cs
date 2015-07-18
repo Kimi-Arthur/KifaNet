@@ -17,6 +17,9 @@ namespace jobutil
         [JsonProperty("command")]
         public string Command { get; set; }
 
+        [JsonProperty("arguments")]
+        public List<string> Arguments { get; set; }
+
         #region PimixService Wrappers
 
         public static string PimixServerApiAddress
