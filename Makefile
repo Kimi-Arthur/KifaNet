@@ -2,7 +2,7 @@ SHELL := /bin/zsh
 
 sln_file = Utilities.mono40.sln
 
-projects = fileutil
+projects = (fileutil|jobutil)
 file_types = (exe.config|exe|dll)
 binary_path = /usr/local/lib/pimix/
 
