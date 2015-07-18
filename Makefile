@@ -2,7 +2,7 @@ SHELL := /bin/zsh
 
 sln_file = Utilities.mono40.sln
 
-projects = (fileutil|jobutil)
+projects = fileutil jobutil
 file_types = (exe.config|exe|dll)
 binary_path = /usr/local/lib/pimix/
 
@@ -14,5 +14,5 @@ build:
 
 install:
 	mkdir -p ${binary_path}
-	cp ${projects}/bin/Release/*.${file_types} ${binary_path}
+	$(foreach project,$(projects),cp $(project)/bin/Release/*.$(file_types) $(binary_path);)
 
