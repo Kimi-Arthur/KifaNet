@@ -20,6 +20,8 @@ namespace jobutil
             Process proc = new Process();
             proc.StartInfo.FileName = job.Command;
             proc.StartInfo.Arguments = string.Join(" ", job.Arguments);
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.RedirectStandardOutput = true;
             proc.Start();
             proc.WaitForExit();
             string stdout = proc.StandardOutput.ReadToEnd();
