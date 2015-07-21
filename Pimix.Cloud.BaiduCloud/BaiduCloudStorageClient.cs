@@ -169,10 +169,13 @@ namespace Pimix.Cloud.BaiduCloud
                         Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
                         Console.WriteLine("Exception:");
                         Console.WriteLine(ex);
-                        Console.WriteLine("Response:");
-                        using (var s = new StreamReader(ex.Response.GetResponseStream()))
+                        if (ex.Response != null)
                         {
-                            Console.WriteLine(s.ReadToEnd());
+                            Console.WriteLine("Response:");
+                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
+                            {
+                                Console.WriteLine(s.ReadToEnd());
+                            }
                         }
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
