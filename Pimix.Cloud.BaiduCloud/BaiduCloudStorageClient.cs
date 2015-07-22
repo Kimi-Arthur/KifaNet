@@ -152,7 +152,7 @@ namespace Pimix.Cloud.BaiduCloud
 
             List<string> blockIds = new List<string>();
 
-            for (int position = 0; position < fileInformation.Size; position += blockLength)
+            for (long position = 0; position < fileInformation.Size; position += blockLength)
             {
                 blockLength = input.Read(buffer, 0, blockInfo[blockIndex]);
 
@@ -164,10 +164,19 @@ namespace Pimix.Cloud.BaiduCloud
                         blockIds.Add(UploadBlock(buffer, 0, blockLength));
                         done = true;
                     }
-                    catch (Exception ex)
+                    catch (WebException ex)
                     {
-                        Console.WriteLine(ex);
                         Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
+                        Console.WriteLine("Exception:");
+                        Console.WriteLine(ex);
+                        if (ex.Response != null)
+                        {
+                            Console.WriteLine("Response:");
+                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
+                            {
+                                Console.WriteLine(s.ReadToEnd());
+                            }
+                        }
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }
