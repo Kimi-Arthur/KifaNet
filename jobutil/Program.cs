@@ -10,10 +10,8 @@ namespace jobutil
     class Program
     {
         static int Main(string[] args)
-            => Parser.Default.ParseArguments<RunJobCommand>(args)
-            .Return(
-                x => ExecuteCommand(x),
-                HandleParseFail);
+            => Parser.Default.ParseArguments<RunJobCommand, RunAllJobsCommand>(args)
+            .Return<Command, int>(ExecuteCommand, HandleParseFail);
 
         static int ExecuteCommand(Command command)
         {
