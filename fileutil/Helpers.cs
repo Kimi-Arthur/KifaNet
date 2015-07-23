@@ -80,8 +80,14 @@ namespace fileutil
             Uri uri;
             if (Uri.TryCreate(uriString, UriKind.Absolute, out uri))
             {
-                return $"/allfiles/{uri.Host}{uri.LocalPath}";
-                //return $"\\\\{uri.Host.Split('.')[0]}/files{uri.LocalPath}";
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    return $"/allfiles/{uri.Host}{uri.LocalPath}";
+                }
+                else
+                {
+                    return $"\\\\{uri.Host.Split('.')[0]}/files{uri.LocalPath}";
+                }
             }
             else
             {
