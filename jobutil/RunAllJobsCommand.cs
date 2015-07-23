@@ -22,12 +22,14 @@ namespace jobutil
                 }
                 catch (Exception)
                 {
+                    Console.Error.WriteLine("No jobs now. Sleep 2 hours");
                     Thread.Sleep(TimeSpan.FromHours(2));
                 }
 
                 if (j != null)
                 {
                     new RunJobCommand { JobId = j.Id }.Execute();
+                    Console.Error.WriteLine("Finished one job. Sleep 5 seconds");
                     Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
             }
