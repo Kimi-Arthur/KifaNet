@@ -23,6 +23,15 @@ namespace fileutil
         [Option('c', "chunk-size", HelpText = "The chunk size used to copy data")]
         public string ChunkSize { get; set; } = ConfigurationManager.AppSettings["BufferSize"];
 
+        [Option('u', "update", HelpText = "Whether to update result to server.")]
+        public bool Update { get; set; } = false;
+
+        [Option('v', "verify-all", HelpText = "Verify all verifiable fields of the file along with updating info.")]
+        public bool VerifyAll { get; set; } = false;
+
+        [Option('f', "fields-to-verify", HelpText = "Fields to verify. Only 'Size' is verified by default.")]
+        public string FieldsToVerify { get; set; } = "Size";
+
         public override int Execute()
         {
             Uri uploadTo = new Uri(DestinationUri);
@@ -54,7 +63,7 @@ namespace fileutil
                 }
             }
 
-            return 0;
+            return Update ? new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute() : 0;
         }
     }
 }

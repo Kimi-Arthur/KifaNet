@@ -16,7 +16,7 @@ namespace fileutil
         public string FileUri { get; set; }
 
         [Option('v', "verify-all", HelpText = "Verify all verifiable fields of the file along with updating info.")]
-        public bool VerifyAll { get; set; }
+        public bool VerifyAll { get; set; } = false;
 
         [Option('f', "fields-to-verify", HelpText = "Fields to verify. Only 'Size' is verified by default.")]
         public string FieldsToVerify { get; set; } = "Size";
