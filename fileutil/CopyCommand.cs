@@ -23,10 +23,13 @@ namespace fileutil
         [Option('c', "chunk-size", HelpText = "The chunk size used to copy data")]
         public string ChunkSize { get; set; } = ConfigurationManager.AppSettings["BufferSize"];
 
-        [Option('u', "update", HelpText = "Whether to update result to server.")]
+        [Option('p', "precheck", HelpText = "Whether to check (and update) SOURCE before copying.")]
+        public bool Precheck { get; set; } = false;
+
+        [Option('u', "update", HelpText = "Whether to update result to server after copying.")]
         public bool Update { get; set; } = false;
 
-        [Option('v', "verify-all", HelpText = "Verify all verifiable fields of the file along with updating info.")]
+        [Option('v', "verify-all", HelpText = "Verify all verifiable fields before update.")]
         public bool VerifyAll { get; set; } = false;
 
         [Option('f', "fields-to-verify", HelpText = "Fields to verify. Only 'Size' is verified by default.")]
@@ -34,6 +37,16 @@ namespace fileutil
 
         public override int Execute()
         {
+            if (Precheck)
+            {
+                var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri }.Execute();
+                if (result != 0)
+                {
+                    Console.Error.WriteLine("Precheck failed!");
+                    return 1;
+                }
+            }
+
             Uri uploadTo = new Uri(DestinationUri);
             var schemes = uploadTo.Scheme.Split('+').ToList();
 
