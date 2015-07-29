@@ -427,7 +427,13 @@ namespace Pimix.Cloud.BaiduCloud
                     try
                     {
                         readCount = Client.Download(buffer, RemotePath, offset, Position, count);
-                        done = true;
+                        done = readCount == count;
+                        if (!done)
+                        {
+                            Console.Error.WriteLine("Didn't get expected amount of data.");
+                            Console.Error.WriteLine($"Responses decoded as utf-8 here ({readCount} bytes):");
+                            Console.Error.WriteLine(Encoding.UTF8.GetString(buffer, 0, readCount));
+                        }
                     }
                     catch (Exception)
                     {
