@@ -25,6 +25,6 @@ namespace Pimix.IO
         AllBlockHashes = BlockMD5 | BlockSHA1 | BlockSHA256,
         AllBaiduCloudRapidHashes = Size | MD5 | SliceMD5 | CRC32,
         All = Basic | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes | EncryptionKey | Locations,
-        AllVerifiable = Basic | AllHashes | SliceMD5
+        AllVerifiable = Basic | AllHashes | SliceMD5 | AllBlockHashes
     }
 }

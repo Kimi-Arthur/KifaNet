@@ -202,9 +202,21 @@ namespace Pimix.IO
             {
                 if (propertiesToCompare.HasFlag(p.Key))
                 {
-                    if (p.Value.GetValue(other) != null && !object.Equals(p.Value.GetValue(other), p.Value.GetValue(this)))
+                    if (p.Value.GetValue(other) != null)
                     {
-                        result |= p.Key;
+                        if (p.Value.PropertyType.IsAssignableFrom(typeof(List<string>)))
+                        {
+                            var olist = p.Value.GetValue(other) as List<string>;
+                            var tlist = p.Value.GetValue(this) as List<string>;
+                            if (!tlist.SequenceEqual(olist))
+                            {
+                                result |= p.Key;
+                            }
+                        }
+                        else if (!object.Equals(p.Value.GetValue(other), p.Value.GetValue(this)))
+                        {
+                            result |= p.Key;
+                        }
                     }
                 }
             }

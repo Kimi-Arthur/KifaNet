@@ -17,10 +17,12 @@ namespace fileutil
     class Program
     {
         static int Main(string[] args)
-            => Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand, RemoveCommand>(args)
+        {
+            return Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand, RemoveCommand>(args)
             .Return(
                 (Command x) => ExecuteCommand(x),
                 HandleParseFail);
+        }
 
         static int ExecuteCommand(Command command)
         {

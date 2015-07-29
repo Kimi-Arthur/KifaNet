@@ -29,6 +29,16 @@ namespace PimixTest.Storage
         }
 
         [TestMethod]
+        public void FileInformationComparerTest()
+        {
+            UTF8Encoding encoding = new UTF8Encoding();
+            Stream s = new MemoryStream(encoding.GetBytes("Test1"));
+            var info1 = FileInformation.GetInformation(s, FileProperties.All);
+            var info2 = FileInformation.GetInformation(s, FileProperties.All);
+            Assert.AreEqual(FileProperties.None, info1.CompareProperties(info2, FileProperties.AllVerifiable));
+        }
+
+        [TestMethod]
         public void GetInformationFromPathTest()
         {
             var info = FileInformation.GetInformation("Test1.txt", FileProperties.All);
