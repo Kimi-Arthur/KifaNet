@@ -64,6 +64,25 @@ namespace Pimix.Service
             }
         }
 
+        public static bool Delete<TDataModel>(string id)
+        {
+            Init(typeof(TDataModel));
+            var typeInfo = typeCache[typeof(TDataModel)];
+
+            string address =
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
+
+            HttpWebRequest request = WebRequest.CreateHttp(address);
+            request.Method = "DELETE";
+            request.Headers["Authorization"] =
+                $"Basic {PimixServerCredential}";
+
+            using (var response = request.GetResponse())
+            {
+                return response.GetDictionary()["status"].ToString() == "ok";
+            }
+        }
+
         public static ResponseType Call<TDataModel, ResponseType>(string action, string methodType = "GET",
             string id = null, Dictionary<string, string> parameters = null, Object body = null)
         {

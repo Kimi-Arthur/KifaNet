@@ -13,7 +13,7 @@ using Pimix.Service;
 namespace Pimix.IO
 {
     [DataModel("universal")]
-    public class FileInformation
+    public partial class FileInformation
     {
         const long MaxBlockCount = 1L << 10;
         const long MaxBlockSize = 2L << 30;
@@ -274,39 +274,5 @@ namespace Pimix.IO
                 return aes.Key.ToHexString();
             }
         }
-
-        #region PimixService Wrappers
-
-        public static string PimixServerApiAddress
-        {
-            get
-            {
-                return PimixService.PimixServerApiAddress;
-            }
-            set
-            {
-                PimixService.PimixServerApiAddress = value;
-            }
-        }
-
-        public static string PimixServerCredential
-        {
-            get
-            {
-                return PimixService.PimixServerCredential;
-            }
-            set
-            {
-                PimixService.PimixServerCredential = value;
-            }
-        }
-
-        public static bool Patch(FileInformation data, string id = null)
-            => PimixService.Patch<FileInformation>(data, id);
-
-        public static FileInformation Get(string id)
-            => PimixService.Get<FileInformation>(id);
-
-        #endregion
     }
 }
