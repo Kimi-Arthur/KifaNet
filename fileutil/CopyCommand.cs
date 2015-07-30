@@ -68,6 +68,13 @@ namespace fileutil
                                 throw new ArgumentException(nameof(DestinationUri));
                         }
                     }
+                    else
+                    {
+                        using (FileStream fs = new FileStream(Helpers.GetPath(DestinationUri), FileMode.Create))
+                        {
+                            stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
+                        }
+                    }
                 }
                 else
                 {
