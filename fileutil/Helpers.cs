@@ -50,10 +50,6 @@ namespace fileutil
                 else
                 {
                     stream = File.OpenRead(GetPath(DataUri));
-                    // Use ftp stream first.
-                    //FtpWebRequest request = WebRequest.Create($"ftp://{uri.Host}/files{uri.LocalPath}") as FtpWebRequest;
-                    //request.Credentials = new NetworkCredential("pimix", "P2015apr");
-                    //downloadStream = request.GetResponse().GetResponseStream();
                 }
 
                 // Concerning file format
