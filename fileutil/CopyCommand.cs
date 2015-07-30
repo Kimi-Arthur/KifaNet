@@ -47,24 +47,26 @@ namespace fileutil
                 }
             }
 
-            Uri uploadTo = new Uri(DestinationUri);
-            var schemes = uploadTo.Scheme.Split('+').ToList();
-
             using (var stream = Helpers.GetDataStream(SourceUri))
             using (var uploadStream = Helpers.GetUploadStream(stream, DestinationUri))
             {
-                if (schemes.Contains("cloud"))
+                Uri uploadTo;
+                if (Uri.TryCreate(DestinationUri, UriKind.Absolute, out uploadTo))
                 {
-                    switch (uploadTo.Host)
+                    var schemes = uploadTo.Scheme.Split('+').ToList();
+                    if (schemes.Contains("cloud"))
                     {
-                        case "pan.baidu.com":
-                            {
-                                BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
-                                break;
-                            }
-                        default:
-                            throw new ArgumentException(nameof(DestinationUri));
+                        switch (uploadTo.Host)
+                        {
+                            case "pan.baidu.com":
+                                {
+                                    BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
+                                    new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
+                                    break;
+                                }
+                            default:
+                                throw new ArgumentException(nameof(DestinationUri));
+                        }
                     }
                 }
                 else
