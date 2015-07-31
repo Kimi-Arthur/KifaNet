@@ -179,6 +179,13 @@ namespace Pimix.Cloud.BaiduCloud
                         }
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
+                    catch (ObjectDisposedException ex)
+                    {
+                        Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
+                        Console.WriteLine("Unexpected ObjectDisposedException:");
+                        Console.WriteLine(ex);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
                 }
 
                 if (blockIndex < blockInfo.Count - 1)
@@ -188,7 +195,22 @@ namespace Pimix.Cloud.BaiduCloud
                 }
             }
 
-            MergeBlocks(remotePath, blockIds);
+            bool mergeDone = false;
+            while (!mergeDone)
+            {
+                try
+                {
+                    MergeBlocks(remotePath, blockIds);
+                    mergeDone = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed when merging");
+                    Console.WriteLine("Exception:");
+                    Console.WriteLine(ex);
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                }
+            }
         }
 
         void UploadDirect(string remotePath, byte[] buffer, int offset, int count)
