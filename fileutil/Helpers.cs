@@ -74,7 +74,7 @@ namespace fileutil
         public static string GetPath(string uriString)
         {
             Uri uri;
-            if (Uri.TryCreate(uriString, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(uriString, UriKind.Absolute, out uri) && uri.Scheme.StartsWith("pimix"))
             {
                 if (Environment.OSVersion.Platform == PlatformID.Unix)
                 {

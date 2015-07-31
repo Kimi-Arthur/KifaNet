@@ -22,13 +22,10 @@ namespace fileutil
         public override int Execute()
         {
             Uri uri;
-            if (Uri.TryCreate(FileUri, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(FileUri, UriKind.Absolute, out uri) && uri.Scheme.StartsWith("pimix"))
             {
                 var info = FileInformation.Get(uri.LocalPath);
                 var schemes = uri.Scheme.Split('+').ToList();
-
-                if (schemes[0] != "pimix")
-                    throw new ArgumentException(nameof(FileUri));
 
                 if (string.IsNullOrEmpty(uri.Host))
                 {
@@ -96,12 +93,9 @@ namespace fileutil
         bool RemoveRealFile(string fileUri)
         {
             Uri uri;
-            if (Uri.TryCreate(fileUri, UriKind.Absolute, out uri))
+            if (Uri.TryCreate(fileUri, UriKind.Absolute, out uri) && uri.Scheme.StartsWith("pimix"))
             {
                 var schemes = uri.Scheme.Split('+').ToList();
-
-                if (schemes[0] != "pimix")
-                    throw new ArgumentException(nameof(fileUri));
 
                 // Concerning file source
                 if (schemes.Contains("cloud"))
