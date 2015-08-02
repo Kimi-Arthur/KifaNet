@@ -56,6 +56,7 @@
     <Compile Include="CopyCommand.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="InfoCommand.cs" />
+    <Compile Include="MoveCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoveCommand.cs" />

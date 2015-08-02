@@ -18,7 +18,7 @@ namespace fileutil
     {
         static int Main(string[] args)
         {
-            return Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand, RemoveCommand>(args)
+            return Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand, RemoveCommand, MoveCommand>(args)
             .Return(
                 (Command x) => ExecuteCommand(x),
                 HandleParseFail);
