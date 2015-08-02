@@ -42,12 +42,15 @@ namespace Pimix.IO
         }
 
         public static bool Patch(FileInformation data, string id = null)
-            => PimixService.Patch<FileInformation>(data, id);
+            => PimixService.Patch(data, id);
 
         public static FileInformation Get(string id)
             => PimixService.Get<FileInformation>(id);
 
         public static bool Delete(string id)
             => PimixService.Delete<FileInformation>(id);
+
+        public static List<FileInformation> GetFolderView(string path)
+            => PimixService.Call<FileInformation, List<FileInformation>>("get_folder_view", parameters: new Dictionary<string, string> {["location"] = path });
     }
 }
