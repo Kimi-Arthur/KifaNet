@@ -4,7 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using CommandLine;
 using Pimix;
 using Pimix.Cloud.BaiduCloud;
@@ -94,6 +94,9 @@ namespace fileutil
                     }
                 }
             }
+
+            // Wait 5 seconds to ensure server sync.
+            Thread.Sleep(TimeSpan.FromSeconds(5));
 
             return Update ? new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute() : 0;
         }

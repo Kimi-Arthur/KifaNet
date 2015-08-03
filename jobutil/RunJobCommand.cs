@@ -21,6 +21,10 @@ namespace jobutil
             {
                 proc.StartInfo.FileName = job.Command;
                 proc.StartInfo.Arguments = string.Join(" ", job.Arguments);
+
+                Console.Error.WriteLine(proc.StartInfo.FileName);
+                Console.Error.WriteLine(proc.StartInfo.Arguments);
+
                 proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.UseShellExecute = false;
