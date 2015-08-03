@@ -69,6 +69,7 @@ namespace fileutil
                                     else
                                     {
                                         // No encryption
+                                        Console.Error.WriteLine("From local and upload stream contains no encryption, will try rapid");
                                         new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: true, fileInformation: FileInformation.Get(uploadTo.LocalPath));
                                     }
                                     break;

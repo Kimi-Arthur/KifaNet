@@ -17,38 +17,40 @@ namespace jobutil
         public override int Execute()
         {
             var job = Job.StartJob(JobId);
-            Process proc = new Process();
-            proc.StartInfo.FileName = job.Command;
-            proc.StartInfo.Arguments = string.Join(" ", job.Arguments);
-            proc.StartInfo.RedirectStandardError = true;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.StartInfo.UseShellExecute = false;
-
-            proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+            using (Process proc = new Process())
             {
-                if (!String.IsNullOrEmpty(e.Data))
+                proc.StartInfo.FileName = job.Command;
+                proc.StartInfo.Arguments = string.Join(" ", job.Arguments);
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.UseShellExecute = false;
+
+                proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
-                    Job.AppendInfo(JobId, new Dictionary<string, object> { ["stdout"] = e.Data + "\n" });
-                }
-            });
+                    if (!String.IsNullOrEmpty(e.Data))
+                    {
+                        Job.AppendInfo(JobId, new Dictionary<string, object> { ["stdout"] = e.Data + "\n" });
+                    }
+                });
 
-            proc.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
-            {
-                if (!String.IsNullOrEmpty(e.Data))
+                proc.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
-                    Job.AppendInfo(JobId, new Dictionary<string, object> { ["stderr"] = e.Data + "\n" });
-                }
-            });
+                    if (!String.IsNullOrEmpty(e.Data))
+                    {
+                        Job.AppendInfo(JobId, new Dictionary<string, object> { ["stderr"] = e.Data + "\n" });
+                    }
+                });
 
-            proc.Start();
-            proc.BeginOutputReadLine();
-            proc.BeginErrorReadLine();
+                proc.Start();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
 
-            proc.WaitForExit();
-            Job.AddInfo(JobId, new Dictionary<string, object> { ["exit_code"] = proc.ExitCode });
-            Job.FinishJob(JobId, proc.ExitCode != 0);
-            // Even if the job fails, the runner is ok.
-            return 0;
+                proc.WaitForExit();
+                Job.AddInfo(JobId, new Dictionary<string, object> { ["exit_code"] = proc.ExitCode });
+                Job.FinishJob(JobId, proc.ExitCode != 0);
+                // Even if the job fails, the runner is ok.
+                return 0;
+            }
         }
     }
 }
