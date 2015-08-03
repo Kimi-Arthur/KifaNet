@@ -69,6 +69,11 @@ namespace jobutil
             return PimixService.Call<Job, Job>("add_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
         }
 
+        public static Job AppendInfo(string id, Dictionary<string, object> information)
+        {
+            return PimixService.Call<Job, Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
+        }
+
         public static Job GetJob()
         {
             return PimixService.Call<Job, Job>("get_job");

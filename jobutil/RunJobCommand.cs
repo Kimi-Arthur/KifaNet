@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using CommandLine;
 
 namespace jobutil
@@ -23,11 +23,29 @@ namespace jobutil
             proc.StartInfo.RedirectStandardError = true;
             proc.StartInfo.RedirectStandardOutput = true;
             proc.StartInfo.UseShellExecute = false;
+
+            proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    Job.AppendInfo(JobId, new Dictionary<string, object> { ["stdout"] = e.Data + "\n" });
+                }
+            });
+
+            proc.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
+            {
+                if (!String.IsNullOrEmpty(e.Data))
+                {
+                    Job.AppendInfo(JobId, new Dictionary<string, object> { ["stderr"] = e.Data + "\n" });
+                }
+            });
+
             proc.Start();
+            proc.BeginOutputReadLine();
+            proc.BeginErrorReadLine();
+
             proc.WaitForExit();
-            string stdout = proc.StandardOutput.ReadToEnd();
-            string stderr = proc.StandardError.ReadToEnd();
-            Job.AddInfo(JobId, new Dictionary<string, object> { ["stdout"] = stdout, ["stderr"] = stderr, ["exit_code"] = proc.ExitCode });
+            Job.AddInfo(JobId, new Dictionary<string, object> { ["exit_code"] = proc.ExitCode });
             Job.FinishJob(JobId, proc.ExitCode != 0);
             // Even if the job fails, the runner is ok.
             return 0;
