@@ -31,7 +31,7 @@ namespace fileutil
         {
             Uri uri = new Uri(FileUri);
 
-            using (var stream = Helpers.GetDataStream(FileUri))
+            using (var stream = GetDataStream(FileUri))
             {
                 var info = FileInformation.Get(uri.LocalPath).RemoveProperties(FilePropertiesToVerify).AddProperties(stream, FileProperties.All);
                 info.Path = uri.LocalPath;

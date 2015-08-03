@@ -48,8 +48,8 @@ namespace fileutil
                 }
             }
 
-            using (var stream = Helpers.GetDataStream(SourceUri))
-            using (var uploadStream = Helpers.GetUploadStream(stream, DestinationUri))
+            using (var stream = GetDataStream(SourceUri))
+            using (var uploadStream = GetUploadStream(stream, DestinationUri))
             {
                 Uri uploadTo;
                 if (Uri.TryCreate(DestinationUri, UriKind.Absolute, out uploadTo))
@@ -80,7 +80,7 @@ namespace fileutil
                     }
                     else
                     {
-                        using (FileStream fs = new FileStream(Helpers.GetPath(DestinationUri), FileMode.Create))
+                        using (FileStream fs = new FileStream(GetPath(DestinationUri), FileMode.Create))
                         {
                             stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
                         }
@@ -88,7 +88,7 @@ namespace fileutil
                 }
                 else
                 {
-                    using (FileStream fs = new FileStream(Helpers.GetPath(DestinationUri), FileMode.Create))
+                    using (FileStream fs = new FileStream(GetPath(DestinationUri), FileMode.Create))
                     {
                         stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
                     }

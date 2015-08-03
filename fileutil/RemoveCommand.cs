@@ -125,12 +125,12 @@ namespace fileutil
                 {
                     try
                     {
-                        File.Delete(Helpers.GetPath(fileUri));
+                        File.Delete(GetPath(fileUri));
                         return true;
                     }
                     catch (Exception ex)
                     {
-                        Console.Error.WriteLine($"File.Delete failed for path {Helpers.GetPath(fileUri)}");
+                        Console.Error.WriteLine($"File.Delete failed for path {GetPath(fileUri)}");
                         Console.Error.WriteLine(ex);
                         return false;
                     }
@@ -140,12 +140,12 @@ namespace fileutil
             {
                 try
                 {
-                    File.Delete(Helpers.GetPath(fileUri));
+                    File.Delete(GetPath(fileUri));
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"File.Delete failed for path {Helpers.GetPath(fileUri)}");
+                    Console.Error.WriteLine($"File.Delete failed for path {GetPath(fileUri)}");
                     Console.Error.WriteLine(ex);
                     return false;
                 }
