@@ -24,12 +24,24 @@ namespace fileutil
         public IEnumerable<string> StorageServerOrderList
             => StorageServerOrder.Split(';');
 
-        public static Stream GetDataStream(string DataUri)
+        public Stream GetDataStream(string DataUri)
         {
             Uri uri;
             Stream stream;
             if (Uri.TryCreate(DataUri, UriKind.Absolute, out uri))
             {
+                if (string.IsNullOrEmpty(uri.Host))
+                {
+                    var info = FileInformation.Get(uri.LocalPath);
+                    foreach (var g in StorageServerOrderList)
+                    {
+                        if (info.Locations.ContainsKey(g))
+                        {
+                            uri = new Uri(info.Locations[g]);
+                        }
+                    }
+                }
+
                 var schemes = uri.Scheme.Split('+').ToList();
                 if (schemes[0] == "http" || schemes[0] == "https")
                 {
