@@ -20,9 +20,10 @@ namespace jobutil
                 {
                     j = Job.GetJob();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     Console.Error.WriteLine("No jobs now. Sleep 2 hours");
+                    Console.WriteLine(ex);
                     Thread.Sleep(TimeSpan.FromHours(2));
                 }
 

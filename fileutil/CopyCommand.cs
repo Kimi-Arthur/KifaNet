@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Pimix;
 using Pimix.Cloud.BaiduCloud;
+using Pimix.IO;
 
 namespace fileutil
 {
@@ -61,7 +62,15 @@ namespace fileutil
                             case "pan.baidu.com":
                                 {
                                     BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                    new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
+                                    if (schemes.Contains("v1"))
+                                    {
+                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
+                                    }
+                                    else
+                                    {
+                                        // No encryption
+                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: true, fileInformation: FileInformation.Get(uploadTo.LocalPath));
+                                    }
                                     break;
                                 }
                             default:
