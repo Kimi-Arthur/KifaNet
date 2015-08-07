@@ -59,10 +59,10 @@ namespace fileutil
                     Console.Error.WriteLine("\t" + compareResult);
                     Console.Error.WriteLine();
                     Console.Error.WriteLine("Expected data:");
-                    Console.Error.WriteLine(JsonConvert.SerializeObject(old, Formatting.Indented));
+                    Console.Error.WriteLine(JsonConvert.SerializeObject(old.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
                     Console.Error.WriteLine();
                     Console.Error.WriteLine("Actual data:");
-                    Console.Error.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
+                    Console.Error.WriteLine(JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
                     Console.Error.WriteLine();
                     return 1;
                 }
