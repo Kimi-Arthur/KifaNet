@@ -37,6 +37,7 @@ namespace fileutil
                     {
                         if (info.Locations.ContainsKey(g))
                         {
+                            Console.Error.WriteLine($"{info.Locations[g]} chosen as the source uri.");
                             uri = new Uri(info.Locations[g]);
                         }
                     }
