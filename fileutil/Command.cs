@@ -13,7 +13,7 @@ using Pimix.IO.FileFormats;
 
 namespace fileutil
 {
-    abstract class Command
+    abstract class FileUtilCommand
     {
         [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
@@ -39,6 +39,7 @@ namespace fileutil
                         {
                             Console.Error.WriteLine($"{info.Locations[g]} chosen as the source uri.");
                             uri = new Uri(info.Locations[g]);
+                            break;
                         }
                     }
                 }

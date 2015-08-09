@@ -10,7 +10,7 @@ using Pimix.IO;
 namespace fileutil
 {
     [Verb("info", HelpText = "Generate information of the specified file.")]
-    class InfoCommand : Command
+    class InfoCommand : FileUtilCommand
     {
         [Value(0, Required = true)]
         public string FileUri { get; set; }

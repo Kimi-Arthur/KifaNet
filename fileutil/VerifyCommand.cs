@@ -9,7 +9,7 @@ using Pimix.IO;
 namespace fileutil
 {
     [Verb("verify", HelpText = "Verify the file is in compliant with the data stored in server.")]
-    class VerifyCommand : Command
+    class VerifyCommand : FileUtilCommand
     {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
