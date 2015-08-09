@@ -11,6 +11,9 @@ namespace jobutil
     [Verb("all", HelpText = "Run all jobs continuously.")]
     class RunAllJobsCommand : Command
     {
+        [Value(0)]
+        public string JobPrefix { get; set; }
+
         public override int Execute()
         {
             while (true)
@@ -18,7 +21,7 @@ namespace jobutil
                 Job j = null;
                 try
                 {
-                    j = Job.GetJob();
+                    j = Job.GetJob(JobPrefix);
                 }
                 catch (Exception ex)
                 {
