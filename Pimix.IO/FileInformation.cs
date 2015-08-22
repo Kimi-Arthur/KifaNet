@@ -12,7 +12,7 @@ using Pimix.Service;
 
 namespace Pimix.IO
 {
-    [DataModel("universal")]
+    [DataModel("files")]
     public partial class FileInformation
     {
         const long MaxBlockCount = 1L << 10;

@@ -459,9 +459,11 @@ namespace Pimix.Cloud.BaiduCloud
                             Console.Error.WriteLine(Encoding.UTF8.GetString(buffer, 0, readCount));
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("Failed once when downloading.");
+                        Console.WriteLine("Failed once when downloading:");
+                        Console.WriteLine(ex);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }
 
