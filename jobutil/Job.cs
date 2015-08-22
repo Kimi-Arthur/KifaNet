@@ -61,7 +61,7 @@ namespace jobutil
 
         public static Job FinishJob(string id, bool failed = false)
         {
-            return PimixService.Call<Job, Job>("finish_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id, ["failed"] = failed.ToString() });
+            return PimixService.Call<Job, Job>("finish_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id,["failed"] = failed.ToString() });
         }
 
         public static Job AddInfo(string id, Dictionary<string, object> information)
@@ -74,9 +74,9 @@ namespace jobutil
             return PimixService.Call<Job, Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
         }
 
-        public static Job GetJob()
+        public static Job GetJob(string idPrefix = null)
         {
-            return PimixService.Call<Job, Job>("get_job");
+            return PimixService.Call<Job, Job>("get_job", parameters: new Dictionary<string, string> {["id_prefix"] = idPrefix });
         }
     }
 }

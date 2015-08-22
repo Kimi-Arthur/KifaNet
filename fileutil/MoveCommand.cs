@@ -8,7 +8,7 @@ using CommandLine;
 namespace fileutil
 {
     [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
-    class MoveCommand : Command
+    class MoveCommand : FileUtilCommand
     {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }

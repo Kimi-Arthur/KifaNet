@@ -20,11 +20,11 @@ namespace fileutil
         {
             return Parser.Default.ParseArguments<InfoCommand, CopyCommand, VerifyCommand, RemoveCommand, MoveCommand>(args)
             .Return(
-                (Command x) => ExecuteCommand(x),
+                (FileUtilCommand x) => ExecuteCommand(x),
                 HandleParseFail);
         }
 
-        static int ExecuteCommand(Command command)
+        static int ExecuteCommand(FileUtilCommand command)
         {
             Initialize(command);
 
@@ -47,7 +47,7 @@ namespace fileutil
 
         static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
-        static void Initialize(Command options)
+        static void Initialize(FileUtilCommand options)
         {
             BaiduCloudConfig.PimixServerApiAddress = options.PimixServerAddress;
         }

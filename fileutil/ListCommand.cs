@@ -9,7 +9,7 @@ using Pimix.IO;
 namespace fileutil
 {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
-    class ListCommand : Command
+    class ListCommand : FileUtilCommand
     {
         [Value(0, MetaName = "FOLDER", MetaValue = "STRING", Required = true, HelpText = "Folder to be listed.")]
         public string FolderUri { get; set; }

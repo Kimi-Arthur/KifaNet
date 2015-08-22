@@ -13,7 +13,7 @@ using Pimix.IO;
 namespace fileutil
 {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
-    class CopyCommand : Command
+    class CopyCommand : FileUtilCommand
     {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
