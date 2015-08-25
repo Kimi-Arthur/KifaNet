@@ -45,6 +45,32 @@ namespace Pimix.Service
             }
         }
 
+        public static bool Post<TDataModel>(TDataModel data, string id = null)
+        {
+            Init(typeof(TDataModel));
+            var typeInfo = typeCache[typeof(TDataModel)];
+
+            id = id ?? typeInfo.Item1.GetValue(data) as string;
+            string content = JsonConvert.SerializeObject(data);
+            string address =
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
+
+            HttpWebRequest request = WebRequest.CreateHttp(address);
+            request.Method = "POST";
+            request.Headers["Authorization"] =
+                $"Basic {PimixServerCredential}";
+
+            using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
+            {
+                sw.Write(content);
+            }
+
+            using (var response = request.GetResponse())
+            {
+                return response.GetDictionary()["status"].ToString() == "ok";
+            }
+        }
+
         public static TDataModel Get<TDataModel>(string id)
         {
             Init(typeof(TDataModel));

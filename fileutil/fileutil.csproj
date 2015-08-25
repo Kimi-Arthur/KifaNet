@@ -52,9 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
+    <Compile Include="FileUtilCommand.cs" />
     <Compile Include="CopyCommand.cs" />
     <Compile Include="InfoCommand.cs" />
+    <Compile Include="LinkCommand.cs" />
     <Compile Include="ListCommand.cs" />
     <Compile Include="MoveCommand.cs" />
     <Compile Include="Program.cs" />
