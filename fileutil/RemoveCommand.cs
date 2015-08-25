@@ -30,7 +30,7 @@ namespace fileutil
                 if (string.IsNullOrEmpty(uri.Host))
                 {
                     // Remove logical file.
-                    if (!RemoveLinkOnly)
+                    if (!RemoveLinkOnly && info.Locations != null)
                     {
                         // Remove real files.
                         foreach (var location in info.Locations.Values)
