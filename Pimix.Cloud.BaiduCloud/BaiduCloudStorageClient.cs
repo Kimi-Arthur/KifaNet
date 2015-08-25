@@ -367,7 +367,29 @@ namespace Pimix.Cloud.BaiduCloud
 
                     if (length < 0)
                     {
-                        length = Client.GetDownloadLength(RemotePath);
+                        Exception exception = null;
+                        int retries = 5;
+                        while (retries > 0)
+                        {
+                            try
+                            {
+                                length = Client.GetDownloadLength(RemotePath);
+                                retries = 0;
+                                exception = null;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Failed when getting file length");
+                                Console.WriteLine("Exception:");
+                                Console.WriteLine(ex);
+                                retries--;
+                                exception = ex;
+                                Thread.Sleep(TimeSpan.FromSeconds(10));
+                            }
+                        }
+
+                        if (exception != null)
+                            throw exception;
                     }
 
                     return length;
