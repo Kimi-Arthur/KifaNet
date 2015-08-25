@@ -18,23 +18,26 @@ namespace jobutil
         {
             while (true)
             {
-                Job j = null;
                 try
                 {
-                    j = Job.GetJob(JobPrefix);
+                    var j = Job.GetJob(JobPrefix);
+
+                    if (!string.IsNullOrEmpty(j?.Id))
+                    {
+                        Job.StartJob(j.Id).Execute();
+                        Console.Error.WriteLine("Finished one job. Sleep 5 seconds");
+                        Thread.Sleep(TimeSpan.FromSeconds(5));
+                    }
+                    else
+                    {
+                        Console.Error.WriteLine("Unexpected job object.");
+                        Thread.Sleep(TimeSpan.FromMinutes(2));
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.Error.WriteLine("No jobs now. Sleep 2 hours");
-                    Console.WriteLine(ex);
-                    Thread.Sleep(TimeSpan.FromHours(2));
-                }
-
-                if (j != null)
-                {
-                    new RunJobCommand { JobId = j.Id }.Execute();
-                    Console.Error.WriteLine("Finished one job. Sleep 5 seconds");
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                    Thread.Sleep(TimeSpan.FromMinutes(2));
                 }
             }
         }

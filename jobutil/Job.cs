@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,47 @@ namespace jobutil
 
         [JsonProperty("arguments")]
         public List<string> Arguments { get; set; }
+
+        public int Execute()
+        {
+            using (Process proc = new Process())
+            {
+                proc.StartInfo.FileName = Command;
+                proc.StartInfo.Arguments = string.Join(" ", Arguments);
+
+                Console.Error.WriteLine(proc.StartInfo.FileName + proc.StartInfo.Arguments);
+
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.UseShellExecute = false;
+
+                proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+                {
+                    if (!String.IsNullOrEmpty(e.Data))
+                    {
+                        Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
+                    }
+                });
+
+                proc.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
+                {
+                    if (!String.IsNullOrEmpty(e.Data))
+                    {
+                        Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
+                    }
+                });
+
+                proc.Start();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
+
+                proc.WaitForExit();
+                Job.AddInfo(Id, new Dictionary<string, object> {["exit_code"] = proc.ExitCode });
+                Job.FinishJob(Id, proc.ExitCode != 0);
+
+                return proc.ExitCode;
+            }
+        }
 
         #region PimixService Wrappers
 
