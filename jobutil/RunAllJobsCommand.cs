@@ -14,14 +14,20 @@ namespace jobutil
         [Value(0)]
         public string JobPrefix { get; set; }
 
+        [Option('t', "thread-count", HelpText = "Maximum thread count when running jobs.")]
+        public int ThreadCount { get; set; } = 1;
+
         public override int Execute()
         {
-            foreach (var j in GetJobs())
-            {
-                Console.Error.WriteLine($"Started job ({j.Id}) at {DateTime.Now}.");
-                j.Execute();
-                Console.Error.WriteLine($"Finished job ({j.Id}) at {DateTime.Now}.");
-            }
+            Parallel.ForEach(
+                GetJobs(),
+                new ParallelOptions { MaxDegreeOfParallelism = ThreadCount },
+                j =>
+                {
+                    Console.Error.WriteLine($"Started job ({j.Id}) at {DateTime.Now}.");
+                    j.Execute();
+                    Console.Error.WriteLine($"Finished job ({j.Id}) at {DateTime.Now}.");
+                });
 
             return 0;
         }
