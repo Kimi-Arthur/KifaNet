@@ -18,8 +18,9 @@ namespace jobutil
         {
             foreach (var j in GetJobs())
             {
-                Console.Error.WriteLine($"Started job ({j.Id}): {j.Command + j.Arguments}");
-                Console.Error.WriteLine($"Finished job ({j.Id}): status code is {j.Execute()}.");
+                Console.Error.WriteLine($"Started job ({j.Id}) at {DateTime.Now}.");
+                j.Execute();
+                Console.Error.WriteLine($"Finished job ({j.Id}) at {DateTime.Now}.");
             }
 
             return 0;
@@ -36,7 +37,6 @@ namespace jobutil
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine(ex);
                     Console.Error.WriteLine("No jobs now. Sleep 2 minutes");
                     Thread.Sleep(TimeSpan.FromMinutes(2));
                 }
