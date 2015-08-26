@@ -16,29 +16,33 @@ namespace jobutil
 
         public override int Execute()
         {
+            foreach (var j in GetJobs())
+            {
+                Console.Error.WriteLine($"Started job ({j.Id}): {j.Command + j.Arguments}");
+                Console.Error.WriteLine($"Finished job ({j.Id}): status code is {j.Execute()}.");
+            }
+
+            return 0;
+        }
+
+        IEnumerable<Job> GetJobs()
+        {
             while (true)
             {
+                Job j = null;
                 try
                 {
-                    var j = Job.GetJob(JobPrefix);
-
-                    if (!string.IsNullOrEmpty(j?.Id))
-                    {
-                        Job.StartJob(j.Id).Execute();
-                        Console.Error.WriteLine("Finished one job. Sleep 5 seconds");
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
-                    }
-                    else
-                    {
-                        Console.Error.WriteLine("Unexpected job object.");
-                        Thread.Sleep(TimeSpan.FromMinutes(2));
-                    }
+                    j = Job.StartJob();
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine("No jobs now. Sleep 2 hours");
+                    Console.Error.WriteLine(ex);
+                    Console.Error.WriteLine("No jobs now. Sleep 2 minutes");
                     Thread.Sleep(TimeSpan.FromMinutes(2));
                 }
+
+                if (j != null)
+                    yield return j;
             }
         }
     }

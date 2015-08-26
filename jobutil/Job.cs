@@ -96,7 +96,7 @@ namespace jobutil
 
         #endregion
 
-        public static Job StartJob(string id)
+        public static Job StartJob(string id = null)
         {
             return PimixService.Call<Job, Job>("start_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id });
         }
