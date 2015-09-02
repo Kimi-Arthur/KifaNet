@@ -56,6 +56,7 @@ namespace Pimix.Cloud.BaiduCloud
                 {
                     ["remote_path"] = remotePath.TrimStart('/')
                 });
+            request.Timeout = 30 * 60 * 1000;
 
             if (count < 0)
             {
@@ -146,7 +147,30 @@ namespace Pimix.Cloud.BaiduCloud
             if (blockInfo[0] >= fileInformation.Size)
             {
                 blockLength = input.Read(buffer, 0, blockInfo[0]);
-                UploadDirect(remotePath, buffer, 0, blockLength);
+                bool uploadDirectDone = false;
+                while (!uploadDirectDone)
+                {
+                    try
+                    {
+                        UploadDirect(remotePath, buffer, 0, blockLength);
+                        uploadDirectDone = true;
+                    }
+                    catch (WebException ex)
+                    {
+                        Console.WriteLine($"Failed once when uploading file {remotePath} with direct upload method.");
+                        Console.WriteLine("Exception:");
+                        Console.WriteLine(ex);
+                        if (ex.Response != null)
+                        {
+                            Console.WriteLine("Response:");
+                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
+                            {
+                                Console.WriteLine(s.ReadToEnd());
+                            }
+                        }
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+                }
                 return;
             }
 
@@ -260,7 +284,6 @@ namespace Pimix.Cloud.BaiduCloud
                 });
 
             request.ContentType = "application/x-www-form-urlencoded";
-            request.Timeout = 30 * 60 * 1000;
 
             using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
             {
@@ -339,6 +362,7 @@ namespace Pimix.Cloud.BaiduCloud
                 });
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
+            //request.ReadWriteTimeout = 300000;
             request.Method = api.Method;
 
             return request;
