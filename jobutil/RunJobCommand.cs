@@ -11,10 +11,10 @@ namespace jobutil
     [Verb("run", HelpText = "Run a specific job.")]
     class RunJobCommand : Command
     {
-        [Value(0, Required = true)]
+        [Value(0)]
         public string JobId { get; set; }
 
         public override int Execute()
-            => Job.StartJob(JobId).Execute();
+            => Job.PullJob(JobId).Execute();
     }
 }
