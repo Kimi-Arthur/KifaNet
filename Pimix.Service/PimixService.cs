@@ -118,7 +118,7 @@ namespace Pimix.Service
             string address = $"{PimixServerApiAddress}/{typeInfo.Item2}{id?.Insert(0, "/")}/${action}";
             if (parameters != null)
             {
-                address += "?" + string.Join("&", parameters.Select(item => $"{item.Key}={item.Value}"));
+                address += "?" + string.Join("&", parameters.Where(item => item.Value != null).Select(item => $"{item.Key}={item.Value}"));
             }
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
