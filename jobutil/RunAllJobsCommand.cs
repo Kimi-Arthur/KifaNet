@@ -50,7 +50,7 @@ namespace jobutil
                 Job j = null;
                 try
                 {
-                    j = Job.StartJob();
+                    j = Job.PullJob();
                     var c = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.Error.WriteLine($"Pulled job ({j.Id}) at {DateTime.Now}.");

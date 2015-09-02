@@ -25,6 +25,7 @@ namespace jobutil
         {
             using (Process proc = new Process())
             {
+                Job.StartJob(Id);
                 proc.StartInfo.FileName = Command;
                 proc.StartInfo.Arguments = string.Join(" ", Arguments);
 
@@ -97,6 +98,11 @@ namespace jobutil
             => PimixService.Get<Job>(id);
 
         #endregion
+
+        public static Job PullJob(string id = null)
+        {
+            return PimixService.Call<Job, Job>("pull_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id });
+        }
 
         public static Job StartJob(string id = null)
         {
