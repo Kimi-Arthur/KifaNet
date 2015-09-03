@@ -170,6 +170,13 @@ namespace Pimix.Cloud.BaiduCloud
                         }
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
+                    catch (ObjectDisposedException ex)
+                    {
+                        Console.WriteLine($"Failed once when uploading file {remotePath} with direct upload method.");
+                        Console.WriteLine("Unexpected ObjectDisposedException:");
+                        Console.WriteLine(ex);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
                 }
                 return;
             }
