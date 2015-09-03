@@ -1,6 +1,6 @@
 SHELL := /bin/zsh
 
-sln_file = Utilities.mono40.sln
+sln_file = Pimix.mono40.sln
 
 projects = fileutil jobutil
 file_types = (exe.config|exe|dll)
