@@ -21,15 +21,13 @@ namespace jobutil
         [JsonProperty("arguments")]
         public List<string> Arguments { get; set; }
 
-        public int Execute()
+        public int Execute(string runnerName = null)
         {
             using (Process proc = new Process())
             {
-                Job.StartJob(Id);
                 proc.StartInfo.FileName = Command;
                 proc.StartInfo.Arguments = string.Join(" ", Arguments);
 
-                Console.Error.WriteLine($"Job start info ({Id}): {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
 
                 proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.RedirectStandardOutput = true;
@@ -52,6 +50,12 @@ namespace jobutil
                 });
 
                 proc.Start();
+
+                runnerName = $"{runnerName}${proc.Id}";
+
+                Job.StartJob(Id, runner: runnerName);
+                Console.Error.WriteLine($"{runnerName}: Job start info ({Id}): {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
+
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
 
@@ -59,7 +63,7 @@ namespace jobutil
                 Job.AddInfo(Id, new Dictionary<string, object> {["exit_code"] = proc.ExitCode });
                 Job.FinishJob(Id, proc.ExitCode != 0);
 
-                Console.Error.WriteLine($"Job finish info ({Id}): {proc.ExitCode}");
+                Console.Error.WriteLine($"{runnerName}: Job finish info ({Id}): {proc.ExitCode}");
 
                 return proc.ExitCode;
             }
