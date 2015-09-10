@@ -10,8 +10,11 @@ namespace jobutil
 {
     abstract class Command
     {
-        [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
+        [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address.")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
+
+        [Option('c', "client-name", HelpText = "Client name used to distinguish running jobutil instances.")]
+        public string ClientName { get; set; } = ConfigurationManager.AppSettings["ClientName"];
 
         public abstract int Execute();
     }

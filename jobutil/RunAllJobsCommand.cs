@@ -11,9 +11,6 @@ namespace jobutil
     [Verb("all", HelpText = "Run all jobs continuously.")]
     class RunAllJobsCommand : Command
     {
-        [Value(0)]
-        public string JobPrefix { get; set; }
-
         [Option('t', "thread-count", HelpText = "Maximum thread count when running jobs.")]
         public int ThreadCount { get; set; } = 1;
 
@@ -50,13 +47,13 @@ namespace jobutil
                 Job j = null;
                 try
                 {
-                    j = Job.PullJob(idPrefix: JobPrefix);
+                    j = Job.PullJob(idPrefix: ClientName + "-");
                     var c = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.Error.WriteLine($"Pulled job ({j.Id}) at {DateTime.Now}.");
                     Console.ForegroundColor = c;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     yield break;
                 }
