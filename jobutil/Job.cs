@@ -99,15 +99,31 @@ namespace jobutil
 
         #endregion
 
-        public static Job PullJob(string id = null, string idPrefix = null)
-        {
-            return PimixService.Call<Job, Job>("pull_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id, ["id_prefix"] = idPrefix });
-        }
+        public static Job PullJob(string id = null, string idPrefix = null, string runner = null)
+            => PimixService.Call<Job, Job>
+            (
+                "pull_job",
+                methodType: "POST",
+                parameters: new Dictionary<string, string>
+                {
+                    ["id"] = id,
+                    ["id_prefix"] = idPrefix,
+                    ["runner"] = runner
+                }
+            );
 
-        public static Job StartJob(string id = null, string idPrefix = null)
-        {
-            return PimixService.Call<Job, Job>("start_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id, ["id_prefix"] = idPrefix });
-        }
+        public static Job StartJob(string id = null, string idPrefix = null, string runner = null)
+            => PimixService.Call<Job, Job>
+            (
+                "start_job",
+                methodType: "POST",
+                parameters: new Dictionary<string, string>
+                {
+                    ["id"] = id,
+                    ["id_prefix"] = idPrefix,
+                    ["runner"] = runner
+                }
+            );
 
         public static Job FinishJob(string id, bool failed = false)
         {
