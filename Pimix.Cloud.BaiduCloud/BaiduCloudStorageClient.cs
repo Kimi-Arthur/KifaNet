@@ -509,7 +509,6 @@ namespace Pimix.Cloud.BaiduCloud
                         {
                             Console.Error.WriteLine("Didn't get expected amount of data.");
                             Console.Error.WriteLine($"Responses contains {readCount} bytes, should be {count} bytes.");
-                            Console.Error.WriteLine(Encoding.UTF8.GetString(buffer, 0, readCount));
                         }
                     }
                     catch (Exception ex)
