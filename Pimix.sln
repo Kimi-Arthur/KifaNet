@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobutil", "jobutil\jobutil.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.MegaNz", "Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj", "{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.MegaNz", "PimixTest.Cloud.MegaNz\PimixTest.Cloud.MegaNz.csproj", "{3DCB620C-D096-45F4-9512-6F453C5A0DEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +153,14 @@ Global
 		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|x64.ActiveCfg = Release|Any CPU
 		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|x64.Build.0 = Release|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Debug|x64.Build.0 = Debug|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Release|x64.ActiveCfg = Release|Any CPU
+		{3DCB620C-D096-45F4-9512-6F453C5A0DEF}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
