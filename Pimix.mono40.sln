@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO", "Pimix.IO\Pimix.IO.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO.FileFormats", "Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{2DD33390-1808-4F3D-82BB-5E65AB955F49}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobutil", "jobutil\jobutil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.MegaNz", "Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj", "{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,14 @@ Global
 		{1CB70F64-85D8-49DA-ABCA-C265429F79D4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1CB70F64-85D8-49DA-ABCA-C265429F79D4}.Release|x64.ActiveCfg = Release|Any CPU
 		{1CB70F64-85D8-49DA-ABCA-C265429F79D4}.Release|x64.Build.0 = Release|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Debug|x64.Build.0 = Debug|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|x64.ActiveCfg = Release|Any CPU
+		{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
