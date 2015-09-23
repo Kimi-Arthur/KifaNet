@@ -326,7 +326,7 @@ namespace Pimix.Cloud.BaiduCloud
                     ["content_length"] = fileInformation.Size.ToString(),
                     ["content_md5"] = fileInformation.MD5,
                     ["slice_md5"] = fileInformation.SliceMD5,
-                    ["content_crc32"] = fileInformation.CRC32
+                    ["content_crc32"] = fileInformation.Adler32
                 });
 
             request.GetRequestStream().Close();

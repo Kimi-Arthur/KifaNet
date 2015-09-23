@@ -43,6 +43,9 @@ namespace Pimix.IO
         [JsonProperty("crc32")]
         public string CRC32 { get; set; }
 
+        [JsonProperty("adler32")]
+        public string Adler32 { get; set; }
+
         [JsonProperty("block_size")]
         public int? BlockSize { get; set; }
 
@@ -128,9 +131,16 @@ namespace Pimix.IO
                 int readLength;
                 byte[] buffer = new byte[blockSize];
 
-                var crc32 = requiredProperties.HasFlag(FileProperties.CRC32)
-                    ? HashFactory.Checksum.CreateAdler32() : null;
-                crc32?.Initialize();
+                List<IHash> additionalHashers = new List<IHash>
+                {
+                    requiredProperties.HasFlag(FileProperties.CRC32) ? HashFactory.Checksum.CreateCRC32a() : null,
+                    requiredProperties.HasFlag(FileProperties.Adler32) ? HashFactory.Checksum.CreateAdler32() : null
+                };
+
+                foreach (var hasher in additionalHashers)
+                {
+                    hasher?.Initialize();
+                }
 
                 while ((readLength = stream.Read(buffer, 0, blockSize)) != 0)
                 {
@@ -139,7 +149,10 @@ namespace Pimix.IO
                         hasher?.TransformBlock(buffer, 0, readLength, buffer, 0);
                     }
 
-                    crc32?.TransformBytes(buffer, 0, readLength);
+                    foreach (var hasher in additionalHashers)
+                    {
+                        hasher?.TransformBytes(buffer, 0, readLength);
+                    }
 
                     if (requiredProperties.HasFlag(FileProperties.BlockMD5))
                     {
@@ -165,7 +178,8 @@ namespace Pimix.IO
                 MD5 = MD5 ?? hashers[0]?.Hash.ToHexString();
                 SHA1 = SHA1 ?? hashers[1]?.Hash.ToHexString();
                 SHA256 = SHA256 ?? hashers[2]?.Hash.ToHexString();
-                CRC32 = CRC32 ?? crc32?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+                CRC32 = CRC32 ?? additionalHashers[0]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+                Adler32 = Adler32 ?? additionalHashers[1]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
             }
 
             if (requiredProperties.HasFlag(FileProperties.EncryptionKey))
