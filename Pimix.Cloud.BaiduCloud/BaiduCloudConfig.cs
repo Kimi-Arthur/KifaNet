@@ -87,6 +87,9 @@ namespace Pimix.Cloud.BaiduCloud
 
         [JsonProperty("merge_blocks")]
         public APIInfo MergeBlocks { get; set; }
+
+        [JsonProperty("get_file_info")]
+        public APIInfo GetFileInfo { get; set; }
     }
 
     public class APIInfo

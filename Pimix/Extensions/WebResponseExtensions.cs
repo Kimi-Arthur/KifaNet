@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Pimix
 {
@@ -11,7 +12,7 @@ namespace Pimix
         public static Dictionary<string, string> EncodingNameFixes { get; set; } =
             new Dictionary<string, string> {["utf8"] = "UTF-8" };
 
-        public static T GetObject<T>(this WebResponse response)
+        static string GetString(WebResponse response)
         {
             var resp = response as HttpWebResponse;
             string encodingName = resp.ContentEncoding;
@@ -25,14 +26,17 @@ namespace Pimix
 
             using (StreamReader sr = new StreamReader(resp.GetResponseStream(), Encoding.GetEncoding(encodingName)))
             {
-                T result = JsonConvert.DeserializeObject<T>(sr.ReadToEnd());
-                return result;
+                return sr.ReadToEnd();
             }
         }
 
+        public static JToken GetJToken(this WebResponse response)
+            => JToken.Parse(GetString(response));
+
+        public static T GetObject<T>(this WebResponse response)
+            => JsonConvert.DeserializeObject<T>(GetString(response));
+
         public static Dictionary<string, object> GetDictionary(this WebResponse response)
-        {
-            return response.GetObject<Dictionary<string, object>>();
-        }
+            => response.GetObject<Dictionary<string, object>>();
     }
 }

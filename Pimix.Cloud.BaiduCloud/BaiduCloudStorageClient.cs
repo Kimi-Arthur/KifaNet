@@ -340,16 +340,15 @@ namespace Pimix.Cloud.BaiduCloud
 
         public long GetDownloadLength(string remotePath)
         {
-            HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
+            HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string>
                 {
                     ["remote_path"] = remotePath.TrimStart('/')
                 });
-            request.Method = "HEAD";
 
             using (var response = request.GetResponse())
             {
-                return response.ContentLength;
+                return (long)response.GetJToken()["list"][0]["size"];
             }
         }
 
