@@ -53,10 +53,17 @@ namespace fileutil
 
             if (DestinationCheck)
             {
-                var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute();
-                if (result == 0)
+                try
                 {
-                    return 0;
+                    var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute();
+                    if (result == 0)
+                    {
+                        return 0;
+                    }
+                }
+                catch
+                {
+                    // Ignore the error for now.
                 }
             }
 
