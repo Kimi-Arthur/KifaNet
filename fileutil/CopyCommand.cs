@@ -27,6 +27,9 @@ namespace fileutil
         [Option('p', "precheck", HelpText = "Whether to check (and update) SOURCE before copying.")]
         public bool Precheck { get; set; } = false;
 
+        [Option('d', "DestinationCheck", HelpText = "Whether to check (and update) DEST before copying.")]
+        public bool DestinationCheck { get; set; } = true;
+
         [Option('u', "update", HelpText = "Whether to update result to server after copying.")]
         public bool Update { get; set; } = false;
 
@@ -45,6 +48,15 @@ namespace fileutil
                 {
                     Console.Error.WriteLine("Precheck failed!");
                     return 1;
+                }
+            }
+
+            if (DestinationCheck)
+            {
+                var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute();
+                if (result == 0)
+                {
+                    return 0;
                 }
             }
 
