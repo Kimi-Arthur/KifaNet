@@ -129,6 +129,17 @@ namespace jobutil
                 }
             );
 
+        public static Job ResetJob(string id)
+            => PimixService.Call<Job, Job>
+            (
+                "reset_job",
+                methodType: "POST",
+                parameters: new Dictionary<string, string>
+                {
+                    ["id"] = id
+                }
+            );
+
         public static Job FinishJob(string id, bool failed = false)
         {
             return PimixService.Call<Job, Job>("finish_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id,["failed"] = failed.ToString() });

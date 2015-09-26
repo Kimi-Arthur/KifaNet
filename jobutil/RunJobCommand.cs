@@ -9,7 +9,7 @@ using CommandLine;
 namespace jobutil
 {
     [Verb("run", HelpText = "Run a specific job.")]
-    class RunJobCommand : Command
+    class RunJobCommand : JobUtilCommand
     {
         [Value(0)]
         public string JobId { get; set; }

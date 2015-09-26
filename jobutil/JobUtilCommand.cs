@@ -8,7 +8,7 @@ using CommandLine;
 
 namespace jobutil
 {
-    abstract class Command
+    abstract class JobUtilCommand
     {
         [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address.")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];

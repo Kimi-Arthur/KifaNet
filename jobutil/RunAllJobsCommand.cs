@@ -10,7 +10,7 @@ using CommandLine;
 namespace jobutil
 {
     [Verb("all", HelpText = "Run all jobs continuously.")]
-    class RunAllJobsCommand : Command
+    class RunAllJobsCommand : JobUtilCommand
     {
         [Option('t', "thread-count", HelpText = "Maximum thread count when running jobs.")]
         public int ThreadCount { get; set; } = 1;

@@ -10,10 +10,10 @@ namespace jobutil
     class Program
     {
         static int Main(string[] args)
-            => Parser.Default.ParseArguments<RunJobCommand, RunAllJobsCommand>(args)
-            .Return<Command, int>(ExecuteCommand, HandleParseFail);
+            => Parser.Default.ParseArguments<RunJobCommand, RunAllJobsCommand, ResetJobCommand>(args)
+            .Return<JobUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
-        static int ExecuteCommand(Command command)
+        static int ExecuteCommand(JobUtilCommand command)
         {
             Initialize(command);
 
@@ -36,7 +36,7 @@ namespace jobutil
 
         static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
-        static void Initialize(Command options)
+        static void Initialize(JobUtilCommand options)
         {
             Job.PimixServerApiAddress = options.PimixServerAddress;
         }
