@@ -7,8 +7,8 @@
     <ProjectGuid>{176E01DB-8DA9-4FE1-9271-411E00E3547A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Pimix.Cloud.Baidu</RootNamespace>
-    <AssemblyName>Pimix.Cloud.Baidu</AssemblyName>
+    <RootNamespace>Pimix.Cloud.BaiduCloud</RootNamespace>
+    <AssemblyName>Pimix.Cloud.BaiduCloud</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
