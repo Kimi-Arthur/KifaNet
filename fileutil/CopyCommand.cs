@@ -27,7 +27,7 @@ namespace fileutil
         [Option('p', "precheck", HelpText = "Whether to check (and update) SOURCE before copying.")]
         public bool Precheck { get; set; } = false;
 
-        [Option('d', "DestinationCheck", HelpText = "Whether to check (and update) DEST before copying.")]
+        [Option('d', "destination-check", HelpText = "Whether to check (and update) DEST before copying.")]
         public bool DestinationCheck { get; set; } = true;
 
         [Option('u', "update", HelpText = "Whether to update result to server after copying.")]
