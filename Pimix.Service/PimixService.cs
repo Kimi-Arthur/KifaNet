@@ -41,7 +41,7 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetDictionary()["status"].ToString() == "ok";
+                return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetDictionary()["status"].ToString() == "ok";
+                return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
         }
 
@@ -105,7 +105,7 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetDictionary()["status"].ToString() == "ok";
+                return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
         }
 

@@ -54,6 +54,8 @@
     <Compile Include="JsonSerialization.cs" />
     <Compile Include="MegaAesCtrStream.cs" />
     <Compile Include="MegaApiClient.cs" />
+    <Compile Include="MegaNzConfig.cs" />
+    <Compile Include="MegaNzStorageClient.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebClient.cs" />
