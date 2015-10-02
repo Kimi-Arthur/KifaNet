@@ -8,14 +8,20 @@ using Newtonsoft.Json.Converters;
 
 namespace Pimix.Service
 {
-    public class ActionStatus
+    public class ActionStatus<ResponseType>
     {
         [JsonProperty("status")]
         [JsonConverter(typeof(StringEnumConverter))]
         public ActionStatusCode StatusCode { get; set; }
 
         [JsonProperty("message")]
-        public string Message { get; set; }
+        public ResponseType Message { get; set; }
+    }
+
+    public class ActionStatus : ActionStatus<string>
+    {
+        public override string ToString()
+            => $"status: {StatusCode}, message: {Message}";
     }
 
     public enum ActionStatusCode

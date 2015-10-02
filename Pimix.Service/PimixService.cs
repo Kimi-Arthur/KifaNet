@@ -137,7 +137,15 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetObject<ResponseType>();
+                var result = response.GetObject<ActionStatus<ResponseType>>();
+                if (result.StatusCode == ActionStatusCode.OK)
+                {
+                    return result.Message;
+                }
+                else
+                {
+                    throw new ActionFailedException { Response = result as ActionStatus };
+                }
             }
         }
 

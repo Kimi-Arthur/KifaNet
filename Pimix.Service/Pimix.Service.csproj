@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionFailedException.cs" />
     <Compile Include="ActionStatus.cs" />
     <Compile Include="PimixService.cs" />
     <Compile Include="DataModelAttribute.cs" />
