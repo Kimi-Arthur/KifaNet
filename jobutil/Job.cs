@@ -129,8 +129,9 @@ namespace jobutil
                 }
             );
 
-        public static Job ResetJob(string id)
-            => PimixService.Call<Job, Job>
+        public static void ResetJob(string id)
+        {
+            PimixService.Call<Job>
             (
                 "reset_job",
                 methodType: "POST",
@@ -139,20 +140,21 @@ namespace jobutil
                     ["id"] = id
                 }
             );
-
-        public static Job FinishJob(string id, bool failed = false)
-        {
-            return PimixService.Call<Job, Job>("finish_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id,["failed"] = failed.ToString() });
         }
 
-        public static Job AddInfo(string id, Dictionary<string, object> information)
+        public static void FinishJob(string id, bool failed = false)
         {
-            return PimixService.Call<Job, Job>("add_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
+            PimixService.Call<Job>("finish_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id,["failed"] = failed.ToString() });
         }
 
-        public static Job AppendInfo(string id, Dictionary<string, object> information)
+        public static void AddInfo(string id, Dictionary<string, object> information)
         {
-            return PimixService.Call<Job, Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
+            PimixService.Call<Job>("add_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
+        }
+
+        public static void AppendInfo(string id, Dictionary<string, object> information)
+        {
+            PimixService.Call<Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
         }
 
         public static Job GetJob(string idPrefix = null)

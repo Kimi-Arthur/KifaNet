@@ -149,6 +149,12 @@ namespace Pimix.Service
             }
         }
 
+        public static void Call<TDataModel>(string action, string methodType = "GET",
+            string id = null, Dictionary<string, string> parameters = null, Object body = null)
+        {
+            Call<TDataModel, object>(action, methodType, id, parameters, body);
+        }
+
         static void Init(Type typeInfo)
         {
             JsonConvert.DefaultSettings =
