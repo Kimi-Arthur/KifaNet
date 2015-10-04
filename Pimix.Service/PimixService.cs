@@ -144,7 +144,7 @@ namespace Pimix.Service
                 }
                 else
                 {
-                    throw new ActionFailedException { Response = result as ActionStatus };
+                    throw new ActionFailedException { Response = result };
                 }
             }
         }

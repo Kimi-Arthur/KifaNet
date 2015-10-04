@@ -11,6 +11,6 @@ namespace Pimix.Service
         public ActionStatus Response { get; set; }
 
         public override string ToString()
-            => $"Action failed with {Response}.";
+            => $"Action failed with \"{Response}\".";
     }
 }

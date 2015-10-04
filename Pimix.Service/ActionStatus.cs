@@ -17,6 +17,13 @@ namespace Pimix.Service
 
         [JsonProperty("message")]
         public ResponseType Message { get; set; }
+
+        public static implicit operator ActionStatus(ActionStatus<ResponseType> value)
+            => new ActionStatus
+            {
+                StatusCode = value.StatusCode,
+                Message = value.Message.ToString()
+            };
     }
 
     public class ActionStatus : ActionStatus<string>
