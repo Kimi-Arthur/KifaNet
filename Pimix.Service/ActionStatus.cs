@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -26,12 +27,11 @@ namespace Pimix.Service
 
     public enum ActionStatusCode
     {
+        [EnumMember(Value = "ok")]
         OK,
+        [EnumMember(Value = "bad_request")]
         BadRequest,
-        Error,
-        // Aliases
-        ok = OK,
-        bad_request = BadRequest,
-        error = Error
+        [EnumMember(Value = "error")]
+        Error
     };
 }
