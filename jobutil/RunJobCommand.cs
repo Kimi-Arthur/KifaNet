@@ -17,7 +17,7 @@ namespace jobutil
         public override int Execute()
         {
             string runnerName = $"{ClientName}${Process.GetCurrentProcess().Id}";
-            return Job.PullJob(JobId, idPrefix: ClientName + "-", runner: runnerName).Execute(ClientName);
+            return Job.PullJob(JobId, idPrefix: ClientName + "-", runner: runnerName).Execute(ClientName, HeartbeatInterval);
         }
     }
 }

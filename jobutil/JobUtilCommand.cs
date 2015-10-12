@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
+using Pimix;
 
 namespace jobutil
 {
@@ -15,6 +16,8 @@ namespace jobutil
 
         [Option('c', "client-name", HelpText = "Client name used to distinguish running jobutil instances.")]
         public string ClientName { get; set; } = ConfigurationManager.AppSettings["ClientName"];
+
+        public TimeSpan HeartbeatInterval { get; set; } = ConfigurationManager.AppSettings["HeartbeatInterval"].ParseTimeSpanString();
 
         public abstract int Execute();
     }

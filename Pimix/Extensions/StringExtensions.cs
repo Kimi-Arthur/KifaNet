@@ -67,5 +67,28 @@ namespace Pimix
 
             return hexBytes;
         }
+
+        public static TimeSpan ParseTimeSpanString(this string timeSpanString)
+        {
+            if (timeSpanString == null || timeSpanString.Length == 0)
+                return TimeSpan.Zero;
+
+            if (timeSpanString.EndsWith("hr"))
+            {
+                return TimeSpan.FromHours(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 2)));
+            }
+
+            if (timeSpanString.EndsWith("min"))
+            {
+                return TimeSpan.FromMinutes(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 3)));
+            }
+
+            if (timeSpanString.EndsWith("s"))
+            {
+                return TimeSpan.FromSeconds(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 1)));
+            }
+
+            return TimeSpan.FromSeconds(double.Parse(timeSpanString));
+        }
     }
 }

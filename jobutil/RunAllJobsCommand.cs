@@ -29,7 +29,7 @@ namespace jobutil
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Error.WriteLine($"{runnerName}: Started job ({j.Id}) at {DateTime.Now}.");
                         Console.ForegroundColor = c;
-                        j.Execute(ClientName);
+                        j.Execute(ClientName, HeartbeatInterval);
                         c = Console.ForegroundColor;
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Error.WriteLine($"{runnerName}: Finished job ({j.Id}) at {DateTime.Now}.");

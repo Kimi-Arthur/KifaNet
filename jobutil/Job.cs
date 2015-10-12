@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using Newtonsoft.Json;
 using Pimix.Service;
 
@@ -21,13 +22,22 @@ namespace jobutil
         [JsonProperty("arguments")]
         public List<string> Arguments { get; set; }
 
-        public int Execute(string runnerName = null)
+        public int Execute(string runnerName = null, TimeSpan? heartbeatInterval = null)
         {
+            Timer timer = null;
+            if (heartbeatInterval != null)
+            {
+                timer = new Timer(heartbeatInterval.Value.TotalMilliseconds);
+                timer.Elapsed += new ElapsedEventHandler((sender, e) =>
+                {
+                    Job.Heartbeat(Id);
+                });
+            }
+
             using (Process proc = new Process())
             {
                 proc.StartInfo.FileName = Command;
                 proc.StartInfo.Arguments = string.Join(" ", Arguments);
-
 
                 proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.RedirectStandardOutput = true;
@@ -38,6 +48,7 @@ namespace jobutil
                     if (!String.IsNullOrEmpty(e.Data))
                     {
                         Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
+                        timer.Interval = timer.Interval;
                     }
                 });
 
@@ -46,9 +57,11 @@ namespace jobutil
                     if (!String.IsNullOrEmpty(e.Data))
                     {
                         Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
+                        timer.Interval = timer.Interval;
                     }
                 });
 
+                timer?.Start();
                 proc.Start();
 
                 runnerName = $"{runnerName}${proc.Id}";
@@ -62,6 +75,8 @@ namespace jobutil
                 proc.WaitForExit();
                 Job.AddInfo(Id, new Dictionary<string, object> {["exit_code"] = proc.ExitCode });
                 Job.FinishJob(Id, proc.ExitCode != 0);
+
+                timer?.Dispose();
 
                 Console.Error.WriteLine($"{runnerName}: Job finish info ({Id}): {proc.ExitCode}");
 
