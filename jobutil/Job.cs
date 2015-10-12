@@ -144,7 +144,29 @@ namespace jobutil
 
         public static void FinishJob(string id, bool failed = false)
         {
-            PimixService.Call<Job>("finish_job", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id,["failed"] = failed.ToString() });
+            PimixService.Call<Job>
+            (
+                "finish_job",
+                methodType: "POST",
+                parameters: new Dictionary<string, string>
+                {
+                    ["id"] = id,
+                    ["failed"] = failed.ToString()
+                }
+            );
+        }
+
+        public static void Heartbeat(string id)
+        {
+            PimixService.Call<Job>
+            (
+                "heartbeat",
+                methodType: "POST",
+                parameters: new Dictionary<string, string>
+                {
+                    ["id"] = id
+                }
+            );
         }
 
         public static void AddInfo(string id, Dictionary<string, object> information)
