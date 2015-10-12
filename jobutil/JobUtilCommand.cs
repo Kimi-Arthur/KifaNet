@@ -19,6 +19,9 @@ namespace jobutil
 
         public TimeSpan HeartbeatInterval { get; set; } = ConfigurationManager.AppSettings["HeartbeatInterval"].ParseTimeSpanString();
 
+        [Option('b', "fire-heartbeat", HelpText = "Whether to fire heartbeat during job execution.")]
+        public bool FireHeartbeat { get; set; } = false;
+
         public abstract int Execute();
     }
 }
