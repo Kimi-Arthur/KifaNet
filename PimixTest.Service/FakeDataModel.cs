@@ -63,11 +63,8 @@ namespace PimixTest.Service
 
         #endregion
 
-        public static bool Reset()
-        {
-            var result = PimixService.Call<FakeDataModel, Dictionary<string, string>>("reset", methodType: "POST");
-            return result.Contains(new KeyValuePair<string, string>("status", "ok"));
-        }
+        public static void Reset()
+            => PimixService.Call<FakeDataModel>("reset", methodType: "POST");
     }
 
     class FakeSubDataModel

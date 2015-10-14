@@ -44,7 +44,7 @@ namespace PimixTest.Service
         [TestMethod]
         public void DataModelCallBasicTest()
         {
-            Assert.IsTrue(FakeDataModel.Reset());
+            FakeDataModel.Reset();
         }
 
         [TestMethod]

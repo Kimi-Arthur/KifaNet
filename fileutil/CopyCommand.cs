@@ -83,13 +83,13 @@ namespace fileutil
                                     BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
                                     if (schemes.Contains("v1"))
                                     {
-                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: false);
+                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.Write(uploadTo.LocalPath, uploadStream, match: false);
                                     }
                                     else
                                     {
                                         // No encryption
                                         Console.Error.WriteLine("From local and upload stream contains no encryption, will try rapid");
-                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.UploadStream(uploadTo.LocalPath, uploadStream, tryRapid: true, fileInformation: FileInformation.Get(uploadTo.LocalPath));
+                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.Write(uploadTo.LocalPath, uploadStream, fileInformation: FileInformation.Get(uploadTo.LocalPath));
                                     }
                                     break;
                                 }

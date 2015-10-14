@@ -11,11 +11,13 @@ using Pimix.IO;
 
 namespace Pimix.Cloud.BaiduCloud
 {
-    public class BaiduCloudStorageClient
+    public class BaiduCloudStorageClient : StorageClient
     {
         private List<Stream> Streams { get; set; } = new List<Stream>();
 
         public static BaiduCloudConfig Config { get; set; }
+
+        public List<int> BlockInfo { get; set; } = null;
 
         string accountId;
         public string AccountId
@@ -46,7 +48,7 @@ namespace Pimix.Cloud.BaiduCloud
 
         }
 
-        int Download(byte[] buffer, string remotePath, int bufferOffset = 0, long offset = 0, int count = -1)
+        int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0, int count = -1)
         {
             // All data contracts are checked by public methods.
             // All data here are expected to be correct.
@@ -54,7 +56,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = remotePath.TrimStart('/')
+                    ["remote_path"] = path.TrimStart('/')
                 });
             request.Timeout = 30 * 60 * 1000;
 
@@ -76,21 +78,20 @@ namespace Pimix.Cloud.BaiduCloud
         /// <summary>
         /// Upload data from stream with the optimal method.
         /// </summary>
-        /// <param name="remotePath">Remote path for the uploaded file.</param>
-        /// <param name="input">Input stream to upload.</param>
-        /// <param name="tryRapid">If rapid upload is tried before normal upload.</param>
-        /// <param name="blockInfo">Contains block info as a series of lengths.</param>
+        /// <param name="path">Path for the destination file.</param>
+        /// <param name="stream">Input stream to upload.</param>
         /// <param name="fileInformation">
-        /// If specified, contains information about the file to be uploaded.
+        /// If specified, contains information about the data to write.
         /// </param>
-        public void UploadStream(string remotePath, Stream input = null, bool tryRapid = true, List<int> blockInfo = null, FileInformation fileInformation = null)
+        /// <param name="match">Whether the fileInformation matches the stream.</param>
+        public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
             fileInformation = fileInformation ?? new FileInformation();
-            if (tryRapid)
+            if (match)
             {
                 try
                 {
-                    UploadStreamRapid(remotePath, input, fileInformation);
+                    UploadStreamRapid(path, stream, fileInformation);
                     return;
                 }
                 catch (Exception)
@@ -98,23 +99,23 @@ namespace Pimix.Cloud.BaiduCloud
                 }
             }
 
-            if (input == null)
-                throw new ArgumentNullException(nameof(input));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
 
-            if (!input.CanSeek)
+            if (!stream.CanSeek)
                 throw new ArgumentException(
                     "Input stream needs to be seekable!",
-                    nameof(input));
+                    nameof(stream));
 
-            UploadNormal(remotePath, input, blockInfo, fileInformation);
+            UploadNormal(path, stream, fileInformation);
         }
 
-        public void DeleteFile(string remotePath)
+        public override void Delete(string path)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.RemovePath,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = remotePath.TrimStart('/')
+                    ["remote_path"] = path.TrimStart('/')
                 });
 
             request.GetRequestStream().Close();
@@ -129,35 +130,35 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadNormal(string remotePath, Stream input, List<int> blockInfo, FileInformation fileInformation)
+        void UploadNormal(string path, Stream input, FileInformation fileInformation)
         {
             fileInformation.AddProperties(input, FileProperties.Size | FileProperties.BlockSize);
 
             input.Seek(0, SeekOrigin.Begin);
 
-            if (blockInfo == null || blockInfo.Count == 0)
+            if (BlockInfo == null || BlockInfo.Count == 0)
             {
-                blockInfo = new List<int> { fileInformation.BlockSize.Value };
+                BlockInfo = new List<int> { fileInformation.BlockSize.Value };
             }
 
             int blockIndex = 0;
             int blockLength = 0;
-            byte[] buffer = new byte[blockInfo.Max()];
+            byte[] buffer = new byte[BlockInfo.Max()];
 
-            if (blockInfo[0] >= fileInformation.Size)
+            if (BlockInfo[0] >= fileInformation.Size)
             {
-                blockLength = input.Read(buffer, 0, blockInfo[0]);
+                blockLength = input.Read(buffer, 0, BlockInfo[0]);
                 bool uploadDirectDone = false;
                 while (!uploadDirectDone)
                 {
                     try
                     {
-                        UploadDirect(remotePath, buffer, 0, blockLength);
+                        UploadDirect(path, buffer, 0, blockLength);
                         uploadDirectDone = true;
                     }
                     catch (WebException ex)
                     {
-                        Console.WriteLine($"Failed once when uploading file {remotePath} with direct upload method.");
+                        Console.WriteLine($"Failed once when uploading file {path} with direct upload method.");
                         Console.WriteLine("Exception:");
                         Console.WriteLine(ex);
                         if (ex.Response != null)
@@ -172,7 +173,7 @@ namespace Pimix.Cloud.BaiduCloud
                     }
                     catch (ObjectDisposedException ex)
                     {
-                        Console.WriteLine($"Failed once when uploading file {remotePath} with direct upload method.");
+                        Console.WriteLine($"Failed once when uploading file {path} with direct upload method.");
                         Console.WriteLine("Unexpected ObjectDisposedException:");
                         Console.WriteLine(ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
@@ -185,7 +186,7 @@ namespace Pimix.Cloud.BaiduCloud
 
             for (long position = 0; position < fileInformation.Size; position += blockLength)
             {
-                blockLength = input.Read(buffer, 0, blockInfo[blockIndex]);
+                blockLength = input.Read(buffer, 0, BlockInfo[blockIndex]);
 
                 bool done = false;
                 while (!done)
@@ -197,7 +198,7 @@ namespace Pimix.Cloud.BaiduCloud
                     }
                     catch (WebException ex)
                     {
-                        Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
+                        Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
                         Console.WriteLine("Exception:");
                         Console.WriteLine(ex);
                         if (ex.Response != null)
@@ -212,14 +213,14 @@ namespace Pimix.Cloud.BaiduCloud
                     }
                     catch (ObjectDisposedException ex)
                     {
-                        Console.WriteLine($"Failed once for file {remotePath}, on block {blockIds.Count}");
+                        Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
                         Console.WriteLine("Unexpected ObjectDisposedException:");
                         Console.WriteLine(ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }
 
-                if (blockIndex < blockInfo.Count - 1)
+                if (blockIndex < BlockInfo.Count - 1)
                 {
                     // Stay at the last element.
                     blockIndex++;
@@ -231,7 +232,7 @@ namespace Pimix.Cloud.BaiduCloud
             {
                 try
                 {
-                    MergeBlocks(remotePath, blockIds);
+                    MergeBlocks(path, blockIds);
                     mergeDone = true;
                 }
                 catch (Exception ex)
@@ -244,12 +245,12 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadDirect(string remotePath, byte[] buffer, int offset, int count)
+        void UploadDirect(string path, byte[] buffer, int offset, int count)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileDirect,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = remotePath.TrimStart('/')
+                    ["remote_path"] = path.TrimStart('/')
                 });
             request.Timeout = 30 * 60 * 1000;
 
@@ -261,8 +262,8 @@ namespace Pimix.Cloud.BaiduCloud
             using (var response = request.GetResponse())
             {
                 var result = response.GetDictionary();
-                if (!result["path"].ToString().EndsWith(remotePath.TrimStart('/')))
-                    throw new Exception($"Direct upload may fail: {remotePath}, real path: {result["path"]}");
+                if (!result["path"].ToString().EndsWith(path.TrimStart('/')))
+                    throw new Exception($"Direct upload may fail: {path}, real path: {result["path"]}");
             }
         }
 
@@ -282,12 +283,12 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void MergeBlocks(string remotePath, List<string> blockList)
+        void MergeBlocks(string path, List<string> blockList)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.MergeBlocks,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = remotePath.TrimStart('/')
+                    ["remote_path"] = path.TrimStart('/')
                 });
 
             request.ContentType = "application/x-www-form-urlencoded";
@@ -310,19 +311,19 @@ namespace Pimix.Cloud.BaiduCloud
             using (var response = request.GetResponse())
             {
                 var result = response.GetDictionary();
-                if (!result["path"].ToString().EndsWith(remotePath))
-                    throw new Exception($"Merge may fail! Original path: {remotePath}, real path: {result["path"]}");
+                if (!result["path"].ToString().EndsWith(path))
+                    throw new Exception($"Merge may fail! Original path: {path}, real path: {result["path"]}");
             }
         }
 
-        void UploadStreamRapid(string remotePath, Stream input, FileInformation fileInformation)
+        void UploadStreamRapid(string path, Stream input, FileInformation fileInformation)
         {
             fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileRapid,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = remotePath.TrimStart('/'),
+                    ["remote_path"] = path.TrimStart('/'),
                     ["content_length"] = fileInformation.Size.ToString(),
                     ["content_md5"] = fileInformation.MD5,
                     ["slice_md5"] = fileInformation.SliceMD5,
@@ -338,12 +339,12 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        public long GetDownloadLength(string remotePath)
+        public long GetDownloadLength(string path)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = remotePath.TrimStart('/')
+                    ["remote_path"] = path.TrimStart('/')
                 });
 
             using (var response = request.GetResponse())
@@ -352,9 +353,9 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        public Stream GetDownloadStream(string remotePath)
+        public override Stream OpenRead(string path)
         {
-            Streams.Add(new DownloadStream(this, remotePath));
+            Streams.Add(new DownloadStream(this, path));
             return Streams.Last();
         }
 
@@ -372,6 +373,16 @@ namespace Pimix.Cloud.BaiduCloud
             request.Method = api.Method;
 
             return request;
+        }
+
+        public override bool Exists()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Copy(string sourcePath, string destinationPath)
+        {
+            throw new NotImplementedException();
         }
 
         private class DownloadStream : Stream
@@ -403,7 +414,7 @@ namespace Pimix.Cloud.BaiduCloud
                         {
                             try
                             {
-                                length = Client.GetDownloadLength(RemotePath);
+                                length = Client.GetDownloadLength(Path);
                                 retries = 0;
                                 exception = null;
                             }
@@ -430,12 +441,12 @@ namespace Pimix.Cloud.BaiduCloud
 
             public BaiduCloudStorageClient Client { get; set; }
 
-            public string RemotePath { get; set; }
+            public string Path { get; set; }
 
-            public DownloadStream(BaiduCloudStorageClient client, string remotePath)
+            public DownloadStream(BaiduCloudStorageClient client, string path)
             {
                 Client = client;
-                RemotePath = remotePath;
+                Path = path;
             }
 
             public override void Flush()
@@ -502,7 +513,7 @@ namespace Pimix.Cloud.BaiduCloud
                 {
                     try
                     {
-                        readCount = Client.Download(buffer, RemotePath, offset, Position, count);
+                        readCount = Client.Download(buffer, Path, offset, Position, count);
                         done = readCount == count;
                         if (!done)
                         {

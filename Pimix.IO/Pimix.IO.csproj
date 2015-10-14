@@ -71,6 +71,7 @@
     <Compile Include="FileProperties.cs" />
     <Compile Include="PatchedStream.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StorageClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

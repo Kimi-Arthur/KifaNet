@@ -107,7 +107,7 @@ namespace fileutil
                                 BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
                                 try
                                 {
-                                    new BaiduCloudStorageClient { AccountId = uri.UserInfo }.DeleteFile(uri.LocalPath);
+                                    new BaiduCloudStorageClient { AccountId = uri.UserInfo }.Delete(uri.LocalPath);
                                     return true;
                                 }
                                 catch (Exception ex)

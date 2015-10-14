@@ -65,7 +65,7 @@ namespace fileutil
                         case "pan.baidu.com":
                             {
                                 BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                stream = new BaiduCloudStorageClient { AccountId = uri.UserInfo }.GetDownloadStream(uri.LocalPath);
+                                stream = new BaiduCloudStorageClient { AccountId = uri.UserInfo }.OpenRead(uri.LocalPath);
                                 break;
                             }
                         default:
