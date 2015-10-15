@@ -1,6 +1,10 @@
 File Utility Application
 ===
 
+Assembly Name
+---
+fileutil.exe
+
 Current Version:
 ---
 1.0.1.2
