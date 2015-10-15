@@ -144,15 +144,21 @@ namespace Pimix.IO
 
                 while ((readLength = stream.Read(buffer, 0, blockSize)) != 0)
                 {
-                    foreach (var hasher in hashers)
-                    {
-                        hasher?.TransformBlock(buffer, 0, readLength, buffer, 0);
-                    }
+                    Parallel.ForEach(
+                        hashers,
+                        hasher =>
+                        {
+                            hasher?.TransformBlock(buffer, 0, readLength, buffer, 0);
+                        }
+                    );
 
-                    foreach (var hasher in additionalHashers)
-                    {
-                        hasher?.TransformBytes(buffer, 0, readLength);
-                    }
+                    Parallel.ForEach(
+                        additionalHashers,
+                        hasher =>
+                        {
+                            hasher?.TransformBytes(buffer, 0, readLength);
+                        }
+                    );
 
                     if (requiredProperties.HasFlag(FileProperties.BlockMD5))
                     {
