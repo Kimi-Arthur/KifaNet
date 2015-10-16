@@ -25,11 +25,9 @@ os.makedirs(destination, exist_ok=True)
 
 for app in apps:
     for entry in os.scandir('src/{}/bin/Release/'.format(app)):
-        print(entry.path)
         to_copy = False
         for p in include_patterns:
             if re.search(p, entry.path):
-                print(':{}'.format(entry.path))
                 to_copy = True
                 break
         if not to_copy:
