@@ -68,9 +68,11 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="fileutil.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj">

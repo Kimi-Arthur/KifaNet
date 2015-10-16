@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Pimix")]
 [assembly: AssemblyProduct("Pimix.Service")]
-[assembly: AssemblyCopyright("Copyright ©  2015 Kimi")]
+[assembly: AssemblyCopyright("Copyright © 2015 Kimi Arthur")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

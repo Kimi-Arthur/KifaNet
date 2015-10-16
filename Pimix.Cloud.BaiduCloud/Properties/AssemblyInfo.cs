@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Pimix")]
 [assembly: AssemblyProduct("Pimix.Cloud.BaiduCloud")]
-[assembly: AssemblyCopyright("Copyright © Kimi 2015")]
+[assembly: AssemblyCopyright("Copyright © 2015 Kimi Arthur")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
