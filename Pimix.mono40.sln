@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO", "Pimix.IO\Pimix.IO.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO", "src\Pimix.IO\Pimix.IO.csproj", "{8E56EA6C-99AA-4DF3-9E58-012F18E4E811}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Service", "Pimix.Service\Pimix.Service.csproj", "{61CBF740-D894-4F39-9071-BBB96CFD13A4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Service", "src\Pimix.Service\Pimix.Service.csproj", "{61CBF740-D894-4F39-9071-BBB96CFD13A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.BaiduCloud", "Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj", "{176E01DB-8DA9-4FE1-9271-411E00E3547A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.BaiduCloud", "src\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj", "{176E01DB-8DA9-4FE1-9271-411E00E3547A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fileutil", "fileutil\fileutil.csproj", "{531CB29E-4A81-4379-AB90-04481E829ADE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fileutil", "src\fileutil\fileutil.csproj", "{531CB29E-4A81-4379-AB90-04481E829ADE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix", "Pimix\Pimix.csproj", "{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix", "src\Pimix\Pimix.csproj", "{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cryptography", "Pimix.Cryptography\Pimix.Cryptography.csproj", "{ABF8A889-54F2-47B0-975D-8437A4129622}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cryptography", "src\Pimix.Cryptography\Pimix.Cryptography.csproj", "{ABF8A889-54F2-47B0-975D-8437A4129622}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO.FileFormats", "Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{2DD33390-1808-4F3D-82BB-5E65AB955F49}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO.FileFormats", "src\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{2DD33390-1808-4F3D-82BB-5E65AB955F49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobutil", "jobutil\jobutil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobutil", "src\jobutil\jobutil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.MegaNz", "Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj", "{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.MegaNz", "src\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj", "{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

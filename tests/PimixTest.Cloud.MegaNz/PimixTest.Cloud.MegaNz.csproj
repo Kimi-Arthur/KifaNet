@@ -3,12 +3,12 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{466AC6D7-E3BC-406B-8D89-42D007D8D5A4}</ProjectGuid>
+    <ProjectGuid>{3DCB620C-D096-45F4-9512-6F453C5A0DEF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PimixTest.IO.FileFormats</RootNamespace>
-    <AssemblyName>PimixTest.IO.FileFormats</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <RootNamespace>PimixTest.Cloud.MegaNz</RootNamespace>
+    <AssemblyName>PimixTest.Cloud.MegaNz</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -16,7 +16,6 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,18 +50,19 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="PimixFileV1Tests.cs" />
+    <Compile Include="MegaApiClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj">
-      <Project>{2dd33390-1808-4f3d-82bb-5e65ab955f49}</Project>
-      <Name>Pimix.IO.FileFormats</Name>
+    <ProjectReference Include="..\..\src\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj">
+      <Project>{684848ae-ee0f-43a0-8096-06dd0ff7fe0c}</Project>
+      <Name>Pimix.Cloud.MegaNz</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
-      <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
-      <Name>Pimix.IO</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

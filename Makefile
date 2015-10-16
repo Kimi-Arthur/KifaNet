@@ -15,7 +15,7 @@ build:
 
 install:
 	mkdir -p ${binary_path}
-	$(foreach project,$(projects),cp $(project)/bin/Release/*.$(file_types) $(binary_path);)
+	$(foreach project,$(projects),cp src/$(project)/bin/Release/*.$(file_types) $(binary_path);)
 
 clean:
 	xbuild /t:Clean ${build_config} ${sln_file}

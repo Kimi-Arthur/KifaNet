@@ -6,6 +6,6 @@ C# based libraries and tools.
 Components
 ---
 
-* **[Pimix.IO](Pimix.IO/README.md): Pimix Input Output Library**
+* **[Pimix.IO](src/Pimix.IO/README.md): Pimix Input Output Library**
 
-* **[fileutil](fileutil/README.md): File Utility Application**
+* **[fileutil](src/fileutil/README.md): File Utility Application**
