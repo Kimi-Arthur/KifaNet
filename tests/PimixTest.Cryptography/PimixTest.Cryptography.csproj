@@ -36,6 +36,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Pimix, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.1.0.0.1\lib\net46\Pimix.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -63,10 +71,6 @@
       <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
       <Name>Pimix.IO</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Pimix\Pimix.csproj">
-      <Project>{2abe34d1-ef0a-4ac6-bb95-05dcefc5bb91}</Project>
-      <Name>Pimix</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="data-encrypted.bin">
@@ -78,6 +82,7 @@
     <None Include="encrypted.bin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
     <None Include="raw.bin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
