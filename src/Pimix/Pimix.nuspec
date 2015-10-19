@@ -14,4 +14,8 @@
     <copyright>Copyright © 2015 Kimi Arthur</copyright>
     <tags>Pimix lib</tags>
   </metadata>
+  <files>
+    <file src="bin/Release/Pimix.pdb" target="lib/net46/Pimix.pdb" />
+    <file src="README.md" target="" />
+  </files>
 </package>
