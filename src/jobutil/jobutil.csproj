@@ -46,6 +46,10 @@
       <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Pimix.Service, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Service.1.1.1\lib\net46\Pimix.Service.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -68,12 +72,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
-      <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>
-      <Name>Pimix.Service</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
