@@ -7,11 +7,13 @@ Pimix.IO.dll
 
 Current Version:
 ---
-1.1.1.2
+1.1.2
 
 Dependencies:
 ---
  - **NewtonSoft.Json**: 7.0.1
+ - **HashLib**: 2.0.1
+ - **Pimix**: 1.0.3
 
 Changes:
 ---
@@ -21,3 +23,4 @@ Changes:
   - Added `Pimix.IO.StorageClient` interface.
  - 1.1.*
   - Use `Parallel.ForEach` to leverage multi processor's power when calculating hashes.
+  - Use 3 digit version number now.

@@ -35,8 +35,8 @@
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.1.0.0.1\lib\net46\Pimix.dll</HintPath>
+    <Reference Include="Pimix, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

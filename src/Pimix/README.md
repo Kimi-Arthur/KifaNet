@@ -7,7 +7,7 @@ Pimix.dll
 
 Current Version:
 ---
-1.0.1.2
+1.0.3
 
 Dependencies:
 ---
@@ -20,3 +20,5 @@ Changes:
  - 1.0.*
   - Add `.pdb` file into nuget package.
   - Include this file `README.md` to the package.
+  - Use 3 digit version number now.
+  - Changed assembly version object.
