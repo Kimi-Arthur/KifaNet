@@ -36,12 +36,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HashLib, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\HashLib.2.0.1\lib\net40\HashLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Pimix, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Pimix.IO, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.IO.1.1.2\lib\net46\Pimix.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Pimix.Service, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Service.1.1.1\lib\net46\Pimix.Service.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -66,10 +78,6 @@
     <ProjectReference Include="..\..\src\Pimix.Cryptography\Pimix.Cryptography.csproj">
       <Project>{abf8a889-54f2-47b0-975d-8437a4129622}</Project>
       <Name>Pimix.Cryptography</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Pimix.IO\Pimix.IO.csproj">
-      <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
-      <Name>Pimix.IO</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
