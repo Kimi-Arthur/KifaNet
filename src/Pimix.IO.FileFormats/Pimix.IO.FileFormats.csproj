@@ -43,6 +43,10 @@
       <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Pimix.Cryptography, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Cryptography.1.0.0\lib\net46\Pimix.Cryptography.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Pimix.IO, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pimix.IO.1.1.2\lib\net46\Pimix.IO.dll</HintPath>
       <Private>True</Private>
@@ -65,12 +69,6 @@
     <Compile Include="PimixFileV0.cs" />
     <Compile Include="PimixFileV1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Pimix.Cryptography\Pimix.Cryptography.csproj">
-      <Project>{abf8a889-54f2-47b0-975d-8437a4129622}</Project>
-      <Name>Pimix.Cryptography</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
