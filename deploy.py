@@ -12,7 +12,8 @@ apps = [
 include_patterns = [
     r'\.exe',
     r'\.exe\.config',
-    r'\.dll'
+    r'\.dll',
+    r'\.pdb'
 ]
 
 exclude_patterns = [
