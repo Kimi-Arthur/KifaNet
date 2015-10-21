@@ -32,5 +32,14 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion(Pimix.Cryptography.AssemblyInfo.Version)]
+[assembly: AssemblyFileVersion(Pimix.Cryptography.AssemblyInfo.Version)]
+[assembly: AssemblyInformationalVersion(Pimix.Cryptography.AssemblyInfo.Version)]
+
+namespace Pimix.Cryptography
+{
+    static class AssemblyInfo
+    {
+        public const string Version = "1.0.1";
+    }
+}
