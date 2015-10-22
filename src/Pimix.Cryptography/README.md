@@ -11,7 +11,7 @@ Classes
 
 Current Version:
 ---
-1.0.0
+[![Nuget](https://img.shields.io/nuget/v/Pimix.Cryptography.svg)](http://nuget.org/packages/Pimix.Cryptography)
 
 Dependencies:
 ---
