@@ -1,0 +1,24 @@
+Pimix Baidu Cloud Library
+===
+
+Assembly Name
+---
+Pimix.Cloud.BaiduCloud.dll
+
+Current Version:
+---
+[![Nuget](https://img.shields.io/nuget/v/Pimix.Cloud.BaiduCloud.svg)](http://nuget.org/packages/Pimix.Cloud.BaiduCloud)
+
+Dependencies:
+---
+ - **NewtonSoft.Json**: 7.0.1
+ - **Pimix**: 1.0.3
+ - **Pimix.IO**: 1.1.2
+ - **Pimix.Service**: 1.1.1
+
+Changes:
+---
+ - 1.0.0
+  - Begin package versioning.
+ - 1.0.*
+  - Update method names due to upstream update.
