@@ -50,8 +50,16 @@
       <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Pimix.Cryptography, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Cryptography.1.0.0\lib\net46\Pimix.Cryptography.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Pimix.IO, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pimix.IO.1.1.2\lib\net46\Pimix.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Pimix.IO.FileFormats, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.IO.FileFormats.1.0.0\lib\net46\Pimix.IO.FileFormats.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Pimix.Service, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
@@ -94,10 +102,6 @@
     <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj">
       <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
       <Name>Pimix.Cloud.BaiduCloud</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj">
-      <Project>{2dd33390-1808-4f3d-82bb-5e65ab955f49}</Project>
-      <Name>Pimix.IO.FileFormats</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
