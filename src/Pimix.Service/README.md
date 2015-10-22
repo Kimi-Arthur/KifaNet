@@ -7,7 +7,7 @@ Pimix.Service.dll
 
 Current Version:
 ---
-1.1.1
+[![Nuget](https://img.shields.io/nuget/v/Pimix.Service.svg)](http://nuget.org/packages/Pimix.Service)
 
 Dependencies:
 ---
