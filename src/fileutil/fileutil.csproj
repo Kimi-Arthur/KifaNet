@@ -50,6 +50,10 @@
       <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Pimix.Cloud.BaiduCloud, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Cloud.BaiduCloud.1.0.1\lib\net46\Pimix.Cloud.BaiduCloud.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Pimix.Cryptography, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pimix.Cryptography.1.0.0\lib\net46\Pimix.Cryptography.dll</HintPath>
       <Private>True</Private>
@@ -97,12 +101,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj">
-      <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
-      <Name>Pimix.Cloud.BaiduCloud</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
