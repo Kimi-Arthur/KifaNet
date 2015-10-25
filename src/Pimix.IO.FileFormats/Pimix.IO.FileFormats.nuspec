@@ -15,7 +15,7 @@
     <tags>Pimix IO FileFormats lib</tags>
   </metadata>
   <files>
-    <file src="bin/Release/Pimix.IO.FileFormats.pdb" target="lib/net46/Pimix.IO.FileFormats.pdb" />
+    <file src="bin\$configuration$\$id$.pdb" target="lib/net46/" />
     <file src="README.md" target="" />
   </files>
 </package>

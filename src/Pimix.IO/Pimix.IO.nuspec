@@ -15,7 +15,7 @@
     <tags>Pimix IO lib</tags>
   </metadata>
   <files>
-    <file src="bin/Release/Pimix.IO.pdb" target="lib/net46/Pimix.IO.pdb" />
+    <file src="bin\$configuration$\$id$.pdb" target="lib/net46/" />
     <file src="README.md" target="" />
   </files>
 </package>

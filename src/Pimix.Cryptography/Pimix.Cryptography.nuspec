@@ -15,7 +15,7 @@
     <tags>Pimix Cryptography lib</tags>
   </metadata>
   <files>
-    <file src="bin/Release/Pimix.Cryptography.pdb" target="lib/net46/Pimix.Cryptography.pdb" />
+    <file src="bin\$configuration$\$id$.pdb" target="lib/net46/" />
     <file src="README.md" target="" />
   </files>
 </package>

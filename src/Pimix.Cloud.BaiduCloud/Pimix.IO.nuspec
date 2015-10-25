@@ -15,7 +15,7 @@
     <tags>Pimix Cloud BaiduCloud lib</tags>
   </metadata>
   <files>
-    <file src="bin/Release/Pimix.Cloud.BaiduCloud.pdb" target="lib/net46/Pimix.Cloud.BaiduCloud.pdb" />
+    <file src="bin\$configuration$\$id$.pdb" target="lib/net46/" />
     <file src="README.md" target="" />
   </files>
 </package>

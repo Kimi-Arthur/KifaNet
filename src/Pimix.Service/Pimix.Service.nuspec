@@ -15,7 +15,7 @@
     <tags>Pimix Service lib</tags>
   </metadata>
   <files>
-    <file src="bin/Release/Pimix.Service.pdb" target="lib/net46/Pimix.Service.pdb" />
+    <file src="bin\$configuration$\$id$.pdb" target="lib/net46/" />
     <file src="README.md" target="" />
   </files>
 </package>
