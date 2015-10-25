@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Service", "src\Pimix.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.BaiduCloud", "src\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj", "{176E01DB-8DA9-4FE1-9271-411E00E3547A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fileutil", "src\fileutil\fileutil.csproj", "{531CB29E-4A81-4379-AB90-04481E829ADE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.FileUtil", "src\Pimix.Apps.FileUtil\Pimix.Apps.FileUtil.csproj", "{531CB29E-4A81-4379-AB90-04481E829ADE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix", "src\Pimix\Pimix.csproj", "{2ABE34D1-EF0A-4AC6-BB95-05DCEFC5BB91}"
 EndProject

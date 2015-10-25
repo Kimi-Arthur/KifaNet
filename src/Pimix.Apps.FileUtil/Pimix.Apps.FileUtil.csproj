@@ -96,7 +96,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="fileutil.nuspec" />
+    <None Include="Pimix.Apps.FileUtil.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
