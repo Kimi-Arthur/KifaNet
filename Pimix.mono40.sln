@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cryptography", "src\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO.FileFormats", "src\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{2DD33390-1808-4F3D-82BB-5E65AB955F49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jobutil", "src\jobutil\jobutil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.JobUtil", "src\Pimix.Apps.JobUtil\Pimix.Apps.JobUtil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.MegaNz", "src\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj", "{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}"
 EndProject

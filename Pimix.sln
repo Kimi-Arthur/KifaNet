@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.IO.FileFormats", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.IO.FileFormats", "tests\PimixTest.IO.FileFormats\PimixTest.IO.FileFormats.csproj", "{466AC6D7-E3BC-406B-8D89-42D007D8D5A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.JobUtil", "src\jobutil\Pimix.Apps.JobUtil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.JobUtil", "src\Pimix.Apps.JobUtil\Pimix.Apps.JobUtil.csproj", "{1CB70F64-85D8-49DA-ABCA-C265429F79D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.MegaNz", "src\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj", "{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}"
 EndProject
