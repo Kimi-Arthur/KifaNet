@@ -7,7 +7,7 @@ fileutil.exe
 
 Current Version:
 ---
-[![Nuget](https://img.shields.io/nuget/vpre/Pimix.Apps.FileUtil.svg)](http://nuget.org/packages/Pimix.Apps.FileUtil)
+[![Nuget](https://img.shields.io/nuget/v/Pimix.Apps.FileUtil.svg)](http://nuget.org/packages/Pimix.Apps.FileUtil)
 
 Dependencies:
 ---
