@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>$id$</id>
+    <id>Pimix.Apps.FileUtil</id>
     <version>$version$-alpha</version>
     <title>$title$</title>
     <authors>$author$</authors>
@@ -12,6 +12,11 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <copyright>Copyright © 2015 Kimi Arthur</copyright>
-    <tags>fileutil app</tags>
+    <tags>Pimix Apps FileUtil app</tags>
   </metadata>
+  <files>
+    <file src="bin\$configuration$\$id$.pdb" target="lib/net46/" />
+    <file src="bin\$configuration$\$id$.exe.config" target="lib/net46/" />
+    <file src="README.md" target="" />
+  </files>
 </package>
