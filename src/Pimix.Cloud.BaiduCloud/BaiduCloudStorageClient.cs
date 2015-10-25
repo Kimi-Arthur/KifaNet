@@ -375,9 +375,25 @@ namespace Pimix.Cloud.BaiduCloud
             return request;
         }
 
-        public override bool Exists()
+        public override bool Exists(string path)
         {
-            throw new NotImplementedException();
+            HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
+                new Dictionary<string, string>
+                {
+                    ["remote_path"] = path.TrimStart('/')
+                });
+
+            try
+            {
+                using (var response = request.GetResponse())
+                {
+                    return (long)response.GetJToken()["list"][0]["size"] > 0;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public override void Copy(string sourcePath, string destinationPath)

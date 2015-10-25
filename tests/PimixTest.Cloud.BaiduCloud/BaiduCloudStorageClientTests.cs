@@ -97,6 +97,15 @@ namespace PimixTest.Cloud.BaiduCloud
             client.Delete("Test/direct.bin");
         }
 
+        [TestMethod]
+        public void ExistsTest()
+        {
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+
+            Assert.IsTrue(client.Exists("Test/2010-11-25.bin"));
+            Assert.IsFalse(client.Exists("Test/2015-11-25.bin"));
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx)
         {

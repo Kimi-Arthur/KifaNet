@@ -5,6 +5,10 @@ Assembly Name
 ---
 Pimix.Cloud.BaiduCloud.dll
 
+Classes
+---
+ - `BaiduCloudStorageClient` implements `StorageClient` for accessing storage service in pan.baidu.com.
+
 Current Version:
 ---
 [![Nuget](https://img.shields.io/nuget/v/Pimix.Cloud.BaiduCloud.svg)](http://nuget.org/packages/Pimix.Cloud.BaiduCloud)
@@ -13,7 +17,7 @@ Dependencies:
 ---
  - **NewtonSoft.Json**: 7.0.1
  - **Pimix**: 1.0.3
- - **Pimix.IO**: 1.1.2
+ - **Pimix.IO**: 1.1.3
  - **Pimix.Service**: 1.1.1
 
 Changes:
@@ -22,3 +26,5 @@ Changes:
   - Begin package versioning.
  - 1.0.*
   - Update method names due to upstream update.
+ - 1.1.0
+  - Implemented Pimix.Cloud.BaiduCloud.BaiduCloudStorageClient.Exists.
