@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Pimix;
 
-namespace jobutil
+namespace Pimix.Apps.JobUtil
 {
     abstract class JobUtilCommand
     {

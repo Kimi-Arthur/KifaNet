@@ -7,7 +7,7 @@
     <ProjectGuid>{1CB70F64-85D8-49DA-ABCA-C265429F79D4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>jobutil</RootNamespace>
+    <RootNamespace>Pimix.Apps.JobUtil</RootNamespace>
     <AssemblyName>jobutil</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

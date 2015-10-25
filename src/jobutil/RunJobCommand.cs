@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading;
 using CommandLine;
 
-namespace jobutil
+namespace Pimix.Apps.JobUtil
 {
     [Verb("run", HelpText = "Run a specific job.")]
     class RunJobCommand : JobUtilCommand

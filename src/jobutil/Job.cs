@@ -8,7 +8,7 @@ using System.Timers;
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace jobutil
+namespace Pimix.Apps.JobUtil
 {
     [DataModel("jobs")]
     class Job

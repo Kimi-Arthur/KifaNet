@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 
-namespace jobutil
+namespace Pimix.Apps.JobUtil
 {
     [Verb("reset", HelpText = "Reset jobs.")]
     class ResetJobCommand : JobUtilCommand

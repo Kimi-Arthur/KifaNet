@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommandLine;
 
-namespace jobutil
+namespace Pimix.Apps.JobUtil
 {
     [Verb("all", HelpText = "Run all jobs continuously.")]
     class RunAllJobsCommand : JobUtilCommand

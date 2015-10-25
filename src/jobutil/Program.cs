@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using CommandLine;
 
-namespace jobutil
+namespace Pimix.Apps.JobUtil
 {
     class Program
     {
