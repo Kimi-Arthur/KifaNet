@@ -25,3 +25,4 @@ Changes:
  - 1.0.*
   - Renamed method calls to support new `StorageClient` interface.
   - Namespace renames and packaging.
+  - Update package title.
