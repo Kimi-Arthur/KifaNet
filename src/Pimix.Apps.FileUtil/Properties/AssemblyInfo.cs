@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("fileutil")]
-[assembly: AssemblyDescription("File utility to handle pimix files etc.")]
+[assembly: AssemblyDescription("Utility to manage pimix files.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Pimix")]
-[assembly: AssemblyProduct("fileutil")]
+[assembly: AssemblyProduct("Pimix.Apps.FileUtil")]
 [assembly: AssemblyCopyright("Copyright © 2015 Kimi Arthur")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
