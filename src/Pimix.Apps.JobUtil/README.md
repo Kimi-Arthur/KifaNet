@@ -20,3 +20,5 @@ Changes:
 ---
  - 1.0.0
   - Begin package versioning.
+ - 1.0.*
+  - Update package title.
