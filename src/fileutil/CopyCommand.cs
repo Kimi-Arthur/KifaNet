@@ -10,7 +10,7 @@ using Pimix;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
     class CopyCommand : FileUtilCommand

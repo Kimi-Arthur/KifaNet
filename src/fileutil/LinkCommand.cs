@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Pimix.IO;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
     class LinkCommand : FileUtilCommand

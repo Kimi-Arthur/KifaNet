@@ -7,7 +7,7 @@ using CommandLine;
 using Newtonsoft.Json;
 using Pimix.IO;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     [Verb("info", HelpText = "Generate information of the specified file.")]
     class InfoCommand : FileUtilCommand

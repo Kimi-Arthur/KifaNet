@@ -11,7 +11,7 @@ using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     abstract class FileUtilCommand
     {

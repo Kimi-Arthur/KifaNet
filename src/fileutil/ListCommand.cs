@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using Pimix.IO;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
     class ListCommand : FileUtilCommand

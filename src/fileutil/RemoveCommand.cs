@@ -8,7 +8,7 @@ using CommandLine;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     [Verb("rm", HelpText = "Remove the FILE. Can be either logic path like: pimix:///Software/... or real path like: pimix://xxx@xxx/....")]
     class RemoveCommand : FileUtilCommand

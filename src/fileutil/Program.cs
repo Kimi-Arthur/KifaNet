@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using CommandLine;
 using Pimix.Cloud.BaiduCloud;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     class Program
     {

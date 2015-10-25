@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CommandLine;
 
-namespace fileutil
+namespace Pimix.Apps.FileUtil
 {
     [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
     class MoveCommand : FileUtilCommand

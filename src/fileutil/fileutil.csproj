@@ -7,7 +7,7 @@
     <ProjectGuid>{531CB29E-4A81-4379-AB90-04481E829ADE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>fileutil</RootNamespace>
+    <RootNamespace>Pimix.Apps.FileUtil</RootNamespace>
     <AssemblyName>fileutil</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
