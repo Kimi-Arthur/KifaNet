@@ -9,7 +9,7 @@ namespace Pimix.IO
 {
     public abstract class StorageClient
     {
-        public abstract bool Exists();
+        public abstract bool Exists(string path);
 
         public abstract void Delete(string path);
 

@@ -5,6 +5,10 @@ Assembly Name
 ---
 Pimix.IO.dll
 
+Classes
+---
+ - `StorageClient` defines general client to manage files.
+
 Current Version:
 ---
 [![Nuget](https://img.shields.io/nuget/v/Pimix.IO.svg)](http://nuget.org/packages/Pimix.IO)
@@ -25,3 +29,4 @@ Changes:
  - 1.1.*
   - Use `Parallel.ForEach` to leverage multi processor's power when calculating hashes.
   - Use 3 digit version number now.
+  - Fixed StorageClient.Exists's parameter.
