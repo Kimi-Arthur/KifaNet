@@ -22,6 +22,11 @@ namespace jobutil
         [Option('b', "fire-heartbeat", HelpText = "Whether to fire heartbeat during job execution.")]
         public bool FireHeartbeat { get; set; } = false;
 
+        public virtual void Initialize()
+        {
+            Job.PimixServerApiAddress = PimixServerAddress;
+        }
+
         public abstract int Execute();
     }
 }

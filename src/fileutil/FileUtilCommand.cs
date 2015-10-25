@@ -134,6 +134,12 @@ namespace fileutil
             return stream;
         }
 
+
+        public virtual void Initialize()
+        {
+            BaiduCloudConfig.PimixServerApiAddress = PimixServerAddress;
+        }
+
         public abstract int Execute();
     }
 }
