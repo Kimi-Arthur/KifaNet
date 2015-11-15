@@ -22,3 +22,4 @@ Changes:
   - Begin package versioning.
  - 1.0.*
   - Update package title.
+  - Fix 'id'.

@@ -13,7 +13,7 @@ namespace Pimix.Apps.JobUtil
     [DataModel("jobs")]
     class Job
     {
-        [JsonProperty("$id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         [JsonProperty("command")]

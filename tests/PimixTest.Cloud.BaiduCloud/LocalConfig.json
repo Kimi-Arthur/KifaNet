@@ -1,5 +1,5 @@
 {
-    "$id": "baidu_cloud",
+    "id": "baidu_cloud",
     "accounts": {
         "Kimi_Arthur": {
             "access_token": "21.cc7abac35c8f2bfd6bfdb849ff439dfc.2592000.1429465140.3490742754-1222350",
@@ -74,7 +74,7 @@
         },
         "oauth_authorize": {
             "method": "GET",
-            "url": "https://openapi.baidu.com/oauth/2.0/authorize?response_type=code&client_id={client_id}&redirect_uri={oauth_redirect_url}&scope={scope}&state={$id}&force_login=1"
+            "url": "https://openapi.baidu.com/oauth/2.0/authorize?response_type=code&client_id={client_id}&redirect_uri={oauth_redirect_url}&scope={scope}&state={id}&force_login=1"
         },
         "oauth_refresh": {
             "method": "GET",

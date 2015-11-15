@@ -11,7 +11,7 @@ namespace PimixTest.Service
     [DataModel("api_test")]
     class FakeDataModel
     {
-        [JsonProperty("$id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         [JsonProperty("int_prop")]

@@ -11,7 +11,7 @@ namespace Pimix.Cloud.BaiduCloud
     [DataModel("configs")]
     public class BaiduCloudConfig
     {
-        [JsonProperty("$id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         [JsonProperty("accounts")]

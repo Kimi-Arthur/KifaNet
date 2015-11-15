@@ -17,7 +17,7 @@ Dependencies:
 ---
  - **NewtonSoft.Json**: 7.0.1
  - **Pimix**: 1.0.3
- - **Pimix.IO**: 1.1.3
+ - **Pimix.IO**: 1.1.4
  - **Pimix.Service**: 1.1.1
 
 Changes:
@@ -30,3 +30,4 @@ Changes:
   - Implemented Pimix.Cloud.BaiduCloud.BaiduCloudStorageClient.Exists.
  - 1.1.*
   - Fix configs name.
+  - Fix 'id'.

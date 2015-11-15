@@ -30,3 +30,4 @@ Changes:
   - Use `Parallel.ForEach` to leverage multi processor's power when calculating hashes.
   - Use 3 digit version number now.
   - Fixed StorageClient.Exists's parameter.
+  - Fix 'id'.

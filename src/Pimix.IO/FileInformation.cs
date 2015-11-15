@@ -22,7 +22,7 @@ namespace Pimix.IO
 
         static Dictionary<FileProperties, PropertyInfo> Properties;
 
-        [JsonProperty("$id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         [JsonProperty("path")]
