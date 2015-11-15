@@ -8,7 +8,7 @@ using Pimix.Service;
 
 namespace Pimix.Cloud.BaiduCloud
 {
-    [DataModel("cloud")]
+    [DataModel("configs")]
     public class BaiduCloudConfig
     {
         [JsonProperty("$id")]

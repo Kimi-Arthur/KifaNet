@@ -28,3 +28,5 @@ Changes:
   - Update method names due to upstream update.
  - 1.1.0
   - Implemented Pimix.Cloud.BaiduCloud.BaiduCloudStorageClient.Exists.
+ - 1.1.*
+  - Fix configs name.
