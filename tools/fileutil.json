@@ -1,0 +1,75 @@
+{
+    "defaults": {
+        "files": [
+            "{name}.dll",
+            "{name}.dll.mdb",
+            "{name}.pdb"
+        ],
+        "framework": "net46",
+        "pdb": true,
+        "prerelease": false
+    },
+    "name": "fileutil",
+    "packages": [
+        {
+            "files": [
+                "{name}.dll"
+            ],
+            "framework": "net45",
+            "name": "CommandLineParser",
+            "prerelease": true,
+            "version": "2.0.93-alpha"
+        },
+        {
+            "files": [
+                "{name}.dll"
+            ],
+            "framework": "net40",
+            "name": "HashLib",
+            "version": "2.0.1"
+        },
+        {
+            "files": [
+                "{name}.dll"
+            ],
+            "framework": "net45",
+            "name": "Newtonsoft.Json",
+            "version": "7.0.1"
+        },
+        {
+            "name": "Pimix",
+            "version": "1.0.3"
+        },
+        {
+            "name": "Pimix.IO",
+            "version": "1.1.4"
+        },
+        {
+            "name": "Pimix.Cloud.BaiduCloud",
+            "version": "1.0.1"
+        },
+        {
+            "name": "Pimix.Cryptography",
+            "version": "1.0.0"
+        },
+        {
+            "name": "Pimix.IO.FileFormats",
+            "version": "1.0.0"
+        },
+        {
+            "name": "Pimix.Service",
+            "version": "1.1.1"
+        },
+        {
+            "files": [
+                "fileutil.exe",
+                "fileutil.exe.config",
+                "fileutil.exe.mdb",
+                "fileutil.pdb"
+            ],
+            "name": "Pimix.Apps.FileUtil",
+            "prerelease": true,
+            "version": "1.0.3-alpha"
+        }
+    ]
+}
