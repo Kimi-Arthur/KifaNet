@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ -z $PATH_PREFIX ]
+then
+    PATH_PREFIX=/usr/local
+fi
+
+PIMIX_PREFIX=$PATH_PREFIX/lib/pimix
+
+{{#packages}}
+export MONO_PATH=$MONO_PATH:$PIMIX_PREFIX/{{name}}.{{version}}/lib/{{framework}}
+{{/packages}}
+
+BINARY_PATH=$PIMIX_PREFIX/{{binary.name}}.{{binary.version}}/lib/{{binary.framework}}{{^binary.framework}}{{framework}}{{/binary.framework}}/{{binary.binary}}
+
+
+
+if [ $# -gt 0 ] && ( [ $1 = "--debug" ] || [ $1 = "-d" ] )
+then
+    mono --debug $BINARY_PATH "${@:2}"
+else
+    mono $BINARY_PATH "$@"
+fi
