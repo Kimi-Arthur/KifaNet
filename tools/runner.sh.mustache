@@ -1,11 +1,6 @@
 #!/bin/bash
 
-if [ -z $PATH_PREFIX ]
-then
-    PATH_PREFIX=/usr/local
-fi
-
-PIMIX_PREFIX=$PATH_PREFIX/lib/pimix
+PIMIX_PREFIX={{{lib_prefix}}}
 
 {{#packages}}
 export MONO_PATH=$MONO_PATH:$PIMIX_PREFIX/{{name}}.{{version}}/lib/{{framework}}
