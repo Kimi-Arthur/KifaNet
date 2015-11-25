@@ -32,6 +32,7 @@ def write_runner(data):
     path = '{}/{}'.format(data['bin_prefix'], data['name'])
     print(Fore.GREEN + 'Writing runner script to {}...'.format(path))
     codecs.open(path, 'w', 'utf-8').write(pystache.render(tmpl, data))
+    os.chmod(path, 0o755)
 
 
 def prepare_data(data):
