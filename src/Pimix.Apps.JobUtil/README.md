@@ -23,3 +23,4 @@ Changes:
  - 1.0.*
   - Update package title.
   - Fix 'id'.
+  - Added retry logic for uploading logs.

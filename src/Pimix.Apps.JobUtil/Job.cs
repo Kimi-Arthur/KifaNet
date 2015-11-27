@@ -47,7 +47,18 @@ namespace Pimix.Apps.JobUtil
                 {
                     if (!String.IsNullOrEmpty(e.Data))
                     {
-                        Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
+                        for (int i = 0; i < 5; i++)
+                        {
+                            try
+                            {
+                                Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
+                            }
+                        }
                         timer.Interval = timer.Interval;
                     }
                 });
@@ -56,7 +67,18 @@ namespace Pimix.Apps.JobUtil
                 {
                     if (!String.IsNullOrEmpty(e.Data))
                     {
-                        Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
+                        for (int i = 0; i < 5; i++)
+                        {
+                            try
+                            {
+                                Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
+                            }
+                        }
                         timer.Interval = timer.Interval;
                     }
                 });
