@@ -22,13 +22,18 @@
         },
         {
             "name": "Pimix.Service",
-            "version": "1.1.1"
+            "version": "1.2.1"
+        },
+        {
+            "framework": "portable-net45+win+wp8",
+            "name": "EnterpriseLibrary.TransientFaultHandling",
+            "version": "6.0.1304.0"
         },
         {
             "binary": "jobutil.exe",
             "name": "Pimix.Apps.JobUtil",
             "prerelease": true,
-            "version": "1.0.3-alpha"
+            "version": "1.0.4-alpha"
         }
     ]
 }
