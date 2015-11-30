@@ -22,3 +22,5 @@ Changes:
   - Add standard ActionView's Call support.
  - 1.1.*
   - Add README.md etc.
+ - 1.2.0
+  - Add retry support for PimixService.

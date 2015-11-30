@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 
 namespace Pimix.Service
@@ -18,6 +19,8 @@ namespace Pimix.Service
         public static string PimixServerApiAddress { get; set; }
 
         public static string PimixServerCredential { get; set; }
+
+        public static RetryPolicy DefaultRetryPolicy { get; set; }
 
         public static bool Patch<TDataModel>(TDataModel data, string id = null)
         {
@@ -39,7 +42,7 @@ namespace Pimix.Service
                 sw.Write(content);
             }
 
-            using (var response = request.GetResponse())
+            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
             {
                 return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
@@ -65,7 +68,7 @@ namespace Pimix.Service
                 sw.Write(content);
             }
 
-            using (var response = request.GetResponse())
+            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
             {
                 return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
@@ -84,7 +87,7 @@ namespace Pimix.Service
             request.Headers["Authorization"] =
                 $"Basic {PimixServerCredential}";
 
-            using (var response = request.GetResponse())
+            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
             {
                 return response.GetObject<TDataModel>();
             }
@@ -103,7 +106,7 @@ namespace Pimix.Service
             request.Headers["Authorization"] =
                 $"Basic {PimixServerCredential}";
 
-            using (var response = request.GetResponse())
+            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
             {
                 return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
@@ -135,7 +138,7 @@ namespace Pimix.Service
                 }
             }
 
-            using (var response = request.GetResponse())
+            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
             {
                 var result = response.GetObject<ActionStatus<ResponseType>>();
                 if (result.StatusCode == ActionStatusCode.OK)
@@ -171,6 +174,20 @@ namespace Pimix.Service
                 DataModelAttribute dmAttr = typeInfo.GetCustomAttribute<DataModelAttribute>();
                 typeCache[typeInfo] = Tuple.Create(idProp, dmAttr.ModelId);
             }
+
+            if (DefaultRetryPolicy == null)
+            {
+                DefaultRetryPolicy = new RetryPolicy<PimixServiceTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(1));
+                DefaultRetryPolicy.Retrying += (sender, args) =>
+                {
+                    Console.Error.WriteLine("Pimix service call failed once!");
+                };
+            }
+        }
+
+        static WebResponse GetResponseWithRetry(this HttpWebRequest request, RetryPolicy retryPolicy)
+        {
+            return retryPolicy.ExecuteAction(request.GetResponse);
         }
     }
 }
