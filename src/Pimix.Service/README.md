@@ -24,3 +24,5 @@ Changes:
   - Add README.md etc.
  - 1.2.0
   - Add retry support for PimixService.
+ - 1.2.*
+  - Print exception info in retrying.
