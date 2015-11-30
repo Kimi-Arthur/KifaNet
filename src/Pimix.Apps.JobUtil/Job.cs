@@ -47,18 +47,15 @@ namespace Pimix.Apps.JobUtil
                 {
                     if (!String.IsNullOrEmpty(e.Data))
                     {
-                        for (int i = 0; i < 5; i++)
+                        try
                         {
-                            try
-                            {
-                                Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
-                                break;
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
-                            }
+                            Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
                         }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
+                        }
+
                         timer.Interval = timer.Interval;
                     }
                 });
@@ -67,18 +64,15 @@ namespace Pimix.Apps.JobUtil
                 {
                     if (!String.IsNullOrEmpty(e.Data))
                     {
-                        for (int i = 0; i < 5; i++)
+                        try
                         {
-                            try
-                            {
-                                Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
-                                break;
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
-                            }
+                            Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
                         }
+                        catch (Exception ex)
+                        {
+                            Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
+                        }
+
                         timer.Interval = timer.Interval;
                     }
                 });
