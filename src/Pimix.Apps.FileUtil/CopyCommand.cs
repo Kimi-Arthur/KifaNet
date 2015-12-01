@@ -99,7 +99,9 @@ namespace Pimix.Apps.FileUtil
                     }
                     else
                     {
-                        using (FileStream fs = new FileStream(GetPath(DestinationUri), FileMode.Create))
+                        var path = GetPath(DestinationUri);
+                        Directory.GetParent(path).Create();
+                        using (FileStream fs = new FileStream(path, FileMode.Create))
                         {
                             stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
                         }
@@ -107,7 +109,9 @@ namespace Pimix.Apps.FileUtil
                 }
                 else
                 {
-                    using (FileStream fs = new FileStream(GetPath(DestinationUri), FileMode.Create))
+                    var path = GetPath(DestinationUri);
+                    Directory.GetParent(path).Create();
+                    using (FileStream fs = new FileStream(path, FileMode.Create))
                     {
                         stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
                     }
