@@ -42,6 +42,10 @@
       <HintPath>..\..\packages\HashLib.2.0.1\lib\net40\HashLib.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -50,24 +54,24 @@
       <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix.Cloud.BaiduCloud, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.Cloud.BaiduCloud.1.0.1\lib\net46\Pimix.Cloud.BaiduCloud.dll</HintPath>
+    <Reference Include="Pimix.Cloud.BaiduCloud, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Cloud.BaiduCloud.1.1.2\lib\net46\Pimix.Cloud.BaiduCloud.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Pimix.Cryptography, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pimix.Cryptography.1.0.0\lib\net46\Pimix.Cryptography.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix.IO, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.IO.1.1.2\lib\net46\Pimix.IO.dll</HintPath>
+    <Reference Include="Pimix.IO, Version=1.1.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.IO.1.1.4\lib\net46\Pimix.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Pimix.IO.FileFormats, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Pimix.IO.FileFormats.1.0.0\lib\net46\Pimix.IO.FileFormats.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix.Service, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.Service.1.1.1\lib\net46\Pimix.Service.dll</HintPath>
+    <Reference Include="Pimix.Service, Version=1.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Pimix.Service.1.2.1\lib\net46\Pimix.Service.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
