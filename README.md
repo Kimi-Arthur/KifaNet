@@ -1,4 +1,4 @@
-Pimix
+<img src="https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png" width="80" height="80">
 ===
 
 C# based libraries and tools.
