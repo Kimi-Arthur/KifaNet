@@ -2,6 +2,7 @@
 import codecs
 import json
 import os
+import platform
 import pystache
 import subprocess
 import sys
@@ -9,6 +10,7 @@ from colorama import init, Fore
 
 init(autoreset=True)
 
+is_windows = platform.system() == 'Windows'
 
 def download_packages(data):
     for p in data['packages']:
@@ -37,7 +39,7 @@ def write_runner(data):
 
 def prepare_data(data):
     if 'install_prefix' not in data:
-        data['install_prefix'] = '/usr/local'
+        data['install_prefix'] = 'C:/Software' if is_windows else '/usr/local'
 
     data['lib_prefix'] = data['install_prefix'] + '/lib/pimix'
     data['bin_prefix'] = data['install_prefix'] + '/bin'
