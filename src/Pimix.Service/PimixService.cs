@@ -177,10 +177,10 @@ namespace Pimix.Service
 
             if (DefaultRetryPolicy == null)
             {
-                DefaultRetryPolicy = new RetryPolicy<PimixServiceTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(1));
+                DefaultRetryPolicy = new RetryPolicy<PimixServiceTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(10));
                 DefaultRetryPolicy.Retrying += (sender, args) =>
                 {
-                    Console.Error.WriteLine("Pimix service call failed once:");
+                    Console.Error.WriteLine("Pimix service call failed once, wait 10 seconds now:");
                     Console.Error.WriteLine(args.LastException);
                 };
             }

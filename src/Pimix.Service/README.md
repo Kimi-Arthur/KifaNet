@@ -26,3 +26,4 @@ Changes:
   - Add retry support for PimixService.
  - 1.2.*
   - Print exception info in retrying.
+  - Longer wait period for retrying.
