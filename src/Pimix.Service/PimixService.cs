@@ -20,7 +20,28 @@ namespace Pimix.Service
 
         public static string PimixServerCredential { get; set; }
 
-        public static RetryPolicy DefaultRetryPolicy { get; set; }
+        static RetryPolicy defaultRetryPolicy;
+        public static RetryPolicy DefaultRetryPolicy
+        {
+            get
+            {
+                if (defaultRetryPolicy == null)
+                {
+                    defaultRetryPolicy = new RetryPolicy<PimixServiceTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(10));
+                    defaultRetryPolicy.Retrying += (sender, args) =>
+                    {
+                        Console.Error.WriteLine("Pimix service call failed once, wait 10 seconds now:");
+                        Console.Error.WriteLine(args.LastException);
+                    };
+                }
+
+                return defaultRetryPolicy;
+            }
+            set
+            {
+                defaultRetryPolicy = value;
+            }
+        }
 
         public static bool Patch<TDataModel>(TDataModel data, string id = null, RetryPolicy retryPolicy = null)
             => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => PatchWithoutRetry<TDataModel>(data, id));
@@ -193,16 +214,6 @@ namespace Pimix.Service
                 PropertyInfo idProp = typeInfo.GetProperty("Id");
                 DataModelAttribute dmAttr = typeInfo.GetCustomAttribute<DataModelAttribute>();
                 typeCache[typeInfo] = Tuple.Create(idProp, dmAttr.ModelId);
-            }
-
-            if (DefaultRetryPolicy == null)
-            {
-                DefaultRetryPolicy = new RetryPolicy<PimixServiceTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(10));
-                DefaultRetryPolicy.Retrying += (sender, args) =>
-                {
-                    Console.Error.WriteLine("Pimix service call failed once, wait 10 seconds now:");
-                    Console.Error.WriteLine(args.LastException);
-                };
             }
         }
     }

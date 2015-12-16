@@ -8,7 +8,7 @@ namespace PimixTest.Service
     [TestClass]
     public class DataModelTests
     {
-        public string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
+        public string PimixServerApiAddress => "http://cubie.pimix.org/api";
 
         [TestMethod]
         public void DataModelGetBasicTest()
