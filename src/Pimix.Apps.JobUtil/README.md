@@ -25,3 +25,4 @@ Changes:
   - Fix 'id'.
   - Added retry logic for uploading logs.
   - Incorporated Pimix.Service's retry logic.
+  - Updated Pimix.Service to 1.3.0 to use the correct retry logic.

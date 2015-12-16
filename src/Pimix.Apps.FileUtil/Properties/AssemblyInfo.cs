@@ -40,6 +40,6 @@ namespace Pimix.Apps.FileUtil
 {
     static class AssemblyInfo
     {
-        public const string Version = "1.0.4";
+        public const string Version = "1.0.5";
     }
 }

@@ -27,3 +27,4 @@ Changes:
   - Namespace renames and packaging.
   - Update package title.
   - Create parent folder before writing file.
+  - Package updates.
