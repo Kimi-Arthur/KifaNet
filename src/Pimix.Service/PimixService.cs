@@ -22,7 +22,10 @@ namespace Pimix.Service
 
         public static RetryPolicy DefaultRetryPolicy { get; set; }
 
-        public static bool Patch<TDataModel>(TDataModel data, string id = null)
+        public static bool Patch<TDataModel>(TDataModel data, string id = null, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => PatchWithoutRetry<TDataModel>(data, id));
+
+        public static bool PatchWithoutRetry<TDataModel>(TDataModel data, string id = null)
         {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
@@ -42,13 +45,16 @@ namespace Pimix.Service
                 sw.Write(content);
             }
 
-            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
+            using (var response = request.GetResponse())
             {
                 return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
         }
 
-        public static bool Post<TDataModel>(TDataModel data, string id = null)
+        public static bool Post<TDataModel>(TDataModel data, string id = null, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => PostWithoutRetry<TDataModel>(data, id));
+
+        public static bool PostWithoutRetry<TDataModel>(TDataModel data, string id = null)
         {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
@@ -68,13 +74,16 @@ namespace Pimix.Service
                 sw.Write(content);
             }
 
-            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
+            using (var response = request.GetResponse())
             {
                 return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
         }
 
-        public static TDataModel Get<TDataModel>(string id)
+        public static TDataModel Get<TDataModel>(string id, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => GetWithoutRetry<TDataModel>(id));
+
+        public static TDataModel GetWithoutRetry<TDataModel>(string id)
         {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
@@ -87,13 +96,16 @@ namespace Pimix.Service
             request.Headers["Authorization"] =
                 $"Basic {PimixServerCredential}";
 
-            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
+            using (var response = request.GetResponse())
             {
                 return response.GetObject<TDataModel>();
             }
         }
 
-        public static bool Delete<TDataModel>(string id)
+        public static bool Delete<TDataModel>(string id, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => DeleteWithoutRetry<TDataModel>(id));
+
+        public static bool DeleteWithoutRetry<TDataModel>(string id)
         {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
@@ -106,13 +118,18 @@ namespace Pimix.Service
             request.Headers["Authorization"] =
                 $"Basic {PimixServerCredential}";
 
-            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
+            using (var response = request.GetResponse())
             {
                 return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
             }
         }
 
         public static ResponseType Call<TDataModel, ResponseType>(string action, string methodType = "GET",
+            string id = null, Dictionary<string, string> parameters = null, Object body = null, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(()
+                => CallWithoutRetry<TDataModel, ResponseType>(action, methodType, id, parameters, body));
+
+        public static ResponseType CallWithoutRetry<TDataModel, ResponseType>(string action, string methodType = "GET",
             string id = null, Dictionary<string, string> parameters = null, Object body = null)
         {
             Init(typeof(TDataModel));
@@ -138,7 +155,7 @@ namespace Pimix.Service
                 }
             }
 
-            using (var response = request.GetResponseWithRetry(DefaultRetryPolicy))
+            using (var response = request.GetResponse())
             {
                 var result = response.GetObject<ActionStatus<ResponseType>>();
                 if (result.StatusCode == ActionStatusCode.OK)
@@ -153,10 +170,13 @@ namespace Pimix.Service
         }
 
         public static void Call<TDataModel>(string action, string methodType = "GET",
+            string id = null, Dictionary<string, string> parameters = null, Object body = null, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(()
+                => CallWithoutRetry<TDataModel>(action, methodType, id, parameters, body));
+
+        public static void CallWithoutRetry<TDataModel>(string action, string methodType = "GET",
             string id = null, Dictionary<string, string> parameters = null, Object body = null)
-        {
-            Call<TDataModel, object>(action, methodType, id, parameters, body);
-        }
+            => CallWithoutRetry<TDataModel, object>(action, methodType, id, parameters, body);
 
         static void Init(Type typeInfo)
         {
@@ -184,11 +204,6 @@ namespace Pimix.Service
                     Console.Error.WriteLine(args.LastException);
                 };
             }
-        }
-
-        static WebResponse GetResponseWithRetry(this HttpWebRequest request, RetryPolicy retryPolicy)
-        {
-            return retryPolicy.ExecuteAction(request.GetResponse);
         }
     }
 }

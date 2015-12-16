@@ -12,7 +12,7 @@ namespace Pimix.Service
         public bool IsTransient(Exception ex)
         {
             // Treat all errors as transient for now.
-            return true;
+            return !(ex is ActionFailedException);
         }
     }
 }
