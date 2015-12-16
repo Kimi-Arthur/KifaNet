@@ -31,3 +31,5 @@ Changes:
   - Use 3 digit version number now.
   - Fixed StorageClient.Exists's parameter.
   - Fix 'id'.
+  - Updated Pimix.Service to 1.3.0, which includes retry.
+    (We don't add retry control in this package for now).
