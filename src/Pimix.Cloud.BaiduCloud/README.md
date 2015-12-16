@@ -31,3 +31,6 @@ Changes:
  - 1.1.*
   - Fix configs name.
   - Fix 'id'.
+  - Updated Pimix.Service to 1.3.0, which includes retry.
+    (We don't add retry control in this package for now).
+  - Updated Pimix.IO to 1.1.5.

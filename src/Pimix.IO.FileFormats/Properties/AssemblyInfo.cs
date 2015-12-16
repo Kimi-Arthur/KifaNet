@@ -40,6 +40,6 @@ namespace Pimix.IO.FileFormats
 {
     static class AssemblyInfo
     {
-        public const string Version = "1.0.0";
+        public const string Version = "1.0.1";
     }
 }
