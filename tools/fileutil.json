@@ -32,15 +32,15 @@
         },
         {
             "name": "Pimix.IO",
-            "version": "1.1.4"
+            "version": "1.1.5"
         },
         {
             "name": "Pimix.Service",
-            "version": "1.2.2"
+            "version": "1.3.0"
         },
         {
             "name": "Pimix.Cloud.BaiduCloud",
-            "version": "1.1.2"
+            "version": "1.1.3"
         },
         {
             "name": "Pimix.Cryptography",
@@ -48,13 +48,13 @@
         },
         {
             "name": "Pimix.IO.FileFormats",
-            "version": "1.0.0"
+            "version": "1.0.1"
         },
         {
             "binary": "fileutil.exe",
             "name": "Pimix.Apps.FileUtil",
             "prerelease": true,
-            "version": "1.0.4-alpha"
+            "version": "1.0.5-alpha"
         }
     ]
 }
