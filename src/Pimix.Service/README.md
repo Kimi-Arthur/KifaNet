@@ -27,3 +27,8 @@ Changes:
  - 1.2.*
   - Print exception info in retrying.
   - Longer wait period for retrying.
+ - **1.3.0 BREAKING change**
+  - New correct way to implement retry logic in PimixService.
+  - Steps to resolve breakage:
+    1. Recompilation needed!
+    2. No code change needed!
