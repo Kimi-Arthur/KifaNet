@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using HashLib;
-using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.IO
+namespace Pimix.Apps.JobUtil
 {
-    public partial class FileInformation
+    partial class Job
     {
         public static string PimixServerApiAddress
         {
@@ -38,16 +33,16 @@ namespace Pimix.IO
             }
         }
 
-        public static bool Patch(FileInformation data, string id = null)
+        public static bool Patch(Job data, string id = null)
             => PimixService.Patch(data, id);
 
-        public static bool Post(FileInformation data, string id = null)
+        public static bool Post(Job data, string id = null)
             => PimixService.Post(data, id);
 
-        public static FileInformation Get(string id)
-            => PimixService.Get<FileInformation>(id);
+        public static Job Get(string id)
+            => PimixService.Get<Job>(id);
 
         public static bool Delete(string id)
-            => PimixService.Delete<FileInformation>(id);
+            => PimixService.Delete<Job>(id);
     }
 }

@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using HashLib;
-using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.IO
+namespace Pimix.Cloud.BaiduCloud
 {
-    public partial class FileInformation
+    public partial class BaiduCloudConfig
     {
         public static string PimixServerApiAddress
         {
@@ -38,16 +33,16 @@ namespace Pimix.IO
             }
         }
 
-        public static bool Patch(FileInformation data, string id = null)
+        public static bool Patch(BaiduCloudConfig data, string id = null)
             => PimixService.Patch(data, id);
 
-        public static bool Post(FileInformation data, string id = null)
+        public static bool Post(BaiduCloudConfig data, string id = null)
             => PimixService.Post(data, id);
 
-        public static FileInformation Get(string id)
-            => PimixService.Get<FileInformation>(id);
+        public static BaiduCloudConfig Get(string id)
+            => PimixService.Get<BaiduCloudConfig>(id);
 
         public static bool Delete(string id)
-            => PimixService.Delete<FileInformation>(id);
+            => PimixService.Delete<BaiduCloudConfig>(id);
     }
 }

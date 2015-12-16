@@ -11,7 +11,7 @@ using Pimix.Service;
 namespace Pimix.Apps.JobUtil
 {
     [DataModel("jobs")]
-    class Job
+    partial class Job
     {
         [JsonProperty("id")]
         public string Id { get; set; }
@@ -49,7 +49,7 @@ namespace Pimix.Apps.JobUtil
                     {
                         try
                         {
-                            Job.AppendInfo(Id, new Dictionary<string, object> {["stdout"] = e.Data + "\n" });
+                            Job.AppendInfo(Id, new Dictionary<string, object> { ["stdout"] = e.Data + "\n" });
                         }
                         catch (Exception ex)
                         {
@@ -66,7 +66,7 @@ namespace Pimix.Apps.JobUtil
                     {
                         try
                         {
-                            Job.AppendInfo(Id, new Dictionary<string, object> {["stderr"] = e.Data + "\n" });
+                            Job.AppendInfo(Id, new Dictionary<string, object> { ["stderr"] = e.Data + "\n" });
                         }
                         catch (Exception ex)
                         {
@@ -89,7 +89,7 @@ namespace Pimix.Apps.JobUtil
                 proc.BeginErrorReadLine();
 
                 proc.WaitForExit();
-                Job.AddInfo(Id, new Dictionary<string, object> {["exit_code"] = proc.ExitCode });
+                Job.AddInfo(Id, new Dictionary<string, object> { ["exit_code"] = proc.ExitCode });
                 Job.FinishJob(Id, proc.ExitCode != 0);
 
                 timer?.Dispose();
@@ -99,40 +99,6 @@ namespace Pimix.Apps.JobUtil
                 return proc.ExitCode;
             }
         }
-
-        #region PimixService Wrappers
-
-        public static string PimixServerApiAddress
-        {
-            get
-            {
-                return PimixService.PimixServerApiAddress;
-            }
-            set
-            {
-                PimixService.PimixServerApiAddress = value;
-            }
-        }
-
-        public static string PimixServerCredential
-        {
-            get
-            {
-                return PimixService.PimixServerCredential;
-            }
-            set
-            {
-                PimixService.PimixServerCredential = value;
-            }
-        }
-
-        public static bool Patch(Job data, string id = null)
-            => PimixService.Patch<Job>(data, id);
-
-        public static Job Get(string id)
-            => PimixService.Get<Job>(id);
-
-        #endregion
 
         public static Job PullJob(string id = null, string idPrefix = null, string runner = null)
             => PimixService.Call<Job, Job>
@@ -161,8 +127,7 @@ namespace Pimix.Apps.JobUtil
             );
 
         public static void ResetJob(string id)
-        {
-            PimixService.Call<Job>
+            => PimixService.Call<Job>
             (
                 "reset_job",
                 methodType: "POST",
@@ -171,11 +136,9 @@ namespace Pimix.Apps.JobUtil
                     ["id"] = id
                 }
             );
-        }
 
         public static void FinishJob(string id, bool failed = false)
-        {
-            PimixService.Call<Job>
+            => PimixService.Call<Job>
             (
                 "finish_job",
                 methodType: "POST",
@@ -185,11 +148,9 @@ namespace Pimix.Apps.JobUtil
                     ["failed"] = failed.ToString()
                 }
             );
-        }
 
         public static void Heartbeat(string id)
-        {
-            PimixService.Call<Job>
+            => PimixService.Call<Job>
             (
                 "heartbeat",
                 methodType: "POST",
@@ -198,21 +159,14 @@ namespace Pimix.Apps.JobUtil
                     ["id"] = id
                 }
             );
-        }
 
         public static void AddInfo(string id, Dictionary<string, object> information)
-        {
-            PimixService.Call<Job>("add_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
-        }
+            => PimixService.Call<Job>("add_info", methodType: "POST", parameters: new Dictionary<string, string> { ["id"] = id }, body: information);
 
         public static void AppendInfo(string id, Dictionary<string, object> information)
-        {
-            PimixService.Call<Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> {["id"] = id }, body: information);
-        }
+            => PimixService.Call<Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> { ["id"] = id }, body: information);
 
         public static Job GetJob(string idPrefix = null)
-        {
-            return PimixService.Call<Job, Job>("get_job", parameters: new Dictionary<string, string> {["id_prefix"] = idPrefix });
-        }
+            => PimixService.Call<Job, Job>("get_job", parameters: new Dictionary<string, string> { ["id_prefix"] = idPrefix });
     }
 }

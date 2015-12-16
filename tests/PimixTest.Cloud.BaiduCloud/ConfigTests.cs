@@ -9,7 +9,7 @@ namespace PimixTest.Cloud.BaiduCloud
     [TestClass]
     public class ConfigTests
     {
-        public string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
+        public string PimixServerApiAddress { get; set; } = "http://cubie.pimix.org/api";
 
         [TestMethod]
         public void GetConfigTest()

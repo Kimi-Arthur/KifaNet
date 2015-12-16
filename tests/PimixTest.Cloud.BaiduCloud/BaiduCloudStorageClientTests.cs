@@ -11,7 +11,7 @@ namespace PimixTest.Cloud.BaiduCloud
     [TestClass]
     public class BaiduCloudStorageClientTests
     {
-        public static string PimixServerApiAddress { get; set; } = "http://test.pimix.org/api";
+        public static string PimixServerApiAddress { get; set; } = "http://cubie.pimix.org/api";
 
         string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 

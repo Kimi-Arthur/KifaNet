@@ -67,6 +67,8 @@ namespace Pimix.IO
         [JsonProperty("locations")]
         public Dictionary<string, string> Locations { get; set; }
 
+        public static List<FileInformation> GetFolderView(string path)
+            => PimixService.Call<FileInformation, List<FileInformation>>("get_folder_view", parameters: new Dictionary<string, string> { ["location"] = path });
 
         static FileInformation()
         {
