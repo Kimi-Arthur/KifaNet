@@ -34,3 +34,6 @@ Changes:
   - Updated Pimix.Service to 1.3.0, which includes retry.
     (We don't add retry control in this package for now).
   - Updated Pimix.IO to 1.1.5.
+ - 1.2.0
+  - Added per-block upload verification.
+  - Better logging for downloading exceptions.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -214,7 +215,14 @@ namespace Pimix.Cloud.BaiduCloud
                     catch (ObjectDisposedException ex)
                     {
                         Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
-                        Console.WriteLine("Unexpected ObjectDisposedException:");
+                        Console.WriteLine("Exception:");
+                        Console.WriteLine(ex);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+                    catch (UploadBlockException ex)
+                    {
+                        Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
+                        Console.WriteLine("Exception:");
                         Console.WriteLine(ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
@@ -269,6 +277,7 @@ namespace Pimix.Cloud.BaiduCloud
 
         string UploadBlock(byte[] buffer, int offset, int count)
         {
+            string expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count).ToHexString().ToLower();
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadBlock);
             request.Timeout = 30 * 60 * 1000;
 
@@ -279,7 +288,10 @@ namespace Pimix.Cloud.BaiduCloud
 
             using (var response = request.GetResponse())
             {
-                return response.GetDictionary()["md5"].ToString();
+                string actualMd5 = response.GetDictionary()["md5"].ToString();
+                if (expectedMd5 != actualMd5)
+                    throw new UploadBlockException() { ExpectedMd5 = expectedMd5, ActualMd5 = actualMd5 };
+                return actualMd5;
             }
         }
 
@@ -401,7 +413,7 @@ namespace Pimix.Cloud.BaiduCloud
             throw new NotImplementedException();
         }
 
-        private class DownloadStream : Stream
+        class DownloadStream : Stream
         {
             private bool IsOpen = true;
 
@@ -539,7 +551,8 @@ namespace Pimix.Cloud.BaiduCloud
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Failed once when downloading:");
+                        Console.WriteLine($"Failed once when downloading (from {Position} to {Position + count}):");
+                        Console.WriteLine("Exception:");
                         Console.WriteLine(ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
@@ -554,6 +567,16 @@ namespace Pimix.Cloud.BaiduCloud
             {
                 throw new NotSupportedException("The Baidu download stream is not writable.");
             }
+        }
+
+        class UploadBlockException : Exception
+        {
+            public string ExpectedMd5 { get; set; }
+
+            public string ActualMd5 { get; set; }
+
+            public override string ToString()
+                => $"Expected md5 is {ExpectedMd5}, while actual md5 is {ActualMd5}.";
         }
     }
 }

@@ -40,6 +40,6 @@ namespace Pimix.Cloud.BaiduCloud
 {
     static class AssemblyInfo
     {
-        public const string Version = "1.1.3";
+        public const string Version = "1.2.0";
     }
 }
