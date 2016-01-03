@@ -28,3 +28,5 @@ Changes:
   - Update package title.
   - Create parent folder before writing file.
   - Package updates.
+ - 1.1.0
+  - Do precheck based on FileInformation's status.
