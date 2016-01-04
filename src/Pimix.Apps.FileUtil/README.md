@@ -30,3 +30,5 @@ Changes:
   - Package updates.
  - 1.1.0
   - Do precheck based on FileInformation's status.
+ - 1.1.*
+  - Fixed: should fire precheck when the location doesn't exist.

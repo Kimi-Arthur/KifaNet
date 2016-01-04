@@ -127,7 +127,7 @@ namespace Pimix.Apps.FileUtil
         bool NeedsPrecheck()
         {
             var info = FileInformation.Get(new Uri(SourceUri).LocalPath);
-            return info.GetProperties() != FileProperties.All || info.Locations.ContainsValue(SourceUri);
+            return info.GetProperties() != FileProperties.All || !info.Locations.ContainsValue(SourceUri);
         }
     }
 }
