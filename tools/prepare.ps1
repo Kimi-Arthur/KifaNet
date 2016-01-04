@@ -1,1 +1,1 @@
-Get-AzureRmVM pimix
+Get-AzureVM pimix
