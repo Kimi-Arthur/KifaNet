@@ -14,8 +14,6 @@ namespace Pimix.Cloud.BaiduCloud
 {
     public class BaiduCloudStorageClient : StorageClient
     {
-        private List<Stream> Streams { get; set; } = new List<Stream>();
-
         public static BaiduCloudConfig Config { get; set; }
 
         public List<int> BlockInfo { get; set; } = null;
@@ -31,14 +29,6 @@ namespace Pimix.Cloud.BaiduCloud
             {
                 accountId = value;
                 Account = Config.Accounts[accountId];
-
-                // Clear all current streams since they are all stale.
-                foreach (var stream in Streams)
-                {
-                    stream.Dispose();
-                }
-
-                Streams.Clear();
             }
         }
 
@@ -366,10 +356,7 @@ namespace Pimix.Cloud.BaiduCloud
         }
 
         public override Stream OpenRead(string path)
-        {
-            Streams.Add(new DownloadStream(this, path));
-            return Streams.Last();
-        }
+            => new DownloadStream(this, path);
 
         private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null)
         {
