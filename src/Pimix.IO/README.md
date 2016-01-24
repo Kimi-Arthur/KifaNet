@@ -7,7 +7,8 @@ Pimix.IO.dll
 
 Classes
 ---
- - `StorageClient` defines general client to manage files.
+ - `StorageClient` defines base client to manage files.
+ - `FileStorageClient` implements `StorageClient` to manage simple files supported by `File`.
 
 Current Version:
 ---
@@ -33,3 +34,5 @@ Changes:
   - Fix 'id'.
   - Updated Pimix.Service to 1.3.0, which includes retry.
     (We don't add retry control in this package for now).
+ - 1.2.0
+  - Add `FileStorageClient`.
