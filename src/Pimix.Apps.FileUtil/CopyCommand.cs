@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using CommandLine;
-using Pimix;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommandLine;
-using Pimix.Cloud.BaiduCloud;
 
 namespace Pimix.Apps.FileUtil
 {
