@@ -32,4 +32,5 @@ Changes:
   - Do precheck based on FileInformation's status.
  - 1.1.*
   - Fixed: should fire precheck when the location doesn't exist.
-  - Fixed: should fire precheck when AT LEAST all items in FileProperties.All exist.
+  - Fixed: should fire precheck when AT LEAST all items in `FileProperties.All` exist.
+  - Refactored: use `StorageClient.DeleteFile` to delete files.

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using CommandLine;
-using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil
@@ -87,65 +85,19 @@ namespace Pimix.Apps.FileUtil
             }
         }
 
-        bool RemoveRealFile(string fileUri)
+        bool RemoveRealFile(string location)
         {
-            Uri uri;
-            if (Uri.TryCreate(fileUri, UriKind.Absolute, out uri) && uri.Scheme.StartsWith("pimix"))
+            StorageClient client = GetStorageClient(location);
+            try
             {
-                var schemes = uri.Scheme.Split('+').ToList();
-
-                // Concerning file source
-                if (schemes.Contains("cloud"))
-                {
-                    switch (uri.Host)
-                    {
-                        case "pan.baidu.com":
-                            {
-                                BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                try
-                                {
-                                    new BaiduCloudStorageClient { AccountId = uri.UserInfo }.Delete(uri.LocalPath);
-                                    return true;
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.Error.WriteLine($"BaiduCloudStorageClient.DeleteFile failed for path {fileUri}");
-                                    Console.Error.WriteLine(ex);
-                                    return false;
-                                }
-                            }
-                        default:
-                            throw new ArgumentException(nameof(fileUri));
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        File.Delete(GetPath(fileUri));
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"File.Delete failed for path {GetPath(fileUri)}");
-                        Console.Error.WriteLine(ex);
-                        return false;
-                    }
-                }
+                client.Delete(GetPath(location));
+                return true;
             }
-            else
+            catch (Exception ex)
             {
-                try
-                {
-                    File.Delete(GetPath(fileUri));
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"File.Delete failed for path {GetPath(fileUri)}");
-                    Console.Error.WriteLine(ex);
-                    return false;
-                }
+                Console.Error.WriteLine($"StorageClient.DeleteFile failed for path {location}");
+                Console.Error.WriteLine(ex);
+                return false;
             }
         }
     }

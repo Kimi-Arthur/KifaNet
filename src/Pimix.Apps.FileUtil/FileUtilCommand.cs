@@ -132,6 +132,27 @@ namespace Pimix.Apps.FileUtil
             return stream;
         }
 
+        public static StorageClient GetStorageClient(String location)
+        {
+            Uri uri;
+            if (Uri.TryCreate(location, UriKind.Absolute, out uri))
+            {
+                var schemes = uri.Scheme.Split('+').ToList();
+
+                if (schemes.Contains("cloud"))
+                {
+                    switch (uri.Host)
+                    {
+                        case "pan.baidu.com":
+                            return new BaiduCloudStorageClient { AccountId = uri.UserInfo };
+                        default:
+                            throw new ArgumentException(nameof(location));
+                    }
+                }
+            }
+
+            return new FileStorageClient();
+        }
 
         public virtual void Initialize()
         {
