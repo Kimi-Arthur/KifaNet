@@ -36,3 +36,5 @@ Changes:
     (We don't add retry control in this package for now).
  - 1.2.0
   - Add `FileStorageClient`.
+ - 1.2.*
+  - Fix `FileStorageClient` accessibility.

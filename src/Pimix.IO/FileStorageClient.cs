@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Pimix.IO
 {
-    class FileStorageClient : StorageClient
+    public class FileStorageClient : StorageClient
     {
         const int DefaultBlockSize = 32 << 20;
 

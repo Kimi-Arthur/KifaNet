@@ -40,6 +40,6 @@ namespace Pimix.IO
 {
     static class AssemblyInfo
     {
-        public const string Version = "1.2.0";
+        public const string Version = "1.2.1";
     }
 }
