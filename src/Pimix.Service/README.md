@@ -32,3 +32,5 @@ Changes:
   - Steps to resolve breakage:
     1. Recompilation needed!
     2. No code change needed!
+ - 1.4.0
+  - New (status + message + response) format contacting PimixServer.

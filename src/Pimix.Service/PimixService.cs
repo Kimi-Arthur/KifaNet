@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 
@@ -68,7 +66,7 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
+                return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
             }
         }
 
@@ -97,7 +95,7 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
+                return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
             }
         }
 
@@ -141,7 +139,7 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                return response.GetObject<ActionStatus>().StatusCode == ActionStatusCode.OK;
+                return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
             }
         }
 
@@ -178,14 +176,14 @@ namespace Pimix.Service
 
             using (var response = request.GetResponse())
             {
-                var result = response.GetObject<ActionStatus<ResponseType>>();
+                var result = response.GetObject<ActionResult<ResponseType>>();
                 if (result.StatusCode == ActionStatusCode.OK)
                 {
-                    return result.Message;
+                    return result.Response;
                 }
                 else
                 {
-                    throw new ActionFailedException { Response = result };
+                    throw new ActionFailedException { Result = result };
                 }
             }
         }

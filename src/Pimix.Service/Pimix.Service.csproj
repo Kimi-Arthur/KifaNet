@@ -72,7 +72,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionFailedException.cs" />
-    <Compile Include="ActionStatus.cs" />
+    <Compile Include="ActionResult.cs" />
+    <Compile Include="ActionStatusCode.cs" />
     <Compile Include="PimixService.cs" />
     <Compile Include="DataModelAttribute.cs" />
     <Compile Include="PimixServiceTransientErrorDetectionStrategy.cs" />
