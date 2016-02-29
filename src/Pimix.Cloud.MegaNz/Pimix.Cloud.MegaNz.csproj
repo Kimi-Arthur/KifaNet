@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MegaNzConfig.Service.cs" />
     <Compile Include="BigInteger.cs" />
     <Compile Include="Crypto.cs" />
     <Compile Include="Exceptions.cs" />

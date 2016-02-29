@@ -1,8 +1,13 @@
-﻿using Pimix.Service;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Pimix.Service;
 
-namespace Pimix.Cloud.BaiduCloud
+namespace Pimix.Cloud.MegaNz
 {
-    public partial class BaiduCloudConfig
+    public partial class MegaNzConfig
     {
         public static string PimixServerApiAddress
         {
@@ -28,16 +33,16 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        public static bool Patch(BaiduCloudConfig data, string id = null)
+        public static bool Patch(MegaNzConfig data, string id = null)
             => PimixService.Patch(data, id);
 
-        public static bool Post(BaiduCloudConfig data, string id = null)
+        public static bool Post(MegaNzConfig data, string id = null)
             => PimixService.Post(data, id);
 
-        public static BaiduCloudConfig Get(string id)
-            => PimixService.Get<BaiduCloudConfig>(id);
+        public static MegaNzConfig Get(string id)
+            => PimixService.Get<MegaNzConfig>(id);
 
         public static bool Delete(string id)
-            => PimixService.Delete<BaiduCloudConfig>(id);
+            => PimixService.Delete<MegaNzConfig>(id);
     }
 }

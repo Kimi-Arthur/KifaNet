@@ -1,0 +1,20 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Pimix.Cloud.MegaNz;
+
+namespace PimixTest.Cloud.MegaNz
+{
+    [TestClass]
+    public class MegaNzConfigTests
+    {
+        public string PimixServerApiAddress { get; set; } = "http://pimix.cloudapp.net/api";
+
+        [TestMethod]
+        public void GetConfigTest()
+        {
+            MegaNzConfig.PimixServerApiAddress = PimixServerApiAddress;
+            var config = MegaNzConfig.Get("mega_nz");
+            Assert.AreEqual("Pny3YQzV", config.Accounts["pimixserver+test@gmail.com"]);
+        }
+    }
+}
