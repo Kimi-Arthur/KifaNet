@@ -10,6 +10,8 @@ namespace Pimix.Cloud.MegaNz
 {
     public class MegaNzStorageClient : StorageClient
     {
+        public static MegaNzConfig Config { get; set; }
+
         public override void Copy(string sourcePath, string destinationPath)
         {
             throw new NotImplementedException();

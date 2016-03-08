@@ -55,12 +55,17 @@
   <ItemGroup>
     <Compile Include="MegaApiClientTests.cs" />
     <Compile Include="MegaNzConfigTests.cs" />
+    <Compile Include="MegaNzStorageClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj">
       <Project>{684848ae-ee0f-43a0-8096-06dd0ff7fe0c}</Project>
       <Name>Pimix.Cloud.MegaNz</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Pimix.IO\Pimix.IO.csproj">
+      <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
+      <Name>Pimix.IO</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -117,9 +117,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
         [ClassCleanup]
         public static void ClassClenaup()
-        {
-            DataCleanup();
-        }
+            => DataCleanup();
 
         static void DataCleanup()
         {
