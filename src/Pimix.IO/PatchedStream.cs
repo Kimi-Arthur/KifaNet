@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Pimix.IO
 {
@@ -46,7 +42,7 @@ namespace Pimix.IO
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            count = (int) Math.Min(count, Length - Position);
+            count = (int)Math.Min(count, Length - Position);
             if (count == 0)
                 return 0;
 

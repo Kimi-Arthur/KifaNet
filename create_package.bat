@@ -1,1 +1,1 @@
-nuget pack src/%1/%1.csproj -Build -Properties Configuration=release
+nuget pack src/%1/%1.csproj -Build -Properties Configuration=release -IncludeReferencedProjects
