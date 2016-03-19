@@ -67,7 +67,9 @@
     <Compile Include="BaiduCloudConfig.cs" />
     <Compile Include="BaiduCloudConfig.Service.cs" />
     <Compile Include="BaiduCloudStorageClient.cs" />
+    <Compile Include="BaiduCloudTransientErrorDetectionStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SeekableDownloadStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

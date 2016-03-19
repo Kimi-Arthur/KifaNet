@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Pimix.IO;
 
@@ -341,7 +342,34 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
+
+        static RetryPolicy defaultRetryPolicy;
+        public static RetryPolicy DefaultRetryPolicy
+        {
+            get
+            {
+                if (defaultRetryPolicy == null)
+                {
+                    defaultRetryPolicy = new RetryPolicy<BaiduCloudTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(10));
+                    defaultRetryPolicy.Retrying += (sender, args) =>
+                    {
+                        Console.Error.WriteLine("Get download length failed once, wait 10 seconds now!");
+                        Console.Error.WriteLine(args.LastException);
+                    };
+                }
+
+                return defaultRetryPolicy;
+            }
+            set
+            {
+                defaultRetryPolicy = value;
+            }
+        }
+
         public long GetDownloadLength(string path)
+            => DefaultRetryPolicy.ExecuteAction(() => GetDownloadLengthWithoutRetry(path));
+
+        public long GetDownloadLengthWithoutRetry(string path)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string>
@@ -356,7 +384,7 @@ namespace Pimix.Cloud.BaiduCloud
         }
 
         public override Stream OpenRead(string path)
-            => new DownloadStream(this, path);
+            => new SeekableDownloadStream(GetDownloadLength(path), (buffer, bufferOffset, offset, count) => Download(buffer, path, bufferOffset, offset, count));
 
         private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null)
         {
@@ -398,162 +426,6 @@ namespace Pimix.Cloud.BaiduCloud
         public override void Copy(string sourcePath, string destinationPath)
         {
             throw new NotImplementedException();
-        }
-
-        class DownloadStream : Stream
-        {
-            private bool IsOpen = true;
-
-            public override bool CanRead
-                => IsOpen;
-
-            public override bool CanSeek
-                => IsOpen;
-
-            public override bool CanWrite
-                => false;
-
-            long length = -1;
-            public override long Length
-            {
-                get
-                {
-                    if (!IsOpen)
-                        throw new ObjectDisposedException(null);
-
-                    if (length < 0)
-                    {
-                        Exception exception = null;
-                        int retries = 5;
-                        while (retries > 0)
-                        {
-                            try
-                            {
-                                length = Client.GetDownloadLength(Path);
-                                retries = 0;
-                                exception = null;
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Failed when getting file length");
-                                Console.WriteLine("Exception:");
-                                Console.WriteLine(ex);
-                                retries--;
-                                exception = ex;
-                                Thread.Sleep(TimeSpan.FromSeconds(10));
-                            }
-                        }
-
-                        if (exception != null)
-                            throw exception;
-                    }
-
-                    return length;
-                }
-            }
-
-            public override long Position { get; set; }
-
-            public BaiduCloudStorageClient Client { get; set; }
-
-            public string Path { get; set; }
-
-            public DownloadStream(BaiduCloudStorageClient client, string path)
-            {
-                Client = client;
-                Path = path;
-            }
-
-            public override void Flush()
-            {
-                if (!IsOpen)
-                    throw new ObjectDisposedException(null);
-
-                // Intentionally doing nothing.
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                if (!IsOpen)
-                    throw new ObjectDisposedException(null);
-
-                switch (origin)
-                {
-                    case SeekOrigin.Begin:
-                        Position = offset;
-                        break;
-                    case SeekOrigin.Current:
-                        Position += offset;
-                        break;
-                    case SeekOrigin.End:
-                        Position = Length + offset;
-                        break;
-                }
-
-                return Position;
-            }
-
-            public override void SetLength(long value)
-            {
-                throw new NotSupportedException("The Baidu download stream is not writable.");
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                if (!IsOpen)
-                    throw new ObjectDisposedException(null);
-
-                if (buffer == null)
-                    throw new ArgumentNullException(nameof(buffer));
-
-                if (offset < 0)
-                    throw new ArgumentOutOfRangeException(nameof(offset));
-
-                if (offset < 0)
-                    throw new ArgumentOutOfRangeException(nameof(offset));
-
-                if (buffer.Length - offset < count)
-                    throw new ArgumentException();
-
-                if (Position >= Length)
-                {
-                    return 0;
-                }
-
-                count = (int)Math.Min(count, Length - Position);
-
-                bool done = false;
-                int readCount = 0;
-                while (!done)
-                {
-                    try
-                    {
-                        readCount = Client.Download(buffer, Path, offset, Position, count);
-                        done = readCount == count;
-                        if (!done)
-                        {
-                            Console.Error.WriteLine("Didn't get expected amount of data.");
-                            Console.Error.WriteLine($"Responses contains {readCount} bytes, should be {count} bytes.");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Failed once when downloading (from {Position} to {Position + count}):");
-                        Console.WriteLine("Exception:");
-                        Console.WriteLine(ex);
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                }
-
-                Position += readCount;
-
-                return readCount;
-            }
-
-            public override void Write(byte[] buffer, int offset, int count)
-            {
-                throw new NotSupportedException("The Baidu download stream is not writable.");
-            }
         }
 
         class UploadBlockException : Exception
