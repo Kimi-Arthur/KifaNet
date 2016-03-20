@@ -48,18 +48,6 @@
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Pimix.IO, Version=1.1.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.IO.1.1.5\lib\net46\Pimix.IO.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Pimix.Service, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.Service.1.3.0\lib\net46\Pimix.Service.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -75,7 +63,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ConfigTests.cs" />
+    <Compile Include="BaiduCloudConfigTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaiduCloudStorageClientTests.cs" />
   </ItemGroup>
@@ -83,6 +71,10 @@
     <ProjectReference Include="..\..\src\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj">
       <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
       <Name>Pimix.Cloud.BaiduCloud</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Pimix.IO\Pimix.IO.csproj">
+      <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
+      <Name>Pimix.IO</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

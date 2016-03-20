@@ -38,3 +38,4 @@ Changes:
   - Add `FileStorageClient`.
  - 1.2.*
   - Fix `FileStorageClient` accessibility.
+  - Update dependency logic.

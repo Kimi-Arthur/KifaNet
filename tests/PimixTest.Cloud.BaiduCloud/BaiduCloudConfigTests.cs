@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
@@ -7,7 +6,7 @@ using Pimix.Cloud.BaiduCloud;
 namespace PimixTest.Cloud.BaiduCloud
 {
     [TestClass]
-    public class ConfigTests
+    public class BaiduCloudConfigTests
     {
         public string PimixServerApiAddress { get; set; } = "http://pimix.cloudapp.net/api";
 

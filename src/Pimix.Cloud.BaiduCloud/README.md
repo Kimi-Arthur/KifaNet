@@ -37,3 +37,5 @@ Changes:
  - 1.2.0
   - Added per-block upload verification.
   - Better logging for downloading exceptions.
+ - 1.2.*
+  - Update dependency logic.

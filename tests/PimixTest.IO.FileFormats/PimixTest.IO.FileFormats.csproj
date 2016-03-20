@@ -48,18 +48,6 @@
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Pimix.IO, Version=1.1.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.IO.1.1.5\lib\net46\Pimix.IO.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Pimix.Service, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.Service.1.3.0\lib\net46\Pimix.Service.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -82,6 +70,10 @@
     <ProjectReference Include="..\..\src\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj">
       <Project>{2dd33390-1808-4f3d-82bb-5e65ab955f49}</Project>
       <Name>Pimix.IO.FileFormats</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Pimix.IO\Pimix.IO.csproj">
+      <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
+      <Name>Pimix.IO</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

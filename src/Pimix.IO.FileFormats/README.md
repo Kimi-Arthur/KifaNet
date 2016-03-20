@@ -21,3 +21,4 @@ Changes:
   - Begin package versioning.
  - 1.0.1
   - Updated Pimix.IO to 1.1.5.
+  - Update dependency logic.

@@ -8,7 +8,7 @@ namespace PimixTest.Cloud.MegaNz
     [TestClass]
     public class MegaApiClientTests
     {
-        [TestMethod]
+        //[TestMethod]
         public void MegaApiClientBasicTest()
         {
             MegaApiClient client = new MegaApiClient();

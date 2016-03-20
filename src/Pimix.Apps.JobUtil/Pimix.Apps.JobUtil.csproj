@@ -46,14 +46,6 @@
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Pimix, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.1.0.3\lib\net46\Pimix.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Pimix.Service, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Pimix.Service.1.3.0\lib\net46\Pimix.Service.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -79,6 +71,16 @@
     <None Include="packages.config" />
     <None Include="Pimix.Apps.JobUtil.nuspec" />
     <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
+      <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>
+      <Name>Pimix.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Pimix\Pimix.csproj">
+      <Project>{2abe34d1-ef0a-4ac6-bb95-05dcefc5bb91}</Project>
+      <Name>Pimix</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

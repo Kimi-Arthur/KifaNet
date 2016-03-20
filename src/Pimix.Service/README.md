@@ -34,3 +34,5 @@ Changes:
     2. No code change needed!
  - 1.4.0
   - New (status + message + response) format contacting PimixServer.
+ - 1.4.*
+  - Update dependency logic.
