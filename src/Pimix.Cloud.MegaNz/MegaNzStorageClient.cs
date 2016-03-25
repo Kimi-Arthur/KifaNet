@@ -42,13 +42,15 @@ namespace Pimix.Cloud.MegaNz
 
         public override void Delete(string path)
         {
-            throw new NotImplementedException();
+            var node = GetNode(path);
+            if (node != null)
+            {
+                Client.Delete(node, false);
+            }
         }
 
         public override bool Exists(string path)
-        {
-            throw new NotImplementedException();
-        }
+            => GetNode(path) != null;
 
         public override Stream OpenRead(string path)
         {
