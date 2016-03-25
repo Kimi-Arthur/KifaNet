@@ -18,7 +18,7 @@ namespace Pimix.Cloud.MegaNz
             }
             set
             {
-                if (accountId != value)
+                if (accountId != null && accountId != value)
                 {
                     var account = Config.Accounts[accountId];
 
@@ -71,12 +71,13 @@ namespace Pimix.Cloud.MegaNz
 
             foreach (var p in path.Split('/'))
             {
-                node = Client.GetNodes(parent).SingleOrDefault(n => n.Name == p);
+                node = nodes.SingleOrDefault(n => n.ParentId == parent.Id && n.Name == p);
                 if (node == null)
                 {
                     if (createParents)
                     {
                         node = Client.CreateFolder(p, parent);
+                        nodes = Client.GetNodes();
                     }
                     else
                     {
