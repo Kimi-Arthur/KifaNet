@@ -18,12 +18,20 @@ namespace Pimix.Cloud.MegaNz
             }
             set
             {
+                if (accountId != value)
+                {
+                    var account = Config.Accounts[accountId];
+
+                    // Update Client.
+                    Client = new MegaApiClient();
+                    Client.Login(account.Username, account.Password);
+                }
+
                 accountId = value;
-                Account = Config.Accounts[accountId];
             }
         }
 
-        public AccountInfo Account { get; private set; }
+        public MegaApiClient Client { get; private set; }
 
         public static MegaNzConfig Config { get; set; }
 
@@ -44,27 +52,42 @@ namespace Pimix.Cloud.MegaNz
 
         public override Stream OpenRead(string path)
         {
-            MegaApiClient client = new MegaApiClient();
-
-            client.Login(Account.Username, Account.Password);
-
-            var nodes = client.GetNodes();
-
-            INode node = nodes.Single(n => n.Type == NodeType.Root);
-            foreach (var p in path.Split('/'))
-            {
-                Console.WriteLine(node.Name);
-                node = client.GetNodes(node).Single(n => n.Name == p);
-            }
-
             MemoryStream memoryStream = new MemoryStream();
-            client.Download(node).CopyTo(memoryStream);
+            Client.Download(GetNode(path)).CopyTo(memoryStream);
             return memoryStream;
         }
 
         public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
             throw new NotImplementedException();
+        }
+
+        INode GetNode(string path, bool createParents = false)
+        {
+            var nodes = Client.GetNodes();
+
+            INode parent = nodes.Single(n => n.Type == NodeType.Root);
+            INode node = parent;
+
+            foreach (var p in path.Split('/'))
+            {
+                node = Client.GetNodes(parent).SingleOrDefault(n => n.Name == p);
+                if (node == null)
+                {
+                    if (createParents)
+                    {
+                        node = Client.CreateFolder(p, parent);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                parent = node;
+            }
+
+            return node;
         }
     }
 }
