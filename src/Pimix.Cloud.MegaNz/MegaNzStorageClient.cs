@@ -20,7 +20,7 @@ namespace Pimix.Cloud.MegaNz
             {
                 if (value != null && accountId != value)
                 {
-                    var account = Config.Accounts[accountId];
+                    var account = Config.Accounts[value];
 
                     // Update Client.
                     Client = new MegaApiClient();
