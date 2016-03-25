@@ -18,7 +18,7 @@ namespace Pimix.Cloud.MegaNz
             }
             set
             {
-                if (accountId != null && accountId != value)
+                if (value != null && accountId != value)
                 {
                     var account = Config.Accounts[accountId];
 
