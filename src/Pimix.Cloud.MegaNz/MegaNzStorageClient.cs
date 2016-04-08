@@ -63,7 +63,7 @@ namespace Pimix.Cloud.MegaNz
         {
             var folder = GetNode(path.Substring(0, path.LastIndexOf('/')));
             var name = path.Substring(path.LastIndexOf('/') + 1);
-            throw new NotImplementedException();
+            Client.Upload(stream, name, folder);
         }
 
         INode GetNode(string path, bool createParents = false)
