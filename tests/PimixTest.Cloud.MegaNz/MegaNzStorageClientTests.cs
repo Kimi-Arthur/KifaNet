@@ -15,7 +15,7 @@ namespace PimixTest.Cloud.MegaNz
         public void DownloadTest()
         {
             var client = new MegaNzStorageClient() { AccountId = "pimixserver+test@gmail.com" };
-            using (var s = client.OpenRead("Test/2010-11-25.bin"))
+            using (var s = client.OpenRead("/Test/2010-11-25.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }

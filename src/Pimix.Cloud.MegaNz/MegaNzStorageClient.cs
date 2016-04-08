@@ -61,11 +61,14 @@ namespace Pimix.Cloud.MegaNz
 
         public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
+            var folder = GetNode(path.Substring(0, path.LastIndexOf('/')));
+            var name = path.Substring(path.LastIndexOf('/') + 1);
             throw new NotImplementedException();
         }
 
         INode GetNode(string path, bool createParents = false)
         {
+            path = path.TrimStart('/');
             var nodes = Client.GetNodes();
 
             INode parent = nodes.Single(n => n.Type == NodeType.Root);

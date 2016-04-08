@@ -19,7 +19,7 @@ namespace PimixTest.Cloud.BaiduCloud
         public void DownloadTest()
         {
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
-            using (var s = client.OpenRead("Test/2010-11-25.bin"))
+            using (var s = client.OpenRead("/Test/2010-11-25.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
@@ -31,7 +31,7 @@ namespace PimixTest.Cloud.BaiduCloud
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
             client.Write(
-                "Test/rapid.bin",
+                "/Test/rapid.bin",
                 fileInformation: new FileInformation
                 {
                     Size = 1048576,
@@ -43,12 +43,12 @@ namespace PimixTest.Cloud.BaiduCloud
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
-            using (var s = client.OpenRead("Test/rapid.bin"))
+            using (var s = client.OpenRead("/Test/rapid.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
 
-            client.Delete("Test/rapid.bin");
+            client.Delete("/Test/rapid.bin");
         }
 
         [TestMethod]
@@ -61,19 +61,19 @@ namespace PimixTest.Cloud.BaiduCloud
             };
 
             client.Write(
-                "Test/block.bin",
+                "/Test/block.bin",
                 File.OpenRead("data.bin"),
                 match: false
             );
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
-            using (var s = client.OpenRead("Test/block.bin"))
+            using (var s = client.OpenRead("/Test/block.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
 
-            client.Delete("Test/block.bin");
+            client.Delete("/Test/block.bin");
         }
 
         [TestMethod]
@@ -82,19 +82,19 @@ namespace PimixTest.Cloud.BaiduCloud
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
             client.Write(
-                "Test/direct.bin",
+                "/Test/direct.bin",
                 File.OpenRead("data.bin"),
                 match: false
             );
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
-            using (var s = client.OpenRead("Test/direct.bin"))
+            using (var s = client.OpenRead("/Test/direct.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
 
-            client.Delete("Test/direct.bin");
+            client.Delete("/Test/direct.bin");
         }
 
         [TestMethod]
@@ -102,8 +102,8 @@ namespace PimixTest.Cloud.BaiduCloud
         {
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
-            Assert.IsTrue(client.Exists("Test/2010-11-25.bin"));
-            Assert.IsFalse(client.Exists("Test/2015-11-25.bin"));
+            Assert.IsTrue(client.Exists("/Test/2010-11-25.bin"));
+            Assert.IsFalse(client.Exists("/Test/2015-11-25.bin"));
         }
 
         [ClassInitialize]
@@ -125,7 +125,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
             try
             {
-                client.Delete("Test/rapid.bin");
+                client.Delete("/Test/rapid.bin");
             }
             catch (Exception)
             {
@@ -133,7 +133,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
             try
             {
-                client.Delete("Test/block.bin");
+                client.Delete("/Test/block.bin");
             }
             catch (Exception)
             {
@@ -141,7 +141,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
             try
             {
-                client.Delete("Test/direct.bin");
+                client.Delete("/Test/direct.bin");
             }
             catch (Exception)
             {
