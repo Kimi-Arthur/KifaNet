@@ -61,7 +61,7 @@ namespace Pimix.Cloud.MegaNz
 
         public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
-            var folder = GetNode(path.Substring(0, path.LastIndexOf('/')));
+            var folder = GetNode(path.Substring(0, path.LastIndexOf('/')), true);
             var name = path.Substring(path.LastIndexOf('/') + 1);
             Client.Upload(stream, name, folder);
         }
