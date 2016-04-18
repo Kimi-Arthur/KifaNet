@@ -292,6 +292,7 @@ namespace Pimix.IO
         {
             using (var aes = new AesCryptoServiceProvider())
             {
+                aes.KeySize = 256;
                 return aes.Key.ToHexString();
             }
         }
