@@ -33,15 +33,7 @@ namespace CG.Web.MegaApiClient
 {
     internal class Crypto
     {
-        private static readonly Rijndael Rijndael;
         private static readonly byte[] DefaultIv = new byte[16];
-
-        static Crypto()
-        {
-            Rijndael = Rijndael.Create();
-            Rijndael.Padding = PaddingMode.None;
-            Rijndael.Mode = CipherMode.CBC;
-        }
 
         #region Key
 
@@ -94,32 +86,44 @@ namespace CG.Web.MegaApiClient
 
         public static byte[] DecryptAes(byte[] data, byte[] key)
         {
-            using (ICryptoTransform decryptor = Rijndael.CreateDecryptor(key, DefaultIv))
+            using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
-                return decryptor.TransformFinalBlock(data, 0, data.Length);
+                aesAlgorithm.Padding = PaddingMode.None;
+                aesAlgorithm.Key = key;
+                aesAlgorithm.Mode = CipherMode.CBC;
+                aesAlgorithm.IV = DefaultIv;
+                using (var decryptor = aesAlgorithm.CreateDecryptor())
+                {
+                    return decryptor.TransformFinalBlock(data, 0, data.Length);
+                }
             }
         }
 
         public static byte[] EncryptAes(byte[] data, byte[] key)
         {
-            using (ICryptoTransform encryptor = Rijndael.CreateEncryptor(key, DefaultIv))
+            ICryptoTransform encoder;
+            using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
-                return encryptor.TransformFinalBlock(data, 0, data.Length);
+                aesAlgorithm.Padding = PaddingMode.None;
+                aesAlgorithm.Key = key;
+                aesAlgorithm.IV = DefaultIv;
+                aesAlgorithm.Mode = CipherMode.CBC;
+                using (var encryptor = aesAlgorithm.CreateEncryptor())
+                {
+                    return encryptor.TransformFinalBlock(data, 0, data.Length);
+                }
             }
         }
 
         public static byte[] CreateAesKey()
         {
-            using (Rijndael rijndael = Rijndael.Create())
+            using (Aes aes = new AesCryptoServiceProvider())
             {
-                rijndael.Mode = CipherMode.CBC;
-                rijndael.KeySize = 128;
-                rijndael.Padding = PaddingMode.None;
-                rijndael.GenerateKey();
-                return rijndael.Key;
+                aes.KeySize = 128;
+                return aes.Key;
             }
         }
-        
+
         #endregion
 
         #region Attributes
