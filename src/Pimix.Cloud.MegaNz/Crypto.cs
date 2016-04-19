@@ -101,7 +101,6 @@ namespace CG.Web.MegaApiClient
 
         public static byte[] EncryptAes(byte[] data, byte[] key)
         {
-            ICryptoTransform encoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
                 aesAlgorithm.Padding = PaddingMode.None;
