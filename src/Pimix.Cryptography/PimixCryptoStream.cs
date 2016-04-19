@@ -48,10 +48,6 @@ namespace Pimix.Cryptography
 
         long InternalPosition
         {
-            get
-            {
-                return stream.Position;
-            }
             set
             {
                 stream.Position = value;
@@ -107,7 +103,6 @@ namespace Pimix.Cryptography
                 int internalToRead = (count - readCount).RoundUp(BlockSize);
 
                 byte[] internalBuffer = new byte[internalToRead];
-                InternalPosition = Position + (needBlockAhead ? BlockSize : 0);
                 int internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
 
                 if (internalReadCount == internalToRead)
