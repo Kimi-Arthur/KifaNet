@@ -46,14 +46,6 @@ namespace Pimix.Cryptography
             }
         }
 
-        long InternalPosition
-        {
-            set
-            {
-                stream.Position = value;
-            }
-        }
-
         public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength, bool needBlockAhead)
         {
             this.stream = stream;
@@ -64,7 +56,7 @@ namespace Pimix.Cryptography
 
         public override void Flush()
         {
-            stream.Flush();
+            stream?.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -121,7 +113,11 @@ namespace Pimix.Cryptography
                 int internalToRead = (int)((Position + count - readCount).RoundUp(BlockSize) - Position.RoundDown(BlockSize)) + (needBlockAhead ? BlockSize : 0);
                 byte[] internalBuffer = new byte[internalToRead];
 
-                InternalPosition = Position.RoundDown(BlockSize);
+                if (stream.CanSeek)
+                {
+                    stream.Position = Position.RoundDown(BlockSize);
+                }
+
                 int internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
 
                 if (needBlockAhead)
@@ -185,21 +181,17 @@ namespace Pimix.Cryptography
         {
             try
             {
-                if (disposing && stream != null)
+                if (disposing)
                 {
-                    try
-                    {
-                        Flush();
-                    }
-                    finally
-                    {
-                        stream.Dispose();
-                    }
+                    Flush();
+                    stream?.Dispose();
+                    transform?.Dispose();
                 }
             }
             finally
             {
                 stream = null;
+                transform = null;
                 base.Dispose(disposing);
             }
         }
