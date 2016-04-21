@@ -53,11 +53,7 @@ namespace Pimix.Cloud.MegaNz
             => GetNode(path) != null;
 
         public override Stream OpenRead(string path)
-        {
-            MemoryStream memoryStream = new MemoryStream();
-            Client.Download(GetNode(path)).CopyTo(memoryStream);
-            return memoryStream;
-        }
+            => Client.Download(GetNode(path));
 
         public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
