@@ -98,11 +98,19 @@ namespace Pimix.IO
                 BlockSize = GetBlockSize(Size.Value);
             }
 
+            int readLength = 0;
+            byte[] buffer = new byte[BlockSize == null ? SliceLength : BlockSize.Value];
+
+            if (stream.CanSeek)
+            {
+                // Assume at head if stream is not seekable.
+                stream.Seek(0, SeekOrigin.Begin);
+            }
+
             if (requiredProperties.HasFlag(FileProperties.SliceMD5))
             {
-                byte[] buffer = new byte[SliceLength];
-                stream.Seek(0, SeekOrigin.Begin);
-                SliceMD5 = (stream.Read(buffer, 0, SliceLength) == SliceLength)
+                readLength = stream.Read(buffer, 0, SliceLength);
+                SliceMD5 = (readLength == SliceLength)
                     ? new MD5CryptoServiceProvider().ComputeHash(buffer, 0, SliceLength).ToHexString()
                     : null;
             }
@@ -127,11 +135,6 @@ namespace Pimix.IO
                     requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new SHA256CryptoServiceProvider() : null
                 };
 
-                stream.Seek(0, SeekOrigin.Begin);
-                int blockSize = BlockSize ?? GetBlockSize(stream.Length);
-                int readLength;
-                byte[] buffer = new byte[blockSize];
-
                 List<IHash> additionalHashers = new List<IHash>
                 {
                     requiredProperties.HasFlag(FileProperties.CRC32) ? HashFactory.Checksum.CreateCRC32a() : null,
@@ -143,7 +146,7 @@ namespace Pimix.IO
                     hasher?.Initialize();
                 }
 
-                while ((readLength = stream.Read(buffer, 0, blockSize)) != 0)
+                while ((readLength += stream.Read(buffer, readLength, BlockSize.Value - readLength)) != 0)
                 {
                     Parallel.ForEach(
                         hashers,
@@ -175,6 +178,8 @@ namespace Pimix.IO
                     {
                         BlockSHA256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).ToHexString());
                     }
+
+                    readLength = 0;
                 }
 
                 foreach (var hasher in hashers)
