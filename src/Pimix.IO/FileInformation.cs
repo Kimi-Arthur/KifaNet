@@ -100,7 +100,7 @@ namespace Pimix.IO
             int readLength = 0;
             byte[] buffer = new byte[BlockSize == null ? SliceLength : BlockSize.Value];
 
-            if (stream.CanSeek)
+            if (stream != null && stream.CanSeek)
             {
                 // Assume at head if stream is not seekable.
                 stream.Seek(0, SeekOrigin.Begin);
