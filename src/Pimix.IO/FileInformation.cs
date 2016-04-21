@@ -92,8 +92,7 @@ namespace Pimix.IO
             }
 
             if (BlockSize == null
-                && (requiredProperties.HasFlag(FileProperties.BlockSize)
-                || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None))
+                && (requiredProperties & (FileProperties.BlockSize | FileProperties.AllHashes | FileProperties.AllBlockHashes)) != FileProperties.None)
             {
                 BlockSize = GetBlockSize(Size.Value);
             }
