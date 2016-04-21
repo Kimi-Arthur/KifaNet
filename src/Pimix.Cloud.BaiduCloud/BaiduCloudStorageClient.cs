@@ -84,8 +84,9 @@ namespace Pimix.Cloud.BaiduCloud
                     UploadStreamRapid(path, stream, fileInformation);
                     return;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Rapid upload failed!\nException:\n{ex}\n");
                 }
             }
 
