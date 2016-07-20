@@ -2,12 +2,12 @@
 
 namespace Pimix.IO.FileFormats
 {
-    public abstract class PimixFile
+    public class PimixFile
     {
-        public FileInformation Info { get; set; }
+        public virtual Stream GetEncodeStream(Stream rawStream)
+            => rawStream;
 
-        public abstract Stream GetEncodeStream(Stream rawStream);
-
-        public abstract Stream GetDecodeStream(Stream encodedStream);
+        public virtual Stream GetDecodeStream(Stream encodedStream)
+            => encodedStream;
     }
 }

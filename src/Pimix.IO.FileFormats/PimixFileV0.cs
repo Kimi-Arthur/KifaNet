@@ -8,17 +8,19 @@ namespace Pimix.IO.FileFormats
 {
     /// <summary>
     /// Legacy file format with encryption and information header.
-    /// 
+    ///
     /// There is a verbose header part, 0x1225 bytes long and starts with "0x01231225".
     /// Information wise, it only contains SHA256 and file size.
     /// SHA256 starts at 0x0e90 (3728) and is in hex string format (thus occupies 64 bytes)
     /// File size starts at 0x073e (1854) and will end with space.
-    /// 
+    ///
     /// We only provide decoder for this format.
-    /// 
+    ///
     /// </summary>
     public class PimixFileV0 : PimixFile
     {
+        public FileInformation Info { get; set; }
+
         public override Stream GetDecodeStream(Stream encodedStream)
         {
             Info = Info ?? new FileInformation();

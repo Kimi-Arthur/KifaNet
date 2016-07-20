@@ -7,13 +7,13 @@ namespace Pimix.IO.FileFormats
 {
     /// <summary>
     /// V1 file format.
-    /// 
+    ///
     /// Common header for v1 and onward:
     ///     B0~3: 0x0123 0x1225
     ///     B4~5: Version Number
     ///     B6~7: Header Length (hl)
     ///     B8~(hl-1): Other parts
-    /// 
+    ///
     /// V1 header:
     ///     B0~3: 0x0123 0x1225
     ///     B4~7: 0x0001 0x0030
@@ -22,6 +22,8 @@ namespace Pimix.IO.FileFormats
     /// </summary>
     public class PimixFileV1 : PimixFile
     {
+        public FileInformation Info { get; set; }
+
         public override Stream GetDecodeStream(Stream encodedStream)
         {
             Info = Info ?? new FileInformation();
