@@ -1,11 +1,14 @@
+using System.IO;
+using Pimix.IO;
+using Pimix.IO.FileFormats;
 
-class Location
+class PimixFile
 {
     public StorageClient Client { get; set; }
     public string Path { get; set; }
     public PimixFileFormat FileFormat { get; set; }
 
-    public Location(string uri)
+    public PimixFile(string uri)
     {
     }
 
@@ -15,9 +18,9 @@ class Location
     public void Delete()
         => Client.Delete(Path);
 
-    public void Copy(Location destination)
+    public void Copy(PimixFile destination)
     {
-        if (destination.Client == Client)
+        if (destination.Client == Client && destination.FileFormat == FileFormat)
         {
             Client.Copy(Path, destination.Path);
         }
@@ -27,9 +30,9 @@ class Location
         }
     }
 
-    public void Move(Location destination)
+    public void Move(PimixFile destination)
     {
-        if (destination.Client == Client)
+        if (destination.Client == Client && destination.FileFormat == FileFormat)
         {
             Client.Move(Path, destination.Path);
         }
@@ -44,5 +47,5 @@ class Location
         => FileFormat.GetDecodeStream(Client.OpenRead(Path));
 
     public void Write(Stream stream = null, FileInformation fileInformation = null, bool match = true)
-        => Client.Write(FileFormat.GetEncodeStream(stream), fileInformation, match);
+        => Client.Write(Path, FileFormat.GetEncodeStream(stream), fileInformation, match);
 }

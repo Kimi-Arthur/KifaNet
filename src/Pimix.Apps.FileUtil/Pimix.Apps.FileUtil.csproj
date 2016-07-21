@@ -67,6 +67,7 @@
     <Compile Include="LinkCommand.cs" />
     <Compile Include="ListCommand.cs" />
     <Compile Include="MoveCommand.cs" />
+    <Compile Include="PimixFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoveCommand.cs" />
