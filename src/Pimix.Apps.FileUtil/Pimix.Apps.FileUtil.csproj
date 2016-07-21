@@ -88,6 +88,10 @@
       <Project>{176e01db-8da9-4fe1-9271-411e00e3547a}</Project>
       <Name>Pimix.Cloud.BaiduCloud</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj">
+      <Project>{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}</Project>
+      <Name>Pimix.Cloud.MegaNz</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj">
       <Project>{2dd33390-1808-4f3d-82bb-5e65ab955f49}</Project>
       <Name>Pimix.IO.FileFormats</Name>

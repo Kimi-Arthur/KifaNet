@@ -15,6 +15,20 @@ namespace Pimix.Cloud.BaiduCloud
     {
         public static BaiduCloudConfig Config { get; set; }
 
+        public static StorageClient Get(string fileSpec)
+        {
+            var specs = fileSpec.Split(new char[] { ';' });
+            foreach (var spec in specs)
+            {
+                if (spec.StartsWith("baidu:"))
+                {
+                    return new BaiduCloudStorageClient { AccountId = spec.Substring(6) };
+                }
+            }
+
+            return null;
+        }
+
         public List<int> BlockInfo { get; set; } = null;
 
         string accountId;

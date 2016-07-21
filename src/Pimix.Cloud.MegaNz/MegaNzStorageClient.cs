@@ -8,6 +8,19 @@ namespace Pimix.Cloud.MegaNz
 {
     public class MegaNzStorageClient : StorageClient
     {
+        public static StorageClient Get(string fileSpec)
+        {
+            var specs = fileSpec.Split(new char[] { ';' });
+            foreach (var spec in specs)
+            {
+                if (spec.StartsWith("mega:"))
+                {
+                    return new MegaNzStorageClient { AccountId = spec.Substring(5) };
+                }
+            }
+
+            return null;
+        }
 
         string accountId;
         public string AccountId

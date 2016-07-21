@@ -2,8 +2,13 @@ using System.IO;
 
 namespace Pimix.IO.FileFormats
 {
-    class RawFileFormat : PimixFileFormat
+    public class RawFileFormat : PimixFileFormat
     {
+        public static PimixFileFormat Get(string fileSpec)
+        {
+            return new RawFileFormat();
+        }
+
         public override Stream GetEncodeStream(Stream rawStream)
             => rawStream;
 

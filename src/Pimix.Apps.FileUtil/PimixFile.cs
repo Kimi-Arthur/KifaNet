@@ -1,4 +1,6 @@
 using System.IO;
+using Pimix.Cloud.BaiduCloud;
+using Pimix.Cloud.MegaNz;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
 
@@ -10,6 +12,10 @@ class PimixFile
 
     public PimixFile(string uri)
     {
+        var segments = uri.Split(new char[] {'/'}, 2);
+        Path = "/" + segments[1];
+        Client = BaiduCloudStorageClient.Get(segments[0]) ?? MegaNzStorageClient.Get(segments[0]) ?? FileStorageClient.Get(segments[0]);
+        FileFormat = PimixFileV1Format.Get(segments[0]) ?? PimixFileV0Format.Get(segments[0]) ?? RawFileFormat.Get(segments[0]);
     }
 
     public void Exists()

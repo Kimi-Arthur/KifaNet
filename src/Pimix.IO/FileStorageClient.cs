@@ -7,6 +7,22 @@ namespace Pimix.IO
     {
         const int DefaultBlockSize = 32 << 20;
 
+        public static StorageClient Get(string fileSpec)
+        {
+            var specs = fileSpec.Split(new char[] { ';' });
+            foreach (var spec in specs)
+            {
+                if (spec.StartsWith("local:"))
+                {
+                    return new FileStorageClient { BasePath = spec.Substring(5) };
+                }
+            }
+
+            return null;
+        }
+
+        public string BasePath { get; set; }
+
         public override void Copy(string sourcePath, string destinationPath)
             => File.Copy(sourcePath, destinationPath);
 
