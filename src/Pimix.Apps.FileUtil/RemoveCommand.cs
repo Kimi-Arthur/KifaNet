@@ -20,7 +20,6 @@ namespace Pimix.Apps.FileUtil
             if (Uri.TryCreate(FileUri, UriKind.Absolute, out uri) && uri.Scheme.StartsWith("pimix"))
             {
                 var info = FileInformation.Get(uri.LocalPath);
-                var schemes = uri.Scheme.Split('+').ToList();
 
                 if (string.IsNullOrEmpty(uri.Host))
                 {
