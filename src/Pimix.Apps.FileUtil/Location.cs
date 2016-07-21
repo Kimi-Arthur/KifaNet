@@ -3,7 +3,7 @@ class Location
 {
     public StorageClient Client { get; set; }
     public string Path { get; set; }
-    public PimixFile FileFormat { get; set; }
+    public PimixFileFormat FileFormat { get; set; }
 
     public Location(string uri)
     {

@@ -20,7 +20,7 @@ namespace Pimix.IO.FileFormats
     ///     B8~15: File Length (int64)
     ///     B16~47: SHA256 (256bit)
     /// </summary>
-    public class PimixFileV1 : PimixFile
+    public class PimixFileV1Format : PimixFileFormat
     {
         public FileInformation Info { get; set; }
 

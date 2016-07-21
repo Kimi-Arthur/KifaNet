@@ -53,10 +53,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PimixFile.cs" />
-    <Compile Include="PimixFileV0.cs" />
-    <Compile Include="PimixFileV1.cs" />
+    <Compile Include="PimixFileFormat.cs" />
+    <Compile Include="PimixFileV0Format.cs" />
+    <Compile Include="PimixFileV1Format.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RawFileFormat.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

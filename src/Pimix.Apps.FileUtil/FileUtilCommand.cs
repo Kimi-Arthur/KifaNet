@@ -78,11 +78,11 @@ namespace Pimix.Apps.FileUtil
                 // Concerning file format
                 if (uri.Scheme.Contains("v0"))
                 {
-                    stream = new PimixFileV0 { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
+                    stream = new PimixFileV0Format { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
                 }
                 else if (uri.Scheme.Contains("v1"))
                 {
-                    stream = new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
+                    stream = new PimixFileV1Format { Info = FileInformation.Get(uri.LocalPath) }.GetDecodeStream(stream);
                 }
 
                 return stream;
@@ -125,7 +125,7 @@ namespace Pimix.Apps.FileUtil
 
                 if (schemes.Contains("v1"))
                 {
-                    return new PimixFileV1 { Info = FileInformation.Get(uri.LocalPath) }.GetEncodeStream(stream);
+                    return new PimixFileV1Format { Info = FileInformation.Get(uri.LocalPath) }.GetEncodeStream(stream);
                 }
             }
 

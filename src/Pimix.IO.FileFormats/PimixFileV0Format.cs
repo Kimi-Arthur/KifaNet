@@ -17,7 +17,7 @@ namespace Pimix.IO.FileFormats
     /// We only provide decoder for this format.
     ///
     /// </summary>
-    public class PimixFileV0 : PimixFile
+    public class PimixFileV0Format : PimixFileFormat
     {
         public FileInformation Info { get; set; }
 
