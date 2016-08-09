@@ -5,7 +5,7 @@ sln_file = Pimix.mono40.sln
 projects = fileutil jobutil
 file_types = (exe.config|exe|dll)
 binary_path = /usr/local/lib/pimix/
-build_config = /p:TargetFrameworkVersion="v4.5" /p:Configuration=Release
+build_config = /p:Configuration=Release
 
 all: build install
 
