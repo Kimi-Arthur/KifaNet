@@ -12,10 +12,36 @@ class PimixFile
 
     public PimixFile(string uri)
     {
+        // Example uri (/files/ omitted):
+        //   /files/v1;baidu:Pimix_1/a/b/c/d.txt
+        //   /files/mega:0z/a/b/c/d.txt
+        //   /files/local:cubie/a/b/c/d.txt
+        //   /files/local:/a/b/c/d.txt
+        //   /files//a/b/c/d.txt
         var segments = uri.Split(new char[] {'/'}, 2);
         Path = "/" + segments[1];
+        if (segments[0] == string.Empty)
+        {
+            segments[0] = GetSpec(Path);
+        }
         Client = BaiduCloudStorageClient.Get(segments[0]) ?? MegaNzStorageClient.Get(segments[0]) ?? FileStorageClient.Get(segments[0]);
         FileFormat = PimixFileV1Format.Get(segments[0]) ?? PimixFileV0Format.Get(segments[0]) ?? RawFileFormat.Get(segments[0]);
+    }
+
+    private string GetSpec(string Path)
+    {
+        var info = FileInformation.Get(Path);
+        if (info == null)
+        {
+            return "";
+        }
+
+        foreach (var location in info.Locations)
+        {
+            return location.Key;
+        }
+
+        return "";
     }
 
     public void Exists()
