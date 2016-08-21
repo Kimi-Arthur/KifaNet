@@ -15,7 +15,10 @@ namespace Pimix.Cloud.MegaNz
             {
                 if (spec.StartsWith("mega:"))
                 {
-                    return new MegaNzStorageClient { AccountId = spec.Substring(5) };
+                    return new MegaNzStorageClient
+                    {
+                        AccountId = $"pimix.server+{spec.Substring(5)}@gmail.com"
+                    };
                 }
             }
 

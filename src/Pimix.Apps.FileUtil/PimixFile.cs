@@ -20,12 +20,11 @@ class PimixFile
         //   /files//a/b/c/d.txt
         var segments = uri.Split(new char[] {'/'}, 2);
         Path = "/" + segments[1];
-        if (segments[0] == string.Empty)
-        {
-            segments[0] = GetSpec(Path);
-        }
-        Client = BaiduCloudStorageClient.Get(segments[0]) ?? MegaNzStorageClient.Get(segments[0]) ?? FileStorageClient.Get(segments[0]);
-        FileFormat = PimixFileV1Format.Get(segments[0]) ?? PimixFileV0Format.Get(segments[0]) ?? RawFileFormat.Get(segments[0]);
+
+        var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
+        Client = BaiduCloudStorageClient.Get(spec) ?? MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
+        FileFormat = PimixFileV1Format.Get(spec) ?? PimixFileV0Format.Get(spec) ?? RawFileFormat.Get(spec);
+        FileFormat.Info = FileInformation.Get(Path);
     }
 
     private string GetSpec(string Path)
@@ -38,6 +37,7 @@ class PimixFile
 
         foreach (var location in info.Locations)
         {
+            // TODO: Will add selection logic here.
             return location.Key;
         }
 

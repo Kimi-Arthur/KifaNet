@@ -24,19 +24,19 @@ namespace Pimix.IO
         public string BasePath { get; set; }
 
         public override void Copy(string sourcePath, string destinationPath)
-            => File.Copy(sourcePath, destinationPath);
+            => File.Copy(GetPath(sourcePath), GetPath(destinationPath));
 
         public override void Delete(string path)
-            => File.Delete(path);
+            => File.Delete(GetPath(path));
 
         public override void Move(string sourcePath, string destinationPath)
-            => File.Move(sourcePath, destinationPath);
+            => File.Move(GetPath(sourcePath), GetPath(destinationPath));
 
         public override bool Exists(string path)
-            => File.Exists(path);
+            => File.Exists(GetPath(path));
 
         public override Stream OpenRead(string path)
-            => File.OpenRead(path);
+            => File.OpenRead(GetPath(path));
 
         public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
@@ -44,10 +44,28 @@ namespace Pimix.IO
                 throw new ArgumentNullException(nameof(stream));
 
             int blockSize = fileInformation?.BlockSize ?? DefaultBlockSize;
+            path = GetPath(path);
             Directory.GetParent(path).Create();
             using (FileStream fs = new FileStream(path, FileMode.Create))
             {
                 stream.CopyTo(fs, blockSize);
+            }
+        }
+
+        string GetPath(string path)
+        {
+            if (BasePath == null)
+            {
+                return path;
+            }
+
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                return $"/allfiles/{BasePath}{path}";
+            }
+            else
+            {
+                return $"\\\\{BasePath}/files{path}";
             }
         }
     }
