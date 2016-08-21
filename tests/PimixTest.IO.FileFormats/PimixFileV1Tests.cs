@@ -32,10 +32,10 @@ namespace PimixTest.IO.FileFormats
             {
                 using (MemoryStream ms = new MemoryStream(data, item.Item1, item.Item2))
                 using (MemoryStream encrypted = new MemoryStream())
-                using (Stream encryptionStream = new PimixFileV1 { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetEncodeStream(ms))
+                using (Stream encryptionStream = new PimixFileV1Format { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetEncodeStream(ms))
                 {
                     encryptionStream.CopyTo(encrypted);
-                    using (Stream output = new PimixFileV1 { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetDecodeStream(encrypted))
+                    using (Stream output = new PimixFileV1Format { Info = new FileInformation { EncryptionKey = EncryptionKey } }.GetDecodeStream(encrypted))
                     {
                         var fs1 = FileInformation.GetInformation(ms, FileProperties.Size | FileProperties.SHA256);
                         var fs2 = FileInformation.GetInformation(output, FileProperties.Size | FileProperties.SHA256);
