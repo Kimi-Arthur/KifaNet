@@ -26,16 +26,16 @@ namespace Pimix.Apps.FileUtil
 
         public override int Execute()
         {
-            Uri uri = new Uri(FileUri);
+            var f = new PimixFile(FileUri);
 
-            using (var stream = GetDataStream(FileUri))
+            using (var stream = f.OpenRead())
             {
-                var info = FileInformation.Get(uri.LocalPath).RemoveProperties(FilePropertiesToVerify).AddProperties(stream, FileProperties.All);
-                info.Path = uri.LocalPath;
+                var info = FileInformation.Get(f.Path).RemoveProperties(FilePropertiesToVerify).AddProperties(stream, FileProperties.All);
+                info.Path = f.Path;
                 if (info.Locations == null)
                     info.Locations = new Dictionary<string, string>();
-                info.Locations[$"{uri.Scheme}://{uri.Host}"] = FileUri;
-                var old = FileInformation.Get(uri.LocalPath);
+                info.Locations[f.Spec] = f.ToString();
+                var old = FileInformation.Get(f.Path);
                 var compareResult = info.CompareProperties(old, FilePropertiesToVerify);
                 if (compareResult == FileProperties.None)
                 {

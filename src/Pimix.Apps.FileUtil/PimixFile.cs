@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Cloud.MegaNz;
 using Pimix.IO;
@@ -6,14 +7,19 @@ using Pimix.IO.FileFormats;
 
 class PimixFile
 {
-    public StorageClient Client { get; set; }
     public string Path { get; set; }
+
+    public string Spec
+        => string.Join(";", new string[] { Client.ToString(), FileFormat.ToString() }.Where((x) => x != null));
+
+    public StorageClient Client { get; set; }
+
     public PimixFileFormat FileFormat { get; set; }
 
     public PimixFile(string uri)
     {
         // Example uri (/files/ omitted):
-        //   /files/v1;baidu:Pimix_1/a/b/c/d.txt
+        //   /files/baidu:Pimix_1;v1/a/b/c/d.txt
         //   /files/mega:0z/a/b/c/d.txt
         //   /files/local:cubie/a/b/c/d.txt
         //   /files/local:/a/b/c/d.txt
@@ -27,7 +33,10 @@ class PimixFile
         FileFormat.Info = FileInformation.Get(Path);
     }
 
-    private string GetSpec(string Path)
+    public override string ToString()
+        => $"{Spec}{Path}";
+
+    string GetSpec(string Path)
     {
         var info = FileInformation.Get(Path);
         if (info == null)
@@ -52,7 +61,7 @@ class PimixFile
 
     public void Copy(PimixFile destination)
     {
-        if (destination.Client == Client && destination.FileFormat == FileFormat)
+        if (Spec == destination.Spec)
         {
             Client.Copy(Path, destination.Path);
         }
@@ -64,7 +73,7 @@ class PimixFile
 
     public void Move(PimixFile destination)
     {
-        if (destination.Client == Client && destination.FileFormat == FileFormat)
+        if (Spec == destination.Spec)
         {
             Client.Move(Path, destination.Path);
         }

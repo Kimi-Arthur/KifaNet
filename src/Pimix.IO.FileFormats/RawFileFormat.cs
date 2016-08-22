@@ -9,6 +9,9 @@ namespace Pimix.IO.FileFormats
             return new RawFileFormat();
         }
 
+        public override string ToString()
+            => null;
+
         public override Stream GetEncodeStream(Stream rawStream)
             => rawStream;
 

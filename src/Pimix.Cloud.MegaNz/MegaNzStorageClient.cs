@@ -17,7 +17,7 @@ namespace Pimix.Cloud.MegaNz
                 {
                     return new MegaNzStorageClient
                     {
-                        AccountId = $"pimix.server+{spec.Substring(5)}@gmail.com"
+                        AccountId = spec.Substring(5)
                     };
                 }
             }
@@ -46,6 +46,9 @@ namespace Pimix.Cloud.MegaNz
                 accountId = value;
             }
         }
+
+        public override string ToString()
+            => $"mega:{AccountId}";
 
         public MegaApiClient Client { get; private set; }
 

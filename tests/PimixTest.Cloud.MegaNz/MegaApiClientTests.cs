@@ -13,7 +13,7 @@ namespace PimixTest.Cloud.MegaNz
         {
             MegaApiClient client = new MegaApiClient();
 
-            client.Login("pimixserver+test@gmail.com", "Pny3YQzV");
+            client.Login("pimix.server+test@gmail.com", "Pny3YQzV");
             var nodes = client.GetNodes();
 
             INode root = nodes.Single(n => n.Type == NodeType.Root);

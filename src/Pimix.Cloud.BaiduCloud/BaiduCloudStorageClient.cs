@@ -22,12 +22,16 @@ namespace Pimix.Cloud.BaiduCloud
             {
                 if (spec.StartsWith("baidu:"))
                 {
+                    Config = BaiduCloudConfig.Get("baidu_cloud");
                     return new BaiduCloudStorageClient { AccountId = spec.Substring(6) };
                 }
             }
 
             return null;
         }
+
+        public override string ToString()
+            => $"baidu:{AccountId}";
 
         public List<int> BlockInfo { get; set; } = null;
 

@@ -17,7 +17,7 @@ namespace PimixTest.Cloud.MegaNz
         [TestMethod]
         public void DownloadTest()
         {
-            var client = new MegaNzStorageClient() { AccountId = "pimixserver+test@gmail.com" };
+            var client = new MegaNzStorageClient() { AccountId = "test" };
             using (var s = client.OpenRead("/Test/2010-11-25.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
@@ -27,7 +27,7 @@ namespace PimixTest.Cloud.MegaNz
         [TestMethod]
         public void ExistsTest()
         {
-            var client = new MegaNzStorageClient() { AccountId = "pimixserver+test@gmail.com" };
+            var client = new MegaNzStorageClient() { AccountId = "test" };
 
             Assert.IsTrue(client.Exists("/Test/2010-11-25.bin"));
             Assert.IsFalse(client.Exists("/Test/2015-11-25.bin"));
@@ -37,7 +37,7 @@ namespace PimixTest.Cloud.MegaNz
         [TestMethod]
         public void UploadTest()
         {
-            var client = new MegaNzStorageClient() { AccountId = "pimixserver+test@gmail.com" };
+            var client = new MegaNzStorageClient() { AccountId = "test" };
 
             client.Write(
                 "/Test/new/upload.bin",
@@ -70,7 +70,7 @@ namespace PimixTest.Cloud.MegaNz
 
         static void DataCleanup()
         {
-            var client = new MegaNzStorageClient() { AccountId = "pimixserver+test@gmail.com" };
+            var client = new MegaNzStorageClient() { AccountId = "test" };
 
             try
             {

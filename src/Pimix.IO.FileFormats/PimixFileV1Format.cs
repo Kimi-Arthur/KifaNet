@@ -36,6 +36,9 @@ namespace Pimix.IO.FileFormats
             return null;
         }
 
+        public override string ToString()
+            => "v1";
+
         public override Stream GetDecodeStream(Stream encodedStream)
         {
             Info = Info ?? new FileInformation();

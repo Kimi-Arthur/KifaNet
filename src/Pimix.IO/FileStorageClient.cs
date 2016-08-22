@@ -14,7 +14,7 @@ namespace Pimix.IO
             {
                 if (spec.StartsWith("local:"))
                 {
-                    return new FileStorageClient { BasePath = spec.Substring(5) };
+                    return new FileStorageClient { BasePath = spec.Substring(6) };
                 }
             }
 
@@ -22,6 +22,9 @@ namespace Pimix.IO
         }
 
         public string BasePath { get; set; }
+
+        public override string ToString()
+            => $"local:{BasePath}";
 
         public override void Copy(string sourcePath, string destinationPath)
             => File.Copy(GetPath(sourcePath), GetPath(destinationPath));
