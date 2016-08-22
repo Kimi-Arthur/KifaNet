@@ -86,10 +86,9 @@ namespace Pimix.Apps.FileUtil
 
         bool RemoveRealFile(string location)
         {
-            StorageClient client = GetStorageClient(location);
             try
             {
-                client.Delete(GetPath(location));
+                new PimixFile(location).Delete();
                 return true;
             }
             catch (Exception ex)

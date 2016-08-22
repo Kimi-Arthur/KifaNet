@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Configuration;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using CommandLine;
-using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil
@@ -17,9 +13,6 @@ namespace Pimix.Apps.FileUtil
 
         [Value(1, Required = true)]
         public string DestinationUri { get; set; }
-
-        [Option('c', "chunk-size", HelpText = "The chunk size used to copy data")]
-        public string ChunkSize { get; set; } = ConfigurationManager.AppSettings["BufferSize"];
 
         [Option('p', "precheck", HelpText = "Whether to check (and update) SOURCE before copying.")]
         public bool Precheck { get; set; } = false;
@@ -64,56 +57,7 @@ namespace Pimix.Apps.FileUtil
                 }
             }
 
-            using (var stream = GetDataStream(SourceUri))
-            using (var uploadStream = GetUploadStream(stream, DestinationUri))
-            {
-                Uri uploadTo;
-                if (Uri.TryCreate(DestinationUri, UriKind.Absolute, out uploadTo))
-                {
-                    var schemes = uploadTo.Scheme.Split('+').ToList();
-                    if (schemes.Contains("cloud"))
-                    {
-                        switch (uploadTo.Host)
-                        {
-                            case "pan.baidu.com":
-                                {
-                                    BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
-                                    if (schemes.Contains("v1"))
-                                    {
-                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.Write(uploadTo.LocalPath, uploadStream, match: false);
-                                    }
-                                    else
-                                    {
-                                        // No encryption
-                                        Console.Error.WriteLine("From local and upload stream contains no encryption, will try rapid");
-                                        new BaiduCloudStorageClient { AccountId = uploadTo.UserInfo }.Write(uploadTo.LocalPath, uploadStream, fileInformation: FileInformation.Get(uploadTo.LocalPath));
-                                    }
-                                    break;
-                                }
-                            default:
-                                throw new ArgumentException(nameof(DestinationUri));
-                        }
-                    }
-                    else
-                    {
-                        var path = GetPath(DestinationUri);
-                        Directory.GetParent(path).Create();
-                        using (FileStream fs = new FileStream(path, FileMode.Create))
-                        {
-                            stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
-                        }
-                    }
-                }
-                else
-                {
-                    var path = GetPath(DestinationUri);
-                    Directory.GetParent(path).Create();
-                    using (FileStream fs = new FileStream(path, FileMode.Create))
-                    {
-                        stream.CopyTo(fs, (int)ChunkSize.ParseSizeString());
-                    }
-                }
-            }
+            new PimixFile(SourceUri).Copy(new PimixFile(DestinationUri));
 
             // Wait 5 seconds to ensure server sync.
             Thread.Sleep(TimeSpan.FromSeconds(5));
