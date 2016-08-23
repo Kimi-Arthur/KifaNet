@@ -442,7 +442,54 @@ namespace Pimix.Cloud.BaiduCloud
 
         public override void Copy(string sourcePath, string destinationPath)
         {
-            throw new NotImplementedException();
+            HttpWebRequest request = ConstructRequest(Config.APIList.CopyFile,
+                new Dictionary<string, string>
+                {
+                    ["from_remote_path"] = sourcePath.TrimStart('/'),
+                    ["to_remote_path"] = destinationPath.TrimStart('/')
+                });
+            try
+            {
+                using (var response = request.GetResponse())
+                {
+                    var value = response.GetJToken();
+                    if (!((string)value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
+                        throw new Exception("from field is incorrect");
+                    if (!((string)value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
+                        throw new Exception("to field is incorrect");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Baidu cloud copy failed!\nException:\n{ex}\n");
+                throw;
+            }
+        }
+
+        public override void Move(string sourcePath, string destinationPath)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.MoveFile,
+                new Dictionary<string, string>
+                {
+                    ["from_remote_path"] = sourcePath.TrimStart('/'),
+                    ["to_remote_path"] = destinationPath.TrimStart('/')
+                });
+            try
+            {
+                using (var response = request.GetResponse())
+                {
+                    var value = response.GetJToken();
+                    if (!((string)value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
+                        throw new Exception("from field is incorrect");
+                    if (!((string)value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
+                        throw new Exception("to field is incorrect");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Baidu cloud move failed!\nException:\n{ex}\n");
+                throw;
+            }
         }
 
         class UploadBlockException : Exception

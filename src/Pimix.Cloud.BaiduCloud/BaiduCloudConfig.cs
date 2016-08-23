@@ -31,6 +31,12 @@ namespace Pimix.Cloud.BaiduCloud
 
     public class APIList
     {
+        [JsonProperty("copy_file")]
+        public APIInfo CopyFile { get; set; }
+
+        [JsonProperty("move_file")]
+        public APIInfo MoveFile { get; set; }
+
         [JsonProperty("download_file")]
         public APIInfo DownloadFile { get; set; }
 

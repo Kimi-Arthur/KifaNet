@@ -26,6 +26,39 @@ namespace PimixTest.Cloud.BaiduCloud
         }
 
         [TestMethod]
+        public void CopyTest()
+        {
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
+            using (var s = client.OpenRead("/Test/2010-11-25.bin_bak"))
+            {
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+
+            client.Delete("/Test/2010-11-25.bin_bak");
+        }
+
+        [TestMethod]
+        public void MoveTest()
+        {
+            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_1");
+            Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_1"));
+            Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_2"));
+
+            client.Move("/Test/2010-11-25.bin_1", "/Test/2010-11-25.bin_2");
+            Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_1"));
+            Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_2"));
+
+            using (var s = client.OpenRead("/Test/2010-11-25.bin_2"))
+            {
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+
+            client.Delete("/Test/2010-11-25.bin_2");
+        }
+
+        [TestMethod]
         public void UploadRapidAndRemoveTest()
         {
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
@@ -123,28 +156,25 @@ namespace PimixTest.Cloud.BaiduCloud
         {
             var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
 
-            try
+            var files = new string[]
             {
-                client.Delete("/Test/rapid.bin");
-            }
-            catch (Exception)
-            {
-            }
+                "/Test/2010-11-25.bin_bak",
+                "/Test/2010-11-25.bin_1",
+                "/Test/2010-11-25.bin_2",
+                "/Test/rapid.bin",
+                "/Test/block.bin",
+                "/Test/direct.bin"
+            };
 
-            try
+            foreach (var f in files)
             {
-                client.Delete("/Test/block.bin");
-            }
-            catch (Exception)
-            {
-            }
-
-            try
-            {
-                client.Delete("/Test/direct.bin");
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    client.Delete(f);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
     }
