@@ -61,17 +61,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FileUtilCommand.cs" />
-    <Compile Include="CopyCommand.cs" />
-    <Compile Include="InfoCommand.cs" />
-    <Compile Include="LinkCommand.cs" />
-    <Compile Include="ListCommand.cs" />
-    <Compile Include="MoveCommand.cs" />
+    <Compile Include="Commands\FileUtilCommand.cs" />
+    <Compile Include="Commands\CopyCommand.cs" />
+    <Compile Include="Commands\InfoCommand.cs" />
+    <Compile Include="Commands\LinkCommand.cs" />
+    <Compile Include="Commands\ListCommand.cs" />
+    <Compile Include="Commands\MoveCommand.cs" />
     <Compile Include="PimixFile.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RemoveCommand.cs" />
-    <Compile Include="VerifyCommand.cs" />
+    <Compile Include="Commands\RemoveCommand.cs" />
+    <Compile Include="Commands\VerifyCommand.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

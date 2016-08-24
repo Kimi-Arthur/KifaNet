@@ -31,7 +31,10 @@ namespace Pimix.Apps.FileUtil
 
         public override int Execute()
         {
-            if (NeedsPrecheck())
+            var source = new PimixFile(SourceUri);
+            var destination = new PimixFile(DestinationUri);
+
+            if (NeedsPrecheck(source))
             {
                 var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri }.Execute();
                 if (result != 0)
@@ -65,10 +68,10 @@ namespace Pimix.Apps.FileUtil
             return Update ? new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute() : 0;
         }
 
-        bool NeedsPrecheck()
+        bool NeedsPrecheck(PimixFile file)
         {
-            var info = FileInformation.Get(new Uri(SourceUri).LocalPath);
-            return !info.GetProperties().HasFlag(FileProperties.All) || !info.Locations.ContainsValue(SourceUri);
+            var info = FileInformation.Get(file.Path);
+            return !info.GetProperties().HasFlag(FileProperties.All) || !info.Locations.ContainsKey(file.Spec);
         }
     }
 }
