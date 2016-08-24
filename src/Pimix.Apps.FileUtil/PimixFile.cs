@@ -10,7 +10,11 @@ class PimixFile
     public string Path { get; set; }
 
     public string Spec
-        => string.Join(";", new string[] { Client.ToString(), FileFormat.ToString() }.Where((x) => x != null));
+        => string.Join(";", new string[]
+        {
+            Client.ToString(),
+            FileFormat.ToString()
+        }.Where((x) => x != null));
 
     public StorageClient Client { get; set; }
 
@@ -18,12 +22,12 @@ class PimixFile
 
     public PimixFile(string uri)
     {
-        // Example uri (/files/ omitted):
-        //   /files/baidu:Pimix_1;v1/a/b/c/d.txt
-        //   /files/mega:0z/a/b/c/d.txt
-        //   /files/local:cubie/a/b/c/d.txt
-        //   /files/local:/a/b/c/d.txt
-        //   /files//a/b/c/d.txt
+        // Example uri:
+        //   baidu:Pimix_1;v1/a/b/c/d.txt
+        //   mega:0z/a/b/c/d.txt
+        //   local:cubie/a/b/c/d.txt
+        //   local:/a/b/c/d.txt
+        //   /a/b/c/d.txt
         var segments = uri.Split(new char[] {'/'}, 2);
         Path = "/" + segments[1];
 
