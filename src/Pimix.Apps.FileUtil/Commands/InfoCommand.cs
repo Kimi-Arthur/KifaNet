@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CommandLine;
 using Newtonsoft.Json;
+using NLog;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil
@@ -23,6 +24,8 @@ namespace Pimix.Apps.FileUtil
 
         [Option('u', "update", HelpText = "Whether to update result to server.")]
         public bool Update { get; set; } = false;
+
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute()
         {
@@ -52,15 +55,15 @@ namespace Pimix.Apps.FileUtil
                 }
                 else
                 {
-                    Console.Error.WriteLine("Verify failed! The following fields differ:");
-                    Console.Error.WriteLine("\t" + compareResult);
-                    Console.Error.WriteLine();
-                    Console.Error.WriteLine("Expected data:");
-                    Console.Error.WriteLine(JsonConvert.SerializeObject(old.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
-                    Console.Error.WriteLine();
-                    Console.Error.WriteLine("Actual data:");
-                    Console.Error.WriteLine(JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
-                    Console.Error.WriteLine();
+                    logger.Warn("Verify failed! The following fields differ:");
+                    logger.Warn("\t" + compareResult);
+                    logger.Warn("");
+                    logger.Warn("Expected data:");
+                    logger.Warn(JsonConvert.SerializeObject(old.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
+                    logger.Warn("");
+                    logger.Warn("Actual data:");
+                    logger.Warn(JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
+                    logger.Warn("");
                     return 1;
                 }
             }
