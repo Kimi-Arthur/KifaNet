@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Pimix.Cloud.BaiduCloud;
@@ -93,4 +94,27 @@ class PimixFile
 
     public void Write(Stream stream = null, FileInformation fileInformation = null, bool match = true)
         => Client.Write(Path, FileFormat.GetEncodeStream(stream), fileInformation, match);
+
+    public FileInformation GetInfo(
+        FileProperties propertiesToRemove = FileProperties.None,
+        FileProperties requiredProperties = FileProperties.All) {
+        using (var stream = OpenRead())
+        {
+            var info = FileInformation.Get(Path)
+                .RemoveProperties(propertiesToRemove)
+                .AddProperties(stream, requiredProperties);
+
+            if (requiredProperties.HasFlag(FileProperties.Path) && info.Path == null) {
+                info.Path = Path;
+            }
+
+            if (requiredProperties.HasFlag(FileProperties.Locations)) {
+                if (info.Locations == null)
+                    info.Locations = new Dictionary<string, string>();
+                info.Locations[Spec] = ToString();
+            }
+
+            return info;
+        }
+    }
 }

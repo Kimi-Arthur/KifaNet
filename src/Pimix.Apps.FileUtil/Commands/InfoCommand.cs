@@ -31,35 +31,37 @@ namespace Pimix.Apps.FileUtil.Commands
         {
             var f = new PimixFile(FileUri);
 
-            using (var stream = f.OpenRead())
-            {
-                var info = FileInformation.Get(f.Path).RemoveProperties(FilePropertiesToVerify).AddProperties(stream, FileProperties.All);
-                info.Path = f.Path;
-                if (info.Locations == null)
-                    info.Locations = new Dictionary<string, string>();
-                info.Locations[f.Spec] = f.ToString();
-                var old = FileInformation.Get(f.Path);
-                var compareResult = info.CompareProperties(old, FilePropertiesToVerify);
-                if (compareResult == FileProperties.None)
-                {
-                    if (Update)
-                    {
-                        FileInformation.Patch(info);
-                    }
-                    else
-                    {
-                        Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
-                    }
+            var info = f.GetInfo(FilePropertiesToVerify);
+            var oldInfo = f.GetInfo(FileProperties.None, FileProperties.None);
 
-                    return 0;
+            var compareResult = info.CompareProperties(oldInfo, FilePropertiesToVerify);
+            if (compareResult == FileProperties.None)
+            {
+                if (Update)
+                {
+                    FileInformation.Patch(info);
                 }
                 else
                 {
-                    logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
-                    logger.Warn("Expected data:\n{0}", JsonConvert.SerializeObject(old.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
-                    logger.Warn("Actual data:\n{0}", JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
-                    return 1;
+                    Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
                 }
+
+                return 0;
+            }
+            else
+            {
+                logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
+                logger.Warn(
+                    "Expected data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                        Formatting.Indented));
+                logger.Warn(
+                    "Actual data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ compareResult),
+                        Formatting.Indented));
+                return 1;
             }
         }
     }
