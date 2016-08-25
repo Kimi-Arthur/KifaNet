@@ -55,15 +55,9 @@ namespace Pimix.Apps.FileUtil
                 }
                 else
                 {
-                    logger.Warn("Verify failed! The following fields differ:");
-                    logger.Warn("\t" + compareResult);
-                    logger.Warn("");
-                    logger.Warn("Expected data:");
-                    logger.Warn(JsonConvert.SerializeObject(old.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
-                    logger.Warn("");
-                    logger.Warn("Actual data:");
-                    logger.Warn(JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
-                    logger.Warn("");
+                    logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
+                    logger.Warn("Expected data:\n{0}", JsonConvert.SerializeObject(old.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
+                    logger.Warn("Actual data:\n{0}", JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult), Formatting.Indented));
                     return 1;
                 }
             }

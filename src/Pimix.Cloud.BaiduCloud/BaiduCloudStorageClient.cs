@@ -7,12 +7,15 @@ using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
+using NLog;
 using Pimix.IO;
 
 namespace Pimix.Cloud.BaiduCloud
 {
     public class BaiduCloudStorageClient : StorageClient
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static BaiduCloudConfig Config { get; set; }
 
         public static StorageClient Get(string fileSpec)
@@ -253,9 +256,7 @@ namespace Pimix.Cloud.BaiduCloud
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed when merging");
-                    Console.WriteLine("Exception:");
-                    Console.WriteLine(ex);
+                    logger.Warn(ex, "Failed when merging");
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
             }
@@ -412,6 +413,7 @@ namespace Pimix.Cloud.BaiduCloud
                     ["remote_path_prefix"] = Config.RemotePathPrefix
                 });
 
+            logger.Trace("Constructed address: {0}", address);
             HttpWebRequest request = WebRequest.CreateHttp(address);
             //request.ReadWriteTimeout = 300000;
             request.Method = api.Method;

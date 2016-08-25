@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommandLine;
+using NLog;
 
 namespace Pimix.Apps.FileUtil
 {
     class Program
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         static int Main(string[] args)
             => Parser.Default.ParseArguments<
                 InfoCommand,
@@ -27,13 +30,7 @@ namespace Pimix.Apps.FileUtil
             }
             catch (Exception ex)
             {
-                while (ex != null)
-                {
-                    Console.WriteLine("Caused by:");
-                    Console.WriteLine(ex);
-                    ex = ex.InnerException;
-                }
-
+                logger.Fatal(ex, "fileutil terminated.");
                 return 1;
             }
         }
