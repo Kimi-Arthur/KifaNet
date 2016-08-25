@@ -3,7 +3,7 @@ using System.Configuration;
 using CommandLine;
 using Pimix.Cloud.BaiduCloud;
 
-namespace Pimix.Apps.FileUtil
+namespace Pimix.Apps.FileUtil.Commands
 {
     abstract class FileUtilCommand
     {

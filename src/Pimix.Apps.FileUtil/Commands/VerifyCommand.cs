@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Pimix.Apps.FileUtil
+namespace Pimix.Apps.FileUtil.Commands
 {
     [Verb("verify", HelpText = "Verify the file is in compliant with the data stored in server.")]
     class VerifyCommand : FileUtilCommand

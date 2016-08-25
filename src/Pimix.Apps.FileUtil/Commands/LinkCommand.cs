@@ -2,7 +2,7 @@
 using CommandLine;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil
+namespace Pimix.Apps.FileUtil.Commands
 {
     [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
     class LinkCommand : FileUtilCommand

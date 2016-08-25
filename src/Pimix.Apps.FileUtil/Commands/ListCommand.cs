@@ -3,7 +3,7 @@ using System.Linq;
 using CommandLine;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil
+namespace Pimix.Apps.FileUtil.Commands
 {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
     class ListCommand : FileUtilCommand

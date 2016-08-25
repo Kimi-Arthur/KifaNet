@@ -1,7 +1,7 @@
 ﻿using System;
 using CommandLine;
 
-namespace Pimix.Apps.FileUtil
+namespace Pimix.Apps.FileUtil.Commands
 {
     [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
     class MoveCommand : FileUtilCommand

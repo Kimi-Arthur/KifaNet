@@ -3,7 +3,7 @@ using System.Threading;
 using CommandLine;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil
+namespace Pimix.Apps.FileUtil.Commands
 {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
     class CopyCommand : FileUtilCommand
@@ -60,7 +60,7 @@ namespace Pimix.Apps.FileUtil
                 }
             }
 
-            new PimixFile(SourceUri).Copy(new PimixFile(DestinationUri));
+            source.Copy(destination);
 
             // Wait 5 seconds to ensure server sync.
             Thread.Sleep(TimeSpan.FromSeconds(5));

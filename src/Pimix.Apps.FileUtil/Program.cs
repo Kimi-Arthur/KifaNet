@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CommandLine;
 using NLog;
+using Pimix.Apps.FileUtil.Commands;
 
 namespace Pimix.Apps.FileUtil
 {
