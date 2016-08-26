@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace CG.Web.MegaApiClient
 {
     [DebuggerDisplay("Type: {Type} - Name: {Name} - Id: {Id}")]
-    internal class Node : INode, INodeCrypto
+    public class Node
     {
         private static readonly DateTime OriginalDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
 
@@ -145,7 +145,7 @@ namespace CG.Web.MegaApiClient
 
         #region Equality
 
-        public bool Equals(INode other)
+        public bool Equals(Node other)
         {
             return other != null && this.Id == other.Id;
         }
@@ -157,7 +157,7 @@ namespace CG.Web.MegaApiClient
 
         public override bool Equals(object obj)
         {
-            return this.Equals(obj as INode);
+            return this.Equals(obj as Node);
         }
 
         #endregion

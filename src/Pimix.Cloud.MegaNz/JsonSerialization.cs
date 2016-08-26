@@ -161,7 +161,7 @@ namespace CG.Web.MegaApiClient
 
     internal class DeleteRequest : RequestBase
     {
-        public DeleteRequest(INode node)
+        public DeleteRequest(Node node)
             : base("d")
         {
             this.Node = node.Id;
@@ -178,7 +178,7 @@ namespace CG.Web.MegaApiClient
 
     internal class GetDownloadLinkRequest : RequestBase
     {
-        public GetDownloadLinkRequest(INode node)
+        public GetDownloadLinkRequest(Node node)
             : base("l")
         {
             this.Id = node.Id;
@@ -195,7 +195,7 @@ namespace CG.Web.MegaApiClient
 
     internal class CreateNodeRequest : RequestBase
     {
-        private CreateNodeRequest(INode parentNode, NodeType type, string attributes, string key, string completionHandle)
+        private CreateNodeRequest(Node parentNode, NodeType type, string attributes, string key, string completionHandle)
             : base("p")
         {
             this.ParentId = parentNode.Id;
@@ -211,12 +211,12 @@ namespace CG.Web.MegaApiClient
                 };
         }
 
-        public static CreateNodeRequest CreateFileNodeRequest(INode parentNode, string attributes, string key, string completionHandle)
+        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes, string key, string completionHandle)
         {
             return new CreateNodeRequest(parentNode, NodeType.File, attributes, key, completionHandle);
         }
 
-        public static CreateNodeRequest CreateFolderNodeRequest(INode parentNode, string attributes, string key)
+        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes, string key)
         {
             return new CreateNodeRequest(parentNode, NodeType.Directory, attributes, key, "xxxxxxxx");
         }
@@ -273,7 +273,7 @@ namespace CG.Web.MegaApiClient
 
     internal class DownloadUrlRequest : RequestBase
     {
-        public DownloadUrlRequest(INode node)
+        public DownloadUrlRequest(Node node)
             : base("g")
         {
             this.Id = node.Id;
@@ -318,7 +318,7 @@ namespace CG.Web.MegaApiClient
 
     internal class MoveRequest : RequestBase
     {
-        public MoveRequest(INode node, INode destinationParentNode)
+        public MoveRequest(Node node, Node destinationParentNode)
             : base("m")
         {
             this.Id = node.Id;

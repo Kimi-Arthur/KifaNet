@@ -81,13 +81,13 @@ namespace Pimix.Cloud.MegaNz
             Client.Upload(stream, name, folder);
         }
 
-        INode GetNode(string path, bool createParents = false)
+        Node GetNode(string path, bool createParents = false)
         {
             path = path.TrimStart('/');
             var nodes = Client.GetNodes();
 
-            INode parent = nodes.Single(n => n.Type == NodeType.Root);
-            INode node = parent;
+            Node parent = nodes.Single(n => n.Type == NodeType.Root);
+            Node node = parent;
 
             foreach (var p in path.Split('/'))
             {

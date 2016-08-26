@@ -228,7 +228,7 @@ namespace CG.Web.MegaApiClient
         /// <returns>Flat representation of all the filesystem nodes</returns>
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        public IEnumerable<INode> GetNodes()
+        public IEnumerable<Node> GetNodes()
         {
             this.EnsureLoggedIn();
 
@@ -250,7 +250,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">Parent node is null</exception>
-        public IEnumerable<INode> GetNodes(INode parent)
+        public IEnumerable<Node> GetNodes(Node parent)
         {
             if (parent == null)
             {
@@ -272,7 +272,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">node is null</exception>
         /// <exception cref="ArgumentException">node is not a directory or a file</exception>
-        public void Delete(INode node, bool moveToTrash = true)
+        public void Delete(Node node, bool moveToTrash = true)
         {
             if (node == null)
             {
@@ -305,7 +305,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">name or parent is null</exception>
         /// <exception cref="ArgumentException">parent is not valid (all types are allowed expect <see cref="NodeType.File" />)</exception>
-        public INode CreateFolder(string name, INode parent)
+        public Node CreateFolder(string name, Node parent)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -342,7 +342,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">node is null</exception>
         /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.File" /> or <see cref="NodeType.Directory" /> can be downloaded)</exception>
-        public Uri GetDownloadLink(INode node)
+        public Uri GetDownloadLink(Node node)
         {
             if (node == null)
             {
@@ -354,10 +354,10 @@ namespace CG.Web.MegaApiClient
                 throw new ArgumentException("Invalid node");
             }
 
-            INodeCrypto nodeCrypto = node as INodeCrypto;
+            Node nodeCrypto = node as Node;
             if (nodeCrypto == null)
             {
-                throw new ArgumentException("node must implement INodeCrypto");
+                throw new ArgumentException("node must implement Node");
             }
 
             this.EnsureLoggedIn();
@@ -382,7 +382,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ArgumentNullException">node or outputFile is null</exception>
         /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.File" /> can be downloaded)</exception>
         /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
-        public void DownloadFile(INode node, string outputFile)
+        public void DownloadFile(Node node, string outputFile)
         {
             if (node == null)
             {
@@ -437,7 +437,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ArgumentNullException">node or outputFile is null</exception>
         /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.File" /> can be downloaded)</exception>
         /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
-        public Stream Download(INode node)
+        public Stream Download(Node node)
         {
             if (node == null)
             {
@@ -449,10 +449,10 @@ namespace CG.Web.MegaApiClient
                 throw new ArgumentException("Invalid node");
             }
 
-            INodeCrypto nodeCrypto = node as INodeCrypto;
+            Node nodeCrypto = node as Node;
             if (nodeCrypto == null)
             {
-                throw new ArgumentException("node must implement INodeCrypto");
+                throw new ArgumentException("node must implement Node");
             }
 
             this.EnsureLoggedIn();
@@ -517,7 +517,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ArgumentNullException">filename or parent is null</exception>
         /// <exception cref="FileNotFoundException">filename is not found</exception>
         /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public INode Upload(string filename, INode parent)
+        public Node Upload(string filename, Node parent)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -553,7 +553,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">stream or name or parent is null</exception>
         /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public INode Upload(Stream stream, string name, INode parent)
+        public Node Upload(Stream stream, string name, Node parent)
         {
             if (stream == null)
             {
@@ -621,7 +621,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ArgumentNullException">node or destinationParentNode is null</exception>
         /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.Directory" /> and <see cref="NodeType.File" /> are supported)</exception>
         /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public INode Move(INode node, INode destinationParentNode)
+        public Node Move(Node node, Node destinationParentNode)
         {
             if (node == null)
             {
