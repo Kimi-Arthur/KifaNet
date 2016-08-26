@@ -33,7 +33,7 @@ using System.Text;
 
 namespace CG.Web.MegaApiClient
 {
-    public class WebClient : IWebClient
+    public class WebClient
     {
         private static readonly string UserAgent;
         private const uint BufferSize = 8192;
