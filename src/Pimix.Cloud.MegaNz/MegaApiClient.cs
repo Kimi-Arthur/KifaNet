@@ -42,7 +42,7 @@ namespace CG.Web.MegaApiClient
 {
     public class MegaApiClient
     {
-        private readonly IWebClient _webClient;
+        private readonly WebClient _webClient;
 
         private const uint BufferSize = 8192;
         private const int ApiRequestAttempts = 10;
@@ -71,7 +71,7 @@ namespace CG.Web.MegaApiClient
         /// <summary>
         /// Instantiate a new <see cref="MegaApiClient" /> object with the provided <see cref="IWebClient" />
         /// </summary>
-        public MegaApiClient(IWebClient webClient)
+        public MegaApiClient(WebClient webClient)
         {
             if (webClient == null)
             {

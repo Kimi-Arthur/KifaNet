@@ -2417,7 +2417,6 @@ public class BigInteger
 
                 BigInteger t = p_sub1 >> s;
 
-	        int bits = thisVal.bitCount();
 	        BigInteger a = 2;
 
                 // b = a^t mod p

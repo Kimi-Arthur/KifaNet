@@ -60,7 +60,6 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="INode.cs" />
-    <Compile Include="IWebClient.cs" />
     <Compile Include="JsonSerialization.cs" />
     <Compile Include="MegaAesCtrStream.cs" />
     <Compile Include="MegaApiClient.cs" />
