@@ -103,13 +103,13 @@ namespace Pimix.Cloud.BaiduCloud
                     done = readCount == count;
                     if (!done)
                     {
-                        logger.Debug("Didn't get expected amount of data.");
-                        logger.Debug("Responses contains {1} bytes, should be {2} bytes.", readCount, count);
+                        logger.Warn("Didn't get expected amount of data.");
+                        logger.Warn("Responses contains {1} bytes, should be {2} bytes.", readCount, count);
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.Debug(ex, "Failed once when downloading (from {1} to {2}):", Position, Position + count);
+                    logger.Warn(ex, "Failed once when downloading (from {1} to {2}):", Position, Position + count);
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
             }
