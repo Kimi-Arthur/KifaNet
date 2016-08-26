@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using NLog;
 
 namespace Pimix.Cloud.BaiduCloud
 {
     class SeekableDownloadStream : Stream
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public delegate int Downloader(byte[] buffer, int bufferOffset = 0, long offset = 0, int count = -1);
 
         Downloader downloader;
@@ -58,12 +61,15 @@ namespace Pimix.Cloud.BaiduCloud
                     break;
             }
 
+            if (Position < 0)
+                throw new ArgumentException(nameof(offset));
+
             return Position;
         }
 
         public override void SetLength(long value)
         {
-            throw new NotSupportedException("The Baidu download stream is not writable.");
+            throw new NotSupportedException("The download stream is not writable.");
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -77,8 +83,7 @@ namespace Pimix.Cloud.BaiduCloud
             if (offset < 0)
                 throw new ArgumentOutOfRangeException(nameof(offset));
 
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException(nameof(offset));
+            count = (int)Math.Min(count, Length - Position);
 
             if (buffer.Length - offset < count)
                 throw new ArgumentException();
@@ -87,8 +92,6 @@ namespace Pimix.Cloud.BaiduCloud
             {
                 return 0;
             }
-
-            count = (int)Math.Min(count, Length - Position);
 
             bool done = false;
             int readCount = 0;
@@ -100,15 +103,13 @@ namespace Pimix.Cloud.BaiduCloud
                     done = readCount == count;
                     if (!done)
                     {
-                        Console.Error.WriteLine("Didn't get expected amount of data.");
-                        Console.Error.WriteLine($"Responses contains {readCount} bytes, should be {count} bytes.");
+                        logger.Debug("Didn't get expected amount of data.");
+                        logger.Debug("Responses contains {1} bytes, should be {2} bytes.", readCount, count);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed once when downloading (from {Position} to {Position + count}):");
-                    Console.WriteLine("Exception:");
-                    Console.WriteLine(ex);
+                    logger.Debug(ex, "Failed once when downloading (from {1} to {2}):", Position, Position + count);
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
             }
@@ -120,7 +121,7 @@ namespace Pimix.Cloud.BaiduCloud
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            throw new NotSupportedException("The Baidu download stream is not writable.");
+            throw new NotSupportedException("The download stream is not writable.");
         }
     }
 }
