@@ -463,7 +463,7 @@ namespace Pimix.Cloud.BaiduCloud
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Baidu cloud copy failed!\nException:\n{ex}\n");
+                logger.Warn(ex, "Copy failed!");
                 throw;
             }
         }
@@ -489,7 +489,7 @@ namespace Pimix.Cloud.BaiduCloud
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Baidu cloud move failed!\nException:\n{ex}\n");
+                logger.Warn(ex, "Move failed!");
                 throw;
             }
         }
