@@ -1,62 +1,36 @@
-﻿#region License
-
-/*
-The MIT License (MIT)
-
-Copyright (c) 2015 Gregoire Pailler
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-#endregion
-
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Web;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace CG.Web.MegaApiClient
+﻿namespace CG.Web.MegaApiClient
 {
-    public class MegaApiClient
-    {
-        private readonly WebClient _webClient;
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Specialized;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.Serialization;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Web;
 
-        private const uint BufferSize = 8192;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
+    public partial class MegaApiClient
+    {
         private const int ApiRequestAttempts = 10;
         private const int ApiRequestDelay = 200;
 
+        public static int BufferSize = 8192;
+
         private static readonly Uri BaseApiUri = new Uri("https://g.api.mega.co.nz/cs");
-        private static readonly Uri BaseUri = new Uri("https://mega.co.nz");
+        private static readonly Uri BaseUri = new Uri("https://mega.nz");
 
-        private Node _trashNode;
+        private readonly WebClient webClient;
 
-        private AuthInfos _authInfos;
-        private string _sessionId;
-        private byte[] _masterKey;
-        private uint _sequenceIndex = (uint)(uint.MaxValue * new Random().NextDouble());
+        private Node trashNode;
+        private AuthInfos authInfos;
+        private string sessionId;
+        private byte[] masterKey;
+        private uint sequenceIndex = (uint)(uint.MaxValue * new Random().NextDouble());
 
         #region Constructors
 
@@ -78,25 +52,12 @@ namespace CG.Web.MegaApiClient
                 throw new ArgumentNullException("webClient");
             }
 
-            this._webClient = webClient;
+            this.webClient = webClient;
         }
 
         #endregion
 
         #region Public API
-
-        /// <summary>
-        /// Login to Mega.co.nz service using email/password credentials
-        /// </summary>
-        /// <param name="email">email</param>
-        /// <param name="password">password</param>
-        /// <exception cref="ApiException">Service is not available or credentials are invalid</exception>
-        /// <exception cref="ArgumentNullException">email or password is null</exception>
-        /// <exception cref="NotSupportedException">Already logged in</exception>
-        public void Login(string email, string password)
-        {
-            this.Login(GenerateAuthInfos(email, password));
-        }
 
         /// <summary>
         /// Generate authentication informations and store them in a serializable object to allow persistence
@@ -130,6 +91,19 @@ namespace CG.Web.MegaApiClient
         }
 
         /// <summary>
+        /// Login to Mega.co.nz service using email/password credentials
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <param name="password">password</param>
+        /// <exception cref="ApiException">Service is not available or credentials are invalid</exception>
+        /// <exception cref="ArgumentNullException">email or password is null</exception>
+        /// <exception cref="NotSupportedException">Already logged in</exception>
+        public void Login(string email, string password)
+        {
+            this.Login(GenerateAuthInfos(email, password));
+        }
+
+        /// <summary>
         /// Login to Mega.co.nz service using hashed credentials
         /// </summary>
         /// <param name="authInfos">Authentication informations generated by <see cref="GenerateAuthInfos"/> method</param>
@@ -146,7 +120,7 @@ namespace CG.Web.MegaApiClient
             this.EnsureLoggedOut();
 
             // Store authInfos to relogin if required
-            this._authInfos = authInfos;
+            this.authInfos = authInfos;
 
             // Request Mega Api
             LoginRequest request = new LoginRequest(authInfos.Email, authInfos.Hash);
@@ -154,18 +128,18 @@ namespace CG.Web.MegaApiClient
 
             // Decrypt master key using our password key
             byte[] cryptedMasterKey = response.MasterKey.FromBase64();
-            this._masterKey = Crypto.DecryptKey(cryptedMasterKey, authInfos.PasswordAesKey);
+            this.masterKey = Crypto.DecryptKey(cryptedMasterKey, authInfos.PasswordAesKey);
 
             // Decrypt RSA private key using decrypted master key
             byte[] cryptedRsaPrivateKey = response.PrivateKey.FromBase64();
-            BigInteger[] rsaPrivateKeyComponents = Crypto.GetRsaPrivateKeyComponents(cryptedRsaPrivateKey, this._masterKey);
+            BigInteger[] rsaPrivateKeyComponents = Crypto.GetRsaPrivateKeyComponents(cryptedRsaPrivateKey, this.masterKey);
 
             // Decrypt session id
             byte[] encryptedSid = response.SessionId.FromBase64();
             byte[] sid = Crypto.RsaDecrypt(encryptedSid.FromMPINumber(), rsaPrivateKeyComponents[0], rsaPrivateKeyComponents[1], rsaPrivateKeyComponents[2]);
 
-            // Session id contains only the first 43 decrypted bytes
-            this._sessionId = sid.CopySubArray(43).ToBase64();
+            // Session id contains only the first 58 base64 characters
+            this.sessionId = sid.ToBase64().Substring(0, 58);
         }
 
         /// <summary>
@@ -179,8 +153,8 @@ namespace CG.Web.MegaApiClient
             Random random = new Random();
 
             // Generate random master key
-            this._masterKey = new byte[16];
-            random.NextBytes(this._masterKey);
+            this.masterKey = new byte[16];
+            random.NextBytes(this.masterKey);
 
             // Generate a random password used to encrypt the master key
             byte[] passwordAesKey = new byte[16];
@@ -190,10 +164,10 @@ namespace CG.Web.MegaApiClient
             byte[] sessionChallenge = new byte[16];
             random.NextBytes(sessionChallenge);
 
-            byte[] encryptedMasterKey = Crypto.EncryptAes(this._masterKey, passwordAesKey);
+            byte[] encryptedMasterKey = Crypto.EncryptAes(this.masterKey, passwordAesKey);
 
             // Encrypt the session challenge with our generated master key
-            byte[] encryptedSessionChallenge = Crypto.EncryptAes(sessionChallenge, this._masterKey);
+            byte[] encryptedSessionChallenge = Crypto.EncryptAes(sessionChallenge, this.masterKey);
             byte[] encryptedSession = new byte[32];
             Array.Copy(sessionChallenge, 0, encryptedSession, 0, 16);
             Array.Copy(encryptedSessionChallenge, 0, encryptedSession, 16, encryptedSessionChallenge.Length);
@@ -206,7 +180,7 @@ namespace CG.Web.MegaApiClient
             LoginRequest request2 = new LoginRequest(userHandle, null);
             LoginResponse response2 = this.Request<LoginResponse>(request2);
 
-            this._sessionId = response2.TemporarySessionId;
+            this.sessionId = response2.TemporarySessionId;
         }
 
         /// <summary>
@@ -218,8 +192,22 @@ namespace CG.Web.MegaApiClient
             this.EnsureLoggedIn();
 
             // Reset values retrieved by Login methods
-            this._masterKey = null;
-            this._sessionId = null;
+            this.masterKey = null;
+            this.sessionId = null;
+        }
+
+        /// <summary>
+        /// Retrieve account (quota) information
+        /// </summary>
+        /// <returns>An object containing account information</returns>
+        /// <exception cref="NotSupportedException">Not logged in</exception>
+        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
+        public AccountInformationResponse GetAccountInformation()
+        {
+            this.EnsureLoggedIn();
+
+            AccountInformationRequest request = new AccountInformationRequest();
+            return this.Request<AccountInformationResponse>(request);
         }
 
         /// <summary>
@@ -233,16 +221,17 @@ namespace CG.Web.MegaApiClient
             this.EnsureLoggedIn();
 
             GetNodesRequest request = new GetNodesRequest();
-            GetNodesResponse response = this.Request<GetNodesResponse>(request, this._masterKey);
+            GetNodesResponse response = this.Request<GetNodesResponse>(request, this.masterKey);
 
             Node[] nodes = response.Nodes;
-            if (this._trashNode == null)
+            if (this.trashNode == null)
             {
-                this._trashNode = nodes.First(n => n.Type == NodeType.Trash);
+                this.trashNode = nodes.First(n => n.Type == NodeType.Trash);
             }
 
-            return nodes;
+            return nodes.Distinct().Cast<Node>();
         }
+
         /// <summary>
         /// Retrieve children nodes of a parent node
         /// </summary>
@@ -256,7 +245,7 @@ namespace CG.Web.MegaApiClient
             {
                 throw new ArgumentNullException("parent");
             }
-            
+
             return this.GetNodes().Where(n => n.ParentId == parent.Id);
         }
 
@@ -288,7 +277,7 @@ namespace CG.Web.MegaApiClient
 
             if (moveToTrash)
             {
-                this.Move(node, this._trashNode);
+                this.Move(node, this.trashNode);
             }
             else
             {
@@ -326,10 +315,10 @@ namespace CG.Web.MegaApiClient
 
             byte[] key = Crypto.CreateAesKey();
             byte[] attributes = Crypto.EncryptAttributes(new Attributes(name), key);
-            byte[] encryptedKey = Crypto.EncryptAes(key, this._masterKey);
+            byte[] encryptedKey = Crypto.EncryptAes(key, this.masterKey);
 
-            CreateNodeRequest request = CreateNodeRequest.CreateFolderNodeRequest(parent, attributes.ToBase64(), encryptedKey.ToBase64());
-            GetNodesResponse response = this.Request<GetNodesResponse>(request, this._masterKey);
+            CreateNodeRequest request = CreateNodeRequest.CreateFolderNodeRequest(parent, attributes.ToBase64(), encryptedKey.ToBase64(), key);
+            GetNodesResponse response = this.Request<GetNodesResponse>(request, this.masterKey);
             return response.Nodes[0];
         }
 
@@ -369,7 +358,7 @@ namespace CG.Web.MegaApiClient
                 "/#{0}!{1}!{2}",
                 node.Type == NodeType.Directory ? "F" : string.Empty,
                 response,
-                nodeCrypto.DecryptedKey.ToBase64()));
+                nodeCrypto.FullKey.ToBase64()));
         }
 
         /// <summary>
@@ -461,7 +450,7 @@ namespace CG.Web.MegaApiClient
             DownloadUrlRequest downloadRequest = new DownloadUrlRequest(node);
             DownloadUrlResponse downloadResponse = this.Request<DownloadUrlResponse>(downloadRequest);
 
-            Stream dataStream = this._webClient.GetRequestRaw(new Uri(downloadResponse.Url));
+            Stream dataStream = this.webClient.GetRequestRaw(new Uri(downloadResponse.Url));
             return new MegaAesCtrStreamDecrypter(dataStream, downloadResponse.Size, nodeCrypto.Key, nodeCrypto.Iv, nodeCrypto.MetaMac);
         }
 
@@ -482,27 +471,16 @@ namespace CG.Web.MegaApiClient
             }
 
             this.EnsureLoggedIn();
-            
-            Regex uriRegex = new Regex("#!(?<id>.+)!(?<key>.+)");
-            Match match = uriRegex.Match(uri.Fragment);
-            if (match.Success == false)
-            {
-                throw new ArgumentException(string.Format("Invalid uri. Unable to extract Id and Key from the uri {0}", uri));
-            }
 
-            string id = match.Groups["id"].Value;
-            byte[] decryptedKey = match.Groups["key"].Value.FromBase64();
-
-            byte[] iv;
-            byte[] metaMac;
-            byte[] fileKey;
-            Crypto.GetPartsFromDecryptedKey(decryptedKey, out iv, out metaMac, out fileKey);
+            string id;
+            byte[] iv, metaMac, fileKey;
+            this.GetPartsFromUri(uri, out id, out iv, out metaMac, out fileKey);
 
             // Retrieve download URL
             DownloadUrlRequestFromId downloadRequest = new DownloadUrlRequestFromId(id);
             DownloadUrlResponse downloadResponse = this.Request<DownloadUrlResponse>(downloadRequest);
 
-            Stream dataStream = this._webClient.GetRequestRaw(new Uri(downloadResponse.Url));
+            Stream dataStream = this.webClient.GetRequestRaw(new Uri(downloadResponse.Url));
             return new MegaAesCtrStreamDecrypter(dataStream, downloadResponse.Size, fileKey, iv, metaMac);
         }
 
@@ -517,7 +495,7 @@ namespace CG.Web.MegaApiClient
         /// <exception cref="ArgumentNullException">filename or parent is null</exception>
         /// <exception cref="FileNotFoundException">filename is not found</exception>
         /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public Node Upload(string filename, Node parent)
+        public Node UploadFile(string filename, Node parent)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -583,7 +561,45 @@ namespace CG.Web.MegaApiClient
 
             using (MegaAesCtrStreamCrypter encryptedStream = new MegaAesCtrStreamCrypter(stream))
             {
-                string completionHandle = this._webClient.PostRequestRaw(new Uri(uploadResponse.Url), encryptedStream);
+                string completionHandle = null;
+                for (int i = 0; i < encryptedStream.ChunksPositions.Length; i++)
+                {
+                    long currentChunkPosition = encryptedStream.ChunksPositions[i];
+                    long nextChunkPosition = i == encryptedStream.ChunksPositions.Length - 1
+                      ? encryptedStream.Length
+                      : encryptedStream.ChunksPositions[i + 1];
+
+                    int chunkSize = (int)(nextChunkPosition - currentChunkPosition);
+                    byte[] chunkBuffer = new byte[chunkSize];
+                    encryptedStream.Read(chunkBuffer, 0, chunkSize);
+                    using (MemoryStream chunkStream = new MemoryStream(chunkBuffer))
+                    {
+                        int remainingRetry = ApiRequestAttempts;
+                        string result = null;
+                        UploadException lastException = null;
+                        while (remainingRetry-- > 0)
+                        {
+                            Uri uri = new Uri(uploadResponse.Url + "/" + encryptedStream.ChunksPositions[i]);
+                            result = this.webClient.PostRequestRaw(uri, chunkStream);
+                            if (result.StartsWith("-"))
+                            {
+                                lastException = new UploadException(result);
+                                Thread.Sleep(ApiRequestDelay);
+                                continue;
+                            }
+
+                            lastException = null;
+                            break;
+                        }
+
+                        if (lastException != null)
+                        {
+                            throw lastException;
+                        }
+
+                        completionHandle = result;
+                    }
+                }
 
                 // Encrypt attributes
                 byte[] cryptedAttributes = Crypto.EncryptAttributes(new Attributes(name), encryptedStream.FileKey);
@@ -602,10 +618,10 @@ namespace CG.Web.MegaApiClient
                     fileKey[i + 16] = encryptedStream.MetaMac[i - 8];
                 }
 
-                byte[] encryptedKey = Crypto.EncryptKey(fileKey, this._masterKey);
+                byte[] encryptedKey = Crypto.EncryptKey(fileKey, this.masterKey);
 
-                CreateNodeRequest createNodeRequest = CreateNodeRequest.CreateFileNodeRequest(parent, cryptedAttributes.ToBase64(), encryptedKey.ToBase64(), completionHandle);
-                GetNodesResponse createNodeResponse = this.Request<GetNodesResponse>(createNodeRequest, this._masterKey);
+                CreateNodeRequest createNodeRequest = CreateNodeRequest.CreateFileNodeRequest(parent, cryptedAttributes.ToBase64(), encryptedKey.ToBase64(), fileKey, completionHandle);
+                GetNodesResponse createNodeResponse = this.Request<GetNodesResponse>(createNodeRequest, this.masterKey);
                 return createNodeResponse.Nodes[0];
             }
         }
@@ -651,96 +667,7 @@ namespace CG.Web.MegaApiClient
 
         #endregion
 
-        #region Web
-
-        private string Request(RequestBase request)
-        {
-            return this.Request<string>(request);
-        }
-
-        private TResponse Request<TResponse>(RequestBase request, object context = null)
-            where TResponse : class
-        {
-            string dataRequest = JsonConvert.SerializeObject(new object[] { request });
-            Uri uri = this.GenerateUrl();
-            object jsonData = null;
-            int currentAttempt = 0;
-            while (true)
-            {
-                string dataResult = this._webClient.PostRequestJson(uri, dataRequest);
-
-                jsonData = JsonConvert.DeserializeObject(dataResult);
-                if (jsonData is long || (jsonData is JArray && ((JArray)jsonData)[0].Type == JTokenType.Integer))
-                {
-                    ApiResultCode apiCode = (jsonData is long)
-                                                ? (ApiResultCode)Enum.ToObject(typeof(ApiResultCode), jsonData)
-                                                : (ApiResultCode)((JArray)jsonData)[0].Value<int>();
-
-                    if (apiCode == ApiResultCode.RequestFailedRetry)
-                    {
-                        if (currentAttempt == ApiRequestAttempts)
-                        {
-                            throw new NotSupportedException("Api not available");
-                        }
-
-                        Thread.Sleep(ApiRequestDelay);
-                        currentAttempt++;
-                        continue;
-                    }
-
-                    if (apiCode == ApiResultCode.BadSessionId && this._authInfos != null)
-                    {
-                        this.Logout();
-                        this.Login(this._authInfos);
-                    }
-
-                    if (apiCode != ApiResultCode.Ok)
-                    {
-                        throw new ApiException(apiCode);
-                    }
-                }
-
-                break;
-            }
-
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.Context = new StreamingContext(StreamingContextStates.All, context);
-
-            string data = ((JArray)jsonData)[0].ToString();
-            return (typeof(TResponse) == typeof(string)) ? data as TResponse : JsonConvert.DeserializeObject<TResponse>(data, settings);
-        }
-
-        private Uri GenerateUrl()
-        {
-            UriBuilder builder = new UriBuilder(BaseApiUri);
-            NameValueCollection query = HttpUtility.ParseQueryString(builder.Query);
-            query["id"] = (_sequenceIndex++ % uint.MaxValue).ToString(CultureInfo.InvariantCulture);
-
-            if (!string.IsNullOrEmpty(this._sessionId))
-            {
-                query["sid"] = this._sessionId;
-            }
-
-            builder.Query = query.ToString();
-            return builder.Uri;
-        }
-
-        private void SaveStream(Stream stream, string outputFile)
-        {
-            using (FileStream fs = new FileStream(outputFile, FileMode.CreateNew, FileAccess.Write))
-            {
-                byte[] buffer = new byte[BufferSize];
-                int len;
-                while ((len = stream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    fs.Write(buffer, 0, len);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Private methods
+        #region Private static methods
 
         private static string GenerateHash(string email, byte[] passwordAesKey)
         {
@@ -785,9 +712,91 @@ namespace CG.Web.MegaApiClient
             return pkey;
         }
 
+        #endregion
+
+        #region Web
+
+        private string Request(RequestBase request)
+        {
+            return this.Request<string>(request);
+        }
+
+        private TResponse Request<TResponse>(RequestBase request, object context = null)
+            where TResponse : class
+        {
+            string dataRequest = JsonConvert.SerializeObject(new object[] { request });
+            Uri uri = this.GenerateUrl();
+            object jsonData = null;
+            int currentAttempt = 0;
+            while (true)
+            {
+                string dataResult = this.webClient.PostRequestJson(uri, dataRequest);
+
+                jsonData = JsonConvert.DeserializeObject(dataResult);
+                if (jsonData is long || (jsonData is JArray && ((JArray)jsonData)[0].Type == JTokenType.Integer))
+                {
+                    ApiResultCode apiCode = (jsonData is long)
+                                                ? (ApiResultCode)Enum.ToObject(typeof(ApiResultCode), jsonData)
+                                                : (ApiResultCode)((JArray)jsonData)[0].Value<int>();
+
+                    if (apiCode == ApiResultCode.RequestFailedRetry)
+                    {
+                        if (currentAttempt == ApiRequestAttempts)
+                        {
+                            throw new NotSupportedException("Api not available");
+                        }
+
+                        Thread.Sleep(ApiRequestDelay);
+                        currentAttempt++;
+                        continue;
+                    }
+
+                    if (apiCode != ApiResultCode.Ok)
+                    {
+                        throw new ApiException(apiCode);
+                    }
+                }
+
+                break;
+            }
+
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.Context = new StreamingContext(StreamingContextStates.All, context);
+
+            string data = ((JArray)jsonData)[0].ToString();
+            return (typeof(TResponse) == typeof(string)) ? data as TResponse : JsonConvert.DeserializeObject<TResponse>(data, settings);
+        }
+
+        private Uri GenerateUrl()
+        {
+            UriBuilder builder = new UriBuilder(BaseApiUri);
+            NameValueCollection query = HttpUtility.ParseQueryString(builder.Query);
+            query["id"] = (this.sequenceIndex++ % uint.MaxValue).ToString(CultureInfo.InvariantCulture);
+
+            if (!string.IsNullOrEmpty(this.sessionId))
+            {
+                query["sid"] = this.sessionId;
+            }
+
+            builder.Query = query.ToString();
+            return builder.Uri;
+        }
+
+        private void SaveStream(Stream stream, string outputFile)
+        {
+            using (FileStream fs = new FileStream(outputFile, FileMode.CreateNew, FileAccess.Write))
+            {
+                stream.CopyTo(fs, BufferSize);
+            }
+        }
+
+        #endregion
+
+        #region Private methods
+
         private void EnsureLoggedIn()
         {
-            if (this._sessionId == null)
+            if (this.sessionId == null)
             {
                 throw new NotSupportedException("Not logged in");
             }
@@ -795,10 +804,25 @@ namespace CG.Web.MegaApiClient
 
         private void EnsureLoggedOut()
         {
-            if (this._sessionId != null)
+            if (this.sessionId != null)
             {
                 throw new NotSupportedException("Already logged in");
             }
+        }
+
+        private void GetPartsFromUri(Uri uri, out string id, out byte[] iv, out byte[] metaMac, out byte[] fileKey)
+        {
+            Regex uriRegex = new Regex("#!(?<id>.+)!(?<key>.+)");
+            Match match = uriRegex.Match(uri.Fragment);
+            if (match.Success == false)
+            {
+                throw new ArgumentException(string.Format("Invalid uri. Unable to extract Id and Key from the uri {0}", uri));
+            }
+
+            id = match.Groups["id"].Value;
+            byte[] decryptedKey = match.Groups["key"].Value.FromBase64();
+
+            Crypto.GetPartsFromDecryptedKey(decryptedKey, out iv, out metaMac, out fileKey);
         }
 
         #endregion

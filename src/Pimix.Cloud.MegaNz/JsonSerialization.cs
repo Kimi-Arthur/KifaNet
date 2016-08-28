@@ -1,37 +1,11 @@
-﻿#region License
-
-/*
-The MIT License (MIT)
-
-Copyright (c) 2015 Gregoire Pailler
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-#endregion
-
-using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace CG.Web.MegaApiClient
+﻿namespace CG.Web.MegaApiClient
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
+
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     #region Base
 
@@ -54,7 +28,7 @@ namespace CG.Web.MegaApiClient
     internal class LoginRequest : RequestBase
     {
         public LoginRequest(string userHandle, string passwordHash)
-            : base("us")
+          : base("us")
         {
             this.UserHandle = userHandle;
             this.PasswordHash = passwordHash;
@@ -85,7 +59,7 @@ namespace CG.Web.MegaApiClient
     internal class AnonymousLoginRequest : RequestBase
     {
         public AnonymousLoginRequest(string masterKey, string temporarySession)
-            : base("up")
+          : base("up")
         {
             this.MasterKey = masterKey;
             this.TemporarySession = temporarySession;
@@ -100,13 +74,43 @@ namespace CG.Web.MegaApiClient
 
     #endregion
 
+    #region AccountInformation
+
+    internal class AccountInformationRequest : RequestBase
+    {
+        public AccountInformationRequest()
+          : base("uq")
+        {
+        }
+
+        [JsonProperty("strg")]
+        public int Storage { get { return 1; } }
+
+        [JsonProperty("xfer")]
+        public int Transfer { get { return 0; } }
+
+        [JsonProperty("pro")]
+        public int AccountType { get { return 0; } }
+    }
+
+    public class AccountInformationResponse
+    {
+        [JsonProperty("mstrg")]
+        public long TotalQuota { get; private set; }
+
+        [JsonProperty("cstrg")]
+        public long UsedQuota { get; private set; }
+    }
+
+    #endregion
+
 
     #region Nodes
 
     internal class GetNodesRequest : RequestBase
     {
         public GetNodesRequest()
-            : base("f")
+          : base("f")
         {
             this.c = 1;
         }
@@ -124,6 +128,20 @@ namespace CG.Web.MegaApiClient
         [JsonProperty("ok")]
         public List<SharedKey> SharedKeys { get; private set; }
 
+        [OnDeserialized]
+        public void OnDeserialized(StreamingContext ctx)
+        {
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+
+            // First Nodes deserialization to retrieve all shared keys
+            settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this });
+            JsonConvert.DeserializeObject<Node[]>(this.NodesSerialized.ToString(), settings);
+
+            // Deserialize nodes
+            settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this, ctx.Context });
+            this.Nodes = JsonConvert.DeserializeObject<Node[]>(this.NodesSerialized.ToString(), settings);
+        }
+
         internal class SharedKey
         {
             public SharedKey(string id, string key)
@@ -138,20 +156,6 @@ namespace CG.Web.MegaApiClient
             [JsonProperty("k")]
             public string Key { get; private set; }
         }
-
-        [OnDeserialized]
-        public void OnDeserialized(StreamingContext ctx)
-        {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-
-            // First Nodes deserialization to retrieve all shared keys
-            settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this });
-            JsonConvert.DeserializeObject<Node[]>(this.NodesSerialized.ToString(), settings);
-
-            // Deserialize nodes
-            settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this, ctx.Context });
-            this.Nodes = JsonConvert.DeserializeObject<Node[]>(this.NodesSerialized.ToString(), settings);
-        }
     }
 
     #endregion
@@ -162,7 +166,7 @@ namespace CG.Web.MegaApiClient
     internal class DeleteRequest : RequestBase
     {
         public DeleteRequest(Node node)
-            : base("d")
+          : base("d")
         {
             this.Node = node.Id;
         }
@@ -179,7 +183,7 @@ namespace CG.Web.MegaApiClient
     internal class GetDownloadLinkRequest : RequestBase
     {
         public GetDownloadLinkRequest(Node node)
-            : base("l")
+          : base("l")
         {
             this.Id = node.Id;
         }
@@ -195,30 +199,20 @@ namespace CG.Web.MegaApiClient
 
     internal class CreateNodeRequest : RequestBase
     {
-        private CreateNodeRequest(Node parentNode, NodeType type, string attributes, string key, string completionHandle)
-            : base("p")
+        private CreateNodeRequest(Node parentNode, NodeType type, string attributes, string encryptedKey, byte[] key, string completionHandle)
+          : base("p")
         {
             this.ParentId = parentNode.Id;
-            this.Nodes = new []
+            this.Nodes = new[]
+            {
+                new CreateNodeRequestData
                 {
-                    new CreateNodeRequestData
-                        {
-                            Attributes = attributes,
-                            Key = key,
-                            Type = type,
-                            CompletionHandle = completionHandle
-                        }
-                };
-        }
-
-        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes, string key, string completionHandle)
-        {
-            return new CreateNodeRequest(parentNode, NodeType.File, attributes, key, completionHandle);
-        }
-
-        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes, string key)
-        {
-            return new CreateNodeRequest(parentNode, NodeType.Directory, attributes, key, "xxxxxxxx");
+                    Attributes = attributes,
+                    Key = encryptedKey,
+                    Type = type,
+                    CompletionHandle = completionHandle
+                }
+            };
         }
 
         [JsonProperty("t")]
@@ -226,6 +220,16 @@ namespace CG.Web.MegaApiClient
 
         [JsonProperty("n")]
         public CreateNodeRequestData[] Nodes { get; private set; }
+
+        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes, string encryptedkey, byte[] fileKey, string completionHandle)
+        {
+            return new CreateNodeRequest(parentNode, NodeType.File, attributes, encryptedkey, fileKey, completionHandle);
+        }
+
+        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes, string encryptedkey, byte[] key)
+        {
+            return new CreateNodeRequest(parentNode, NodeType.Directory, attributes, encryptedkey, key, "xxxxxxxx");
+        }
 
         internal class CreateNodeRequestData
         {
@@ -251,7 +255,7 @@ namespace CG.Web.MegaApiClient
     internal class UploadUrlRequest : RequestBase
     {
         public UploadUrlRequest(long fileSize)
-            : base("u")
+          : base("u")
         {
             this.Size = fileSize;
         }
@@ -274,7 +278,7 @@ namespace CG.Web.MegaApiClient
     internal class DownloadUrlRequest : RequestBase
     {
         public DownloadUrlRequest(Node node)
-            : base("g")
+          : base("g")
         {
             this.Id = node.Id;
         }
@@ -288,7 +292,7 @@ namespace CG.Web.MegaApiClient
     internal class DownloadUrlRequestFromId : RequestBase
     {
         public DownloadUrlRequestFromId(string id)
-            : base("g")
+          : base("g")
         {
             this.Id = id;
         }
@@ -308,7 +312,7 @@ namespace CG.Web.MegaApiClient
         public long Size { get; private set; }
 
         [JsonProperty("at")]
-        private string SerializedAttributes { get; set; }
+        public string SerializedAttributes { get; set; }
     }
 
     #endregion
@@ -319,7 +323,7 @@ namespace CG.Web.MegaApiClient
     internal class MoveRequest : RequestBase
     {
         public MoveRequest(Node node, Node destinationParentNode)
-            : base("m")
+          : base("m")
         {
             this.Id = node.Id;
             this.DestinationParentId = destinationParentNode.Id;
