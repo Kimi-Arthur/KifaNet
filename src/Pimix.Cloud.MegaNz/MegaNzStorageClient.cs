@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
@@ -54,10 +53,11 @@ namespace Pimix.Cloud.MegaNz
 
         public static MegaNzConfig Config { get; set; }
 
-        public override void Copy(string sourcePath, string destinationPath)
-        {
-            throw new NotImplementedException();
-        }
+        // Comment out as this doesn't work now.
+        //public override void Move(string sourcePath, string destinationPath)
+        //{
+        //    Client.Move(GetNode(sourcePath), GetNode(GetParent(destinationPath), true));
+        //}
 
         public override void Delete(string path)
         {
@@ -76,10 +76,13 @@ namespace Pimix.Cloud.MegaNz
 
         public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
         {
-            var folder = GetNode(path.Substring(0, path.LastIndexOf('/')), true);
+            var folder = GetNode(GetParent(path), true);
             var name = path.Substring(path.LastIndexOf('/') + 1);
             Client.Upload(stream, name, folder);
         }
+
+        string GetParent(string path)
+            => path.Substring(0, path.LastIndexOf('/'));
 
         Node GetNode(string path, bool createParents = false)
         {

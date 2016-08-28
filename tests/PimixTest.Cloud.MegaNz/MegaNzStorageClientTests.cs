@@ -15,19 +15,9 @@ namespace PimixTest.Cloud.MegaNz
         string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
         [TestMethod]
-        public void DownloadTest()
-        {
-            var client = new MegaNzStorageClient() { AccountId = "test" };
-            using (var s = client.OpenRead("/Test/2010-11-25.bin"))
-            {
-                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
-            }
-        }
-
-        [TestMethod]
         public void ExistsTest()
         {
-            var client = new MegaNzStorageClient() { AccountId = "test" };
+            var client = GetStorageClient();
 
             Assert.IsTrue(client.Exists("/Test/2010-11-25.bin"));
             Assert.IsFalse(client.Exists("/Test/2015-11-25.bin"));
@@ -35,9 +25,20 @@ namespace PimixTest.Cloud.MegaNz
         }
 
         [TestMethod]
+        public void DownloadTest()
+        {
+            var client = GetStorageClient();
+
+            using (var s = client.OpenRead("/Test/2010-11-25.bin"))
+            {
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+        }
+
+        [TestMethod]
         public void UploadTest()
         {
-            var client = new MegaNzStorageClient() { AccountId = "test" };
+            var client = GetStorageClient();
 
             client.Write(
                 "/Test/new/upload.bin",
@@ -55,6 +56,41 @@ namespace PimixTest.Cloud.MegaNz
             client.Delete("/Test/new/upload.bin");
         }
 
+        [TestMethod]
+        public void CopyTest()
+        {
+            var client = GetStorageClient();
+
+            client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
+            using (var s = client.OpenRead("/Test/2010-11-25.bin_bak"))
+            {
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+
+            client.Delete("/Test/2010-11-25.bin_bak");
+        }
+
+        [TestMethod]
+        public void MoveTest()
+        {
+            var client = GetStorageClient();
+
+            client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_1");
+            Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_1"));
+            Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_2"));
+
+            client.Move("/Test/2010-11-25.bin_1", "/Test/2010-11-25.bin_2");
+            Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_1"));
+            Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_2"));
+
+            using (var s = client.OpenRead("/Test/2010-11-25.bin_2"))
+            {
+                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+
+            client.Delete("/Test/2010-11-25.bin_2");
+        }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx)
         {
@@ -70,15 +106,29 @@ namespace PimixTest.Cloud.MegaNz
 
         static void DataCleanup()
         {
-            var client = new MegaNzStorageClient() { AccountId = "test" };
+            var client = GetStorageClient();
 
-            try
+            var files = new string[]
             {
-                client.Delete("/Test/new/upload.bin");
-            }
-            catch (Exception)
+                "/Test/2010-11-25.bin_bak",
+                "/Test/2010-11-25.bin_1",
+                "/Test/2010-11-25.bin_2",
+                "/Test/upload.bin"
+            };
+
+            foreach (var f in files)
             {
+                try
+                {
+                    client.Delete(f);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
+
+        static MegaNzStorageClient GetStorageClient()
+            => new MegaNzStorageClient() { AccountId = "test" };
     }
 }

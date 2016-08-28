@@ -18,7 +18,8 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void DownloadTest()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
+
             using (var s = client.OpenRead("/Test/2010-11-25.bin"))
             {
                 Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
@@ -28,7 +29,8 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void CopyTest()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
+
             client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
             using (var s = client.OpenRead("/Test/2010-11-25.bin_bak"))
             {
@@ -41,7 +43,8 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void MoveTest()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
+
             client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_1");
             Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_1"));
             Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_2"));
@@ -61,7 +64,7 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void UploadRapidAndRemoveTest()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
 
             client.Write(
                 "/Test/rapid.bin",
@@ -87,11 +90,8 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void UploadByBlockTest()
         {
-            var client = new BaiduCloudStorageClient()
-            {
-                AccountId = "PimixT",
-                BlockInfo = new List<int> { 128 << 10 }
-            };
+            var client = GetStorageClient();
+            client.BlockInfo = new List<int> { 128 << 10 };
 
             client.Write(
                 "/Test/block.bin",
@@ -112,7 +112,7 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void UploadDirectTest()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
 
             client.Write(
                 "/Test/direct.bin",
@@ -133,7 +133,7 @@ namespace PimixTest.Cloud.BaiduCloud
         [TestMethod]
         public void ExistsTest()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
 
             Assert.IsTrue(client.Exists("/Test/2010-11-25.bin"));
             Assert.IsFalse(client.Exists("/Test/2015-11-25.bin"));
@@ -154,7 +154,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
         static void DataCleanup()
         {
-            var client = new BaiduCloudStorageClient() { AccountId = "PimixT" };
+            var client = GetStorageClient();
 
             var files = new string[]
             {
@@ -177,5 +177,8 @@ namespace PimixTest.Cloud.BaiduCloud
                 }
             }
         }
+
+        static BaiduCloudStorageClient GetStorageClient()
+            => new BaiduCloudStorageClient() { AccountId = "PimixT" };
     }
 }

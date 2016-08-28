@@ -8,7 +8,10 @@ namespace Pimix.IO
 
         public abstract void Delete(string path);
 
-        public abstract void Copy(string sourcePath, string destinationPath);
+        public virtual void Copy(string sourcePath, string destinationPath)
+        {
+            Write(destinationPath, OpenRead(sourcePath));
+        }
 
         public virtual void Move(string sourcePath, string destinationPath)
         {
