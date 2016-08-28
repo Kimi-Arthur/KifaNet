@@ -39,6 +39,7 @@ namespace Pimix.Cryptography
             {
                 if ((value - 1) / BlockSize != (position - 1) / BlockSize)
                 {
+                    // The block is changed.
                     padBuffer = null;
                 }
 
