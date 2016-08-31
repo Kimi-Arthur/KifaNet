@@ -603,6 +603,10 @@
 
                 // Encrypt attributes
                 byte[] cryptedAttributes = Crypto.EncryptAttributes(new Attributes(name), encryptedStream.FileKey);
+                for (int i = 0; i < 8; i++)
+                {
+                    encryptedStream.Iv[i] = encryptedStream.MetaMac[i] = 0;
+                }
 
                 // Compute the file key
                 byte[] fileKey = new byte[32];

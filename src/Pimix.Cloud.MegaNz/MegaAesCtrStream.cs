@@ -22,18 +22,7 @@
             get { return this.iv; }
         }
 
-        public byte[] MetaMac
-        {
-            get
-            {
-                if (this.position != this.streamLength)
-                {
-                    throw new NotSupportedException("Stream must be fully read to obtain computed FileMac");
-                }
-
-                return this.metaMac;
-            }
-        }
+        public byte[] MetaMac { get; set; } = new byte[8];
     }
 
     internal class MegaAesCtrStreamDecrypter : MegaAesCtrStream
@@ -50,14 +39,6 @@
 
             this.expectedMetaMac = expectedMetaMac;
         }
-
-        protected override void OnStreamRead()
-        {
-            if (!this.expectedMetaMac.SequenceEqual(this.metaMac))
-            {
-                throw new DownloadException();
-            }
-        }
     }
 
     internal abstract class MegaAesCtrStream : Stream
@@ -65,7 +46,6 @@
         protected readonly byte[] fileKey;
         protected readonly byte[] iv;
         protected readonly long streamLength;
-        protected long position = 0;
         protected byte[] metaMac = new byte[8];
 
         private readonly Stream stream;
@@ -133,99 +113,20 @@
             get { return this.streamLength; }
         }
 
-        public override long Position
-        {
-            get
-            {
-                return this.position;
-            }
-
-            set
-            {
-                if (this.position != value)
-                {
-                    throw new NotSupportedException("Seek is not supported");
-                }
-            }
-        }
+        public override long Position { get; set; } = 0;
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (this.position == this.streamLength)
+            count = (int)Math.Min(count, Length - Position);
+            int readLength = stream.Read(buffer, offset, count);
+            while (readLength < count)
             {
-                return 0;
+                readLength += stream.Read(buffer, offset + readLength, count - readLength);
             }
 
-            for (long pos = this.position; pos < Math.Min(this.position + count, this.streamLength); pos += 16)
-            {
-                // We are on a chunk bondary
-                if (this.chunksPositions.Any(chunk => chunk == pos))
-                {
-                    if (pos != 0)
-                    {
-                        // Compute the current chunk mac data on each chunk bondary
-                        this.ComputeChunk();
-                    }
+            Position += readLength;
 
-                    // Init chunk mac with Iv values
-                    for (int i = 0; i < 8; i++)
-                    {
-                        this.currentChunkMac[i] = this.iv[i];
-                        this.currentChunkMac[i + 8] = this.iv[i];
-                    }
-                }
-
-                this.IncrementCounter();
-
-                // Iterate each AES 16 bytes block
-                byte[] input = new byte[16];
-                byte[] output = new byte[input.Length];
-                int inputLength = this.stream.Read(input, 0, input.Length);
-                if (inputLength != input.Length)
-                {
-                    // Sometimes, the stream is not finished but the read is not complete
-                    inputLength += this.stream.Read(input, inputLength, input.Length - inputLength);
-                }
-
-                // Merge Iv and counter
-                byte[] ivCounter = new byte[16];
-                Array.Copy(this.iv, ivCounter, 8);
-                Array.Copy(this.counter, 0, ivCounter, 8, 8);
-
-                byte[] encryptedIvCounter = Crypto.EncryptAes(ivCounter, this.fileKey);
-
-                for (int inputPos = 0; inputPos < inputLength; inputPos++)
-                {
-                    output[inputPos] = (byte)(encryptedIvCounter[inputPos] ^ input[inputPos]);
-                    this.currentChunkMac[inputPos] ^= (this.mode == Mode.Crypt) ? input[inputPos] : output[inputPos];
-                }
-
-                // Copy to buffer
-                Array.Copy(output, 0, buffer, offset + pos - this.position, Math.Min(output.Length, this.streamLength - pos));
-
-                // Crypt to current chunk mac
-                this.currentChunkMac = Crypto.EncryptAes(this.currentChunkMac, this.fileKey);
-            }
-
-            long len = Math.Min(count, this.streamLength - this.position);
-            this.position += len;
-
-            // When stream is fully processed, we compute the last chunk
-            if (this.position == this.streamLength)
-            {
-                this.ComputeChunk();
-
-                // Compute Meta MAC
-                for (int i = 0; i < 4; i++)
-                {
-                    this.metaMac[i] = (byte)(this.fileMac[i] ^ this.fileMac[i + 4]);
-                    this.metaMac[i + 4] = (byte)(this.fileMac[i + 8] ^ this.fileMac[i + 12]);
-                }
-
-                this.OnStreamRead();
-            }
-
-            return (int)len;
+            return readLength;
         }
 
         public override void Flush()
