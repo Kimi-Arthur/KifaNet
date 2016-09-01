@@ -86,7 +86,7 @@ namespace Pimix.Cloud.MegaNz
 
         Node GetNode(string path, bool createParents = false)
         {
-            path = path.TrimStart('/');
+            path = path.Trim('/');
             var nodes = Client.GetNodes();
 
             Node parent = nodes.Single(n => n.Type == NodeType.Root);

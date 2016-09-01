@@ -38,21 +38,8 @@
         /// Instantiate a new <see cref="MegaApiClient" /> object
         /// </summary>
         public MegaApiClient()
-            : this(new WebClient())
         {
-        }
-
-        /// <summary>
-        /// Instantiate a new <see cref="MegaApiClient" /> object with the provided <see cref="IWebClient" />
-        /// </summary>
-        public MegaApiClient(WebClient webClient)
-        {
-            if (webClient == null)
-            {
-                throw new ArgumentNullException("webClient");
-            }
-
-            this.webClient = webClient;
+            this.webClient = new WebClient();
         }
 
         #endregion
@@ -143,47 +130,6 @@
         }
 
         /// <summary>
-        /// Login anonymously to Mega.co.nz service
-        /// </summary>
-        /// <exception cref="ApiException">Throws if service is not available</exception>
-        public void LoginAnonymous()
-        {
-            this.EnsureLoggedOut();
-
-            Random random = new Random();
-
-            // Generate random master key
-            this.masterKey = new byte[16];
-            random.NextBytes(this.masterKey);
-
-            // Generate a random password used to encrypt the master key
-            byte[] passwordAesKey = new byte[16];
-            random.NextBytes(passwordAesKey);
-
-            // Generate a random session challenge
-            byte[] sessionChallenge = new byte[16];
-            random.NextBytes(sessionChallenge);
-
-            byte[] encryptedMasterKey = Crypto.EncryptAes(this.masterKey, passwordAesKey);
-
-            // Encrypt the session challenge with our generated master key
-            byte[] encryptedSessionChallenge = Crypto.EncryptAes(sessionChallenge, this.masterKey);
-            byte[] encryptedSession = new byte[32];
-            Array.Copy(sessionChallenge, 0, encryptedSession, 0, 16);
-            Array.Copy(encryptedSessionChallenge, 0, encryptedSession, 16, encryptedSessionChallenge.Length);
-
-            // Request Mega Api to obtain a temporary user handle
-            AnonymousLoginRequest request = new AnonymousLoginRequest(encryptedMasterKey.ToBase64(), encryptedSession.ToBase64());
-            string userHandle = this.Request(request);
-
-            // Request Mega Api to retrieve our temporary session id
-            LoginRequest request2 = new LoginRequest(userHandle, null);
-            LoginResponse response2 = this.Request<LoginResponse>(request2);
-
-            this.sessionId = response2.TemporarySessionId;
-        }
-
-        /// <summary>
         /// Logout from Mega.co.nz service
         /// </summary>
         /// <exception cref="NotSupportedException">Not logged in</exception>
@@ -230,23 +176,6 @@
             }
 
             return nodes.Distinct().Cast<Node>();
-        }
-
-        /// <summary>
-        /// Retrieve children nodes of a parent node
-        /// </summary>
-        /// <returns>Flat representation of children nodes</returns>
-        /// <exception cref="NotSupportedException">Not logged in</exception>
-        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        /// <exception cref="ArgumentNullException">Parent node is null</exception>
-        public IEnumerable<Node> GetNodes(Node parent)
-        {
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
-
-            return this.GetNodes().Where(n => n.ParentId == parent.Id);
         }
 
         /// <summary>
@@ -317,104 +246,9 @@
             byte[] attributes = Crypto.EncryptAttributes(new Attributes(name), key);
             byte[] encryptedKey = Crypto.EncryptAes(key, this.masterKey);
 
-            CreateNodeRequest request = CreateNodeRequest.CreateFolderNodeRequest(parent, attributes.ToBase64(), encryptedKey.ToBase64(), key);
+            CreateNodeRequest request = CreateNodeRequest.CreateFolderNodeRequest(parent, attributes.ToBase64(), encryptedKey.ToBase64());
             GetNodesResponse response = this.Request<GetNodesResponse>(request, this.masterKey);
             return response.Nodes[0];
-        }
-
-        /// <summary>
-        /// Retrieve an url to download specified node
-        /// </summary>
-        /// <param name="node">Node to retrieve the download link (only <see cref="NodeType.File" /> or <see cref="NodeType.Directory" /> can be downloaded)</param>
-        /// <returns>Download link to retrieve the node with associated key</returns>
-        /// <exception cref="NotSupportedException">Not logged in</exception>
-        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        /// <exception cref="ArgumentNullException">node is null</exception>
-        /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.File" /> or <see cref="NodeType.Directory" /> can be downloaded)</exception>
-        public Uri GetDownloadLink(Node node)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException("node");
-            }
-
-            if (node.Type != NodeType.File && node.Type != NodeType.Directory)
-            {
-                throw new ArgumentException("Invalid node");
-            }
-
-            Node nodeCrypto = node as Node;
-            if (nodeCrypto == null)
-            {
-                throw new ArgumentException("node must implement Node");
-            }
-
-            this.EnsureLoggedIn();
-
-            GetDownloadLinkRequest request = new GetDownloadLinkRequest(node);
-            string response = this.Request<string>(request);
-
-            return new Uri(BaseUri, string.Format(
-                "/#{0}!{1}!{2}",
-                node.Type == NodeType.Directory ? "F" : string.Empty,
-                response,
-                nodeCrypto.FullKey.ToBase64()));
-        }
-
-        /// <summary>
-        /// Download a specified node and save it to the specified file
-        /// </summary>
-        /// <param name="node">Node to download (only <see cref="NodeType.File" /> can be downloaded)</param>
-        /// <param name="outputFile">File to save the node to</param>
-        /// <exception cref="NotSupportedException">Not logged in</exception>
-        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        /// <exception cref="ArgumentNullException">node or outputFile is null</exception>
-        /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.File" /> can be downloaded)</exception>
-        /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
-        public void DownloadFile(Node node, string outputFile)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException("node");
-            }
-
-            if (string.IsNullOrEmpty(outputFile))
-            {
-                throw new ArgumentNullException("outputFile");
-            }
-
-            using (Stream stream = this.Download(node))
-            {
-                this.SaveStream(stream, outputFile);
-            }
-        }
-
-        /// <summary>
-        /// Download a specified Uri from Mega and save it to the specified file
-        /// </summary>
-        /// <param name="uri">Uri to download</param>
-        /// <param name="outputFile">File to save the Uri to</param>
-        /// <exception cref="NotSupportedException">Not logged in</exception>
-        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        /// <exception cref="ArgumentNullException">uri or outputFile is null</exception>
-        /// <exception cref="ArgumentException">Uri is not valid (id and key are required)</exception>
-        /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
-        public void DownloadFile(Uri uri, string outputFile)
-        {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
-            }
-
-            if (string.IsNullOrEmpty(outputFile))
-            {
-                throw new ArgumentNullException("outputFile");
-            }
-
-            using (Stream stream = this.Download(uri))
-            {
-                this.SaveStream(stream, outputFile);
-            }
         }
 
         /// <summary>
@@ -451,73 +285,7 @@
             DownloadUrlResponse downloadResponse = this.Request<DownloadUrlResponse>(downloadRequest);
 
             Stream dataStream = this.webClient.GetRequestRaw(new Uri(downloadResponse.Url));
-            return new MegaAesCtrStreamDecrypter(dataStream, downloadResponse.Size, nodeCrypto.Key, nodeCrypto.Iv, nodeCrypto.MetaMac);
-        }
-
-        /// <summary>
-        /// Retrieve a Stream to download and decrypt the specified Uri
-        /// </summary>
-        /// <param name="uri">Uri to download</param>
-        /// <exception cref="NotSupportedException">Not logged in</exception>
-        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        /// <exception cref="ArgumentNullException">uri is null</exception>
-        /// <exception cref="ArgumentException">Uri is not valid (id and key are required)</exception>
-        /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
-        public Stream Download(Uri uri)
-        {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
-            }
-
-            this.EnsureLoggedIn();
-
-            string id;
-            byte[] iv, metaMac, fileKey;
-            this.GetPartsFromUri(uri, out id, out iv, out metaMac, out fileKey);
-
-            // Retrieve download URL
-            DownloadUrlRequestFromId downloadRequest = new DownloadUrlRequestFromId(id);
-            DownloadUrlResponse downloadResponse = this.Request<DownloadUrlResponse>(downloadRequest);
-
-            Stream dataStream = this.webClient.GetRequestRaw(new Uri(downloadResponse.Url));
-            return new MegaAesCtrStreamDecrypter(dataStream, downloadResponse.Size, fileKey, iv, metaMac);
-        }
-
-        /// <summary>
-        /// Upload a file on Mega.co.nz and attach created node to selected parent
-        /// </summary>
-        /// <param name="filename">File to upload</param>
-        /// <param name="parent">Node to attach the uploaded file (all types except <see cref="NodeType.File" /> are supported)</param>
-        /// <returns>Created node</returns>
-        /// <exception cref="NotSupportedException">Not logged in</exception>
-        /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        /// <exception cref="ArgumentNullException">filename or parent is null</exception>
-        /// <exception cref="FileNotFoundException">filename is not found</exception>
-        /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public Node UploadFile(string filename, Node parent)
-        {
-            if (string.IsNullOrEmpty(filename))
-            {
-                throw new ArgumentNullException("filename");
-            }
-
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
-
-            if (!File.Exists(filename))
-            {
-                throw new FileNotFoundException(filename);
-            }
-
-            this.EnsureLoggedIn();
-
-            using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read))
-            {
-                return this.Upload(fileStream, Path.GetFileName(filename), parent);
-            }
+            return new StreamWithLength(dataStream, downloadResponse.Size);
         }
 
         /// <summary>
@@ -559,75 +327,56 @@
             UploadUrlRequest uploadRequest = new UploadUrlRequest(stream.Length);
             UploadUrlResponse uploadResponse = this.Request<UploadUrlResponse>(uploadRequest);
 
-            using (MegaAesCtrStreamCrypter encryptedStream = new MegaAesCtrStreamCrypter(stream))
+            var chunksPositions = GetChunksPositions(stream.Length);
+
+            string completionHandle = null;
+            for (int i = 0; i < chunksPositions.Length; i++)
             {
-                string completionHandle = null;
-                for (int i = 0; i < encryptedStream.ChunksPositions.Length; i++)
-                {
-                    long currentChunkPosition = encryptedStream.ChunksPositions[i];
-                    long nextChunkPosition = i == encryptedStream.ChunksPositions.Length - 1
-                      ? encryptedStream.Length
-                      : encryptedStream.ChunksPositions[i + 1];
+                long currentChunkPosition = chunksPositions[i];
+                long nextChunkPosition = i == chunksPositions.Length - 1
+                  ? stream.Length
+                  : chunksPositions[i + 1];
 
-                    int chunkSize = (int)(nextChunkPosition - currentChunkPosition);
-                    byte[] chunkBuffer = new byte[chunkSize];
-                    encryptedStream.Read(chunkBuffer, 0, chunkSize);
-                    using (MemoryStream chunkStream = new MemoryStream(chunkBuffer))
+                int chunkSize = (int)(nextChunkPosition - currentChunkPosition);
+                byte[] chunkBuffer = new byte[chunkSize];
+                stream.Read(chunkBuffer, 0, chunkSize);
+                using (MemoryStream chunkStream = new MemoryStream(chunkBuffer))
+                {
+                    int remainingRetry = ApiRequestAttempts;
+                    string result = null;
+                    UploadException lastException = null;
+                    while (remainingRetry-- > 0)
                     {
-                        int remainingRetry = ApiRequestAttempts;
-                        string result = null;
-                        UploadException lastException = null;
-                        while (remainingRetry-- > 0)
+                        Uri uri = new Uri(uploadResponse.Url + "/" + chunksPositions[i]);
+                        result = this.webClient.PostRequestRaw(uri, chunkStream);
+                        if (result.StartsWith("-"))
                         {
-                            Uri uri = new Uri(uploadResponse.Url + "/" + encryptedStream.ChunksPositions[i]);
-                            result = this.webClient.PostRequestRaw(uri, chunkStream);
-                            if (result.StartsWith("-"))
-                            {
-                                lastException = new UploadException(result);
-                                Thread.Sleep(ApiRequestDelay);
-                                continue;
-                            }
-
-                            lastException = null;
-                            break;
+                            lastException = new UploadException(result);
+                            Thread.Sleep(ApiRequestDelay);
+                            continue;
                         }
 
-                        if (lastException != null)
-                        {
-                            throw lastException;
-                        }
-
-                        completionHandle = result;
+                        lastException = null;
+                        break;
                     }
+
+                    if (lastException != null)
+                    {
+                        throw lastException;
+                    }
+
+                    completionHandle = result;
                 }
-
-                // Encrypt attributes
-                byte[] cryptedAttributes = Crypto.EncryptAttributes(new Attributes(name), encryptedStream.FileKey);
-                for (int i = 0; i < 8; i++)
-                {
-                    encryptedStream.Iv[i] = encryptedStream.MetaMac[i] = 0;
-                }
-
-                // Compute the file key
-                byte[] fileKey = new byte[32];
-                for (int i = 0; i < 8; i++)
-                {
-                    fileKey[i] = (byte)(encryptedStream.FileKey[i] ^ encryptedStream.Iv[i]);
-                    fileKey[i + 16] = encryptedStream.Iv[i];
-                }
-
-                for (int i = 8; i < 16; i++)
-                {
-                    fileKey[i] = (byte)(encryptedStream.FileKey[i] ^ encryptedStream.MetaMac[i - 8]);
-                    fileKey[i + 16] = encryptedStream.MetaMac[i - 8];
-                }
-
-                byte[] encryptedKey = Crypto.EncryptKey(fileKey, this.masterKey);
-
-                CreateNodeRequest createNodeRequest = CreateNodeRequest.CreateFileNodeRequest(parent, cryptedAttributes.ToBase64(), encryptedKey.ToBase64(), fileKey, completionHandle);
-                GetNodesResponse createNodeResponse = this.Request<GetNodesResponse>(createNodeRequest, this.masterKey);
-                return createNodeResponse.Nodes[0];
             }
+
+            // Encrypt attributes
+            byte[] cryptedAttributes = Crypto.EncryptAttributes(new Attributes(name), new byte[16]);
+
+            byte[] encryptedKey = Crypto.EncryptKey(new byte[32], this.masterKey);
+
+            CreateNodeRequest createNodeRequest = CreateNodeRequest.CreateFileNodeRequest(parent, cryptedAttributes.ToBase64(), encryptedKey.ToBase64(), completionHandle);
+            GetNodesResponse createNodeResponse = this.Request<GetNodesResponse>(createNodeRequest, this.masterKey);
+            return createNodeResponse.Nodes[0];
         }
 
         /// <summary>
@@ -814,20 +563,27 @@
             }
         }
 
-        private void GetPartsFromUri(Uri uri, out string id, out byte[] iv, out byte[] metaMac, out byte[] fileKey)
+        private long[] GetChunksPositions(long size)
         {
-            Regex uriRegex = new Regex("#!(?<id>.+)!(?<key>.+)");
-            Match match = uriRegex.Match(uri.Fragment);
-            if (match.Success == false)
+            List<long> chunks = new List<long>();
+            chunks.Add(0);
+
+            long chunkStartPosition = 0;
+            for (int idx = 1; (idx <= 8) && (chunkStartPosition < (size - (idx * 131072))); idx++)
             {
-                throw new ArgumentException(string.Format("Invalid uri. Unable to extract Id and Key from the uri {0}", uri));
+                chunkStartPosition += idx * 131072;
+                chunks.Add(chunkStartPosition);
             }
 
-            id = match.Groups["id"].Value;
-            byte[] decryptedKey = match.Groups["key"].Value.FromBase64();
+            while ((chunkStartPosition + 1048576) < size)
+            {
+                chunkStartPosition += 1048576;
+                chunks.Add(chunkStartPosition);
+            }
 
-            Crypto.GetPartsFromDecryptedKey(decryptedKey, out iv, out metaMac, out fileKey);
+            return chunks.ToArray();
         }
+
 
         #endregion
 

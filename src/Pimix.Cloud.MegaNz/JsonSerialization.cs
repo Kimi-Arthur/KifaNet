@@ -199,7 +199,7 @@
 
     internal class CreateNodeRequest : RequestBase
     {
-        private CreateNodeRequest(Node parentNode, NodeType type, string attributes, string encryptedKey, byte[] key, string completionHandle)
+        private CreateNodeRequest(Node parentNode, NodeType type, string attributes, string encryptedKey, string completionHandle)
           : base("p")
         {
             this.ParentId = parentNode.Id;
@@ -221,14 +221,14 @@
         [JsonProperty("n")]
         public CreateNodeRequestData[] Nodes { get; private set; }
 
-        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes, string encryptedkey, byte[] fileKey, string completionHandle)
+        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes, string encryptedkey, string completionHandle)
         {
-            return new CreateNodeRequest(parentNode, NodeType.File, attributes, encryptedkey, fileKey, completionHandle);
+            return new CreateNodeRequest(parentNode, NodeType.File, attributes, encryptedkey, completionHandle);
         }
 
-        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes, string encryptedkey, byte[] key)
+        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes, string encryptedkey)
         {
-            return new CreateNodeRequest(parentNode, NodeType.Directory, attributes, encryptedkey, key, "xxxxxxxx");
+            return new CreateNodeRequest(parentNode, NodeType.Directory, attributes, encryptedkey, "xxxxxxxx");
         }
 
         internal class CreateNodeRequestData

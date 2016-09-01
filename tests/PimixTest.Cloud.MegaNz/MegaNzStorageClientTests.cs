@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using CG.Web.MegaApiClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.MegaNz;
 using Pimix.IO;
@@ -54,6 +55,7 @@ namespace PimixTest.Cloud.MegaNz
             }
 
             client.Delete("/Test/new/upload.bin");
+            client.Delete("/Test/new/");
         }
 
         [TestMethod]
@@ -113,7 +115,8 @@ namespace PimixTest.Cloud.MegaNz
                 "/Test/2010-11-25.bin_bak",
                 "/Test/2010-11-25.bin_1",
                 "/Test/2010-11-25.bin_2",
-                "/Test/upload.bin"
+                "/Test/new/upload.bin",
+                "/Test/new/"
             };
 
             foreach (var f in files)
@@ -126,6 +129,7 @@ namespace PimixTest.Cloud.MegaNz
                 {
                 }
             }
+
         }
 
         static MegaNzStorageClient GetStorageClient()
