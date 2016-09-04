@@ -37,29 +37,14 @@
         public string SerializedFileAttributes { get; private set; }
 
         [JsonIgnore]
-        public DateTime LastModificationDate { get; private set; }
-
-        [JsonIgnore]
         public byte[] Key { get; private set; }
 
         [JsonIgnore]
         public byte[] FullKey { get; private set; }
-
-        [JsonIgnore]
-        public byte[] SharedKey { get; private set; }
-
-        [JsonIgnore]
-        public byte[] Iv { get; private set; }
-
-        [JsonIgnore]
-        public byte[] MetaMac { get; private set; }
-
+                
         #endregion
 
         #region Deserialization
-
-        [JsonProperty("ts")]
-        private long SerializedLastModificationDate { get; set; }
 
         [JsonProperty("a")]
         private string SerializedAttributes { get; set; }
@@ -85,8 +70,6 @@
             {
                 byte[] masterKey = (byte[])context[1];
 
-                this.LastModificationDate = OriginalDateTime.AddSeconds(this.SerializedLastModificationDate).ToLocalTime();
-
                 if (this.Type == NodeType.File || this.Type == NodeType.Directory)
                 {
                     // There are cases where the SerializedKey property contains multiple keys separated with /
@@ -96,35 +79,11 @@
                     int splitPosition = serializedKey.IndexOf(":", StringComparison.InvariantCulture);
                     byte[] encryptedKey = serializedKey.Substring(splitPosition + 1).FromBase64();
 
-                    // If node is shared, we need to retrieve shared masterkey
-                    if (nodesResponse.SharedKeys != null)
-                    {
-                        string handle = serializedKey.Substring(0, splitPosition);
-                        GetNodesResponse.SharedKey sharedKey = nodesResponse.SharedKeys.FirstOrDefault(x => x.Id == handle);
-                        if (sharedKey != null)
-                        {
-                            masterKey = Crypto.DecryptKey(sharedKey.Key.FromBase64(), masterKey);
-                            if (this.Type == NodeType.Directory)
-                            {
-                                this.SharedKey = masterKey;
-                            }
-                            else
-                            {
-                                this.SharedKey = Crypto.DecryptKey(encryptedKey, masterKey);
-                            }
-                        }
-                    }
-
                     this.FullKey = Crypto.DecryptKey(encryptedKey, masterKey);
 
                     if (this.Type == NodeType.File)
                     {
-                        byte[] iv, metaMac, fileKey;
-                        Crypto.GetPartsFromDecryptedKey(this.FullKey, out iv, out metaMac, out fileKey);
-
-                        this.Iv = iv;
-                        this.MetaMac = metaMac;
-                        this.Key = fileKey;
+                        this.Key = Crypto.GetPartsFromDecryptedKey(this.FullKey);
                     }
                     else
                     {

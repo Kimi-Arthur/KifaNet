@@ -17,7 +17,7 @@
     public partial class MegaApiClient
     {
         private const int ApiRequestAttempts = 10;
-        private const int ApiRequestDelay = 200;
+        private static TimeSpan ApiRequestDelay = TimeSpan.FromSeconds(5);
 
         public static int BufferSize = 8192;
 
