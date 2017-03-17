@@ -25,7 +25,7 @@ namespace Pimix.Cloud.BaiduCloud
             {
                 if (spec.StartsWith("baidu:"))
                 {
-                    Config = BaiduCloudConfig.Get("baidu_cloud");
+                    Config = BaiduCloudConfig.Get("default");
                     return new BaiduCloudStorageClient { AccountId = spec.Substring(6) };
                 }
             }

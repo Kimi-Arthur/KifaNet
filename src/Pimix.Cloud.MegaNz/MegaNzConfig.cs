@@ -4,7 +4,7 @@ using Pimix.Service;
 
 namespace Pimix.Cloud.MegaNz
 {
-    [DataModel("configs")]
+    [DataModel("configs/mega_nz")]
     public partial class MegaNzConfig
     {
         [JsonProperty("id")]

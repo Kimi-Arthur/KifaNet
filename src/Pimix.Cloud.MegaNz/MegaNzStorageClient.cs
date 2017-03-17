@@ -14,6 +14,7 @@ namespace Pimix.Cloud.MegaNz
             {
                 if (spec.StartsWith("mega:"))
                 {
+                    Config = MegaNzConfig.Get("default");
                     return new MegaNzStorageClient
                     {
                         AccountId = spec.Substring(5)

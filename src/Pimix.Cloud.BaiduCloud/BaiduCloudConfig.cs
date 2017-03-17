@@ -4,7 +4,7 @@ using Pimix.Service;
 
 namespace Pimix.Cloud.BaiduCloud
 {
-    [DataModel("configs")]
+    [DataModel("configs/baidu_cloud")]
     public partial class BaiduCloudConfig
     {
         [JsonProperty("id")]

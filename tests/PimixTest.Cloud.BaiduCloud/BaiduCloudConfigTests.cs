@@ -14,7 +14,7 @@ namespace PimixTest.Cloud.BaiduCloud
         public void GetConfigTest()
         {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
-            var config = BaiduCloudConfig.Get("baidu_cloud");
+            var config = BaiduCloudConfig.Get("default");
             Assert.IsTrue(config.ClientId.StartsWith("Tk"));
         }
 

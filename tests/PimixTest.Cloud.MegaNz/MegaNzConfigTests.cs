@@ -12,7 +12,7 @@ namespace PimixTest.Cloud.MegaNz
         public void GetConfigTest()
         {
             MegaNzConfig.PimixServerApiAddress = PimixServerApiAddress;
-            var config = MegaNzConfig.Get("mega_nz");
+            var config = MegaNzConfig.Get("default");
             Assert.AreEqual("Pny3YQzV", config.Accounts["test"].Password);
             Assert.AreEqual("pimix.server+test@gmail.com", config.Accounts["test"].Username);
         }

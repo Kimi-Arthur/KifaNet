@@ -143,7 +143,7 @@ namespace PimixTest.Cloud.BaiduCloud
         public static void ClassInitialize(TestContext ctx)
         {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
-            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("baidu_cloud");
+            BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("default");
 
             DataCleanup();
         }

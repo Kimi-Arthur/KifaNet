@@ -97,7 +97,7 @@ namespace PimixTest.Cloud.MegaNz
         public static void ClassInitialize(TestContext ctx)
         {
             MegaNzConfig.PimixServerApiAddress = PimixServerApiAddress;
-            MegaNzStorageClient.Config = MegaNzConfig.Get("mega_nz");
+            MegaNzStorageClient.Config = MegaNzConfig.Get("default");
 
             DataCleanup();
         }
