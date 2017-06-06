@@ -1,93 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{684848AE-EE0F-43A0-8096-06DD0FF7FE0C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Pimix.Cloud.MegaNz</RootNamespace>
-    <AssemblyName>Pimix.Cloud.MegaNz</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>2.0.0-preview1</Version>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
+    <Description>Cloud storage for MegaNz service.</Description>
+    <Copyright>Copyright © 2015-2017 Kimi Arthur</Copyright>
+    <PackageTags>Pimix lib</PackageTags>
+    <PackageReleaseNotes>2.0.0-preview1:</PackageReleaseNotes>
+    <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="HashLib, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\HashLib.2.0.1\lib\net40\HashLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
+    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="MegaNzConfig.Service.cs" />
-    <Compile Include="BigInteger.cs" />
-    <Compile Include="Crypto.cs" />
-    <Compile Include="Exceptions.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="JsonSerialization.cs" />
-    <Compile Include="MegaAesCtrStream.cs" />
-    <Compile Include="MegaApiClient.cs" />
-    <Compile Include="MegaNzConfig.cs" />
-    <Compile Include="MegaNzStorageClient.cs" />
-    <Compile Include="Node.cs" />
-    <Compile Include="NodeType.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebClient.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj">
-      <Project>{8e56ea6c-99aa-4df3-9e58-012f18e4e811}</Project>
-      <Name>Pimix.IO</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj">
-      <Project>{61cbf740-d894-4f39-9071-bbb96cfd13a4}</Project>
-      <Name>Pimix.Service</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
