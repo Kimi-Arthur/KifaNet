@@ -10,7 +10,6 @@
     <Description>Cryptographic libraries.</Description>
     <Copyright>Copyright © 2015-2017 Kimi Arthur</Copyright>
     <PackageTags>Pimix lib</PackageTags>
-    <PackageReleaseNotes>2.0.0-preview1:</PackageReleaseNotes>
     <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
 
