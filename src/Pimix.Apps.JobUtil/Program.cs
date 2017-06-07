@@ -7,12 +7,8 @@ namespace Pimix.Apps.JobUtil
     class Program
     {
         static int Main(string[] args)
-            => Parser.Default.ParseArguments<
-                RunJobCommand,
-                RunAllJobsCommand,
-                ResetJobCommand
-                >(args)
-            .Return<JobUtilCommand, int>(ExecuteCommand, HandleParseFail);
+            => Parser.Default.ParseArguments<RunJobCommand, RunAllJobsCommand, ResetJobCommand>(args)
+            .MapResult<JobUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
         static int ExecuteCommand(JobUtilCommand command)
         {
