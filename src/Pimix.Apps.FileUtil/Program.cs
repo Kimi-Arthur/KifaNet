@@ -19,7 +19,7 @@ namespace Pimix.Apps.FileUtil
                 MoveCommand,
                 LinkCommand
                 >(args)
-            .Return<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
+            .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
         static int ExecuteCommand(FileUtilCommand command)
         {

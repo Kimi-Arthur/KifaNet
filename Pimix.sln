@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PimixTest.Cloud.MegaNz", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.JobUtil", "src\Pimix.Apps.JobUtil\Pimix.Apps.JobUtil.csproj", "{AA48DD43-1AB2-4625-8CDD-9DE10A334F37}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.FileUtil", "src\Pimix.Apps.FileUtil\Pimix.Apps.FileUtil.csproj", "{FA56DE78-275B-453E-B241-4AE0C2E43C27}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{AA48DD43-1AB2-4625-8CDD-9DE10A334F37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA48DD43-1AB2-4625-8CDD-9DE10A334F37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA48DD43-1AB2-4625-8CDD-9DE10A334F37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA56DE78-275B-453E-B241-4AE0C2E43C27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA56DE78-275B-453E-B241-4AE0C2E43C27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA56DE78-275B-453E-B241-4AE0C2E43C27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA56DE78-275B-453E-B241-4AE0C2E43C27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
