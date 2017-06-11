@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
+using System.Net;
 using CommandLine;
 using Pimix.Cloud.BaiduCloud;
 
@@ -19,6 +20,10 @@ namespace Pimix.Apps.FileUtil.Commands
         public virtual void Initialize()
         {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerAddress;
+
+            CredentialCache.DefaultNetworkCredentials.UserName = ConfigurationManager.AppSettings["DefaultNetworkUserName"];
+
+            CredentialCache.DefaultNetworkCredentials.Password = ConfigurationManager.AppSettings["DefaultNetworkPassword"];
         }
 
         public abstract int Execute();
