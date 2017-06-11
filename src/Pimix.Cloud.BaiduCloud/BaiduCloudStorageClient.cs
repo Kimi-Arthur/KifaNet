@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using NLog;
@@ -61,20 +62,27 @@ namespace Pimix.Cloud.BaiduCloud
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0, int count = -1)
         {
-            // All data contracts are checked by public methods.
-            // All data here are expected to be correct.
-
-            HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
-                new Dictionary<string, string>
-                {
-                    ["remote_path"] = path.TrimStart('/')
-                });
-            request.Timeout = 30 * 60 * 1000;
-
             if (count < 0)
             {
                 count = buffer.Length - bufferOffset;
             }
+
+            Parallel.For(0, count / (1 << 20), i =>
+            {
+                DownloadSingleThread(buffer, path, bufferOffset + (i << 20), offset + (i << 20), Math.Min(1 << 20, count - (i << 20)));
+            });
+
+            return count;
+        }
+
+        int DownloadSingleThread(byte[] buffer, string path, int bufferOffset, long offset, int count)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
+            new Dictionary<string, string>
+            {
+                ["remote_path"] = path.TrimStart('/')
+            });
+            request.Timeout = 30 * 60 * 1000;
 
             request.AddRange(offset, offset + count - 1);
 
