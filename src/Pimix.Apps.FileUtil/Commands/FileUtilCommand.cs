@@ -21,8 +21,8 @@ namespace Pimix.Apps.FileUtil.Commands
         {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerAddress;
 
+            CredentialCache.DefaultNetworkCredentials.Domain = ConfigurationManager.AppSettings["DefaultNetworkDomain"];
             CredentialCache.DefaultNetworkCredentials.UserName = ConfigurationManager.AppSettings["DefaultNetworkUserName"];
-
             CredentialCache.DefaultNetworkCredentials.Password = ConfigurationManager.AppSettings["DefaultNetworkPassword"];
         }
 
