@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +41,8 @@ namespace Pimix.Cloud.BaiduCloud
 
         public List<int> BlockInfo { get; set; } = null;
 
+        private HttpClient Client;
+
         string accountId;
         public string AccountId
         {
@@ -57,7 +61,7 @@ namespace Pimix.Cloud.BaiduCloud
 
         public BaiduCloudStorageClient()
         {
-
+            Client = new HttpClient();
         }
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0, int count = -1)
@@ -77,19 +81,17 @@ namespace Pimix.Cloud.BaiduCloud
 
         int DownloadSingleThread(byte[] buffer, string path, int bufferOffset, long offset, int count)
         {
-            HttpWebRequest request = ConstructRequest(Config.APIList.DownloadFile,
+            var request = GetRequest(Config.APIList.DownloadFile,
             new Dictionary<string, string>
             {
                 ["remote_path"] = path.TrimStart('/')
             });
-            request.Timeout = 30 * 60 * 1000;
 
-            request.AddRange(offset, offset + count - 1);
-
-            using (var response = request.GetResponse())
+            request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+            using (var response = Client.SendAsync(request).Result)
             {
                 MemoryStream memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                response.GetResponseStream().CopyTo(memoryStream, count);
+                response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
                 return (int)memoryStream.Position;
             }
         }
@@ -411,6 +413,19 @@ namespace Pimix.Cloud.BaiduCloud
 
         public override Stream OpenRead(string path)
             => new SeekableDownloadStream(GetDownloadLength(path), (buffer, bufferOffset, offset, count) => Download(buffer, path, bufferOffset, offset, count));
+
+        private HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null)
+        {
+            string address = api.Url.Format(parameters).Format(
+                new Dictionary<string, string>
+                {
+                    ["access_token"] = Account.AccessToken,
+                    ["remote_path_prefix"] = Config.RemotePathPrefix
+                });
+
+            logger.Trace($"{api.Method} {address}");
+            return new HttpRequestMessage(new HttpMethod(api.Method), address);
+        }
 
         private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null)
         {
