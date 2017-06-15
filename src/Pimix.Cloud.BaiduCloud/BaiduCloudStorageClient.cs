@@ -71,9 +71,11 @@ namespace Pimix.Cloud.BaiduCloud
                 count = buffer.Length - bufferOffset;
             }
 
-            Parallel.For(0, count / (1 << 20), i =>
+            int step = 1 << 20;
+
+            Parallel.For(0, (count - 1) / step + 1, i =>
             {
-                DownloadSingleThread(buffer, path, bufferOffset + (i << 20), offset + (i << 20), Math.Min(1 << 20, count - (i << 20)));
+                DownloadSingleThread(buffer, path, bufferOffset + i * step, offset + i * step, Math.Min(step, count - step * i));
             });
 
             return count;
