@@ -75,7 +75,7 @@ namespace Pimix.Cloud.MegaNz
         public override Stream OpenRead(string path)
             => Client.Download(GetNode(path));
 
-        public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
+        public override void Write(string path, Stream stream, long size = 0)
         {
             var folder = GetNode(GetParent(path), true);
             var name = path.Substring(path.LastIndexOf('/') + 1);

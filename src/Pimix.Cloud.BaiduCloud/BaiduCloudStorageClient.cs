@@ -39,8 +39,6 @@ namespace Pimix.Cloud.BaiduCloud
         public override string ToString()
             => $"baidu:{AccountId}";
 
-        public List<int> BlockInfo { get; set; } = null;
-
         private HttpClient Client;
 
         string accountId;
@@ -103,35 +101,9 @@ namespace Pimix.Cloud.BaiduCloud
         /// </summary>
         /// <param name="path">Path for the destination file.</param>
         /// <param name="stream">Input stream to upload.</param>
-        /// <param name="fileInformation">
-        /// If specified, contains information about the data to write.
-        /// </param>
-        /// <param name="match">Whether the fileInformation matches the stream.</param>
-        public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
+        public override void Write(string path, Stream stream, long size = 0)
         {
-            fileInformation = fileInformation ?? new FileInformation();
-            if (match)
-            {
-                try
-                {
-                    UploadStreamRapid(path, stream, fileInformation);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Rapid upload failed!\nException:\n{ex}\n");
-                }
-            }
-
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            if (!stream.CanSeek)
-                throw new ArgumentException(
-                    "Input stream needs to be seekable!",
-                    nameof(stream));
-
-            UploadNormal(path, stream, fileInformation);
+            UploadNormal(path, stream, size);
         }
 
         public override void Delete(string path)
@@ -154,24 +126,21 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadNormal(string path, Stream input, FileInformation fileInformation)
+        void UploadNormal(string path, Stream input, long size = 0)
         {
-            fileInformation.AddProperties(input, FileProperties.Size | FileProperties.BlockSize);
-
-            input.Seek(0, SeekOrigin.Begin);
-
-            if (BlockInfo == null || BlockInfo.Count == 0)
+            if (size == 0)
             {
-                BlockInfo = new List<int> { fileInformation.BlockSize.Value };
+                size = input.Length;
             }
 
-            int blockIndex = 0;
-            int blockLength = 0;
-            byte[] buffer = new byte[BlockInfo.Max()];
+            var blockSize = GetBlockSize(size);
 
-            if (BlockInfo[0] >= fileInformation.Size)
+            int blockLength = 0;
+            byte[] buffer = new byte[blockSize];
+
+            if (blockSize >= size)
             {
-                blockLength = input.Read(buffer, 0, BlockInfo[0]);
+                blockLength = input.Read(buffer, 0, (int)size);
                 bool uploadDirectDone = false;
                 while (!uploadDirectDone)
                 {
@@ -208,9 +177,9 @@ namespace Pimix.Cloud.BaiduCloud
 
             List<string> blockIds = new List<string>();
 
-            for (long position = 0; position < fileInformation.Size; position += blockLength)
+            for (long position = 0; position < size; position += blockLength)
             {
-                blockLength = input.Read(buffer, 0, BlockInfo[blockIndex]);
+                blockLength = input.Read(buffer, 0, blockSize);
 
                 bool done = false;
                 while (!done)
@@ -249,12 +218,6 @@ namespace Pimix.Cloud.BaiduCloud
                         Console.WriteLine(ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
-                }
-
-                if (blockIndex < BlockInfo.Count - 1)
-                {
-                    // Stay at the last element.
-                    blockIndex++;
                 }
             }
 
@@ -519,7 +482,27 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        class UploadBlockException : Exception
+		const long MaxBlockCount = 1L << 10;
+		const long MaxBlockSize = 2L << 30;
+		const long MinBlockSize = 32L << 20;
+
+		static int GetBlockSize(long size)
+		{
+			long blockSize = MinBlockSize;
+
+			// Special logic:
+			//   1. Reserve one block for header
+			//   2. Not stop when equals for the 'padding' logic
+
+			while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size)
+			{
+				blockSize <<= 1;
+			}
+
+			return (int)blockSize;
+		}
+
+		class UploadBlockException : Exception
         {
             public string ExpectedMd5 { get; set; }
 

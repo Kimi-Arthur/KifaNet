@@ -12,10 +12,10 @@ namespace Pimix.IO.FileFormats
         public override string ToString()
             => null;
 
-        public override Stream GetEncodeStream(Stream rawStream)
+        public override Stream GetEncodeStream(Stream rawStream, FileInformation info)
             => rawStream;
 
-        public override Stream GetDecodeStream(Stream encodedStream)
+        public override Stream GetDecodeStream(Stream encodedStream, FileInformation info)
             => encodedStream;
     }
 }

@@ -39,70 +39,67 @@ namespace Pimix.IO.FileFormats
         public override string ToString()
             => "v1";
 
-        public override Stream GetDecodeStream(Stream encodedStream)
+        public override Stream GetDecodeStream(Stream encodedStream, FileInformation info)
         {
-            Info = Info ?? new FileInformation();
-            if (Info.EncryptionKey == null)
+            if (info.EncryptionKey == null)
             {
                 // We have to get the data from server...
 
-                if (Info.Id == null)
+                if (info.Id == null)
                 {
                     // We need to get the secondary id from the stream as ":SHA256".
                     encodedStream.Seek(16, SeekOrigin.Begin);
                     byte[] sha256Bytes = new byte[32];
                     encodedStream.Read(sha256Bytes, 0, 32);
-                    Info.Id = ":" + sha256Bytes.ToHexString();
+                    info.Id = ":" + sha256Bytes.ToHexString();
                 }
 
-                Info = FileInformation.Get(Info.Id);
+                info = FileInformation.Get(info.Id);
             }
 
-            if (Info.Size == null)
+            if (info.Size == null)
             {
                 // If we only miss the file size, we can get from the header.
                 byte[] sizeBytes = new byte[8];
                 encodedStream.Seek(8, SeekOrigin.Begin);
                 encodedStream.Read(sizeBytes, 0, 8);
-                Info.Size = sizeBytes.ToInt64();
+                info.Size = sizeBytes.ToInt64();
             }
 
             ICryptoTransform decoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
                 aesAlgorithm.Padding = PaddingMode.ANSIX923;
-                aesAlgorithm.Key = Info.EncryptionKey.ParseHexString();
+                aesAlgorithm.Key = info.EncryptionKey.ParseHexString();
                 aesAlgorithm.Mode = CipherMode.ECB;
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PatchedStream(encodedStream) { IgnoreBefore = 0x30 }, decoder, Info.Size.Value, true);
+            return new PimixCryptoStream(new PatchedStream(encodedStream) { IgnoreBefore = 0x30 }, decoder, info.Size.Value, true);
         }
 
-        public override Stream GetEncodeStream(Stream rawStream)
+        public override Stream GetEncodeStream(Stream rawStream, FileInformation info)
         {
-            Info = Info ?? new FileInformation();
+            info.AddProperties(rawStream, FileProperties.Size | FileProperties.SHA256);
 
-            Info.AddProperties(rawStream, FileProperties.Size | FileProperties.SHA256);
-
-            if (Info.EncryptionKey == null)
+            if (info.EncryptionKey == null)
                 throw new ArgumentException("Encryption key must be given before calling");
 
             byte[] header = new byte[48];
             new byte[] { 0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30 }.CopyTo(header, 0);
-            Info.Size.Value.ToByteArray().CopyTo(header, 8);
-            Info.SHA256.ParseHexString().CopyTo(header, 16);
+            info.Size.Value.ToByteArray().CopyTo(header, 8);
+            info.SHA256.ParseHexString().CopyTo(header, 16);
 
             ICryptoTransform encoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
                 aesAlgorithm.Padding = PaddingMode.ANSIX923;
-                aesAlgorithm.Key = Info.EncryptionKey.ParseHexString();
+                aesAlgorithm.Key = info.EncryptionKey.ParseHexString();
                 aesAlgorithm.Mode = CipherMode.ECB;
                 encoder = aesAlgorithm.CreateEncryptor();
             }
 
-            return new PatchedStream(new PimixCryptoStream(rawStream, encoder, Info.Size.Value.RoundDown(16) + 16, false)) { BufferBefore = header };
+            return new PatchedStream(new PimixCryptoStream(rawStream, encoder, info.Size.Value.RoundDown(16) + 16, false)) { BufferBefore = header };
         }
     }
 }

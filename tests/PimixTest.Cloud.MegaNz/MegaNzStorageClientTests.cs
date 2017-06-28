@@ -41,11 +41,7 @@ namespace PimixTest.Cloud.MegaNz
         {
             var client = GetStorageClient();
 
-            client.Write(
-                "/Test/new/upload.bin",
-                File.OpenRead("data.bin"),
-                match: false
-            );
+            client.Write("/Test/new/upload.bin", File.OpenRead("data.bin"));
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
 

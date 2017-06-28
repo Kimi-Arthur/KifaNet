@@ -41,12 +41,9 @@ namespace Pimix.IO
         public override Stream OpenRead(string path)
             => File.OpenRead(GetPath(path));
 
-        public override void Write(string path, Stream stream = null, FileInformation fileInformation = null, bool match = true)
+        public override void Write(string path, Stream stream, long size = 0)
         {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
-
-            int blockSize = fileInformation?.BlockSize ?? DefaultBlockSize;
+            int blockSize = DefaultBlockSize;
             path = GetPath(path);
             Directory.GetParent(path).Create();
             using (FileStream fs = new FileStream(path, FileMode.Create))

@@ -61,53 +61,53 @@ namespace PimixTest.Cloud.BaiduCloud
             client.Delete("/Test/2010-11-25.bin_2");
         }
 
-        [TestMethod]
-        public void UploadRapidAndRemoveTest()
-        {
-            var client = GetStorageClient();
+        //[TestMethod]
+        //public void UploadRapidAndRemoveTest()
+        //{
+        //    var client = GetStorageClient();
 
-            client.Write(
-                "/Test/rapid.bin",
-                fileInformation: new FileInformation
-                {
-                    Size = 1048576,
-                    MD5 = "3DD3601B968AEBB08C6FD3E1A66D22C3",
-                    Adler32 = "6B9CF2BA",
-                    SliceMD5 = "70C2358C662FB2A7EAC51902FA398BA2"
-                },
-                match: true);
+        //    client.Write(
+        //        "/Test/rapid.bin",
+        //        fileInformation: new FileInformation
+        //        {
+        //            Size = 1048576,
+        //            MD5 = "3DD3601B968AEBB08C6FD3E1A66D22C3",
+        //            Adler32 = "6B9CF2BA",
+        //            SliceMD5 = "70C2358C662FB2A7EAC51902FA398BA2"
+        //        },
+        //        match: true);
 
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+        //    Thread.Sleep(TimeSpan.FromSeconds(1));
 
-            using (var s = client.OpenRead("/Test/rapid.bin"))
-            {
-                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
-            }
+        //    using (var s = client.OpenRead("/Test/rapid.bin"))
+        //    {
+        //        Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+        //    }
 
-            client.Delete("/Test/rapid.bin");
-        }
+        //    client.Delete("/Test/rapid.bin");
+        //}
 
-        [TestMethod]
-        public void UploadByBlockTest()
-        {
-            var client = GetStorageClient();
-            client.BlockInfo = new List<int> { 128 << 10 };
+        //[TestMethod]
+        //public void UploadByBlockTest()
+        //{
+        //    var client = GetStorageClient();
+        //    client.BlockInfo = new List<int> { 128 << 10 };
 
-            client.Write(
-                "/Test/block.bin",
-                File.OpenRead("data.bin"),
-                match: false
-            );
+        //    client.Write(
+        //        "/Test/block.bin",
+        //        File.OpenRead("data.bin"),
+        //        match: false
+        //    );
 
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+        //    Thread.Sleep(TimeSpan.FromSeconds(1));
 
-            using (var s = client.OpenRead("/Test/block.bin"))
-            {
-                Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
-            }
+        //    using (var s = client.OpenRead("/Test/block.bin"))
+        //    {
+        //        Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+        //    }
 
-            client.Delete("/Test/block.bin");
-        }
+        //    client.Delete("/Test/block.bin");
+        //}
 
         [TestMethod]
         public void UploadDirectTest()
@@ -116,9 +116,7 @@ namespace PimixTest.Cloud.BaiduCloud
 
             client.Write(
                 "/Test/direct.bin",
-                File.OpenRead("data.bin"),
-                match: false
-            );
+                File.OpenRead("data.bin"));
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
 

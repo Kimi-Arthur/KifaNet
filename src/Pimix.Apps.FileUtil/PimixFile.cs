@@ -21,7 +21,9 @@ class PimixFile
 
     public PimixFileFormat FileFormat { get; set; }
 
-    public PimixFile(string uri)
+    public FileInformation FileInfo { get; set; }
+
+    public PimixFile(string uri, string id = null)
     {
         // Example uri:
         //   baidu:Pimix_1;v1/a/b/c/d.txt
@@ -31,11 +33,15 @@ class PimixFile
         //   /a/b/c/d.txt
         var segments = uri.Split(new char[] {'/'}, 2);
         Path = "/" + segments[1];
+        id = id ?? Path;
 
         var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
+
+        FileInfo = FileInformation.Get(id);
+
         Client = BaiduCloudStorageClient.Get(spec) ?? MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
+
         FileFormat = PimixFileV1Format.Get(spec) ?? PimixFileV0Format.Get(spec) ?? RawFileFormat.Get(spec);
-        FileFormat.Info = FileInformation.Get(Path);
     }
 
     public override string ToString()
@@ -90,10 +96,10 @@ class PimixFile
     }
 
     public Stream OpenRead()
-        => FileFormat.GetDecodeStream(Client.OpenRead(Path));
+        => FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo);
 
-    public void Write(Stream stream = null, FileInformation fileInformation = null, bool match = true)
-        => Client.Write(Path, FileFormat.GetEncodeStream(stream), fileInformation, match);
+    public void Write(Stream stream)
+    => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo), FileInfo.Size.GetValueOrDefault());
 
     public FileInformation GetInfo(
         FileProperties propertiesToRemove = FileProperties.None,

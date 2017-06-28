@@ -36,46 +36,45 @@ namespace Pimix.IO.FileFormats
         public override string ToString()
             => "v0";
 
-        public override Stream GetDecodeStream(Stream encodedStream)
+        public override Stream GetDecodeStream(Stream encodedStream, FileInformation info)
         {
-            Info = Info ?? new FileInformation();
-            if (Info.EncryptionKey == null)
+            if (info.EncryptionKey == null)
             {
                 // We have to get the data from server...
 
-                if (Info.Id == null)
+                if (info.Id == null)
                 {
                     // We need to get the secondary id from the stream as ":SHA256".
                     encodedStream.Seek(3728, SeekOrigin.Begin);
                     byte[] sha256Bytes = new byte[64];
                     encodedStream.Read(sha256Bytes, 0, 64);
-                    Info.Id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
+                    info.Id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
                 }
 
-                Info = FileInformation.Get(Info.Id);
+                info = FileInformation.Get(info.Id);
             }
 
-            if (Info.Size == null)
+            if (info.Size == null)
             {
                 // If we only miss the file size, we can get from the header.
                 encodedStream.Seek(1854, SeekOrigin.Begin);
                 byte[] sizeBytes = new byte[92];
-                Info.Size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
+                info.Size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
             }
 
             ICryptoTransform decoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider())
             {
                 aesAlgorithm.Padding = PaddingMode.ANSIX923;
-                aesAlgorithm.Key = Info.EncryptionKey.ParseHexString();
+                aesAlgorithm.Key = info.EncryptionKey.ParseHexString();
                 aesAlgorithm.Mode = CipherMode.ECB;
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PatchedStream(encodedStream) { IgnoreBefore = 0x1225 }, decoder, Info.Size.Value, true);
+            return new PimixCryptoStream(new PatchedStream(encodedStream) { IgnoreBefore = 0x1225 }, decoder, info.Size.Value, true);
         }
 
-        public override Stream GetEncodeStream(Stream rawStream)
+        public override Stream GetEncodeStream(Stream rawStream, FileInformation info)
         {
             throw new NotImplementedException();
         }
