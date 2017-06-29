@@ -21,7 +21,7 @@ namespace Pimix.Apps.FileUtil.Commands
                 return 1;
             }
 
-            return FileInformation.Post(new FileInformation { Id = Target, Path = LinkName }, LinkName) ? 0 : 1;
+            return FileInformation.Link(Target, LinkName) ? 0 : 1;
         }
     }
 }

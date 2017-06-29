@@ -121,6 +121,28 @@ namespace Pimix.Service
             }
         }
 
+        public static bool Link<TDataModel>(string targetId, string linkId, RetryPolicy retryPolicy = null)
+            => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => LinkWithoutRetry<TDataModel>(targetId, linkId));
+
+        public static bool LinkWithoutRetry<TDataModel>(string targetId, string linkId)
+        {
+            Init(typeof(TDataModel));
+            var typeInfo = typeCache[typeof(TDataModel)];
+
+            string address =
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/^+{targetId},{linkId}";
+
+            HttpWebRequest request = WebRequest.CreateHttp(address);
+            request.Method = "GET";
+            request.Headers["Authorization"] =
+                $"Basic {PimixServerCredential}";
+
+            using (var response = request.GetResponse())
+            {
+                return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
+            }
+        }
+
         public static bool Delete<TDataModel>(string id, RetryPolicy retryPolicy = null)
             => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(() => DeleteWithoutRetry<TDataModel>(id));
 

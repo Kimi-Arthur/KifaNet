@@ -31,7 +31,7 @@ class PimixFile
         //   local:cubie/a/b/c/d.txt
         //   local:/a/b/c/d.txt
         //   /a/b/c/d.txt
-        var segments = uri.Split(new char[] {'/'}, 2);
+        var segments = uri.Split(new char[] { '/' }, 2);
         Path = "/" + segments[1];
         id = id ?? Path;
 
@@ -99,28 +99,13 @@ class PimixFile
         => FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo);
 
     public void Write(Stream stream)
-    => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+        => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
-    public FileInformation GetInfo(
-        FileProperties propertiesToRemove = FileProperties.None,
-        FileProperties requiredProperties = FileProperties.All) {
+    public FileInformation CalculateInfo(FileProperties properties)
+    {
         using (var stream = OpenRead())
         {
-            var info = FileInformation.Get(Path)
-                .RemoveProperties(propertiesToRemove)
-                .AddProperties(stream, requiredProperties);
-
-            if (requiredProperties.HasFlag(FileProperties.Path) && info.Path == null) {
-                info.Path = Path;
-            }
-
-            if (requiredProperties.HasFlag(FileProperties.Locations)) {
-                if (info.Locations == null)
-                    info.Locations = new Dictionary<string, string>();
-                info.Locations[Spec] = ToString();
-            }
-
-            return info;
+            return FileInformation.GetInformation(stream, properties);
         }
     }
 }

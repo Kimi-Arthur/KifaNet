@@ -7,7 +7,6 @@ namespace Pimix.IO
     {
         None = 0x0,
         Id = 0x1,
-        Path = 0x1,
         Size = 0x2,
         BlockSize = 0x4,
         MD5 = 0x100,

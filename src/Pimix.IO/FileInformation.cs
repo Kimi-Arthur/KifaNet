@@ -24,9 +24,6 @@ namespace Pimix.IO
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("path")]
-        public string Path { get; set; }
-
         [JsonProperty("size")]
         public long? Size { get; set; }
 
@@ -253,28 +250,10 @@ namespace Pimix.IO
             => new FileInformation().AddProperties(stream, requiredProperties);
 
         public static FileInformation GetInformation(string path, FileProperties requiredProperties)
-        {
-            FileInformation info = GetInformation(File.OpenRead(path), requiredProperties);
-
-            if (requiredProperties.HasFlag(FileProperties.Path))
-            {
-                info.Path = System.IO.Path.GetFullPath(path).Replace(System.IO.Path.DirectorySeparatorChar, '/');
-            }
-
-            return info;
-        }
+            => GetInformation(File.OpenRead(path), requiredProperties);
 
         public static FileInformation GetInformation(string basePath, string path, FileProperties requiredProperties)
-        {
-            FileInformation info = GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
-
-            if (requiredProperties.HasFlag(FileProperties.Path))
-            {
-                info.Path = path.Replace(System.IO.Path.DirectorySeparatorChar, '/');
-            }
-
-            return info;
-        }
+            => GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
 
         static int GetBlockSize(long size)
         {

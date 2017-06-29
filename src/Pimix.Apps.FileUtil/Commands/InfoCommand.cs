@@ -13,6 +13,9 @@ namespace Pimix.Apps.FileUtil.Commands
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
+        [Option('i', "id", HelpText = "ID for the uri.")]
+        public string FileId { get; set; }
+
         [Option('v', "verify-all", HelpText = "Verify all verifiable fields of the file along with updating info.")]
         public bool VerifyAll { get; set; } = false;
 
@@ -29,10 +32,10 @@ namespace Pimix.Apps.FileUtil.Commands
 
         public override int Execute()
         {
-            var f = new PimixFile(FileUri);
+            var f = new PimixFile(FileUri, FileId);
 
-            var info = f.GetInfo(FilePropertiesToVerify);
-            var oldInfo = f.GetInfo(FileProperties.None, FileProperties.None);
+            var info = f.CalculateInfo(FilePropertiesToVerify);
+            var oldInfo = f.FileInfo;
 
             var compareResult = info.CompareProperties(oldInfo, FilePropertiesToVerify);
             if (compareResult == FileProperties.None)

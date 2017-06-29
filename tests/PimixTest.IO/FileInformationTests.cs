@@ -63,7 +63,6 @@ namespace PimixTest.Storage
         public void GetInformationEmpty()
         {
             var info = FileInformation.GetInformation("Test1.txt", FileProperties.None);
-            Assert.IsNull(info.Path);
             Assert.IsNull(info.Size);
             Assert.IsNull(info.MD5);
             Assert.IsNull(info.SHA1);
