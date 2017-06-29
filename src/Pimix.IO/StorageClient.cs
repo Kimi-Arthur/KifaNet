@@ -21,6 +21,6 @@ namespace Pimix.IO
 
         public abstract Stream OpenRead(string path);
 
-        public abstract void Write(string path, Stream stream, long size = 0);
+        public abstract void Write(string path, Stream stream);
     }
 }

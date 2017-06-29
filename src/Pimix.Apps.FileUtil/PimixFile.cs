@@ -99,7 +99,7 @@ class PimixFile
         => FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo);
 
     public void Write(Stream stream)
-    => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo), FileInfo.Size.GetValueOrDefault());
+    => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
     public FileInformation GetInfo(
         FileProperties propertiesToRemove = FileProperties.None,

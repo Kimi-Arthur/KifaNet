@@ -101,9 +101,9 @@ namespace Pimix.Cloud.BaiduCloud
         /// </summary>
         /// <param name="path">Path for the destination file.</param>
         /// <param name="stream">Input stream to upload.</param>
-        public override void Write(string path, Stream stream, long size = 0)
+        public override void Write(string path, Stream stream)
         {
-            UploadNormal(path, stream, size);
+            UploadNormal(path, stream);
         }
 
         public override void Delete(string path)
@@ -126,12 +126,9 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadNormal(string path, Stream input, long size = 0)
+        void UploadNormal(string path, Stream input)
         {
-            if (size == 0)
-            {
-                size = input.Length;
-            }
+            var size = input.Length;
 
             var blockSize = GetBlockSize(size);
 
@@ -482,27 +479,27 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-		const long MaxBlockCount = 1L << 10;
-		const long MaxBlockSize = 2L << 30;
-		const long MinBlockSize = 32L << 20;
+        const long MaxBlockCount = 1L << 10;
+        const long MaxBlockSize = 2L << 30;
+        const long MinBlockSize = 32L << 20;
 
-		static int GetBlockSize(long size)
-		{
-			long blockSize = MinBlockSize;
+        static int GetBlockSize(long size)
+        {
+            long blockSize = MinBlockSize;
 
-			// Special logic:
-			//   1. Reserve one block for header
-			//   2. Not stop when equals for the 'padding' logic
+            // Special logic:
+            //   1. Reserve one block for header
+            //   2. Not stop when equals for the 'padding' logic
 
-			while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size)
-			{
-				blockSize <<= 1;
-			}
+            while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size)
+            {
+                blockSize <<= 1;
+            }
 
-			return (int)blockSize;
-		}
+            return (int)blockSize;
+        }
 
-		class UploadBlockException : Exception
+        class UploadBlockException : Exception
         {
             public string ExpectedMd5 { get; set; }
 
