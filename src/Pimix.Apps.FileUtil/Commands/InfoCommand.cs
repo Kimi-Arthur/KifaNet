@@ -42,7 +42,7 @@ namespace Pimix.Apps.FileUtil.Commands
             {
                 if (Update)
                 {
-                    FileInformation.Patch(info);
+                    FileInformation.Patch(info, FileId ?? f.Path);
                 }
                 else
                 {

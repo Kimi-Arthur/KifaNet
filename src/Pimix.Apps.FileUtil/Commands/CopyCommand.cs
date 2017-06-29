@@ -14,6 +14,9 @@ namespace Pimix.Apps.FileUtil.Commands
         [Value(1, Required = true)]
         public string DestinationUri { get; set; }
 
+        [Option('i', "id", HelpText = "ID for the uri.")]
+        public string FileId { get; set; }
+
         [Option('p', "precheck", HelpText = "Whether to check (and update) SOURCE before copying.")]
         public bool Precheck { get; set; } = false;
 
@@ -31,12 +34,12 @@ namespace Pimix.Apps.FileUtil.Commands
 
         public override int Execute()
         {
-            var source = new PimixFile(SourceUri);
-            var destination = new PimixFile(DestinationUri);
+            var source = new PimixFile(SourceUri, FileId);
+            var destination = new PimixFile(DestinationUri, FileId);
 
             if (NeedsPrecheck(source))
             {
-                var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri }.Execute();
+                var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri, FileId = FileId }.Execute();
                 if (result != 0)
                 {
                     Console.Error.WriteLine("Precheck failed!");
@@ -48,7 +51,7 @@ namespace Pimix.Apps.FileUtil.Commands
             {
                 try
                 {
-                    var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri }.Execute();
+                    var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = FileId }.Execute();
                     if (result == 0)
                     {
                         return 0;
@@ -70,8 +73,7 @@ namespace Pimix.Apps.FileUtil.Commands
 
         bool NeedsPrecheck(PimixFile file)
         {
-            var info = FileInformation.Get(file.Path);
-            return !info.GetProperties().HasFlag(FileProperties.All) || !info.Locations.ContainsKey(file.Spec);
+            return !file.FileInfo.GetProperties().HasFlag(FileProperties.All) || !file.FileInfo.Locations.ContainsKey(file.Spec);
         }
     }
 }
