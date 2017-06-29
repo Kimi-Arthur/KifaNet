@@ -309,7 +309,7 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
-        void UploadStreamRapid(string path, Stream input, FileInformation fileInformation)
+        public void UploadStreamRapid(string path, FileInformation fileInformation, Stream input = null)
         {
             fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
