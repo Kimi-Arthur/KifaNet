@@ -1,22 +1,17 @@
 SHELL := /bin/zsh
 
-sln_file = Pimix.mono40.sln
-
-projects = fileutil jobutil
-file_types = (exe.config|exe|dll)
-binary_path = /usr/local/lib/pimix/
-build_config = /p:Configuration=Release
-
 all: build install
 
 build:
-	nuget restore ${sln_file}
-	xbuild ${build_config} ${sln_file}
+	dotnet restore
+	dotnet build -c Release
 
 install:
-	mkdir -p ${binary_path}
-	$(foreach project,$(projects),cp src/$(project)/bin/Release/*.$(file_types) $(binary_path);)
+	mkdir -p /usr/local/lib/pimix/fileutil
+	mkdir -p /usr/local/lib/pimix/jobutil
+	cp src/Pimix.Apps.FileUtil/bin/Release/netcoreapp2.0/* /usr/local/lib/pimix/fileutil
+	cp src/Pimix.Apps.JobUtil/bin/Release/netcoreapp2.0/* /usr/local/lib/pimix/jobutil
 
 clean:
-	xbuild /t:Clean ${build_config} ${sln_file}
+	dotnet clean
 
