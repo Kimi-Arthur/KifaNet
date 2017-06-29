@@ -1,11 +1,19 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Pimix.IO.FileFormats
 {
-    public abstract class PimixFileFormat
+    public class PimixFileFormat
     {
-        public abstract Stream GetEncodeStream(Stream rawStream, FileInformation info);
+        public virtual Stream GetEncodeStream(Stream rawStream, FileInformation info)
+        {
+            throw new NotImplementedException();
+        }
 
-        public abstract Stream GetDecodeStream(Stream encodedStream, FileInformation info);
+
+        public virtual Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

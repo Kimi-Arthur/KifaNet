@@ -15,7 +15,7 @@ namespace Pimix.IO.FileFormats
         public override Stream GetEncodeStream(Stream rawStream, FileInformation info)
             => rawStream;
 
-        public override Stream GetDecodeStream(Stream encodedStream, FileInformation info)
+        public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null)
             => encodedStream;
     }
 }
