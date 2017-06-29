@@ -13,7 +13,8 @@ namespace PimixTest.Cloud.BaiduCloud
     {
         public static string PimixServerApiAddress { get; set; } = "http://pimix.cloudapp.net/api";
 
-        string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+        const string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+        const string BigFileSHA256 = "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
         [TestMethod]
         public void DownloadTest()
@@ -86,27 +87,29 @@ namespace PimixTest.Cloud.BaiduCloud
             client.Delete("/Test/rapid.bin");
         }
 
-        //[TestMethod]
-        //public void UploadByBlockTest()
-        //{
-        //    var client = GetStorageClient();
-        //    client.BlockInfo = new List<int> { 128 << 10 };
+        [TestMethod]
+        public void UploadByBlockTest()
+        {
+            var client = GetStorageClient();
+            var data = new byte[34 << 20];
+            File.OpenRead("data.bin").Read(data, 0, 1 << 20);
+            for (int i = 1; i < 34; ++i) {
+                Array.Copy(data, 0, data, i << 20, 1 << 20);
+            }
 
-        //    client.Write(
-        //        "/Test/block.bin",
-        //        File.OpenRead("data.bin"),
-        //        match: false
-        //    );
+            var dataStream = new MemoryStream(data);
 
-        //    Thread.Sleep(TimeSpan.FromSeconds(1));
+            client.Write("/Test/block.bin", dataStream);
 
-        //    using (var s = client.OpenRead("/Test/block.bin"))
-        //    {
-        //        Assert.AreEqual(FileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
-        //    }
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
-        //    client.Delete("/Test/block.bin");
-        //}
+            using (var s = client.OpenRead("/Test/block.bin"))
+            {
+                Assert.AreEqual(BigFileSHA256, FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+            }
+
+            client.Delete("/Test/block.bin");
+        }
 
         [TestMethod]
         public void UploadDirectTest()
