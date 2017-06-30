@@ -14,10 +14,9 @@ namespace Pimix.IO
     [DataModel("files")]
     public partial class FileInformation
     {
-        const long MaxBlockCount = 1L << 10;
-        const long MaxBlockSize = 2L << 30;
-        const long MinBlockSize = 32L << 20;
         const int SliceLength = 256 << 10;
+
+        const int BlockSize = 32 << 20;
 
         static Dictionary<FileProperties, PropertyInfo> Properties;
 
@@ -41,9 +40,6 @@ namespace Pimix.IO
 
         [JsonProperty("adler32")]
         public string Adler32 { get; set; }
-
-        [JsonProperty("block_size")]
-        public int? BlockSize { get; set; }
 
         [JsonProperty("block_md5")]
         public List<string> BlockMD5 { get; set; }
@@ -81,21 +77,14 @@ namespace Pimix.IO
 
             if (Size == null
                 && (requiredProperties.HasFlag(FileProperties.Size)
-                || requiredProperties.HasFlag(FileProperties.BlockSize)
                 || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None
                 || (requiredProperties & FileProperties.AllHashes) != FileProperties.None))
             {
                 Size = stream.Length;
             }
 
-            if (BlockSize == null
-                && (requiredProperties & (FileProperties.BlockSize | FileProperties.AllHashes | FileProperties.AllBlockHashes)) != FileProperties.None)
-            {
-                BlockSize = GetBlockSize(Size.Value);
-            }
-
             int readLength = 0;
-            byte[] buffer = new byte[BlockSize == null ? SliceLength : BlockSize.Value];
+            byte[] buffer = new byte[BlockSize];
 
             if (stream != null && stream.CanSeek)
             {
@@ -142,7 +131,7 @@ namespace Pimix.IO
                     hasher?.Initialize();
                 }
 
-                while ((readLength += stream.Read(buffer, readLength, BlockSize.Value - readLength)) != 0)
+                while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) != 0)
                 {
                     Parallel.ForEach(
                         hashers,
@@ -254,22 +243,6 @@ namespace Pimix.IO
 
         public static FileInformation GetInformation(string basePath, string path, FileProperties requiredProperties)
             => GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
-
-        static int GetBlockSize(long size)
-        {
-            long blockSize = MinBlockSize;
-
-            // Special logic:
-            //   1. Reserve one block for header
-            //   2. Not stop when equals for the 'padding' logic
-
-            while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size)
-            {
-                blockSize <<= 1;
-            }
-
-            return (int)blockSize;
-        }
 
         static string GenerateEncryptionKey()
         {

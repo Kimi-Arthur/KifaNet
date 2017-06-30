@@ -68,7 +68,6 @@ namespace PimixTest.Storage
             Assert.IsNull(info.SHA1);
             Assert.IsNull(info.SHA256);
             Assert.IsNull(info.CRC32);
-            Assert.IsNull(info.BlockSize);
             Assert.IsNull(info.BlockMD5);
             Assert.IsNull(info.BlockSHA1);
             Assert.IsNull(info.BlockSHA256);
