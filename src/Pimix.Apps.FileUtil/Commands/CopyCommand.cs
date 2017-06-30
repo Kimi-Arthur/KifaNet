@@ -73,7 +73,7 @@ namespace Pimix.Apps.FileUtil.Commands
 
         bool NeedsPrecheck(PimixFile file)
         {
-            return !file.FileInfo.GetProperties().HasFlag(FileProperties.All) || !file.FileInfo.Locations.ContainsKey(file.Spec);
+            return !file.FileInfo.GetProperties().HasFlag(FileProperties.All) || !file.FileInfo.Locations.Contains(file.ToString());
         }
     }
 }

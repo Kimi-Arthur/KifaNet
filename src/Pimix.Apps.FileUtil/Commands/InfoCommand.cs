@@ -43,6 +43,7 @@ namespace Pimix.Apps.FileUtil.Commands
                 if (Update)
                 {
                     FileInformation.Patch(info, f.FileInfo.Id);
+                    FileInformation.AddLocation(f.FileInfo.Id, FileUri);
                 }
                 else
                 {

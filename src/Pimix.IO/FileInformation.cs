@@ -57,10 +57,13 @@ namespace Pimix.IO
         public string EncryptionKey { get; set; }
 
         [JsonProperty("locations")]
-        public Dictionary<string, string> Locations { get; set; }
+        public List<string> Locations { get; set; }
 
         public static List<FileInformation> GetFolderView(string path)
             => PimixService.Call<FileInformation, List<FileInformation>>("get_folder_view", parameters: new Dictionary<string, string> { ["location"] = path });
+
+        public static void AddLocation(string id, string location)
+            => PimixService.Call<FileInformation>("add_location", id: id, parameters: new Dictionary<string, string> { ["location"] = location });
 
         static FileInformation()
         {

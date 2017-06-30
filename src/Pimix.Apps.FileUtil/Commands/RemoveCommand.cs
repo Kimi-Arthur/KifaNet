@@ -27,7 +27,7 @@ namespace Pimix.Apps.FileUtil.Commands
                     if (!RemoveLinkOnly && info.Locations != null)
                     {
                         // Remove real files.
-                        foreach (var location in info.Locations.Values)
+                        foreach (var location in info.Locations)
                         {
                             if (!RemoveRealFile(location))
                             {
@@ -43,7 +43,7 @@ namespace Pimix.Apps.FileUtil.Commands
                 }
                 else
                 {
-                    if (!info.Locations.Values.Contains(FileUri))
+                    if (!info.Locations.Contains(FileUri))
                     {
                         // Not found the entry. Then it's already done somehow.
                         Console.Error.WriteLine($"File {FileUri} already removed!");
@@ -62,7 +62,7 @@ namespace Pimix.Apps.FileUtil.Commands
                     }
 
                     // Logical removal.
-                    info.Locations.Remove($"{uri.Scheme}://{uri.Host}");
+                    info.Locations.Remove(FileUri);
                     FileInformation.Patch(info);
                     return 0;
                 }

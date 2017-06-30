@@ -176,10 +176,15 @@ namespace Pimix.Service
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
-            string address = $"{PimixServerApiAddress}/{typeInfo.Item2}{id?.Insert(0, "/")}/${action}";
+            if (id != null)
+            {
+                parameters.Add("id", id);
+            }
+
+            string address = $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}";
             if (parameters != null)
             {
-                address += "?" + string.Join("&", parameters.Where(item => item.Value != null).Select(item => $"{item.Key}={item.Value}"));
+                address += "?" + string.Join("&", parameters.Where(item => item.Value != null).Select(item => $"{item.Key}={Uri.EscapeDataString(item.Value)}"));
             }
 
             HttpWebRequest request = WebRequest.CreateHttp(address);

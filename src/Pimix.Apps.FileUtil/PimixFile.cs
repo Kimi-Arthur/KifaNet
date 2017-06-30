@@ -58,7 +58,7 @@ class PimixFile
         foreach (var location in info.Locations)
         {
             // TODO: Will add selection logic here.
-            return location.Key;
+            return location;
         }
 
         return "";
