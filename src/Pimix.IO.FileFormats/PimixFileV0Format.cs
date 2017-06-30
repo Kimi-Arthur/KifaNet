@@ -51,6 +51,7 @@ namespace Pimix.IO.FileFormats
 
             encodedStream.Seek(1854, SeekOrigin.Begin);
             byte[] sizeBytes = new byte[92];
+            encodedStream.Read(sizeBytes, 0, 92);
             var size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
 
             ICryptoTransform decoder;
