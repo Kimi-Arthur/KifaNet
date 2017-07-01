@@ -65,6 +65,12 @@ namespace Pimix.IO
         public static void AddLocation(string id, string location)
             => PimixService.Call<FileInformation>("add_location", id: id, parameters: new Dictionary<string, string> { ["location"] = location });
 
+        public static void RemoveLocation(string id, string location)
+            => PimixService.Call<FileInformation>("remove_location", id: id, parameters: new Dictionary<string, string> { ["location"] = location });
+
+        public static string GetLocation(string type)
+            => PimixService.Call<FileInformation, string>("get_location", parameters: new Dictionary<string, string> { ["type"] = type });
+
         static FileInformation()
         {
             Properties = new Dictionary<FileProperties, PropertyInfo>();
