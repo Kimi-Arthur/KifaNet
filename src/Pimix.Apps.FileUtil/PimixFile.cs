@@ -8,6 +8,8 @@ using Pimix.IO.FileFormats;
 
 class PimixFile
 {
+    public string Id { get; set; }
+
     public string Path { get; set; }
 
     public string Spec
@@ -21,7 +23,8 @@ class PimixFile
 
     public PimixFileFormat FileFormat { get; set; }
 
-    public FileInformation FileInfo { get; set; }
+    public FileInformation FileInfo => FileInformation.Get(Id);
+
 
     public PimixFile(string uri, string id = null)
     {
@@ -33,11 +36,9 @@ class PimixFile
         //   /a/b/c/d.txt
         var segments = uri.Split(new char[] { '/' }, 2);
         Path = "/" + segments[1];
-        id = id ?? Path;
+        Id = id ?? Path;
 
         var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
-
-        FileInfo = FileInformation.Get(id);
 
         Client = BaiduCloudStorageClient.Get(spec) ?? MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
 
@@ -103,9 +104,14 @@ class PimixFile
 
     public FileInformation CalculateInfo(FileProperties properties)
     {
+        var info = FileInfo;
+        info.RemoveProperties(FileProperties.AllVerifiable & properties);
+
         using (var stream = OpenRead())
         {
-            return FileInformation.GetInformation(stream, properties);
+            info.AddProperties(stream, properties);
         }
+
+        return info;
     }
 }

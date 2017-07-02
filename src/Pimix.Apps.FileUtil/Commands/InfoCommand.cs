@@ -34,7 +34,7 @@ namespace Pimix.Apps.FileUtil.Commands
         {
             var f = new PimixFile(FileUri, FileId);
 
-            var info = f.CalculateInfo(FilePropertiesToVerify);
+            var info = f.CalculateInfo(FilePropertiesToVerify | FileProperties.EncryptionKey);
             var oldInfo = f.FileInfo;
 
             var compareResult = info.CompareProperties(oldInfo, FilePropertiesToVerify);
@@ -42,8 +42,8 @@ namespace Pimix.Apps.FileUtil.Commands
             {
                 if (Update)
                 {
-                    FileInformation.Patch(info, f.FileInfo.Id);
-                    FileInformation.AddLocation(f.FileInfo.Id, FileUri);
+                    FileInformation.Patch(info);
+                    FileInformation.AddLocation(f.Id, FileUri);
                 }
                 else
                 {
