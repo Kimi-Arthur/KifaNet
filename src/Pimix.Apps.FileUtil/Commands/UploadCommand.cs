@@ -23,8 +23,8 @@ namespace Pimix.Apps.FileUtil.Commands
             var locationsForSource = source.FileInfo.Locations;
             if (locationsForSource == null || !locationsForSource.Contains(FileUri))
             {
-                Console.WriteLine("Source location is not found!");
-                Console.WriteLine("Please run info command first.");
+                logger.Error("Source location is not found!");
+                logger.Error("Please run info command first.");
                 return 1;
             }
 
@@ -40,13 +40,13 @@ namespace Pimix.Apps.FileUtil.Commands
             }
             else
             {
-                logger.Warn("Upload failed! The following fields differ: {0}", compareResult);
-                logger.Warn(
+                logger.Error("Upload failed! The following fields differ: {0}", compareResult);
+                logger.Error(
                     "Expected data:\n{0}",
                     JsonConvert.SerializeObject(
                         compareResult.baseInfo.RemoveProperties(FileProperties.All ^ compareResult.infoDiff),
                         Formatting.Indented));
-                logger.Warn(
+                logger.Error(
                     "Actual data:\n{0}",
                     JsonConvert.SerializeObject(
                         compareResult.calculatedInfo.RemoveProperties(FileProperties.All ^ compareResult.infoDiff),
