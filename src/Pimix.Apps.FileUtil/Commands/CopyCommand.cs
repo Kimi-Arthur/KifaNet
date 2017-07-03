@@ -35,11 +35,11 @@ namespace Pimix.Apps.FileUtil.Commands
         public override int Execute()
         {
             var source = new PimixFile(SourceUri, FileId);
-            var destination = new PimixFile(DestinationUri, source.FileInfo.Id);
+            var destination = new PimixFile(DestinationUri, source.Id);
 
             if (NeedsPrecheck(source))
             {
-                var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri, FileId = source.FileInfo.Id }.Execute();
+                var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri, FileId = source.Id }.Execute();
                 if (result != 0)
                 {
                     Console.Error.WriteLine("Precheck failed!");
@@ -51,7 +51,7 @@ namespace Pimix.Apps.FileUtil.Commands
             {
                 try
                 {
-                    var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = source.FileInfo.Id }.Execute();
+                    var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = source.Id }.Execute();
                     if (result == 0)
                     {
                         return 0;
@@ -68,7 +68,7 @@ namespace Pimix.Apps.FileUtil.Commands
             // Wait 5 seconds to ensure server sync.
             Thread.Sleep(TimeSpan.FromSeconds(5));
 
-            return Update ? new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = source.FileInfo.Id }.Execute() : 0;
+            return Update ? new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = source.Id }.Execute() : 0;
         }
 
         bool NeedsPrecheck(PimixFile file)
