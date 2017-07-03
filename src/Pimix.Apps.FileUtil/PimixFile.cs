@@ -114,4 +114,13 @@ class PimixFile
 
         return info;
     }
+
+    public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) GetDiff(FileProperties properties)
+    {
+        var baseInfo = FileInfo;
+        var newInfo = CalculateInfo(properties);
+        var compareResult = newInfo.CompareProperties(baseInfo, properties);
+
+        return (infoDiff: compareResult, baseInfo: baseInfo, calculatedInfo: newInfo);
+    }
 }

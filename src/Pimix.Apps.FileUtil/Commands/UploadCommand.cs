@@ -32,10 +32,8 @@ namespace Pimix.Apps.FileUtil.Commands
             var destination = new PimixFile(destinationLocation, source.Id);
             source.Copy(destination);
 
-            var destinationInfo = destination.CalculateInfo(FileProperties.AllVerifiable);
-            var expectedInfo = destination.FileInfo;
-            var compareResult = destinationInfo.CompareProperties(expectedInfo, FileProperties.AllVerifiable);
-            if (compareResult == FileProperties.None)
+            var compareResult = destination.GetDiff(FileProperties.AllVerifiable);
+            if (compareResult.infoDiff == FileProperties.None)
             {
                 FileInformation.AddLocation(source.Id, destinationLocation);
                 return 0;
@@ -46,12 +44,12 @@ namespace Pimix.Apps.FileUtil.Commands
                 logger.Warn(
                     "Expected data:\n{0}",
                     JsonConvert.SerializeObject(
-                        expectedInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                        compareResult.baseInfo.RemoveProperties(FileProperties.All ^ compareResult.infoDiff),
                         Formatting.Indented));
                 logger.Warn(
                     "Actual data:\n{0}",
                     JsonConvert.SerializeObject(
-                        destinationInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                        compareResult.calculatedInfo.RemoveProperties(FileProperties.All ^ compareResult.infoDiff),
                         Formatting.Indented));
                 return 2;
             }
