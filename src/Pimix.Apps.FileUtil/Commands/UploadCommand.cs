@@ -1,5 +1,7 @@
 using System;
 using CommandLine;
+using Newtonsoft.Json;
+using NLog;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands
@@ -13,11 +15,14 @@ namespace Pimix.Apps.FileUtil.Commands
         [Option('i', "id", HelpText = "ID for the uri.")]
         public string FileId { get; set; }
 
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public override int Execute()
         {
             var source = new PimixFile(FileUri, FileId);
             var locationsForSource = source.FileInfo.Locations;
-            if (locationsForSource == null || !locationsForSource.Contains(FileUri)) {
+            if (locationsForSource == null || !locationsForSource.Contains(FileUri))
+            {
                 Console.WriteLine("Source location is not found!");
                 Console.WriteLine("Please run info command first.");
                 return 1;
@@ -27,9 +32,29 @@ namespace Pimix.Apps.FileUtil.Commands
             var destination = new PimixFile(destinationLocation, source.Id);
             source.Copy(destination);
 
-            FileInformation.AddLocation(source.Id, destinationLocation);
-
-            return 0;
+            var destinationInfo = destination.CalculateInfo(FileProperties.AllVerifiable);
+            var expectedInfo = destination.FileInfo;
+            var compareResult = destinationInfo.CompareProperties(expectedInfo, FileProperties.AllVerifiable);
+            if (compareResult == FileProperties.None)
+            {
+                FileInformation.AddLocation(source.Id, destinationLocation);
+                return 0;
+            }
+            else
+            {
+                logger.Warn("Upload failed! The following fields differ: {0}", compareResult);
+                logger.Warn(
+                    "Expected data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        expectedInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                        Formatting.Indented));
+                logger.Warn(
+                    "Actual data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        destinationInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                        Formatting.Indented));
+                return 2;
+            }
         }
     }
 }
