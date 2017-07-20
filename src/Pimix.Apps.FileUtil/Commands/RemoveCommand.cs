@@ -43,10 +43,9 @@ namespace Pimix.Apps.FileUtil.Commands
             else
             {
                 var file = new PimixFile(FileUri, FileId);
-                if (!file.FileInfo.Locations.Contains(FileUri))
+                if (file.FileInfo.Locations == null || !file.FileInfo.Locations.Contains(FileUri))
                 {
-                    // Not found the entry. Then it's already done somehow.
-                    Console.Error.WriteLine($"File {FileUri} already removed!");
+                    file.Delete();
                     return 0;
                 }
 
