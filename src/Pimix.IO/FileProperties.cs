@@ -22,7 +22,7 @@ namespace Pimix.IO
         AllHashes = MD5 | SHA1 | SHA256 | CRC32 | Adler32,
         AllBlockHashes = BlockMD5 | BlockSHA1 | BlockSHA256,
         AllBaiduCloudRapidHashes = Size | MD5 | SliceMD5 | Adler32,
-        All = Size | AllHashes | AllBlockHashes | AllBaiduCloudRapidHashes | EncryptionKey | Locations,
+        All = AllVerifiable | EncryptionKey | Locations,
         AllVerifiable = Size | AllHashes | SliceMD5 | AllBlockHashes
     }
 }

@@ -105,7 +105,7 @@ class PimixFile
     public FileInformation CalculateInfo(FileProperties properties)
     {
         var info = FileInfo;
-        info.RemoveProperties(FileProperties.AllVerifiable & properties);
+        info.RemoveProperties(FileProperties.AllVerifiable & properties | FileProperties.Locations);
 
         using (var stream = OpenRead())
         {
