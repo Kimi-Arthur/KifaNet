@@ -123,4 +123,28 @@ class PimixFile
 
         return (infoDiff: compareResult, baseInfo: baseInfo, calculatedInfo: newInfo);
     }
+
+    public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add()
+    {
+            var info = CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
+            var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
+
+            if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {
+                // One same file already exists.
+                FileInformation.Link(sha256Info.Id, info.Id);
+            }
+
+            var oldInfo = FileInfo;
+
+            var compareResult = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            if (compareResult == FileProperties.None)
+            {
+                info.EncryptionKey = oldInfo.EncryptionKey ?? info.EncryptionKey;  // Only happens for unencrypted file.
+
+                FileInformation.Patch(info);
+                FileInformation.AddLocation(Id, ToString());
+            }
+
+            return (compareResult, oldInfo, info);
+    }
 }
