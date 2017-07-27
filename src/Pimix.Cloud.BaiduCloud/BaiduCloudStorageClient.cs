@@ -81,6 +81,8 @@ namespace Pimix.Cloud.BaiduCloud
 
         int DownloadSingleThread(byte[] buffer, string path, int bufferOffset, long offset, int count)
         {
+            logger.Debug("Download block: [{0}, {1})", offset, offset + count);
+
             var request = GetRequest(Config.APIList.DownloadFile,
             new Dictionary<string, string>
             {
