@@ -20,11 +20,20 @@ namespace Pimix.Apps.FileUtil.Commands
         public override int Execute()
         {
             var source = new PimixFile(FileUri, FileId);
-            var locationsForSource = source.FileInfo.Locations;
-            if (locationsForSource == null || !locationsForSource.Contains(FileUri))
-            {
-                logger.Error("Source location is not found!");
-                logger.Error("Please run info command first.");
+            var sourceCheckResult = source.Add();
+
+            if (sourceCheckResult.infoDiff != FileProperties.None) {
+                logger.Error("Precheck failed! {0}", sourceCheckResult.infoDiff);
+                logger.Warn(
+                    "Expected data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        sourceCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ result.infoDiff),
+                        Formatting.Indented));
+                logger.Warn(
+                    "Actual data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        sourceCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ result.infoDiff),
+                        Formatting.Indented));
                 return 1;
             }
 
