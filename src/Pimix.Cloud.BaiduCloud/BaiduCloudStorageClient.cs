@@ -143,29 +143,26 @@ namespace Pimix.Cloud.BaiduCloud
                 {
                     try
                     {
+                        logger.Debug("Upload method: Direct");
                         UploadDirect(path, buffer, 0, blockLength);
                         uploadDirectDone = true;
                     }
                     catch (WebException ex)
                     {
-                        Console.WriteLine($"Failed once when uploading file {path} with direct upload method.");
-                        Console.WriteLine("Exception:");
-                        Console.WriteLine(ex);
+                        logger.Warn($"WebException:\n{0}", ex);
                         if (ex.Response != null)
                         {
-                            Console.WriteLine("Response:");
+                            logger.Warn("Response:");
                             using (var s = new StreamReader(ex.Response.GetResponseStream()))
                             {
-                                Console.WriteLine(s.ReadToEnd());
+                                logger.Warn(s.ReadToEnd());
                             }
                         }
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                     catch (ObjectDisposedException ex)
                     {
-                        Console.WriteLine($"Failed once when uploading file {path} with direct upload method.");
-                        Console.WriteLine("Unexpected ObjectDisposedException:");
-                        Console.WriteLine(ex);
+                        logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }
@@ -174,9 +171,12 @@ namespace Pimix.Cloud.BaiduCloud
 
             List<string> blockIds = new List<string>();
 
+            logger.Debug("Upload method: Block");
             for (long position = 0; position < size; position += blockLength)
             {
                 blockLength = input.Read(buffer, 0, blockSize);
+
+                logger.Debug("Upload block ({0}): [{1}, {2})", position / blockSize, position, position + blockLength);
 
                 bool done = false;
                 while (!done)
@@ -184,35 +184,30 @@ namespace Pimix.Cloud.BaiduCloud
                     try
                     {
                         blockIds.Add(UploadBlock(buffer, 0, blockLength));
+                        logger.Debug("Block ID/MD5: {0}", blockIds.Last());
                         done = true;
                     }
                     catch (WebException ex)
                     {
-                        Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
-                        Console.WriteLine("Exception:");
-                        Console.WriteLine(ex);
+                        logger.Warn($"WebException:\n{0}", ex);
                         if (ex.Response != null)
                         {
-                            Console.WriteLine("Response:");
+                            logger.Warn("Response:");
                             using (var s = new StreamReader(ex.Response.GetResponseStream()))
                             {
-                                Console.WriteLine(s.ReadToEnd());
+                                logger.Warn(s.ReadToEnd());
                             }
                         }
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                     catch (ObjectDisposedException ex)
                     {
-                        Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
-                        Console.WriteLine("Exception:");
-                        Console.WriteLine(ex);
+                        logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                     catch (UploadBlockException ex)
                     {
-                        Console.WriteLine($"Failed once for file {path}, on block {blockIds.Count}");
-                        Console.WriteLine("Exception:");
-                        Console.WriteLine(ex);
+                        logger.Warn("MD5 mismatch:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }
