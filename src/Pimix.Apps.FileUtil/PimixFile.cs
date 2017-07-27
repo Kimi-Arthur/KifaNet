@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NLog;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Cloud.MegaNz;
 using Pimix.IO;
@@ -8,6 +9,9 @@ using Pimix.IO.FileFormats;
 
 class PimixFile
 {
+
+    private static Logger logger = LogManager.GetCurrentClassLogger();
+
     public string Id { get; set; }
 
     public string Path { get; set; }
@@ -124,27 +128,33 @@ class PimixFile
         return (infoDiff: compareResult, baseInfo: baseInfo, calculatedInfo: newInfo);
     }
 
-    public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add()
+    public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add(bool alwaysCheck = false)
     {
-            var info = CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
-            var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
+        var oldInfo = FileInfo;
+        if (!alwaysCheck && oldInfo.Locations != null && oldInfo.Locations.Contains(ToString())) {
+            logger.Debug("Skipped checking for {0}.", ToString());
+            return (FileProperties.None, oldInfo, oldInfo);
+        }
 
-            if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {
-                // One same file already exists.
-                FileInformation.Link(sha256Info.Id, info.Id);
-            }
+        var info = CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
+        var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
 
-            var oldInfo = FileInfo;
+        if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {
+            // One same file already exists.
+            FileInformation.Link(sha256Info.Id, info.Id);
+        }
 
-            var compareResult = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
-            if (compareResult == FileProperties.None)
-            {
-                info.EncryptionKey = oldInfo.EncryptionKey ?? info.EncryptionKey;  // Only happens for unencrypted file.
+        oldInfo = FileInfo;
 
-                FileInformation.Patch(info);
-                FileInformation.AddLocation(Id, ToString());
-            }
+        var compareResult = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+        if (compareResult == FileProperties.None)
+        {
+            info.EncryptionKey = oldInfo.EncryptionKey ?? info.EncryptionKey;  // Only happens for unencrypted file.
 
-            return (compareResult, oldInfo, info);
+            FileInformation.Patch(info);
+            FileInformation.AddLocation(Id, ToString());
+        }
+
+        return (compareResult, oldInfo, info);
     }
 }
