@@ -27,12 +27,12 @@ namespace Pimix.Apps.FileUtil.Commands
                 logger.Warn(
                     "Expected data:\n{0}",
                     JsonConvert.SerializeObject(
-                        sourceCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ result.infoDiff),
+                        sourceCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ sourceCheckResult.infoDiff),
                         Formatting.Indented));
                 logger.Warn(
                     "Actual data:\n{0}",
                     JsonConvert.SerializeObject(
-                        sourceCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ result.infoDiff),
+                        sourceCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ sourceCheckResult.infoDiff),
                         Formatting.Indented));
                 return 1;
             }
