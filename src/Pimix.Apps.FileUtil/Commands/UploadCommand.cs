@@ -12,15 +12,17 @@ namespace Pimix.Apps.FileUtil.Commands
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        [Option('i', "id", HelpText = "ID for the uri.")]
-        public string FileId { get; set; }
-
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute()
         {
-            var source = new PimixFile(FileUri, FileId);
+            var source = new PimixFile(FileUri);
             var sourceCheckResult = source.Add();
+
+            if (sourceCheckResult.infoDiff == FileProperties.All) {
+                logger.Error("Source {0} doesn't exist", FileUri);
+                return 1;
+            }
 
             if (sourceCheckResult.infoDiff != FileProperties.None) {
                 logger.Error("Precheck failed! {0}", sourceCheckResult.infoDiff);
@@ -38,27 +40,34 @@ namespace Pimix.Apps.FileUtil.Commands
             }
 
             var destinationLocation = FileInformation.CreateLocation(source.Id);
-            var destination = new PimixFile(destinationLocation, source.Id);
+            var destination = new PimixFile(destinationLocation);
+            var destinationCheckResult = destination.Add();
+
+            if (destinationCheckResult.infoDiff == FileProperties.None) {
+                logger.Info("Already uploaded!");
+                return 0;
+            }
+
             source.Copy(destination);
 
-            var compareResult = destination.GetDiff(FileProperties.AllVerifiable);
-            if (compareResult.infoDiff == FileProperties.None)
+            destinationCheckResult = destination.Add();
+            if (destinationCheckResult.infoDiff == FileProperties.None)
             {
-                FileInformation.AddLocation(source.Id, destinationLocation);
+                logger.Info("Successfully uploaded {0} to {0}!", source, destination);
                 return 0;
             }
             else
             {
-                logger.Error("Upload failed! The following fields differ: {0}", compareResult);
+                logger.Error("Upload failed! The following fields differ: {0}", destinationCheckResult.infoDiff);
                 logger.Error(
                     "Expected data:\n{0}",
                     JsonConvert.SerializeObject(
-                        compareResult.baseInfo.RemoveProperties(FileProperties.All ^ compareResult.infoDiff),
+                        destinationCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
                         Formatting.Indented));
                 logger.Error(
                     "Actual data:\n{0}",
                     JsonConvert.SerializeObject(
-                        compareResult.calculatedInfo.RemoveProperties(FileProperties.All ^ compareResult.infoDiff),
+                        destinationCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
                         Formatting.Indented));
                 return 2;
             }

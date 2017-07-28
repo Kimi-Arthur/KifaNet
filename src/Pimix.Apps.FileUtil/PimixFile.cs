@@ -69,7 +69,7 @@ class PimixFile
         return "";
     }
 
-    public void Exists()
+    public bool Exists()
         => Client.Exists(Path);
 
     public void Delete()
@@ -108,11 +108,12 @@ class PimixFile
 
     public FileInformation CalculateInfo(FileProperties properties)
     {
+        // File is guaranteed to exist.
+
         var info = FileInfo;
         info.RemoveProperties(FileProperties.AllVerifiable & properties | FileProperties.Locations);
 
-        using (var stream = OpenRead())
-        {
+        using (var stream = OpenRead()) {
             info.AddProperties(stream, properties);
         }
 
@@ -130,6 +131,10 @@ class PimixFile
 
     public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add(bool alwaysCheck = false)
     {
+        if (!Exists()) {
+            return (FileProperties.All, null, null);
+        }
+
         var oldInfo = FileInfo;
         if (!alwaysCheck && oldInfo.Locations != null && oldInfo.Locations.Contains(ToString())) {
             logger.Debug("Skipped checking for {0}.", ToString());
