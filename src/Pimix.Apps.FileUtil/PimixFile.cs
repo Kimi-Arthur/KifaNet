@@ -40,7 +40,7 @@ class PimixFile
         //   /a/b/c/d.txt
         var segments = uri.Split(new char[] { '/' }, 2);
         Path = "/" + segments[1];
-        Id = id ?? Path;
+        Id = id ?? FileInformation.GetId(uri);
 
         var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
 
