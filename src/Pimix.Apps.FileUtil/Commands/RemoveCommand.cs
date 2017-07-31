@@ -28,12 +28,12 @@ namespace Pimix.Apps.FileUtil.Commands
                     // Remove real files.
                     foreach (var location in info.Locations)
                     {
-                        var file = new PimixFile(location, FileId);
-                        file.Delete();
+                        var file = new PimixFile(location);
+                        if (file.Path == FileId) {
+                            file.Delete();
+                            FileInformation.RemoveLocation(FileId, location);
+                        }
                     }
-
-                    info.Locations.Clear();
-                    FileInformation.Patch(info);
                 }
 
                 // Logical removal.
