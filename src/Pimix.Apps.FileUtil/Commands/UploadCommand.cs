@@ -17,12 +17,13 @@ namespace Pimix.Apps.FileUtil.Commands
         public override int Execute()
         {
             var source = new PimixFile(FileUri);
-            var sourceCheckResult = source.Add();
 
-            if (sourceCheckResult.infoDiff == FileProperties.All) {
+            if (!source.Exists()) {
                 logger.Error("Source {0} doesn't exist", FileUri);
                 return 1;
             }
+
+            var sourceCheckResult = source.Add();
 
             if (sourceCheckResult.infoDiff != FileProperties.None) {
                 logger.Error("Precheck failed! {0}", sourceCheckResult.infoDiff);

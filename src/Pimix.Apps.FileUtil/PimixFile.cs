@@ -131,12 +131,10 @@ class PimixFile
 
     public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add(bool alwaysCheck = false)
     {
-        if (!Exists()) {
-            return (FileProperties.All, null, null);
-        }
+        // File is guaranteed to exist.
 
         var oldInfo = FileInfo;
-        if (!alwaysCheck && oldInfo.Locations != null && oldInfo.Locations.Contains(ToString())) {
+        if (oldInfo.GetProperties() == FileProperties.All && !alwaysCheck && oldInfo.Locations != null && oldInfo.Locations.Contains(ToString())) {
             logger.Debug("Skipped checking for {0}.", ToString());
             return (FileProperties.None, oldInfo, oldInfo);
         }
