@@ -14,7 +14,7 @@ class PimixFile
 
     public string Id { get; set; }
 
-    public string Path { get; set; }
+    private string Path { get; set; }
 
     public string Spec
         => string.Join(";", new string[]

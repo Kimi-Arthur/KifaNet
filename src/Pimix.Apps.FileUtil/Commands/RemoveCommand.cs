@@ -32,7 +32,7 @@ namespace Pimix.Apps.FileUtil.Commands
                     foreach (var location in info.Locations)
                     {
                         var file = new PimixFile(location);
-                        if (file.Path == FileId) {
+                        if (file.Id == FileId) {
                             if (file.Exists()) {
                                 file.Delete();
                                 logger.Info($"File {file} deleted.");
