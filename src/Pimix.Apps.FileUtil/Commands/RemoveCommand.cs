@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using CommandLine;
+using NLog;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands
@@ -17,6 +18,8 @@ namespace Pimix.Apps.FileUtil.Commands
         [Option('l', "link", HelpText = "Remove link only.")]
         public bool RemoveLinkOnly { get; set; }
 
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public override int Execute()
         {
             if (String.IsNullOrEmpty(FileUri)) {
@@ -30,14 +33,21 @@ namespace Pimix.Apps.FileUtil.Commands
                     {
                         var file = new PimixFile(location);
                         if (file.Path == FileId) {
-                            file.Delete();
+                            if (file.Exists()) {
+                                file.Delete();
+                                logger.Info($"File {file} deleted.");
+                            } else {
+                                logger.Warn($"File {file} not found.");
+                            }
                             FileInformation.RemoveLocation(FileId, location);
+                            logger.Info($"Entry {location} removed.");
                         }
                     }
                 }
 
                 // Logical removal.
                 FileInformation.Delete(info.Id);
+                logger.Info($"FileInfo {info.Id} removed.");
                 return 0;
             }
             else
@@ -45,18 +55,28 @@ namespace Pimix.Apps.FileUtil.Commands
                 var file = new PimixFile(FileUri, FileId);
                 if (file.FileInfo.Locations == null || !file.FileInfo.Locations.Contains(FileUri))
                 {
-                    file.Delete();
+                    if (file.Exists()) {
+                        file.Delete();
+                        logger.Warn($"File {file} deleted, no entry found though.");
+                    } else {
+                        logger.Warn($"File {file} not found.");
+                    }
                     return 0;
                 }
 
                 // Remove specific location item.
                 if (!RemoveLinkOnly)
                 {
-                    // Remove real files.
-                    file.Delete();
+                    if (file.Exists()) {
+                        file.Delete();
+                        logger.Info($"File {file} deleted.");
+                    } else {
+                        logger.Warn($"File {file} not found.");
+                    }
                 }
 
                 FileInformation.RemoveLocation(file.Id, FileUri);
+                logger.Info($"Entry {file} removed.");
 
                 return 0;
             }
