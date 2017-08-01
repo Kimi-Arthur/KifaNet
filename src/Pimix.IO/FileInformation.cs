@@ -110,9 +110,7 @@ namespace Pimix.IO
             if (requiredProperties.HasFlag(FileProperties.SliceMD5))
             {
                 readLength = stream.Read(buffer, 0, SliceLength);
-                SliceMD5 = (readLength == SliceLength)
-                    ? new MD5CryptoServiceProvider().ComputeHash(buffer, 0, SliceLength).ToHexString()
-                    : null;
+                SliceMD5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength).ToHexString();
             }
 
             if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None)
