@@ -108,7 +108,9 @@ class PimixFile
 
     public FileInformation CalculateInfo(FileProperties properties)
     {
-        // File is guaranteed to exist.
+        if (!Exists()) {
+            throw new FileNotFoundException(ToString());
+        }
 
         var info = FileInfo;
         info.RemoveProperties(FileProperties.AllVerifiable & properties | FileProperties.Locations);
@@ -120,18 +122,11 @@ class PimixFile
         return info;
     }
 
-    public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) GetDiff(FileProperties properties)
-    {
-        var baseInfo = FileInfo;
-        var newInfo = CalculateInfo(properties);
-        var compareResult = newInfo.CompareProperties(baseInfo, properties);
-
-        return (infoDiff: compareResult, baseInfo: baseInfo, calculatedInfo: newInfo);
-    }
-
     public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add(bool alwaysCheck = false)
     {
-        // File is guaranteed to exist.
+        if (!Exists()) {
+            throw new FileNotFoundException(ToString());
+        }
 
         var oldInfo = FileInfo;
         if ((oldInfo.GetProperties() & FileProperties.All) == FileProperties.All && !alwaysCheck && oldInfo.Locations != null && oldInfo.Locations.Contains(ToString())) {

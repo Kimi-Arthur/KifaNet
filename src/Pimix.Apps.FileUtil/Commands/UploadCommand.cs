@@ -42,34 +42,45 @@ namespace Pimix.Apps.FileUtil.Commands
 
             var destinationLocation = FileInformation.CreateLocation(source.Id);
             var destination = new PimixFile(destinationLocation);
-            var destinationCheckResult = destination.Add();
 
-            if (destinationCheckResult.infoDiff == FileProperties.None) {
-                logger.Info("Already uploaded!");
-                return 0;
+            if (destination.Exists()) {
+                var destinationCheckResult = destination.Add();
+
+                if (destinationCheckResult.infoDiff == FileProperties.None) {
+                    logger.Info("Already uploaded!");
+                    return 0;
+                } else {
+                    logger.Warn("Destination exists, but doesn't match.");
+                    return 2;
+                }
             }
 
             source.Copy(destination);
 
-            destinationCheckResult = destination.Add();
-            if (destinationCheckResult.infoDiff == FileProperties.None)
-            {
-                logger.Info("Successfully uploaded {0} to {0}!", source, destination);
-                return 0;
-            }
-            else
-            {
-                logger.Error("Upload failed! The following fields differ: {0}", destinationCheckResult.infoDiff);
-                logger.Error(
-                    "Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        destinationCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
-                        Formatting.Indented));
-                logger.Error(
-                    "Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        destinationCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
-                        Formatting.Indented));
+            if (destination.Exists()) {
+                var destinationCheckResult = destination.Add();
+                if (destinationCheckResult.infoDiff == FileProperties.None)
+                {
+                    logger.Info("Successfully uploaded {0} to {0}!", source, destination);
+                    return 0;
+                }
+                else
+                {
+                    logger.Error("Upload failed! The following fields differ: {0}", destinationCheckResult.infoDiff);
+                    logger.Error(
+                        "Expected data:\n{0}",
+                        JsonConvert.SerializeObject(
+                            destinationCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
+                            Formatting.Indented));
+                    logger.Error(
+                        "Actual data:\n{0}",
+                        JsonConvert.SerializeObject(
+                            destinationCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
+                            Formatting.Indented));
+                    return 2;
+                }
+            } else {
+                logger.Fatal("Destination doesn't exist unexpectedly!");
                 return 2;
             }
         }
