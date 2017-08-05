@@ -61,7 +61,7 @@ namespace Pimix.Apps.FileUtil.Commands
                 var destinationCheckResult = destination.Add();
                 if (destinationCheckResult.infoDiff == FileProperties.None)
                 {
-                    logger.Info("Successfully uploaded {0} to {0}!", source, destination);
+                    logger.Info("Successfully uploaded {0} to {1}!", source, destination);
                     return 0;
                 }
                 else
