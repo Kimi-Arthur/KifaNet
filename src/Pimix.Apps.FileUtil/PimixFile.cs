@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using NLog;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Cloud.MegaNz;
@@ -145,12 +146,22 @@ class PimixFile
         oldInfo = FileInfo;
 
         var compareResult = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
-        if (compareResult == FileProperties.None)
-        {
+        if (compareResult == FileProperties.None) {
             info.EncryptionKey = oldInfo.EncryptionKey ?? info.EncryptionKey;  // Only happens for unencrypted file.
 
             FileInformation.Patch(info);
             FileInformation.AddLocation(Id, ToString());
+        } else {
+            logger.Warn(
+                "Expected data:\n{0}",
+                JsonConvert.SerializeObject(
+                    oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                    Formatting.Indented));
+            logger.Warn(
+                "Actual data:\n{0}",
+                JsonConvert.SerializeObject(
+                    info.RemoveProperties(FileProperties.All ^ compareResult),
+                    Formatting.Indented));
         }
 
         return (compareResult, oldInfo, info);

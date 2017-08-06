@@ -26,17 +26,7 @@ namespace Pimix.Apps.FileUtil.Commands
             var sourceCheckResult = source.Add();
 
             if (sourceCheckResult.infoDiff != FileProperties.None) {
-                logger.Error("Precheck failed! {0}", sourceCheckResult.infoDiff);
-                logger.Warn(
-                    "Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        sourceCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ sourceCheckResult.infoDiff),
-                        Formatting.Indented));
-                logger.Warn(
-                    "Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        sourceCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ sourceCheckResult.infoDiff),
-                        Formatting.Indented));
+                logger.Error("Source is wrong! The following fields differ: {0}", sourceCheckResult.infoDiff);
                 return 1;
             }
 
@@ -67,16 +57,6 @@ namespace Pimix.Apps.FileUtil.Commands
                 else
                 {
                     logger.Error("Upload failed! The following fields differ: {0}", destinationCheckResult.infoDiff);
-                    logger.Error(
-                        "Expected data:\n{0}",
-                        JsonConvert.SerializeObject(
-                            destinationCheckResult.baseInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
-                            Formatting.Indented));
-                    logger.Error(
-                        "Actual data:\n{0}",
-                        JsonConvert.SerializeObject(
-                            destinationCheckResult.calculatedInfo.RemoveProperties(FileProperties.All ^ destinationCheckResult.infoDiff),
-                            Formatting.Indented));
                     return 2;
                 }
             } else {

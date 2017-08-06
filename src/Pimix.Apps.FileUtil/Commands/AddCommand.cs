@@ -34,16 +34,6 @@ namespace Pimix.Apps.FileUtil.Commands
             else
             {
                 logger.Warn("Conflict with old file info! Please check: {0}", result.infoDiff);
-                logger.Warn(
-                    "Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        result.baseInfo.RemoveProperties(FileProperties.All ^ result.infoDiff),
-                        Formatting.Indented));
-                logger.Warn(
-                    "Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        result.calculatedInfo.RemoveProperties(FileProperties.All ^ result.infoDiff),
-                        Formatting.Indented));
                 return 1;
             }
         }
