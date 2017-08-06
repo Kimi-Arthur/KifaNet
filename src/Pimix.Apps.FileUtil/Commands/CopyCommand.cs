@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using CommandLine;
+using NLog;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands
@@ -14,66 +15,60 @@ namespace Pimix.Apps.FileUtil.Commands
         [Value(1, Required = true)]
         public string DestinationUri { get; set; }
 
-        [Option('i', "id", HelpText = "ID for the uri.")]
-        public string FileId { get; set; }
+        [Option('f', "overwrite", HelpText = "Overwrite destination.")]
+        public bool Overwrite { get; set; } = false;
 
-        [Option('p', "precheck", HelpText = "Whether to check (and update) SOURCE before copying.")]
-        public bool Precheck { get; set; } = false;
+        [Option('v', "verify", HelpText = "Verify destination.")]
+        public bool Verify { get; set; } = false;
 
-        [Option('d', "destination-check", HelpText = "Whether to check (and update) DEST before copying.")]
-        public bool DestinationCheck { get; set; } = true;
-
-        [Option('u', "update", HelpText = "Whether to update result to server after copying.")]
-        public bool Update { get; set; } = false;
-
-        [Option('v', "verify-all", HelpText = "Verify all verifiable fields before update.")]
-        public bool VerifyAll { get; set; } = false;
-
-        [Option('f', "fields-to-verify", HelpText = "Fields to verify. Only 'Size' is verified by default.")]
-        public string FieldsToVerify { get; set; } = "Size";
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute()
         {
-            var source = new PimixFile(SourceUri, FileId);
-            var destination = new PimixFile(DestinationUri, source.Id);
+            var source = new PimixFile(SourceUri);
+            var destination = new PimixFile(DestinationUri);
 
-            if (NeedsPrecheck(source))
-            {
-                var result = new InfoCommand { Update = true, VerifyAll = true, FileUri = SourceUri, FileId = source.Id }.Execute();
-                if (result != 0)
-                {
-                    Console.Error.WriteLine("Precheck failed!");
-                    return 1;
-                }
+            if (!source.Exists()) {
+                logger.Error("Source does not exist!");
+                return 1;
             }
 
-            if (DestinationCheck)
-            {
-                try
-                {
-                    var result = new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = source.Id }.Execute();
-                    if (result == 0)
-                    {
-                        return 0;
-                    }
-                }
-                catch
-                {
-                    // Ignore the error for now.
+            var destinationSha256 = destination.FileInfo.SHA256;
+            if (destinationSha256 != null && destinationSha256 != source.FileInfo.SHA256) {
+                logger.Error("Cannot move file between different entities.");
+                return 1;
+            }
+
+            if (destination.Exists()) {
+                if (Overwrite) {
+                    logger.Debug("Overwriting existing file.");
+                    destination.Delete();
+                    FileInformation.RemoveLocation(destination.Id, DestinationUri);
+                } else {
+                    logger.Error("Destination already exists!");
+                    logger.Error("Add -f to overwrite.");
+                    return 1;
                 }
             }
 
             source.Copy(destination);
 
-            // Wait 5 seconds to ensure server sync.
-            Thread.Sleep(TimeSpan.FromSeconds(5));
+            if (!destination.Exists()) {
+                logger.Fatal("Destination doesn't exist unexpectedly!");
+                return 2;
+            }
 
-            return Update ? new InfoCommand { Update = true, VerifyAll = VerifyAll, FieldsToVerify = FieldsToVerify, FileUri = DestinationUri, FileId = source.Id }.Execute() : 0;
-        }
+            if (Verify) {
+                var result = destination.Add(Verify);
+                if (result.infoDiff != FileProperties.None) {
+                    logger.Fatal("Unexpected copy failure.");
+                    return 2;
+                }
+            }
 
-        bool NeedsPrecheck(PimixFile file)
-        {
-            return !file.FileInfo.GetProperties().HasFlag(FileProperties.All) || !file.FileInfo.Locations.Contains(file.ToString());
+            FileInformation.AddLocation(destination.Id, DestinationUri);
+            logger.Info($"Successfully copied {SourceUri} to {DestinationUri}.");
+            return 0;
         }
     }
 }
