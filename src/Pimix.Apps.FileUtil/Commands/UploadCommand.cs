@@ -60,7 +60,8 @@ namespace Pimix.Apps.FileUtil.Commands
                     return 2;
                 }
             } else {
-                logger.Fatal("Destination doesn't exist unexpectedly!");
+                destination.Delete();
+                logger.Fatal("Destination doesn't exist unexpectedly! Removed.");
                 return 2;
             }
         }
