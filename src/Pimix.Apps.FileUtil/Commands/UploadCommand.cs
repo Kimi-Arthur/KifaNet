@@ -56,12 +56,15 @@ namespace Pimix.Apps.FileUtil.Commands
                 }
                 else
                 {
-                    logger.Error("Upload failed! The following fields differ: {0}", destinationCheckResult.infoDiff);
+                    destination.Delete();
+                    logger.Error(
+                        "Upload failed! The following fields differ (removed): {0}",
+                        destinationCheckResult.infoDiff
+                    );
                     return 2;
                 }
             } else {
-                destination.Delete();
-                logger.Fatal("Destination doesn't exist unexpectedly! Removed.");
+                logger.Fatal("Destination doesn't exist unexpectedly!");
                 return 2;
             }
         }
