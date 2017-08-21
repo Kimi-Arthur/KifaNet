@@ -16,7 +16,7 @@ namespace Pimix.IO
     {
         const int SliceLength = 256 << 10;
 
-        const int BlockSize = 32 << 20;
+        public const int BlockSize = 32 << 20;
 
         static Dictionary<FileProperties, PropertyInfo> Properties;
 
