@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CommandLine;
+using Newtonsoft.Json;
+using NLog;
+using Pimix.IO;
+using Renci.SshNet;
+
+namespace Pimix.Apps.FileUtil.Commands
+{
+    [Verb("get", HelpText = "Get file.")]
+    class GetCommand : FileUtilCommand
+    {
+        [Value(0, Required = true, MetaName = "File URL")]
+        public string FileUri { get; set; }
+
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        public override int Execute()
+        {
+            var target = new PimixFile(FileUri);
+            if (target.Exists()) {
+                var targetCheckResult = target.Add();
+
+                if (targetCheckResult.infoDiff == FileProperties.None) {
+                    logger.Info("Already got!");
+                    return 0;
+                } else {
+                    logger.Warn("Target exists, but doesn't match.");
+                    return 2;
+                }
+            }
+
+            var info = target.FileInfo;
+
+            if (info.Locations == null) {
+                logger.Error($"No instance exists for {info.Id}!");
+                return 1;
+            }
+
+            foreach (var location in info.Locations) {
+                var linkSource = new PimixFile(location);
+                if (linkSource.Spec == target.Spec) {
+                    Link(linkSource, target);
+                    FileInformation.AddLocation(target.Id, target.ToString());
+                    return 0;
+                }
+            }
+
+            var source = new PimixFile(FileInformation.GetLocation(info.Id));
+            source.Copy(target);
+
+            if (target.Exists()) {
+                var destinationCheckResult = target.Add();
+                if (destinationCheckResult.infoDiff == FileProperties.None)
+                {
+                    logger.Info("Successfully got {1} from {0}!", source, target);
+                    return 0;
+                }
+                else
+                {
+                    //target.Delete();
+                    logger.Error(
+                        "Get failed! The following fields differ (removed): {0}",
+                        destinationCheckResult.infoDiff
+                    );
+                    return 2;
+                }
+            } else {
+                logger.Fatal("Destination doesn't exist unexpectedly!");
+                return 2;
+            }
+        }
+
+        void Link(PimixFile source, PimixFile target) {
+            var connectionInfo = new ConnectionInfo(target.Spec.Split(':').Last(),
+                                                    "root",
+                                                    new PasswordAuthenticationMethod("root", "fakepass"));
+            using (var client = new SshClient(connectionInfo))
+            {
+                client.Connect();
+                var result = client.RunCommand($"umask 0000 && mkdir -p \"/nfs/files{string.Join("/", target.Path.Split('/').SkipLast(1))}\"");
+                if (result.ExitStatus != 0)
+                {
+                    throw new Exception("Make parent folders failed.");
+                }
+
+                result = client.RunCommand($"ln \"/nfs/files{source.Path}\" \"/nfs/files{target.Path}\"");
+                if (result.ExitStatus != 0)
+                {
+                    throw new Exception("Link command failed");
+                }
+            }
+        }
+    }
+}

@@ -19,7 +19,8 @@ namespace Pimix.Apps.FileUtil
                 MoveCommand,
                 LinkCommand,
                 UploadCommand,
-                AddCommand
+                AddCommand,
+                GetCommand
                 >(args)
             .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
