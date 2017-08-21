@@ -101,10 +101,10 @@ class PimixFile
         }
     }
 
-    public Stream OpenRead()
+    Stream OpenRead()
         => FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey);
 
-    public void Write(Stream stream)
+    void Write(Stream stream)
         => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
     public FileInformation CalculateInfo(FileProperties properties)
