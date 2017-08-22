@@ -86,6 +86,7 @@ namespace Pimix.IO
 
                 offset += copyCount;
                 Position += copyCount;
+                count -= copyCount;
             }
 
             return count;
