@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="HashLib" Version="2.0.1" />
+    <PackageReference Include="NLog" Version="5.0.0-beta07" />
   </ItemGroup>
 
   <ItemGroup>
