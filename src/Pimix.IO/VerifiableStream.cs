@@ -58,6 +58,8 @@ namespace Pimix.IO
             logger.Debug("Read {0} bytes from {1}.", count, Position);
             logger.Debug("Effective block: {0} to {1}.", startPosition, endPosition);
             byte[] blockRead = new byte[FileInformation.BlockSize];
+
+            int left = count;
             for (long pos = startPosition; pos < endPosition; pos += FileInformation.BlockSize)
             {
                 int bytesToRead = (int)Math.Min(endPosition - pos, (long)FileInformation.BlockSize);
@@ -81,12 +83,12 @@ namespace Pimix.IO
                     throw new Exception($"Unable to get valid block starting from {pos}");
                 }
 
-                int copyCount = Math.Min(count, bytesRead - (int)(Position - pos));
+                int copyCount = Math.Min(left, bytesRead - (int)(Position - pos));
                 Array.Copy(blockRead, Position - pos, buffer, offset, copyCount);
 
                 offset += copyCount;
                 Position += copyCount;
-                count -= copyCount;
+                left -= copyCount;
             }
 
             return count;
