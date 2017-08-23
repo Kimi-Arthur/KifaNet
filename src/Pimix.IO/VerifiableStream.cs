@@ -97,30 +97,41 @@ namespace Pimix.IO
         bool isBlockValid(byte[] buffer, int offset, int count, int blockId) {
             bool result = true;
 
-            string expectedMd5 = info.BlockMD5[blockId];
-            string md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
+            if (info.BlockMD5 != null)
+            {
+                string expectedMd5 = info.BlockMD5[blockId];
+                string md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
-            if (md5 != expectedMd5) {
-                logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedMd5, md5);
-                result = false;
+                if (md5 != expectedMd5)
+                {
+                    logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedMd5, md5);
+                    result = false;
+                }
             }
 
-            string expectedSha1 = info.BlockSHA1[blockId];
-            string sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
+            if (info.BlockSHA1 != null)
+            {
+                string expectedSha1 = info.BlockSHA1[blockId];
+                string sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
-            if (sha1 != expectedSha1) {
-                logger.Warn("SHA1 mismatch: expected {0}, got {1}", expectedSha1, sha1);
-                result = false;
+                if (sha1 != expectedSha1)
+                {
+                    logger.Warn("SHA1 mismatch: expected {0}, got {1}", expectedSha1, sha1);
+                    result = false;
+                }
             }
 
-            string expectedSha256 = info.BlockSHA256[blockId];
-            string sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
+            if (info.BlockSHA256 != null)
+            {
+                string expectedSha256 = info.BlockSHA256[blockId];
+                string sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
-            if (sha256 != expectedSha256) {
-                logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedSha256, sha256);
-                result = false;
+                if (sha256 != expectedSha256)
+                {
+                    logger.Warn("SHA256 mismatch: expected {0}, got {1}", expectedSha256, sha256);
+                    result = false;
+                }
             }
-
 
             return result;
         }
