@@ -117,7 +117,7 @@ namespace Pimix.IO
             string sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
             if (sha256 != expectedSha256) {
-                logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedSha256, sha256);
+                logger.Warn("SHA256 mismatch: expected {0}, got {1}", expectedSha256, sha256);
                 result = false;
             }
 
