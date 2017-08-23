@@ -29,7 +29,12 @@ namespace Pimix.Cloud.BaiduCloud
                 if (spec.StartsWith("baidu:"))
                 {
                     Config = BaiduCloudConfig.Get("default");
-                    return new BaiduCloudStorageClient { AccountId = spec.Substring(6) };
+                    var client = new BaiduCloudStorageClient { AccountId = spec.Substring(6) };
+                    if (fileSpec.Contains("v1")) {
+                        client.headerLength = 48;
+                    }
+
+                    return client;
                 }
             }
 
@@ -39,7 +44,9 @@ namespace Pimix.Cloud.BaiduCloud
         public override string ToString()
             => $"baidu:{AccountId}";
 
-        private HttpClient Client;
+        HttpClient Client;
+
+        int headerLength;
 
         string accountId;
         public string AccountId
@@ -171,10 +178,51 @@ namespace Pimix.Cloud.BaiduCloud
                 return;
             }
 
+            logger.Debug("Upload method: Block");
+
             List<string> blockIds = new List<string>();
 
-            logger.Debug("Upload method: Block");
-            for (long position = 0; position < size; position += blockLength)
+            if (headerLength > 0) {
+                blockLength = input.Read(buffer, 0, headerLength);
+
+                logger.Debug("Upload header: [{0}, {1})", 0, headerLength);
+
+                bool done = false;
+                while (!done)
+                {
+                    try
+                    {
+                        blockIds.Add(UploadBlock(buffer, 0, blockLength));
+                        logger.Debug("Block ID/MD5: {0}", blockIds.Last());
+                        done = true;
+                    }
+                    catch (WebException ex)
+                    {
+                        logger.Warn($"WebException:\n{0}", ex);
+                        if (ex.Response != null)
+                        {
+                            logger.Warn("Response:");
+                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
+                            {
+                                logger.Warn(s.ReadToEnd());
+                            }
+                        }
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+                    catch (ObjectDisposedException ex)
+                    {
+                        logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+                    catch (UploadBlockException ex)
+                    {
+                        logger.Warn("MD5 mismatch:\n{0}", ex);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+                }
+            }
+
+            for (long position = headerLength; position < size; position += blockLength)
             {
                 blockLength = input.Read(buffer, 0, blockSize);
 
