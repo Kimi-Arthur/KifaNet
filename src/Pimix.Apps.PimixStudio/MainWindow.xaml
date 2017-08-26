@@ -1,0 +1,23 @@
+﻿<Window x:Class="Pimix.Apps.PimixStudio.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Pimix.Apps.PimixStudio"
+        mc:Ignorable="d"
+        Title="Pimix Studio" Height="350" Width="525">
+    <Grid>
+        <TabControl x:Name="tabControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabStripPlacement="Left">
+            <TabItem Header="Files">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="TV Shows">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+            <TabItem Header="Downloads">
+                <Grid Background="#FFE5E5E5"/>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>
