@@ -1,15 +1,12 @@
 ﻿using CommandLine;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
+namespace Pimix.Apps.FileUtil.Commands {
     [Verb("verify", HelpText = "Verify the file is in compliant with the data stored in server.")]
-    class VerifyCommand : FileUtilCommand
-    {
+    class VerifyCommand : FileUtilCommand {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        public override int Execute()
-        {
+        public override int Execute() {
             return new InfoCommand() { FileUri = FileUri, VerifyAll = true }.Execute();
         }
     }

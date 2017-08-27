@@ -4,10 +4,8 @@ using CommandLine;
 using NLog;
 using Pimix.Apps.FileUtil.Commands;
 
-namespace Pimix.Apps.FileUtil
-{
-    class Program
-    {
+namespace Pimix.Apps.FileUtil {
+    class Program {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         static int Main(string[] args)
@@ -24,16 +22,12 @@ namespace Pimix.Apps.FileUtil
                 >(args)
             .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
-        static int ExecuteCommand(FileUtilCommand command)
-        {
+        static int ExecuteCommand(FileUtilCommand command) {
             command.Initialize();
 
-            try
-            {
+            try {
                 return command.Execute();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 logger.Fatal(ex, "fileutil terminated.");
                 return 1;
             }

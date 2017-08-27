@@ -1,11 +1,9 @@
-﻿using System;
-using System.Threading;
-using CommandLine;
+﻿using CommandLine;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
+namespace Pimix.Apps.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
     class CopyCommand : FileUtilCommand
     {

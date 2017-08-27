@@ -1,13 +1,11 @@
-﻿using System;
-using CommandLine;
+﻿using CommandLine;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
+namespace Pimix.Apps.FileUtil.Commands {
     [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
-    class MoveCommand : FileUtilCommand
-    {
+    class MoveCommand : FileUtilCommand {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
 
@@ -22,8 +20,7 @@ namespace Pimix.Apps.FileUtil.Commands
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override int Execute()
-        {
+        public override int Execute() {
             PimixFile source = new PimixFile(SourceUri);
             PimixFile destination = new PimixFile(DestinationUri);
             if (!source.Exists()) {

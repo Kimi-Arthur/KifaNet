@@ -1,21 +1,17 @@
-using System;
 using CommandLine;
-using Newtonsoft.Json;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
+namespace Pimix.Apps.FileUtil.Commands {
     [Verb("upload", HelpText = "Upload file to a cloud location.")]
-    class UploadCommand : FileUtilCommand
-    {
+    class UploadCommand : FileUtilCommand {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override int Execute()
-        {
+        public override int Execute() {
             var source = new PimixFile(FileUri);
 
             if (!source.Exists()) {
@@ -49,13 +45,10 @@ namespace Pimix.Apps.FileUtil.Commands
 
             if (destination.Exists()) {
                 var destinationCheckResult = destination.Add();
-                if (destinationCheckResult.infoDiff == FileProperties.None)
-                {
+                if (destinationCheckResult.infoDiff == FileProperties.None) {
                     logger.Info("Successfully uploaded {0} to {1}!", source, destination);
                     return 0;
-                }
-                else
-                {
+                } else {
                     destination.Delete();
                     logger.Error(
                         "Upload failed! The following fields differ (removed): {0}",

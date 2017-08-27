@@ -70,7 +70,7 @@ namespace Pimix.IO
                 {
                     stream.Seek(pos, SeekOrigin.Begin);
                     bytesRead = stream.Read(blockRead, 0, bytesToRead);
-                    if (bytesRead == bytesToRead && isBlockValid(blockRead, 0, bytesRead, (int)(pos / FileInformation.BlockSize))) {
+                    if (bytesRead == bytesToRead && IsBlockValid(blockRead, 0, bytesRead, (int)(pos / FileInformation.BlockSize))) {
                         successful = true;
                         break;
                     } else {
@@ -94,7 +94,7 @@ namespace Pimix.IO
             return count;
         }
 
-        bool isBlockValid(byte[] buffer, int offset, int count, int blockId) {
+        bool IsBlockValid(byte[] buffer, int offset, int count, int blockId) {
             bool result = true;
 
             if (info.BlockMD5 != null)

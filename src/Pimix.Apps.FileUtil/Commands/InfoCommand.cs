@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using CommandLine;
 using Newtonsoft.Json;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.IO;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
+namespace Pimix.Apps.FileUtil.Commands {
     [Verb("info", HelpText = "Generate information of the specified file.")]
-    class InfoCommand : FileUtilCommand
-    {
+    class InfoCommand : FileUtilCommand {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
@@ -30,30 +28,23 @@ namespace Pimix.Apps.FileUtil.Commands
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override int Execute()
-        {
+        public override int Execute() {
             var f = new PimixFile(FileUri, FileId);
 
             var info = f.CalculateInfo(FilePropertiesToVerify | FileProperties.EncryptionKey);
             var oldInfo = f.FileInfo;
 
             var compareResult = info.CompareProperties(oldInfo, FilePropertiesToVerify);
-            if (compareResult == FileProperties.None)
-            {
-                if (Update)
-                {
+            if (compareResult == FileProperties.None) {
+                if (Update) {
                     FileInformation.Patch(info);
                     FileInformation.AddLocation(f.Id, FileUri);
-                }
-                else
-                {
+                } else {
                     Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
                 }
 
                 return 0;
-            }
-            else
-            {
+            } else {
                 logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
                 logger.Warn(
                     "Expected data:\n{0}",

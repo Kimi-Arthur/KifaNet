@@ -4,10 +4,8 @@ using System.Net;
 using CommandLine;
 using Pimix.Cloud.BaiduCloud;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
-    abstract class FileUtilCommand
-    {
+namespace Pimix.Apps.FileUtil.Commands {
+    abstract class FileUtilCommand {
         [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
 
@@ -17,8 +15,7 @@ namespace Pimix.Apps.FileUtil.Commands
         public IEnumerable<string> StorageServerOrderList
             => StorageServerOrder.Split(';');
 
-        public virtual void Initialize()
-        {
+        public virtual void Initialize() {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerAddress;
 
             CredentialCache.DefaultNetworkCredentials.Domain = ConfigurationManager.AppSettings["DefaultNetworkDomain"];

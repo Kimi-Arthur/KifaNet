@@ -1,24 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
-using Newtonsoft.Json;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.IO;
 using Renci.SshNet;
 
-namespace Pimix.Apps.FileUtil.Commands
-{
+namespace Pimix.Apps.FileUtil.Commands {
     [Verb("get", HelpText = "Get file.")]
-    class GetCommand : FileUtilCommand
-    {
+    class GetCommand : FileUtilCommand {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override int Execute()
-        {
+        public override int Execute() {
             var target = new PimixFile(FileUri);
             if (target.Exists()) {
                 var targetCheckResult = target.Add();
@@ -53,13 +49,10 @@ namespace Pimix.Apps.FileUtil.Commands
 
             if (target.Exists()) {
                 var destinationCheckResult = target.Add();
-                if (destinationCheckResult.infoDiff == FileProperties.None)
-                {
+                if (destinationCheckResult.infoDiff == FileProperties.None) {
                     logger.Info("Successfully got {1} from {0}!", source, target);
                     return 0;
-                }
-                else
-                {
+                } else {
                     //target.Delete();
                     logger.Error(
                         "Get failed! The following fields differ (removed): {0}",
@@ -77,18 +70,15 @@ namespace Pimix.Apps.FileUtil.Commands
             var connectionInfo = new ConnectionInfo(target.Spec.Split(':').Last(),
                                                     "root",
                                                     new PasswordAuthenticationMethod("root", "fakepass"));
-            using (var client = new SshClient(connectionInfo))
-            {
+            using (var client = new SshClient(connectionInfo)) {
                 client.Connect();
                 var result = client.RunCommand($"umask 0000 && mkdir -p \"/nfs/files{string.Join("/", target.Path.Split('/').SkipLast(1))}\"");
-                if (result.ExitStatus != 0)
-                {
+                if (result.ExitStatus != 0) {
                     throw new Exception("Make parent folders failed.");
                 }
 
                 result = client.RunCommand($"ln \"/nfs/files{source.Path}\" \"/nfs/files{target.Path}\"");
-                if (result.ExitStatus != 0)
-                {
+                if (result.ExitStatus != 0) {
                     throw new Exception("Link command failed");
                 }
             }
