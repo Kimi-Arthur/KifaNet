@@ -35,7 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.FileUtil", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.PimixStudio", "src\Pimix.Apps.PimixStudio\Pimix.Apps.PimixStudio.csproj", "{2FE112D3-061B-4D18-AB3C-BFB227D7396C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Api.Files", "src\Pimix.Api.Files\Pimix.Api.Files.csproj", "{A1FCD94B-1107-4404-8A66-109537B2D6DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Api.Files", "src\Pimix.Api.Files\Pimix.Api.Files.csproj", "{A1FCD94B-1107-4404-8A66-109537B2D6DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.WinServices.JobService", "src\Pimix.WinServices.JobService\Pimix.WinServices.JobService.csproj", "{20527744-8ABD-49D7-AB4C-A66DE0B506E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,6 +113,10 @@ Global
 		{A1FCD94B-1107-4404-8A66-109537B2D6DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1FCD94B-1107-4404-8A66-109537B2D6DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A1FCD94B-1107-4404-8A66-109537B2D6DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20527744-8ABD-49D7-AB4C-A66DE0B506E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20527744-8ABD-49D7-AB4C-A66DE0B506E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20527744-8ABD-49D7-AB4C-A66DE0B506E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20527744-8ABD-49D7-AB4C-A66DE0B506E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
