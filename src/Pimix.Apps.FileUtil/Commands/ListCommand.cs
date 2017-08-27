@@ -10,8 +10,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public string FolderUri { get; set; }
 
         public override int Execute() {
-            Uri uri;
-            if (Uri.TryCreate(FolderUri, UriKind.Absolute, out uri) && uri.Scheme.StartsWith("pimix")) {
+            if (Uri.TryCreate(FolderUri, UriKind.Absolute, out Uri uri) && uri.Scheme.StartsWith("pimix")) {
                 var info = FileInformation.GetFolderView(uri.LocalPath);
                 var schemes = uri.Scheme.Split('+').ToList();
             }
