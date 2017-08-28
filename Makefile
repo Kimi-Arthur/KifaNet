@@ -3,8 +3,8 @@ SHELL := /bin/zsh
 all: build install
 
 build:
-	dotnet restore
-	dotnet publish -c Release
+	dotnet publish -c Release src/Pimix.Apps.FileUtil
+	dotnet publish -c Release src/Pimix.Apps.JobUtil
 
 install:
 	mkdir -p /usr/local/lib/pimix/fileutil
