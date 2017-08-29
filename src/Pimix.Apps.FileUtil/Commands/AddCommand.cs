@@ -15,15 +15,15 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             var f = new PimixFile(FileUri);
             if (!f.Exists()) {
-                logger.Error($"Source {0} doesn't exist!", f);
+                logger.Error$"Source {0} doesn't exist!", f);
                 return 1;
             }
 
-            logger.Info($"Adding {0}...", f);
+            logger.Info("Adding {0}...", f);
             var result = f.Add();
 
             if (result.infoDiff == FileProperties.None) {
-                logger.Info($"Successfully added {0}", f);
+                logger.Info("Successfully added {0}", f);
                 logger.Info(JsonConvert.SerializeObject(f.FileInfo, Formatting.Indented));
                 return 0;
             } else {
