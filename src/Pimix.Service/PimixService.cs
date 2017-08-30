@@ -130,7 +130,7 @@ namespace Pimix.Service
             var typeInfo = typeCache[typeof(TDataModel)];
 
             string address =
-                $"{PimixServerApiAddress}/{typeInfo.Item2}/^+{targetId},{linkId}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/^+{targetId}|{linkId}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "GET";
