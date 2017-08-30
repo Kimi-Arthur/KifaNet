@@ -15,7 +15,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             var f = new PimixFile(FileUri);
             if (!f.Exists()) {
-                logger.Error($"Source {0} doesn't exist!", f);
+                logger.Error("Source {0} doesn't exist!", f);
                 return 1;
             }
 
