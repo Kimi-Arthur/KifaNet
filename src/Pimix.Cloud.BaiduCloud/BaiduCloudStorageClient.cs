@@ -93,7 +93,7 @@ namespace Pimix.Cloud.BaiduCloud
             var request = GetRequest(Config.APIList.DownloadFile,
             new Dictionary<string, string>
             {
-                ["remote_path"] = path.TrimStart('/')
+                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
             });
 
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
@@ -120,7 +120,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.RemovePath,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
             request.GetRequestStream().Close();
@@ -284,7 +284,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileDirect,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
             request.Timeout = 30 * 60 * 1000;
 
@@ -326,7 +326,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.MergeBlocks,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
             request.ContentType = "application/x-www-form-urlencoded";
@@ -361,7 +361,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileRapid,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/'),
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/')),
                     ["content_length"] = fileInformation.Size.ToString(),
                     ["content_md5"] = fileInformation.MD5,
                     ["slice_md5"] = fileInformation.SliceMD5,
@@ -409,7 +409,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
             using (var response = request.GetResponse())
@@ -456,7 +456,7 @@ namespace Pimix.Cloud.BaiduCloud
             HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string>
                 {
-                    ["remote_path"] = path.TrimStart('/')
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
             try
