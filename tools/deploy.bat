@@ -1,4 +1,5 @@
-dotnet publish -c Release
+dotnet publish -c Release src\Pimix.Apps.FileUtil
+dotnet publish -c Release src\Pimix.Apps.JobUtil
 
 rmdir /s /q C:\Software\lib\fileutil
 rmdir /s /q C:\Software\lib\jobutil
