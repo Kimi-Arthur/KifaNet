@@ -178,7 +178,7 @@ namespace Pimix.Service
 
             if (id != null)
             {
-                parameters.Add("id", id);
+                parameters["id"] = id;
             }
 
             string address = $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}";
