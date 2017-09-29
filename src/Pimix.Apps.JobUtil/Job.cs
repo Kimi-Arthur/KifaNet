@@ -46,7 +46,7 @@ namespace Pimix.Apps.JobUtil
                     {
                         try
                         {
-                            Job.Log(Id, e.Data, "i");
+                            Job.Log(Id, e.Data, "info");
                         }
                         catch (Exception ex)
                         {
@@ -63,7 +63,7 @@ namespace Pimix.Apps.JobUtil
                     {
                         try
                         {
-                            Job.Log(Id, e.Data, "d");
+                            Job.Log(Id, e.Data, "debug");
                         }
                         catch (Exception ex)
                         {
