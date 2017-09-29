@@ -46,7 +46,7 @@ namespace Pimix.Apps.JobUtil
                     {
                         try
                         {
-                            Job.AppendInfo(Id, new Dictionary<string, object> { ["stdout"] = e.Data + "\n" });
+                            Job.Log(Id, e.Data, "i");
                         }
                         catch (Exception ex)
                         {
@@ -63,7 +63,7 @@ namespace Pimix.Apps.JobUtil
                     {
                         try
                         {
-                            Job.AppendInfo(Id, new Dictionary<string, object> { ["stderr"] = e.Data + "\n" });
+                            Job.Log(Id, e.Data, "d");
                         }
                         catch (Exception ex)
                         {
@@ -86,8 +86,7 @@ namespace Pimix.Apps.JobUtil
                 proc.BeginErrorReadLine();
 
                 proc.WaitForExit();
-                Job.AddInfo(Id, new Dictionary<string, object> { ["exit_code"] = proc.ExitCode });
-                Job.FinishJob(Id, proc.ExitCode != 0);
+                Job.FinishJob(Id, proc.ExitCode);
 
                 timer?.Dispose();
 
@@ -157,11 +156,11 @@ namespace Pimix.Apps.JobUtil
                 }
             );
 
-        public static void AddInfo(string id, Dictionary<string, object> information)
-            => PimixService.Call<Job>("add_info", methodType: "POST", parameters: new Dictionary<string, string> { ["id"] = id }, body: information);
+        public static void FinishJob(string id, int exit_code = 0)
+            => PimixService.Call<Job>("finish_job", methodType: "POST", body: new Dictionary<string, object> { ["id"] = id, ["exit_code"] = exit_code });
 
-        public static void AppendInfo(string id, Dictionary<string, object> information)
-            => PimixService.Call<Job>("append_info", methodType: "POST", parameters: new Dictionary<string, string> { ["id"] = id }, body: information);
+        public static void Log(string id, string message, string level = "i")
+            => PimixService.Call<Job>("log", methodType: "POST", body: new Dictionary<string, string> { ["id"] = id, ["level"] = level,  ["message"] = message});
 
         public static Job GetJob(string idPrefix = null)
             => PimixService.Call<Job, Job>("get_job", parameters: new Dictionary<string, string> { ["id_prefix"] = idPrefix });
