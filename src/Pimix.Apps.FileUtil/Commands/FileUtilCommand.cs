@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
 using CommandLine;
+using NLog;
+using NLog.Layouts;
+using NLog.Targets;
 using Pimix.Cloud.BaiduCloud;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -9,14 +13,16 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('s', "pimix-server-api-address", HelpText = "Uri for pimix api server address")]
         public string PimixServerAddress { get; set; } = ConfigurationManager.AppSettings["PimixServerApiAddress"];
 
-        [Option('g', "storage-server-order", HelpText = "Storage server order separated by semicolons.")]
-        public string StorageServerOrder { get; set; } = ConfigurationManager.AppSettings["StorageServerOrder"];
-
-        public IEnumerable<string> StorageServerOrderList
-            => StorageServerOrder.Split(';');
+        [Option("job-id", HelpText = "Job ID to report log as.")]
+        public string JobId { get; set; } = null;
 
         public virtual void Initialize() {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerAddress;
+            var config = LogManager.Configuration;
+            if (JobId != null) {
+                config.RemoveTarget("console");
+                config.AddTarget(ServiceTarget);
+            }
 
             CredentialCache.DefaultNetworkCredentials.Domain = ConfigurationManager.AppSettings["DefaultNetworkDomain"];
             CredentialCache.DefaultNetworkCredentials.UserName = ConfigurationManager.AppSettings["DefaultNetworkUserName"];
@@ -24,5 +30,14 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         public abstract int Execute();
+
+        Target ServiceTarget {
+            get {
+                var target = new NetworkTarget();
+                target.Address = Layout.FromString($"{PimixServerAddress}/jobs/$log?id={JobId}&level=${{pad:padding=1:fixedLength=true:inner=${{level}}}}");
+                return target;
+            }
+        }
     }
+
 }
