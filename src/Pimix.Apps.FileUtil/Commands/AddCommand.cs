@@ -22,12 +22,12 @@ namespace Pimix.Apps.FileUtil.Commands {
             logger.Info("Adding {0}...", f);
             var result = f.Add();
 
-            if (result.infoDiff == FileProperties.None) {
+            if (result == FileProperties.None) {
                 logger.Info("Successfully added {0}", f);
                 logger.Info(JsonConvert.SerializeObject(f.FileInfo, Formatting.Indented));
                 return 0;
             } else {
-                logger.Warn("Conflict with old file info! Please check: {0}", result.infoDiff);
+                logger.Warn("Conflict with old file info! Please check: {0}", result);
                 return 1;
             }
         }

@@ -22,8 +22,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             logger.Info("Checking source {0}...", source);
             var sourceCheckResult = source.Add();
 
-            if (sourceCheckResult.infoDiff != FileProperties.None) {
-                logger.Error("Source is wrong! The following fields differ: {0}", sourceCheckResult.infoDiff);
+            if (sourceCheckResult != FileProperties.None) {
+                logger.Error("Source is wrong! The following fields differ: {0}", sourceCheckResult);
                 return 1;
             }
 
@@ -33,7 +33,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (destination.Exists()) {
                 var destinationCheckResult = destination.Add();
 
-                if (destinationCheckResult.infoDiff == FileProperties.None) {
+                if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Already uploaded!");
                     return 0;
                 } else {
@@ -49,14 +49,14 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (destination.Exists()) {
                 logger.Info("Checking {0}...", destination);
                 var destinationCheckResult = destination.Add();
-                if (destinationCheckResult.infoDiff == FileProperties.None) {
+                if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully uploaded {0} to {1}!", source, destination);
                     return 0;
                 } else {
                     destination.Delete();
                     logger.Fatal(
                         "Upload failed! The following fields differ (removed): {0}",
-                        destinationCheckResult.infoDiff
+                        destinationCheckResult
                     );
                     return 2;
                 }

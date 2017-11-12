@@ -19,7 +19,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (target.Exists()) {
                 var targetCheckResult = target.Add();
 
-                if (targetCheckResult.infoDiff == FileProperties.None) {
+                if (targetCheckResult == FileProperties.None) {
                     logger.Info("Already got!");
                     return 0;
                 } else {
@@ -49,14 +49,14 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             if (target.Exists()) {
                 var destinationCheckResult = target.Add();
-                if (destinationCheckResult.infoDiff == FileProperties.None) {
+                if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully got {1} from {0}!", source, target);
                     return 0;
                 } else {
                     //target.Delete();
                     logger.Error(
                         "Get failed! The following fields differ (removed): {0}",
-                        destinationCheckResult.infoDiff
+                        destinationCheckResult
                     );
                     return 2;
                 }

@@ -55,7 +55,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             if (Verify) {
                 var result = destination.Add(Verify);
-                if (result.infoDiff != FileProperties.None) {
+                if (result != FileProperties.None) {
                     logger.Fatal("Unexpected move failure.");
                     return 2;
                 }

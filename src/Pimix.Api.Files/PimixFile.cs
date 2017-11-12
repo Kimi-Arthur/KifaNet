@@ -113,7 +113,7 @@ namespace Pimix.Api.Files {
             return info;
         }
 
-        public (FileProperties infoDiff, FileInformation baseInfo, FileInformation calculatedInfo) Add(bool alwaysCheck = false) {
+        public FileProperties Add(bool alwaysCheck = false) {
             if (!Exists()) {
                 throw new FileNotFoundException(ToString());
             }
@@ -121,7 +121,7 @@ namespace Pimix.Api.Files {
             var oldInfo = FileInfo;
             if ((oldInfo.GetProperties() & FileProperties.All) == FileProperties.All && !alwaysCheck && oldInfo.Locations != null && oldInfo.Locations.Contains(ToString())) {
                 logger.Debug("Skipped checking for {0}.", ToString());
-                return (FileProperties.None, oldInfo, oldInfo);
+                return FileProperties.None;
             }
 
             var info = CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
@@ -153,7 +153,7 @@ namespace Pimix.Api.Files {
                         Formatting.Indented));
             }
 
-            return (compareResult, oldInfo, info);
+            return compareResult;
         }
     }
 }
