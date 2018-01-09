@@ -10,6 +10,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
+        [Option('f', "force-check", HelpText = "Check file integrity even if it is already recorded.")]
+        public bool ForceRecheck { get; set; } = false;
+
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
@@ -20,7 +23,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             logger.Info("Adding {0}...", f);
-            var result = f.Add();
+            var result = f.Add(ForceRecheck);
 
             if (result == FileProperties.None) {
                 logger.Info("Successfully added {0}", f);
