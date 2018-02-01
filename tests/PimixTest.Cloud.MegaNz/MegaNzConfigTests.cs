@@ -6,7 +6,7 @@ namespace PimixTest.Cloud.MegaNz
     [TestClass]
     public class MegaNzConfigTests
     {
-        public static string PimixServerApiAddress { get; set; } = "http://pimix.cloudapp.net/api";
+        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         [TestMethod]
         public void GetConfigTest()

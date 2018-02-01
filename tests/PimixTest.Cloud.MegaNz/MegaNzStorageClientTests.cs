@@ -11,7 +11,7 @@ namespace PimixTest.Cloud.MegaNz
     [TestClass]
     public class MegaNzStorageClientTests
     {
-        public static string PimixServerApiAddress { get; set; } = "http://pimix.cloudapp.net/api";
+        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 

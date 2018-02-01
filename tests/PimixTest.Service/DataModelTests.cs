@@ -6,7 +6,7 @@ namespace PimixTest.Service
     [TestClass]
     public class DataModelTests
     {
-        public string PimixServerApiAddress => "http://pimix.cloudapp.net/api";
+        public string PimixServerApiAddress => "http://www.pimix.tk/api";
 
         [TestMethod]
         public void DataModelGetBasicTest()
