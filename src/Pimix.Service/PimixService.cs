@@ -52,7 +52,7 @@ namespace Pimix.Service
             id = id ?? typeInfo.Item1.GetValue(data) as string;
             string content = JsonConvert.SerializeObject(data);
             string address =
-                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "PATCH";
@@ -81,7 +81,7 @@ namespace Pimix.Service
             id = id ?? typeInfo.Item1.GetValue(data) as string;
             string content = JsonConvert.SerializeObject(data);
             string address =
-                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "POST";
@@ -108,7 +108,7 @@ namespace Pimix.Service
             var typeInfo = typeCache[typeof(TDataModel)];
 
             string address =
-                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "GET";
@@ -130,7 +130,7 @@ namespace Pimix.Service
             var typeInfo = typeCache[typeof(TDataModel)];
 
             string address =
-                $"{PimixServerApiAddress}/{typeInfo.Item2}/^+{targetId}|{linkId}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "GET";
@@ -152,7 +152,7 @@ namespace Pimix.Service
             var typeInfo = typeCache[typeof(TDataModel)];
 
             string address =
-                $"{PimixServerApiAddress}/{typeInfo.Item2}/{id}";
+                $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}";
 
             HttpWebRequest request = WebRequest.CreateHttp(address);
             request.Method = "DELETE";
