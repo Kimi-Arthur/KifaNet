@@ -28,7 +28,6 @@ namespace Pimix.Api.Files {
 
         public FileInformation FileInfo => FileInformation.Get(Id);
 
-
         public PimixFile(string uri, string id = null) {
             // Example uri:
             //   baidu:Pimix_1;v1/a/b/c/d.txt
@@ -66,6 +65,9 @@ namespace Pimix.Api.Files {
 
         public bool Exists()
             => Client.Exists(Path);
+
+        public FileInformation QuickInfo()
+            => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
         public void Delete()
             => Client.Delete(Path);
@@ -124,7 +126,27 @@ namespace Pimix.Api.Files {
                 return FileProperties.None;
             }
 
+            // Compare with quick info.
+            var quickInfo = QuickInfo();
+            logger.Debug("Quick info:\n{0}", JsonConvert.SerializeObject(quickInfo));
+
             var info = CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
+
+            var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
+
+            if (quickCompareResult != FileProperties.None) {
+                logger.Warn(
+                    "Quick data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                        Formatting.Indented));
+                logger.Warn(
+                    "Actual data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                        Formatting.Indented));
+            }
+
             var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
 
             if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {

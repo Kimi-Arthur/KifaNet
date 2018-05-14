@@ -6,6 +6,8 @@ namespace Pimix.IO
     {
         public abstract bool Exists(string path);
 
+        public virtual FileInformation QuickInfo(string path) => new FileInformation();
+
         public abstract void Delete(string path);
 
         public virtual void Copy(string sourcePath, string destinationPath)

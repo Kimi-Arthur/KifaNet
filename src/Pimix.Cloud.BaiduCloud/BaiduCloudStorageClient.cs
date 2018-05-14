@@ -472,6 +472,33 @@ namespace Pimix.Cloud.BaiduCloud
             }
         }
 
+        public override FileInformation QuickInfo(string path)
+        {
+            HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
+                new Dictionary<string, string>
+                {
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                });
+
+            try
+            {
+                using (var response = request.GetResponse())
+                {
+                    var data = response.GetJToken()["list"][0];
+                    return new FileInformation()
+                    {
+                        Size = (long) data["size"],
+                        MD5 = ((string) data["md5"] ?? ((string) data["block_list"]).Substring(2, 32)).ToUpper()
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                logger.Warn("Failed to get basic info for {0}", path);
+                return new FileInformation();
+            }
+        }
+
         public override void Copy(string sourcePath, string destinationPath)
         {
             HttpWebRequest request = ConstructRequest(Config.APIList.CopyFile,
