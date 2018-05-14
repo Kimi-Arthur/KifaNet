@@ -90,11 +90,7 @@ namespace Pimix.Api.Files {
         }
 
         Stream OpenRead() {
-            if (FileInfo.Size != null) {
-                return new VerfiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
-            } else {
-                return FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey);
-            }
+            return new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
         }
 
         void Write(Stream stream)

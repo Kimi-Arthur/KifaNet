@@ -1,12 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using NLog;
 
 namespace Pimix.IO
 {
-    public class VerfiableStream : Stream
+    public class VerifiableStream : Stream
     {
         static Logger logger = LogManager.GetCurrentClassLogger();
         
@@ -27,15 +29,13 @@ namespace Pimix.IO
             => stream.CanSeek;
 
         // Only support read and seek for now.
-        public override bool CanWrite
-            => false;
+        public override bool CanWrite => false;
 
-        public override long Length
-            => info.Size.Value;
+        public override long Length => stream.Length;
 
         public override long Position { get; set; }
 
-        public VerfiableStream(Stream stream, FileInformation info)
+        public VerifiableStream(Stream stream, FileInformation info)
         {
             this.stream = stream;
             this.info = info;
@@ -62,24 +62,59 @@ namespace Pimix.IO
             int left = count;
             for (long pos = startPosition; pos < endPosition; pos += FileInformation.BlockSize)
             {
-                int bytesToRead = (int)Math.Min(endPosition - pos, (long)FileInformation.BlockSize);
+                int bytesToRead = (int)Math.Min(endPosition - pos, FileInformation.BlockSize);
                 int bytesRead = 0;
 
                 bool successful = false;
+                var candidates = new Dictionary<(string md5, string sha1, string sha256), int>();
                 for (int i = 0; i < 5; ++i)
                 {
                     stream.Seek(pos, SeekOrigin.Begin);
                     bytesRead = stream.Read(blockRead, 0, bytesToRead);
-                    if (bytesRead == bytesToRead && IsBlockValid(blockRead, 0, bytesRead, (int)(pos / FileInformation.BlockSize))) {
-                        successful = true;
-                        break;
+                    if (bytesRead == bytesToRead) {
+                        var result = IsBlockValid(blockRead, 0, bytesRead, (int) (pos / FileInformation.BlockSize));
+                        if (result.result == true) {
+                            successful = true;
+                            break;
+                        }
+
+                        if (result.result == false) {
+                            logger.Warn("Block {0} is problematic, retrying ({1})...", pos / FileInformation.BlockSize, i);
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                        } else {
+                            candidates[(result.md5, result.sha1, result.sha256)] = candidates.GetValueOrDefault((result.md5, result.sha1, result.sha256), 0) + 1;
+                            if (HasMajority(candidates))
+                            {
+                                if (candidates.Count > 1)
+                                {
+                                    logger.Debug("Block {0} is not consistently got, but it's fine:", pos / FileInformation.BlockSize);
+                                    foreach (var candidate in candidates)
+                                    {
+                                        logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
+                                    }
+                                }
+                                successful = true;
+                                break;
+                            }
+
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                        }
                     } else {
-                        logger.Warn("Block {0} is problematic, retrying ({1})...", pos / FileInformation.BlockSize, i);
+                        logger.Warn("Block {0} is problematic (unexpected read length {1}, should be {2}), retrying ({3})...", pos / FileInformation.BlockSize, bytesRead, bytesToRead, i);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }
 
                 if (!successful) {
+                    if (candidates.Count > 1)
+                    {
+                        logger.Warn("Block {0} is too inconsistent:", pos / FileInformation.BlockSize);
+                        foreach (var candidate in candidates)
+                        {
+                            logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                        }
+                    }
+
                     throw new Exception($"Unable to get valid block starting from {pos}");
                 }
 
@@ -94,13 +129,25 @@ namespace Pimix.IO
             return count;
         }
 
-        bool IsBlockValid(byte[] buffer, int offset, int count, int blockId) {
-            bool result = true;
+        private bool HasMajority(Dictionary<(string md5, string sha1, string sha256), int> candidates)
+        {
+            var totalCount = candidates.Values.Sum();
+            if (totalCount == 1)
+            {
+                return false;
+            }
 
+            return candidates.Values.Any(i => i > totalCount / 2);
+        }
+
+        (bool? result, string md5, string sha1, string sha256) IsBlockValid(byte[] buffer, int offset, int count, int blockId) {
+            bool? result = null;
+
+            string md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
             if (info.BlockMD5 != null)
             {
+                result = true;
                 string expectedMd5 = info.BlockMD5[blockId];
-                string md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
                 if (md5 != expectedMd5)
                 {
@@ -109,10 +156,11 @@ namespace Pimix.IO
                 }
             }
 
+            string sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
             if (info.BlockSHA1 != null)
             {
+                result = result ?? true;
                 string expectedSha1 = info.BlockSHA1[blockId];
-                string sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
                 if (sha1 != expectedSha1)
                 {
@@ -121,10 +169,12 @@ namespace Pimix.IO
                 }
             }
 
+            string sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
+
             if (info.BlockSHA256 != null)
             {
+                result = result ?? true;
                 string expectedSha256 = info.BlockSHA256[blockId];
-                string sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
                 if (sha256 != expectedSha256)
                 {
@@ -133,7 +183,7 @@ namespace Pimix.IO
                 }
             }
 
-            return result;
+            return (result, md5, sha1, sha256);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
