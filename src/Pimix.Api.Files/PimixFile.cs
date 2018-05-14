@@ -145,6 +145,7 @@ namespace Pimix.Api.Files {
                     JsonConvert.SerializeObject(
                         info.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
+                return quickCompareResult;
             }
 
             var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
