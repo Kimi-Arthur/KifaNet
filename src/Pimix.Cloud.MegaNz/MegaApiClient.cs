@@ -22,7 +22,6 @@ namespace CG.Web.MegaApiClient {
         readonly WebClient webClient;
 
         Node trashNode;
-        AuthInfos authInfos;
         string sessionId;
         byte[] masterKey;
         uint sequenceIndex = (uint) (uint.MaxValue * new Random().NextDouble());
@@ -91,9 +90,6 @@ namespace CG.Web.MegaApiClient {
             if (authInfos == null) throw new ArgumentNullException("authInfos");
 
             EnsureLoggedOut();
-
-            // Store authInfos to relogin if required
-            this.authInfos = authInfos;
 
             // Request Mega Api
             var request = new LoginRequest(authInfos.Email, authInfos.Hash);
