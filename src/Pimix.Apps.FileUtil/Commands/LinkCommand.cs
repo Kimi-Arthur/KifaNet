@@ -5,10 +5,12 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
     class LinkCommand : FileUtilCommand {
-        [Value(0, MetaName = "TARGET", MetaValue = "STRING", Required = true, HelpText = "The target for this link.")]
+        [Value(0, MetaName = "TARGET", MetaValue = "STRING", Required = true,
+            HelpText = "The target for this link.")]
         public string Target { get; set; }
 
-        [Value(1, MetaName = "LINK_NAME", MetaValue = "STRING", Required = true, HelpText = "The link's name.")]
+        [Value(1, MetaName = "LINK_NAME", MetaValue = "STRING", Required = true,
+            HelpText = "The link's name.")]
         public string LinkName { get; set; }
 
         public override int Execute() {

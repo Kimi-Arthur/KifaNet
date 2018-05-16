@@ -13,50 +13,37 @@ using Newtonsoft.Json;
 using NLog;
 using Pimix.IO;
 
-namespace Pimix.Cloud.BaiduCloud
-{
-    public class BaiduCloudStorageClient : StorageClient
-    {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+namespace Pimix.Cloud.BaiduCloud {
+    public class BaiduCloudStorageClient : StorageClient {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static BaiduCloudConfig Config { get; set; }
 
-        public static StorageClient Get(string fileSpec)
-        {
-            var specs = fileSpec.Split(new char[] { ';' });
+        public static StorageClient Get(string fileSpec) {
+            var specs = fileSpec.Split(';');
             foreach (var spec in specs)
-            {
-                if (spec.StartsWith("baidu:"))
-                {
+                if (spec.StartsWith("baidu:")) {
                     Config = BaiduCloudConfig.Get("default");
-                    var client = new BaiduCloudStorageClient { AccountId = spec.Substring(6) };
-                    if (fileSpec.Contains("v1")) {
-                        client.headerLength = 48;
-                    }
+                    var client = new BaiduCloudStorageClient {AccountId = spec.Substring(6)};
+                    if (fileSpec.Contains("v1")) client.headerLength = 48;
 
                     return client;
                 }
-            }
 
             return null;
         }
 
-        public override string ToString()
-            => $"baidu:{AccountId}";
+        public override string ToString() => $"baidu:{AccountId}";
 
-        HttpClient Client;
+        readonly HttpClient Client;
 
         int headerLength;
 
         string accountId;
-        public string AccountId
-        {
-            get
-            {
-                return accountId;
-            }
-            set
-            {
+
+        public string AccountId {
+            get => accountId;
+            set {
                 accountId = value;
                 Account = Config.Accounts[accountId];
             }
@@ -64,281 +51,228 @@ namespace Pimix.Cloud.BaiduCloud
 
         public AccountInfo Account { get; private set; }
 
-        public BaiduCloudStorageClient()
-        {
+        public BaiduCloudStorageClient() {
             Client = new HttpClient();
         }
 
-        int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0, int count = -1)
-        {
-            if (count < 0)
-            {
-                count = buffer.Length - bufferOffset;
-            }
+        int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
+            int count = -1) {
+            if (count < 0) count = buffer.Length - bufferOffset;
 
-            int step = 1 << 20;
+            var step = 1 << 20;
 
-            Parallel.For(0, (count - 1) / step + 1, i =>
-            {
-                DownloadSingleThread(buffer, path, bufferOffset + i * step, offset + i * step, Math.Min(step, count - step * i));
-            });
+            Parallel.For(0, (count - 1) / step + 1,
+                i => {
+                    DownloadSingleThread(buffer, path, bufferOffset + i * step, offset + i * step,
+                        Math.Min(step, count - step * i));
+                });
 
             return count;
         }
 
-        int DownloadSingleThread(byte[] buffer, string path, int bufferOffset, long offset, int count)
-        {
+        int DownloadSingleThread(byte[] buffer, string path, int bufferOffset, long offset,
+            int count) {
             logger.Debug("Download block: [{0}, {1})", offset, offset + count);
 
             var request = GetRequest(Config.APIList.DownloadFile,
-            new Dictionary<string, string>
-            {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+                new Dictionary<string, string> {
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                });
 
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            using (var response = Client.SendAsync(request).Result)
-            {
-                MemoryStream memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+            using (var response = Client.SendAsync(request).Result) {
+                var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                 response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                return (int)memoryStream.Position;
+                return (int) memoryStream.Position;
             }
         }
 
         /// <summary>
-        /// Upload data from stream with the optimal method.
+        ///     Upload data from stream with the optimal method.
         /// </summary>
         /// <param name="path">Path for the destination file.</param>
         /// <param name="stream">Input stream to upload.</param>
-        public override void Write(string path, Stream stream)
-        {
+        public override void Write(string path, Stream stream) {
             UploadNormal(path, stream);
         }
 
-        public override void Delete(string path)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.RemovePath,
-                new Dictionary<string, string>
-                {
+        public override void Delete(string path) {
+            var request = ConstructRequest(Config.APIList.RemovePath,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
             request.GetRequestStream().Close();
 
-            using (var response = request.GetResponse())
-            {
-                if (response.GetDictionary() == null)
-                {
-                    // TODO: Add appropriate exceptions.
-                    throw new InvalidOperationException();
-                }
+            using (var response = request.GetResponse()) {
+                if (response.GetDictionary() == null) throw new InvalidOperationException();
             }
         }
 
-        void UploadNormal(string path, Stream input)
-        {
+        void UploadNormal(string path, Stream input) {
             var size = input.Length;
 
             var blockSize = GetBlockSize(size);
 
-            int blockLength = 0;
-            byte[] buffer = new byte[blockSize];
+            var blockLength = 0;
+            var buffer = new byte[blockSize];
 
-            if (blockSize >= size)
-            {
-                blockLength = input.Read(buffer, 0, (int)size);
-                bool uploadDirectDone = false;
+            if (blockSize >= size) {
+                blockLength = input.Read(buffer, 0, (int) size);
+                var uploadDirectDone = false;
                 while (!uploadDirectDone)
-                {
-                    try
-                    {
+                    try {
                         logger.Debug("Upload method: Direct");
                         UploadDirect(path, buffer, 0, blockLength);
                         uploadDirectDone = true;
-                    }
-                    catch (WebException ex)
-                    {
+                    } catch (WebException ex) {
                         logger.Warn($"WebException:\n{0}", ex);
-                        if (ex.Response != null)
-                        {
+                        if (ex.Response != null) {
                             logger.Warn("Response:");
-                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
-                            {
+                            using (var s = new StreamReader(ex.Response.GetResponseStream())) {
                                 logger.Warn(s.ReadToEnd());
                             }
                         }
+
                         Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                    catch (ObjectDisposedException ex)
-                    {
+                    } catch (ObjectDisposedException ex) {
                         logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
-                }
+
                 return;
             }
 
             logger.Debug("Upload method: Block");
 
-            List<string> blockIds = new List<string>();
+            var blockIds = new List<string>();
 
             if (headerLength > 0) {
                 blockLength = input.Read(buffer, 0, headerLength);
 
                 logger.Debug("Upload header: [{0}, {1})", 0, headerLength);
 
-                bool done = false;
+                var done = false;
                 while (!done)
-                {
-                    try
-                    {
+                    try {
                         blockIds.Add(UploadBlock(buffer, 0, blockLength));
                         logger.Debug("Block ID/MD5: {0}", blockIds.Last());
                         done = true;
-                    }
-                    catch (WebException ex)
-                    {
+                    } catch (WebException ex) {
                         logger.Warn($"WebException:\n{0}", ex);
-                        if (ex.Response != null)
-                        {
+                        if (ex.Response != null) {
                             logger.Warn("Response:");
-                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
-                            {
+                            using (var s = new StreamReader(ex.Response.GetResponseStream())) {
                                 logger.Warn(s.ReadToEnd());
                             }
                         }
+
                         Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                    catch (ObjectDisposedException ex)
-                    {
+                    } catch (ObjectDisposedException ex) {
                         logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                    catch (UploadBlockException ex)
-                    {
+                    } catch (UploadBlockException ex) {
                         logger.Warn("MD5 mismatch:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
-                }
             }
 
-            for (long position = headerLength; position < size; position += blockLength)
-            {
+            for (long position = headerLength; position < size; position += blockLength) {
                 blockLength = input.Read(buffer, 0, blockSize);
 
-                logger.Debug("Upload block ({0}): [{1}, {2})", position / blockSize, position, position + blockLength);
+                logger.Debug("Upload block ({0}): [{1}, {2})", position / blockSize, position,
+                    position + blockLength);
 
-                bool done = false;
+                var done = false;
                 while (!done)
-                {
-                    try
-                    {
+                    try {
                         blockIds.Add(UploadBlock(buffer, 0, blockLength));
                         logger.Debug("Block ID/MD5: {0}", blockIds.Last());
                         done = true;
-                    }
-                    catch (WebException ex)
-                    {
+                    } catch (WebException ex) {
                         logger.Warn($"WebException:\n{0}", ex);
-                        if (ex.Response != null)
-                        {
+                        if (ex.Response != null) {
                             logger.Warn("Response:");
-                            using (var s = new StreamReader(ex.Response.GetResponseStream()))
-                            {
+                            using (var s = new StreamReader(ex.Response.GetResponseStream())) {
                                 logger.Warn(s.ReadToEnd());
                             }
                         }
+
                         Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                    catch (ObjectDisposedException ex)
-                    {
+                    } catch (ObjectDisposedException ex) {
                         logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                    catch (UploadBlockException ex)
-                    {
+                    } catch (UploadBlockException ex) {
                         logger.Warn("MD5 mismatch:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
-                }
             }
 
-            bool mergeDone = false;
+            var mergeDone = false;
             while (!mergeDone)
-            {
-                try
-                {
+                try {
                     MergeBlocks(path, blockIds);
                     mergeDone = true;
-                }
-                catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     logger.Warn(ex, "Failed when merging");
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
-            }
         }
 
-        void UploadDirect(string path, byte[] buffer, int offset, int count)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileDirect,
-                new Dictionary<string, string>
-                {
+        void UploadDirect(string path, byte[] buffer, int offset, int count) {
+            var request = ConstructRequest(Config.APIList.UploadFileDirect,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
             request.Timeout = 30 * 60 * 1000;
 
-            using (Stream requestStream = request.GetRequestStream())
-            {
+            using (var requestStream = request.GetRequestStream()) {
                 requestStream.Write(buffer, offset, count);
             }
 
-            using (var response = request.GetResponse())
-            {
+            using (var response = request.GetResponse()) {
                 var result = response.GetDictionary();
                 if (!result["path"].ToString().EndsWith(path.TrimStart('/')))
-                    throw new Exception($"Direct upload may fail: {path}, real path: {result["path"]}");
+                    throw new Exception(
+                        $"Direct upload may fail: {path}, real path: {result["path"]}");
             }
         }
 
-        string UploadBlock(byte[] buffer, int offset, int count)
-        {
-            string expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count).ToHexString().ToLower();
-            HttpWebRequest request = ConstructRequest(Config.APIList.UploadBlock);
+        string UploadBlock(byte[] buffer, int offset, int count) {
+            var expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count)
+                .ToHexString().ToLower();
+            var request = ConstructRequest(Config.APIList.UploadBlock);
             request.Timeout = 30 * 60 * 1000;
 
-            using (Stream requestStream = request.GetRequestStream())
-            {
+            using (var requestStream = request.GetRequestStream()) {
                 requestStream.Write(buffer, offset, count);
             }
 
-            using (var response = request.GetResponse())
-            {
-                string actualMd5 = response.GetDictionary()["md5"].ToString();
+            using (var response = request.GetResponse()) {
+                var actualMd5 = response.GetDictionary()["md5"].ToString();
                 if (expectedMd5 != actualMd5)
-                    throw new UploadBlockException() { ExpectedMd5 = expectedMd5, ActualMd5 = actualMd5 };
+                    throw new UploadBlockException {
+                        ExpectedMd5 = expectedMd5,
+                        ActualMd5 = actualMd5
+                    };
                 return actualMd5;
             }
         }
 
-        void MergeBlocks(string path, List<string> blockList)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.MergeBlocks,
-                new Dictionary<string, string>
-                {
+        void MergeBlocks(string path, List<string> blockList) {
+            var request = ConstructRequest(Config.APIList.MergeBlocks,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
             request.ContentType = "application/x-www-form-urlencoded";
 
-            using (StreamWriter sw = new StreamWriter(request.GetRequestStream()))
-            {
+            using (var sw = new StreamWriter(request.GetRequestStream())) {
                 sw.Write("param=");
                 sw.Write(
                     Uri.EscapeDataString(
                         JsonConvert.SerializeObject(
-                            new Dictionary<string, List<string>>
-                            {
+                            new Dictionary<string, List<string>> {
                                 ["block_list"] = blockList
                             }
                         )
@@ -346,21 +280,20 @@ namespace Pimix.Cloud.BaiduCloud
                 );
             }
 
-            using (var response = request.GetResponse())
-            {
+            using (var response = request.GetResponse()) {
                 var result = response.GetDictionary();
                 if (!result["path"].ToString().EndsWith(path))
-                    throw new Exception($"Merge may fail! Original path: {path}, real path: {result["path"]}");
+                    throw new Exception(
+                        $"Merge may fail! Original path: {path}, real path: {result["path"]}");
             }
         }
 
-        public void UploadStreamRapid(string path, FileInformation fileInformation, Stream input = null)
-        {
+        public void UploadStreamRapid(string path, FileInformation fileInformation,
+            Stream input = null) {
             fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
-            HttpWebRequest request = ConstructRequest(Config.APIList.UploadFileRapid,
-                new Dictionary<string, string>
-                {
+            var request = ConstructRequest(Config.APIList.UploadFileRapid,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/')),
                     ["content_length"] = fileInformation.Size.ToString(),
                     ["content_md5"] = fileInformation.MD5,
@@ -370,62 +303,56 @@ namespace Pimix.Cloud.BaiduCloud
 
             request.GetRequestStream().Close();
 
-            using (var response = request.GetResponse())
-            {
-                if (!response.GetDictionary().Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5)))
+            using (var response = request.GetResponse()) {
+                if (!response.GetDictionary()
+                    .Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5)))
                     throw new Exception("Response is unexpected!");
             }
         }
 
 
         static RetryPolicy defaultRetryPolicy;
-        public static RetryPolicy DefaultRetryPolicy
-        {
-            get
-            {
-                if (defaultRetryPolicy == null)
-                {
-                    defaultRetryPolicy = new RetryPolicy<BaiduCloudTransientErrorDetectionStrategy>(5, TimeSpan.FromSeconds(10));
-                    defaultRetryPolicy.Retrying += (sender, args) =>
-                    {
-                        Console.Error.WriteLine("Get download length failed once, wait 10 seconds now!");
+
+        public static RetryPolicy DefaultRetryPolicy {
+            get {
+                if (defaultRetryPolicy == null) {
+                    defaultRetryPolicy =
+                        new RetryPolicy<BaiduCloudTransientErrorDetectionStrategy>(5,
+                            TimeSpan.FromSeconds(10));
+                    defaultRetryPolicy.Retrying += (sender, args) => {
+                        Console.Error.WriteLine(
+                            "Get download length failed once, wait 10 seconds now!");
                         Console.Error.WriteLine(args.LastException);
                     };
                 }
 
                 return defaultRetryPolicy;
             }
-            set
-            {
-                defaultRetryPolicy = value;
-            }
+            set => defaultRetryPolicy = value;
         }
 
         public long GetDownloadLength(string path)
             => DefaultRetryPolicy.ExecuteAction(() => GetDownloadLengthWithoutRetry(path));
 
-        public long GetDownloadLengthWithoutRetry(string path)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string>
-                {
+        public long GetDownloadLengthWithoutRetry(string path) {
+            var request = ConstructRequest(Config.APIList.GetFileInfo,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
-            using (var response = request.GetResponse())
-            {
-                return (long)response.GetJToken()["list"][0]["size"];
+            using (var response = request.GetResponse()) {
+                return (long) response.GetJToken()["list"][0]["size"];
             }
         }
 
         public override Stream OpenRead(string path)
-            => new SeekableDownloadStream(GetDownloadLength(path), (buffer, bufferOffset, offset, count) => Download(buffer, path, bufferOffset, offset, count));
+            => new SeekableDownloadStream(GetDownloadLength(path),
+                (buffer, bufferOffset, offset, count)
+                    => Download(buffer, path, bufferOffset, offset, count));
 
-        private HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null)
-        {
-            string address = api.Url.Format(parameters).Format(
-                new Dictionary<string, string>
-                {
+        HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null) {
+            var address = api.Url.Format(parameters).Format(
+                new Dictionary<string, string> {
                     ["access_token"] = Account.AccessToken,
                     ["remote_path_prefix"] = Config.RemotePathPrefix
                 });
@@ -434,118 +361,92 @@ namespace Pimix.Cloud.BaiduCloud
             return new HttpRequestMessage(new HttpMethod(api.Method), address);
         }
 
-        private HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null)
-        {
-            string address = api.Url.Format(parameters).Format(
-                new Dictionary<string, string>
-                {
+        HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null) {
+            var address = api.Url.Format(parameters).Format(
+                new Dictionary<string, string> {
                     ["access_token"] = Account.AccessToken,
                     ["remote_path_prefix"] = Config.RemotePathPrefix
                 });
 
             logger.Trace("Constructed address: {0}", address);
-            HttpWebRequest request = WebRequest.CreateHttp(address);
+            var request = WebRequest.CreateHttp(address);
             //request.ReadWriteTimeout = 300000;
             request.Method = api.Method;
 
             return request;
         }
 
-        public override bool Exists(string path)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string>
-                {
+        public override bool Exists(string path) {
+            var request = ConstructRequest(Config.APIList.GetFileInfo,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
-            try
-            {
-                using (var response = request.GetResponse())
-                {
-                    return (long)response.GetJToken()["list"][0]["size"] > 0;
+            try {
+                using (var response = request.GetResponse()) {
+                    return (long) response.GetJToken()["list"][0]["size"] > 0;
                 }
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 return false;
             }
         }
 
-        public override FileInformation QuickInfo(string path)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string>
-                {
+        public override FileInformation QuickInfo(string path) {
+            var request = ConstructRequest(Config.APIList.GetFileInfo,
+                new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
-            try
-            {
-                using (var response = request.GetResponse())
-                {
+            try {
+                using (var response = request.GetResponse()) {
                     var data = response.GetJToken()["list"][0];
-                    return new FileInformation()
-                    {
+                    return new FileInformation {
                         Size = (long) data["size"],
-                        MD5 = ((string) data["md5"] ?? ((string) data["block_list"]).Substring(2, 32)).ToUpper()
+                        MD5 = ((string) data["md5"] ??
+                               ((string) data["block_list"]).Substring(2, 32)).ToUpper()
                     };
                 }
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 logger.Warn("Failed to get basic info for {0}", path);
                 return new FileInformation();
             }
         }
 
-        public override void Copy(string sourcePath, string destinationPath)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.CopyFile,
-                new Dictionary<string, string>
-                {
+        public override void Copy(string sourcePath, string destinationPath) {
+            var request = ConstructRequest(Config.APIList.CopyFile,
+                new Dictionary<string, string> {
                     ["from_remote_path"] = sourcePath.TrimStart('/'),
                     ["to_remote_path"] = destinationPath.TrimStart('/')
                 });
-            try
-            {
-                using (var response = request.GetResponse())
-                {
+            try {
+                using (var response = request.GetResponse()) {
                     var value = response.GetJToken();
-                    if (!((string)value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
+                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
                         throw new Exception("from field is incorrect");
-                    if (!((string)value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
+                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
                         throw new Exception("to field is incorrect");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 logger.Warn(ex, "Copy failed!");
                 throw;
             }
         }
 
-        public override void Move(string sourcePath, string destinationPath)
-        {
-            HttpWebRequest request = ConstructRequest(Config.APIList.MoveFile,
-                new Dictionary<string, string>
-                {
+        public override void Move(string sourcePath, string destinationPath) {
+            var request = ConstructRequest(Config.APIList.MoveFile,
+                new Dictionary<string, string> {
                     ["from_remote_path"] = sourcePath.TrimStart('/'),
                     ["to_remote_path"] = destinationPath.TrimStart('/')
                 });
-            try
-            {
-                using (var response = request.GetResponse())
-                {
+            try {
+                using (var response = request.GetResponse()) {
                     var value = response.GetJToken();
-                    if (!((string)value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
+                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
                         throw new Exception("from field is incorrect");
-                    if (!((string)value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
+                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
                         throw new Exception("to field is incorrect");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 logger.Warn(ex, "Move failed!");
                 throw;
             }
@@ -555,24 +456,20 @@ namespace Pimix.Cloud.BaiduCloud
         const long MaxBlockSize = 2L << 30;
         const long MinBlockSize = 32L << 20;
 
-        static int GetBlockSize(long size)
-        {
-            long blockSize = MinBlockSize;
+        static int GetBlockSize(long size) {
+            var blockSize = MinBlockSize;
 
             // Special logic:
             //   1. Reserve one block for header
             //   2. Not stop when equals for the 'padding' logic
 
             while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size)
-            {
                 blockSize <<= 1;
-            }
 
-            return (int)blockSize;
+            return (int) blockSize;
         }
 
-        class UploadBlockException : Exception
-        {
+        class UploadBlockException : Exception {
             public string ExpectedMd5 { get; set; }
 
             public string ActualMd5 { get; set; }

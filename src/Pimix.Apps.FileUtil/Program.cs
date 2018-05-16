@@ -6,21 +6,21 @@ using Pimix.Apps.FileUtil.Commands;
 
 namespace Pimix.Apps.FileUtil {
     class Program {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static int Main(string[] args)
             => Parser.Default.ParseArguments<
-                InfoCommand,
-                CopyCommand,
-                VerifyCommand,
-                RemoveCommand,
-                MoveCommand,
-                LinkCommand,
-                UploadCommand,
-                AddCommand,
-                GetCommand
+                    InfoCommand,
+                    CopyCommand,
+                    VerifyCommand,
+                    RemoveCommand,
+                    MoveCommand,
+                    LinkCommand,
+                    UploadCommand,
+                    AddCommand,
+                    GetCommand
                 >(args)
-            .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
+                .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
         static int ExecuteCommand(FileUtilCommand command) {
             command.Initialize();

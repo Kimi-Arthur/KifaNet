@@ -3,39 +3,27 @@ using System.Linq;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
 
-namespace Pimix.Cloud.MegaNz
-{
-    public class MegaNzStorageClient : StorageClient
-    {
-        public static StorageClient Get(string fileSpec)
-        {
-            var specs = fileSpec.Split(new char[] { ';' });
+namespace Pimix.Cloud.MegaNz {
+    public class MegaNzStorageClient : StorageClient {
+        public static StorageClient Get(string fileSpec) {
+            var specs = fileSpec.Split(';');
             foreach (var spec in specs)
-            {
-                if (spec.StartsWith("mega:"))
-                {
+                if (spec.StartsWith("mega:")) {
                     Config = MegaNzConfig.Get("default");
-                    return new MegaNzStorageClient
-                    {
+                    return new MegaNzStorageClient {
                         AccountId = spec.Substring(5)
                     };
                 }
-            }
 
             return null;
         }
 
         string accountId;
-        public string AccountId
-        {
-            get
-            {
-                return accountId;
-            }
-            set
-            {
-                if (value != null && accountId != value)
-                {
+
+        public string AccountId {
+            get => accountId;
+            set {
+                if (value != null && accountId != value) {
                     var account = Config.Accounts[value];
 
                     // Update Client.
@@ -47,8 +35,7 @@ namespace Pimix.Cloud.MegaNz
             }
         }
 
-        public override string ToString()
-            => $"mega:{AccountId}";
+        public override string ToString() => $"mega:{AccountId}";
 
         public MegaApiClient Client { get; private set; }
 
@@ -60,51 +47,37 @@ namespace Pimix.Cloud.MegaNz
         //    Client.Move(GetNode(sourcePath), GetNode(GetParent(destinationPath), true));
         //}
 
-        public override void Delete(string path)
-        {
+        public override void Delete(string path) {
             var node = GetNode(path);
-            if (node != null)
-            {
-                Client.Delete(node, false);
-            }
+            if (node != null) Client.Delete(node, false);
         }
 
-        public override bool Exists(string path)
-            => GetNode(path) != null;
+        public override bool Exists(string path) => GetNode(path) != null;
 
-        public override Stream OpenRead(string path)
-            => Client.Download(GetNode(path));
+        public override Stream OpenRead(string path) => Client.Download(GetNode(path));
 
-        public override void Write(string path, Stream stream)
-        {
+        public override void Write(string path, Stream stream) {
             var folder = GetNode(GetParent(path), true);
             var name = path.Substring(path.LastIndexOf('/') + 1);
             Client.Upload(stream, name, folder);
         }
 
-        string GetParent(string path)
-            => path.Substring(0, path.LastIndexOf('/'));
+        string GetParent(string path) => path.Substring(0, path.LastIndexOf('/'));
 
-        Node GetNode(string path, bool createParents = false)
-        {
+        Node GetNode(string path, bool createParents = false) {
             path = path.Trim('/');
             var nodes = Client.GetNodes();
 
-            Node parent = nodes.Single(n => n.Type == NodeType.Root);
-            Node node = parent;
+            var parent = nodes.Single(n => n.Type == NodeType.Root);
+            var node = parent;
 
-            foreach (var p in path.Split('/'))
-            {
+            foreach (var p in path.Split('/')) {
                 node = nodes.SingleOrDefault(n => n.ParentId == parent.Id && n.Name == p);
-                if (node == null)
-                {
-                    if (createParents)
-                    {
+                if (node == null) {
+                    if (createParents) {
                         node = Client.CreateFolder(p, parent);
                         nodes = Client.GetNodes();
-                    }
-                    else
-                    {
+                    } else {
                         return null;
                     }
                 }

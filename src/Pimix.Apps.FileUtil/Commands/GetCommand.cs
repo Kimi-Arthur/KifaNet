@@ -12,7 +12,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
@@ -22,10 +22,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (targetCheckResult == FileProperties.None) {
                     logger.Info("Already got!");
                     return 0;
-                } else {
-                    logger.Warn("Target exists, but doesn't match.");
-                    return 2;
                 }
+
+                logger.Warn("Target exists, but doesn't match.");
+                return 2;
             }
 
             var info = target.FileInfo;
@@ -52,35 +52,34 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully got {1} from {0}!", source, target);
                     return 0;
-                } else {
-                    //target.Delete();
-                    logger.Error(
-                        "Get failed! The following fields differ (removed): {0}",
-                        destinationCheckResult
-                    );
-                    return 2;
                 }
-            } else {
-                logger.Fatal("Destination doesn't exist unexpectedly!");
+
+                //target.Delete();
+                logger.Error(
+                    "Get failed! The following fields differ (removed): {0}",
+                    destinationCheckResult
+                );
                 return 2;
             }
+
+            logger.Fatal("Destination doesn't exist unexpectedly!");
+            return 2;
         }
 
         void Link(PimixFile source, PimixFile target) {
             var connectionInfo = new ConnectionInfo(target.Spec.Split(':').Last(),
-                                                    "root",
-                                                    new PasswordAuthenticationMethod("root", "fakepass"));
+                "root",
+                new PasswordAuthenticationMethod("root", "fakepass"));
             using (var client = new SshClient(connectionInfo)) {
                 client.Connect();
-                var result = client.RunCommand($"umask 0000 && mkdir -p \"/nfs/files{string.Join("/", target.Path.Split('/').SkipLast(1))}\"");
-                if (result.ExitStatus != 0) {
-                    throw new Exception("Make parent folders failed.");
-                }
+                var result =
+                    client.RunCommand(
+                        $"umask 0000 && mkdir -p \"/nfs/files{string.Join("/", target.Path.Split('/').SkipLast(1))}\"");
+                if (result.ExitStatus != 0) throw new Exception("Make parent folders failed.");
 
-                result = client.RunCommand($"ln \"/nfs/files{source.Path}\" \"/nfs/files{target.Path}\"");
-                if (result.ExitStatus != 0) {
-                    throw new Exception("Link command failed");
-                }
+                result = client.RunCommand(
+                    $"ln \"/nfs/files{source.Path}\" \"/nfs/files{target.Path}\"");
+                if (result.ExitStatus != 0) throw new Exception("Link command failed");
             }
         }
     }

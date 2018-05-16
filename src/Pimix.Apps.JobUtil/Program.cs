@@ -2,26 +2,20 @@
 using System.Collections.Generic;
 using CommandLine;
 
-namespace Pimix.Apps.JobUtil
-{
-    class Program
-    {
+namespace Pimix.Apps.JobUtil {
+    class Program {
         static int Main(string[] args)
-            => Parser.Default.ParseArguments<RunJobCommand, RunAllJobsCommand, ResetJobCommand>(args)
-            .MapResult<JobUtilCommand, int>(ExecuteCommand, HandleParseFail);
+            => Parser.Default
+                .ParseArguments<RunJobCommand, RunAllJobsCommand, ResetJobCommand>(args)
+                .MapResult<JobUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
-        static int ExecuteCommand(JobUtilCommand command)
-        {
+        static int ExecuteCommand(JobUtilCommand command) {
             command.Initialize();
 
-            try
-            {
+            try {
                 return command.Execute();
-            }
-            catch (Exception ex)
-            {
-                while (ex != null)
-                {
+            } catch (Exception ex) {
+                while (ex != null) {
                     Console.WriteLine("Caused by:");
                     Console.WriteLine(ex);
                     ex = ex.InnerException;

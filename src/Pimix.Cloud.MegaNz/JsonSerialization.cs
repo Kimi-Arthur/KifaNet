@@ -1,19 +1,14 @@
-﻿namespace CG.Web.MegaApiClient
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
+namespace CG.Web.MegaApiClient {
     #region Base
 
-    internal abstract class RequestBase
-    {
-        protected RequestBase(string action)
-        {
-            this.Action = action;
+    abstract class RequestBase {
+        protected RequestBase(string action) {
+            Action = action;
         }
 
         [JsonProperty("a")]
@@ -25,13 +20,11 @@
 
     #region Login
 
-    internal class LoginRequest : RequestBase
-    {
+    class LoginRequest : RequestBase {
         public LoginRequest(string userHandle, string passwordHash)
-          : base("us")
-        {
-            this.UserHandle = userHandle;
-            this.PasswordHash = passwordHash;
+            : base("us") {
+            UserHandle = userHandle;
+            PasswordHash = passwordHash;
         }
 
         [JsonProperty("user")]
@@ -41,8 +34,7 @@
         public string PasswordHash { get; private set; }
     }
 
-    internal class LoginResponse
-    {
+    class LoginResponse {
         [JsonProperty("csid")]
         public string SessionId { get; private set; }
 
@@ -56,13 +48,11 @@
         public string MasterKey { get; private set; }
     }
 
-    internal class AnonymousLoginRequest : RequestBase
-    {
+    class AnonymousLoginRequest : RequestBase {
         public AnonymousLoginRequest(string masterKey, string temporarySession)
-          : base("up")
-        {
-            this.MasterKey = masterKey;
-            this.TemporarySession = temporarySession;
+            : base("up") {
+            MasterKey = masterKey;
+            TemporarySession = temporarySession;
         }
 
         [JsonProperty("k")]
@@ -76,25 +66,22 @@
 
     #region AccountInformation
 
-    internal class AccountInformationRequest : RequestBase
-    {
+    class AccountInformationRequest : RequestBase {
         public AccountInformationRequest()
-          : base("uq")
-        {
+            : base("uq") {
         }
 
         [JsonProperty("strg")]
-        public int Storage { get { return 1; } }
+        public int Storage => 1;
 
         [JsonProperty("xfer")]
-        public int Transfer { get { return 0; } }
+        public int Transfer => 0;
 
         [JsonProperty("pro")]
-        public int AccountType { get { return 0; } }
+        public int AccountType => 0;
     }
 
-    public class AccountInformationResponse
-    {
+    public class AccountInformationResponse {
         [JsonProperty("mstrg")]
         public long TotalQuota { get; private set; }
 
@@ -107,19 +94,16 @@
 
     #region Nodes
 
-    internal class GetNodesRequest : RequestBase
-    {
+    class GetNodesRequest : RequestBase {
         public GetNodesRequest()
-          : base("f")
-        {
-            this.c = 1;
+            : base("f") {
+            c = 1;
         }
 
-        public int c { get; private set; }
+        public int c { get; }
     }
 
-    internal class GetNodesResponse
-    {
+    class GetNodesResponse {
         public Node[] Nodes { get; private set; }
 
         [JsonProperty("f")]
@@ -129,25 +113,23 @@
         public List<SharedKey> SharedKeys { get; private set; }
 
         [OnDeserialized]
-        public void OnDeserialized(StreamingContext ctx)
-        {
-            JsonSerializerSettings settings = new JsonSerializerSettings();
+        public void OnDeserialized(StreamingContext ctx) {
+            var settings = new JsonSerializerSettings();
 
             // First Nodes deserialization to retrieve all shared keys
-            settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this });
-            JsonConvert.DeserializeObject<Node[]>(this.NodesSerialized.ToString(), settings);
+            settings.Context = new StreamingContext(StreamingContextStates.All, new[] {this});
+            JsonConvert.DeserializeObject<Node[]>(NodesSerialized.ToString(), settings);
 
             // Deserialize nodes
-            settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this, ctx.Context });
-            this.Nodes = JsonConvert.DeserializeObject<Node[]>(this.NodesSerialized.ToString(), settings);
+            settings.Context =
+                new StreamingContext(StreamingContextStates.All, new[] {this, ctx.Context});
+            Nodes = JsonConvert.DeserializeObject<Node[]>(NodesSerialized.ToString(), settings);
         }
 
-        internal class SharedKey
-        {
-            public SharedKey(string id, string key)
-            {
-                this.Id = id;
-                this.Key = key;
+        internal class SharedKey {
+            public SharedKey(string id, string key) {
+                Id = id;
+                Key = key;
             }
 
             [JsonProperty("h")]
@@ -163,12 +145,10 @@
 
     #region Delete
 
-    internal class DeleteRequest : RequestBase
-    {
+    class DeleteRequest : RequestBase {
         public DeleteRequest(Node node)
-          : base("d")
-        {
-            this.Node = node.Id;
+            : base("d") {
+            Node = node.Id;
         }
 
         [JsonProperty("n")]
@@ -180,12 +160,10 @@
 
     #region Link
 
-    internal class GetDownloadLinkRequest : RequestBase
-    {
+    class GetDownloadLinkRequest : RequestBase {
         public GetDownloadLinkRequest(Node node)
-          : base("l")
-        {
-            this.Id = node.Id;
+            : base("l") {
+            Id = node.Id;
         }
 
         [JsonProperty("n")]
@@ -197,16 +175,13 @@
 
     #region Create node
 
-    internal class CreateNodeRequest : RequestBase
-    {
-        private CreateNodeRequest(Node parentNode, NodeType type, string attributes, string encryptedKey, string completionHandle)
-          : base("p")
-        {
-            this.ParentId = parentNode.Id;
-            this.Nodes = new[]
-            {
-                new CreateNodeRequestData
-                {
+    class CreateNodeRequest : RequestBase {
+        CreateNodeRequest(Node parentNode, NodeType type, string attributes, string encryptedKey,
+            string completionHandle)
+            : base("p") {
+            ParentId = parentNode.Id;
+            Nodes = new[] {
+                new CreateNodeRequestData {
                     Attributes = attributes,
                     Key = encryptedKey,
                     Type = type,
@@ -221,18 +196,17 @@
         [JsonProperty("n")]
         public CreateNodeRequestData[] Nodes { get; private set; }
 
-        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes, string encryptedkey, string completionHandle)
-        {
-            return new CreateNodeRequest(parentNode, NodeType.File, attributes, encryptedkey, completionHandle);
-        }
+        public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes,
+            string encryptedkey, string completionHandle)
+            => new CreateNodeRequest(parentNode, NodeType.File, attributes, encryptedkey,
+                completionHandle);
 
-        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes, string encryptedkey)
-        {
-            return new CreateNodeRequest(parentNode, NodeType.Directory, attributes, encryptedkey, "xxxxxxxx");
-        }
+        public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes,
+            string encryptedkey)
+            => new CreateNodeRequest(parentNode, NodeType.Directory, attributes, encryptedkey,
+                "xxxxxxxx");
 
-        internal class CreateNodeRequestData
-        {
+        internal class CreateNodeRequestData {
             [JsonProperty("h")]
             public string CompletionHandle { get; set; }
 
@@ -252,20 +226,17 @@
 
     #region UploadRequest
 
-    internal class UploadUrlRequest : RequestBase
-    {
+    class UploadUrlRequest : RequestBase {
         public UploadUrlRequest(long fileSize)
-          : base("u")
-        {
-            this.Size = fileSize;
+            : base("u") {
+            Size = fileSize;
         }
 
         [JsonProperty("s")]
         public long Size { get; private set; }
     }
 
-    internal class UploadUrlResponse
-    {
+    class UploadUrlResponse {
         [JsonProperty("p")]
         public string Url { get; private set; }
     }
@@ -275,36 +246,31 @@
 
     #region DownloadRequest
 
-    internal class DownloadUrlRequest : RequestBase
-    {
+    class DownloadUrlRequest : RequestBase {
         public DownloadUrlRequest(Node node)
-          : base("g")
-        {
-            this.Id = node.Id;
+            : base("g") {
+            Id = node.Id;
         }
 
-        public int g { get { return 1; } }
+        public int g => 1;
 
         [JsonProperty("n")]
         public string Id { get; private set; }
     }
 
-    internal class DownloadUrlRequestFromId : RequestBase
-    {
+    class DownloadUrlRequestFromId : RequestBase {
         public DownloadUrlRequestFromId(string id)
-          : base("g")
-        {
-            this.Id = id;
+            : base("g") {
+            Id = id;
         }
 
-        public int g { get { return 1; } }
+        public int g => 1;
 
         [JsonProperty("p")]
         public string Id { get; private set; }
     }
 
-    internal class DownloadUrlResponse
-    {
+    class DownloadUrlResponse {
         [JsonProperty("g")]
         public string Url { get; private set; }
 
@@ -320,13 +286,11 @@
 
     #region Move
 
-    internal class MoveRequest : RequestBase
-    {
+    class MoveRequest : RequestBase {
         public MoveRequest(Node node, Node destinationParentNode)
-          : base("m")
-        {
-            this.Id = node.Id;
-            this.DestinationParentId = destinationParentNode.Id;
+            : base("m") {
+            Id = node.Id;
+            DestinationParentId = destinationParentNode.Id;
         }
 
         [JsonProperty("n")]
@@ -341,11 +305,9 @@
 
     #region Attributes
 
-    internal class Attributes
-    {
-        public Attributes(string name)
-        {
-            this.Name = name;
+    class Attributes {
+        public Attributes(string name) {
+            Name = name;
         }
 
         [JsonProperty("n")]

@@ -5,17 +5,14 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Pimix
-{
-    public static class WebResponseExtensions
-    {
+namespace Pimix {
+    public static class WebResponseExtensions {
         public static Dictionary<string, string> EncodingNameFixes { get; set; } =
-            new Dictionary<string, string> {["utf8"] = "UTF-8" };
+            new Dictionary<string, string> {["utf8"] = "UTF-8"};
 
-        static string GetString(WebResponse response)
-        {
+        static string GetString(WebResponse response) {
             var resp = response as HttpWebResponse;
-            string encodingName = resp.ContentEncoding;
+            var encodingName = resp.ContentEncoding;
             if (string.IsNullOrEmpty(encodingName))
                 encodingName = resp.CharacterSet;
             if (string.IsNullOrEmpty(encodingName))
@@ -24,8 +21,8 @@ namespace Pimix
             // Wrongly encoding name handling.
             encodingName = EncodingNameFixes.GetValueOrDefault(encodingName, encodingName);
 
-            using (StreamReader sr = new StreamReader(resp.GetResponseStream(), Encoding.GetEncoding(encodingName)))
-            {
+            using (var sr = new StreamReader(resp.GetResponseStream(),
+                Encoding.GetEncoding(encodingName))) {
                 return sr.ReadToEnd();
             }
         }

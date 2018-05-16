@@ -1,40 +1,29 @@
-﻿namespace CG.Web.MegaApiClient
-{
-    using System;
+﻿using System;
 
-    public class ApiException : Exception
-    {
-        internal ApiException(ApiResultCode apiResultCode)
-        {
-            this.ApiResultCode = apiResultCode;
+namespace CG.Web.MegaApiClient {
+    public class ApiException : Exception {
+        internal ApiException(ApiResultCode apiResultCode) {
+            ApiResultCode = apiResultCode;
         }
 
-        public ApiResultCode ApiResultCode { get; private set; }
+        public ApiResultCode ApiResultCode { get; }
 
-        public override string Message
-        {
-            get { return string.Format("API response: {0}", this.ApiResultCode); }
-        }
+        public override string Message => string.Format("API response: {0}", ApiResultCode);
     }
 
-    public class DownloadException : Exception
-    {
+    public class DownloadException : Exception {
         public DownloadException()
-          : base("Invalid file checksum")
-        {
+            : base("Invalid file checksum") {
         }
     }
 
-    public class UploadException : Exception
-    {
+    public class UploadException : Exception {
         public UploadException(string error)
-          : base("Upload error: " + error)
-        {
+            : base("Upload error: " + error) {
         }
     }
 
-    public enum ApiResultCode
-    {
+    public enum ApiResultCode {
         Ok = 0,
         InternalError = -1,
         BadArguments = -2,

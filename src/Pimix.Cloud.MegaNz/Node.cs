@@ -1,19 +1,14 @@
-﻿namespace CG.Web.MegaApiClient
-{
-    using System;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Runtime.Serialization;
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
-    using Newtonsoft.Json;
-
+namespace CG.Web.MegaApiClient {
     [DebuggerDisplay("Type: {Type} - Name: {Name} - Id: {Id}")]
-    public class Node
-    {
-        private static readonly DateTime OriginalDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+    public class Node {
+        static readonly DateTime OriginalDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
 
-        private Node()
-        {
+        Node() {
         }
 
         #region Public properties
@@ -31,7 +26,7 @@
         public string SharingId { get; private set; }
 
         [JsonProperty("sk")]
-        private string SharingKey { get; set; }
+        string SharingKey { get; set; }
 
         [JsonProperty("fa")]
         public string SerializedFileAttributes { get; private set; }
@@ -41,57 +36,47 @@
 
         [JsonIgnore]
         public byte[] FullKey { get; private set; }
-                
+
         #endregion
 
         #region Deserialization
 
         [JsonProperty("a")]
-        private string SerializedAttributes { get; set; }
+        string SerializedAttributes { get; set; }
 
         [JsonProperty("k")]
-        private string SerializedKey { get; set; }
+        string SerializedKey { get; set; }
 
         [OnDeserialized]
-        public void OnDeserialized(StreamingContext ctx)
-        {
-            object[] context = (object[])ctx.Context;
-            GetNodesResponse nodesResponse = (GetNodesResponse)context[0];
-            if (context.Length == 1)
-            {
+        public void OnDeserialized(StreamingContext ctx) {
+            var context = (object[]) ctx.Context;
+            var nodesResponse = (GetNodesResponse) context[0];
+            if (context.Length == 1) {
                 // Add key from incoming sharing.
-                if (this.SharingKey != null)
-                {
-                    nodesResponse.SharedKeys.Add(new GetNodesResponse.SharedKey(this.Id, this.SharingKey));
-                }
-                return;
-            }
-            else
-            {
-                byte[] masterKey = (byte[])context[1];
+                if (SharingKey != null)
+                    nodesResponse.SharedKeys.Add(new GetNodesResponse.SharedKey(Id, SharingKey));
+            } else {
+                var masterKey = (byte[]) context[1];
 
-                if (this.Type == NodeType.File || this.Type == NodeType.Directory)
-                {
+                if (Type == NodeType.File || Type == NodeType.Directory) {
                     // There are cases where the SerializedKey property contains multiple keys separated with /
                     // This can occur when a folder is shared and the parent is shared too.
                     // Both keys are working so we use the first one
-                    string serializedKey = this.SerializedKey.Split('/')[0];
-                    int splitPosition = serializedKey.IndexOf(":", StringComparison.InvariantCulture);
-                    byte[] encryptedKey = serializedKey.Substring(splitPosition + 1).FromBase64();
+                    var serializedKey = SerializedKey.Split('/')[0];
+                    var splitPosition =
+                        serializedKey.IndexOf(":", StringComparison.InvariantCulture);
+                    var encryptedKey = serializedKey.Substring(splitPosition + 1).FromBase64();
 
-                    this.FullKey = Crypto.DecryptKey(encryptedKey, masterKey);
+                    FullKey = Crypto.DecryptKey(encryptedKey, masterKey);
 
-                    if (this.Type == NodeType.File)
-                    {
-                        this.Key = Crypto.GetPartsFromDecryptedKey(this.FullKey);
-                    }
+                    if (Type == NodeType.File)
+                        Key = Crypto.GetPartsFromDecryptedKey(FullKey);
                     else
-                    {
-                        this.Key = this.FullKey;
-                    }
+                        Key = FullKey;
 
-                    Attributes attributes = Crypto.DecryptAttributes(this.SerializedAttributes.FromBase64(), this.Key);
-                    this.Name = attributes.Name;
+                    var attributes =
+                        Crypto.DecryptAttributes(SerializedAttributes.FromBase64(), Key);
+                    Name = attributes.Name;
                 }
             }
         }
@@ -100,20 +85,11 @@
 
         #region Equality
 
-        public bool Equals(Node other)
-        {
-            return other != null && this.Id == other.Id;
-        }
+        public bool Equals(Node other) => other != null && Id == other.Id;
 
-        public override int GetHashCode()
-        {
-            return this.Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        public override bool Equals(object obj)
-        {
-            return this.Equals(obj as Node);
-        }
+        public override bool Equals(object obj) => Equals(obj as Node);
 
         #endregion
 
@@ -126,5 +102,4 @@
         [JsonProperty("t")]
         public NodeType Type { get; protected set; }
     }
-
 }

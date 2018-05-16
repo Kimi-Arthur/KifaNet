@@ -2,11 +2,9 @@
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace PimixTest.Service
-{
+namespace PimixTest.Service {
     [DataModel("api_test")]
-    class FakeDataModel
-    {
+    class FakeDataModel {
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -27,44 +25,27 @@ namespace PimixTest.Service
 
         #region PimixService Wrappers
 
-        public static string PimixServerApiAddress
-        {
-            get
-            {
-                return PimixService.PimixServerApiAddress;
-            }
-            set
-            {
-                PimixService.PimixServerApiAddress = value;
-            }
+        public static string PimixServerApiAddress {
+            get => PimixService.PimixServerApiAddress;
+            set => PimixService.PimixServerApiAddress = value;
         }
 
-        public static string PimixServerCredential
-        {
-            get
-            {
-                return PimixService.PimixServerCredential;
-            }
-            set
-            {
-                PimixService.PimixServerCredential = value;
-            }
+        public static string PimixServerCredential {
+            get => PimixService.PimixServerCredential;
+            set => PimixService.PimixServerCredential = value;
         }
 
         public static bool Patch(FakeDataModel data, string id = null)
-            => PimixService.Patch<FakeDataModel>(data, id);
+            => PimixService.Patch(data, id);
 
-        public static FakeDataModel Get(string id)
-            => PimixService.Get<FakeDataModel>(id);
+        public static FakeDataModel Get(string id) => PimixService.Get<FakeDataModel>(id);
 
         #endregion
 
-        public static void Reset()
-            => PimixService.Call<FakeDataModel>("reset", methodType: "POST");
+        public static void Reset() => PimixService.Call<FakeDataModel>("reset", "POST");
     }
 
-    class FakeSubDataModel
-    {
+    class FakeSubDataModel {
         [JsonProperty("sub_prop1")]
         public string SubProp1 { get; set; }
 

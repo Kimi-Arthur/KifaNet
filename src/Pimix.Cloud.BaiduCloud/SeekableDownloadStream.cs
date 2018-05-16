@@ -3,53 +3,44 @@ using System.IO;
 using System.Threading;
 using NLog;
 
-namespace Pimix.Cloud.BaiduCloud
-{
-    class SeekableDownloadStream : Stream
-    {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+namespace Pimix.Cloud.BaiduCloud {
+    class SeekableDownloadStream : Stream {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public delegate int Downloader(byte[] buffer, int bufferOffset = 0, long offset = 0, int count = -1);
+        public delegate int Downloader(byte[] buffer, int bufferOffset = 0, long offset = 0,
+            int count = -1);
 
-        Downloader downloader;
+        readonly Downloader downloader;
 
-        bool isOpen = true;
+        readonly bool isOpen = true;
 
-        public override bool CanRead
-            => isOpen;
+        public override bool CanRead => isOpen;
 
-        public override bool CanSeek
-            => isOpen;
+        public override bool CanSeek => isOpen;
 
-        public override bool CanWrite
-            => false;
+        public override bool CanWrite => false;
 
-        long length;
-        public override long Length => length;
+        public override long Length { get; }
 
         public override long Position { get; set; }
 
-        public SeekableDownloadStream(long length, Downloader downloader)
-        {
-            this.length = length;
+        public SeekableDownloadStream(long length, Downloader downloader) {
+            Length = length;
             this.downloader = downloader;
         }
 
-        public override void Flush()
-        {
+        public override void Flush() {
             if (!isOpen)
                 throw new ObjectDisposedException(null);
 
             // Intentionally doing nothing.
         }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
+        public override long Seek(long offset, SeekOrigin origin) {
             if (!isOpen)
                 throw new ObjectDisposedException(null);
 
-            switch (origin)
-            {
+            switch (origin) {
                 case SeekOrigin.Begin:
                     Position = offset;
                     break;
@@ -67,13 +58,11 @@ namespace Pimix.Cloud.BaiduCloud
             return Position;
         }
 
-        public override void SetLength(long value)
-        {
+        public override void SetLength(long value) {
             throw new NotSupportedException("The download stream is not writable.");
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
+        public override int Read(byte[] buffer, int offset, int count) {
             if (!isOpen)
                 throw new ObjectDisposedException(null);
 
@@ -83,44 +72,36 @@ namespace Pimix.Cloud.BaiduCloud
             if (offset < 0)
                 throw new ArgumentOutOfRangeException(nameof(offset));
 
-            count = (int)Math.Min(count, Length - Position);
+            count = (int) Math.Min(count, Length - Position);
 
             if (buffer.Length - offset < count)
                 throw new ArgumentException();
 
-            if (Position >= Length)
-            {
-                return 0;
-            }
+            if (Position >= Length) return 0;
 
-            bool done = false;
-            int readCount = 0;
+            var done = false;
+            var readCount = 0;
             while (!done)
-            {
-                try
-                {
+                try {
                     readCount = downloader(buffer, offset, Position, count);
                     done = readCount == count;
-                    if (!done)
-                    {
+                    if (!done) {
                         logger.Warn("Didn't get expected amount of data.");
-                        logger.Warn("Responses contains {0} bytes, should be {1} bytes.", readCount, count);
+                        logger.Warn("Responses contains {0} bytes, should be {1} bytes.", readCount,
+                            count);
                     }
-                }
-                catch (Exception ex)
-                {
-                    logger.Warn(ex, "Failed once when downloading (from {0} to {1}):", Position, Position + count);
+                } catch (Exception ex) {
+                    logger.Warn(ex, "Failed once when downloading (from {0} to {1}):", Position,
+                        Position + count);
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
-            }
 
             Position += readCount;
 
             return readCount;
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
-        {
+        public override void Write(byte[] buffer, int offset, int count) {
             throw new NotSupportedException("The download stream is not writable.");
         }
     }

@@ -9,16 +9,14 @@ using HashLib;
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.IO
-{
+namespace Pimix.IO {
     [DataModel("files")]
-    public partial class FileInformation
-    {
+    public partial class FileInformation {
         const int SliceLength = 256 << 10;
 
         public const int BlockSize = 32 << 20;
 
-        static Dictionary<FileProperties, PropertyInfo> Properties;
+        static readonly Dictionary<FileProperties, PropertyInfo> Properties;
 
         [JsonProperty("id")]
         public string Id { get; set; }
@@ -60,207 +58,191 @@ namespace Pimix.IO
         public List<string> Locations { get; set; }
 
         public static List<FileInformation> GetFolderView(string path)
-            => PimixService.Call<FileInformation, List<FileInformation>>("get_folder_view", parameters: new Dictionary<string, string> { ["location"] = path });
+            => PimixService.Call<FileInformation, List<FileInformation>>("get_folder_view",
+                parameters: new Dictionary<string, string> {["location"] = path});
 
         public static void AddLocation(string id, string location)
-            => PimixService.Call<FileInformation>("add_location", id: id, parameters: new Dictionary<string, string> { ["location"] = location });
+            => PimixService.Call<FileInformation>("add_location", id: id,
+                parameters: new Dictionary<string, string> {["location"] = location});
 
         public static void RemoveLocation(string id, string location)
-            => PimixService.Call<FileInformation>("remove_location", id: id, parameters: new Dictionary<string, string> { ["location"] = location });
+            => PimixService.Call<FileInformation>("remove_location", id: id,
+                parameters: new Dictionary<string, string> {["location"] = location});
 
         public static string CreateLocation(string id, string type = null)
-            => PimixService.Call<FileInformation, string>("create_location", id: id, parameters: new Dictionary<string, string> { ["type"] = type });
+            => PimixService.Call<FileInformation, string>("create_location", id: id,
+                parameters: new Dictionary<string, string> {["type"] = type});
 
         public static string GetLocation(string id, string types = null)
-            => PimixService.Call<FileInformation, string>("get_location", id: id, parameters: new Dictionary<string, string> { ["types"] = types });
+            => PimixService.Call<FileInformation, string>("get_location", id: id,
+                parameters: new Dictionary<string, string> {["types"] = types});
 
         public static string GetId(string location)
-            => PimixService.Call<FileInformation, string>("get_id", parameters: new Dictionary<string, string> { ["location"] = location });
+            => PimixService.Call<FileInformation, string>("get_id",
+                parameters: new Dictionary<string, string> {["location"] = location});
 
-        static FileInformation()
-        {
+        static FileInformation() {
             Properties = new Dictionary<FileProperties, PropertyInfo>();
-            foreach (var prop in typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public))
-            {
-                Properties[(FileProperties)Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
-            }
+            foreach (var prop in
+                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                Properties[(FileProperties) Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
         }
 
-        public FileInformation AddProperties(Stream stream, FileProperties requiredProperties)
-        {
+        public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
             requiredProperties -= requiredProperties & GetProperties();
 
             if (Size == null
                 && (requiredProperties.HasFlag(FileProperties.Size)
-                || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None
-                || (requiredProperties & FileProperties.AllHashes) != FileProperties.None))
-            {
+                    || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None
+                    || (requiredProperties & FileProperties.AllHashes) != FileProperties.None))
                 Size = stream.Length;
-            }
 
-            int readLength = 0;
-            byte[] buffer = new byte[BlockSize];
+            var readLength = 0;
+            var buffer = new byte[BlockSize];
 
-            if (stream != null && stream.CanSeek)
-            {
-                // Assume at head if stream is not seekable.
-                stream.Seek(0, SeekOrigin.Begin);
-            }
+            if (stream != null && stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
 
-            if (requiredProperties.HasFlag(FileProperties.SliceMD5))
-            {
+            if (requiredProperties.HasFlag(FileProperties.SliceMD5)) {
                 readLength = stream.Read(buffer, 0, SliceLength);
-                SliceMD5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength).ToHexString();
+                SliceMD5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength)
+                    .ToHexString();
             }
 
-            if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None)
-            {
-                List<HashAlgorithm> hashers = new List<HashAlgorithm>
-                {
-                    requiredProperties.HasFlag(FileProperties.MD5) ? new MD5CryptoServiceProvider() : null,
-                    requiredProperties.HasFlag(FileProperties.SHA1) ? new SHA1CryptoServiceProvider() : null,
-                    requiredProperties.HasFlag(FileProperties.SHA256) ? new SHA256CryptoServiceProvider() : null
+            if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None) {
+                var hashers = new List<HashAlgorithm> {
+                    requiredProperties.HasFlag(FileProperties.MD5)
+                        ? new MD5CryptoServiceProvider()
+                        : null,
+                    requiredProperties.HasFlag(FileProperties.SHA1)
+                        ? new SHA1CryptoServiceProvider()
+                        : null,
+                    requiredProperties.HasFlag(FileProperties.SHA256)
+                        ? new SHA256CryptoServiceProvider()
+                        : null
                 };
 
-                BlockMD5 = requiredProperties.HasFlag(FileProperties.BlockMD5) ? new List<string>() : BlockMD5;
-                BlockSHA1 = requiredProperties.HasFlag(FileProperties.BlockSHA1) ? new List<string>() : BlockSHA1;
-                BlockSHA256 = requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new List<string>() : BlockSHA256;
+                BlockMD5 = requiredProperties.HasFlag(FileProperties.BlockMD5)
+                    ? new List<string>()
+                    : BlockMD5;
+                BlockSHA1 = requiredProperties.HasFlag(FileProperties.BlockSHA1)
+                    ? new List<string>()
+                    : BlockSHA1;
+                BlockSHA256 = requiredProperties.HasFlag(FileProperties.BlockSHA256)
+                    ? new List<string>()
+                    : BlockSHA256;
 
-                List<HashAlgorithm> blockHashers = new List<HashAlgorithm>
-                {
-                    requiredProperties.HasFlag(FileProperties.BlockMD5) ? new MD5CryptoServiceProvider() : null,
-                    requiredProperties.HasFlag(FileProperties.BlockSHA1) ? new SHA1CryptoServiceProvider() : null,
-                    requiredProperties.HasFlag(FileProperties.BlockSHA256) ? new SHA256CryptoServiceProvider() : null
+                var blockHashers = new List<HashAlgorithm> {
+                    requiredProperties.HasFlag(FileProperties.BlockMD5)
+                        ? new MD5CryptoServiceProvider()
+                        : null,
+                    requiredProperties.HasFlag(FileProperties.BlockSHA1)
+                        ? new SHA1CryptoServiceProvider()
+                        : null,
+                    requiredProperties.HasFlag(FileProperties.BlockSHA256)
+                        ? new SHA256CryptoServiceProvider()
+                        : null
                 };
 
-                List<IHash> additionalHashers = new List<IHash>
-                {
-                    requiredProperties.HasFlag(FileProperties.CRC32) ? HashFactory.Checksum.CreateCRC32a() : null,
-                    requiredProperties.HasFlag(FileProperties.Adler32) ? HashFactory.Checksum.CreateAdler32() : null
+                var additionalHashers = new List<IHash> {
+                    requiredProperties.HasFlag(FileProperties.CRC32)
+                        ? HashFactory.Checksum.CreateCRC32a()
+                        : null,
+                    requiredProperties.HasFlag(FileProperties.Adler32)
+                        ? HashFactory.Checksum.CreateAdler32()
+                        : null
                 };
 
-                foreach (var hasher in additionalHashers)
-                {
-                    hasher?.Initialize();
-                }
+                foreach (var hasher in additionalHashers) hasher?.Initialize();
 
-                while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) != 0)
-                {
+                while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) !=
+                       0) {
                     Parallel.ForEach(
                         hashers,
-                        hasher =>
-                        {
-                            hasher?.TransformBlock(buffer, 0, readLength, buffer, 0);
-                        }
+                        hasher => { hasher?.TransformBlock(buffer, 0, readLength, buffer, 0); }
                     );
 
                     Parallel.ForEach(
                         additionalHashers,
-                        hasher =>
-                        {
-                            hasher?.TransformBytes(buffer, 0, readLength);
-                        }
+                        hasher => { hasher?.TransformBytes(buffer, 0, readLength); }
                     );
 
                     if (requiredProperties.HasFlag(FileProperties.BlockMD5))
-                    {
-                        BlockMD5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).ToHexString());
-                    }
+                        BlockMD5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength)
+                            .ToHexString());
 
                     if (requiredProperties.HasFlag(FileProperties.BlockSHA1))
-                    {
-                        BlockSHA1.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).ToHexString());
-                    }
+                        BlockSHA1.Add(blockHashers[1].ComputeHash(buffer, 0, readLength)
+                            .ToHexString());
 
                     if (requiredProperties.HasFlag(FileProperties.BlockSHA256))
-                    {
-                        BlockSHA256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).ToHexString());
-                    }
+                        BlockSHA256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength)
+                            .ToHexString());
 
                     readLength = 0;
                 }
 
-                foreach (var hasher in hashers)
-                {
-                    hasher?.TransformFinalBlock(buffer, 0, 0);
-                }
+                foreach (var hasher in hashers) hasher?.TransformFinalBlock(buffer, 0, 0);
 
                 MD5 = MD5 ?? hashers[0]?.Hash.ToHexString();
                 SHA1 = SHA1 ?? hashers[1]?.Hash.ToHexString();
                 SHA256 = SHA256 ?? hashers[2]?.Hash.ToHexString();
-                CRC32 = CRC32 ?? additionalHashers[0]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
-                Adler32 = Adler32 ?? additionalHashers[1]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+                CRC32 = CRC32 ?? additionalHashers[0]?.TransformFinal().GetBytes().Reverse()
+                            .ToArray().ToHexString();
+                Adler32 = Adler32 ?? additionalHashers[1]?.TransformFinal().GetBytes().Reverse()
+                              .ToArray().ToHexString();
             }
 
             if (requiredProperties.HasFlag(FileProperties.EncryptionKey))
-            {
                 EncryptionKey = GenerateEncryptionKey();
-            }
 
             return this;
         }
 
-        public FileInformation RemoveProperties(FileProperties removedProperties)
-        {
+        public FileInformation RemoveProperties(FileProperties removedProperties) {
             foreach (var p in Properties)
-            {
                 if (removedProperties.HasFlag(p.Key))
-                {
                     p.Value.SetValue(this, null);
-                }
-            }
 
             return this;
         }
 
         public FileProperties GetProperties()
             => Properties
-            .Where(x => x.Value.GetValue(this) != null)
-            .Select(x => x.Key)
-            .Aggregate(FileProperties.None, (result, x) => result | x);
+                .Where(x => x.Value.GetValue(this) != null)
+                .Select(x => x.Key)
+                .Aggregate(FileProperties.None, (result, x) => result | x);
 
-        public FileProperties CompareProperties(FileInformation other, FileProperties propertiesToCompare)
-        {
-            FileProperties result = FileProperties.None;
+        public FileProperties CompareProperties(FileInformation other,
+            FileProperties propertiesToCompare) {
+            var result = FileProperties.None;
             foreach (var p in Properties)
-            {
                 if (propertiesToCompare.HasFlag(p.Key))
-                {
-                    if (p.Value.GetValue(other) != null)
-                    {
-                        if (p.Value.PropertyType.IsAssignableFrom(typeof(List<string>)))
-                        {
+                    if (p.Value.GetValue(other) != null) {
+                        if (p.Value.PropertyType.IsAssignableFrom(typeof(List<string>))) {
                             var olist = p.Value.GetValue(other) as List<string>;
                             var tlist = p.Value.GetValue(this) as List<string>;
-                            if (!tlist.SequenceEqual(olist))
-                            {
-                                result |= p.Key;
-                            }
-                        }
-                        else if (!object.Equals(p.Value.GetValue(other), p.Value.GetValue(this)))
-                        {
+                            if (!tlist.SequenceEqual(olist)) result |= p.Key;
+                        } else if (!Equals(p.Value.GetValue(other), p.Value.GetValue(this))) {
                             result |= p.Key;
                         }
                     }
-                }
-            }
 
             return result;
         }
 
-        public static FileInformation GetInformation(Stream stream, FileProperties requiredProperties)
+        public static FileInformation GetInformation(Stream stream,
+            FileProperties requiredProperties)
             => new FileInformation().AddProperties(stream, requiredProperties);
 
         public static FileInformation GetInformation(string path, FileProperties requiredProperties)
             => GetInformation(File.OpenRead(path), requiredProperties);
 
-        public static FileInformation GetInformation(string basePath, string path, FileProperties requiredProperties)
+        public static FileInformation GetInformation(string basePath, string path,
+            FileProperties requiredProperties)
             => GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
 
-        static string GenerateEncryptionKey()
-        {
-            using (var aes = new AesCryptoServiceProvider())
-            {
+        static string GenerateEncryptionKey() {
+            using (var aes = new AesCryptoServiceProvider()) {
                 aes.KeySize = 256;
                 return aes.Key.ToHexString();
             }

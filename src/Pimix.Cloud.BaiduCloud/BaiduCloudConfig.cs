@@ -2,11 +2,9 @@
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.Cloud.BaiduCloud
-{
+namespace Pimix.Cloud.BaiduCloud {
     [DataModel("configs/baidu_cloud")]
-    public partial class BaiduCloudConfig
-    {
+    public partial class BaiduCloudConfig {
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -23,14 +21,12 @@ namespace Pimix.Cloud.BaiduCloud
         public string RemotePathPrefix { get; set; }
     }
 
-    public class AccountInfo
-    {
+    public class AccountInfo {
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
     }
 
-    public class APIList
-    {
+    public class APIList {
         [JsonProperty("copy_file")]
         public APIInfo CopyFile { get; set; }
 
@@ -59,8 +55,7 @@ namespace Pimix.Cloud.BaiduCloud
         public APIInfo GetFileInfo { get; set; }
     }
 
-    public class APIInfo
-    {
+    public class APIInfo {
         [JsonProperty("method")]
         public string Method { get; set; }
 

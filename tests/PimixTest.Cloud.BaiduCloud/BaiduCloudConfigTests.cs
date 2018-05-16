@@ -3,26 +3,21 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
 
-namespace PimixTest.Cloud.BaiduCloud
-{
+namespace PimixTest.Cloud.BaiduCloud {
     [TestClass]
-    public class BaiduCloudConfigTests
-    {
+    public class BaiduCloudConfigTests {
         public string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         [TestMethod]
-        public void GetConfigTest()
-        {
+        public void GetConfigTest() {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
             var config = BaiduCloudConfig.Get("default");
             Assert.IsTrue(config.ClientId.StartsWith("Tk"));
         }
 
         [TestMethod]
-        public void GetConfigFromLocalTest()
-        {
-            using (StreamReader sr = new StreamReader("LocalConfig.json"))
-            {
+        public void GetConfigFromLocalTest() {
+            using (var sr = new StreamReader("LocalConfig.json")) {
                 var config = JsonConvert.DeserializeObject<BaiduCloudConfig>(sr.ReadToEnd());
                 Assert.IsTrue(config.ClientId.StartsWith("Tk"));
             }

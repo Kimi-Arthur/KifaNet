@@ -14,19 +14,24 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('i', "id", HelpText = "ID for the uri.")]
         public string FileId { get; set; }
 
-        [Option('v', "verify-all", HelpText = "Verify all verifiable fields of the file along with updating info.")]
+        [Option('v', "verify-all", HelpText =
+            "Verify all verifiable fields of the file along with updating info.")]
         public bool VerifyAll { get; set; } = false;
 
-        [Option('f', "fields-to-verify", HelpText = "Fields to verify. Only 'Size' is verified by default.")]
+        [Option('f', "fields-to-verify", HelpText =
+            "Fields to verify. Only 'Size' is verified by default.")]
         public string FieldsToVerify { get; set; } = "Size";
 
         public FileProperties FilePropertiesToVerify
-            => VerifyAll ? FileProperties.AllVerifiable : FileProperties.AllVerifiable & (FileProperties)Enum.Parse(typeof(FileProperties), FieldsToVerify);
+            => VerifyAll
+                ? FileProperties.AllVerifiable
+                : FileProperties.AllVerifiable &
+                  (FileProperties) Enum.Parse(typeof(FileProperties), FieldsToVerify);
 
         [Option('u', "update", HelpText = "Whether to update result to server.")]
         public bool Update { get; set; } = false;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var f = new PimixFile(FileUri, FileId);
@@ -44,20 +49,20 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 return 0;
-            } else {
-                logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
-                logger.Warn(
-                    "Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
-                        Formatting.Indented));
-                logger.Warn(
-                    "Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ compareResult),
-                        Formatting.Indented));
-                return 1;
             }
+
+            logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
+            logger.Warn(
+                "Expected data:\n{0}",
+                JsonConvert.SerializeObject(
+                    oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                    Formatting.Indented));
+            logger.Warn(
+                "Actual data:\n{0}",
+                JsonConvert.SerializeObject(
+                    info.RemoveProperties(FileProperties.All ^ compareResult),
+                    Formatting.Indented));
+            return 1;
         }
     }
 }

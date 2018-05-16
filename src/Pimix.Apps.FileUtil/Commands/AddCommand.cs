@@ -10,10 +10,11 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
-        [Option('f', "force-check", HelpText = "Check file integrity even if it is already recorded.")]
+        [Option('f', "force-check", HelpText =
+            "Check file integrity even if it is already recorded.")]
         public bool ForceRecheck { get; set; } = false;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var f = new PimixFile(FileUri);
@@ -29,10 +30,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                 logger.Info("Successfully added {0}", f);
                 logger.Info(JsonConvert.SerializeObject(f.FileInfo, Formatting.Indented));
                 return 0;
-            } else {
-                logger.Warn("Conflict with old file info! Please check: {0}", result);
-                return 1;
             }
+
+            logger.Warn("Conflict with old file info! Please check: {0}", result);
+            return 1;
         }
     }
 }

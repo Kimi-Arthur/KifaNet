@@ -1,7 +1,5 @@
-﻿namespace Pimix
-{
-    public static class MathExtensions
-    {
+﻿namespace Pimix {
+    public static class MathExtensions {
         public static long RoundUp(this long value, long period)
             => value % period == 0 ? value : value - value % period + period;
 

@@ -1,45 +1,39 @@
-﻿namespace CG.Web.MegaApiClient
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.Serialization;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Web;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Threading;
+using System.Web;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
-    public partial class MegaApiClient
-    {
-        private const int ApiRequestAttempts = 10;
-        private static TimeSpan ApiRequestDelay = TimeSpan.FromSeconds(5);
+namespace CG.Web.MegaApiClient {
+    public class MegaApiClient {
+        const int ApiRequestAttempts = 10;
+        static readonly TimeSpan ApiRequestDelay = TimeSpan.FromSeconds(5);
 
         public static int BufferSize = 8192;
 
-        private static readonly Uri BaseApiUri = new Uri("https://g.api.mega.co.nz/cs");
-        private static readonly Uri BaseUri = new Uri("https://mega.nz");
+        static readonly Uri BaseApiUri = new Uri("https://g.api.mega.co.nz/cs");
+        static readonly Uri BaseUri = new Uri("https://mega.nz");
 
-        private readonly WebClient webClient;
+        readonly WebClient webClient;
 
-        private Node trashNode;
-        private AuthInfos authInfos;
-        private string sessionId;
-        private byte[] masterKey;
-        private uint sequenceIndex = (uint)(uint.MaxValue * new Random().NextDouble());
+        Node trashNode;
+        AuthInfos authInfos;
+        string sessionId;
+        byte[] masterKey;
+        uint sequenceIndex = (uint) (uint.MaxValue * new Random().NextDouble());
 
         #region Constructors
 
         /// <summary>
-        /// Instantiate a new <see cref="MegaApiClient" /> object
+        ///     Instantiate a new <see cref="MegaApiClient" /> object
         /// </summary>
-        public MegaApiClient()
-        {
-            this.webClient = new WebClient();
+        public MegaApiClient() {
+            webClient = new WebClient();
         }
 
         #endregion
@@ -47,142 +41,130 @@
         #region Public API
 
         /// <summary>
-        /// Generate authentication informations and store them in a serializable object to allow persistence
+        ///     Generate authentication informations and store them in a serializable object to allow
+        ///     persistence
         /// </summary>
         /// <param name="email">email</param>
         /// <param name="password">password</param>
         /// <returns><see cref="AuthInfos" /> object containing encrypted data</returns>
         /// <exception cref="ArgumentNullException">email or password is null</exception>
-        public static AuthInfos GenerateAuthInfos(string email, string password)
-        {
-            if (string.IsNullOrEmpty(email))
-            {
-                throw new ArgumentNullException("email");
-            }
+        public static AuthInfos GenerateAuthInfos(string email, string password) {
+            if (string.IsNullOrEmpty(email)) throw new ArgumentNullException("email");
 
-            if (string.IsNullOrEmpty(password))
-            {
-                throw new ArgumentNullException("password");
-            }
+            if (string.IsNullOrEmpty(password)) throw new ArgumentNullException("password");
 
             // Retrieve password as UTF8 byte array
-            byte[] passwordBytes = password.ToBytes();
+            var passwordBytes = password.ToBytes();
 
             // Encrypt password to use password as key for the hash
-            byte[] passwordAesKey = PrepareKey(passwordBytes);
+            var passwordAesKey = PrepareKey(passwordBytes);
 
             // Hash email and password to decrypt master key on Mega servers
-            string hash = GenerateHash(email.ToLowerInvariant(), passwordAesKey);
+            var hash = GenerateHash(email.ToLowerInvariant(), passwordAesKey);
 
             return new AuthInfos(email, hash, passwordAesKey);
         }
 
         /// <summary>
-        /// Login to Mega.co.nz service using email/password credentials
+        ///     Login to Mega.co.nz service using email/password credentials
         /// </summary>
         /// <param name="email">email</param>
         /// <param name="password">password</param>
         /// <exception cref="ApiException">Service is not available or credentials are invalid</exception>
         /// <exception cref="ArgumentNullException">email or password is null</exception>
         /// <exception cref="NotSupportedException">Already logged in</exception>
-        public void Login(string email, string password)
-        {
-            this.Login(GenerateAuthInfos(email, password));
+        public void Login(string email, string password) {
+            Login(GenerateAuthInfos(email, password));
         }
 
         /// <summary>
-        /// Login to Mega.co.nz service using hashed credentials
+        ///     Login to Mega.co.nz service using hashed credentials
         /// </summary>
-        /// <param name="authInfos">Authentication informations generated by <see cref="GenerateAuthInfos"/> method</param>
+        /// <param name="authInfos">
+        ///     Authentication informations generated by <see cref="GenerateAuthInfos" />
+        ///     method
+        /// </param>
         /// <exception cref="ApiException">Service is not available or authInfos is invalid</exception>
         /// <exception cref="ArgumentNullException">authInfos is null</exception>
         /// <exception cref="NotSupportedException">Already logged in</exception>
-        public void Login(AuthInfos authInfos)
-        {
-            if (authInfos == null)
-            {
-                throw new ArgumentNullException("authInfos");
-            }
+        public void Login(AuthInfos authInfos) {
+            if (authInfos == null) throw new ArgumentNullException("authInfos");
 
-            this.EnsureLoggedOut();
+            EnsureLoggedOut();
 
             // Store authInfos to relogin if required
             this.authInfos = authInfos;
 
             // Request Mega Api
-            LoginRequest request = new LoginRequest(authInfos.Email, authInfos.Hash);
-            LoginResponse response = this.Request<LoginResponse>(request);
+            var request = new LoginRequest(authInfos.Email, authInfos.Hash);
+            var response = Request<LoginResponse>(request);
 
             // Decrypt master key using our password key
-            byte[] cryptedMasterKey = response.MasterKey.FromBase64();
-            this.masterKey = Crypto.DecryptKey(cryptedMasterKey, authInfos.PasswordAesKey);
+            var cryptedMasterKey = response.MasterKey.FromBase64();
+            masterKey = Crypto.DecryptKey(cryptedMasterKey, authInfos.PasswordAesKey);
 
             // Decrypt RSA private key using decrypted master key
-            byte[] cryptedRsaPrivateKey = response.PrivateKey.FromBase64();
-            BigInteger[] rsaPrivateKeyComponents = Crypto.GetRsaPrivateKeyComponents(cryptedRsaPrivateKey, this.masterKey);
+            var cryptedRsaPrivateKey = response.PrivateKey.FromBase64();
+            var rsaPrivateKeyComponents =
+                Crypto.GetRsaPrivateKeyComponents(cryptedRsaPrivateKey, masterKey);
 
             // Decrypt session id
-            byte[] encryptedSid = response.SessionId.FromBase64();
-            byte[] sid = Crypto.RsaDecrypt(encryptedSid.FromMPINumber(), rsaPrivateKeyComponents[0], rsaPrivateKeyComponents[1], rsaPrivateKeyComponents[2]);
+            var encryptedSid = response.SessionId.FromBase64();
+            var sid = Crypto.RsaDecrypt(encryptedSid.FromMPINumber(), rsaPrivateKeyComponents[0],
+                rsaPrivateKeyComponents[1], rsaPrivateKeyComponents[2]);
 
             // Session id contains only the first 58 base64 characters
-            this.sessionId = sid.ToBase64().Substring(0, 58);
+            sessionId = sid.ToBase64().Substring(0, 58);
         }
 
         /// <summary>
-        /// Logout from Mega.co.nz service
+        ///     Logout from Mega.co.nz service
         /// </summary>
         /// <exception cref="NotSupportedException">Not logged in</exception>
-        public void Logout()
-        {
-            this.EnsureLoggedIn();
+        public void Logout() {
+            EnsureLoggedIn();
 
             // Reset values retrieved by Login methods
-            this.masterKey = null;
-            this.sessionId = null;
+            masterKey = null;
+            sessionId = null;
         }
 
         /// <summary>
-        /// Retrieve account (quota) information
+        ///     Retrieve account (quota) information
         /// </summary>
         /// <returns>An object containing account information</returns>
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        public AccountInformationResponse GetAccountInformation()
-        {
-            this.EnsureLoggedIn();
+        public AccountInformationResponse GetAccountInformation() {
+            EnsureLoggedIn();
 
-            AccountInformationRequest request = new AccountInformationRequest();
-            return this.Request<AccountInformationResponse>(request);
+            var request = new AccountInformationRequest();
+            return Request<AccountInformationResponse>(request);
         }
 
         /// <summary>
-        /// Retrieve all filesystem nodes
+        ///     Retrieve all filesystem nodes
         /// </summary>
         /// <returns>Flat representation of all the filesystem nodes</returns>
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
-        public IEnumerable<Node> GetNodes()
-        {
-            this.EnsureLoggedIn();
+        public IEnumerable<Node> GetNodes() {
+            EnsureLoggedIn();
 
-            GetNodesRequest request = new GetNodesRequest();
-            GetNodesResponse response = this.Request<GetNodesResponse>(request, this.masterKey);
+            var request = new GetNodesRequest();
+            var response = Request<GetNodesResponse>(request, masterKey);
 
-            Node[] nodes = response.Nodes;
-            if (this.trashNode == null)
-            {
-                this.trashNode = nodes.First(n => n.Type == NodeType.Trash);
-            }
+            var nodes = response.Nodes;
+            if (trashNode == null) trashNode = nodes.First(n => n.Type == NodeType.Trash);
 
             return nodes.Distinct().Cast<Node>();
         }
 
         /// <summary>
-        /// Delete a node from the filesytem
+        ///     Delete a node from the filesytem
         /// </summary>
         /// <remarks>
-        /// You can only delete <see cref="NodeType.Directory" /> or <see cref="NodeType.File" /> node
+        ///     You can only delete <see cref="NodeType.Directory" /> or <see cref="NodeType.File" /> node
         /// </remarks>
         /// <param name="node">Node to delete</param>
         /// <param name="moveToTrash">Moved to trash if true, Permanently deleted if false</param>
@@ -190,167 +172,133 @@
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">node is null</exception>
         /// <exception cref="ArgumentException">node is not a directory or a file</exception>
-        public void Delete(Node node, bool moveToTrash = true)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException("node");
-            }
+        public void Delete(Node node, bool moveToTrash = true) {
+            if (node == null) throw new ArgumentNullException("node");
 
             if (node.Type != NodeType.Directory && node.Type != NodeType.File)
-            {
                 throw new ArgumentException("Invalid node type");
-            }
 
-            this.EnsureLoggedIn();
+            EnsureLoggedIn();
 
             if (moveToTrash)
-            {
-                this.Move(node, this.trashNode);
-            }
+                Move(node, trashNode);
             else
-            {
-                this.Request(new DeleteRequest(node));
-            }
+                Request(new DeleteRequest(node));
         }
 
         /// <summary>
-        /// Create a folder on the filesytem
+        ///     Create a folder on the filesytem
         /// </summary>
         /// <param name="name">Folder name</param>
         /// <param name="parent">Parent node to attach created folder</param>
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">name or parent is null</exception>
-        /// <exception cref="ArgumentException">parent is not valid (all types are allowed expect <see cref="NodeType.File" />)</exception>
-        public Node CreateFolder(string name, Node parent)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
+        /// <exception cref="ArgumentException">
+        ///     parent is not valid (all types are allowed expect
+        ///     <see cref="NodeType.File" />)
+        /// </exception>
+        public Node CreateFolder(string name, Node parent) {
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
 
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
+            if (parent == null) throw new ArgumentNullException("parent");
 
-            if (parent.Type == NodeType.File)
-            {
-                throw new ArgumentException("Invalid parent node");
-            }
+            if (parent.Type == NodeType.File) throw new ArgumentException("Invalid parent node");
 
-            this.EnsureLoggedIn();
+            EnsureLoggedIn();
 
-            byte[] key = Crypto.CreateAesKey();
-            byte[] attributes = Crypto.EncryptAttributes(new Attributes(name), key);
-            byte[] encryptedKey = Crypto.EncryptAes(key, this.masterKey);
+            var key = Crypto.CreateAesKey();
+            var attributes = Crypto.EncryptAttributes(new Attributes(name), key);
+            var encryptedKey = Crypto.EncryptAes(key, masterKey);
 
-            CreateNodeRequest request = CreateNodeRequest.CreateFolderNodeRequest(parent, attributes.ToBase64(), encryptedKey.ToBase64());
-            GetNodesResponse response = this.Request<GetNodesResponse>(request, this.masterKey);
+            var request = CreateNodeRequest.CreateFolderNodeRequest(parent, attributes.ToBase64(),
+                encryptedKey.ToBase64());
+            var response = Request<GetNodesResponse>(request, masterKey);
             return response.Nodes[0];
         }
 
         /// <summary>
-        /// Retrieve a Stream to download and decrypt the specified node
+        ///     Retrieve a Stream to download and decrypt the specified node
         /// </summary>
         /// <param name="node">Node to download (only <see cref="NodeType.File" /> can be downloaded)</param>
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">node or outputFile is null</exception>
-        /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.File" /> can be downloaded)</exception>
+        /// <exception cref="ArgumentException">
+        ///     node is not valid (only <see cref="NodeType.File" /> can be
+        ///     downloaded)
+        /// </exception>
         /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
-        public Stream Download(Node node)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException("node");
-            }
+        public Stream Download(Node node) {
+            if (node == null) throw new ArgumentNullException("node");
 
-            if (node.Type != NodeType.File)
-            {
-                throw new ArgumentException("Invalid node");
-            }
+            if (node.Type != NodeType.File) throw new ArgumentException("Invalid node");
 
-            Node nodeCrypto = node as Node;
-            if (nodeCrypto == null)
-            {
-                throw new ArgumentException("node must implement Node");
-            }
+            var nodeCrypto = node;
+            if (nodeCrypto == null) throw new ArgumentException("node must implement Node");
 
-            this.EnsureLoggedIn();
+            EnsureLoggedIn();
 
             // Retrieve download URL
-            DownloadUrlRequest downloadRequest = new DownloadUrlRequest(node);
-            DownloadUrlResponse downloadResponse = this.Request<DownloadUrlResponse>(downloadRequest);
+            var downloadRequest = new DownloadUrlRequest(node);
+            var downloadResponse = Request<DownloadUrlResponse>(downloadRequest);
 
-            Stream dataStream = this.webClient.GetRequestRaw(new Uri(downloadResponse.Url));
+            var dataStream = webClient.GetRequestRaw(new Uri(downloadResponse.Url));
             return new StreamWithLength(dataStream, downloadResponse.Size);
         }
 
         /// <summary>
-        /// Upload a stream on Mega.co.nz and attach created node to selected parent
+        ///     Upload a stream on Mega.co.nz and attach created node to selected parent
         /// </summary>
         /// <param name="stream">Data to upload</param>
         /// <param name="name">Created node name</param>
-        /// <param name="parent">Node to attach the uploaded file (all types except <see cref="NodeType.File" /> are supported)</param>
+        /// <param name="parent">
+        ///     Node to attach the uploaded file (all types except
+        ///     <see cref="NodeType.File" /> are supported)
+        /// </param>
         /// <returns>Created node</returns>
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">stream or name or parent is null</exception>
-        /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public Node Upload(Stream stream, string name, Node parent)
-        {
-            if (stream == null)
-            {
-                throw new ArgumentNullException("stream");
-            }
+        /// <exception cref="ArgumentException">
+        ///     parent is not valid (all types except
+        ///     <see cref="NodeType.File" /> are supported)
+        /// </exception>
+        public Node Upload(Stream stream, string name, Node parent) {
+            if (stream == null) throw new ArgumentNullException("stream");
 
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException("name");
-            }
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
 
-            if (parent == null)
-            {
-                throw new ArgumentNullException("parent");
-            }
+            if (parent == null) throw new ArgumentNullException("parent");
 
-            if (parent.Type == NodeType.File)
-            {
-                throw new ArgumentException("Invalid parent node");
-            }
+            if (parent.Type == NodeType.File) throw new ArgumentException("Invalid parent node");
 
-            this.EnsureLoggedIn();
+            EnsureLoggedIn();
 
             // Retrieve upload URL
-            UploadUrlRequest uploadRequest = new UploadUrlRequest(stream.Length);
-            UploadUrlResponse uploadResponse = this.Request<UploadUrlResponse>(uploadRequest);
+            var uploadRequest = new UploadUrlRequest(stream.Length);
+            var uploadResponse = Request<UploadUrlResponse>(uploadRequest);
 
             var chunksPositions = GetChunksPositions(stream.Length);
 
             string completionHandle = null;
-            for (int i = 0; i < chunksPositions.Length; i++)
-            {
-                long currentChunkPosition = chunksPositions[i];
-                long nextChunkPosition = i == chunksPositions.Length - 1
-                  ? stream.Length
-                  : chunksPositions[i + 1];
+            for (var i = 0; i < chunksPositions.Length; i++) {
+                var currentChunkPosition = chunksPositions[i];
+                var nextChunkPosition = i == chunksPositions.Length - 1
+                    ? stream.Length
+                    : chunksPositions[i + 1];
 
-                int chunkSize = (int)(nextChunkPosition - currentChunkPosition);
-                byte[] chunkBuffer = new byte[chunkSize];
+                var chunkSize = (int) (nextChunkPosition - currentChunkPosition);
+                var chunkBuffer = new byte[chunkSize];
                 stream.Read(chunkBuffer, 0, chunkSize);
-                using (MemoryStream chunkStream = new MemoryStream(chunkBuffer))
-                {
-                    int remainingRetry = ApiRequestAttempts;
+                using (var chunkStream = new MemoryStream(chunkBuffer)) {
+                    var remainingRetry = ApiRequestAttempts;
                     string result = null;
                     UploadException lastException = null;
-                    while (remainingRetry-- > 0)
-                    {
-                        Uri uri = new Uri(uploadResponse.Url + "/" + chunksPositions[i]);
-                        result = this.webClient.PostRequestRaw(uri, chunkStream);
-                        if (result.StartsWith("-"))
-                        {
+                    while (remainingRetry-- > 0) {
+                        var uri = new Uri(uploadResponse.Url + "/" + chunksPositions[i]);
+                        result = webClient.PostRequestRaw(uri, chunkStream);
+                        if (result.StartsWith("-")) {
                             lastException = new UploadException(result);
                             Thread.Sleep(ApiRequestDelay);
                             continue;
@@ -360,27 +308,25 @@
                         break;
                     }
 
-                    if (lastException != null)
-                    {
-                        throw lastException;
-                    }
+                    if (lastException != null) throw lastException;
 
                     completionHandle = result;
                 }
             }
 
             // Encrypt attributes
-            byte[] cryptedAttributes = Crypto.EncryptAttributes(new Attributes(name), new byte[16]);
+            var cryptedAttributes = Crypto.EncryptAttributes(new Attributes(name), new byte[16]);
 
-            byte[] encryptedKey = Crypto.EncryptKey(new byte[32], this.masterKey);
+            var encryptedKey = Crypto.EncryptKey(new byte[32], masterKey);
 
-            CreateNodeRequest createNodeRequest = CreateNodeRequest.CreateFileNodeRequest(parent, cryptedAttributes.ToBase64(), encryptedKey.ToBase64(), completionHandle);
-            GetNodesResponse createNodeResponse = this.Request<GetNodesResponse>(createNodeRequest, this.masterKey);
+            var createNodeRequest = CreateNodeRequest.CreateFileNodeRequest(parent,
+                cryptedAttributes.ToBase64(), encryptedKey.ToBase64(), completionHandle);
+            var createNodeResponse = Request<GetNodesResponse>(createNodeRequest, masterKey);
             return createNodeResponse.Nodes[0];
         }
 
         /// <summary>
-        /// Change node parent
+        ///     Change node parent
         /// </summary>
         /// <param name="node">Node to move</param>
         /// <param name="destinationParentNode">New parent</param>
@@ -388,78 +334,66 @@
         /// <exception cref="NotSupportedException">Not logged in</exception>
         /// <exception cref="ApiException">Mega.co.nz service reports an error</exception>
         /// <exception cref="ArgumentNullException">node or destinationParentNode is null</exception>
-        /// <exception cref="ArgumentException">node is not valid (only <see cref="NodeType.Directory" /> and <see cref="NodeType.File" /> are supported)</exception>
-        /// <exception cref="ArgumentException">parent is not valid (all types except <see cref="NodeType.File" /> are supported)</exception>
-        public Node Move(Node node, Node destinationParentNode)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException("node");
-            }
+        /// <exception cref="ArgumentException">
+        ///     node is not valid (only <see cref="NodeType.Directory" /> and
+        ///     <see cref="NodeType.File" /> are supported)
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        ///     parent is not valid (all types except
+        ///     <see cref="NodeType.File" /> are supported)
+        /// </exception>
+        public Node Move(Node node, Node destinationParentNode) {
+            if (node == null) throw new ArgumentNullException("node");
 
             if (destinationParentNode == null)
-            {
                 throw new ArgumentNullException("destinationParentNode");
-            }
 
             if (node.Type != NodeType.Directory && node.Type != NodeType.File)
-            {
                 throw new ArgumentException("Invalid node type");
-            }
 
             if (destinationParentNode.Type == NodeType.File)
-            {
                 throw new ArgumentException("Invalid destination parent node");
-            }
 
-            this.EnsureLoggedIn();
+            EnsureLoggedIn();
 
-            this.Request(new MoveRequest(node, destinationParentNode));
-            return this.GetNodes().First(n => n.Equals(node));
+            Request(new MoveRequest(node, destinationParentNode));
+            return GetNodes().First(n => n.Equals(node));
         }
 
         #endregion
 
         #region Private static methods
 
-        private static string GenerateHash(string email, byte[] passwordAesKey)
-        {
-            byte[] emailBytes = email.ToBytes();
-            byte[] hash = new byte[16];
+        static string GenerateHash(string email, byte[] passwordAesKey) {
+            var emailBytes = email.ToBytes();
+            var hash = new byte[16];
 
             // Compute email in 16 bytes array
-            for (int i = 0; i < emailBytes.Length; i++)
-            {
-                hash[i % 16] ^= emailBytes[i];
-            }
+            for (var i = 0; i < emailBytes.Length; i++) hash[i % 16] ^= emailBytes[i];
 
             // Encrypt hash using password key
-            for (int it = 0; it < 16384; it++)
-            {
-                hash = Crypto.EncryptAes(hash, passwordAesKey);
-            }
+            for (var it = 0; it < 16384; it++) hash = Crypto.EncryptAes(hash, passwordAesKey);
 
             // Retrieve bytes 0-4 and 8-12 from the hash
-            byte[] result = new byte[8];
+            var result = new byte[8];
             Array.Copy(hash, 0, result, 0, 4);
             Array.Copy(hash, 8, result, 4, 4);
 
             return result.ToBase64();
         }
 
-        private static byte[] PrepareKey(byte[] data)
-        {
-            byte[] pkey = new byte[] { 0x93, 0xC4, 0x67, 0xE3, 0x7D, 0xB0, 0xC7, 0xA4, 0xD1, 0xBE, 0x3F, 0x81, 0x01, 0x52, 0xCB, 0x56 };
+        static byte[] PrepareKey(byte[] data) {
+            var pkey = new byte[] {
+                0x93, 0xC4, 0x67, 0xE3, 0x7D, 0xB0, 0xC7, 0xA4, 0xD1, 0xBE, 0x3F, 0x81, 0x01, 0x52,
+                0xCB, 0x56
+            };
 
-            for (int it = 0; it < 65536; it++)
-            {
-                for (int idx = 0; idx < data.Length; idx += 16)
-                {
-                    // Pad the data to 16 bytes blocks
-                    byte[] key = data.CopySubArray(16, idx);
+            for (var it = 0; it < 65536; it++)
+            for (var idx = 0; idx < data.Length; idx += 16) {
+                // Pad the data to 16 bytes blocks
+                var key = data.CopySubArray(16, idx);
 
-                    pkey = Crypto.EncryptAes(pkey, key);
-                }
+                pkey = Crypto.EncryptAes(pkey, key);
             }
 
             return pkey;
@@ -469,76 +403,61 @@
 
         #region Web
 
-        private string Request(RequestBase request)
-        {
-            return this.Request<string>(request);
-        }
+        string Request(RequestBase request) => Request<string>(request);
 
-        private TResponse Request<TResponse>(RequestBase request, object context = null)
-            where TResponse : class
-        {
-            string dataRequest = JsonConvert.SerializeObject(new object[] { request });
-            Uri uri = this.GenerateUrl();
+        TResponse Request<TResponse>(RequestBase request, object context = null)
+            where TResponse : class {
+            var dataRequest = JsonConvert.SerializeObject(new object[] {request});
+            var uri = GenerateUrl();
             object jsonData = null;
-            int currentAttempt = 0;
-            while (true)
-            {
-                string dataResult = this.webClient.PostRequestJson(uri, dataRequest);
+            var currentAttempt = 0;
+            while (true) {
+                var dataResult = webClient.PostRequestJson(uri, dataRequest);
 
                 jsonData = JsonConvert.DeserializeObject(dataResult);
-                if (jsonData is long || (jsonData is JArray && ((JArray)jsonData)[0].Type == JTokenType.Integer))
-                {
-                    ApiResultCode apiCode = (jsonData is long)
-                                                ? (ApiResultCode)Enum.ToObject(typeof(ApiResultCode), jsonData)
-                                                : (ApiResultCode)((JArray)jsonData)[0].Value<int>();
+                if (jsonData is long || jsonData is JArray &&
+                    ((JArray) jsonData)[0].Type == JTokenType.Integer) {
+                    var apiCode = jsonData is long
+                        ? (ApiResultCode) Enum.ToObject(typeof(ApiResultCode), jsonData)
+                        : (ApiResultCode) ((JArray) jsonData)[0].Value<int>();
 
-                    if (apiCode == ApiResultCode.RequestFailedRetry)
-                    {
+                    if (apiCode == ApiResultCode.RequestFailedRetry) {
                         if (currentAttempt == ApiRequestAttempts)
-                        {
                             throw new NotSupportedException("Api not available");
-                        }
 
                         Thread.Sleep(ApiRequestDelay);
                         currentAttempt++;
                         continue;
                     }
 
-                    if (apiCode != ApiResultCode.Ok)
-                    {
-                        throw new ApiException(apiCode);
-                    }
+                    if (apiCode != ApiResultCode.Ok) throw new ApiException(apiCode);
                 }
 
                 break;
             }
 
-            JsonSerializerSettings settings = new JsonSerializerSettings();
+            var settings = new JsonSerializerSettings();
             settings.Context = new StreamingContext(StreamingContextStates.All, context);
 
-            string data = ((JArray)jsonData)[0].ToString();
-            return (typeof(TResponse) == typeof(string)) ? data as TResponse : JsonConvert.DeserializeObject<TResponse>(data, settings);
+            var data = ((JArray) jsonData)[0].ToString();
+            return typeof(TResponse) == typeof(string)
+                ? data as TResponse
+                : JsonConvert.DeserializeObject<TResponse>(data, settings);
         }
 
-        private Uri GenerateUrl()
-        {
-            UriBuilder builder = new UriBuilder(BaseApiUri);
-            NameValueCollection query = HttpUtility.ParseQueryString(builder.Query);
-            query["id"] = (this.sequenceIndex++ % uint.MaxValue).ToString(CultureInfo.InvariantCulture);
+        Uri GenerateUrl() {
+            var builder = new UriBuilder(BaseApiUri);
+            var query = HttpUtility.ParseQueryString(builder.Query);
+            query["id"] = (sequenceIndex++ % uint.MaxValue).ToString(CultureInfo.InvariantCulture);
 
-            if (!string.IsNullOrEmpty(this.sessionId))
-            {
-                query["sid"] = this.sessionId;
-            }
+            if (!string.IsNullOrEmpty(sessionId)) query["sid"] = sessionId;
 
             builder.Query = query.ToString();
             return builder.Uri;
         }
 
-        private void SaveStream(Stream stream, string outputFile)
-        {
-            using (FileStream fs = new FileStream(outputFile, FileMode.CreateNew, FileAccess.Write))
-            {
+        void SaveStream(Stream stream, string outputFile) {
+            using (var fs = new FileStream(outputFile, FileMode.CreateNew, FileAccess.Write)) {
                 stream.CopyTo(fs, BufferSize);
             }
         }
@@ -547,36 +466,25 @@
 
         #region Private methods
 
-        private void EnsureLoggedIn()
-        {
-            if (this.sessionId == null)
-            {
-                throw new NotSupportedException("Not logged in");
-            }
+        void EnsureLoggedIn() {
+            if (sessionId == null) throw new NotSupportedException("Not logged in");
         }
 
-        private void EnsureLoggedOut()
-        {
-            if (this.sessionId != null)
-            {
-                throw new NotSupportedException("Already logged in");
-            }
+        void EnsureLoggedOut() {
+            if (sessionId != null) throw new NotSupportedException("Already logged in");
         }
 
-        private long[] GetChunksPositions(long size)
-        {
-            List<long> chunks = new List<long>();
+        long[] GetChunksPositions(long size) {
+            var chunks = new List<long>();
             chunks.Add(0);
 
             long chunkStartPosition = 0;
-            for (int idx = 1; (idx <= 8) && (chunkStartPosition < (size - (idx * 131072))); idx++)
-            {
+            for (var idx = 1; idx <= 8 && chunkStartPosition < size - idx * 131072; idx++) {
                 chunkStartPosition += idx * 131072;
                 chunks.Add(chunkStartPosition);
             }
 
-            while ((chunkStartPosition + 1048576) < size)
-            {
+            while (chunkStartPosition + 1048576 < size) {
                 chunkStartPosition += 1048576;
                 chunks.Add(chunkStartPosition);
             }
@@ -584,18 +492,15 @@
             return chunks.ToArray();
         }
 
-
         #endregion
 
         #region AuthInfos
 
-        public class AuthInfos
-        {
-            public AuthInfos(string email, string hash, byte[] passwordAesKey)
-            {
-                this.Email = email;
-                this.Hash = hash;
-                this.PasswordAesKey = passwordAesKey;
+        public class AuthInfos {
+            public AuthInfos(string email, string hash, byte[] passwordAesKey) {
+                Email = email;
+                Hash = hash;
+                PasswordAesKey = passwordAesKey;
             }
 
             [JsonProperty]

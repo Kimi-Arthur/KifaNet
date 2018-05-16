@@ -18,11 +18,11 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('v', "verify", HelpText = "Verify destination.")]
         public bool Verify { get; set; } = false;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
-            PimixFile source = new PimixFile(SourceUri);
-            PimixFile destination = new PimixFile(DestinationUri);
+            var source = new PimixFile(SourceUri);
+            var destination = new PimixFile(DestinationUri);
             if (!source.Exists()) {
                 logger.Error("Source does not exist!");
                 return 1;

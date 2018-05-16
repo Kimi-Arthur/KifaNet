@@ -6,14 +6,17 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
     class ListCommand : FileUtilCommand {
-        [Value(0, MetaName = "FOLDER", MetaValue = "STRING", Required = true, HelpText = "Folder to be listed.")]
+        [Value(0, MetaName = "FOLDER", MetaValue = "STRING", Required = true,
+            HelpText = "Folder to be listed.")]
         public string FolderUri { get; set; }
 
         public override int Execute() {
-            if (Uri.TryCreate(FolderUri, UriKind.Absolute, out Uri uri) && uri.Scheme.StartsWith("pimix")) {
+            if (Uri.TryCreate(FolderUri, UriKind.Absolute, out var uri) &&
+                uri.Scheme.StartsWith("pimix")) {
                 var info = FileInformation.GetFolderView(uri.LocalPath);
                 var schemes = uri.Scheme.Split('+').ToList();
             }
+
             throw new NotImplementedException();
         }
     }

@@ -1,10 +1,8 @@
 ﻿using System;
 
-namespace Pimix.IO
-{
+namespace Pimix.IO {
     [Flags]
-    public enum FileProperties
-    {
+    public enum FileProperties {
         None = 0x0,
         Id = 0x1,
         Size = 0x2,

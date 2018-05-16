@@ -2,11 +2,9 @@
 using Newtonsoft.Json;
 using Pimix.Service;
 
-namespace Pimix.Cloud.MegaNz
-{
+namespace Pimix.Cloud.MegaNz {
     [DataModel("configs/mega_nz")]
-    public partial class MegaNzConfig
-    {
+    public partial class MegaNzConfig {
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -14,8 +12,7 @@ namespace Pimix.Cloud.MegaNz
         public Dictionary<string, AccountInfo> Accounts { get; private set; }
     }
 
-    public class AccountInfo
-    {
+    public class AccountInfo {
         [JsonProperty("username")]
         public string Username { get; set; }
 

@@ -1,11 +1,11 @@
-﻿using System;
-using CommandLine;
+﻿using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
-    [Verb("rm", HelpText = "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
+    [Verb("rm", HelpText =
+        "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
     class RemoveCommand : FileUtilCommand {
         [Value(0, MetaName = "FILE", MetaValue = "STRING", HelpText = "File to be removed.")]
         public string FileUri { get; set; }
@@ -16,15 +16,14 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('l', "link", HelpText = "Remove link only.")]
         public bool RemoveLinkOnly { get; set; }
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
-            if (String.IsNullOrEmpty(FileUri)) {
+            if (string.IsNullOrEmpty(FileUri)) {
                 var info = FileInformation.Get(FileId);
 
                 // Remove logical file.
-                if (!RemoveLinkOnly && info.Locations != null) {
-                    // Remove real files.
+                if (!RemoveLinkOnly && info.Locations != null)
                     foreach (var location in info.Locations) {
                         var file = new PimixFile(location);
                         if (file.Id == FileId) {
@@ -34,17 +33,19 @@ namespace Pimix.Apps.FileUtil.Commands {
                             } else {
                                 logger.Warn($"File {file} not found.");
                             }
+
                             FileInformation.RemoveLocation(FileId, location);
                             logger.Info($"Entry {location} removed.");
                         }
                     }
-                }
 
                 // Logical removal.
                 FileInformation.Delete(info.Id);
                 logger.Info($"FileInfo {info.Id} removed.");
                 return 0;
-            } else {
+            }
+
+            {
                 var file = new PimixFile(FileUri, FileId);
                 if (file.FileInfo.Locations == null || !file.FileInfo.Locations.Contains(FileUri)) {
                     if (file.Exists()) {
@@ -53,6 +54,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     } else {
                         logger.Warn($"File {file} not found.");
                     }
+
                     return 0;
                 }
 

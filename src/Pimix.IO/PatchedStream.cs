@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
 
-namespace Pimix.IO
-{
-    public class PatchedStream : Stream
-    {
+namespace Pimix.IO {
+    public class PatchedStream : Stream {
         Stream stream;
 
         public long IgnoreBefore { get; set; } = 0;
@@ -15,42 +13,36 @@ namespace Pimix.IO
 
         public byte[] BufferAfter { get; set; } = new byte[0];
 
-        public override bool CanRead
-            => stream.CanRead;
+        public override bool CanRead => stream.CanRead;
 
-        public override bool CanSeek
-            => stream.CanSeek;
+        public override bool CanSeek => stream.CanSeek;
 
         // Only support read and seek for now.
-        public override bool CanWrite
-            => false;
+        public override bool CanWrite => false;
 
         public override long Length
-            => stream.Length - IgnoreBefore - IgnoreAfter + BufferBefore.LongLength + BufferAfter.LongLength;
+            => stream.Length - IgnoreBefore - IgnoreAfter + BufferBefore.LongLength +
+               BufferAfter.LongLength;
 
         public override long Position { get; set; }
 
-        public PatchedStream(Stream stream)
-        {
+        public PatchedStream(Stream stream) {
             this.stream = stream;
         }
 
-        public override void Flush()
-        {
+        public override void Flush() {
             stream.Flush();
         }
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            count = (int)Math.Min(count, Length - Position);
+        public override int Read(byte[] buffer, int offset, int count) {
+            count = (int) Math.Min(count, Length - Position);
             if (count == 0)
                 return 0;
 
-            int readCount = 0;
+            var readCount = 0;
 
-            if (Position < BufferBefore.Length)
-            {
-                int beforeCount = (int)Math.Min(count - readCount, BufferBefore.Length - Position);
+            if (Position < BufferBefore.Length) {
+                var beforeCount = (int) Math.Min(count - readCount, BufferBefore.Length - Position);
                 Array.Copy(BufferBefore, Position, buffer, offset + readCount, beforeCount);
                 Position += beforeCount;
                 readCount += beforeCount;
@@ -59,9 +51,9 @@ namespace Pimix.IO
                     return count;
             }
 
-            if (Position < Length - BufferAfter.Length)
-            {
-                int streamCount = (int)Math.Min(count - readCount, Length - BufferAfter.Length - Position);
+            if (Position < Length - BufferAfter.Length) {
+                var streamCount = (int) Math.Min(count - readCount,
+                    Length - BufferAfter.Length - Position);
                 stream.Seek(Position - BufferBefore.Length + IgnoreBefore, SeekOrigin.Begin);
                 stream.Read(buffer, offset + readCount, streamCount);
                 Position += streamCount;
@@ -71,17 +63,17 @@ namespace Pimix.IO
                     return count;
             }
 
-            int afterCount = (int)(count - readCount);
-            Array.Copy(BufferAfter, Position - BufferBefore.Length - stream.Length + IgnoreAfter + IgnoreBefore, buffer, offset + readCount, afterCount);
+            var afterCount = count - readCount;
+            Array.Copy(BufferAfter,
+                Position - BufferBefore.Length - stream.Length + IgnoreAfter + IgnoreBefore, buffer,
+                offset + readCount, afterCount);
             Position += afterCount;
 
             return count;
         }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            switch (origin)
-            {
+        public override long Seek(long offset, SeekOrigin origin) {
+            switch (origin) {
                 case SeekOrigin.Begin:
                     Position = offset;
                     return Position;
@@ -96,34 +88,23 @@ namespace Pimix.IO
             }
         }
 
-        public override void SetLength(long value)
-        {
+        public override void SetLength(long value) {
             throw new NotImplementedException();
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
-        {
+        public override void Write(byte[] buffer, int offset, int count) {
             throw new NotImplementedException();
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            try
-            {
+        protected override void Dispose(bool disposing) {
+            try {
                 if (disposing && stream != null)
-                {
-                    try
-                    {
+                    try {
                         Flush();
-                    }
-                    finally
-                    {
+                    } finally {
                         stream.Dispose();
                     }
-                }
-            }
-            finally
-            {
+            } finally {
                 stream = null;
                 base.Dispose(disposing);
             }

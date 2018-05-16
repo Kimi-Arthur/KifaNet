@@ -5,8 +5,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
-    class CopyCommand : FileUtilCommand
-    {
+    class CopyCommand : FileUtilCommand {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
 
@@ -19,10 +18,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('v', "verify", HelpText = "Verify destination.")]
         public bool Verify { get; set; } = false;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override int Execute()
-        {
+        public override int Execute() {
             var source = new PimixFile(SourceUri);
             var destination = new PimixFile(DestinationUri);
 

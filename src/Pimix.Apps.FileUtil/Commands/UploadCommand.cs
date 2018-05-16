@@ -9,7 +9,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var source = new PimixFile(FileUri);
@@ -23,7 +23,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             var sourceCheckResult = source.Add();
 
             if (sourceCheckResult != FileProperties.None) {
-                logger.Error("Source is wrong! The following fields differ: {0}", sourceCheckResult);
+                logger.Error("Source is wrong! The following fields differ: {0}",
+                    sourceCheckResult);
                 return 1;
             }
 
@@ -36,10 +37,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Already uploaded!");
                     return 0;
-                } else {
-                    logger.Warn("Destination exists, but doesn't match.");
-                    return 2;
                 }
+
+                logger.Warn("Destination exists, but doesn't match.");
+                return 2;
             }
 
             logger.Info("Copying {0} to {1}...", source, destination);
@@ -52,18 +53,18 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully uploaded {0} to {1}!", source, destination);
                     return 0;
-                } else {
-                    destination.Delete();
-                    logger.Fatal(
-                        "Upload failed! The following fields differ (removed): {0}",
-                        destinationCheckResult
-                    );
-                    return 2;
                 }
-            } else {
-                logger.Fatal("Destination doesn't exist unexpectedly!");
+
+                destination.Delete();
+                logger.Fatal(
+                    "Upload failed! The following fields differ (removed): {0}",
+                    destinationCheckResult
+                );
                 return 2;
             }
+
+            logger.Fatal("Destination doesn't exist unexpectedly!");
+            return 2;
         }
     }
 }
