@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using CommandLine;
+using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -10,14 +11,21 @@ namespace Pimix.Apps.FileUtil.Commands {
             HelpText = "Folder to be listed.")]
         public string FolderUri { get; set; }
 
+        [Option('r', "recursive", HelpText = "List files recursively.")]
+        public bool Recursive { get; set; } = false;
+
+        [Option('l', "long", HelpText = "Long list mode")]
+        public bool LongListMode { get; set; } = false;
+
         public override int Execute() {
-            if (Uri.TryCreate(FolderUri, UriKind.Absolute, out var uri) &&
-                uri.Scheme.StartsWith("pimix")) {
-                var info = FileInformation.GetFolderView(uri.LocalPath);
-                var schemes = uri.Scheme.Split('+').ToList();
+            int counter = 0;
+            foreach (var info in new PimixFile(FolderUri).List(Recursive)) {
+                Console.WriteLine(LongListMode ? $"{info.Id}\t{info.Size}" : info.Id);
+                counter++;
             }
 
-            throw new NotImplementedException();
+            Console.WriteLine($"\nIn total, {counter} files in {FolderUri}");
+            return 0;
         }
     }
 }

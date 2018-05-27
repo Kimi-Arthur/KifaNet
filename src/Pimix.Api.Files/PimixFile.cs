@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -65,6 +66,9 @@ namespace Pimix.Api.Files {
             => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
         public void Delete() => Client.Delete(Path);
+
+        public IEnumerable<FileInformation> List(bool recursive = false)
+            => Client.List(Path, recursive);
 
         public void Copy(PimixFile destination) {
             if (Spec == destination.Spec)

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Pimix.IO {
     public class FileStorageClient : StorageClient {
@@ -27,6 +29,22 @@ namespace Pimix.IO {
             => File.Move(GetPath(sourcePath), GetPath(destinationPath));
 
         public override bool Exists(string path) => File.Exists(GetPath(path));
+
+        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+            var directory = new DirectoryInfo(GetPath(path));
+            var items = directory.GetFiles("*",
+                recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+            return items.OrderBy(i => i.Name).Select(i => new FileInformation() {
+                Id = GetId(i.FullName),
+                Size = i.Length
+            });
+        }
+
+        private string GetId(string path) {
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+                return path.Substring($"/allfiles/{BasePath}".Length);
+            return path.Substring($"\\\\{BasePath}/files".Length);
+        }
 
         public override Stream OpenRead(string path) => File.OpenRead(GetPath(path));
 

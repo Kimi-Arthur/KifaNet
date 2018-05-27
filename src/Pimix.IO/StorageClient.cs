@@ -1,7 +1,12 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Pimix.IO {
     public abstract class StorageClient {
+        public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
+            => Enumerable.Empty<FileInformation>();
+
         public abstract bool Exists(string path);
 
         public virtual FileInformation QuickInfo(string path) => new FileInformation();

@@ -16,6 +16,7 @@ namespace Pimix.Apps.FileUtil {
                     RemoveCommand,
                     MoveCommand,
                     LinkCommand,
+                    ListCommand,
                     UploadCommand,
                     AddCommand,
                     GetCommand
