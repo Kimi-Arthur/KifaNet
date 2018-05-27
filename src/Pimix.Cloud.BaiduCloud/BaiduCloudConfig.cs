@@ -53,6 +53,12 @@ namespace Pimix.Cloud.BaiduCloud {
 
         [JsonProperty("get_file_info")]
         public APIInfo GetFileInfo { get; set; }
+
+        [JsonProperty("diff_file_list")]
+        public APIInfo DiffFileList { get; set; }
+
+        [JsonProperty("list_files")]
+        public APIInfo ListFiles { get; set; }
     }
 
     public class APIInfo {

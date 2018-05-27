@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,13 +28,21 @@ namespace Pimix {
             }
         }
 
-        public static JToken GetJToken(this WebResponse response)
-            => JToken.Parse(GetString(response));
+        public static JToken GetJToken(this WebResponse response) => JToken.Parse(GetString(response));
 
         public static T GetObject<T>(this WebResponse response)
             => JsonConvert.DeserializeObject<T>(GetString(response));
 
         public static Dictionary<string, object> GetDictionary(this WebResponse response)
             => response.GetObject<Dictionary<string, object>>();
+
+        static string GetString(HttpResponseMessage response) {
+            using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
+                Encoding.GetEncoding("UTF-8"))) {
+                return sr.ReadToEnd();
+            }
+        }
+
+        public static JToken GetJToken(this HttpResponseMessage response) => JToken.Parse(GetString(response));
     }
 }

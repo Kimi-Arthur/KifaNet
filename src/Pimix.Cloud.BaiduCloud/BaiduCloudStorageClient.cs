@@ -376,6 +376,28 @@ namespace Pimix.Cloud.BaiduCloud {
             return request;
         }
 
+        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+            if (recursive) {
+            } else {
+                var request = GetRequest(Config.APIList.ListFiles,
+                    new Dictionary<string, string> {
+                        ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                    });
+                using (var response = Client.SendAsync(request).Result) {
+                    var result = response.GetJToken();
+                    foreach (var file in result["list"]) {
+                        if ((int) file["isdir"] == 0) {
+                            yield return new FileInformation {
+                                Id = ((string) file["path"]).Substring(Config.RemotePathPrefix.Length),
+                                Size = (long) file["size"],
+                                MD5 = (string) file["md5"]
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
         public override bool Exists(string path) {
             var request = ConstructRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string> {
@@ -474,8 +496,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
             public string ActualMd5 { get; set; }
 
-            public override string ToString()
-                => $"Expected md5 is {ExpectedMd5}, while actual md5 is {ActualMd5}.";
+            public override string ToString() => $"Expected md5 is {ExpectedMd5}, while actual md5 is {ActualMd5}.";
         }
     }
 }
