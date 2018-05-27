@@ -40,29 +40,29 @@ namespace Pimix.Apps.FileUtil.Commands {
             var oldInfo = f.FileInfo;
 
             var compareResult = info.CompareProperties(oldInfo, FilePropertiesToVerify);
-            if (compareResult == FileProperties.None) {
-                if (Update) {
-                    FileInformation.Patch(info);
-                    FileInformation.AddLocation(f.Id, FileUri);
-                } else {
-                    Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
-                }
-
-                return 0;
+            if (compareResult != FileProperties.None) {
+                logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
+                logger.Warn(
+                    "Expected data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                        Formatting.Indented));
+                logger.Warn(
+                    "Actual data:\n{0}",
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ compareResult),
+                        Formatting.Indented));
+                return 1;
             }
 
-            logger.Warn("Verify failed! The following fields differ: {0}", compareResult);
-            logger.Warn(
-                "Expected data:\n{0}",
-                JsonConvert.SerializeObject(
-                    oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
-                    Formatting.Indented));
-            logger.Warn(
-                "Actual data:\n{0}",
-                JsonConvert.SerializeObject(
-                    info.RemoveProperties(FileProperties.All ^ compareResult),
-                    Formatting.Indented));
-            return 1;
+            if (Update) {
+                FileInformation.Patch(info);
+                FileInformation.AddLocation(f.Id, FileUri);
+            } else {
+                Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
+            }
+
+            return 0;
         }
     }
 }
