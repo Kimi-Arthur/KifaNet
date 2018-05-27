@@ -56,7 +56,7 @@ namespace Pimix {
         }
 
         public static TimeSpan ParseTimeSpanString(this string timeSpanString) {
-            if (timeSpanString == null || timeSpanString.Length == 0)
+            if (string.IsNullOrEmpty(timeSpanString))
                 return TimeSpan.Zero;
 
             if (timeSpanString.EndsWith("hr"))
