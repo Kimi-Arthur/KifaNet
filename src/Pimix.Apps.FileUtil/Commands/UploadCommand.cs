@@ -9,6 +9,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
+        [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
+        public bool RemoveSource { get; set; } = false;
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
@@ -52,6 +55,13 @@ namespace Pimix.Apps.FileUtil.Commands {
                 var destinationCheckResult = destination.Add();
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully uploaded {0} to {1}!", source, destination);
+
+                    if (RemoveSource) {
+                        source.Delete();
+                        FileInformation.RemoveLocation(source.Id, source.ToString());
+                        logger.Info("Source {0} removed since upload is successful.", source);
+                    }
+
                     return 0;
                 }
 
