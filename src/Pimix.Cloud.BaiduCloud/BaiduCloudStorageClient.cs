@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix.IO;
 
@@ -377,7 +378,32 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+            List<JToken> fileList;
+
             if (recursive) {
+                var request = GetRequest(Config.APIList.DiffFileList, new Dictionary<string, string> {
+                    ["cursor"] = "null"
+                });
+                var entries = new Dictionary<string, JToken>();
+                JToken result;
+                using (var response = Client.SendAsync(request).Result) {
+                    result = response.GetJToken();
+                }
+
+                ProcessDiffResponse(result, entries);
+
+                while ((bool) result["has_more"]) {
+                    request = GetRequest(Config.APIList.DiffFileList, new Dictionary<string, string> {
+                        ["cursor"] = (string) result["cursor"]
+                    });
+                    using (var response = Client.SendAsync(request).Result) {
+                        result = response.GetJToken();
+                    }
+
+                    ProcessDiffResponse(result, entries);
+                }
+
+                fileList = entries.Values.ToList();
             } else {
                 var request = GetRequest(Config.APIList.ListFiles,
                     new Dictionary<string, string> {
@@ -385,13 +411,42 @@ namespace Pimix.Cloud.BaiduCloud {
                     });
                 using (var response = Client.SendAsync(request).Result) {
                     var result = response.GetJToken();
-                    foreach (var file in result["list"]) {
-                        if ((int) file["isdir"] == 0) {
-                            yield return new FileInformation {
-                                Id = ((string) file["path"]).Substring(Config.RemotePathPrefix.Length),
-                                Size = (long) file["size"],
-                                MD5 = (string) file["md5"]
-                            };
+                    fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
+                }
+            }
+            
+            foreach (var file in fileList.OrderBy(f => f["path"])) {
+                if ((int) file["isdir"] == 0) {
+                    var id = ((string) file["path"]).Substring(Config.RemotePathPrefix.Length);
+                    if (!id.StartsWith(path)) {
+                        continue;
+                    }
+
+                    yield return new FileInformation {
+                        Id = id,
+                        Size = (long) file["size"],
+                        MD5 = ((string) file["md5"]).ToUpper()
+                    };
+                }
+            }
+        }
+
+        void ProcessDiffResponse(JToken result, Dictionary<string, JToken> entries) {
+            if ((bool) result["reset"]) {
+                entries.Clear();
+            }
+
+            foreach (var entry in result["entries"].Values()) {
+                if ((int) entry["isdelete"] == 0) {
+                    entries[(string) entry["path"]] = entry;
+                } else {
+                    if ((int) entry["isdir"] == 0) {
+                        entries.Remove((string) entry["path"]);
+                    } else {
+                        var path = (string)entry["path"];
+                        var toRemove = entries.Keys.Where(x => x.StartsWith(path)).ToArray();
+                        foreach (var key in toRemove) {
+                            entries.Remove(key);
                         }
                     }
                 }
