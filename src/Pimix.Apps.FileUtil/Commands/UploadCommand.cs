@@ -39,6 +39,13 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Already uploaded!");
+
+                    if (RemoveSource) {
+                        source.Delete();
+                        FileInformation.RemoveLocation(source.Id, source.ToString());
+                        logger.Info("Source {0} removed since upload is successful.", source);
+                    }
+
                     return 0;
                 }
 
