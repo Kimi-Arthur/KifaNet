@@ -43,7 +43,7 @@ namespace Pimix.IO {
         private string GetId(string path) {
             if (Environment.OSVersion.Platform == PlatformID.Unix)
                 return path.Substring($"/allfiles/{BasePath}".Length);
-            return path.Substring($"\\\\{BasePath}/files".Length);
+            return path.Substring($"\\\\{BasePath}/files".Length).Replace("\\", "/");
         }
 
         public override Stream OpenRead(string path) => File.OpenRead(GetPath(path));
