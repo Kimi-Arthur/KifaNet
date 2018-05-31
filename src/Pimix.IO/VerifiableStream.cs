@@ -61,43 +61,50 @@ namespace Pimix.IO {
                 var successful = false;
                 var candidates = new Dictionary<(string md5, string sha1, string sha256), int>();
                 for (var i = 0; i < 5; ++i) {
-                    stream.Seek(pos, SeekOrigin.Begin);
-                    bytesRead = stream.Read(blockRead, 0, bytesToRead);
-                    if (bytesRead == bytesToRead) {
-                        var result = IsBlockValid(blockRead, 0, bytesRead,
-                            (int) (pos / FileInformation.BlockSize));
-                        if (result.result == true) {
+                    while (true) {
+                        try {
+                            stream.Seek(pos, SeekOrigin.Begin);
+                            bytesRead = stream.Read(blockRead, 0, bytesToRead);
+                            if (bytesRead == bytesToRead) {
+                                break;
+                            }
+
+                            logger.Warn("Didn't get expected amount of data.");
+                            logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
+                        } catch (Exception ex) {
+                            logger.Warn(ex, "Failed once when reading from {0} to {1}:", Position, Position + count);
+                        }
+
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    }
+
+                    var result = IsBlockValid(blockRead, 0, bytesRead, (int) (pos / FileInformation.BlockSize));
+                    if (result.result == true) {
+                        successful = true;
+                        break;
+                    }
+
+                    if (result.result == false) {
+                        logger.Warn("Block {0} is problematic, retrying ({1})...",
+                            pos / FileInformation.BlockSize, i);
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    } else {
+                        candidates[(result.md5, result.sha1, result.sha256)] =
+                            candidates.GetValueOrDefault(
+                                (result.md5, result.sha1, result.sha256), 0) + 1;
+                        if (HasMajority(candidates)) {
+                            if (candidates.Count > 1) {
+                                logger.Debug(
+                                    "Block {0} is not consistently got, but it's fine:",
+                                    pos / FileInformation.BlockSize);
+                                foreach (var candidate in candidates)
+                                    logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
+                            }
+
                             successful = true;
                             break;
                         }
 
-                        if (result.result == false) {
-                            logger.Warn("Block {0} is problematic, retrying ({1})...",
-                                pos / FileInformation.BlockSize, i);
-                            Thread.Sleep(TimeSpan.FromSeconds(10));
-                        } else {
-                            candidates[(result.md5, result.sha1, result.sha256)] =
-                                candidates.GetValueOrDefault(
-                                    (result.md5, result.sha1, result.sha256), 0) + 1;
-                            if (HasMajority(candidates)) {
-                                if (candidates.Count > 1) {
-                                    logger.Debug(
-                                        "Block {0} is not consistently got, but it's fine:",
-                                        pos / FileInformation.BlockSize);
-                                    foreach (var candidate in candidates)
-                                        logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
-                                }
-
-                                successful = true;
-                                break;
-                            }
-
-                            Thread.Sleep(TimeSpan.FromSeconds(10));
-                        }
-                    } else {
-                        logger.Warn(
-                            "Block {0} is problematic (unexpected read length {1}, should be {2}), retrying ({3})...",
-                            pos / FileInformation.BlockSize, bytesRead, bytesToRead, i);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
                 }

@@ -79,25 +79,8 @@ namespace Pimix.Cloud.BaiduCloud {
 
             if (Position >= Length) return 0;
 
-            var done = false;
-            var readCount = 0;
-            while (!done)
-                try {
-                    readCount = downloader(buffer, offset, Position, count);
-                    done = readCount == count;
-                    if (!done) {
-                        logger.Warn("Didn't get expected amount of data.");
-                        logger.Warn("Responses contains {0} bytes, should be {1} bytes.", readCount,
-                            count);
-                    }
-                } catch (Exception ex) {
-                    logger.Warn(ex, "Failed once when downloading (from {0} to {1}):", Position,
-                        Position + count);
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
-                }
-
+            int readCount = downloader(buffer, offset, Position, count);
             Position += readCount;
-
             return readCount;
         }
 
