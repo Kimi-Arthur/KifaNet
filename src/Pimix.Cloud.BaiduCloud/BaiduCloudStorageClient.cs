@@ -243,7 +243,7 @@ namespace Pimix.Cloud.BaiduCloud {
             var expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count)
                 .ToHexString().ToLower();
             var request = ConstructRequest(Config.APIList.UploadBlock);
-            request.Timeout = 30 * 60 * 1000;
+            request.Timeout = 30 * 60 * 1000 * Math.Max(1, count - 1 >> 25);
 
             using (var requestStream = request.GetRequestStream()) {
                 requestStream.Write(buffer, offset, count);
