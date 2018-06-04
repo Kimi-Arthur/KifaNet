@@ -64,8 +64,25 @@ namespace Pimix.Cloud.BaiduCloud {
 
             Parallel.For(0, (count - 1) / step + 1,
                 i => {
-                    DownloadSingleThread(buffer, path, bufferOffset + i * step, offset + i * step,
-                        Math.Min(step, count - step * i));
+                    int singleCount = Math.Min(step, count - step * i);
+                    long singleOffset = offset + i * step;
+                    int readCount = 0;
+
+                    while (readCount != singleCount) {
+                        try {
+                            readCount = DownloadSingleThread(buffer, path, bufferOffset + i * step, singleOffset,
+                                singleCount);
+                            if (readCount != singleCount) {
+                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                                    singleCount, singleOffset, readCount);
+                                Thread.Sleep(TimeSpan.FromSeconds(5));
+                            }
+                        } catch (Exception ex) {
+                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", singleCount,
+                                singleOffset);
+                            Thread.Sleep(TimeSpan.FromSeconds(5));
+                        }
+                    }
                 });
 
             return count;
@@ -414,7 +431,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
                 }
             }
-            
+
             foreach (var file in fileList.OrderBy(f => f["path"])) {
                 if ((int) file["isdir"] == 0) {
                     var id = ((string) file["path"]).Substring(Config.RemotePathPrefix.Length);
@@ -443,7 +460,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     if ((int) entry["isdir"] == 0) {
                         entries.Remove((string) entry["path"]);
                     } else {
-                        var path = (string)entry["path"];
+                        var path = (string) entry["path"];
                         var toRemove = entries.Keys.Where(x => x.StartsWith(path)).ToArray();
                         foreach (var key in toRemove) {
                             entries.Remove(key);
