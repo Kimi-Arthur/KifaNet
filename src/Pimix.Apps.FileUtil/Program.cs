@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using CommandLine;
 using NLog;
 using Pimix.Apps.FileUtil.Commands;
@@ -9,9 +8,8 @@ namespace Pimix.Apps.FileUtil {
     class Program {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        static int Main(string[] args) {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            return Parser.Default.ParseArguments<
+        static int Main(string[] args)
+            => Parser.Default.ParseArguments<
                     InfoCommand,
                     CopyCommand,
                     VerifyCommand,
@@ -24,7 +22,6 @@ namespace Pimix.Apps.FileUtil {
                     GetCommand
                 >(args)
                 .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
-        }
 
         static int ExecuteCommand(FileUtilCommand command) {
             command.Initialize();
