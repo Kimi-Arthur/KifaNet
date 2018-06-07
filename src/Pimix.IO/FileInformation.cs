@@ -81,6 +81,13 @@ namespace Pimix.IO {
             => PimixService.Call<FileInformation, string>("get_id",
                 parameters: new Dictionary<string, string> {["location"] = location});
 
+        public static List<string> ListFolder(string folder, bool recursive = false)
+            => PimixService.Call<FileInformation, List<string>>("list_folder",
+                parameters: new Dictionary<string, string> {
+                    ["folder"] = folder,
+                    ["recursive"] = recursive ? "1" : ""
+                });
+
         static FileInformation() {
             Properties = new Dictionary<FileProperties, PropertyInfo>();
             foreach (var prop in
