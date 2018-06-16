@@ -22,6 +22,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
+            return UploadFile(source);
+        }
+
+        int UploadFile(PimixFile source) {            
             logger.Info("Checking source {0}...", source);
             var sourceCheckResult = source.Add();
 
@@ -82,6 +86,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             logger.Fatal("Destination doesn't exist unexpectedly!");
             return 2;
+
         }
     }
 }
