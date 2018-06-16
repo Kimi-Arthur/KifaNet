@@ -26,9 +26,10 @@ namespace Pimix.Api.Files {
 
         public PimixFileFormat FileFormat { get; set; }
 
-        public FileInformation FileInfo => FileInformation.Get(Id);
+        readonly FileInformation _fileInfo;
+        public FileInformation FileInfo => _fileInfo ?? FileInformation.Get(Id);
 
-        public PimixFile(string uri, string id = null) {
+        public PimixFile(string uri, string id = null, FileInformation fileInfo = null) {
             // Example uri:
             //   baidu:Pimix_1;v1/a/b/c/d.txt
             //   mega:0z/a/b/c/d.txt
@@ -37,7 +38,8 @@ namespace Pimix.Api.Files {
             //   /a/b/c/d.txt
             var segments = uri.Split(new[] {'/'}, 2);
             Path = "/" + segments[1];
-            Id = id ?? FileInformation.GetId(uri);
+            Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);
+            _fileInfo = fileInfo;
 
             var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
 
