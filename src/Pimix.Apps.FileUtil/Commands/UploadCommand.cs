@@ -48,7 +48,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             return 1;
         }
 
-        int UploadFolder(IEnumerable<PimixFile> files) => files.Select(UploadFile).Max();
+        int UploadFolder(IEnumerable<PimixFile> files)
+            => files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();
 
         int UploadFile(PimixFile source) {
             logger.Info("Checking source {0}...", source);
