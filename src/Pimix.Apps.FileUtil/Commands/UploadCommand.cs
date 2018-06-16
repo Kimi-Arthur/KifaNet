@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -9,6 +12,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
+        [Option('f', "folder", HelpText = "Upload the whole folder.")]
+        public bool IsFolder { get; set; } = false;
+
         [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
         public bool RemoveSource { get; set; } = false;
 
@@ -17,15 +23,34 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             var source = new PimixFile(FileUri);
 
-            if (!source.Exists()) {
-                logger.Error("Source {0} doesn't exist", FileUri);
-                return 1;
+            if (IsFolder) {
+                var files = source.List().ToList();
+                if (files.Count > 0) {
+                    foreach (var file in files) {
+                        Console.WriteLine(file.Id);
+                    }
+
+                    string removalText = RemoveSource ? " and remove source afterwards" : "";
+                    Console.Write($"Confirming upload the {files.Count} above{removalText}?");
+                    Console.ReadLine();
+                    return UploadFolder(files);
+                }
+
+                Console.Write($"No files found in {FileUri}.");
+                return 0;
             }
 
-            return UploadFile(source);
+            if (source.Exists()) {
+                return UploadFile(source);
+            }
+
+            logger.Error("Source {0} doesn't exist", FileUri);
+            return 1;
         }
 
-        int UploadFile(PimixFile source) {            
+        int UploadFolder(IEnumerable<PimixFile> files) => files.Select(UploadFile).Max();
+
+        int UploadFile(PimixFile source) {
             logger.Info("Checking source {0}...", source);
             var sourceCheckResult = source.Add();
 
@@ -86,7 +111,6 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             logger.Fatal("Destination doesn't exist unexpectedly!");
             return 2;
-
         }
     }
 }
