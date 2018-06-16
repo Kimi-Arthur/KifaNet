@@ -20,7 +20,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             int counter = 0;
             foreach (var file in new PimixFile(FolderUri).List(Recursive)) {
-                Console.WriteLine(LongListMode ? $"{file.Path}\t{file.FileInfo.Size}" : file.Path);
+                Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.Path);
                 counter++;
             }
 
