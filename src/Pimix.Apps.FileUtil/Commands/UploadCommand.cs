@@ -24,7 +24,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             var source = new PimixFile(FileUri);
 
             if (IsFolder) {
-                var files = source.List().ToList();
+                var files = source.List(true).ToList();
                 if (files.Count > 0) {
                     foreach (var file in files) {
                         Console.WriteLine(file.Id);
