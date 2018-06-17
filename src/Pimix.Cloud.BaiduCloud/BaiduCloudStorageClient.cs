@@ -480,7 +480,8 @@ namespace Pimix.Cloud.BaiduCloud {
                 using (var response = request.GetResponse()) {
                     return (long) response.GetJToken()["list"][0]["size"] > 0;
                 }
-            } catch (Exception) {
+            } catch (Exception ex) {
+                logger.Debug(ex, "File not found");
                 return false;
             }
         }

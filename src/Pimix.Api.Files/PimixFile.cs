@@ -97,8 +97,6 @@ namespace Pimix.Api.Files {
             => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
         public FileInformation CalculateInfo(FileProperties properties) {
-            if (!Exists()) throw new FileNotFoundException(ToString());
-
             var info = FileInfo;
             info.RemoveProperties((FileProperties.AllVerifiable & properties) |
                                   FileProperties.Locations);
