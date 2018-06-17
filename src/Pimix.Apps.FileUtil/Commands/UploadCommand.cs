@@ -27,7 +27,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 var files = source.List(true).ToList();
                 if (files.Count > 0) {
                     foreach (var file in files) {
-                        Console.WriteLine(file.Id);
+                        Console.WriteLine(file);
                     }
 
                     string removalText = RemoveSource ? " and remove source afterwards" : "";
