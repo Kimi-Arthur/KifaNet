@@ -1,38 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>2.0.0-preview1</Version>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
-    <Description>Utility to manage pimix jobs.</Description>
-    <Copyright>Copyright © 2015-2017 Kimi Arthur</Copyright>
-    <PackageTags>Pimix Apps FileUtil app</PackageTags>
-    <Authors>Kimi Arthur</Authors>
-    <AssemblyName>fileutil</AssemblyName>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.1.1-beta" />
-    <PackageReference Include="NLog.Config" Version="4.5.0-alpha04" />
-    <PackageReference Include="SSH.NET" Version="2016.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.0-preview1-25305-02" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
-    <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj" />
-    <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj" />
-    <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj" />
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <Version>2.0.0-preview1</Version>
+        <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
+        <Description>Utility to manage pimix jobs.</Description>
+        <Copyright>Copyright © 2015-2017 Kimi Arthur</Copyright>
+        <PackageTags>Pimix Apps FileUtil app</PackageTags>
+        <Authors>Kimi Arthur</Authors>
+        <AssemblyName>fileutil</AssemblyName>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.2.1"/>
+        <PackageReference Include="NLog.Config" Version="4.5.0-alpha04"/>
+        <PackageReference Include="SSH.NET" Version="2016.0.0"/>
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj"/>
+        <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj"/>
+        <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj"/>
+        <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj"/>
+        <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
