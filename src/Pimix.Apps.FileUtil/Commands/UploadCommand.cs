@@ -33,7 +33,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     string removalText = RemoveSource ? " and remove source afterwards" : "";
                     Console.Write($"Confirming upload the {files.Count} above{removalText}?");
                     Console.ReadLine();
-                    return UploadFolder(files);
+
+                    return files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();
                 }
 
                 Console.Write($"No files found in {FileUri}.");
@@ -47,9 +48,6 @@ namespace Pimix.Apps.FileUtil.Commands {
             logger.Error("Source {0} doesn't exist", FileUri);
             return 1;
         }
-
-        int UploadFolder(IEnumerable<PimixFile> files)
-            => files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();
 
         int UploadFile(PimixFile source) {
             logger.Info("Checking source {0}...", source);
