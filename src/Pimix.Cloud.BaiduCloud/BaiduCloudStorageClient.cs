@@ -471,19 +471,20 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public override bool Exists(string path) {
-            var request = GetRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string> {
-                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                });
 
             while (true) {
+                var request = GetRequest(Config.APIList.GetFileInfo,
+                    new Dictionary<string, string> {
+                        ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                    });
+
                 try {
                     using (var response = Client.SendAsync(request).Result) {
                         return (long) response.GetJToken()["list"][0]["size"] > 0;
                     }
                 } catch (Exception ex) {
                     logger.Debug(ex, "Existence test failed");
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
             }
         }
