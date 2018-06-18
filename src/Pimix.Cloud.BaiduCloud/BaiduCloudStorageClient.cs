@@ -480,7 +480,13 @@ namespace Pimix.Cloud.BaiduCloud {
 
                 try {
                     using (var response = Client.SendAsync(request).Result) {
-                        return (long) response.GetJToken()["list"][0]["size"] > 0;
+                        var responseObject = response.GetJToken();
+
+                        if (responseObject["list"] == null) {
+                            return false;
+                        }
+
+                        return (long) responseObject["list"][0]["size"] > 0;
                     }
                 } catch (Exception ex) {
                     logger.Debug(ex, "Existence test failed");
