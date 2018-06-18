@@ -16,6 +16,10 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
+            return GetFile(target);
+        }
+
+        int GetFile(PimixFile target) {
             if (target.Exists()) {
                 var targetCheckResult = target.Add();
 
@@ -54,9 +58,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 0;
                 }
 
-                //target.Delete();
                 logger.Error(
-                    "Get failed! The following fields differ (removed): {0}",
+                    "Get failed! The following fields differ (not removed): {0}",
                     destinationCheckResult
                 );
                 return 2;
