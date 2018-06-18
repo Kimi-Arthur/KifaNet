@@ -71,6 +71,9 @@ namespace Pimix.IO {
 
                             logger.Warn("Didn't get expected amount of data.");
                             logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
+                        } catch (CryptographicException ex) {
+                            logger.Warn(ex, "Decrypt error when reading from {0} to {1}:", Position, Position + count);
+                            throw;
                         } catch (Exception ex) {
                             logger.Warn(ex, "Failed once when reading from {0} to {1}:", Position, Position + count);
                         }
