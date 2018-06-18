@@ -476,13 +476,15 @@ namespace Pimix.Cloud.BaiduCloud {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
-            try {
-                using (var response = Client.SendAsync(request).Result) {
-                    return (long) response.GetJToken()["list"][0]["size"] > 0;
+            while (true) {
+                try {
+                    using (var response = Client.SendAsync(request).Result) {
+                        return (long) response.GetJToken()["list"][0]["size"] > 0;
+                    }
+                } catch (Exception ex) {
+                    logger.Debug(ex, "Existence test failed");
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
-            } catch (Exception ex) {
-                logger.Debug(ex, "File not found");
-                return false;
             }
         }
 
