@@ -29,7 +29,7 @@ namespace Pimix.Apps.FileUtil {
             try {
                 return command.Execute();
             } catch (Exception ex) {
-                logger.Fatal(ex, "fileutil terminated.");
+                logger.Fatal(ex, "Unexpected error happened");
                 return 1;
             }
         }
