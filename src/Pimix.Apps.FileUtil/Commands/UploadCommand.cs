@@ -113,7 +113,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 logger.Fatal("Destination doesn't exist unexpectedly!");
                 return 2;
             } catch (Exception ex) {
-                logger.Fatal("Unexpected error");
+                logger.Fatal(ex, "Unexpected error");
                 return 127;
             }
         }
