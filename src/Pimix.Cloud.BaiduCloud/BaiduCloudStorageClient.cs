@@ -505,9 +505,7 @@ namespace Pimix.Cloud.BaiduCloud {
                 using (var response = request.GetResponse()) {
                     var data = response.GetJToken()["list"][0];
                     return new FileInformation {
-                        Size = (long) data["size"],
-                        MD5 = ((string) data["md5"] ??
-                               ((string) data["block_list"]).Substring(2, 32)).ToUpper()
+                        Size = (long) data["size"]
                     };
                 }
             } catch (Exception) {
