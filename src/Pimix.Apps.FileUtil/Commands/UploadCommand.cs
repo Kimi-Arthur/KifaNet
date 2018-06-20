@@ -30,8 +30,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                         Console.WriteLine(file);
                     }
 
-                    string removalText = RemoveSource ? " and remove source afterwards" : "";
-                    Console.Write($"Confirming upload the {files.Count} above{removalText}?");
+                    string removalText = RemoveSource ? " and remove them afterwards" : "";
+                    Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
                     Console.ReadLine();
 
                     return files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();

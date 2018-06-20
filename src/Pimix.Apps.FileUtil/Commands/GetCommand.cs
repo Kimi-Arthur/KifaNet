@@ -26,7 +26,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                         Console.WriteLine(file);
                     }
 
-                    Console.Write($"Confirm getting the {files.Count} above?");
+                    Console.Write($"Confirm getting the {files.Count} files above?");
                     Console.ReadLine();
 
                     return files.Select(f => GetFile(new PimixFile(target.Spec + f))).Max();
