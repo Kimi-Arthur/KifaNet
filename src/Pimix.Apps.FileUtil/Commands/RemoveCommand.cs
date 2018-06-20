@@ -20,59 +20,61 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             if (string.IsNullOrEmpty(FileUri)) {
-                var info = FileInformation.Get(FileId);
+                return RemoveLogicalFile(FileInformation.Get(FileId));
+            }
 
-                // Remove logical file.
-                if (!RemoveLinkOnly && info.Locations != null)
-                    foreach (var location in info.Locations) {
-                        var file = new PimixFile(location);
-                        if (file.Id == FileId) {
-                            if (file.Exists()) {
-                                file.Delete();
-                                logger.Info($"File {file} deleted.");
-                            } else {
-                                logger.Warn($"File {file} not found.");
-                            }
+            return RemoveFileInstance(new PimixFile(FileUri, FileId));
+        }
 
-                            FileInformation.RemoveLocation(FileId, location);
-                            logger.Info($"Entry {location} removed.");
+        int RemoveLogicalFile(FileInformation info) {
+            if (!RemoveLinkOnly && info.Locations != null)
+                foreach (var location in info.Locations) {
+                    var file = new PimixFile(location);
+                    if (file.Id == FileId) {
+                        if (file.Exists()) {
+                            file.Delete();
+                            logger.Info($"File {file} deleted.");
+                        } else {
+                            logger.Warn($"File {file} not found.");
                         }
-                    }
 
-                // Logical removal.
-                FileInformation.Delete(info.Id);
-                logger.Info($"FileInfo {info.Id} removed.");
-                return 0;
-            }
-
-            {
-                var file = new PimixFile(FileUri, FileId);
-                if (file.FileInfo.Locations == null || !file.FileInfo.Locations.Contains(FileUri)) {
-                    if (file.Exists()) {
-                        file.Delete();
-                        logger.Warn($"File {file} deleted, no entry found though.");
-                    } else {
-                        logger.Warn($"File {file} not found.");
-                    }
-
-                    return 0;
-                }
-
-                // Remove specific location item.
-                if (!RemoveLinkOnly) {
-                    if (file.Exists()) {
-                        file.Delete();
-                        logger.Info($"File {file} deleted.");
-                    } else {
-                        logger.Warn($"File {file} not found.");
+                        FileInformation.RemoveLocation(FileId, location);
+                        logger.Info($"Entry {location} removed.");
                     }
                 }
 
-                FileInformation.RemoveLocation(file.Id, FileUri);
-                logger.Info($"Entry {file} removed.");
+            // Logical removal.
+            FileInformation.Delete(info.Id);
+            logger.Info($"FileInfo {info.Id} removed.");
+            return 0;
+        }
+
+        int RemoveFileInstance(PimixFile file) {
+            if (file.FileInfo.Locations == null || !file.FileInfo.Locations.Contains(FileUri)) {
+                if (file.Exists()) {
+                    file.Delete();
+                    logger.Warn($"File {file} deleted, no entry found though.");
+                } else {
+                    logger.Warn($"File {file} not found.");
+                }
 
                 return 0;
             }
+
+            // Remove specific location item.
+            if (!RemoveLinkOnly) {
+                if (file.Exists()) {
+                    file.Delete();
+                    logger.Info($"File {file} deleted.");
+                } else {
+                    logger.Warn($"File {file} not found.");
+                }
+            }
+
+            FileInformation.RemoveLocation(file.Id, FileUri);
+            logger.Info($"Entry {file} removed.");
+
+            return 0;
         }
     }
 }
