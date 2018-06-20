@@ -70,7 +70,8 @@ namespace Pimix.Api.Files {
         public void Delete() => Client.Delete(Path);
 
         public IEnumerable<PimixFile> List(bool recursive = false)
-            => Client.List(Path, recursive).Select(info => new PimixFile(Spec + info.Id, fileInfo: info));
+            => Client.List(Path, recursive).Where(info => !info.Id.Contains("/."))
+                .Select(info => new PimixFile(Spec + info.Id, fileInfo: info));
 
         public void Copy(PimixFile destination) {
             if (Spec == destination.Spec)
