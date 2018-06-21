@@ -402,7 +402,12 @@ namespace Pimix.Cloud.BaiduCloud {
 
             bool needWalk;
             using (var response = Client.SendAsync(infoRequest).Result) {
-                var info = response.GetJToken()["list"][0];
+                var result = response.GetJToken();
+                if (result["list"] == null) {
+                    yield break;
+                }
+
+                var info = result["list"][0];
                 if ((int) info["isdir"] == 0) {
                     yield break;
                 }
