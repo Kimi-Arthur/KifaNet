@@ -12,9 +12,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        [Option('f', "folder", HelpText = "Upload the whole folder.")]
-        public bool IsFolder { get; set; } = false;
-
         [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
         public bool RemoveSource { get; set; } = false;
 
@@ -23,29 +20,24 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             var source = new PimixFile(FileUri);
 
-            if (IsFolder) {
-                var files = source.List(true).ToList();
-                if (files.Count > 0) {
-                    foreach (var file in files) {
-                        Console.WriteLine(file);
-                    }
-
-                    string removalText = RemoveSource ? " and remove them afterwards" : "";
-                    Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
-                    Console.ReadLine();
-
-                    return files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();
+            var files = source.List(true).ToList();
+            if (files.Count > 0) {
+                foreach (var file in files) {
+                    Console.WriteLine(file);
                 }
 
-                Console.Write($"No files found in {FileUri}.");
-                return 0;
+                string removalText = RemoveSource ? " and remove them afterwards" : "";
+                Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
+                Console.ReadLine();
+
+                return files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();
             }
 
             if (source.Exists()) {
                 return UploadFile(source);
             }
 
-            logger.Error("Source {0} doesn't exist", FileUri);
+            logger.Error("Source {0} doesn't exist or folder contains no files.", FileUri);
             return 1;
         }
 
