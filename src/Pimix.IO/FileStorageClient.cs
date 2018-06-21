@@ -31,7 +31,12 @@ namespace Pimix.IO {
         public override bool Exists(string path) => File.Exists(GetPath(path));
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
-            var directory = new DirectoryInfo(GetPath(path));
+            var normalizedPath = GetPath(path);
+            if (!Directory.Exists(normalizedPath)) {
+                return Enumerable.Empty<FileInformation>();
+            }
+
+            var directory = new DirectoryInfo(normalizedPath);
             var items = directory.GetFiles("*",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
             return items.OrderBy(i => i.Name).Select(i => new FileInformation() {

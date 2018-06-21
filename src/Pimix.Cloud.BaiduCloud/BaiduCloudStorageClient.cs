@@ -395,9 +395,24 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+            var infoRequest = GetRequest(Config.APIList.GetFileInfo,
+                new Dictionary<string, string> {
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                });
+
+            bool needWalk;
+            using (var response = Client.SendAsync(infoRequest).Result) {
+                var info = response.GetJToken()["list"][0];
+                if ((int) info["isdir"] == 0) {
+                    yield break;
+                }
+
+                needWalk = (int) info["ifhassubdir"] == 1;
+            }
+
             List<JToken> fileList;
 
-            if (recursive) {
+            if (recursive && needWalk) {
                 var request = GetRequest(Config.APIList.DiffFileList, new Dictionary<string, string> {
                     ["cursor"] = "null"
                 });
