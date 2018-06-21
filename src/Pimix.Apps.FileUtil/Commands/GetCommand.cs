@@ -12,28 +12,21 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
-        [Option('f', "folder", HelpText = "Upload the whole folder.")]
-        public bool IsFolder { get; set; } = false;
-
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
-            if (IsFolder) {
-                var files = FileInformation.ListFolder(target.Id, true);
-                if (files.Count > 0) {
-                    foreach (var file in files) {
-                        Console.WriteLine(file);
-                    }
 
-                    Console.Write($"Confirm getting the {files.Count} files above?");
-                    Console.ReadLine();
-
-                    return files.Select(f => GetFile(new PimixFile(target.Spec + f))).Max();
+            var files = FileInformation.ListFolder(target.Id, true);
+            if (files.Count > 0) {
+                foreach (var file in files) {
+                    Console.WriteLine(file);
                 }
 
-                Console.Write($"No files found in {FileUri}.");
-                return 0;
+                Console.Write($"Confirm getting the {files.Count} files above?");
+                Console.ReadLine();
+
+                return files.Select(f => GetFile(new PimixFile(target.Spec + f))).Max();
             }
 
             return GetFile(target);
