@@ -364,7 +364,7 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public override Stream OpenRead(string path)
-            => new SeekableDownloadStream(GetDownloadLength(path),
+            => new SeekableReadStream(GetDownloadLength(path),
                 (buffer, bufferOffset, offset, count)
                     => Download(buffer, path, bufferOffset, offset, count));
 

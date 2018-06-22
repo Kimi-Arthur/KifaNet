@@ -3,14 +3,14 @@ using System.IO;
 using System.Threading;
 using NLog;
 
-namespace Pimix.Cloud.BaiduCloud {
-    class SeekableDownloadStream : Stream {
+namespace Pimix.IO {
+    public class SeekableReadStream : Stream {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public delegate int Downloader(byte[] buffer, int bufferOffset = 0, long offset = 0,
+        public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0,
             int count = -1);
 
-        readonly Downloader downloader;
+        readonly Reader reader;
 
         readonly bool isOpen = true;
 
@@ -24,9 +24,9 @@ namespace Pimix.Cloud.BaiduCloud {
 
         public override long Position { get; set; }
 
-        public SeekableDownloadStream(long length, Downloader downloader) {
+        public SeekableReadStream(long length, Reader reader) {
             Length = length;
-            this.downloader = downloader;
+            this.reader = reader;
         }
 
         public override void Flush() {
@@ -79,7 +79,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
             if (Position >= Length) return 0;
 
-            int readCount = downloader(buffer, offset, Position, count);
+            int readCount = reader(buffer, offset, Position, count);
             Position += readCount;
             return readCount;
         }
