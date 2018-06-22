@@ -14,9 +14,6 @@ namespace Pimix.Cloud.BaiduCloud {
         [JsonProperty("apis")]
         public APIList APIList { get; private set; }
 
-        [JsonProperty("client_id")]
-        public string ClientId { get; set; }
-
         [JsonProperty("remote_path_prefix")]
         public string RemotePathPrefix { get; set; }
     }

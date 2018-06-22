@@ -12,14 +12,14 @@ namespace PimixTest.Cloud.BaiduCloud {
         public void GetConfigTest() {
             BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
             var config = BaiduCloudConfig.Get("default");
-            Assert.IsTrue(config.ClientId.StartsWith("Tk"));
+            Assert.IsTrue(config.Accounts.Count > 0);
         }
 
         [TestMethod]
         public void GetConfigFromLocalTest() {
             using (var sr = new StreamReader("LocalConfig.json")) {
                 var config = JsonConvert.DeserializeObject<BaiduCloudConfig>(sr.ReadToEnd());
-                Assert.IsTrue(config.ClientId.StartsWith("Tk"));
+                Assert.IsTrue(config.Accounts.Count > 0);
             }
         }
     }
