@@ -31,6 +31,9 @@ namespace Pimix.Cloud.GoogleDrive {
     }
 
     public class APIList {
+        [JsonProperty("create_folder")]
+        public APIInfo CreateFolder { get; set; }
+
         [JsonProperty("download_file")]
         public APIInfo DownloadFile { get; set; }
 
@@ -47,6 +50,9 @@ namespace Pimix.Cloud.GoogleDrive {
 
         [JsonProperty("url")]
         public string Url { get; set; }
+
+        [JsonProperty("data")]
+        public string Data { get; set; }
 
         [JsonProperty("headers")]
         public Dictionary<string, string> Headers { get; set; }

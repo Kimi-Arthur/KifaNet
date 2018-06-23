@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using NLog;
 using Pimix.IO;
 
@@ -43,7 +45,7 @@ namespace Pimix.Cloud.GoogleDrive {
             Client = new HttpClient();
         }
 
-        public override bool Exists(string path) => throw new NotImplementedException();
+        public override bool Exists(string path) => GetFileId(path) != null;
 
         public override void Delete(string path) {
             throw new NotImplementedException();
@@ -89,7 +91,7 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
-        string GetFileId(string path) {
+        string GetFileId(string path, bool createParents = false) {
             string fileId = "root";
             foreach (var segment in $"{Config.RootFolder}{path}".Split('/')) {
                 var request = GetRequest(Config.APIList.FindFile, new Dictionary<string, string>() {
@@ -98,12 +100,37 @@ namespace Pimix.Cloud.GoogleDrive {
                 });
 
                 using (var response = Client.SendAsync(request).Result) {
-                    var token = response.GetJToken();
-                    fileId = (string) token["files"][0]["id"];
+                    var files = response.GetJToken()["files"];
+                    if (files == null) {
+                        return null;
+                    }
+
+                    if (files.Any()) {
+                        fileId = (string) files[0]["id"];
+                        continue;
+                    }
+
+                    if (createParents) {
+                        fileId = CreateFolder(fileId, segment);
+                    } else {
+                        return null;
+                    }
                 }
             }
 
             return fileId;
+        }
+
+        string CreateFolder(string parentId, string name) {
+            var request = GetRequest(Config.APIList.CreateFolder, new Dictionary<string, string>() {
+                ["parent_id"] = parentId,
+                ["name"] = name
+            });
+
+            using (var response = Client.SendAsync(request).Result) {
+                var token = response.GetJToken();
+                return (string) token["id"];
+            }
         }
 
         HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null) {
@@ -117,6 +144,10 @@ namespace Pimix.Cloud.GoogleDrive {
 
             foreach (var header in api.Headers) {
                 request.Headers.Add(header.Key, header.Value.Format(parameters));
+            }
+
+            if (api.Data != null) {
+                request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(api.Data.Format(parameters)));
             }
 
             return request;
