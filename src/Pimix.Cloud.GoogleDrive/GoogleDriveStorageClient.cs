@@ -91,7 +91,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
         string GetFileId(string path) {
             string fileId = "root";
-            foreach (var segment in path.Substring(1).Split('/')) {
+            foreach (var segment in $"{Config.RootFolder}{path}".Split('/')) {
                 var request = GetRequest(Config.APIList.FindFile, new Dictionary<string, string>() {
                     ["name"] = segment,
                     ["parent_id"] = fileId

@@ -11,6 +11,9 @@ namespace Pimix.Cloud.GoogleDrive {
         [JsonProperty("accounts")]
         public Dictionary<string, AccountInfo> Accounts { get; private set; }
 
+        [JsonProperty("root_folder")]
+        public string RootFolder { get; set; }
+
         [JsonProperty("apis")]
         public APIList APIList { get; private set; }
 
