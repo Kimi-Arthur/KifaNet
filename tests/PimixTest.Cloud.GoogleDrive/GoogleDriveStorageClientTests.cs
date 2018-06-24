@@ -12,6 +12,8 @@ namespace PimixTest.Cloud.GoogleDrive {
         public GoogleDriveStorageClientTests() {
             GoogleDriveConfig.PimixServerApiAddress = PimixServerApiAddress;
             GoogleDriveStorageClient.Config = GoogleDriveConfig.Get("default");
+
+            GetStorageClient().Delete("/Test/big.bin");
         }
 
         const string FileSHA256 =
@@ -44,7 +46,7 @@ namespace PimixTest.Cloud.GoogleDrive {
         }
 
         [Fact]
-        public void UploadByBlockTest() {
+        public void UploadTest() {
             var client = GetStorageClient();
             var data = new byte[34 << 20];
             File.OpenRead("data.bin").Read(data, 0, 1 << 20);
@@ -60,6 +62,8 @@ namespace PimixTest.Cloud.GoogleDrive {
                 Assert.Equal(BigFileSHA256,
                     FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
             }
+
+            client.Delete("/Test/big.bin");
         }
 
         static GoogleDriveStorageClient GetStorageClient()

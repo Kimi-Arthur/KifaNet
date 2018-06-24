@@ -50,7 +50,18 @@ namespace Pimix.Cloud.GoogleDrive {
         public override bool Exists(string path) => GetFileId(path) != null;
 
         public override void Delete(string path) {
-            throw new NotImplementedException();
+            var fileId = GetFileId(path);
+            if (fileId != null) {
+                var request = GetRequest(Config.APIList.DeleteFile, new Dictionary<string, string>() {
+                    ["file_id"] = fileId
+                });
+
+                using (var response = Client.SendAsync(request).Result) {
+                    if (!response.IsSuccessStatusCode) {
+                        throw new Exception("Delete is not successful.");
+                    }
+                }
+            }
         }
 
         public override Stream OpenRead(string path) {

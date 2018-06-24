@@ -37,6 +37,9 @@ namespace Pimix.Cloud.GoogleDrive {
         [JsonProperty("create_folder")]
         public APIInfo CreateFolder { get; set; }
 
+        [JsonProperty("delete_file")]
+        public APIInfo DeleteFile { get; set; }
+
         [JsonProperty("download_file")]
         public APIInfo DownloadFile { get; set; }
 
