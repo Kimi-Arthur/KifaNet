@@ -20,6 +20,10 @@ namespace Pimix.IO {
 
         readonly FileInformation info;
 
+        byte[] lastBlock;
+
+        long lastBlockStart = -1;
+
         public override bool CanRead => stream.CanRead;
 
         public override bool CanSeek => stream.CanSeek;
@@ -49,82 +53,93 @@ namespace Pimix.IO {
             var endPosition =
                 Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
-            logger.Debug("Read {0} bytes from {1}.", count, Position);
-            logger.Debug("Effective block: {0} to {1}.", startPosition, endPosition);
-            var blockRead = new byte[FileInformation.BlockSize];
+            logger.Debug("Effectively read [{0}, {1}) to fill [{2}, {3}).", startPosition, endPosition, Position,
+                Position + count);
+
+            lastBlock = lastBlock ?? new byte[FileInformation.BlockSize];
 
             var left = count;
             for (var pos = startPosition; pos < endPosition; pos += FileInformation.BlockSize) {
                 var bytesToRead = (int) Math.Min(endPosition - pos, FileInformation.BlockSize);
                 var bytesRead = 0;
+                if (pos == lastBlockStart) {
+                    logger.Debug($"Skipped {bytesToRead} bytes from {pos}.");
+                    bytesRead = bytesToRead;
+                } else {
+                    var successful = false;
+                    var candidates = new Dictionary<(string md5, string sha1, string sha256), int>();
+                    for (var i = 0; i < 5; ++i) {
+                        while (true) {
+                            try {
+                                stream.Seek(pos, SeekOrigin.Begin);
+                                bytesRead = stream.Read(lastBlock, 0, bytesToRead);
+                                if (bytesRead == bytesToRead) {
+                                    break;
+                                }
 
-                var successful = false;
-                var candidates = new Dictionary<(string md5, string sha1, string sha256), int>();
-                for (var i = 0; i < 5; ++i) {
-                    while (true) {
-                        try {
-                            stream.Seek(pos, SeekOrigin.Begin);
-                            bytesRead = stream.Read(blockRead, 0, bytesToRead);
-                            if (bytesRead == bytesToRead) {
-                                break;
+                                logger.Warn("Didn't get expected amount of data.");
+                                logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
+                            } catch (CryptographicException ex) {
+                                logger.Warn(ex, "Decrypt error when reading from {0} to {1}:", Position,
+                                    Position + count);
+                                throw;
+                            } catch (Exception ex) {
+                                logger.Warn(ex, "Failed once when reading from {0} to {1}:", Position,
+                                    Position + count);
                             }
 
-                            logger.Warn("Didn't get expected amount of data.");
-                            logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
-                        } catch (CryptographicException ex) {
-                            logger.Warn(ex, "Decrypt error when reading from {0} to {1}:", Position, Position + count);
-                            throw;
-                        } catch (Exception ex) {
-                            logger.Warn(ex, "Failed once when reading from {0} to {1}:", Position, Position + count);
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
                         }
 
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-
-                    var result = IsBlockValid(blockRead, 0, bytesRead, (int) (pos / FileInformation.BlockSize));
-                    if (result.result == true) {
-                        successful = true;
-                        break;
-                    }
-
-                    if (result.result == false) {
-                        logger.Warn("Block {0} is problematic, retrying ({1})...",
-                            pos / FileInformation.BlockSize, i);
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                    } else {
-                        candidates[(result.md5, result.sha1, result.sha256)] =
-                            candidates.GetValueOrDefault(
-                                (result.md5, result.sha1, result.sha256), 0) + 1;
-                        if (HasMajority(candidates)) {
-                            if (candidates.Count > 1) {
-                                logger.Debug(
-                                    "Block {0} is not consistently got, but it's fine:",
-                                    pos / FileInformation.BlockSize);
-                                foreach (var candidate in candidates)
-                                    logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
-                            }
-
+                        var result = IsBlockValid(lastBlock, 0, bytesRead, (int) (pos / FileInformation.BlockSize));
+                        if (result.result == true) {
                             successful = true;
                             break;
                         }
 
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                    }
-                }
+                        if (result.result == false) {
+                            logger.Warn("Block {0} is problematic, retrying ({1})...",
+                                pos / FileInformation.BlockSize, i);
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                        } else {
+                            candidates[(result.md5, result.sha1, result.sha256)] =
+                                candidates.GetValueOrDefault(
+                                    (result.md5, result.sha1, result.sha256), 0) + 1;
+                            if (HasMajority(candidates)) {
+                                if (candidates.Count > 1) {
+                                    logger.Debug(
+                                        "Block {0} is not consistently got, but it's fine:",
+                                        pos / FileInformation.BlockSize);
+                                    foreach (var candidate in candidates)
+                                        logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
+                                }
 
-                if (!successful) {
-                    if (candidates.Count > 1) {
-                        logger.Warn("Block {0} is too inconsistent:",
-                            pos / FileInformation.BlockSize);
-                        foreach (var candidate in candidates)
-                            logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                                successful = true;
+                                break;
+                            }
+
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                        }
                     }
 
-                    throw new Exception($"Unable to get valid block starting from {pos}");
+                    if (!successful) {
+                        if (candidates.Count > 1) {
+                            logger.Warn("Block {0} is too inconsistent:",
+                                pos / FileInformation.BlockSize);
+                            foreach (var candidate in candidates)
+                                logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                        }
+
+                        throw new Exception($"Unable to get valid block starting from {pos}");
+                    }
+
+                    logger.Debug($"Read {bytesToRead} bytes from {pos}.");
+
+                    lastBlockStart = pos;
                 }
 
                 var copyCount = Math.Min(left, bytesRead - (int) (Position - pos));
-                Array.Copy(blockRead, Position - pos, buffer, offset, copyCount);
+                Array.Copy(lastBlock, Position - pos, buffer, offset, copyCount);
 
                 offset += copyCount;
                 Position += copyCount;
