@@ -57,7 +57,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 var destinationLocation =
-                    FileInformation.CreateLocation(source.Id, UseGoogleDrive ? "google;v1" : "baidu;v1");
+                    FileInformation.CreateLocation(source.Id, UseGoogleDrive ? "google" : "baidu");
                 var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {

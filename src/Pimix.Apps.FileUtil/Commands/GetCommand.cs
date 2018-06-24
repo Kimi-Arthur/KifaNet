@@ -12,6 +12,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
+        [Option('g', "use-google-drive", HelpText = "Use Google Drive as backend storage.")]
+        public bool UseGoogleDrive { get; set; } = false;
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
@@ -61,7 +64,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            var source = new PimixFile(FileInformation.GetLocation(info.Id));
+            var source = new PimixFile(FileInformation.GetLocation(info.Id, UseGoogleDrive ? "google" : "baidu"));
             source.Copy(target);
 
             if (target.Exists()) {
