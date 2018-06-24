@@ -15,6 +15,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
         public bool RemoveSource { get; set; } = false;
 
+        [Option('g', "use-google-drive", HelpText = "Use Google Drive as backend storage.")]
+        public bool UseGoogleDrive { get; set; } = false;
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
@@ -53,7 +56,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 1;
                 }
 
-                var destinationLocation = FileInformation.CreateLocation(source.Id);
+                var destinationLocation =
+                    FileInformation.CreateLocation(source.Id, UseGoogleDrive ? "google;v1" : "baidu;v1");
                 var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {

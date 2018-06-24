@@ -1,14 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj" />
+    <ProjectReference Include="..\Pimix.Cloud.GoogleDrive\Pimix.Cloud.GoogleDrive.csproj" />
     <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj" />
     <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj" />
     <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
   </ItemGroup>
-
 </Project>

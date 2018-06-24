@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using NLog;
 using Pimix.Cloud.BaiduCloud;
+using Pimix.Cloud.GoogleDrive;
 using Pimix.Cloud.MegaNz;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
@@ -43,7 +44,7 @@ namespace Pimix.Api.Files {
 
             var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
 
-            Client = BaiduCloudStorageClient.Get(spec) ??
+            Client = BaiduCloudStorageClient.Get(spec) ?? GoogleDriveStorageClient.Get(spec) ??
                      MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
 
             FileFormat = PimixFileV1Format.Get(spec) ??
