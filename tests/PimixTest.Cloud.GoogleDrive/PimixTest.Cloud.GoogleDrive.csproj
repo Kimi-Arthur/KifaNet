@@ -12,4 +12,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pimix.Cloud.GoogleDrive\Pimix.Cloud.GoogleDrive.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="data.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

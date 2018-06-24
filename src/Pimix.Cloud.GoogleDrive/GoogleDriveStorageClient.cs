@@ -12,6 +12,8 @@ namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        public const int BlockSize = 32 << 20;
+
         public static GoogleDriveConfig Config { get; set; }
 
         public static StorageClient Get(string fileSpec) {
@@ -61,8 +63,50 @@ namespace Pimix.Cloud.GoogleDrive {
             );
         }
 
-        public override void Write(string path, Stream stream) {
-            throw new NotImplementedException();
+        public override void Write(string path, Stream input) {
+            var folderId = GetFileId(path.Substring(0, path.LastIndexOf('/')), true);
+            var request = GetRequest(Config.APIList.CreateFile, new Dictionary<string, string> {
+                ["parent_id"] = folderId,
+                ["name"] = path.Substring(path.LastIndexOf('/') + 1)
+            });
+
+            Uri uploadUri;
+            using (var response = Client.SendAsync(request).Result) {
+                uploadUri = response.Headers.Location;
+            }
+
+            long size = input.Length;
+            var buffer = new byte[BlockSize];
+
+            for (long position = 0; position < size; position += BlockSize) {
+                var blockLength = input.Read(buffer, 0, BlockSize);
+                var targetEndByte = position + blockLength - 1;
+                var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUri);
+                var content = new ByteArrayContent(buffer, 0, blockLength);
+                content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
+                content.Headers.ContentLength = blockLength;
+                uploadRequest.Content = content;
+
+                using (var response = Client.SendAsync(uploadRequest).Result) {
+                    if (targetEndByte + 1 == size) {
+                        if (!response.IsSuccessStatusCode) {
+                            throw new Exception("Last request should have success code");
+                        }
+                    } else {
+                        var range = RangeHeaderValue.Parse(response.Headers.First(h => h.Key == "Range").Value.First());
+                        var fromByte = range.Ranges.First().From;
+                        var toByte = range.Ranges.First().To;
+                        if (fromByte != 0) {
+                            throw new Exception($"Unexpected exception: from byte is {fromByte}");
+                        }
+
+                        if (toByte != targetEndByte) {
+                            throw new Exception(
+                                $"Unexpected exception: to byte is {toByte}, should be {targetEndByte}");
+                        }
+                    }
+                }
+            }
         }
 
         int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0, int count = -1) {
@@ -142,12 +186,16 @@ namespace Pimix.Cloud.GoogleDrive {
             logger.Trace($"{api.Method} {address}");
             var request = new HttpRequestMessage(new HttpMethod(api.Method), address);
 
-            foreach (var header in api.Headers) {
+            foreach (var header in api.Headers.Where(h => !h.Key.StartsWith("Content-"))) {
                 request.Headers.Add(header.Key, header.Value.Format(parameters));
             }
 
             if (api.Data != null) {
                 request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(api.Data.Format(parameters)));
+
+                foreach (var header in api.Headers.Where(h => h.Key.StartsWith("Content-"))) {
+                    request.Content.Headers.Add(header.Key, header.Value.Format(parameters));
+                }
             }
 
             return request;
