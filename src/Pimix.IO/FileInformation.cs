@@ -57,33 +57,29 @@ namespace Pimix.IO {
         [JsonProperty("locations")]
         public List<string> Locations { get; set; }
 
-        public static List<FileInformation> GetFolderView(string path)
-            => PimixService.Call<FileInformation, List<FileInformation>>("get_folder_view",
-                parameters: new Dictionary<string, string> {["location"] = path});
-
         public static void AddLocation(string id, string location)
-            => PimixService.Call<FileInformation>("add_location", id: id,
-                parameters: new Dictionary<string, string> {["location"] = location});
+            => PimixService.Call<FileInformation>("add_location", id,
+                new Dictionary<string, object> {["location"] = location});
 
         public static void RemoveLocation(string id, string location)
-            => PimixService.Call<FileInformation>("remove_location", id: id,
-                parameters: new Dictionary<string, string> {["location"] = location});
+            => PimixService.Call<FileInformation>("remove_location", id,
+                new Dictionary<string, object> {["location"] = location});
 
         public static string CreateLocation(string id, string type = null)
-            => PimixService.Call<FileInformation, string>("create_location", id: id,
-                parameters: new Dictionary<string, string> {["type"] = type});
+            => PimixService.Call<FileInformation, string>("create_location", id,
+                new Dictionary<string, object>{["type"] = type});
 
-        public static string GetLocation(string id, string types = null)
-            => PimixService.Call<FileInformation, string>("get_location", id: id,
-                parameters: new Dictionary<string, string> {["types"] = types});
+        public static string GetLocation(string id, string type = null)
+            => PimixService.Call<FileInformation, string>("get_location", id,
+                new Dictionary<string, object> {["type"] = type});
 
         public static string GetId(string location)
             => PimixService.Call<FileInformation, string>("get_id",
-                parameters: new Dictionary<string, string> {["location"] = location});
+                parameters: new Dictionary<string, object> {["location"] = location});
 
         public static List<string> ListFolder(string folder, bool recursive = false)
             => PimixService.Call<FileInformation, List<string>>("list_folder",
-                parameters: new Dictionary<string, string> {
+                parameters: new Dictionary<string, object> {
                     ["folder"] = folder,
                     ["recursive"] = recursive ? "1" : ""
                 });

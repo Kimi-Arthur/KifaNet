@@ -83,9 +83,8 @@ namespace Pimix.Apps.JobUtil {
             => PimixService.Call<Job, Job>
             (
                 "pull_job",
-                "POST",
-                parameters: new Dictionary<string, string> {
-                    ["id"] = id,
+                id,
+                new Dictionary<string, object> {
                     ["id_prefix"] = idPrefix,
                     ["runner"] = runner
                 }
@@ -95,9 +94,8 @@ namespace Pimix.Apps.JobUtil {
             => PimixService.Call<Job, Job>
             (
                 "start_job",
-                "POST",
-                parameters: new Dictionary<string, string> {
-                    ["id"] = id,
+                id,
+                new Dictionary<string, object> {
                     ["id_prefix"] = idPrefix,
                     ["runner"] = runner
                 }
@@ -107,47 +105,25 @@ namespace Pimix.Apps.JobUtil {
             => PimixService.Call<Job>
             (
                 "reset_job",
-                "POST",
-                parameters: new Dictionary<string, string> {
-                    ["id"] = id
-                }
-            );
-
-        public static void FinishJob(string id, bool failed = false)
-            => PimixService.Call<Job>
-            (
-                "finish_job",
-                "POST",
-                parameters: new Dictionary<string, string> {
-                    ["id"] = id,
-                    ["failed"] = failed.ToString()
-                }
+                id
             );
 
         public static void Heartbeat(string id)
             => PimixService.Call<Job>
             (
                 "heartbeat",
-                "POST",
-                parameters: new Dictionary<string, string> {
-                    ["id"] = id
-                }
+                id
             );
 
-        public static void FinishJob(string id, int exit_code = 0)
-            => PimixService.Call<Job>("finish_job", "POST",
-                body: new Dictionary<string, object> {["id"] = id, ["exit_code"] = exit_code});
+        public static void FinishJob(string id, int exitCode = 0)
+            => PimixService.Call<Job>("finish_job", id,
+                new Dictionary<string, object> {["exit_code"] = exitCode});
 
         public static void Log(string id, string message, string level = "i")
-            => PimixService.Call<Job>("log", "POST",
-                body: new Dictionary<string, string> {
-                    ["id"] = id,
+            => PimixService.Call<Job>("log", id,
+                new Dictionary<string, object> {
                     ["level"] = level,
                     ["message"] = message
                 });
-
-        public static Job GetJob(string idPrefix = null)
-            => PimixService.Call<Job, Job>("get_job",
-                parameters: new Dictionary<string, string> {["id_prefix"] = idPrefix});
     }
 }

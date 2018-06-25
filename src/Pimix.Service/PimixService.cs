@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 
@@ -15,6 +17,8 @@ namespace Pimix.Service {
         public static string PimixServerApiAddress { get; set; }
 
         public static string PimixServerCredential { get; set; }
+
+        static HttpClient client = new HttpClient();
 
         static RetryPolicy defaultRetryPolicy;
 
@@ -154,56 +158,46 @@ namespace Pimix.Service {
             }
         }
 
-        public static ResponseType Call<TDataModel, ResponseType>(string action,
-            string methodType = "GET",
-            string id = null, Dictionary<string, string> parameters = null, object body = null,
+        public static TResponse Call<TDataModel, TResponse>(string action,
+            string id = null, Dictionary<string, object> parameters = null,
             RetryPolicy retryPolicy = null)
             => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(()
-                => CallWithoutRetry<TDataModel, ResponseType>(action, methodType, id, parameters,
-                    body));
+                => CallWithoutRetry<TDataModel, TResponse>(action, id, parameters));
 
-        public static ResponseType CallWithoutRetry<TDataModel, ResponseType>(string action,
-            string methodType = "GET",
-            string id = null, Dictionary<string, string> parameters = null, object body = null) {
+        static TResponse CallWithoutRetry<TDataModel, TResponse>(string action,
+            string id = null, Dictionary<string, object> parameters = null) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
-            if (id != null) parameters["id"] = id;
+            var request =
+                new HttpRequestMessage(HttpMethod.Post, $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}");
 
-            var address = $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}";
-            if (parameters != null)
-                address += "?" + string.Join("&",
-                               parameters.Where(item => item.Value != null).Select(item
-                                   => $"{item.Key}={Uri.EscapeDataString(item.Value)}"));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", PimixServerCredential);
 
-            var request = WebRequest.CreateHttp(address);
-            request.Method = methodType;
-            request.Headers["Authorization"] =
-                $"Basic {PimixServerCredential}";
+            if (parameters != null) {
+                if (id != null) parameters["id"] = id;
+                request.Content = new StringContent(JsonConvert.SerializeObject(parameters), Encoding.UTF8,
+                    "application/json");
+            }
 
-            if (body != null)
-                using (var sw = new StreamWriter(request.GetRequestStream())) {
-                    var content = JsonConvert.SerializeObject(body);
-                    sw.Write(content);
-                }
 
-            using (var response = request.GetResponse()) {
-                var result = response.GetObject<ActionResult<ResponseType>>();
+            using (var response = client.SendAsync(request).Result) {
+                var result = response.GetObject<ActionResult<TResponse>>();
                 if (result.StatusCode == ActionStatusCode.OK)
                     return result.Response;
                 throw new ActionFailedException {Result = result};
             }
         }
 
-        public static void Call<TDataModel>(string action, string methodType = "GET",
-            string id = null, Dictionary<string, string> parameters = null, object body = null,
+        public static void Call<TDataModel>(string action,
+            string id = null, Dictionary<string, object> parameters = null,
             RetryPolicy retryPolicy = null)
             => (retryPolicy ?? DefaultRetryPolicy).ExecuteAction(()
-                => CallWithoutRetry<TDataModel>(action, methodType, id, parameters, body));
+                => CallWithoutRetry<TDataModel>(action, id, parameters));
 
-        public static void CallWithoutRetry<TDataModel>(string action, string methodType = "GET",
-            string id = null, Dictionary<string, string> parameters = null, object body = null)
-            => CallWithoutRetry<TDataModel, object>(action, methodType, id, parameters, body);
+        static void CallWithoutRetry<TDataModel>(string action,
+            string id = null, Dictionary<string, object> parameters = null)
+            => CallWithoutRetry<TDataModel, object>(action, id, parameters);
 
         static void Init(Type typeInfo) {
             JsonConvert.DefaultSettings =

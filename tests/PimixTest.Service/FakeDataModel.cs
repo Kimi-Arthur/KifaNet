@@ -42,7 +42,7 @@ namespace PimixTest.Service {
 
         #endregion
 
-        public static void Reset() => PimixService.Call<FakeDataModel>("reset", "POST");
+        public static void Reset() => PimixService.Call<FakeDataModel>("reset");
     }
 
     class FakeSubDataModel {
