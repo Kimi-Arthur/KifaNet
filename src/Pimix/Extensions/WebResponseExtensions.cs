@@ -44,5 +44,8 @@ namespace Pimix {
         }
 
         public static JToken GetJToken(this HttpResponseMessage response) => JToken.Parse(GetString(response));
+
+        public static T GetObject<T>(this HttpResponseMessage response)
+            => JsonConvert.DeserializeObject<T>(GetString(response));
     }
 }
