@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -64,7 +65,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            var source = new PimixFile(FileInformation.GetLocation(info.Id, UseGoogleDrive ? "google" : "baidu"));
+            var source = new PimixFile(FileInformation.GetLocation(info.Id,
+                UseGoogleDrive ? new List<string> {"google", "baidu"} : new List<string> {"baidu", "google"}));
             source.Copy(target);
 
             if (target.Exists()) {

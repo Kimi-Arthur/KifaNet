@@ -69,9 +69,9 @@ namespace Pimix.IO {
             => PimixService.Call<FileInformation, string>("create_location", id,
                 new Dictionary<string, object>{["type"] = type});
 
-        public static string GetLocation(string id, string type = null)
+        public static string GetLocation(string id, List<string> types = null)
             => PimixService.Call<FileInformation, string>("get_location", id,
-                new Dictionary<string, object> {["type"] = type});
+                new Dictionary<string, object> {["types"] = types});
 
         public static string GetId(string location)
             => PimixService.Call<FileInformation, string>("get_id",
