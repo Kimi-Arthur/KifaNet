@@ -94,11 +94,29 @@ namespace Pimix.Cloud.BaiduCloud {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
-            request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            using (var response = Client.SendAsync(request).Result) {
-                var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                return (int) memoryStream.Position;
+            while (true) {
+                request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+                var response = Client.SendAsync(request).Result;
+                if (response.IsSuccessStatusCode) {
+                    var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+                    response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+                    response.Dispose();
+                    if (memoryStream.Position != count) {
+                        throw new Exception(
+                            $"Unexpected download length ({memoryStream.Position}, should be {count}): {response}");
+                    }
+
+                    return count;
+                }
+
+                if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
+                    response.StatusCode < HttpStatusCode.BadRequest) {
+                    logger.Trace($"Redirecting to {response.Headers.Location}");
+                    request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
+                    response.Dispose();
+                } else {
+                    throw new Exception($"Unexpected download response: {response}");
+                }
             }
         }
 
@@ -458,7 +476,6 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public override bool Exists(string path) {
-
             while (true) {
                 var request = GetRequest(Config.APIList.GetFileInfo,
                     new Dictionary<string, string> {
