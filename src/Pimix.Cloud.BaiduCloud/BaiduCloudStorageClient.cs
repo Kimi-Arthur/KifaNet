@@ -50,44 +50,45 @@ namespace Pimix.Cloud.BaiduCloud {
         public AccountInfo Account { get; private set; }
 
         public BaiduCloudStorageClient() {
-            Client = new HttpClient();
+            Client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
         }
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
             int count = -1) {
             if (count < 0) count = buffer.Length - bufferOffset;
 
-            var step = 1 << 20;
+            var maxChunkSize = 1 << 20;
 
-            Parallel.For(0, (count - 1) / step + 1,
-                i => {
-                    int singleCount = Math.Min(step, count - step * i);
-                    long singleOffset = offset + i * step;
-                    int readCount = 0;
+            // Originally this used multithread. But it needs to be single threaded due to the anti-hotlink technology
+            // used by Baidu, whic produces error with code 31326 and message like
+            // "user is not authorized, hitcode:120".
+            for (int chunkOffset = 0; chunkOffset < count; chunkOffset += maxChunkSize) {
+                var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
+                int readCount = 0;
 
-                    while (readCount != singleCount) {
-                        try {
-                            readCount = DownloadSingleThread(buffer, path, bufferOffset + i * step, singleOffset,
-                                singleCount);
-                            if (readCount != singleCount) {
-                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
-                                    singleCount, singleOffset, readCount);
-                                Thread.Sleep(TimeSpan.FromSeconds(5));
-                            }
-                        } catch (Exception ex) {
-                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", singleCount,
-                                singleOffset);
+                while (readCount != chunkSize) {
+                    try {
+                        readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset, offset + chunkOffset,
+                            chunkSize);
+                        if (readCount != chunkSize) {
+                            logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                                chunkSize, offset + chunkOffset, readCount);
                             Thread.Sleep(TimeSpan.FromSeconds(5));
                         }
+                    } catch (Exception ex) {
+                        logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
+                            offset + chunkOffset);
+                        Thread.Sleep(TimeSpan.FromSeconds(5));
                     }
-                });
+                }
+            }
 
             return count;
         }
 
-        int DownloadSingleThread(byte[] buffer, string path, int bufferOffset, long offset,
+        int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset,
             int count) {
-            logger.Debug("Download block: [{0}, {1})", offset, offset + count);
+            logger.Debug("Download chunk: [{0}, {1})", offset, offset + count);
 
             var request = GetRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string> {
@@ -115,6 +116,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
                     response.Dispose();
                 } else {
+                    logger.Fatal(response.Content.ReadAsStringAsync().Result);
                     throw new Exception($"Unexpected download response: {response}");
                 }
             }
