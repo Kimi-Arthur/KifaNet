@@ -59,29 +59,30 @@ namespace Pimix.Cloud.BaiduCloud {
 
             var maxChunkSize = 1 << 20;
 
-            // Originally this used multithread. But it needs to be single threaded due to the anti-hotlink technology
-            // used by Baidu, whic produces error with code 31326 and message like
+            // The thread limit will help prevent errors with code 31326 and message like
             // "user is not authorized, hitcode:120".
-            for (int chunkOffset = 0; chunkOffset < count; chunkOffset += maxChunkSize) {
-                var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
-                int readCount = 0;
+            Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {MaxDegreeOfParallelism = 4},
+                i => {
+                    int chunkOffset = i * maxChunkSize;
+                    int chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
+                    int readCount = 0;
 
-                while (readCount != chunkSize) {
-                    try {
-                        readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset, offset + chunkOffset,
-                            chunkSize);
-                        if (readCount != chunkSize) {
-                            logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
-                                chunkSize, offset + chunkOffset, readCount);
+                    while (readCount != chunkSize) {
+                        try {
+                            readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset, offset + chunkOffset,
+                                chunkSize);
+                            if (readCount != chunkSize) {
+                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                                    chunkSize, offset + chunkOffset, readCount);
+                                Thread.Sleep(TimeSpan.FromSeconds(5));
+                            }
+                        } catch (Exception ex) {
+                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
+                                offset + chunkOffset);
                             Thread.Sleep(TimeSpan.FromSeconds(5));
                         }
-                    } catch (Exception ex) {
-                        logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
-                            offset + chunkOffset);
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
                     }
-                }
-            }
+                });
 
             return count;
         }
