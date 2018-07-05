@@ -61,8 +61,9 @@ namespace Pimix.Cloud.BaiduCloud {
 
             // The thread limit will help prevent errors with code 31326 and message like
             // "user is not authorized, hitcode:120".
-            Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {MaxDegreeOfParallelism = 4},
+            Parallel.For(0, (count - 1) / maxChunkSize + 1,
                 i => {
+                    Thread.Sleep(TimeSpan.FromSeconds(i * 4));
                     int chunkOffset = i * maxChunkSize;
                     int chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
                     int readCount = 0;
