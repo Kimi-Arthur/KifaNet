@@ -7,18 +7,25 @@ namespace Pimix.IO {
     public class FileStorageClient : StorageClient {
         const int DefaultBlockSize = 32 << 20;
 
+        public static Dictionary<string, string> PathMap = new Dictionary<string, string>();
+
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
             foreach (var spec in specs)
                 if (spec.StartsWith("local:"))
-                    return new FileStorageClient {BasePath = spec.Substring(6)};
+                    return new FileStorageClient {
+                        BaseId = spec.Substring(6),
+                        BasePath = PathMap[spec.Substring(6)]
+                    };
 
             return null;
         }
 
-        public string BasePath { get; set; }
+        string BaseId { get; set; }
 
-        public override string ToString() => $"local:{BasePath}";
+        string BasePath { get; set; }
+
+        public override string ToString() => $"local:{BaseId}";
 
         public override void Copy(string sourcePath, string destinationPath)
             => File.Copy(GetPath(sourcePath), GetPath(destinationPath));
@@ -45,12 +52,6 @@ namespace Pimix.IO {
             });
         }
 
-        private string GetId(string path) {
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-                return path.Substring($"/allfiles/{BasePath}".Length);
-            return path.Substring($"\\\\{BasePath}/files".Length).Replace("\\", "/");
-        }
-
         public override Stream OpenRead(string path) => File.OpenRead(GetPath(path));
 
         public override void Write(string path, Stream stream) {
@@ -62,12 +63,8 @@ namespace Pimix.IO {
             }
         }
 
-        string GetPath(string path) {
-            if (BasePath == null) return path;
+        string GetId(string path) => path.Substring(BasePath.Length);
 
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
-                return $"/allfiles/{BasePath}{path}";
-            return $"\\\\{BasePath}/files{path}";
-        }
+        string GetPath(string path) => $"{BasePath}{path}";
     }
 }

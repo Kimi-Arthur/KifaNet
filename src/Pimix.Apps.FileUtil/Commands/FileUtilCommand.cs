@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Configuration;
+using System.Linq;
 using System.Net;
 using System.Text;
 using CommandLine;
 using NLog;
 using NLog.Layouts;
 using NLog.Targets;
+using Pimix.IO;
 using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -19,6 +21,11 @@ namespace Pimix.Apps.FileUtil.Commands {
         public string PimixServerCredential { get; set; } =
             ConfigurationManager.AppSettings["PimixServerCredential"];
 
+        [Option("path-map", HelpText =
+            "Mapping from path id to actual path on device for local paths")]
+        public string PathMap { get; set; } =
+            ConfigurationManager.AppSettings["PathMap"];
+
         [Option("job-id", HelpText = "Job ID to report log as.")]
         public string JobId { get; set; } = null;
 
@@ -26,6 +33,10 @@ namespace Pimix.Apps.FileUtil.Commands {
             PimixService.PimixServerApiAddress = PimixServerAddress;
             PimixService.PimixServerCredential =
                 Convert.ToBase64String(Encoding.UTF8.GetBytes(PimixServerCredential));
+
+            FileStorageClient.PathMap = PathMap.Split(";")
+                .ToDictionary(x => x.Split("=").First(), x => x.Split("=").Last());
+
             var config = LogManager.Configuration;
             if (JobId != null) {
                 config.RemoveTarget("console");
