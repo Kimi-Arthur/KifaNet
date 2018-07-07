@@ -42,7 +42,7 @@ namespace Pimix.Api.Files {
             Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);
             _fileInfo = fileInfo;
 
-            var spec = string.IsNullOrEmpty(segments[0]) ? GetSpec(Path) : segments[0];
+            var spec = segments[0];
 
             Client = BaiduCloudStorageClient.Get(spec) ?? GoogleDriveStorageClient.Get(spec) ??
                      MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
@@ -52,16 +52,6 @@ namespace Pimix.Api.Files {
         }
 
         public override string ToString() => $"{Spec}{Path}";
-
-        string GetSpec(string path) {
-            var info = FileInformation.Get(path);
-            if (info == null) return "";
-
-            foreach (var location in info.Locations) // TODO: Will add selection logic here.
-                return location;
-
-            return "";
-        }
 
         public bool Exists() => Client.Exists(Path);
 
