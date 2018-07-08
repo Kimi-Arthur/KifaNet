@@ -85,8 +85,7 @@ namespace Pimix.Api.Files {
                 FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
-        void Write(Stream stream)
-            => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+        void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
         public FileInformation CalculateInfo(FileProperties properties) {
             var info = FileInfo;
@@ -104,9 +103,8 @@ namespace Pimix.Api.Files {
             if (!Exists()) throw new FileNotFoundException(ToString());
 
             var oldInfo = FileInfo;
-            if ((oldInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
-                !alwaysCheck && oldInfo.Locations != null &&
-                oldInfo.Locations.Contains(ToString())) {
+            if (!alwaysCheck && (oldInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
+                oldInfo.Locations?.GetValueOrDefault(ToString(), null) != null) {
                 logger.Debug("Skipped checking for {0}.", ToString());
                 return FileProperties.None;
             }
@@ -148,7 +146,7 @@ namespace Pimix.Api.Files {
                     info.EncryptionKey; // Only happens for unencrypted file.
 
                 FileInformation.Patch(info);
-                FileInformation.AddLocation(Id, ToString());
+                Register(true);
             } else {
                 logger.Warn(
                     "Expected data:\n{0}",
@@ -164,5 +162,7 @@ namespace Pimix.Api.Files {
 
             return compareResult;
         }
+
+        public void Register(bool verified = false) => FileInformation.AddLocation(Id, ToString(), verified);
     }
 }

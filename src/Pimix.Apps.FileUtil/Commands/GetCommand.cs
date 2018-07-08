@@ -56,7 +56,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            foreach (var location in info.Locations) {
+            foreach (var location in info.Locations.Keys) {
                 var linkSource = new PimixFile(location);
                 if (linkSource.Spec == target.Spec) {
                     Link(linkSource, target);

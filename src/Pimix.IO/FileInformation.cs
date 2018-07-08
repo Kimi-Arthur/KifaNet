@@ -55,11 +55,14 @@ namespace Pimix.IO {
         public string EncryptionKey { get; set; }
 
         [JsonProperty("locations")]
-        public List<string> Locations { get; set; }
+        public Dictionary<string, DateTime?> Locations { get; set; }
 
-        public static void AddLocation(string id, string location)
+        public static void AddLocation(string id, string location, bool verified = false)
             => PimixService.Call<FileInformation>("add_location", id,
-                new Dictionary<string, object> {["location"] = location});
+                new Dictionary<string, object> {
+                    ["location"] = location,
+                    ["verified"] = verified
+                });
 
         public static void RemoveLocation(string id, string location)
             => PimixService.Call<FileInformation>("remove_location", id,

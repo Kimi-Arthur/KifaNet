@@ -47,6 +47,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         int UploadFile(PimixFile source) {
             // TODO: Better catching.
             try {
+                source.Register();
                 logger.Info("Checking source {0}...", source);
                 var sourceCheckResult = source.Add();
 
@@ -59,6 +60,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 var destinationLocation =
                     FileInformation.CreateLocation(source.Id, UseGoogleDrive ? "google" : "baidu");
                 var destination = new PimixFile(destinationLocation);
+                destination.Register();
 
                 if (destination.Exists()) {
                     var destinationCheckResult = destination.Add();

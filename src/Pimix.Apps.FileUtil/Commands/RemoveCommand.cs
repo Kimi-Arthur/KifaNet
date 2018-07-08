@@ -28,7 +28,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         int RemoveLogicalFile(FileInformation info) {
             if (!RemoveLinkOnly && info.Locations != null)
-                foreach (var location in info.Locations) {
+                foreach (var location in info.Locations.Keys) {
                     var file = new PimixFile(location);
                     if (file.Id == FileId) {
                         if (file.Exists()) {
@@ -50,7 +50,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         int RemoveFileInstance(PimixFile file) {
-            if (file.FileInfo.Locations?.Contains(FileUri) != true) {
+            if (file.FileInfo.Locations?.ContainsKey(FileUri) != true) {
                 if (file.Exists()) {
                     file.Delete();
                     logger.Warn($"File {file} deleted, no entry found though.");
