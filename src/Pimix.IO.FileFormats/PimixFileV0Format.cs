@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Pimix.Cryptography;
@@ -14,7 +15,7 @@ namespace Pimix.IO.FileFormats {
     /// </summary>
     public class PimixFileV0Format : PimixFileFormat {
         public static PimixFileFormat Get(string fileSpec) {
-            var specs = fileSpec.Split(';');
+            var specs = fileSpec.Split('/').First().Split(';');
             foreach (var spec in specs)
                 if (spec == "v0")
                     return new PimixFileV0Format();

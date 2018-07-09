@@ -18,11 +18,10 @@ namespace Pimix.IO.FileFormats {
     ///     B16~47: SHA256 (256bit)
     /// </summary>
     public class PimixFileV1Format : PimixFileFormat {
-        public static PimixFileFormat Get(string fileSpec) {
-            var specs = fileSpec.Split(';');
-            foreach (var spec in specs)
-                if (spec == "v1")
-                    return new PimixFileV1Format();
+        public static PimixFileFormat Get(string fileUri) {
+            if (fileUri.EndsWith(".v1")) {
+                return new PimixFileV1Format();
+            }
 
             return null;
         }

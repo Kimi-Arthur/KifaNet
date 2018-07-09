@@ -47,8 +47,8 @@ namespace Pimix.Api.Files {
             Client = BaiduCloudStorageClient.Get(spec) ?? GoogleDriveStorageClient.Get(spec) ??
                      MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
 
-            FileFormat = PimixFileV1Format.Get(spec) ??
-                         PimixFileV0Format.Get(spec) ?? RawFileFormat.Get(spec);
+            FileFormat = PimixFileV1Format.Get(uri) ??
+                         PimixFileV0Format.Get(uri) ?? RawFileFormat.Get(uri);
         }
 
         public override string ToString() => $"{Spec}{Path}";
