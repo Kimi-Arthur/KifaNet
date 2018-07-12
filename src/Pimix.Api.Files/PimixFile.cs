@@ -17,11 +17,7 @@ namespace Pimix.Api.Files {
 
         public string Path { get; set; }
 
-        public string Spec
-            => string.Join(";", new[] {
-                Client.ToString(),
-                FileFormat.ToString()
-            }.Where(x => x != null));
+        public string Host => Client.ToString();
 
         public StorageClient Client { get; set; }
 
@@ -51,7 +47,7 @@ namespace Pimix.Api.Files {
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Get(uri);
         }
 
-        public override string ToString() => $"{Spec}{Path}";
+        public override string ToString() => $"{Host}{Path}{FileFormat}";
 
         public bool Exists() => Client.Exists(Path);
 
@@ -62,17 +58,17 @@ namespace Pimix.Api.Files {
 
         public IEnumerable<PimixFile> List(bool recursive = false)
             => Client.List(Path, recursive).Where(info => !info.Id.Contains("/."))
-                .Select(info => new PimixFile(Spec + info.Id, fileInfo: info));
+                .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public void Copy(PimixFile destination) {
-            if (Spec == destination.Spec)
+            if (Host == destination.Host && FileFormat == destination.FileFormat)
                 Client.Copy(Path, destination.Path);
             else
                 destination.Write(OpenRead());
         }
 
         public void Move(PimixFile destination) {
-            if (Spec == destination.Spec) {
+            if (Host == destination.Host && FileFormat == destination.FileFormat) {
                 Client.Move(Path, destination.Path);
             } else {
                 Copy(destination);

@@ -30,7 +30,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.Write($"Confirm getting the {files.Count} files above?");
                 Console.ReadLine();
 
-                return files.Select(f => GetFile(new PimixFile(target.Spec + f))).Max();
+                return files.Select(f => GetFile(new PimixFile(target.Host + f))).Max();
             }
 
             return GetFile(target);
@@ -58,7 +58,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             foreach (var location in info.Locations.Keys) {
                 var linkSource = new PimixFile(location);
-                if (linkSource.Spec == target.Spec) {
+                if (linkSource.Host == target.Host) {
                     Link(linkSource, target);
                     FileInformation.AddLocation(target.Id, target.ToString());
                     return 0;
@@ -88,7 +88,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         void Link(PimixFile source, PimixFile target) {
-            var connectionInfo = new ConnectionInfo(target.Spec.Split(':').Last(),
+            var connectionInfo = new ConnectionInfo(target.Host.Split(':').Last(),
                 "root",
                 new PasswordAuthenticationMethod("root", "fakepass"));
             using (var client = new SshClient(connectionInfo)) {

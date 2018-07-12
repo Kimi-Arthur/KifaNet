@@ -2,9 +2,9 @@ using System.IO;
 
 namespace Pimix.IO.FileFormats {
     public class RawFileFormat : PimixFileFormat {
-        public static PimixFileFormat Get(string fileSpec) => new RawFileFormat();
+        public static PimixFileFormat Get(string fileUri) => new RawFileFormat();
 
-        public override string ToString() => null;
+        public override string ToString() => "";
 
         public override Stream GetEncodeStream(Stream rawStream, FileInformation info) => rawStream;
 
