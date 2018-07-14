@@ -18,12 +18,14 @@ namespace Pimix.IO.FileFormats {
             var specs = fileSpec.Split('/').First().Split(';');
             foreach (var spec in specs)
                 if (spec == "v0")
-                    return new PimixFileV0Format();
+                    return Instance;
 
             return null;
         }
+        
+        static readonly PimixFileV0Format Instance = new PimixFileV0Format();
 
-        public override string ToString() => "";
+        public override string ToString() => ".v0";
 
         public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null) {
             if (encryptionKey == null) {

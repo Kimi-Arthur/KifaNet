@@ -2,7 +2,7 @@ using System.IO;
 
 namespace Pimix.IO.FileFormats {
     public class RawFileFormat : PimixFileFormat {
-        public static PimixFileFormat Get(string fileUri) => new RawFileFormat();
+        public static readonly RawFileFormat Instance = new RawFileFormat();
 
         public override string ToString() => "";
 

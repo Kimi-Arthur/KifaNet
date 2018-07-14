@@ -20,11 +20,13 @@ namespace Pimix.IO.FileFormats {
     public class PimixFileV1Format : PimixFileFormat {
         public static PimixFileFormat Get(string fileUri) {
             if (fileUri.EndsWith(".v1")) {
-                return new PimixFileV1Format();
+                return Instance;
             }
 
             return null;
         }
+        
+        static readonly PimixFileV1Format Instance = new PimixFileV1Format();
 
         public override string ToString() => ".v1";
 

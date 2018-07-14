@@ -44,7 +44,7 @@ namespace Pimix.Api.Files {
                      MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
 
             FileFormat = PimixFileV1Format.Get(uri) ??
-                         PimixFileV0Format.Get(uri) ?? RawFileFormat.Get(uri);
+                         PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
         }
 
         public override string ToString() => $"{Host}{Path}{FileFormat}";
