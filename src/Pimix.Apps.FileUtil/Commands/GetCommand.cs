@@ -60,12 +60,14 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            foreach (var location in info.Locations.Keys) {
-                var linkSource = new PimixFile(location);
-                if (linkSource.IsComaptible(target)) {
-                    Link(linkSource, target);
-                    FileInformation.AddLocation(target.Id, target.ToString());
-                    return 0;
+            foreach (var location in info.Locations) {
+                if (location.Value != null) {
+                    var linkSource = new PimixFile(location.Key);
+                    if (linkSource.IsComaptible(target)) {
+                        Link(linkSource, target);
+                        FileInformation.AddLocation(target.Id, target.ToString());
+                        return 0;
+                    }
                 }
             }
 
