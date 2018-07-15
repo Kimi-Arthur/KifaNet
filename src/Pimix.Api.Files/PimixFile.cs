@@ -61,14 +61,15 @@ namespace Pimix.Api.Files {
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public void Copy(PimixFile destination) {
-            if (Host == destination.Host && FileFormat == destination.FileFormat)
+            if (IsComaptible(destination)) {
                 Client.Copy(Path, destination.Path);
-            else
+            } else {
                 destination.Write(OpenRead());
+            }
         }
 
         public void Move(PimixFile destination) {
-            if (Host == destination.Host && FileFormat == destination.FileFormat) {
+            if (IsComaptible(destination)) {
                 Client.Move(Path, destination.Path);
             } else {
                 Copy(destination);
@@ -160,5 +161,13 @@ namespace Pimix.Api.Files {
         }
 
         public void Register(bool verified = false) => FileInformation.AddLocation(Id, ToString(), verified);
+
+        /// <summary>
+        /// Gets path in local file system. This can only be called for local files.
+        /// </summary>
+        /// <returns></returns>
+        public string GetLocalPath() => Client.GetPath(Path);
+
+        public bool IsComaptible(PimixFile other) => Host == other.Host && FileFormat == other.FileFormat;
     }
 }

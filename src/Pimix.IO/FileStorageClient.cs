@@ -65,6 +65,6 @@ namespace Pimix.IO {
 
         string GetId(string path) => path.Substring(BasePath.Length).Replace("\\", "/");
 
-        string GetPath(string path) => $"{BasePath}{path}";
+        public override string GetPath(string path) => $"{BasePath}{path}";
     }
 }

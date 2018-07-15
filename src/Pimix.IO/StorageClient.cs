@@ -25,5 +25,9 @@ namespace Pimix.IO {
         public abstract Stream OpenRead(string path);
 
         public abstract void Write(string path, Stream stream);
+
+        public virtual string GetPath(string path) {
+            throw new System.NotImplementedException();
+        }
     }
 }
