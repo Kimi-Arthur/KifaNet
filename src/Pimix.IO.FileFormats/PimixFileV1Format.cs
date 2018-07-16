@@ -28,7 +28,7 @@ namespace Pimix.IO.FileFormats {
         
         static readonly PimixFileV1Format Instance = new PimixFileV1Format();
 
-        public override string ToString() => ".v1";
+        public override string ToString() => "v1";
 
         public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null) {
             if (encryptionKey == null) {
