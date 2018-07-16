@@ -58,7 +58,9 @@ namespace Pimix.IO {
             var blockSize = DefaultBlockSize;
             path = GetPath(path);
             Directory.GetParent(path).Create();
-            using (var fs = new FileStream(path, FileMode.Create)) {
+            using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
+                fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
+                stream.Seek(fs.Position, SeekOrigin.Begin);
                 stream.CopyTo(fs, blockSize);
             }
         }

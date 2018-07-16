@@ -42,15 +42,19 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         int GetFile(PimixFile target) {
             if (target.Exists()) {
-                var targetCheckResult = target.Add();
+                if (target.CalculateInfo(FileProperties.Size).Size != target.FileInfo.Size) {
+                    logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");
+                } else {
+                    var targetCheckResult = target.Add();
 
-                if (targetCheckResult == FileProperties.None) {
-                    logger.Info("Already got!");
-                    return 0;
+                    if (targetCheckResult == FileProperties.None) {
+                        logger.Info("Already got!");
+                        return 0;
+                    }
+
+                    logger.Warn("Target exists, but doesn't match.");
+                    return 2;
                 }
-
-                logger.Warn("Target exists, but doesn't match.");
-                return 2;
             }
 
             var info = target.FileInfo;
