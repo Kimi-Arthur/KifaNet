@@ -4,6 +4,8 @@ all: build install
 
 dev: build install_dev
 
+staging: build install_staging
+
 build:
 	dotnet publish -c Release src/Pimix.Apps.FileUtil
 	dotnet publish -c Release src/Pimix.Apps.JobUtil
@@ -19,6 +21,12 @@ install_dev:
 	mkdir -p /usr/local/lib/pimix/jobutil_dev
 	cp -R src/Pimix.Apps.FileUtil/bin/Release/netcoreapp2.0/publish/* /usr/local/lib/pimix/fileutil_dev
 	cp -R src/Pimix.Apps.JobUtil/bin/Release/netcoreapp2.0/publish/* /usr/local/lib/pimix/jobutil_dev
+
+install_staging:
+	mkdir -p /usr/local/lib/pimix/fileutil_staging
+	mkdir -p /usr/local/lib/pimix/jobutil_staging
+	cp -R src/Pimix.Apps.FileUtil/bin/Release/netcoreapp2.0/publish/* /usr/local/lib/pimix/fileutil_staging
+	cp -R src/Pimix.Apps.JobUtil/bin/Release/netcoreapp2.0/publish/* /usr/local/lib/pimix/jobutil_staging
 
 clean:
 	rm -rf /usr/local/lib/pimix
