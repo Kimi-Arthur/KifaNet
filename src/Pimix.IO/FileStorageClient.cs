@@ -15,7 +15,7 @@ namespace Pimix.IO {
                 if (spec.StartsWith("local:"))
                     return new FileStorageClient {
                         BaseId = spec.Substring(6),
-                        BasePath = PathMap[spec.Substring(6)]
+                        BasePath = PathMap.GetValueOrDefault(spec.Substring(6), null)
                     };
 
             return null;
