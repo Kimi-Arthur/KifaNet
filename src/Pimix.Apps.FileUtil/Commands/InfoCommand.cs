@@ -62,7 +62,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             if (Update) {
                 FileInformation.Patch(info);
-                FileInformation.AddLocation(f.Id, FileUri);
+                FileInformation.AddLocation(f.Id, FileUri, true);
             }
 
             Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
