@@ -82,7 +82,8 @@ namespace Pimix.Api.Files {
                 FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
-        void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+        void Write(Stream stream)
+            => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
         public FileInformation CalculateInfo(FileProperties properties) {
             var info = FileInfo;
@@ -100,7 +101,8 @@ namespace Pimix.Api.Files {
             if (!Exists()) throw new FileNotFoundException(ToString());
 
             var oldInfo = FileInfo;
-            if (!alwaysCheck && (oldInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
+            if (!alwaysCheck &&
+                (oldInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
                 oldInfo.Locations?.GetValueOrDefault(ToString(), null) != null) {
                 logger.Debug("Skipped checking for {0}.", ToString());
                 return FileProperties.None;
@@ -160,7 +162,12 @@ namespace Pimix.Api.Files {
             return compareResult;
         }
 
-        public void Register(bool verified = false) => FileInformation.AddLocation(Id, ToString(), verified);
+        public void Register(bool verified = false)
+            => FileInformation.AddLocation(Id, ToString(), verified);
+
+        public bool IsCloud
+            => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
+                Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
 
         /// <summary>
         /// Gets path in local file system. This can only be called for local files.
@@ -168,6 +175,7 @@ namespace Pimix.Api.Files {
         /// <returns></returns>
         public string GetLocalPath() => Client.GetPath(Path);
 
-        public bool IsComaptible(PimixFile other) => Host == other.Host && FileFormat == other.FileFormat;
+        public bool IsComaptible(PimixFile other)
+            => Host == other.Host && FileFormat == other.FileFormat;
     }
 }

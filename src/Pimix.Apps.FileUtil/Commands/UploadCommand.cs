@@ -92,6 +92,11 @@ namespace Pimix.Apps.FileUtil.Commands {
                         logger.Info("Successfully uploaded {0} to {1}!", source, destination);
 
                         if (RemoveSource) {
+                            if (source.IsCloud) {
+                                logger.Info("Source {0} is not removed as it's in cloud.", source);
+                                return 0;
+                            }
+
                             source.Delete();
                             FileInformation.RemoveLocation(source.Id, source.ToString());
                             logger.Info("Source {0} removed since upload is successful.", source);
