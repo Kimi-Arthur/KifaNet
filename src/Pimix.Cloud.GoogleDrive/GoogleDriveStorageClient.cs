@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using NLog;
 using Pimix.IO;
 
@@ -12,7 +13,10 @@ namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public const int BlockSize = 32 << 20;
+        static readonly TimeSpan RefreshAccountInterval = TimeSpan.FromMinutes(50);
+        const int BlockSize = 32 << 20;
+
+        readonly Timer refreshTimer;
 
         public static GoogleDriveConfig Config { get; set; }
 
@@ -29,7 +33,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public override string ToString() => $"google:{AccountId}";
 
-        readonly HttpClient Client;
+        readonly HttpClient client;
 
         string accountId;
 
@@ -44,7 +48,8 @@ namespace Pimix.Cloud.GoogleDrive {
         public AccountInfo Account { get; private set; }
 
         public GoogleDriveStorageClient() {
-            Client = new HttpClient();
+            client = new HttpClient();
+            refreshTimer = new Timer(RefreshAccount, null, TimeSpan.Zero, RefreshAccountInterval);
         }
 
         public override bool Exists(string path) => GetFileId(path) != null;
@@ -52,11 +57,12 @@ namespace Pimix.Cloud.GoogleDrive {
         public override void Delete(string path) {
             var fileId = GetFileId(path);
             if (fileId != null) {
-                var request = GetRequest(Config.APIList.DeleteFile, new Dictionary<string, string>() {
-                    ["file_id"] = fileId
-                });
+                var request = GetRequest(Config.APIList.DeleteFile,
+                    new Dictionary<string, string> {
+                        ["file_id"] = fileId
+                    });
 
-                using (var response = Client.SendAsync(request).Result) {
+                using (var response = client.SendAsync(request).Result) {
                     if (!response.IsSuccessStatusCode) {
                         throw new Exception("Delete is not successful.");
                     }
@@ -82,7 +88,7 @@ namespace Pimix.Cloud.GoogleDrive {
             });
 
             Uri uploadUri;
-            using (var response = Client.SendAsync(request).Result) {
+            using (var response = client.SendAsync(request).Result) {
                 uploadUri = response.Headers.Location;
             }
 
@@ -94,17 +100,19 @@ namespace Pimix.Cloud.GoogleDrive {
                 var targetEndByte = position + blockLength - 1;
                 var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUri);
                 var content = new ByteArrayContent(buffer, 0, blockLength);
-                content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
+                content.Headers.ContentRange =
+                    new ContentRangeHeaderValue(position, targetEndByte, size);
                 content.Headers.ContentLength = blockLength;
                 uploadRequest.Content = content;
 
-                using (var response = Client.SendAsync(uploadRequest).Result) {
+                using (var response = client.SendAsync(uploadRequest).Result) {
                     if (targetEndByte + 1 == size) {
                         if (!response.IsSuccessStatusCode) {
                             throw new Exception("Last request should have success code");
                         }
                     } else {
-                        var range = RangeHeaderValue.Parse(response.Headers.First(h => h.Key == "Range").Value.First());
+                        var range = RangeHeaderValue.Parse(response.Headers
+                            .First(h => h.Key == "Range").Value.First());
                         var fromByte = range.Ranges.First().From;
                         var toByte = range.Ranges.First().To;
                         if (fromByte != 0) {
@@ -120,15 +128,16 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
-        int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0, int count = -1) {
+        int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
+            int count = -1) {
             if (count < 0) count = buffer.Length - bufferOffset;
 
-            var request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string>() {
+            var request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string> {
                 ["file_id"] = fileId
             });
 
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            using (var response = Client.SendAsync(request).Result) {
+            using (var response = client.SendAsync(request).Result) {
                 var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                 response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
                 return (int) memoryStream.Position;
@@ -140,7 +149,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 ["file_id"] = fileId
             });
 
-            using (var response = Client.SendAsync(request).Result) {
+            using (var response = client.SendAsync(request).Result) {
                 var token = response.GetJToken();
                 return long.Parse((string) token["size"]);
             }
@@ -154,7 +163,7 @@ namespace Pimix.Cloud.GoogleDrive {
                     ["parent_id"] = fileId
                 });
 
-                using (var response = Client.SendAsync(request).Result) {
+                using (var response = client.SendAsync(request).Result) {
                     var files = response.GetJToken()["files"];
                     if (files == null) {
                         return null;
@@ -182,9 +191,23 @@ namespace Pimix.Cloud.GoogleDrive {
                 ["name"] = name
             });
 
-            using (var response = Client.SendAsync(request).Result) {
+            using (var response = client.SendAsync(request).Result) {
                 var token = response.GetJToken();
                 return (string) token["id"];
+            }
+        }
+
+        void RefreshAccount(object stateInfo) {
+            var request = GetRequest(Config.APIList.OauthRefresh, new Dictionary<string, string>() {
+                ["refresh_token"] = Account.RefreshToken,
+                ["client_id"] = Config.ClientId,
+                ["client_secret"] = Config.ClientSecret
+            });
+
+            using (var response = client.SendAsync(request).Result) {
+                var token = response.GetJToken();
+                Account.AccessToken = (string) token["access_token"];
+                Account.RefreshToken = (string) token["refresh_token"];
             }
         }
 
@@ -202,7 +225,8 @@ namespace Pimix.Cloud.GoogleDrive {
             }
 
             if (api.Data != null) {
-                request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(api.Data.Format(parameters)));
+                request.Content =
+                    new ByteArrayContent(Encoding.UTF8.GetBytes(api.Data.Format(parameters)));
 
                 foreach (var header in api.Headers.Where(h => h.Key.StartsWith("Content-"))) {
                     request.Content.Headers.Add(header.Key, header.Value.Format(parameters));
@@ -210,6 +234,11 @@ namespace Pimix.Cloud.GoogleDrive {
             }
 
             return request;
+        }
+
+        public override void Dispose() {
+            refreshTimer?.Dispose();
+            client?.Dispose();
         }
     }
 }

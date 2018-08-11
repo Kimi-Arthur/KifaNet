@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace Pimix.IO {
-    public abstract class StorageClient {
+    public abstract class StorageClient : IDisposable {
         public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
             => Enumerable.Empty<FileInformation>();
 
@@ -27,7 +28,10 @@ namespace Pimix.IO {
         public abstract void Write(string path, Stream stream);
 
         public virtual string GetPath(string path) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public virtual void Dispose() {
         }
     }
 }

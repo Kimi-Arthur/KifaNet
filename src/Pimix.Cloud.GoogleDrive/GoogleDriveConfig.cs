@@ -14,6 +14,12 @@ namespace Pimix.Cloud.GoogleDrive {
         [JsonProperty("root_folder")]
         public string RootFolder { get; set; }
 
+        [JsonProperty("client_id")]
+        public string ClientId { get; set; }
+
+        [JsonProperty("client_secret")]
+        public string ClientSecret { get; set; }
+
         [JsonProperty("apis")]
         public APIList APIList { get; private set; }
 
@@ -28,6 +34,9 @@ namespace Pimix.Cloud.GoogleDrive {
     public class AccountInfo {
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }
+
+        [JsonProperty("refresh_token")]
+        public string RefreshToken { get; set; }
     }
 
     public class APIList {
@@ -48,6 +57,9 @@ namespace Pimix.Cloud.GoogleDrive {
 
         [JsonProperty("get_file_info")]
         public APIInfo GetFileInfo { get; set; }
+
+        [JsonProperty("oauth_refresh")]
+        public APIInfo OauthRefresh { get; set; }
     }
 
     public class APIInfo {

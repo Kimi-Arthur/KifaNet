@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ using Pimix.IO;
 using Pimix.IO.FileFormats;
 
 namespace Pimix.Api.Files {
-    public class PimixFile {
+    public class PimixFile : IDisposable {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public string Id { get; set; }
@@ -177,5 +178,9 @@ namespace Pimix.Api.Files {
 
         public bool IsComaptible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
+
+        public void Dispose() {
+            Client?.Dispose();
+        }
     }
 }

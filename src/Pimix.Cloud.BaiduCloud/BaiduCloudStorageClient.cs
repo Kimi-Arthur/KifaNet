@@ -35,7 +35,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
         public override string ToString() => $"baidu:{AccountId}";
 
-        readonly HttpClient Client;
+        readonly HttpClient client;
 
         string accountId;
 
@@ -50,7 +50,7 @@ namespace Pimix.Cloud.BaiduCloud {
         public AccountInfo Account { get; private set; }
 
         public BaiduCloudStorageClient() {
-            Client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
+            client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
         }
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
@@ -99,7 +99,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
             while (true) {
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                var response = Client.SendAsync(request).Result;
+                var response = client.SendAsync(request).Result;
                 if (response.IsSuccessStatusCode) {
                     var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                     response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
@@ -390,7 +390,7 @@ namespace Pimix.Cloud.BaiduCloud {
                 });
 
             bool needWalk;
-            using (var response = Client.SendAsync(infoRequest).Result) {
+            using (var response = client.SendAsync(infoRequest).Result) {
                 var result = response.GetJToken();
                 if (result["list"] == null) {
                     yield break;
@@ -412,7 +412,7 @@ namespace Pimix.Cloud.BaiduCloud {
                 });
                 var entries = new Dictionary<string, JToken>();
                 JToken result;
-                using (var response = Client.SendAsync(request).Result) {
+                using (var response = client.SendAsync(request).Result) {
                     result = response.GetJToken();
                 }
 
@@ -422,7 +422,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     request = GetRequest(Config.APIList.DiffFileList, new Dictionary<string, string> {
                         ["cursor"] = (string) result["cursor"]
                     });
-                    using (var response = Client.SendAsync(request).Result) {
+                    using (var response = client.SendAsync(request).Result) {
                         result = response.GetJToken();
                     }
 
@@ -435,7 +435,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     new Dictionary<string, string> {
                         ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                     });
-                using (var response = Client.SendAsync(request).Result) {
+                using (var response = client.SendAsync(request).Result) {
                     var result = response.GetJToken();
                     fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
                 }
@@ -487,7 +487,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     });
 
                 try {
-                    using (var response = Client.SendAsync(request).Result) {
+                    using (var response = client.SendAsync(request).Result) {
                         var responseObject = response.GetJToken();
 
                         if (responseObject["list"] == null) {
@@ -577,6 +577,10 @@ namespace Pimix.Cloud.BaiduCloud {
                 blockSize <<= 1;
 
             return (int) blockSize;
+        }
+
+        public override void Dispose() {
+            client?.Dispose();
         }
 
         class UploadBlockException : Exception {
