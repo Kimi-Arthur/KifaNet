@@ -16,7 +16,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         [Option('v', "verify-all", HelpText =
             "Verify all verifiable fields of the file along with updating info.")]
-        public bool VerifyAll { get; set; } = false;
+        public bool VerifyAll { get; set; }
 
         [Option('f', "fields-to-verify", HelpText =
             "Fields to verify. Only 'Size' is verified by default.")]
@@ -63,9 +63,9 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (Update) {
                 FileInformation.Patch(info);
                 FileInformation.AddLocation(f.Id, FileUri);
-            } else {
-                Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
             }
+
+            Console.WriteLine(JsonConvert.SerializeObject(info, Formatting.Indented));
 
             return 0;
         }

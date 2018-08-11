@@ -7,6 +7,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute()
-            => new InfoCommand {FileUri = FileUri, VerifyAll = true}.Execute();
+            => new InfoCommand {FileUri = FileUri, VerifyAll = true, Update = true}.Execute();
     }
 }
