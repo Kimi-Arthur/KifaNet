@@ -58,8 +58,12 @@ namespace Pimix.Api.Files {
         public void Delete() => Client.Delete(Path);
 
         public IEnumerable<PimixFile> List(bool recursive = false)
-            => Client.List(Path, recursive).Where(info => !info.Id.Contains("/."))
+            => Client.List(Path, recursive).Where(f => !IsInvisible(f))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
+
+        static bool IsInvisible(FileInformation f)
+            => f.Id.Contains("/.") || f.Id.EndsWith(".!qB") || f.Id.EndsWith(".!ut")
+               || f.Id.EndsWith(".fdmdownload") || f.Id.EndsWith(".crdownload");
 
         public void Copy(PimixFile destination) {
             if (IsComaptible(destination)) {
