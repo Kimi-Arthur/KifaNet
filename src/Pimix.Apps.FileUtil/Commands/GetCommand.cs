@@ -7,6 +7,7 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
+using Renci.SshNet;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("get", HelpText = "Get file.")]
@@ -69,7 +70,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     var linkSource = new PimixFile(location.Key);
                     if (linkSource.IsComaptible(target)) {
                         Link(linkSource, target);
-                        FileInformation.AddLocation(target.Id, target.ToString());
+                        target.Register();
                         return 0;
                     }
                 }
@@ -98,57 +99,29 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         void Link(PimixFile source, PimixFile link) {
-            var relativePath = GetRelativePath(link.Path, source.Path);
-            var linkPath = link.GetLocalPath();
-            Directory.GetParent(linkPath).Create();
+            Directory.GetParent(link.GetLocalPath()).Create();
 
-            logger.Debug("Linking {0} to point to relative path {1}", linkPath, relativePath);
-            CreateSymbolicLink(linkPath, relativePath);
-        }
+            var prefixMap = CenterPathMap.Split(";")
+                .ToDictionary(x => x.Split("=").First(), x => x.Split("=").Last());
+            var prefix = prefixMap.GetValueOrDefault(link.Host.Substring(6));
 
-        static void CreateSymbolicLink(string linkPath, string relativePath) {
-            using (var proc = new Process()) {
-                proc.StartInfo.FileName = "/bin/ln";
-                proc.StartInfo.Arguments = $"-s \"{relativePath}\" \"{linkPath}\"";
+            var hostLinkPath = $"{prefix}{link.Path}";
+            var hostSourcePath = $"{prefix}{source.Path}";
 
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.UseShellExecute = false;
+            var segments = CenterHost.Split("@");
+            var username = segments[0].Split(":").First();
+            var password = segments[0].Split(":").Last();
 
-                proc.OutputDataReceived += (sender, e) => {
-                    if (!string.IsNullOrEmpty(e.Data)) {
-                        logger.Debug(e.Data);
-                    }
-                };
+            var connectionInfo = new ConnectionInfo(segments[1],
+                username,
+                new PasswordAuthenticationMethod(username, password));
 
-                proc.ErrorDataReceived += (sender, e) => {
-                    if (!string.IsNullOrEmpty(e.Data)) {
-                        logger.Debug(e.Data);
-                    }
-                };
-
-                proc.Start();
-
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
-
-                proc.WaitForExit();
-
-                if (proc.ExitCode != 0) {
-                    logger.Fatal($"Error when linking: {proc.ExitCode}");
-                    throw new Exception("Linking Error");
-                }
+            using (var client = new SshClient(connectionInfo)) {
+                client.Connect();
+                var result = client.RunCommand(
+                    $"ln \"{hostSourcePath}\" \"{hostLinkPath}\"");
+                if (result.ExitStatus != 0) throw new Exception("Link command failed");
             }
-        }
-
-        static string GetRelativePath(string basePath, string valuePath) {
-            var baseSegments = basePath.Split('/');
-            var valueSegments = valuePath.Split('/');
-            var commonPrefix = baseSegments.Zip(valueSegments, (b, v) => b == v)
-                .Select((value, index) => (value, index)).First(x => !x.Item1).Item2;
-            return string.Join("/",
-                Enumerable.Repeat("..", baseSegments.Length - commonPrefix - 1)
-                    .Concat(valueSegments.Skip(commonPrefix)));
         }
     }
 }

@@ -23,8 +23,16 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         [Option("path-map", HelpText =
             "Mapping from path id to actual path on device for local paths")]
-        public string PathMap { get; set; } =
-            ConfigurationManager.AppSettings["PathMap"];
+        public string PathMap { get; set; } = ConfigurationManager.AppSettings["PathMap"];
+
+        [Option("center-host", HelpText =
+            "Center host in the format of username:password@address")]
+        public string CenterHost { get; set; } = ConfigurationManager.AppSettings["CenterHost"];
+
+        [Option("center-path-map", HelpText =
+            "Mapping from path id to actual path on Center host")]
+        public string CenterPathMap { get; set; } =
+            ConfigurationManager.AppSettings["CenterPathMap"];
 
         [Option("job-id", HelpText = "Job ID to report log as.")]
         public string JobId { get; set; } = null;
