@@ -11,7 +11,7 @@ namespace Pimix {
     public static class WebResponseExtensions {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static Dictionary<string, string> EncodingNameFixes { get; set; } =
+        static readonly Dictionary<string, string> EncodingNameFixes =
             new Dictionary<string, string> {["utf8"] = "UTF-8"};
 
         static string GetString(WebResponse response) {
