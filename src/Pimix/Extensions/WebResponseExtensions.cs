@@ -5,9 +5,12 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 
 namespace Pimix {
     public static class WebResponseExtensions {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public static Dictionary<string, string> EncodingNameFixes { get; set; } =
             new Dictionary<string, string> {["utf8"] = "UTF-8"};
 
@@ -28,7 +31,8 @@ namespace Pimix {
             }
         }
 
-        public static JToken GetJToken(this WebResponse response) => JToken.Parse(GetString(response));
+        public static JToken GetJToken(this WebResponse response)
+            => JToken.Parse(GetString(response));
 
         public static T GetObject<T>(this WebResponse response)
             => JsonConvert.DeserializeObject<T>(GetString(response));
@@ -39,11 +43,14 @@ namespace Pimix {
         static string GetString(HttpResponseMessage response) {
             using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
                 Encoding.GetEncoding("UTF-8"))) {
-                return sr.ReadToEnd();
+                var data = sr.ReadToEnd();
+                logger.Trace(data);
+                return data;
             }
         }
 
-        public static JToken GetJToken(this HttpResponseMessage response) => JToken.Parse(GetString(response));
+        public static JToken GetJToken(this HttpResponseMessage response)
+            => JToken.Parse(GetString(response));
 
         public static T GetObject<T>(this HttpResponseMessage response)
             => JsonConvert.DeserializeObject<T>(GetString(response));

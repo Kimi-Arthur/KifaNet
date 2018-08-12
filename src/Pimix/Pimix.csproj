@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>2.0.0-preview1</Version>
@@ -11,9 +10,8 @@
     <PackageTags>Pimix lib</PackageTags>
     <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="NLog" Version="5.0.0-beta07" />
   </ItemGroup>
-
 </Project>
