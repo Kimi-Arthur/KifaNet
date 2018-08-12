@@ -198,7 +198,7 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         void RefreshAccount(object stateInfo) {
-            var request = GetRequest(Config.APIList.OauthRefresh, new Dictionary<string, string>() {
+            var request = GetRequest(Config.APIList.OauthRefresh, new Dictionary<string, string> {
                 ["refresh_token"] = Account.RefreshToken,
                 ["client_id"] = Config.ClientId,
                 ["client_secret"] = Config.ClientSecret

@@ -73,6 +73,6 @@ namespace Pimix.Cloud.GoogleDrive {
         public string Data { get; set; }
 
         [JsonProperty("headers")]
-        public Dictionary<string, string> Headers { get; set; }
+        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
     }
 }
