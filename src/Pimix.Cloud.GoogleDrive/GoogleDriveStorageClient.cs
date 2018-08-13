@@ -210,7 +210,6 @@ namespace Pimix.Cloud.GoogleDrive {
             using (var response = client.SendAsync(request).Result) {
                 var token = response.GetJToken();
                 Account.AccessToken = (string) token["access_token"];
-                Account.RefreshToken = (string) token["refresh_token"];
             }
         }
 
