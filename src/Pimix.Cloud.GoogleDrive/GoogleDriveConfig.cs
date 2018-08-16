@@ -55,6 +55,9 @@ namespace Pimix.Cloud.GoogleDrive {
         [JsonProperty("find_file")]
         public APIInfo FindFile { get; set; }
 
+        [JsonProperty("list_files")]
+        public APIInfo ListFiles { get; set; }
+
         [JsonProperty("get_file_info")]
         public APIInfo GetFileInfo { get; set; }
 

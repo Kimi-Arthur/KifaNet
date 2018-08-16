@@ -25,9 +25,7 @@ namespace Pimix.Cloud.GoogleDrive {
             foreach (var spec in specs)
                 if (spec.StartsWith("google:")) {
                     Config = GoogleDriveConfig.Get("default");
-                    var client = new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
-                    client.RefreshAccount(null);
-                    return client;
+                    return new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
                 }
 
             return null;
@@ -53,8 +51,41 @@ namespace Pimix.Cloud.GoogleDrive {
             client = new HttpClient(new HttpClientHandler() {
                 AllowAutoRedirect = false
             });
+        }
 
-            refreshTimer = new Timer(RefreshAccount, null, RefreshAccountInterval, RefreshAccountInterval);
+        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+            var fileId = GetFileId(path);
+            if (fileId == null) {
+                yield break;
+            }
+
+            var pageToken = "";
+            var incomplete = true;
+
+            while (incomplete) {
+                var request = GetRequest(Config.APIList.ListFiles, new Dictionary<string, string> {
+                    ["parent_id"] = fileId,
+                    ["page_token"] = pageToken
+                });
+
+                using (var response = client.SendAsync(request).Result) {
+                    if (!response.IsSuccessStatusCode) {
+                        throw new Exception("List Files is not successful.");
+                    }
+
+                    var token = response.GetJToken();
+                    incomplete = (bool) token["incompleteSearch"];
+                    if (incomplete) {
+                        pageToken = (string) token["nextPageToken"];
+                    }
+
+                    foreach (var fileToken in token["files"]) {
+                        yield return new FileInformation {
+                            Id = $"{path}/{(string) fileToken["name"]}"
+                        };
+                    }
+                }
+            }
         }
 
         public override bool Exists(string path) => GetFileId(path) != null;
@@ -202,22 +233,34 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
-        void RefreshAccount(object stateInfo) {
+        DateTime lastRefreshed = DateTime.MinValue;
+
+        void RefreshAccount() {
+            if (DateTime.Now - lastRefreshed < RefreshAccountInterval) {
+                return;
+            }
+
             var request = GetRequest(Config.APIList.OauthRefresh, new Dictionary<string, string> {
                 ["refresh_token"] = Account.RefreshToken,
                 ["client_id"] = Config.ClientId,
                 ["client_secret"] = Config.ClientSecret
-            });
+            }, false);
 
             using (var response = client.SendAsync(request).Result) {
                 var token = response.GetJToken();
                 Account.AccessToken = (string) token["access_token"];
             }
+
+            lastRefreshed = DateTime.Now;
         }
 
-        HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null) {
+        HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null,
+            bool needAccessToken = true) {
             parameters = parameters ?? new Dictionary<string, string>();
-            parameters["access_token"] = Account.AccessToken;
+            if (needAccessToken) {
+                RefreshAccount();
+                parameters["access_token"] = Account.AccessToken;
+            }
 
             var address = api.Url.Format(parameters);
 
