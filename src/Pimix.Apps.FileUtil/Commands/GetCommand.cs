@@ -70,7 +70,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     var linkSource = new PimixFile(location.Key);
                     if (linkSource.IsComaptible(target)) {
                         Link(linkSource, target);
-                        target.Register();
+                        target.Register(true);
                         return 0;
                     }
                 }
@@ -84,6 +84,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 var destinationCheckResult = target.Add();
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully got {1} from {0}!", source, target);
+                    source.Register(true);
                     return 0;
                 }
 

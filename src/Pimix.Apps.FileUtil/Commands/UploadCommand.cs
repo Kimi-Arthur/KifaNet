@@ -98,6 +98,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                                 if (source.IsCloud) {
                                     logger.Info("Source {0} is not removed as it's in cloud.",
                                         source);
+                                    source.Register(true);
                                     return 0;
                                 }
 
@@ -105,6 +106,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                                 FileInformation.RemoveLocation(source.Id, source.ToString());
                                 logger.Info("Source {0} removed since upload is successful.",
                                     source);
+                            } else {
+                                source.Register(true);
                             }
 
                             return 0;
