@@ -25,7 +25,9 @@ namespace Pimix.Cloud.GoogleDrive {
             foreach (var spec in specs)
                 if (spec.StartsWith("google:")) {
                     Config = GoogleDriveConfig.Get("default");
-                    return new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
+                    var client = new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
+                    client.RefreshAccount(null);
+                    return client;
                 }
 
             return null;
@@ -52,7 +54,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 AllowAutoRedirect = false
             });
 
-            refreshTimer = new Timer(RefreshAccount, null, TimeSpan.Zero, RefreshAccountInterval);
+            refreshTimer = new Timer(RefreshAccount, null, RefreshAccountInterval, RefreshAccountInterval);
         }
 
         public override bool Exists(string path) => GetFileId(path) != null;
