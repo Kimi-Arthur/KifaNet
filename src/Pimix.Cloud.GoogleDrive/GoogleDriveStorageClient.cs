@@ -16,8 +16,6 @@ namespace Pimix.Cloud.GoogleDrive {
         static readonly TimeSpan RefreshAccountInterval = TimeSpan.FromMinutes(50);
         const int BlockSize = 32 << 20;
 
-        readonly Timer refreshTimer;
-
         public static GoogleDriveConfig Config { get; set; }
 
         public static StorageClient Get(string fileSpec) {
@@ -284,7 +282,6 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         public override void Dispose() {
-            refreshTimer?.Dispose();
             client?.Dispose();
         }
     }

@@ -14,6 +14,9 @@ namespace Pimix.Api.Files {
     public class PimixFile : IDisposable {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        static readonly Dictionary<String, StorageClient> KnownClients =
+            new Dictionary<string, StorageClient>();
+
         public string Id { get; set; }
 
         public string Path { get; set; }
@@ -41,8 +44,13 @@ namespace Pimix.Api.Files {
 
             var spec = segments[0];
 
-            Client = BaiduCloudStorageClient.Get(spec) ?? GoogleDriveStorageClient.Get(spec) ??
-                     MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
+            if (!KnownClients.ContainsKey(spec)) {
+                KnownClients[spec] = BaiduCloudStorageClient.Get(spec) ??
+                                     GoogleDriveStorageClient.Get(spec) ??
+                                     MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
+            }
+
+            Client = KnownClients[spec];
 
             FileFormat = PimixFileV1Format.Get(uri) ??
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
