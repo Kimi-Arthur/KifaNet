@@ -58,9 +58,8 @@ namespace Pimix.Cloud.GoogleDrive {
             }
 
             var pageToken = "";
-            var incomplete = true;
 
-            while (incomplete) {
+            while (pageToken != null) {
                 var request = GetRequest(Config.APIList.ListFiles, new Dictionary<string, string> {
                     ["parent_id"] = fileId,
                     ["page_token"] = pageToken
@@ -72,10 +71,7 @@ namespace Pimix.Cloud.GoogleDrive {
                     }
 
                     var token = response.GetJToken();
-                    incomplete = (bool) token["incompleteSearch"];
-                    if (incomplete) {
-                        pageToken = (string) token["nextPageToken"];
-                    }
+                    pageToken = token.Value<string>("nextPageToken");
 
                     foreach (var fileToken in token["files"]) {
                         yield return new FileInformation {
