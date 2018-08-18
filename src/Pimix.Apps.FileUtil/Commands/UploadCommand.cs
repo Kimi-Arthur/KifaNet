@@ -39,8 +39,6 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (source.Exists()) {
                 return UploadFile(source);
             }
-            
-            source.Dispose();
 
             logger.Error("Source {0} doesn't exist or folder contains no files.", FileUri);
             return 1;
@@ -61,69 +59,68 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 var destinationLocation =
                     FileInformation.CreateLocation(source.Id, UseGoogleDrive ? "google" : "baidu");
-                using (var destination = new PimixFile(destinationLocation)) {
-                    destination.Register();
+                var destination = new PimixFile(destinationLocation);
+                destination.Register();
 
-                    if (destination.Exists()) {
-                        var destinationCheckResult = destination.Add();
+                if (destination.Exists()) {
+                    var destinationCheckResult = destination.Add();
 
-                        if (destinationCheckResult == FileProperties.None) {
-                            logger.Info("Already uploaded!");
+                    if (destinationCheckResult == FileProperties.None) {
+                        logger.Info("Already uploaded!");
 
-                            if (RemoveSource) {
-                                source.Delete();
-                                FileInformation.RemoveLocation(source.Id, source.ToString());
-                                logger.Info("Source {0} removed since upload is successful.",
-                                    source);
-                            }
-
-                            return 0;
+                        if (RemoveSource) {
+                            source.Delete();
+                            FileInformation.RemoveLocation(source.Id, source.ToString());
+                            logger.Info("Source {0} removed since upload is successful.",
+                                source);
                         }
 
-                        logger.Warn("Destination exists, but doesn't match.");
-                        return 2;
+                        return 0;
                     }
 
-                    logger.Info("Copying {0} to {1}...", source, destination);
-
-                    source.Copy(destination);
-
-                    if (destination.Exists()) {
-                        logger.Info("Checking {0}...", destination);
-                        var destinationCheckResult = destination.Add();
-                        if (destinationCheckResult == FileProperties.None) {
-                            logger.Info("Successfully uploaded {0} to {1}!", source, destination);
-
-                            if (RemoveSource) {
-                                if (source.IsCloud) {
-                                    logger.Info("Source {0} is not removed as it's in cloud.",
-                                        source);
-                                    source.Register(true);
-                                    return 0;
-                                }
-
-                                source.Delete();
-                                FileInformation.RemoveLocation(source.Id, source.ToString());
-                                logger.Info("Source {0} removed since upload is successful.",
-                                    source);
-                            } else {
-                                source.Register(true);
-                            }
-
-                            return 0;
-                        }
-
-                        destination.Delete();
-                        logger.Fatal(
-                            "Upload failed! The following fields differ (removed): {0}",
-                            destinationCheckResult
-                        );
-                        return 2;
-                    }
-
-                    logger.Fatal("Destination doesn't exist unexpectedly!");
+                    logger.Warn("Destination exists, but doesn't match.");
                     return 2;
                 }
+
+                logger.Info("Copying {0} to {1}...", source, destination);
+
+                source.Copy(destination);
+
+                if (destination.Exists()) {
+                    logger.Info("Checking {0}...", destination);
+                    var destinationCheckResult = destination.Add();
+                    if (destinationCheckResult == FileProperties.None) {
+                        logger.Info("Successfully uploaded {0} to {1}!", source, destination);
+
+                        if (RemoveSource) {
+                            if (source.IsCloud) {
+                                logger.Info("Source {0} is not removed as it's in cloud.",
+                                    source);
+                                source.Register(true);
+                                return 0;
+                            }
+
+                            source.Delete();
+                            FileInformation.RemoveLocation(source.Id, source.ToString());
+                            logger.Info("Source {0} removed since upload is successful.",
+                                source);
+                        } else {
+                            source.Register(true);
+                        }
+
+                        return 0;
+                    }
+
+                    destination.Delete();
+                    logger.Fatal(
+                        "Upload failed! The following fields differ (removed): {0}",
+                        destinationCheckResult
+                    );
+                    return 2;
+                }
+
+                logger.Fatal("Destination doesn't exist unexpectedly!");
+                return 2;
             } catch (Exception ex) {
                 logger.Fatal(ex, "Unexpected error");
                 return 127;

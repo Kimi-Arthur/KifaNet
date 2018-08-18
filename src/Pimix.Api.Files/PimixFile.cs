@@ -11,7 +11,7 @@ using Pimix.IO;
 using Pimix.IO.FileFormats;
 
 namespace Pimix.Api.Files {
-    public class PimixFile : IDisposable {
+    public class PimixFile {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static readonly Dictionary<String, StorageClient> KnownClients =
@@ -190,9 +190,5 @@ namespace Pimix.Api.Files {
 
         public bool IsComaptible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
-
-        public void Dispose() {
-            Client?.Dispose();
-        }
     }
 }
