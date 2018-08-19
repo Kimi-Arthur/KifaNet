@@ -1,4 +1,6 @@
-﻿using CommandLine;
+﻿using System;
+using System.Linq;
+using CommandLine;
 using Newtonsoft.Json;
 using NLog;
 using Pimix.Api.Files;
@@ -17,22 +19,38 @@ namespace Pimix.Apps.FileUtil.Commands {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
-            var f = new PimixFile(FileUri);
-            if (!f.Exists()) {
-                logger.Error("Source {0} doesn't exist!", f);
-                return 1;
+            var source = new PimixFile(FileUri);
+
+            var files = source.List(true).ToList();
+            if (files.Count > 0) {
+                foreach (var file in files) {
+                    Console.WriteLine(file);
+                }
+
+                Console.Write($"Confirm adding the {files.Count} files above?");
+                Console.ReadLine();
+
+                return files.Select(f => AddFile(new PimixFile(f.ToString()))).Max();
             }
 
+            if (source.Exists()) {
+                return AddFile(source);
+            }
+
+            logger.Error("File {0} doesn't exist or folder contains no files.", FileUri);
+            return 1;
+        }
+
+        int AddFile(PimixFile f) {
             logger.Info("Adding {0}...", f);
             var result = f.Add(ForceRecheck);
 
             if (result == FileProperties.None) {
                 logger.Info("Successfully added {0}", f);
-                logger.Info(JsonConvert.SerializeObject(f.FileInfo, Formatting.Indented));
                 return 0;
             }
 
-            logger.Warn("Conflict with old file info! Please check: {0}", result);
+            logger.Warn("Conflict with recorded file info! Please check: {0}", result);
             return 1;
         }
     }
