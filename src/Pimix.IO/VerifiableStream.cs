@@ -53,8 +53,7 @@ namespace Pimix.IO {
             var endPosition =
                 Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
-            logger.Debug("Effectively read [{0}, {1}) to fill [{2}, {3}).", startPosition, endPosition, Position,
-                Position + count);
+            logger.Debug($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
             lastBlock = lastBlock ?? new byte[FileInformation.BlockSize];
 
@@ -63,11 +62,12 @@ namespace Pimix.IO {
                 var bytesToRead = (int) Math.Min(endPosition - pos, FileInformation.BlockSize);
                 var bytesRead = 0;
                 if (pos == lastBlockStart) {
-                    logger.Debug($"Skipped {bytesToRead} bytes from {pos}.");
+                    logger.Debug($"[{pos}, {pos + bytesToRead}) skipped");
                     bytesRead = bytesToRead;
                 } else {
                     var successful = false;
-                    var candidates = new Dictionary<(string md5, string sha1, string sha256), int>();
+                    var candidates =
+                        new Dictionary<(string md5, string sha1, string sha256), int>();
                     for (var i = 0; i < 5; ++i) {
                         while (true) {
                             try {
@@ -78,20 +78,24 @@ namespace Pimix.IO {
                                 }
 
                                 logger.Warn("Didn't get expected amount of data.");
-                                logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
+                                logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead,
+                                    bytesToRead);
                             } catch (CryptographicException ex) {
-                                logger.Warn(ex, "Decrypt error when reading from {0} to {1}:", Position,
+                                logger.Warn(ex, "Decrypt error when reading from {0} to {1}:",
+                                    Position,
                                     Position + count);
                                 throw;
                             } catch (Exception ex) {
-                                logger.Warn(ex, "Failed once when reading from {0} to {1}:", Position,
+                                logger.Warn(ex, "Failed once when reading from {0} to {1}:",
+                                    Position,
                                     Position + count);
                             }
 
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                         }
 
-                        var result = IsBlockValid(lastBlock, 0, bytesRead, (int) (pos / FileInformation.BlockSize));
+                        var result = IsBlockValid(lastBlock, 0, bytesRead,
+                            (int) (pos / FileInformation.BlockSize));
                         if (result.result == true) {
                             successful = true;
                             break;
@@ -133,7 +137,7 @@ namespace Pimix.IO {
                         throw new Exception($"Unable to get valid block starting from {pos}");
                     }
 
-                    logger.Debug($"Read {bytesToRead} bytes from {pos}.");
+                    logger.Debug($"[{pos}, {pos + bytesToRead}) got");
 
                     lastBlockStart = pos;
                 }
