@@ -46,9 +46,11 @@ namespace Pimix.Cloud.GoogleDrive {
         public AccountInfo Account { get; private set; }
 
         public GoogleDriveStorageClient() {
-            client = new HttpClient(new HttpClientHandler() {
+            client = new HttpClient(new HttpClientHandler {
                 AllowAutoRedirect = false
-            });
+            }) {
+                Timeout = TimeSpan.FromMinutes(30)
+            };
         }
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
