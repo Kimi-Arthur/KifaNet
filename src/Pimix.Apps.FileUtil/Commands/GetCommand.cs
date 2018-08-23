@@ -18,9 +18,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('g', "use-google-drive", HelpText = "Use Google Drive as backend storage.")]
         public bool UseGoogleDrive { get; set; } = false;
 
-        [Option('p', "is-primary", HelpText = "Newly created file is primary on this device.")]
-        public bool IsPrimary { get; set; } = false;
-
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
