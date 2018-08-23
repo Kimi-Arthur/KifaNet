@@ -15,8 +15,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
-        [Option('g', "use-google-drive", HelpText = "Use Google Drive as backend storage.")]
-        public bool UseGoogleDrive { get; set; } = false;
+        [Option('b', "use-baidu-cloud", HelpText = "Prefer baidu cloud storage first.")]
+        public bool UseBaiduCloud { get; set; } = false;
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -74,7 +74,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             var source = new PimixFile(FileInformation.GetLocation(info.Id,
-                UseGoogleDrive ? new List<string> {"google", "baidu"} : new List<string> {"baidu", "google"}));
+                UseBaiduCloud ? new List<string> {"baidu", "google"} : new List<string> {"google", "baidu"}));
             source.Copy(target);
 
             if (target.Exists()) {
