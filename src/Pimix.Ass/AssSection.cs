@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BilibiliAssGenerator.Ass
+namespace Pimix.Ass
 {
     public abstract class AssSection : AssElement
     {

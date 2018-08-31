@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.GoogleDrive", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.GoogleDrive", "tests\PimixTest.Cloud.GoogleDrive\PimixTest.Cloud.GoogleDrive.csproj", "{359007A6-3F48-456A-AF9C-75F51B3A4F3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Ass", "src\Pimix.Ass\Pimix.Ass.csproj", "{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,10 @@ Global
 		{359007A6-3F48-456A-AF9C-75F51B3A4F3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{359007A6-3F48-456A-AF9C-75F51B3A4F3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{359007A6-3F48-456A-AF9C-75F51B3A4F3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

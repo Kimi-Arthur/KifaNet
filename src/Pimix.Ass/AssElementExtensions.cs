@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BilibiliAssGenerator.Ass
+namespace Pimix.Ass
 {
     public static class AssElementExtensions
     {
