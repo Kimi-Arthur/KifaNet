@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BilibiliAssGenerator.Bilibili;
+using Pimix.Bilibili;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BilibiliAssGeneratorTests.Bilibili
+namespace PimixTest.Bilibili
 {
     [TestClass]
     public class BilibiliVideoTests

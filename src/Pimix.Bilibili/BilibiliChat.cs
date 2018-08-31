@@ -40,21 +40,6 @@ namespace Pimix.Bilibili
             {
                 comments.Add(new BilibiliComment(comment.Attributes["p"].Value, comment.InnerText));
             }
-
-            ChatLength = GetVideoLength(cid);
-        }
-
-        static TimeSpan GetVideoLength(string cid)
-        {
-            HttpWebRequest request = WebRequest.CreateHttp($"http://interface.bilibili.tv/playurl?cid={cid}&appkey=0f38c1b83b2de0a0");
-            request.AutomaticDecompression = DecompressionMethods.Deflate;
-            var document = new XmlDocument();
-            using (var s = request.GetResponse().GetResponseStream())
-            {
-                document.Load(s);
-            }
-
-            return TimeSpan.FromMilliseconds(double.Parse(document.SelectSingleNode("//timelength").InnerText));
         }
     }
 }
