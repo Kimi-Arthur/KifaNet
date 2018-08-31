@@ -6,10 +6,10 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using BilibiliAssGenerator.Ass;
+using Pimix.Ass;
 using HtmlAgilityPack;
 
-namespace BilibiliAssGenerator.Bilibili
+namespace Pimix.Bilibili
 {
     public class BilibiliVideo
     {

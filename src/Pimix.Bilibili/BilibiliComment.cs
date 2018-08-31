@@ -5,9 +5,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BilibiliAssGenerator.Ass;
+using Pimix.Ass;
 
-namespace BilibiliAssGenerator.Bilibili
+namespace Pimix.Bilibili
 {
     public struct BilibiliComment
     {

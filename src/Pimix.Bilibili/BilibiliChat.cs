@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace BilibiliAssGenerator.Bilibili
+namespace Pimix.Bilibili
 {
     public class BilibiliChat
     {
