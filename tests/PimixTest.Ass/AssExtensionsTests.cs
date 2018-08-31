@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using BilibiliAssGenerator.Ass;
+using Pimix.Ass;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BilibiliAssGeneratorTests.Ass
+namespace PimixTest.Ass
 {
     [TestClass]
     public class AssExtensionsTests
