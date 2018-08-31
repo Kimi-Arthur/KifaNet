@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Pimix.Ass
-{
-    public abstract class AssElement
-    {
+﻿namespace Pimix.Ass {
+    public abstract class AssElement {
         public abstract string GenerateAssText();
     }
 }

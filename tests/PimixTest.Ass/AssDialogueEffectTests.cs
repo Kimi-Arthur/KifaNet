@@ -1,6 +1,6 @@
 ﻿using System;
-using Pimix.Ass;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Pimix.Ass;
 
 namespace PimixTest.Ass {
     [TestClass]
@@ -9,7 +9,7 @@ namespace PimixTest.Ass {
         public void BannerEffectBasicTest() {
             var effect = new AssDialogueBannerEffect();
             Assert.AreEqual("Banner;0;0;0", effect.GenerateAssText());
-            effect = new AssDialogueBannerEffect() {
+            effect = new AssDialogueBannerEffect {
                 Delay = 12,
                 FadeAwayWidth = 2,
                 LeftToRight = AssDialogueBannerEffect.LeftToRightType.LeftToRight
@@ -21,11 +21,10 @@ namespace PimixTest.Ass {
         public void BannerEffectRangeTest() {
             var effect = new AssDialogueBannerEffect();
 
-            foreach (var d in new[] {-1, 101, 1024}) {
+            foreach (var d in new[] {-1, 101, 1024})
                 Assert.AreEqual("Delay", Assert
                     .ThrowsException<ArgumentOutOfRangeException>(() => effect.Delay = d)
                     .ParamName);
-            }
         }
     }
 }

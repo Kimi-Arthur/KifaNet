@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Pimix.Ass
-{
-    public enum AssAlignment
-    {
+﻿namespace Pimix.Ass {
+    public enum AssAlignment {
         BottomLeft = 1,
         BottomCenter = 2,
         BottomRight = 3,

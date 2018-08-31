@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Pimix.Ass
-{
-    public class AssStyle : AssLine
-    {
-        public enum BorderStyleType
-        {
+namespace Pimix.Ass {
+    public class AssStyle : AssLine {
+        public enum BorderStyleType {
             OutlineWithDropShadow = 1,
             OpaqueBox = 3
         }
@@ -19,8 +12,7 @@ namespace Pimix.Ass
         public static string DefaultFontname = "Simhei";
 
         public static AssStyle DefaultStyle
-            = new AssStyle()
-            {
+            = new AssStyle {
                 // TODO: Finish default style
                 Name = "Default"
             };
@@ -58,14 +50,10 @@ namespace Pimix.Ass
         public BorderStyleType BorderStyle { get; set; }
 
         int outline;
-        public int Outline
-        {
-            get
-            {
-                return outline;
-            }
-            set
-            {
+
+        public int Outline {
+            get => outline;
+            set {
                 if (value < 0 || value > 4)
                     throw new ArgumentOutOfRangeException(nameof(Outline));
                 outline = value;
@@ -73,14 +61,10 @@ namespace Pimix.Ass
         }
 
         int shadow;
-        public int Shadow
-        {
-            get
-            {
-                return shadow;
-            }
-            set
-            {
+
+        public int Shadow {
+            get => shadow;
+            set {
                 if (value < 0 || value > 4)
                     throw new ArgumentOutOfRangeException(nameof(Shadow));
                 shadow = value;
@@ -100,8 +84,7 @@ namespace Pimix.Ass
         public override string Key => "Style";
 
         public override IEnumerable<string> Values
-            => new List<string>
-            {
+            => new List<string> {
                 Name.GenerateAssText(),
                 Fontname.GenerateAssText(),
                 Fontsize.GenerateAssText(),
@@ -127,7 +110,6 @@ namespace Pimix.Ass
                 Encoding.GenerateAssText()
             };
 
-        public string ValidName
-            => Name == "Default" ? "*Default" : Name;
+        public string ValidName => Name == "Default" ? "*Default" : Name;
     }
 }

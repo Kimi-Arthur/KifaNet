@@ -1,35 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Pimix.Ass
-{
-    public class AssDialogueText : AssElement
-    {
+namespace Pimix.Ass {
+    public class AssDialogueText : AssElement {
         public AssAlignment? Alignment { get; set; }
 
         public List<AssDialogueTextElement> TextElements { get; set; }
 
-        public AssDialogueText()
-        {
+        public AssDialogueText() {
         }
 
-        public AssDialogueText(AssDialogueTextElement element)
-        {
-            TextElements = new List<AssDialogueTextElement>() { element };
+        public AssDialogueText(AssDialogueTextElement element) {
+            TextElements = new List<AssDialogueTextElement> {element};
         }
 
-        public override string GenerateAssText()
-        {
-            string stylePrefix = "";
+        public override string GenerateAssText() {
+            var stylePrefix = "";
             stylePrefix += GenerateAssTextForAttribute("an", Alignment);
 
-            return (!string.IsNullOrEmpty(stylePrefix) ? $"{{{stylePrefix}}}" : "") + string.Concat(TextElements.Select(x => x.GenerateAssText()));
+            return (!string.IsNullOrEmpty(stylePrefix) ? $"{{{stylePrefix}}}" : "") +
+                   string.Concat(TextElements.Select(x => x.GenerateAssText()));
         }
 
         static string GenerateAssTextForAttribute(string name, Enum value)
-            => value != null ? $"\\{name}{value :d}" : "";
+            => value != null ? $"\\{name}{value:d}" : "";
     }
 }

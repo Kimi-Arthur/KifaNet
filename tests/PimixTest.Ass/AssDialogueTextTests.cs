@@ -1,27 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using Pimix.Ass;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Pimix.Ass;
 
-namespace PimixTest.Ass
-{
+namespace PimixTest.Ass {
     [TestClass]
-    public class AssDialogueTextTests
-    {
+    public class AssDialogueTextTests {
         [TestMethod]
-        public void BasicTest()
-        {
-            AssElement text = new AssDialogueText()
-            {
-                TextElements = new List<AssDialogueTextElement> { "one1" }
+        public void BasicTest() {
+            AssElement text = new AssDialogueText {
+                TextElements = new List<AssDialogueTextElement> {"one1"}
             };
 
             Assert.AreEqual("one1", text.GenerateAssText());
         }
 
         [TestMethod]
-        public void StyleTest()
-        {
+        public void StyleTest() {
             var element = new AssDialogueTextElement("two2");
             element.Bold = false;
             element.Italic = true;

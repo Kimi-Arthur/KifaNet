@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Drawing;
-using Pimix.Ass;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Pimix.Ass;
 
 namespace PimixTest.Ass {
     [TestClass]
     public class AssStyleTests {
         [TestMethod]
         public void BasicTest() {
-            AssElement style = new AssStyle() {
+            AssElement style = new AssStyle {
                 Name = "Default",
                 Fontname = "simhei",
                 Fontsize = 28,
@@ -42,29 +42,23 @@ namespace PimixTest.Ass {
         [TestMethod]
         public void OutlineArgumentRangeCheckTest() {
             var style = new AssStyle();
-            for (int i = 0; i < 5; i++) {
-                style.Outline = i;
-            }
+            for (var i = 0; i < 5; i++) style.Outline = i;
 
-            foreach (var o in new[] {-1, 5, 123}) {
+            foreach (var o in new[] {-1, 5, 123})
                 Assert.AreEqual("Outline", Assert
                     .ThrowsException<ArgumentOutOfRangeException>(() => style.Outline = o)
                     .ParamName);
-            }
         }
 
         [TestMethod]
         public void ShadowArgumentRangeCheckTest() {
             var style = new AssStyle();
-            for (int i = 0; i < 5; i++) {
-                style.Shadow = i;
-            }
+            for (var i = 0; i < 5; i++) style.Shadow = i;
 
-            foreach (var s in new[] {-1, 5, 123}) {
+            foreach (var s in new[] {-1, 5, 123})
                 Assert.AreEqual("Shadow", Assert
                     .ThrowsException<ArgumentOutOfRangeException>(() => style.Shadow = s)
                     .ParamName);
-            }
         }
 
         [TestMethod]

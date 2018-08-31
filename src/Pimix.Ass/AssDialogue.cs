@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Pimix.Ass
-{
-    public class AssDialogue : AssEvent
-    {
+﻿namespace Pimix.Ass {
+    public class AssDialogue : AssEvent {
         public override string Key => "Dialogue";
     }
 }

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Pimix.Ass
-{
-    public abstract class AssDialogueEffect : AssElement
-    {
+namespace Pimix.Ass {
+    public abstract class AssDialogueEffect : AssElement {
         public abstract string EffectType { get; }
         public abstract IEnumerable<string> EffectParameters { get; }
 

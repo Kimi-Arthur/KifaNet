@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Pimix.Ass
-{
-    public class AssEventsSection : AssSection
-    {
+namespace Pimix.Ass {
+    public class AssEventsSection : AssSection {
         public override string SectionTitle { get; } = "Events";
 
         public List<string> Format
-            => new List<string>
-            {
+            => new List<string> {
                 "Layer",
                 "Start",
                 "End",
@@ -27,15 +20,10 @@ namespace Pimix.Ass
 
         public List<AssEvent> Events { get; set; } = new List<AssEvent>();
 
-        public override IEnumerable<AssLine> AssLines
-        {
-            get
-            {
+        public override IEnumerable<AssLine> AssLines {
+            get {
                 yield return new AssLine("Format", Format);
-                foreach (var evt in Events)
-                {
-                    yield return evt;
-                }
+                foreach (var evt in Events) yield return evt;
             }
         }
     }

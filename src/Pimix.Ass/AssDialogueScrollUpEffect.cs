@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Pimix.Ass
-{
-    class AssDialogueScrollUpEffect : AssDialogueEffect
-    {
+namespace Pimix.Ass {
+    class AssDialogueScrollUpEffect : AssDialogueEffect {
         public override IEnumerable<string> EffectParameters
-            => new List<string>
-            {
+            => new List<string> {
                 Y1.GenerateAssText(),
                 Y2.GenerateAssText(),
                 Delay.GenerateAssText(),

@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 
-namespace Pimix.Ass
-{
-    public class AssDialogueTextElement : AssElement
-    {
+namespace Pimix.Ass {
+    public class AssDialogueTextElement : AssElement {
         public string Content { get; set; }
 
         public bool? Bold { get; set; }
@@ -50,21 +43,18 @@ namespace Pimix.Ass
         public Color? BackColour { get; set; }
 
         public AssDialogueTextElement()
-            : this("")
-        {
+            : this("") {
         }
 
-        public AssDialogueTextElement(string s)
-        {
+        public AssDialogueTextElement(string s) {
             Content = s;
         }
 
         public static implicit operator AssDialogueTextElement(string s)
             => new AssDialogueTextElement(s);
 
-        public override string GenerateAssText()
-        {
-            string styleText = "";
+        public override string GenerateAssText() {
+            var styleText = "";
             styleText += GenerateAssTextForAttribute("b", Bold);
             styleText += GenerateAssTextForAttribute("i", Italic);
             styleText += GenerateAssTextForAttribute("u", Underline);
@@ -98,8 +88,8 @@ namespace Pimix.Ass
 
         static string GenerateAssTextForAttribute(string name, Color? value)
             => value.HasValue
-            ? $"\\{name}a&H{value.Value.A :X2}&"
-                + $"\\{name}c&H{value.Value.B :X2}{value.Value.G :X2}{value.Value.R :X2}&"
-            : "";
+                ? $"\\{name}a&H{value.Value.A:X2}&"
+                  + $"\\{name}c&H{value.Value.B:X2}{value.Value.G:X2}{value.Value.R:X2}&"
+                : "";
     }
 }
