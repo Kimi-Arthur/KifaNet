@@ -25,7 +25,7 @@ namespace Pimix.IO.FileFormats {
 
             return null;
         }
-        
+
         static readonly PimixFileV1Format Instance = new PimixFileV1Format();
 
         public override string ToString() => "v1";
@@ -61,8 +61,9 @@ namespace Pimix.IO.FileFormats {
         public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
             info.AddProperties(rawStream, FileProperties.Size | FileProperties.SHA256);
 
-            if (info.EncryptionKey == null)
+            if (info.EncryptionKey == null) {
                 throw new ArgumentException("Encryption key must be given before calling");
+            }
 
             var header = new byte[48];
             new byte[] {0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30}.CopyTo(header, 0);

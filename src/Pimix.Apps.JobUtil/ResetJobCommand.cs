@@ -8,7 +8,9 @@ namespace Pimix.Apps.JobUtil {
         public IEnumerable<string> Jobs { get; set; }
 
         public override int Execute() {
-            foreach (var job in Jobs) Job.ResetJob(job);
+            foreach (var job in Jobs) {
+                Job.ResetJob(job);
+            }
 
             return 0;
         }

@@ -50,8 +50,9 @@ namespace Pimix.Apps.JobUtil {
                     yield break;
                 }
 
-                if (j != null)
+                if (j != null) {
                     yield return j;
+                }
             }
         }
     }

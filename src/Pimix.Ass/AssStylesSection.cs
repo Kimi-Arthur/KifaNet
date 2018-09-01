@@ -36,7 +36,9 @@ namespace Pimix.Ass {
         public override IEnumerable<AssLine> AssLines {
             get {
                 yield return new AssLine("Format", Format);
-                foreach (var style in Styles) yield return style;
+                foreach (var style in Styles) {
+                    yield return style;
+                }
             }
         }
     }

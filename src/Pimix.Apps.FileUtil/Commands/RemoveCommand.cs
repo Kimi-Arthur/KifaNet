@@ -27,7 +27,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         int RemoveLogicalFile(FileInformation info) {
-            if (!RemoveLinkOnly && info.Locations != null)
+            if (!RemoveLinkOnly && info.Locations != null) {
                 foreach (var location in info.Locations.Keys) {
                     var file = new PimixFile(location);
                     if (file.Id == FileId) {
@@ -42,6 +42,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                         logger.Info($"Entry {location} removed.");
                     }
                 }
+            }
 
             // Logical removal.
             FileInformation.Delete(info.Id);

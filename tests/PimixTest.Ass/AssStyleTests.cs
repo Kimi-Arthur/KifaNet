@@ -42,23 +42,29 @@ namespace PimixTest.Ass {
         [TestMethod]
         public void OutlineArgumentRangeCheckTest() {
             var style = new AssStyle();
-            for (var i = 0; i < 5; i++) style.Outline = i;
+            for (var i = 0; i < 5; i++) {
+                style.Outline = i;
+            }
 
-            foreach (var o in new[] {-1, 5, 123})
+            foreach (var o in new[] {-1, 5, 123}) {
                 Assert.AreEqual("Outline", Assert
                     .ThrowsException<ArgumentOutOfRangeException>(() => style.Outline = o)
                     .ParamName);
+            }
         }
 
         [TestMethod]
         public void ShadowArgumentRangeCheckTest() {
             var style = new AssStyle();
-            for (var i = 0; i < 5; i++) style.Shadow = i;
+            for (var i = 0; i < 5; i++) {
+                style.Shadow = i;
+            }
 
-            foreach (var s in new[] {-1, 5, 123})
+            foreach (var s in new[] {-1, 5, 123}) {
                 Assert.AreEqual("Shadow", Assert
                     .ThrowsException<ArgumentOutOfRangeException>(() => style.Shadow = s)
                     .ParamName);
+            }
         }
 
         [TestMethod]

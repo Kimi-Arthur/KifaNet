@@ -87,7 +87,9 @@ namespace PimixTest.Cloud.BaiduCloud {
             var client = GetStorageClient();
             var data = new byte[34 << 20];
             File.OpenRead("data.bin").Read(data, 0, 1 << 20);
-            for (var i = 1; i < 34; ++i) Array.Copy(data, 0, data, i << 20, 1 << 20);
+            for (var i = 1; i < 34; ++i) {
+                Array.Copy(data, 0, data, i << 20, 1 << 20);
+            }
 
             var dataStream = new MemoryStream(data);
 
@@ -152,11 +154,12 @@ namespace PimixTest.Cloud.BaiduCloud {
                 "/Test/direct.bin"
             };
 
-            foreach (var f in files)
+            foreach (var f in files) {
                 try {
                     client.Delete(f);
                 } catch (Exception) {
                 }
+            }
         }
 
         static BaiduCloudStorageClient GetStorageClient()

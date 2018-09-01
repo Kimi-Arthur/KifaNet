@@ -61,8 +61,9 @@ namespace CG.Web.MegaApiClient {
 
         public static byte[] GetPartsFromDecryptedKey(byte[] decryptedKey) {
             var fileKey = new byte[16];
-            for (var idx = 0; idx < 16; idx++)
+            for (var idx = 0; idx < 16; idx++) {
                 fileKey[idx] = (byte) (decryptedKey[idx] ^ decryptedKey[idx + 16]);
+            }
 
             return fileKey;
         }

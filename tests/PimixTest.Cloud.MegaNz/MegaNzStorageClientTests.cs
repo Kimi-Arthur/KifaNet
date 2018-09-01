@@ -104,11 +104,12 @@ namespace PimixTest.Cloud.MegaNz {
                 "/Test/new/"
             };
 
-            foreach (var f in files)
+            foreach (var f in files) {
                 try {
                     client.Delete(f);
                 } catch (Exception) {
                 }
+            }
         }
 
         static MegaNzStorageClient GetStorageClient()

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -29,7 +28,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.WriteLine(file);
                 }
 
-                string removalText = RemoveSource ? " and remove them afterwards" : "";
+                var removalText = RemoveSource ? " and remove them afterwards" : "";
                 Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
                 Console.ReadLine();
 

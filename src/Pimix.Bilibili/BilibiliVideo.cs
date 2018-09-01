@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Pimix.Ass;
 using HtmlAgilityPack;
+using Pimix.Ass;
 
 namespace Pimix.Bilibili {
     public class BilibiliVideo {
@@ -19,20 +17,18 @@ namespace Pimix.Bilibili {
 
         static readonly Regex cidReg = new Regex(@"videoshot/(\d+)-");
 
-        public string Aid { get; private set; }
+        public string Aid { get; }
 
         public string Title { get; set; }
 
         PartModeType partMode;
 
         public PartModeType PartMode {
-            get {
-                return partMode;
-            }
+            get => partMode;
             set {
                 partMode = value;
                 if (partMode == PartModeType.ContinuousPartMode) {
-                    TimeSpan offset = TimeSpan.Zero;
+                    var offset = TimeSpan.Zero;
                     foreach (var part in Parts) {
                         part.ChatOffset = offset;
                         offset += part.ChatLength;
@@ -53,7 +49,7 @@ namespace Pimix.Bilibili {
 
         public BilibiliVideo(string aid) {
             Aid = aid;
-            HttpWebRequest request =
+            var request =
                 WebRequest.CreateHttp($"http://www.bilibili.com/video/av{aid}");
             request.AutomaticDecompression = DecompressionMethods.GZip;
             AddCookies(request);
@@ -75,17 +71,17 @@ namespace Pimix.Bilibili {
 
             if (options == null) {
                 // Single page
-                Parts = new List<BilibiliChat>() {new BilibiliChat(FindCid(documentNode), "")};
+                Parts = new List<BilibiliChat> {new BilibiliChat(FindCid(documentNode), "")};
                 PartMode = PartModeType.SinglePartMode;
             } else {
                 // Multiple pages
                 var titles = documentNode.SelectSingleNode("//select").InnerText
-                    .Split(new char[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries).ToList();
-                var parts = new List<BilibiliChat>()
+                    .Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var parts = new List<BilibiliChat>
                     {new BilibiliChat(FindCid(documentNode), titles[0])};
                 foreach (var option in options.Skip(1)
                     .Zip(titles.Skip(1), (x, y) => Tuple.Create(x, y))) {
-                    HttpWebRequest subpageRequest =
+                    var subpageRequest =
                         WebRequest.CreateHttp($"http://www.bilibili.com{option.Item1}");
                     subpageRequest.AutomaticDecompression = DecompressionMethods.GZip;
                     AddCookies(subpageRequest);
@@ -105,25 +101,24 @@ namespace Pimix.Bilibili {
         }
 
         public AssDocument GenerateAssDocument() {
-            AssDocument result = new AssDocument();
-            result.Sections.Add(new AssScriptInfoSection()
+            var result = new AssDocument();
+            result.Sections.Add(new AssScriptInfoSection
                 {Title = Title, OriginalScript = "Bilibili"});
-            result.Sections.Add(new AssStylesSection()
+            result.Sections.Add(new AssStylesSection
                 {Styles = new List<AssStyle> {AssStyle.DefaultStyle}});
-            AssEventsSection events = new AssEventsSection();
+            var events = new AssEventsSection();
             result.Sections.Add(events);
 
-            foreach (var part in Parts) {
-                foreach (var comment in part.Comments) {
-                    events.Events.Add(comment.GenerateAssDialogue());
-                }
+            foreach (var part in Parts)
+            foreach (var comment in part.Comments) {
+                events.Events.Add(comment.GenerateAssDialogue());
             }
 
             return result;
         }
 
         void AddCookies(HttpWebRequest request) {
-            string cookies =
+            var cookies =
                 "buvid3=5F6F28B3-78AD-4032-AEC9-9B23C523E56116637infoc";
             request.CookieContainer = new CookieContainer();
             foreach (var cookie in cookies.Split(';')) {
@@ -133,8 +128,8 @@ namespace Pimix.Bilibili {
             }
         }
 
-        string FindCid(HtmlNode documentNode) =>
-            cidReg.Match(documentNode
+        string FindCid(HtmlNode documentNode)
+            => cidReg.Match(documentNode
                 .SelectNodes("//div[@class='bilibili-player-video-progress-detail-img']")
                 .First().GetAttributeValue("style", "")).Groups[1].Value;
     }

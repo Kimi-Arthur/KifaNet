@@ -72,8 +72,9 @@ namespace PimixTest.Cryptography {
                         stream.Seek(0, SeekOrigin.Begin);
                         stream.Seek(-b, SeekOrigin.End);
                         baseStream.Seek(-b, SeekOrigin.End);
-                        for (var i = 0; i < b; i++)
+                        for (var i = 0; i < b; i++) {
                             Assert.AreEqual(baseStream.ReadByte(), stream.ReadByte());
+                        }
                     }
                 }
             }

@@ -7,13 +7,14 @@ namespace Pimix.Cloud.MegaNz {
     public class MegaNzStorageClient : StorageClient {
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
-            foreach (var spec in specs)
+            foreach (var spec in specs) {
                 if (spec.StartsWith("mega:")) {
                     Config = MegaNzConfig.Get("default");
                     return new MegaNzStorageClient {
                         AccountId = spec.Substring(5)
                     };
                 }
+            }
 
             return null;
         }
@@ -49,7 +50,9 @@ namespace Pimix.Cloud.MegaNz {
 
         public override void Delete(string path) {
             var node = GetNode(path);
-            if (node != null) Client.Delete(node, false);
+            if (node != null) {
+                Client.Delete(node, false);
+            }
         }
 
         public override bool Exists(string path) => GetNode(path) != null;

@@ -16,13 +16,15 @@ namespace Pimix.IO.FileFormats {
     public class PimixFileV0Format : PimixFileFormat {
         public static PimixFileFormat Get(string fileSpec) {
             var specs = fileSpec.Split('/').First().Split(';');
-            foreach (var spec in specs)
-                if (spec == "v0")
+            foreach (var spec in specs) {
+                if (spec == "v0") {
                     return Instance;
+                }
+            }
 
             return null;
         }
-        
+
         static readonly PimixFileV0Format Instance = new PimixFileV0Format();
 
         public override string ToString() => "v0";

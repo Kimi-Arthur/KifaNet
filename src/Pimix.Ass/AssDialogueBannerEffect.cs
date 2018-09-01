@@ -22,8 +22,10 @@ namespace Pimix.Ass {
         public int Delay {
             get => delay;
             set {
-                if (value < 0 || value > 100)
+                if (value < 0 || value > 100) {
                     throw new ArgumentOutOfRangeException(nameof(Delay));
+                }
+
                 delay = value;
             }
         }

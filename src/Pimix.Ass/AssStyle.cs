@@ -54,8 +54,10 @@ namespace Pimix.Ass {
         public int Outline {
             get => outline;
             set {
-                if (value < 0 || value > 4)
+                if (value < 0 || value > 4) {
                     throw new ArgumentOutOfRangeException(nameof(Outline));
+                }
+
                 outline = value;
             }
         }
@@ -65,8 +67,10 @@ namespace Pimix.Ass {
         public int Shadow {
             get => shadow;
             set {
-                if (value < 0 || value > 4)
+                if (value < 0 || value > 4) {
                     throw new ArgumentOutOfRangeException(nameof(Shadow));
+                }
+
                 shadow = value;
             }
         }

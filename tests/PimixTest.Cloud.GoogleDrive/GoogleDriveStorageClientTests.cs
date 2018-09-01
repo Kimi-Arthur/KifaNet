@@ -50,7 +50,9 @@ namespace PimixTest.Cloud.GoogleDrive {
             var client = GetStorageClient();
             var data = new byte[34 << 20];
             File.OpenRead("data.bin").Read(data, 0, 1 << 20);
-            for (var i = 1; i < 34; ++i) Array.Copy(data, 0, data, i << 20, 1 << 20);
+            for (var i = 1; i < 34; ++i) {
+                Array.Copy(data, 0, data, i << 20, 1 << 20);
+            }
 
             var dataStream = new MemoryStream(data);
 
@@ -67,6 +69,6 @@ namespace PimixTest.Cloud.GoogleDrive {
         }
 
         static GoogleDriveStorageClient GetStorageClient()
-            => new GoogleDriveStorageClient() {AccountId = "good"};
+            => new GoogleDriveStorageClient {AccountId = "good"};
     }
 }

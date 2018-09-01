@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
 using NLog;
 using Pimix.IO;
 
@@ -20,11 +19,12 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
-            foreach (var spec in specs)
+            foreach (var spec in specs) {
                 if (spec.StartsWith("google:")) {
                     Config = GoogleDriveConfig.Get("default");
                     return new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
                 }
+            }
 
             return null;
         }
@@ -124,7 +124,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 uploadUri = response.Headers.Location;
             }
 
-            long size = input.Length;
+            var size = input.Length;
             var buffer = new byte[BlockSize];
 
             for (long position = 0; position < size; position += BlockSize) {
@@ -162,7 +162,9 @@ namespace Pimix.Cloud.GoogleDrive {
 
         int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
             int count = -1) {
-            if (count < 0) count = buffer.Length - bufferOffset;
+            if (count < 0) {
+                count = buffer.Length - bufferOffset;
+            }
 
             var request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string> {
                 ["file_id"] = fileId
@@ -177,7 +179,7 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         long GetFileSize(string fileId) {
-            var request = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string>() {
+            var request = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string> {
                 ["file_id"] = fileId
             });
 
@@ -188,9 +190,9 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         string GetFileId(string path, bool createParents = false) {
-            string fileId = "root";
+            var fileId = "root";
             foreach (var segment in $"{Config.RootFolder}{path}".Split('/')) {
-                var request = GetRequest(Config.APIList.FindFile, new Dictionary<string, string>() {
+                var request = GetRequest(Config.APIList.FindFile, new Dictionary<string, string> {
                     ["name"] = segment,
                     ["parent_id"] = fileId
                 });
@@ -218,7 +220,7 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         string CreateFolder(string parentId, string name) {
-            var request = GetRequest(Config.APIList.CreateFolder, new Dictionary<string, string>() {
+            var request = GetRequest(Config.APIList.CreateFolder, new Dictionary<string, string> {
                 ["parent_id"] = parentId,
                 ["name"] = name
             });

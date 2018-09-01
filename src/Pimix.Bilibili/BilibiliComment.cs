@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Pimix.Ass;
 
-namespace Pimix.Bilibili
-{
-    public struct BilibiliComment
-    {
-        public enum ModeType
-        {
+namespace Pimix.Bilibili {
+    public struct BilibiliComment {
+        public enum ModeType {
             None,
             Normal,
             Bottom = 4,
@@ -22,8 +15,7 @@ namespace Pimix.Bilibili
             Advanced = 9
         }
 
-        public enum PoolType
-        {
+        public enum PoolType {
             Normal,
             Subtitle,
             Special
@@ -49,36 +41,32 @@ namespace Pimix.Bilibili
 
         public int FontSize { get; set; }
 
-        public BilibiliComment(string property, string text)
-        {
+        public BilibiliComment(string property, string text) {
             Text = text;
 
             var values = property.Split(',');
             VideoTime = TimeSpan.FromSeconds(double.Parse(values[0]));
-            Mode = (ModeType)int.Parse(values[1]);
+            Mode = (ModeType) int.Parse(values[1]);
             FontSize = int.Parse(values[2]);
             TextColor = Color.FromArgb(int.Parse(values[3]));
             PostTime = new DateTime(1970, 1, 1).AddSeconds(double.Parse(values[4]));
-            Pool = (PoolType)int.Parse(values[5]);
+            Pool = (PoolType) int.Parse(values[5]);
             UserId = long.Parse(values[6], NumberStyles.HexNumber);
             CommentId = long.Parse(values[7]);
         }
 
-        public BilibiliComment WithOffset(TimeSpan offset)
-        {
+        public BilibiliComment WithOffset(TimeSpan offset) {
             var result = this;
             result.VideoTime = result.VideoTime.Add(offset);
             return result;
         }
 
         public AssDialogue GenerateAssDialogue()
-            => new AssDialogue()
-            {
+            => new AssDialogue {
                 Start = VideoTime,
                 End = VideoTime + DefaultDuration,
                 Text = new AssDialogueText(Text),
-                Effect = new AssDialogueBannerEffect()
-                {
+                Effect = new AssDialogueBannerEffect {
                     Delay = 1500 / (100 + Text.Length)
                 }
             };

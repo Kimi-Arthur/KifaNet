@@ -22,13 +22,14 @@ namespace Pimix.Cloud.BaiduCloud {
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
-            foreach (var spec in specs)
+            foreach (var spec in specs) {
                 if (spec.StartsWith("baidu:")) {
                     Config = BaiduCloudConfig.Get("default");
                     var client = new BaiduCloudStorageClient {AccountId = spec.Substring(6)};
 
                     return client;
                 }
+            }
 
             return null;
         }
@@ -55,7 +56,9 @@ namespace Pimix.Cloud.BaiduCloud {
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
             int count = -1) {
-            if (count < 0) count = buffer.Length - bufferOffset;
+            if (count < 0) {
+                count = buffer.Length - bufferOffset;
+            }
 
             var maxChunkSize = 1 << 20;
 
@@ -64,21 +67,24 @@ namespace Pimix.Cloud.BaiduCloud {
             Parallel.For(0, (count - 1) / maxChunkSize + 1,
                 i => {
                     Thread.Sleep(TimeSpan.FromSeconds(i * 4));
-                    int chunkOffset = i * maxChunkSize;
-                    int chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
-                    int readCount = 0;
+                    var chunkOffset = i * maxChunkSize;
+                    var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
+                    var readCount = 0;
 
                     while (readCount != chunkSize) {
                         try {
-                            readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset, offset + chunkOffset,
+                            readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset,
+                                offset + chunkOffset,
                                 chunkSize);
                             if (readCount != chunkSize) {
-                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                                logger.Warn(
+                                    "Internal failure downloading {0} bytes from {1}: only got {2}",
                                     chunkSize, offset + chunkOffset, readCount);
                                 Thread.Sleep(TimeSpan.FromSeconds(5));
                             }
                         } catch (Exception ex) {
-                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
+                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:",
+                                chunkSize,
                                 offset + chunkOffset);
                             Thread.Sleep(TimeSpan.FromSeconds(5));
                         }
@@ -142,7 +148,9 @@ namespace Pimix.Cloud.BaiduCloud {
             request.GetRequestStream().Close();
 
             using (var response = request.GetResponse()) {
-                if (response.GetDictionary() == null) throw new InvalidOperationException();
+                if (response.GetDictionary() == null) {
+                    throw new InvalidOperationException();
+                }
             }
         }
 
@@ -157,7 +165,7 @@ namespace Pimix.Cloud.BaiduCloud {
             if (blockSize >= size) {
                 blockLength = input.Read(buffer, 0, (int) size);
                 var uploadDirectDone = false;
-                while (!uploadDirectDone)
+                while (!uploadDirectDone) {
                     try {
                         logger.Debug("Upload method: Direct");
                         UploadDirect(path, buffer, 0, blockLength);
@@ -176,6 +184,7 @@ namespace Pimix.Cloud.BaiduCloud {
                         logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
+                }
 
                 return;
             }
@@ -191,7 +200,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     position + blockLength);
 
                 var done = false;
-                while (!done)
+                while (!done) {
                     try {
                         blockIds.Add(UploadBlock(buffer, 0, blockLength));
                         logger.Debug("Block ID/MD5: {0}", blockIds.Last());
@@ -213,10 +222,11 @@ namespace Pimix.Cloud.BaiduCloud {
                         logger.Warn("MD5 mismatch:\n{0}", ex);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     }
+                }
             }
 
             var mergeDone = false;
-            while (!mergeDone)
+            while (!mergeDone) {
                 try {
                     MergeBlocks(path, blockIds);
                     mergeDone = true;
@@ -224,6 +234,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     logger.Warn(ex, "Failed when merging");
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
+            }
         }
 
         void UploadDirect(string path, byte[] buffer, int offset, int count) {
@@ -239,9 +250,10 @@ namespace Pimix.Cloud.BaiduCloud {
 
             using (var response = request.GetResponse()) {
                 var result = response.GetDictionary();
-                if (!result["path"].ToString().EndsWith(path.TrimStart('/')))
+                if (!result["path"].ToString().EndsWith(path.TrimStart('/'))) {
                     throw new Exception(
                         $"Direct upload may fail: {path}, real path: {result["path"]}");
+                }
             }
         }
 
@@ -249,7 +261,7 @@ namespace Pimix.Cloud.BaiduCloud {
             var expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count)
                 .ToHexString().ToLower();
             var request = ConstructRequest(Config.APIList.UploadBlock);
-            request.Timeout = 30 * 60 * 1000 * Math.Max(1, count - 1 >> 25);
+            request.Timeout = 30 * 60 * 1000 * Math.Max(1, (count - 1) >> 25);
 
             using (var requestStream = request.GetRequestStream()) {
                 requestStream.Write(buffer, offset, count);
@@ -257,11 +269,13 @@ namespace Pimix.Cloud.BaiduCloud {
 
             using (var response = request.GetResponse()) {
                 var actualMd5 = response.GetDictionary()["md5"].ToString();
-                if (expectedMd5 != actualMd5)
+                if (expectedMd5 != actualMd5) {
                     throw new UploadBlockException {
                         ExpectedMd5 = expectedMd5,
                         ActualMd5 = actualMd5
                     };
+                }
+
                 return actualMd5;
             }
         }
@@ -289,9 +303,10 @@ namespace Pimix.Cloud.BaiduCloud {
 
             using (var response = request.GetResponse()) {
                 var result = response.GetDictionary();
-                if (!result["path"].ToString().EndsWith(path))
+                if (!result["path"].ToString().EndsWith(path)) {
                     throw new Exception(
                         $"Merge may fail! Original path: {path}, real path: {result["path"]}");
+                }
             }
         }
 
@@ -312,8 +327,9 @@ namespace Pimix.Cloud.BaiduCloud {
 
             using (var response = request.GetResponse()) {
                 if (!response.GetDictionary()
-                    .Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5)))
+                    .Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5))) {
                     throw new Exception("Response is unexpected!");
+                }
             }
         }
 
@@ -531,10 +547,13 @@ namespace Pimix.Cloud.BaiduCloud {
             try {
                 using (var response = request.GetResponse()) {
                     var value = response.GetJToken();
-                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
+                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
                         throw new Exception("from field is incorrect");
-                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
+                    }
+
+                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
                         throw new Exception("to field is incorrect");
+                    }
                 }
             } catch (Exception ex) {
                 logger.Warn(ex, "Copy failed!");
@@ -551,10 +570,13 @@ namespace Pimix.Cloud.BaiduCloud {
             try {
                 using (var response = request.GetResponse()) {
                     var value = response.GetJToken();
-                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath))
+                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
                         throw new Exception("from field is incorrect");
-                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath))
+                    }
+
+                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
                         throw new Exception("to field is incorrect");
+                    }
                 }
             } catch (Exception ex) {
                 logger.Warn(ex, "Move failed!");
@@ -573,8 +595,9 @@ namespace Pimix.Cloud.BaiduCloud {
             //   1. Reserve one block for header
             //   2. Not stop when equals for the 'padding' logic
 
-            while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size)
+            while (blockSize <= MaxBlockSize && blockSize * (MaxBlockCount - 1) <= size) {
                 blockSize <<= 1;
+            }
 
             return (int) blockSize;
         }
@@ -588,7 +611,8 @@ namespace Pimix.Cloud.BaiduCloud {
 
             public string ActualMd5 { get; set; }
 
-            public override string ToString() => $"Expected md5 is {ExpectedMd5}, while actual md5 is {ActualMd5}.";
+            public override string ToString()
+                => $"Expected md5 is {ExpectedMd5}, while actual md5 is {ActualMd5}.";
         }
     }
 }

@@ -24,7 +24,7 @@ namespace PimixTest.IO.FileFormats {
                 new Tuple<int, int>(0, (64 << 20) - 8)
             };
 
-            foreach (var item in rangeList)
+            foreach (var item in rangeList) {
                 using (var ms = new MemoryStream(data, item.Item1, item.Item2))
                 using (var encrypted = new MemoryStream())
                 using (var encryptionStream = new PimixFileV1Format().GetEncodeStream(ms,
@@ -43,6 +43,7 @@ namespace PimixTest.IO.FileFormats {
                         Assert.AreEqual(fs1.SHA256, fs2.SHA256);
                     }
                 }
+            }
         }
     }
 }

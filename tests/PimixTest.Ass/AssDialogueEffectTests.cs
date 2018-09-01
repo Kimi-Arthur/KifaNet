@@ -21,10 +21,11 @@ namespace PimixTest.Ass {
         public void BannerEffectRangeTest() {
             var effect = new AssDialogueBannerEffect();
 
-            foreach (var d in new[] {-1, 101, 1024})
+            foreach (var d in new[] {-1, 101, 1024}) {
                 Assert.AreEqual("Delay", Assert
                     .ThrowsException<ArgumentOutOfRangeException>(() => effect.Delay = d)
                     .ParamName);
+            }
         }
     }
 }

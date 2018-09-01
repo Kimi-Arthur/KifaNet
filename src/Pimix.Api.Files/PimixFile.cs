@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,7 +13,7 @@ namespace Pimix.Api.Files {
     public class PimixFile {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        static readonly Dictionary<String, StorageClient> KnownClients =
+        static readonly Dictionary<string, StorageClient> KnownClients =
             new Dictionary<string, StorageClient>();
 
         public string Id { get; set; }
@@ -111,7 +110,9 @@ namespace Pimix.Api.Files {
         }
 
         public FileProperties Add(bool alwaysCheck = false) {
-            if (!Exists()) throw new FileNotFoundException(ToString());
+            if (!Exists()) {
+                throw new FileNotFoundException(ToString());
+            }
 
             var oldInfo = FileInfo;
             if (!alwaysCheck &&
@@ -146,8 +147,9 @@ namespace Pimix.Api.Files {
 
             var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
 
-            if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256)
+            if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {
                 FileInformation.Link(sha256Info.Id, info.Id);
+            }
 
             oldInfo = FileInfo;
 
@@ -183,7 +185,7 @@ namespace Pimix.Api.Files {
                 Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
 
         /// <summary>
-        /// Gets path in local file system. This can only be called for local files.
+        ///     Gets path in local file system. This can only be called for local files.
         /// </summary>
         /// <returns></returns>
         public string GetLocalPath() => Client.GetPath(Path);
