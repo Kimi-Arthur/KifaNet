@@ -10,14 +10,14 @@ namespace PimixTest.Bilibili {
         [TestMethod]
         public void SinglePartTest() {
             var video = new BilibiliVideo("1858457");
-            Assert.AreEqual("1858457", video.Aid);
+            Assert.AreEqual("1858457", video.Id);
             Assert.AreEqual("Die Mannschaft", video.Title);
             Assert.AreEqual("ARD 一部关于德国队在2014年巴西世界杯夺冠旅程的纪录片。", video.Description);
-            Assert.IsTrue(video.Keywords.SequenceEqual(new[] {"德国队", "世界杯", "DFB"}),
+            Assert.IsTrue(video.Tags.SequenceEqual(new[] {"德国队", "世界杯", "DFB"}),
                 "Keywords differ");
-            Assert.AreEqual(1, video.Parts.Count());
-            Assert.AreEqual("2862733", video.Parts.ElementAt(0).Cid);
-            Assert.AreEqual("", video.Parts.ElementAt(0).Title);
+            Assert.AreEqual(1, video.Pages.Count());
+            Assert.AreEqual("2862733", video.Pages.ElementAt(0).Cid);
+            Assert.AreEqual("", video.Pages.ElementAt(0).Title);
             Assert.AreEqual(BilibiliVideo.PartModeType.SinglePartMode, video.PartMode);
             var doc = video.GenerateAssDocument();
             Assert.AreEqual(
@@ -28,12 +28,12 @@ namespace PimixTest.Bilibili {
         [TestMethod]
         public void MultiPartsTest() {
             var video = new BilibiliVideo("1852616");
-            Assert.AreEqual("1852616", video.Aid);
+            Assert.AreEqual("1852616", video.Id);
             Assert.AreEqual("【NHK红白歌合战】141231 第65回 全场高清中文字幕【东京不够热字幕组】", video.Title);
             Assert.AreEqual(
                 "第65回 NHK红白歌合战全场\r 最后一个年末音番！至此，东热字幕组的2014年末音番制作结束，奋斗了一个多月，大家辛苦了！\r 第一弹：Best Hits歌谣祭2014全场→av1737581 第二弹：Best Artist 2014全场→av1753285 第三弹：FNS歌谣祭2014全场→av1778707 第四弹：Music Station Super Live 2014全场→av1839990",
                 video.Description);
-            Assert.IsTrue(video.Keywords.SequenceEqual(
+            Assert.IsTrue(video.Tags.SequenceEqual(
                     new[] {
                         "NHK红白歌合战",
                         "红白歌会",
@@ -46,7 +46,7 @@ namespace PimixTest.Bilibili {
                         "TOKIO"
                     }),
                 "Keywords differ");
-            Assert.AreEqual(5, video.Parts.Count());
+            Assert.AreEqual(5, video.Pages.Count());
             var data = new List<Tuple<string, string>> {
                 Tuple.Create(
                     "2852771",
@@ -66,17 +66,17 @@ namespace PimixTest.Bilibili {
             };
 
             var offset = TimeSpan.Zero;
-            foreach (var item in data.Zip(video.Parts,
+            foreach (var item in data.Zip(video.Pages,
                 (x, y) => Tuple.Create(x.Item1, x.Item2, y))) {
                 Assert.AreEqual(item.Item1, item.Item3.Cid);
                 Assert.AreEqual(item.Item2, item.Item3.Title);
                 Assert.IsTrue(item.Item3.Comments.Count() > 1000, "Comments should be > 1000");
                 Assert.AreEqual(offset, item.Item3.ChatOffset);
-                offset += item.Item3.ChatLength;
+                offset += item.Item3.Duration;
             }
 
             video.PartMode = BilibiliVideo.PartModeType.ParallelPartMode;
-            foreach (var item in video.Parts) {
+            foreach (var item in video.Pages) {
                 Assert.AreEqual(TimeSpan.Zero, item.ChatOffset);
             }
         }

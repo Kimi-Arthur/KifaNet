@@ -3,14 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Xml;
+using Newtonsoft.Json;
 
 namespace Pimix.Bilibili {
     public class BilibiliChat {
         readonly List<BilibiliComment> comments;
 
+        [JsonProperty("id")]
+        public int Id { get; }
+
+        [JsonProperty("cid")]
         public string Cid { get; }
 
-        public TimeSpan ChatLength { get; set; }
+        [JsonProperty("duration")]
+        public TimeSpan Duration { get; set; }
 
         public TimeSpan ChatOffset { get; set; } = TimeSpan.Zero;
 

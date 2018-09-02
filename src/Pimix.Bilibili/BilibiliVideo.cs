@@ -5,9 +5,12 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using Pimix.Ass;
+using Pimix.Service;
 
 namespace Pimix.Bilibili {
+    [DataModel("bilibili/videos")]
     public class BilibiliVideo {
         public enum PartModeType {
             SinglePartMode,
@@ -17,9 +20,38 @@ namespace Pimix.Bilibili {
 
         static readonly Regex cidReg = new Regex(@"videoshot/(\d+)-");
 
-        public string Aid { get; }
+        [JsonProperty("id")]
+        public string Id { get; }
 
+        [JsonProperty("title")]
         public string Title { get; set; }
+
+        [JsonProperty("author")]
+        public string Author { get; set; }
+        
+        [JsonProperty("description")]
+        public string Description { get; set; }
+        
+        [JsonProperty("width")]
+        public int Width { get; set; }
+        
+        [JsonProperty("height")]
+        public int Height { get; set; }
+        
+        [JsonProperty("tags")]
+        public List<string> Tags { get; set; }
+        
+        [JsonProperty("category")]
+        public string Category { get; set; }
+        
+        [JsonProperty("cover")]
+        public string Cover { get; set; }
+
+        [JsonProperty("uploaded")]
+        public DateTime Uploaded { get; set; }
+        
+        [JsonProperty("pages")]
+        public IEnumerable<BilibiliChat> Pages { get; set; }
 
         PartModeType partMode;
 
@@ -29,28 +61,22 @@ namespace Pimix.Bilibili {
                 partMode = value;
                 if (partMode == PartModeType.ContinuousPartMode) {
                     var offset = TimeSpan.Zero;
-                    foreach (var part in Parts) {
+                    foreach (var part in Pages) {
                         part.ChatOffset = offset;
-                        offset += part.ChatLength;
+                        offset += part.Duration;
                     }
                 } else {
-                    foreach (var part in Parts) {
+                    foreach (var part in Pages) {
                         part.ChatOffset = TimeSpan.Zero;
                     }
                 }
             }
         }
 
-        public IEnumerable<BilibiliChat> Parts { get; set; }
-
-        public string Description { get; set; }
-
-        public IEnumerable<string> Keywords { get; set; }
-
-        public BilibiliVideo(string aid) {
-            Aid = aid;
+        public BilibiliVideo(string id) {
+            Id = id;
             var request =
-                WebRequest.CreateHttp($"http://www.bilibili.com/video/av{aid}");
+                WebRequest.CreateHttp($"http://www.bilibili.com/video/av{id}");
             request.AutomaticDecompression = DecompressionMethods.GZip;
             AddCookies(request);
 
@@ -64,14 +90,14 @@ namespace Pimix.Bilibili {
                 .Value;
             Description = documentNode.SelectSingleNode("//meta[@name='description']")
                 .Attributes["content"].Value;
-            Keywords = documentNode.SelectSingleNode("//meta[@name='keywords']")
+            Tags = documentNode.SelectSingleNode("//meta[@name='keywords']")
                 .Attributes["content"].Value.Split(',').ToList();
             var options = documentNode.SelectNodes("//option")
                 ?.Select(n => n.Attributes["value"].Value);
 
             if (options == null) {
                 // Single page
-                Parts = new List<BilibiliChat> {new BilibiliChat(FindCid(documentNode), "")};
+                Pages = new List<BilibiliChat> {new BilibiliChat(FindCid(documentNode), "")};
                 PartMode = PartModeType.SinglePartMode;
             } else {
                 // Multiple pages
@@ -95,7 +121,7 @@ namespace Pimix.Bilibili {
                     parts.Add(new BilibiliChat(FindCid(subpageDocumentNode), option.Item2));
                 }
 
-                Parts = parts;
+                Pages = parts;
                 PartMode = PartModeType.ContinuousPartMode;
             }
         }
@@ -109,7 +135,7 @@ namespace Pimix.Bilibili {
             var events = new AssEventsSection();
             result.Sections.Add(events);
 
-            foreach (var part in Parts)
+            foreach (var part in Pages)
             foreach (var comment in part.Comments) {
                 events.Events.Add(comment.GenerateAssDialogue());
             }
