@@ -1,5 +1,6 @@
 ﻿using System;
 using CommandLine;
+using NLog;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -13,13 +14,22 @@ namespace Pimix.Apps.FileUtil.Commands {
             HelpText = "The link's name.")]
         public string LinkName { get; set; }
 
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public override int Execute() {
             if (!Target.StartsWith("/") || !LinkName.StartsWith("/")) {
                 Console.Error.WriteLine("You should use absolute file path for the two arguments.");
                 return 1;
             }
 
-            return FileInformation.Link(Target, LinkName) ? 0 : 1;
+            var result = FileInformation.Link(Target, LinkName);
+            if (result) {
+                logger.Info("Successfully linked {0} with {1}!", LinkName, Target);
+            } else {
+                logger.Fatal("Linking {0} to {1} is unsuccessful!", LinkName, Target);
+            }
+
+            return result ? 0 : 1;
         }
     }
 }
