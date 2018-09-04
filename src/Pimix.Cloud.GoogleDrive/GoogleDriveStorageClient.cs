@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using NLog;
 using Pimix.IO;
 
@@ -130,31 +131,52 @@ namespace Pimix.Cloud.GoogleDrive {
             for (long position = 0; position < size; position += BlockSize) {
                 var blockLength = input.Read(buffer, 0, BlockSize);
                 var targetEndByte = position + blockLength - 1;
-                var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUri);
-                var content = new ByteArrayContent(buffer, 0, blockLength);
-                content.Headers.ContentRange =
-                    new ContentRangeHeaderValue(position, targetEndByte, size);
-                content.Headers.ContentLength = blockLength;
-                uploadRequest.Content = content;
 
-                using (var response = client.SendAsync(uploadRequest).Result) {
-                    if (targetEndByte + 1 == size) {
-                        if (!response.IsSuccessStatusCode) {
-                            throw new Exception("Last request should have success code");
-                        }
-                    } else {
-                        var range = RangeHeaderValue.Parse(response.Headers
-                            .First(h => h.Key == "Range").Value.First());
-                        var fromByte = range.Ranges.First().From;
-                        var toByte = range.Ranges.First().To;
-                        if (fromByte != 0) {
-                            throw new Exception($"Unexpected exception: from byte is {fromByte}");
+                var done = false;
+
+                while (!done) {
+                    var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUri);
+                    var content = new ByteArrayContent(buffer, 0, blockLength);
+                    content.Headers.ContentRange =
+                        new ContentRangeHeaderValue(position, targetEndByte, size);
+                    content.Headers.ContentLength = blockLength;
+                    uploadRequest.Content = content;
+
+                    try {
+                        using (var response = client.SendAsync(uploadRequest).Result) {
+                            if (targetEndByte + 1 == size) {
+                                if (!response.IsSuccessStatusCode) {
+                                    throw new Exception("Last request should have success code");
+                                }
+                            } else {
+                                var range = RangeHeaderValue.Parse(response.Headers
+                                    .First(h => h.Key == "Range").Value.First());
+                                var fromByte = range.Ranges.First().From;
+                                var toByte = range.Ranges.First().To;
+                                if (fromByte != 0) {
+                                    throw new Exception(
+                                        $"Unexpected exception: from byte is {fromByte}");
+                                }
+
+                                if (toByte != targetEndByte) {
+                                    throw new Exception(
+                                        $"Unexpected exception: to byte is {toByte}, should be {targetEndByte}");
+                                }
+                            }
                         }
 
-                        if (toByte != targetEndByte) {
-                            throw new Exception(
-                                $"Unexpected exception: to byte is {toByte}, should be {targetEndByte}");
-                        }
+                        done = true;
+                    } catch (AggregateException ae) {
+                        ae.Handle(x => {
+                            if (x is HttpRequestException) {
+                                logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
+                                    position + blockLength);
+                                Thread.Sleep(TimeSpan.FromSeconds(10));
+                                return true;
+                            }
+
+                            return false;
+                        });
                     }
                 }
             }
