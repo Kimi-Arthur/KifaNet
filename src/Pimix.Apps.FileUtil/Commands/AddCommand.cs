@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using CommandLine;
-using Newtonsoft.Json;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;

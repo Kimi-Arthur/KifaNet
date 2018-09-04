@@ -8,7 +8,9 @@ namespace CG.Web.MegaApiClient {
         readonly Stream stream;
 
         public StreamWithLength(Stream stream, long streamLength) {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null) {
+                throw new ArgumentNullException("stream");
+            }
 
             this.stream = stream;
             this.streamLength = streamLength;
@@ -27,8 +29,9 @@ namespace CG.Web.MegaApiClient {
         public override int Read(byte[] buffer, int offset, int count) {
             count = (int) Math.Min(count, Length - Position);
             var readLength = stream.Read(buffer, offset, count);
-            while (readLength < count)
+            while (readLength < count) {
                 readLength += stream.Read(buffer, offset + readLength, count - readLength);
+            }
 
             Position += readLength;
 

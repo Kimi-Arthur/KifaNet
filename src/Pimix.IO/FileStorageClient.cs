@@ -52,7 +52,25 @@ namespace Pimix.IO {
             });
         }
 
-        public override Stream OpenRead(string path) => File.OpenRead(GetPath(path));
+        public override Stream OpenRead(string path) {
+            var localPath = GetPath(path);
+            var fileSize = new FileInfo(localPath).Length;
+            return new SeekableReadStream(fileSize,
+                (buffer, bufferOffset, offset, count)
+                    => Read(buffer, localPath, bufferOffset, offset, count));
+        }
+
+        int Read(byte[] buffer, string localPath, int bufferOffset = 0, long offset = 0,
+            int count = -1) {
+            if (count < 0) {
+                count = buffer.Length - bufferOffset;
+            }
+
+            using (var st = File.OpenRead(localPath)) {
+                st.Seek(offset, SeekOrigin.Begin);
+                return st.Read(buffer, 0, count);
+            }
+        }
 
         public override void Write(string path, Stream stream) {
             var blockSize = DefaultBlockSize;

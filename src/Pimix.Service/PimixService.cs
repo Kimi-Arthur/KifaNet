@@ -18,7 +18,7 @@ namespace Pimix.Service {
 
         public static string PimixServerCredential { get; set; }
 
-        static HttpClient client = new HttpClient();
+        static readonly HttpClient client = new HttpClient();
 
         static RetryPolicy defaultRetryPolicy;
 
@@ -170,21 +170,29 @@ namespace Pimix.Service {
             var typeInfo = typeCache[typeof(TDataModel)];
 
             var request =
-                new HttpRequestMessage(HttpMethod.Post, $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}");
+                new HttpRequestMessage(HttpMethod.Post,
+                    $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}");
 
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", PimixServerCredential);
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue("Basic", PimixServerCredential);
 
             if (parameters != null) {
-                if (id != null) parameters["id"] = id;
-                request.Content = new StringContent(JsonConvert.SerializeObject(parameters), Encoding.UTF8,
+                if (id != null) {
+                    parameters["id"] = id;
+                }
+
+                request.Content = new StringContent(JsonConvert.SerializeObject(parameters),
+                    Encoding.UTF8,
                     "application/json");
             }
 
 
             using (var response = client.SendAsync(request).Result) {
                 var result = response.GetObject<ActionResult<TResponse>>();
-                if (result.StatusCode == ActionStatusCode.OK)
+                if (result.StatusCode == ActionStatusCode.OK) {
                     return result.Response;
+                }
+
                 throw new ActionFailedException {Result = result};
             }
         }

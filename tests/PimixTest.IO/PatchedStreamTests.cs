@@ -8,7 +8,9 @@ namespace PimixTest.IO {
         [TestMethod]
         public void PartialStreamBasicTest() {
             var data = new byte[1024];
-            for (var i = 0; i < 1024; i++) data[i] = (byte) i;
+            for (var i = 0; i < 1024; i++) {
+                data[i] = (byte) i;
+            }
 
             var ms = new MemoryStream(data);
             var ps = new PatchedStream(ms) {

@@ -53,8 +53,9 @@ namespace CG.Web.MegaApiClient {
             var nodesResponse = (GetNodesResponse) context[0];
             if (context.Length == 1) {
                 // Add key from incoming sharing.
-                if (SharingKey != null)
+                if (SharingKey != null) {
                     nodesResponse.SharedKeys.Add(new GetNodesResponse.SharedKey(Id, SharingKey));
+                }
             } else {
                 var masterKey = (byte[]) context[1];
 
@@ -69,10 +70,11 @@ namespace CG.Web.MegaApiClient {
 
                     FullKey = Crypto.DecryptKey(encryptedKey, masterKey);
 
-                    if (Type == NodeType.File)
+                    if (Type == NodeType.File) {
                         Key = Crypto.GetPartsFromDecryptedKey(FullKey);
-                    else
+                    } else {
                         Key = FullKey;
+                    }
 
                     var attributes =
                         Crypto.DecryptAttributes(SerializedAttributes.FromBase64(), Key);

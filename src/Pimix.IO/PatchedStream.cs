@@ -36,8 +36,9 @@ namespace Pimix.IO {
 
         public override int Read(byte[] buffer, int offset, int count) {
             count = (int) Math.Min(count, Length - Position);
-            if (count == 0)
+            if (count == 0) {
                 return 0;
+            }
 
             var readCount = 0;
 
@@ -47,8 +48,9 @@ namespace Pimix.IO {
                 Position += beforeCount;
                 readCount += beforeCount;
 
-                if (readCount == count)
+                if (readCount == count) {
                     return count;
+                }
             }
 
             if (Position < Length - BufferAfter.Length) {
@@ -59,8 +61,9 @@ namespace Pimix.IO {
                 Position += streamCount;
                 readCount += streamCount;
 
-                if (readCount == count)
+                if (readCount == count) {
                     return count;
+                }
             }
 
             var afterCount = count - readCount;
@@ -98,12 +101,13 @@ namespace Pimix.IO {
 
         protected override void Dispose(bool disposing) {
             try {
-                if (disposing && stream != null)
+                if (disposing && stream != null) {
                     try {
                         Flush();
                     } finally {
                         stream.Dispose();
                     }
+                }
             } finally {
                 stream = null;
                 base.Dispose(disposing);

@@ -46,8 +46,9 @@ namespace Pimix.IO {
 
         public override int Read(byte[] buffer, int offset, int count) {
             count = (int) Math.Min(count, Length - Position);
-            if (count == 0)
+            if (count == 0) {
                 return 0;
+            }
 
             var startPosition = Position.RoundDown(FileInformation.BlockSize);
             var endPosition =
@@ -114,8 +115,9 @@ namespace Pimix.IO {
                                     logger.Debug(
                                         "Block {0} is not consistently got, but it's fine:",
                                         pos / FileInformation.BlockSize);
-                                    foreach (var candidate in candidates)
+                                    foreach (var candidate in candidates) {
                                         logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
+                                    }
                                 }
 
                                 successful = true;
@@ -130,8 +132,9 @@ namespace Pimix.IO {
                         if (candidates.Count > 1) {
                             logger.Warn("Block {0} is too inconsistent:",
                                 pos / FileInformation.BlockSize);
-                            foreach (var candidate in candidates)
+                            foreach (var candidate in candidates) {
                                 logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                            }
                         }
 
                         throw new Exception($"Unable to get valid block starting from {pos}");
@@ -155,7 +158,9 @@ namespace Pimix.IO {
 
         bool HasMajority(Dictionary<(string md5, string sha1, string sha256), int> candidates) {
             var totalCount = candidates.Values.Sum();
-            if (totalCount == 1) return false;
+            if (totalCount == 1) {
+                return false;
+            }
 
             return candidates.Values.Any(i => i > totalCount / 2);
         }
@@ -227,12 +232,13 @@ namespace Pimix.IO {
 
         protected override void Dispose(bool disposing) {
             try {
-                if (disposing && stream != null)
+                if (disposing && stream != null) {
                     try {
                         Flush();
                     } finally {
                         stream.Dispose();
                     }
+                }
             } finally {
                 stream = null;
                 base.Dispose(disposing);

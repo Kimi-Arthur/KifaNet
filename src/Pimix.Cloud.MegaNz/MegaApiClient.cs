@@ -48,9 +48,13 @@ namespace CG.Web.MegaApiClient {
         /// <returns><see cref="AuthInfos" /> object containing encrypted data</returns>
         /// <exception cref="ArgumentNullException">email or password is null</exception>
         public static AuthInfos GenerateAuthInfos(string email, string password) {
-            if (string.IsNullOrEmpty(email)) throw new ArgumentNullException("email");
+            if (string.IsNullOrEmpty(email)) {
+                throw new ArgumentNullException("email");
+            }
 
-            if (string.IsNullOrEmpty(password)) throw new ArgumentNullException("password");
+            if (string.IsNullOrEmpty(password)) {
+                throw new ArgumentNullException("password");
+            }
 
             // Retrieve password as UTF8 byte array
             var passwordBytes = password.ToBytes();
@@ -87,7 +91,9 @@ namespace CG.Web.MegaApiClient {
         /// <exception cref="ArgumentNullException">authInfos is null</exception>
         /// <exception cref="NotSupportedException">Already logged in</exception>
         public void Login(AuthInfos authInfos) {
-            if (authInfos == null) throw new ArgumentNullException("authInfos");
+            if (authInfos == null) {
+                throw new ArgumentNullException("authInfos");
+            }
 
             EnsureLoggedOut();
 
@@ -151,9 +157,11 @@ namespace CG.Web.MegaApiClient {
             var response = Request<GetNodesResponse>(request, masterKey);
 
             var nodes = response.Nodes;
-            if (trashNode == null) trashNode = nodes.First(n => n.Type == NodeType.Trash);
+            if (trashNode == null) {
+                trashNode = nodes.First(n => n.Type == NodeType.Trash);
+            }
 
-            return nodes.Distinct().Cast<Node>();
+            return nodes.Distinct();
         }
 
         /// <summary>
@@ -169,17 +177,21 @@ namespace CG.Web.MegaApiClient {
         /// <exception cref="ArgumentNullException">node is null</exception>
         /// <exception cref="ArgumentException">node is not a directory or a file</exception>
         public void Delete(Node node, bool moveToTrash = true) {
-            if (node == null) throw new ArgumentNullException("node");
+            if (node == null) {
+                throw new ArgumentNullException("node");
+            }
 
-            if (node.Type != NodeType.Directory && node.Type != NodeType.File)
+            if (node.Type != NodeType.Directory && node.Type != NodeType.File) {
                 throw new ArgumentException("Invalid node type");
+            }
 
             EnsureLoggedIn();
 
-            if (moveToTrash)
+            if (moveToTrash) {
                 Move(node, trashNode);
-            else
+            } else {
                 Request(new DeleteRequest(node));
+            }
         }
 
         /// <summary>
@@ -195,11 +207,17 @@ namespace CG.Web.MegaApiClient {
         ///     <see cref="NodeType.File" />)
         /// </exception>
         public Node CreateFolder(string name, Node parent) {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (string.IsNullOrEmpty(name)) {
+                throw new ArgumentNullException("name");
+            }
 
-            if (parent == null) throw new ArgumentNullException("parent");
+            if (parent == null) {
+                throw new ArgumentNullException("parent");
+            }
 
-            if (parent.Type == NodeType.File) throw new ArgumentException("Invalid parent node");
+            if (parent.Type == NodeType.File) {
+                throw new ArgumentException("Invalid parent node");
+            }
 
             EnsureLoggedIn();
 
@@ -226,12 +244,18 @@ namespace CG.Web.MegaApiClient {
         /// </exception>
         /// <exception cref="DownloadException">Checksum is invalid. Downloaded data are corrupted</exception>
         public Stream Download(Node node) {
-            if (node == null) throw new ArgumentNullException("node");
+            if (node == null) {
+                throw new ArgumentNullException("node");
+            }
 
-            if (node.Type != NodeType.File) throw new ArgumentException("Invalid node");
+            if (node.Type != NodeType.File) {
+                throw new ArgumentException("Invalid node");
+            }
 
             var nodeCrypto = node;
-            if (nodeCrypto == null) throw new ArgumentException("node must implement Node");
+            if (nodeCrypto == null) {
+                throw new ArgumentException("node must implement Node");
+            }
 
             EnsureLoggedIn();
 
@@ -261,13 +285,21 @@ namespace CG.Web.MegaApiClient {
         ///     <see cref="NodeType.File" /> are supported)
         /// </exception>
         public Node Upload(Stream stream, string name, Node parent) {
-            if (stream == null) throw new ArgumentNullException("stream");
+            if (stream == null) {
+                throw new ArgumentNullException("stream");
+            }
 
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (string.IsNullOrEmpty(name)) {
+                throw new ArgumentNullException("name");
+            }
 
-            if (parent == null) throw new ArgumentNullException("parent");
+            if (parent == null) {
+                throw new ArgumentNullException("parent");
+            }
 
-            if (parent.Type == NodeType.File) throw new ArgumentException("Invalid parent node");
+            if (parent.Type == NodeType.File) {
+                throw new ArgumentException("Invalid parent node");
+            }
 
             EnsureLoggedIn();
 
@@ -304,7 +336,9 @@ namespace CG.Web.MegaApiClient {
                         break;
                     }
 
-                    if (lastException != null) throw lastException;
+                    if (lastException != null) {
+                        throw lastException;
+                    }
 
                     completionHandle = result;
                 }
@@ -339,16 +373,21 @@ namespace CG.Web.MegaApiClient {
         ///     <see cref="NodeType.File" /> are supported)
         /// </exception>
         public Node Move(Node node, Node destinationParentNode) {
-            if (node == null) throw new ArgumentNullException("node");
+            if (node == null) {
+                throw new ArgumentNullException("node");
+            }
 
-            if (destinationParentNode == null)
+            if (destinationParentNode == null) {
                 throw new ArgumentNullException("destinationParentNode");
+            }
 
-            if (node.Type != NodeType.Directory && node.Type != NodeType.File)
+            if (node.Type != NodeType.Directory && node.Type != NodeType.File) {
                 throw new ArgumentException("Invalid node type");
+            }
 
-            if (destinationParentNode.Type == NodeType.File)
+            if (destinationParentNode.Type == NodeType.File) {
                 throw new ArgumentException("Invalid destination parent node");
+            }
 
             EnsureLoggedIn();
 
@@ -365,10 +404,14 @@ namespace CG.Web.MegaApiClient {
             var hash = new byte[16];
 
             // Compute email in 16 bytes array
-            for (var i = 0; i < emailBytes.Length; i++) hash[i % 16] ^= emailBytes[i];
+            for (var i = 0; i < emailBytes.Length; i++) {
+                hash[i % 16] ^= emailBytes[i];
+            }
 
             // Encrypt hash using password key
-            for (var it = 0; it < 16384; it++) hash = Crypto.EncryptAes(hash, passwordAesKey);
+            for (var it = 0; it < 16384; it++) {
+                hash = Crypto.EncryptAes(hash, passwordAesKey);
+            }
 
             // Retrieve bytes 0-4 and 8-12 from the hash
             var result = new byte[8];
@@ -418,15 +461,18 @@ namespace CG.Web.MegaApiClient {
                         : (ApiResultCode) ((JArray) jsonData)[0].Value<int>();
 
                     if (apiCode == ApiResultCode.RequestFailedRetry) {
-                        if (currentAttempt == ApiRequestAttempts)
+                        if (currentAttempt == ApiRequestAttempts) {
                             throw new NotSupportedException("Api not available");
+                        }
 
                         Thread.Sleep(ApiRequestDelay);
                         currentAttempt++;
                         continue;
                     }
 
-                    if (apiCode != ApiResultCode.Ok) throw new ApiException(apiCode);
+                    if (apiCode != ApiResultCode.Ok) {
+                        throw new ApiException(apiCode);
+                    }
                 }
 
                 break;
@@ -446,7 +492,9 @@ namespace CG.Web.MegaApiClient {
             var query = HttpUtility.ParseQueryString(builder.Query);
             query["id"] = (sequenceIndex++ % uint.MaxValue).ToString(CultureInfo.InvariantCulture);
 
-            if (!string.IsNullOrEmpty(sessionId)) query["sid"] = sessionId;
+            if (!string.IsNullOrEmpty(sessionId)) {
+                query["sid"] = sessionId;
+            }
 
             builder.Query = query.ToString();
             return builder.Uri;
@@ -463,11 +511,15 @@ namespace CG.Web.MegaApiClient {
         #region Private methods
 
         void EnsureLoggedIn() {
-            if (sessionId == null) throw new NotSupportedException("Not logged in");
+            if (sessionId == null) {
+                throw new NotSupportedException("Not logged in");
+            }
         }
 
         void EnsureLoggedOut() {
-            if (sessionId != null) throw new NotSupportedException("Already logged in");
+            if (sessionId != null) {
+                throw new NotSupportedException("Already logged in");
+            }
         }
 
         long[] GetChunksPositions(long size) {

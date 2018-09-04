@@ -57,9 +57,11 @@ namespace CG.Web.MegaApiClient {
 
         public static T[] CopySubArray<T>(this T[] source, int length, int offset = 0) {
             var result = new T[length];
-            while (--length >= 0)
-                if (source.Length > offset + length)
+            while (--length >= 0) {
+                if (source.Length > offset + length) {
                     result[length] = source[offset + length];
+                }
+            }
 
             return result;
         }

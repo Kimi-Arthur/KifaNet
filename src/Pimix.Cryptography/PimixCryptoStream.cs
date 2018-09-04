@@ -25,7 +25,9 @@ namespace Pimix.Cryptography {
             get => position;
 
             set {
-                if ((value - 1) / BlockSize != (position - 1) / BlockSize) padBuffer = null;
+                if ((value - 1) / BlockSize != (position - 1) / BlockSize) {
+                    padBuffer = null;
+                }
 
                 position = value;
             }
@@ -44,19 +46,23 @@ namespace Pimix.Cryptography {
         }
 
         public override int Read(byte[] buffer, int offset, int count) {
-            if (buffer == null)
+            if (buffer == null) {
                 throw new ArgumentNullException(nameof(buffer));
+            }
 
-            if (offset < 0)
+            if (offset < 0) {
                 throw new ArgumentOutOfRangeException(nameof(offset));
+            }
 
-            if (buffer.Length - offset < count)
+            if (buffer.Length - offset < count) {
                 throw new ArgumentException();
+            }
 
             count = (int) Math.Min(count, Length - Position);
 
-            if (count == 0)
+            if (count == 0) {
                 return 0;
+            }
 
             var readCount = 0;
 
@@ -69,11 +75,13 @@ namespace Pimix.Cryptography {
 
                 Position += leftOverCount;
                 readCount += leftOverCount;
-                if (readCount == count)
+                if (readCount == count) {
                     return count;
+                }
 
-                if (Position % BlockSize != 0)
+                if (Position % BlockSize != 0) {
                     throw new Exception("Unexpected");
+                }
 
                 var internalToRead = (count - readCount).RoundUp(BlockSize);
 
@@ -92,12 +100,15 @@ namespace Pimix.Cryptography {
                            Position.RoundDown(BlockSize)) + (needBlockAhead ? BlockSize : 0);
                 var internalBuffer = new byte[internalToRead];
 
-                if (stream.CanSeek) stream.Position = Position.RoundDown(BlockSize);
+                if (stream.CanSeek) {
+                    stream.Position = Position.RoundDown(BlockSize);
+                }
 
                 var internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
 
-                if (needBlockAhead)
+                if (needBlockAhead) {
                     transform.TransformBlock(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
+                }
 
                 if (internalReadCount == internalToRead) {
                     tmp = new byte[internalReadCount - (needBlockAhead ? BlockSize : 0)];

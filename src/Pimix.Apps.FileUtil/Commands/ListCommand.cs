@@ -19,7 +19,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool LongListMode { get; set; } = false;
 
         public override int Execute() {
-            int counter = 0;
+            var counter = 0;
             if (string.IsNullOrEmpty(FolderUri)) {
                 foreach (var info in FileInformation.ListFolder(FolderId, Recursive)) {
                     Console.WriteLine(info);

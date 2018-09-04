@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
 using NLog;
 
 namespace Pimix.IO {
@@ -30,15 +29,17 @@ namespace Pimix.IO {
         }
 
         public override void Flush() {
-            if (!isOpen)
+            if (!isOpen) {
                 throw new ObjectDisposedException(null);
+            }
 
             // Intentionally doing nothing.
         }
 
         public override long Seek(long offset, SeekOrigin origin) {
-            if (!isOpen)
+            if (!isOpen) {
                 throw new ObjectDisposedException(null);
+            }
 
             switch (origin) {
                 case SeekOrigin.Begin:
@@ -52,8 +53,9 @@ namespace Pimix.IO {
                     break;
             }
 
-            if (Position < 0)
+            if (Position < 0) {
                 throw new ArgumentException(nameof(offset));
+            }
 
             return Position;
         }
@@ -63,23 +65,29 @@ namespace Pimix.IO {
         }
 
         public override int Read(byte[] buffer, int offset, int count) {
-            if (!isOpen)
+            if (!isOpen) {
                 throw new ObjectDisposedException(null);
+            }
 
-            if (buffer == null)
+            if (buffer == null) {
                 throw new ArgumentNullException(nameof(buffer));
+            }
 
-            if (offset < 0)
+            if (offset < 0) {
                 throw new ArgumentOutOfRangeException(nameof(offset));
+            }
 
             count = (int) Math.Min(count, Length - Position);
 
-            if (buffer.Length - offset < count)
+            if (buffer.Length - offset < count) {
                 throw new ArgumentException();
+            }
 
-            if (Position >= Length) return 0;
+            if (Position >= Length) {
+                return 0;
+            }
 
-            int readCount = reader(buffer, offset, Position, count);
+            var readCount = reader(buffer, offset, Position, count);
             Position += readCount;
             return readCount;
         }

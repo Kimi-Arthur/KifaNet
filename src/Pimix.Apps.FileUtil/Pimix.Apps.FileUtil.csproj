@@ -11,6 +11,7 @@
         <PackageTags>Pimix Apps FileUtil app</PackageTags>
         <Authors>Kimi Arthur</Authors>
         <AssemblyName>fileutil</AssemblyName>
+        <NoWarn>NU1605</NoWarn>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.2.1"/>

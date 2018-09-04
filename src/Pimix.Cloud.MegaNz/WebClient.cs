@@ -75,8 +75,9 @@ namespace CG.Web.MegaApiClient {
                 var buffer = new byte[length];
                 int bytesRead;
 
-                while ((bytesRead = dataStream.Read(buffer, 0, length)) > 0)
+                while ((bytesRead = dataStream.Read(buffer, 0, length)) > 0) {
                     requestStream.Write(buffer, 0, bytesRead);
+                }
             }
 
             using (var response = (HttpWebResponse) request.GetResponse()) {
