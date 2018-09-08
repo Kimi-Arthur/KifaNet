@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using CommandLine;
@@ -41,7 +40,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         int GetFile(PimixFile target) {
             if (target.Exists()) {
                 if (target.CalculateInfo(FileProperties.Size).Size != target.FileInfo.Size) {
-                    logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");
+                    logger.Info(
+                        "Target exists but size is incorrect. Assuming incomplete Get result.");
                 } else {
                     var targetCheckResult = target.Add();
 
@@ -68,13 +68,16 @@ namespace Pimix.Apps.FileUtil.Commands {
                     if (linkSource.IsComaptible(target)) {
                         Link(linkSource, target);
                         target.Register(true);
+                        logger.Info("Got {0} through hard linking to {1}.", target, linkSource);
                         return 0;
                     }
                 }
             }
 
             var source = new PimixFile(FileInformation.GetLocation(info.Id,
-                UseBaiduCloud ? new List<string> {"baidu", "google"} : new List<string> {"google", "baidu"}));
+                UseBaiduCloud
+                    ? new List<string> {"baidu", "google"}
+                    : new List<string> {"google", "baidu"}));
             source.Copy(target);
 
             if (target.Exists()) {
