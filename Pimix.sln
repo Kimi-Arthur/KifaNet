@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Bilibili", "src\Pimix
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Bilibili", "tests\PimixTest.Bilibili\PimixTest.Bilibili.csproj", "{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.SubUtil", "src\Pimix.Apps.SubUtil\Pimix.Apps.SubUtil.csproj", "{4B103459-90B8-4F4A-93EF-D594D24B58F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -153,6 +155,10 @@ Global
 		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
