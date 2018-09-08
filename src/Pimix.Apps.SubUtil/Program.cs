@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using CommandLine;
+using Pimix.Apps.SubUtil.Commands;
 
 namespace Pimix.Apps.SubUtil {
     class Program {
         static int Main(string[] args)
             => Parser.Default
-                .ParseArguments<>(args)
-                .MapResult<SubUtilCommand, int>(ExecuteCommand, HandleParseFail);
+                .ParseArguments<GenerateCommand>(args)
+                .MapResult(ExecuteCommand, HandleParseFail);
 
-        static int ExecuteCommand(SubUtilCommand command) {
+        static int ExecuteCommand(GenerateCommand command) {
             command.Initialize();
 
             try {
