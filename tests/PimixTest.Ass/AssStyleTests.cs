@@ -10,8 +10,8 @@ namespace PimixTest.Ass {
         public void BasicTest() {
             AssElement style = new AssStyle {
                 Name = "Default",
-                Fontname = "simhei",
-                Fontsize = 28,
+                FontName = "simhei",
+                FontSize = 28,
                 PrimaryColour = Color.DarkOrange, // FFFF8C00
                 SecondaryColour = Color.FromArgb(0x00000000),
                 OutlineColour = Color.FromArgb(0x00111111),

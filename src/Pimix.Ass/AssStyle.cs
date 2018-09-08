@@ -9,19 +9,52 @@ namespace Pimix.Ass {
             OpaqueBox = 3
         }
 
-        public static string DefaultFontname = "Simhei";
+        public const string DefaultFontName = "Simhei";
 
-        public static AssStyle DefaultStyle
+        public static readonly AssStyle DefaultStyle
             = new AssStyle {
-                // TODO: Finish default style
                 Name = "Default"
             };
 
+        public static readonly AssStyle SubtitleStyle
+            = new AssStyle {
+                Name = "Subtitle"
+            };
+
+        public static readonly AssStyle ToptitleStyle
+            = new AssStyle {
+                Name = "Toptitle"
+            };
+
+        public static readonly AssStyle TopCommentStyle
+            = new AssStyle {
+                Name = "TopComment"
+            };
+
+        public static readonly AssStyle BottomCommentStyle
+            = new AssStyle {
+                Name = "BottomComment"
+            };
+
+        public static readonly AssStyle RtlCommentStyle
+            = new AssStyle {
+                Name = "RtlComment"
+            };
+
+        public static readonly List<AssStyle> Styles =
+            new List<AssStyle> {
+                DefaultStyle,
+                SubtitleStyle,
+                ToptitleStyle,
+                TopCommentStyle,
+                BottomCommentStyle,
+                RtlCommentStyle
+            };
         public string Name { get; set; }
 
-        public string Fontname { get; set; } = DefaultFontname;
+        public string FontName { get; set; } = DefaultFontName;
 
-        public int Fontsize { get; set; }
+        public int FontSize { get; set; }
 
         public Color PrimaryColour { get; set; }
 
@@ -90,8 +123,8 @@ namespace Pimix.Ass {
         public override IEnumerable<string> Values
             => new List<string> {
                 Name.GenerateAssText(),
-                Fontname.GenerateAssText(),
-                Fontsize.GenerateAssText(),
+                FontName.GenerateAssText(),
+                FontSize.GenerateAssText(),
                 PrimaryColour.GenerateAssText(),
                 SecondaryColour.GenerateAssText(),
                 OutlineColour.GenerateAssText(),

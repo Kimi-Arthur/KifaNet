@@ -12,8 +12,8 @@ namespace PimixTest.Ass {
                 Styles = new List<AssStyle> {
                     new AssStyle {
                         Name = "Default",
-                        Fontname = "simhei",
-                        Fontsize = 28,
+                        FontName = "simhei",
+                        FontSize = 28,
                         PrimaryColour = Color.FromArgb(0x00FFFFFF),
                         SecondaryColour = Color.FromArgb(0x00000000),
                         OutlineColour = Color.FromArgb(0x00111111),
@@ -37,8 +37,8 @@ namespace PimixTest.Ass {
                     },
                     new AssStyle {
                         Name = "staff",
-                        Fontname = "youyuan",
-                        Fontsize = 26,
+                        FontName = "youyuan",
+                        FontSize = 26,
                         PrimaryColour = Color.FromArgb(0x00EBEBEB),
                         SecondaryColour = Color.FromArgb(0x00000000),
                         OutlineColour = Color.FromArgb(0x28000000),
