@@ -37,7 +37,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option("job-id", HelpText = "Job ID to report log as.")]
         public string JobId { get; set; } = null;
 
-        public virtual void Initialize() {
+        public void Initialize() {
             PimixService.PimixServerApiAddress = PimixServerAddress;
             PimixService.PimixServerCredential =
                 Convert.ToBase64String(Encoding.UTF8.GetBytes(PimixServerCredential));
