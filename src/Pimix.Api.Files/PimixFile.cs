@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,6 +47,10 @@ namespace Pimix.Api.Files {
                         uri = $"local:{p.Key}{fullPath.Substring(p.Value.Length)}";
                         break;
                     }
+                }
+
+                if (!uri.Contains(":")) {
+                    throw new Exception($"Path {uri} not in registered path.");
                 }
             }
 
