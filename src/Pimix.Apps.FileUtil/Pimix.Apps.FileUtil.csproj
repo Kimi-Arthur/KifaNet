@@ -14,17 +14,17 @@
         <NoWarn>NU1605</NoWarn>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.2.1"/>
-        <PackageReference Include="NLog.Config" Version="4.5.0-alpha04"/>
-        <PackageReference Include="SSH.NET" Version="2016.0.0"/>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0"/>
+        <PackageReference Include="CommandLineParser" Version="2.3.0" />
+        <PackageReference Include="NLog.Config" Version="4.5.0-alpha04" />
+        <PackageReference Include="SSH.NET" Version="2016.0.0" />
+        <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj"/>
-        <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj"/>
-        <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj"/>
-        <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj"/>
-        <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj"/>
+        <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
+        <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj" />
+        <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj" />
+        <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj" />
+        <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
     </ItemGroup>
     <ItemGroup>
         <None Update="NLog.config">
