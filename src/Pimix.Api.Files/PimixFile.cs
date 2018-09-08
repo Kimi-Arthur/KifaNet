@@ -36,6 +36,19 @@ namespace Pimix.Api.Files {
             //   local:cubie/a/b/c/d.txt
             //   local:/a/b/c/d.txt
             //   /a/b/c/d.txt
+            //   ~/a.txt
+            //   ../a.txt
+            if (!uri.Contains(":")) {
+                // Local path, convert to canonical one.
+                var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
+                foreach (var p in FileStorageClient.PathMap) {
+                    if (fullPath.StartsWith(p.Value)) {
+                        uri = $"local:{p.Key}{fullPath.Substring(p.Value.Length)}";
+                        break;
+                    }
+                }
+            }
+
             var segments = uri.Split(new[] {'/'}, 2);
             Path = "/" + segments[1];
             Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);

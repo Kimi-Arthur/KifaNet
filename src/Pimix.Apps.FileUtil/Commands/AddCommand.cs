@@ -36,7 +36,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return AddFile(source);
             }
 
-            logger.Error("File {0} doesn't exist or folder contains no files.", FileUri);
+            logger.Error("File {0} doesn't exist or folder contains no files.", source);
             return 1;
         }
 

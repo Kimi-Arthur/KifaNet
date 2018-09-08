@@ -51,7 +51,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         int RemoveFileInstance(PimixFile file) {
-            if (file.FileInfo.Locations?.ContainsKey(FileUri) != true) {
+            var f = new PimixFile(FileUri);
+            if (file.FileInfo.Locations?.ContainsKey(f.ToString()) != true) {
                 if (file.Exists()) {
                     file.Delete();
                     logger.Warn($"File {file} deleted, no entry found though.");
@@ -72,7 +73,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            FileInformation.RemoveLocation(file.Id, FileUri);
+            FileInformation.RemoveLocation(file.Id, f.ToString());
             logger.Info($"Entry {file} removed.");
 
             return 0;
