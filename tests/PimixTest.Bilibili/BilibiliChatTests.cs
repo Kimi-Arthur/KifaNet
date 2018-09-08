@@ -8,7 +8,10 @@ namespace PimixTest.Bilibili {
     public class BilibiliChatTests {
         [TestMethod]
         public void BasicTest() {
-            var chat = new BilibiliChat("2862733", "测试标题");
+            var chat = new BilibiliChat {
+                Cid = "2862733",
+                Title = "测试标题"
+            };
             Assert.AreEqual("2862733", chat.Cid);
             Assert.AreEqual(TimeSpan.Zero, chat.ChatOffset);
             Assert.AreEqual("测试标题", chat.Title);
@@ -22,7 +25,10 @@ namespace PimixTest.Bilibili {
 
         [TestMethod]
         public void WithOffsetTest() {
-            var chat = new BilibiliChat("2862733", "测试标题");
+            var chat = new BilibiliChat {
+                Cid = "2862733",
+                Title = "测试标题"
+            };
 
             Assert.AreEqual(TimeSpan.FromSeconds(163.708), chat.Comments.ElementAt(1).VideoTime);
 

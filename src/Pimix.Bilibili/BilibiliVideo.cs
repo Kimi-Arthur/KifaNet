@@ -28,28 +28,28 @@ namespace Pimix.Bilibili {
 
         [JsonProperty("author")]
         public string Author { get; set; }
-        
+
         [JsonProperty("description")]
         public string Description { get; set; }
-        
+
         [JsonProperty("width")]
         public int Width { get; set; }
-        
+
         [JsonProperty("height")]
         public int Height { get; set; }
-        
+
         [JsonProperty("tags")]
         public List<string> Tags { get; set; }
-        
+
         [JsonProperty("category")]
         public string Category { get; set; }
-        
+
         [JsonProperty("cover")]
         public string Cover { get; set; }
 
         [JsonProperty("uploaded")]
         public DateTime Uploaded { get; set; }
-        
+
         [JsonProperty("pages")]
         public IEnumerable<BilibiliChat> Pages { get; set; }
 
@@ -97,14 +97,22 @@ namespace Pimix.Bilibili {
 
             if (options == null) {
                 // Single page
-                Pages = new List<BilibiliChat> {new BilibiliChat(FindCid(documentNode), "")};
+                Pages = new List<BilibiliChat> {
+                    new BilibiliChat {
+                        Cid = FindCid(documentNode)
+                    }
+                };
                 PartMode = PartModeType.SinglePartMode;
             } else {
                 // Multiple pages
                 var titles = documentNode.SelectSingleNode("//select").InnerText
                     .Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries).ToList();
-                var parts = new List<BilibiliChat>
-                    {new BilibiliChat(FindCid(documentNode), titles[0])};
+                var parts = new List<BilibiliChat> {
+                    new BilibiliChat {
+                        Cid = FindCid(documentNode),
+                        Title = titles[0]
+                    }
+                };
                 foreach (var option in options.Skip(1)
                     .Zip(titles.Skip(1), (x, y) => Tuple.Create(x, y))) {
                     var subpageRequest =
@@ -118,7 +126,8 @@ namespace Pimix.Bilibili {
                     }
 
                     var subpageDocumentNode = subpageDocument.DocumentNode;
-                    parts.Add(new BilibiliChat(FindCid(subpageDocumentNode), option.Item2));
+                    parts.Add(new BilibiliChat
+                        {Cid = FindCid(subpageDocumentNode), Title = option.Item2});
                 }
 
                 Pages = parts;

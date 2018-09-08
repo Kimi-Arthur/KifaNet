@@ -32,7 +32,11 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public override string ToString() => $"google:{AccountId}";
 
-        readonly HttpClient client;
+        readonly HttpClient client = new HttpClient(new HttpClientHandler {
+            AllowAutoRedirect = false
+        }) {
+            Timeout = TimeSpan.FromMinutes(30)
+        };
 
         string accountId;
 
@@ -45,14 +49,6 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         public AccountInfo Account { get; private set; }
-
-        public GoogleDriveStorageClient() {
-            client = new HttpClient(new HttpClientHandler {
-                AllowAutoRedirect = false
-            }) {
-                Timeout = TimeSpan.FromMinutes(30)
-            };
-        }
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
             var fileId = GetFileId(path);
