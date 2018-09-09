@@ -7,10 +7,10 @@ namespace Pimix.Apps.SubUtil {
     class Program {
         static int Main(string[] args)
             => Parser.Default
-                .ParseArguments<GenerateCommand>(args)
-                .MapResult(ExecuteCommand, HandleParseFail);
+                .ParseArguments<GenerateCommand, GetCommentsCommand>(args)
+                .MapResult<SubUtilCommand, int>(ExecuteCommand, HandleParseFail);
 
-        static int ExecuteCommand(GenerateCommand command) {
+        static int ExecuteCommand(SubUtilCommand command) {
             command.Initialize();
 
             try {
