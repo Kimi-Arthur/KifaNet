@@ -7,10 +7,10 @@ using Pimix.Configs;
 namespace Pimix.Apps.SubUtil {
     class Program {
         static int Main(string[] args) {
-            PimixConfigs.LoadFromSystemConfigs();
-
             AppDomain.CurrentDomain.AssemblyLoad +=
                 (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+
+            PimixConfigs.LoadFromSystemConfigs();
 
             return Parser.Default
                 .ParseArguments<GenerateCommand, GetCommentsCommand>(args)
