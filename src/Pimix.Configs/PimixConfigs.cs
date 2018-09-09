@@ -10,10 +10,12 @@ namespace Pimix.Configs {
         public static readonly List<string> ConfigFilePaths = new List<string>
             {"pimix.yaml", "~/.pimix.yaml", "/etc/pimix.yaml"};
 
-        public static void LoadFromSystemConfigs() {
+        public static void LoadFromSystemConfigs(Assembly assembly = null) {
+            Console.WriteLine($"Load {assembly}");
             foreach (var filePath in ConfigFilePaths) {
                 if (File.Exists(filePath)) {
-                    var properties = GetAllProperties();
+                    var properties =
+                        assembly == null ? GetAllProperties() : GetProperties(assembly);
                     LoadFromStream(File.OpenRead(filePath), properties);
                     break;
                 }
@@ -34,12 +36,22 @@ namespace Pimix.Configs {
         public static Dictionary<string, PropertyInfo> GetAllProperties() {
             var properties = new Dictionary<string, PropertyInfo>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                foreach (var t in assembly.GetTypes()) {
-                    if (t.Namespace?.StartsWith("Pimix") == true) {
-                        foreach (var p in t.GetProperties()) {
-                            if (p.GetSetMethod()?.IsStatic == true) {
-                                properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
-                            }
+                foreach (var property in GetProperties(assembly)) {
+                    properties[property.Key] = property.Value;
+                }
+            }
+
+            return properties;
+        }
+
+        static Dictionary<string, PropertyInfo> GetProperties(Assembly assembly) {
+            var properties = new Dictionary<string, PropertyInfo>();
+
+            foreach (var t in assembly.GetTypes()) {
+                if (t.Namespace?.StartsWith("Pimix") == true) {
+                    foreach (var p in t.GetProperties()) {
+                        if (p.GetSetMethod()?.IsStatic == true) {
+                            properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
                         }
                     }
                 }
