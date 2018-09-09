@@ -11,7 +11,6 @@ namespace Pimix.Configs {
             {"pimix.yaml", "~/.pimix.yaml", "/etc/pimix.yaml"};
 
         public static void LoadFromSystemConfigs(Assembly assembly = null) {
-            Console.WriteLine($"Load {assembly}");
             foreach (var filePath in ConfigFilePaths) {
                 if (File.Exists(filePath)) {
                     var properties =
