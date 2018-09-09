@@ -7,7 +7,8 @@ namespace Pimix.IO {
     public class FileStorageClient : StorageClient {
         const int DefaultBlockSize = 32 << 20;
 
-        public static Dictionary<string, string> PathMap = new Dictionary<string, string>();
+        public static Dictionary<string, string> PathMap { get; set; } =
+            new Dictionary<string, string>();
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
