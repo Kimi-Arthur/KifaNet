@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using CommandLine;
+using Pimix.Api.Files;
 using Pimix.Bilibili;
 
 namespace Pimix.Apps.SubUtil.Commands {
@@ -14,9 +15,15 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             var chat = new BilibiliChat {Cid = Cid};
-            StringWriter sw = new StringWriter();
-            chat.RawDocument.Save(sw);
-            Console.WriteLine(sw.ToString());
+            var memoryStream = new MemoryStream();
+            chat.RawDocument.Save(memoryStream);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            var lastDot = FileUri.LastIndexOf(".", StringComparison.Ordinal);
+            var targetUri = $"{FileUri.Substring(0, lastDot)}.{Cid}.xml";
+            var target = new PimixFile(targetUri);
+            target.Write(memoryStream);
+
             return 0;
         }
     }

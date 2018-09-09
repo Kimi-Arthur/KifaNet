@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
       <ProjectReference Include="..\Pimix.Bilibili\Pimix.Bilibili.csproj" />
       <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
     </ItemGroup>

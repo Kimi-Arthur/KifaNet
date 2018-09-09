@@ -107,12 +107,12 @@ namespace Pimix.Api.Files {
             }
         }
 
-        Stream OpenRead()
+        public Stream OpenRead()
             => new VerifiableStream(
                 FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
-        void Write(Stream stream)
+        public void Write(Stream stream)
             => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
         public FileInformation CalculateInfo(FileProperties properties) {
