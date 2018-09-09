@@ -1,0 +1,5 @@
+Pimix.Service.PimixService:
+  PimixServerApiAddress: http://www.pimix.tk/api
+
+Pimix.IO.FileStorageClient:
+  PathMap:
