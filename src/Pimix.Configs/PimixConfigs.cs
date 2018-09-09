@@ -12,13 +12,11 @@ namespace Pimix.Configs {
 
         public static void LoadFromSystemConfigs() {
             foreach (var filePath in ConfigFilePaths) {
-                if (!File.Exists(filePath)) {
-                    continue;
+                if (File.Exists(filePath)) {
+                    var properties = GetAllProperties();
+                    LoadFromStream(File.OpenRead(filePath), properties);
+                    break;
                 }
-
-                var properties = GetAllProperties();
-                LoadFromStream(File.OpenRead(filePath), properties);
-                break;
             }
         }
 
@@ -37,9 +35,11 @@ namespace Pimix.Configs {
             var properties = new Dictionary<string, PropertyInfo>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
                 foreach (var t in assembly.GetTypes()) {
-                    foreach (var p in t.GetProperties()) {
-                        if (p.GetSetMethod()?.IsStatic == true) {
-                            properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
+                    if (t.Namespace?.StartsWith("Pimix") == true) {
+                        foreach (var p in t.GetProperties()) {
+                            if (p.GetSetMethod()?.IsStatic == true) {
+                                properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
+                            }
                         }
                     }
                 }

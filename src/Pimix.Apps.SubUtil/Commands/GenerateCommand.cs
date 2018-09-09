@@ -1,4 +1,7 @@
+using System;
 using CommandLine;
+using Pimix.Configs;
+using Pimix.Service;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
@@ -13,6 +16,9 @@ namespace Pimix.Apps.SubUtil.Commands {
         public string OutputFile { get; set; }
 
         public override int Execute() {
+            PimixConfigs.LoadFromSystemConfigs();
+            Console.WriteLine(PimixService.PimixServerApiAddress);
+
             return 0;
         }
     }
