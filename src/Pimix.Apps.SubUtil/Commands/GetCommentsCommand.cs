@@ -15,8 +15,23 @@ namespace Pimix.Apps.SubUtil.Commands {
         [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
         public string Cid { get; set; }
 
+        [Option('a', "aid", HelpText =
+            "Bilibili aid for the video. It can contain one segment or multiple." +
+            "Example: av2044037, av2044037p4")]
+        public string Aid { get; set; }
+
         public override int Execute() {
-            var chat = new BilibiliChat {Cid = Cid};
+            if (Aid != null) {
+                var status = 0;
+                var ids = Aid.Split('p');
+                var v = BilibiliVideo.Get(ids[0]);
+                return status;
+            }
+
+            return GetChat(new BilibiliChat {Cid = Cid});
+        }
+
+        int GetChat(BilibiliChat chat) {
             var memoryStream = new MemoryStream();
             var writer = new XmlTextWriter(memoryStream, new UpperCaseUtf8Encoding()) {
                 Formatting = Formatting.Indented
