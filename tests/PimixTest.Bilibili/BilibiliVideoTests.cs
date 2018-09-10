@@ -3,66 +3,69 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Bilibili;
+using Pimix.Service;
 
 namespace PimixTest.Bilibili {
     [TestClass]
     public class BilibiliVideoTests {
         [TestMethod]
         public void SinglePartTest() {
-            var video = new BilibiliVideo("1858457");
-            Assert.AreEqual("1858457", video.Id);
-            Assert.AreEqual("Die Mannschaft", video.Title);
-            Assert.AreEqual("ARD 一部关于德国队在2014年巴西世界杯夺冠旅程的纪录片。", video.Description);
-            Assert.IsTrue(video.Tags.SequenceEqual(new[] {"德国队", "世界杯", "DFB"}),
+            PimixService.PimixServerApiAddress = "http://www.pimix.tk/api";
+            var video = BilibiliVideo.Get("av26361000");
+            Assert.AreEqual("av26361000", video.Id);
+            Assert.AreEqual("【7月】工作细胞 01【独家正版】", video.Title);
+            Assert.AreEqual("#01", video.Description);
+            Assert.IsTrue(video.Tags.SequenceEqual(new[] {"BILIBILI正版", "TV动画"}),
                 "Keywords differ");
             Assert.AreEqual(1, video.Pages.Count());
-            Assert.AreEqual("2862733", video.Pages.ElementAt(0).Cid);
-            Assert.AreEqual("", video.Pages.ElementAt(0).Title);
+            Assert.AreEqual("49053680", video.Pages.ElementAt(0).Cid);
+            Assert.AreEqual("hatarakusaibou_ep01.mp4", video.Pages.ElementAt(0).Title);
             Assert.AreEqual(BilibiliVideo.PartModeType.SinglePartMode, video.PartMode);
             var doc = video.GenerateAssDocument();
-            Assert.AreEqual(
-                "[Script Info]\r\nTitle: Die Mannschaft\r\nOriginal Script: Bilibili\r\nScript Type: V4.00+\r\n",
-                doc.GenerateAssText());
+            Assert.IsTrue(
+                doc.GenerateAssText().StartsWith(
+                    "[Script Info]\r\n" +
+                    "Title: 【7月】工作细胞 01【独家正版】\r\n" +
+                    "Original Script: Bilibili\r\n" +
+                    "Script Type: V4.00+\r\n\r\n"));
         }
 
         [TestMethod]
         public void MultiPartsTest() {
-            var video = new BilibiliVideo("1852616");
-            Assert.AreEqual("1852616", video.Id);
-            Assert.AreEqual("【NHK红白歌合战】141231 第65回 全场高清中文字幕【东京不够热字幕组】", video.Title);
-            Assert.AreEqual(
-                "第65回 NHK红白歌合战全场\r 最后一个年末音番！至此，东热字幕组的2014年末音番制作结束，奋斗了一个多月，大家辛苦了！\r 第一弹：Best Hits歌谣祭2014全场→av1737581 第二弹：Best Artist 2014全场→av1753285 第三弹：FNS歌谣祭2014全场→av1778707 第四弹：Music Station Super Live 2014全场→av1839990",
-                video.Description);
+            PimixService.PimixServerApiAddress = "http://www.pimix.tk/api";
+            var video = BilibiliVideo.Get("av2044037");
+            video.PartMode = BilibiliVideo.PartModeType.ContinuousPartMode;
+            Assert.AreEqual("av2044037", video.Id);
+            Assert.AreEqual("【日语学习】发音入门基础：50音图", video.Title);
+            Assert.AreEqual("【封面爸爸去哪儿】\r\n日语发音基础详解，查漏补缺。", video.Description);
             Assert.IsTrue(video.Tags.SequenceEqual(
                     new[] {
-                        "NHK红白歌合战",
-                        "红白歌会",
-                        "141231",
-                        "AKB48",
-                        "南天群星",
-                        "福山雅治",
-                        "SMAP",
-                        "吉高由里子",
-                        "TOKIO"
+                        "日语教程",
+                        "日语学习",
+                        "日语五十音图",
+                        "学习日语的过程"
                     }),
                 "Keywords differ");
-            Assert.AreEqual(5, video.Pages.Count());
+            Assert.AreEqual(6, video.Pages.Count());
             var data = new List<Tuple<string, string>> {
                 Tuple.Create(
-                    "2852771",
-                    "1、HKT48|Sexy Zone|E-girls|AAA|妖表|miwa|福田こうへい|SKE48|NMB48|郷ひろみ|藤あや子|色涂"),
+                    "3164090",
+                    "基础发音1：50音图あかさ"),
                 Tuple.Create(
-                    "2852772",
-                    "2、西川x水树|Chris Hart|伍代夏子|三代目JSB|西野加奈|香西かおり|細川たかし|德永英明|天童よしみ|岚x妖表|坂本冬美|森進一|和田アキ子|V6"),
+                    "3164091",
+                    "基础发音2：50音图あかさ"),
                 Tuple.Create(
-                    "2852773",
-                    "3、花子与安妮SP|絢香|May J.|世终|Perfume|金爆|桃草|关8|何炅|水森かおり|五木ひろし"),
+                    "3164092",
+                    "基础发音3：50音图た～ま"),
                 Tuple.Create(
-                    "2852774",
-                    "4、生物股长|彭薇薇|TOKIO|冰雪奇缘SP|SMAP|椎名林檎|EXILE|薬師丸ひろ子|石川さゆり|長渕剛|中森明菜"),
+                    "3164093",
+                    "基础发音4：50音图や～わ"),
                 Tuple.Create(
-                    "2852775",
-                    "5、AKB48|福山雅治|中島みゆき|美輪明宏|南天群星|岚|松田聖子|合唱故乡")
+                    "3164094",
+                    "基础发音5：拗音，促音，拨音"),
+                Tuple.Create(
+                    "3164095",
+                    "基础发音6：长音，アクセント")
             };
 
             var offset = TimeSpan.Zero;

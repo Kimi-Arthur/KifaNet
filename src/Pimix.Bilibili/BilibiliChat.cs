@@ -8,8 +8,17 @@ using Newtonsoft.Json;
 
 namespace Pimix.Bilibili {
     public class BilibiliChat {
+        [JsonProperty("id")]
+        public int Id { get; set; }
+        
         [JsonProperty("cid")]
         public string Cid { get; set; }
+
+        [JsonProperty("title")]
+        public string Title { get; set; } = "";
+
+        [JsonProperty("duration")]
+        public TimeSpan Duration { get; set; }
 
         XmlDocument rawDocument;
 
@@ -27,9 +36,6 @@ namespace Pimix.Bilibili {
             }
         }
 
-        [JsonProperty("duration")]
-        public TimeSpan Duration { get; set; }
-
         public TimeSpan ChatOffset { get; set; } = TimeSpan.Zero;
 
         readonly List<BilibiliComment> comments = new List<BilibiliComment>();
@@ -46,8 +52,6 @@ namespace Pimix.Bilibili {
                 return comments.Select(c => c.WithOffset(ChatOffset));
             }
         }
-
-        public string Title { get; set; } = "";
 
         readonly HttpClient client = new HttpClient(new HttpClientHandler {
             AutomaticDecompression = DecompressionMethods.Deflate
