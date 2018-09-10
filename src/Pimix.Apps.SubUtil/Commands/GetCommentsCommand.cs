@@ -18,7 +18,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         public override int Execute() {
             var chat = new BilibiliChat {Cid = Cid};
             var memoryStream = new MemoryStream();
-            var writer = new XmlTextWriter(memoryStream, new UTF8Encoding(false)) {
+            var writer = new XmlTextWriter(memoryStream, new UpperCaseUtf8Encoding()) {
                 Formatting = Formatting.Indented
             };
             chat.RawDocument.Save(writer);
@@ -34,5 +34,9 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             return 0;
         }
+    }
+
+    class UpperCaseUtf8Encoding : UTF8Encoding {
+        public override string WebName => base.WebName.ToUpper();
     }
 }
