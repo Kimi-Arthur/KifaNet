@@ -22,6 +22,7 @@ namespace PimixTest.Storage {
                 info.BlockSHA256[0]);
             Assert.AreEqual("E1B849F9631FFC1829B2E31402373E3C", info.SliceMD5);
             Assert.AreEqual("05AF01D2", info.Adler32);
+            Assert.AreEqual("4B73F3E6", info.CRC32);
 
             s = new MemoryStream(encoding.GetBytes("中文长度不一样"));
             Assert.AreEqual(21, FileInformation.GetInformation(s, FileProperties.Size).Size);
@@ -47,6 +48,7 @@ namespace PimixTest.Storage {
                 info.SHA256);
             Assert.AreEqual("E1B849F9631FFC1829B2E31402373E3C", info.SliceMD5);
             Assert.AreEqual("05AF01D2", info.Adler32);
+            Assert.AreEqual("4B73F3E6", info.CRC32);
         }
 
         [TestMethod]
