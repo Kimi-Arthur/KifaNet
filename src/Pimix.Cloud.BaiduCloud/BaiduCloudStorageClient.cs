@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
@@ -333,38 +332,28 @@ namespace Pimix.Cloud.BaiduCloud {
             }
         }
 
+        public long GetDownloadLength(string path) {
+            while (true) {
+                var request = GetRequest(Config.APIList.GetFileInfo,
+                    new Dictionary<string, string> {
+                        ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                    });
 
-        static RetryPolicy defaultRetryPolicy;
+                try {
+                    using (var response = client.SendAsync(request).Result) {
+                        return (long) response.GetJToken()["list"][0]["size"];
+                    }
+                } catch (AggregateException ae) {
+                    ae.Handle(x => {
+                        if (x is HttpRequestException) {
+                            logger.Warn(x, "Get download length failed once");
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                            return true;
+                        }
 
-        public static RetryPolicy DefaultRetryPolicy {
-            get {
-                if (defaultRetryPolicy == null) {
-                    defaultRetryPolicy =
-                        new RetryPolicy<BaiduCloudTransientErrorDetectionStrategy>(5,
-                            TimeSpan.FromSeconds(10));
-                    defaultRetryPolicy.Retrying += (sender, args) => {
-                        Console.Error.WriteLine(
-                            "Get download length failed once, wait 10 seconds now!");
-                        Console.Error.WriteLine(args.LastException);
-                    };
+                        return false;
+                    });
                 }
-
-                return defaultRetryPolicy;
-            }
-            set => defaultRetryPolicy = value;
-        }
-
-        public long GetDownloadLength(string path)
-            => DefaultRetryPolicy.ExecuteAction(() => GetDownloadLengthWithoutRetry(path));
-
-        public long GetDownloadLengthWithoutRetry(string path) {
-            var request = ConstructRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string> {
-                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                });
-
-            using (var response = request.GetResponse()) {
-                return (long) response.GetJToken()["list"][0]["size"];
             }
         }
 
