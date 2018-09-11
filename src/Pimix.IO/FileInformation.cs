@@ -151,7 +151,7 @@ namespace Pimix.IO {
 
                 var additionalHashers = new List<IHash> {
                     requiredProperties.HasFlag(FileProperties.CRC32)
-                        ? HashFactory.Checksum.CreateCRC32a()
+                        ? HashFactory.Checksum.CreateCRC32_IEEE()
                         : null,
                     requiredProperties.HasFlag(FileProperties.Adler32)
                         ? HashFactory.Checksum.CreateAdler32()

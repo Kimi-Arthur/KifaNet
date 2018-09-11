@@ -11,8 +11,8 @@
     <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="HashLib" Version="2.0.1" />
     <PackageReference Include="NLog" Version="5.0.0-beta07" />
+    <PackageReference Include="NStratis.HashLib" Version="1.0.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
