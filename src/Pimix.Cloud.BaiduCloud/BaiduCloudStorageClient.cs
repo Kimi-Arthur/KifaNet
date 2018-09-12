@@ -205,7 +205,7 @@ namespace Pimix.Cloud.BaiduCloud {
                         logger.Debug("Block ID/MD5: {0}", blockIds.Last());
                         done = true;
                     } catch (WebException ex) {
-                        logger.Warn($"WebException:\n{0}", ex);
+                        logger.Warn(ex, "WebException");
                         if (ex.Response != null) {
                             logger.Warn("Response:");
                             using (var s = new StreamReader(ex.Response.GetResponseStream())) {
@@ -224,16 +224,11 @@ namespace Pimix.Cloud.BaiduCloud {
                 }
             }
 
-            var mergeDone = false;
-            while (!mergeDone) {
-                try {
-                    MergeBlocks(path, blockIds);
-                    mergeDone = true;
-                } catch (Exception ex) {
+            Retry.Run(() => { MergeBlocks(path, blockIds); },
+                (ex, i) => {
                     logger.Warn(ex, "Failed when merging");
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
-                }
-            }
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                });
         }
 
         void UploadDirect(string path, byte[] buffer, int offset, int count) {
