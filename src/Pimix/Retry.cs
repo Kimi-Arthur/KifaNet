@@ -7,6 +7,23 @@ namespace Pimix {
                 try {
                     return action();
                 } catch (Exception ex) {
+                    while (ex is AggregateException) {
+                        ex = ex.InnerException;
+                    }
+
+                    handleException(ex, i);
+                }
+        }
+
+        public static void Run(Action action, Action<Exception, int> handleException) {
+            for (int i = 1;; i++)
+                try {
+                    action();
+                } catch (Exception ex) {
+                    while (ex is AggregateException) {
+                        ex = ex.InnerException;
+                    }
+
                     handleException(ex, i);
                 }
         }

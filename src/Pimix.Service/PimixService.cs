@@ -171,10 +171,6 @@ namespace Pimix.Service {
                 throw ex;
             }
 
-            while (ex is AggregateException) {
-                ex = ex.InnerException;
-            }
-
             logger.Warn(ex, $"{message} ({index})");
             Thread.Sleep(TimeSpan.FromSeconds(5));
         }
