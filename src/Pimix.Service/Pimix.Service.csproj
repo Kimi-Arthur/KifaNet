@@ -13,10 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling" Version="6.0.1304" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Pimix\Pimix.csproj" />
   </ItemGroup>
 
