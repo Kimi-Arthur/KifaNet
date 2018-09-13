@@ -7,8 +7,10 @@ using YamlDotNet.Serialization;
 
 namespace Pimix.Configs {
     public class PimixConfigs {
-        public static readonly List<string> ConfigFilePaths = new List<string>
-            {"pimix.yaml", "~/.pimix.yaml", "/etc/pimix.yaml"};
+        static string name => AppDomain.CurrentDomain.FriendlyName;
+
+        static List<string> ConfigFilePaths => new List<string>
+            {$"~/.{name}.yaml", "~/.pimix.yaml", $"/etc/{name}.yaml", "/etc/pimix.yaml"};
 
         static readonly Deserializer deserializer = new Deserializer();
 
