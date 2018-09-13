@@ -48,7 +48,7 @@ namespace Pimix.IO {
         public override void Copy(string sourcePath, string destinationPath) {
             Directory.GetParent(GetPath(destinationPath)).Create();
 
-            if (NeverLink || Server.RemotePrefix == null && !IsUnixLike) {
+            if (NeverLink) {
                 File.Copy(GetPath(sourcePath), GetPath(destinationPath));
             } else if (Server.RemotePrefix != null) {
                 RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));
@@ -71,8 +71,10 @@ namespace Pimix.IO {
 
         void Link(string sourcePath, string destinationPath) {
             using (var proc = new Process()) {
-                proc.StartInfo.FileName = "ln";
-                proc.StartInfo.Arguments = $"\"{sourcePath}\" \"{destinationPath}\"";
+                proc.StartInfo.FileName = IsUnixLike ? "ln" : "cmd.exe";
+                proc.StartInfo.Arguments = IsUnixLike
+                    ? $"\"{sourcePath}\" \"{destinationPath}\""
+                    : $"/c mklink /h \"{destinationPath}\" \"{sourcePath}\"";
                 proc.StartInfo.UseShellExecute = false;
                 proc.Start();
                 proc.WaitForExit();
