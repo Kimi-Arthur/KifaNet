@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Renci.SshNet;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("get", HelpText = "Get file.")]
@@ -65,9 +63,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             foreach (var location in info.Locations) {
                 if (location.Value != null) {
                     var linkSource = new PimixFile(location.Key);
-                    if (linkSource.IsComaptible(target)) {
-                        Link(linkSource, target);
-                        target.Register(true);
+                    if (linkSource.IsCompatible(target)) {
+                        linkSource.Copy(target);
                         logger.Info("Got {0} through hard linking to {1}.", target, linkSource);
                         return 0;
                     }
@@ -97,32 +94,6 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             logger.Fatal("Destination doesn't exist unexpectedly!");
             return 2;
-        }
-
-        void Link(PimixFile source, PimixFile link) {
-            Directory.GetParent(link.GetLocalPath()).Create();
-
-            var prefixMap = CenterPathMap.Split(";")
-                .ToDictionary(x => x.Split("=").First(), x => x.Split("=").Last());
-            var prefix = prefixMap.GetValueOrDefault(link.Host.Substring(6));
-
-            var hostLinkPath = $"{prefix}{link.Path}";
-            var hostSourcePath = $"{prefix}{source.Path}";
-
-            var segments = CenterHost.Split("@");
-            var username = segments[0].Split(":").First();
-            var password = segments[0].Split(":").Last();
-
-            var connectionInfo = new ConnectionInfo(segments[1],
-                username,
-                new PasswordAuthenticationMethod(username, password));
-
-            using (var client = new SshClient(connectionInfo)) {
-                client.Connect();
-                var result = client.RunCommand(
-                    $"ln \"{hostSourcePath}\" \"{hostLinkPath}\"");
-                if (result.ExitStatus != 0) throw new Exception("Link command failed");
-            }
         }
     }
 }

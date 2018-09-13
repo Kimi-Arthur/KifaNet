@@ -1,35 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using Renci.SshNet;
 
 namespace Pimix.IO {
+    public class ServerConfig {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Host { get; set; }
+        public string RemotePrefix { get; set; }
+        public string Prefix { get; set; }
+    }
+
     public class FileStorageClient : StorageClient {
         const int DefaultBlockSize = 32 << 20;
 
-        public static Dictionary<string, string> PathMap { get; set; } =
-            new Dictionary<string, string>();
+        public static bool NeverLink { get; set; } = false;
+
+        public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } =
+            new Dictionary<string, ServerConfig>();
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
             foreach (var spec in specs)
                 if (spec.StartsWith("local:"))
                     return new FileStorageClient {
-                        BaseId = spec.Substring(6),
-                        BasePath = PathMap.GetValueOrDefault(spec.Substring(6), null)
+                        ServerId = spec.Substring(6),
+                        Server = ServerConfigs.GetValueOrDefault(spec.Substring(6), null)
                     };
 
             return null;
         }
 
-        string BaseId { get; set; }
+        public override string ToString() => $"local:{ServerId}";
 
-        string BasePath { get; set; }
+        string ServerId { get; set; }
 
-        public override string ToString() => $"local:{BaseId}";
+        ServerConfig Server { get; set; }
 
-        public override void Copy(string sourcePath, string destinationPath)
-            => File.Copy(GetPath(sourcePath), GetPath(destinationPath));
+        static bool IsUnixLike
+            => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+               RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        public override void Copy(string sourcePath, string destinationPath) {
+            Directory.GetParent(GetPath(destinationPath)).Create();
+
+            if (NeverLink || Server.RemotePrefix == null && !IsUnixLike) {
+                File.Copy(GetPath(sourcePath), GetPath(destinationPath));
+            } else if (Server.RemotePrefix != null) {
+                RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));
+            } else {
+                Link(GetPath(sourcePath), GetPath(destinationPath));
+            }
+        }
+
+        void RemoteLink(string sourcePath, string destinationPath) {
+            var connectionInfo = new ConnectionInfo(Server.Host,
+                Server.Username,
+                new PasswordAuthenticationMethod(Server.Username, Server.Password));
+
+            using (var client = new SshClient(connectionInfo)) {
+                client.Connect();
+                var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
+                if (result.ExitStatus != 0) throw new Exception("Remote link command failed");
+            }
+        }
+
+        void Link(string sourcePath, string destinationPath) {
+            using (var proc = new Process()) {
+                proc.StartInfo.FileName = "ln";
+                proc.StartInfo.Arguments = $"\"{sourcePath}\" \"{destinationPath}\"";
+                proc.StartInfo.UseShellExecute = false;
+                proc.Start();
+                proc.WaitForExit();
+                if (proc.ExitCode != 0) throw new Exception("Local link command failed");
+            }
+        }
 
         public override void Delete(string path) => File.Delete(GetPath(path));
 
@@ -84,8 +133,10 @@ namespace Pimix.IO {
             }
         }
 
-        string GetId(string path) => path.Substring(BasePath.Length).Replace("\\", "/");
+        string GetId(string path) => path.Substring(Server.Prefix.Length).Replace("\\", "/");
 
-        public override string GetPath(string path) => $"{BasePath}{path}";
+        string GetPath(string path) => $"{Server.Prefix}{path}";
+
+        string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";
     }
 }

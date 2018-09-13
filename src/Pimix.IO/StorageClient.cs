@@ -27,10 +27,6 @@ namespace Pimix.IO {
 
         public abstract void Write(string path, Stream stream);
 
-        public virtual string GetPath(string path) {
-            throw new NotImplementedException();
-        }
-
         public virtual void Dispose() {
         }
     }

@@ -8,15 +8,6 @@ using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     abstract class FileUtilCommand {
-        [Option("center-host", HelpText =
-            "Center host in the format of username:password@address")]
-        public string CenterHost { get; set; } = ConfigurationManager.AppSettings["CenterHost"];
-
-        [Option("center-path-map", HelpText =
-            "Mapping from path id to actual path on Center host")]
-        public string CenterPathMap { get; set; } =
-            ConfigurationManager.AppSettings["CenterPathMap"];
-
         [Option("job-id", HelpText = "Job ID to report log as.")]
         public string JobId { get; set; } = null;
 

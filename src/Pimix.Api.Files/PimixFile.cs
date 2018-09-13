@@ -42,9 +42,9 @@ namespace Pimix.Api.Files {
             if (!uri.Contains(":")) {
                 // Local path, convert to canonical one.
                 var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
-                foreach (var p in FileStorageClient.PathMap) {
-                    if (fullPath.StartsWith(p.Value)) {
-                        uri = $"local:{p.Key}{fullPath.Substring(p.Value.Length)}";
+                foreach (var p in FileStorageClient.ServerConfigs) {
+                    if (fullPath.StartsWith(p.Value.Prefix)) {
+                        uri = $"local:{p.Key}{fullPath.Substring(p.Value.Prefix.Length)}";
                         break;
                     }
                 }
@@ -91,7 +91,7 @@ namespace Pimix.Api.Files {
                || f.Id.EndsWith(".fdmdownload") || f.Id.EndsWith(".crdownload");
 
         public void Copy(PimixFile destination) {
-            if (IsComaptible(destination)) {
+            if (IsCompatible(destination)) {
                 Client.Copy(Path, destination.Path);
             } else {
                 destination.Write(OpenRead());
@@ -99,7 +99,7 @@ namespace Pimix.Api.Files {
         }
 
         public void Move(PimixFile destination) {
-            if (IsComaptible(destination)) {
+            if (IsCompatible(destination)) {
                 Client.Move(Path, destination.Path);
             } else {
                 Copy(destination);
@@ -202,13 +202,7 @@ namespace Pimix.Api.Files {
             => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
                 Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
 
-        /// <summary>
-        ///     Gets path in local file system. This can only be called for local files.
-        /// </summary>
-        /// <returns></returns>
-        public string GetLocalPath() => Client.GetPath(Path);
-
-        public bool IsComaptible(PimixFile other)
+        public bool IsCompatible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
     }
 }
