@@ -65,6 +65,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     var linkSource = new PimixFile(location.Key);
                     if (linkSource.IsCompatible(target)) {
                         linkSource.Copy(target);
+                        target.Register(true);
                         logger.Info("Got {0} through hard linking to {1}.", target, linkSource);
                         return 0;
                     }
