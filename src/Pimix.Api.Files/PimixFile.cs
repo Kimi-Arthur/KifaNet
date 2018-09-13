@@ -37,9 +37,10 @@ namespace Pimix.Api.Files {
             //   local:cubie/a/b/c/d.txt
             //   local:/a/b/c/d.txt
             //   /a/b/c/d.txt
+            //   C:/files/a.txt
             //   ~/a.txt
             //   ../a.txt
-            if (!uri.Contains(":")) {
+            if (!uri.Contains(":") || uri.Contains(":/")) {
                 // Local path, convert to canonical one.
                 var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
                 foreach (var p in FileStorageClient.ServerConfigs) {
