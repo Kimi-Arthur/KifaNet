@@ -16,6 +16,7 @@ namespace PimixTest.Configs {
             Assert.Contains("PimixTest.Configs.PimixConfigsTests.IntListConfig", keys);
             Assert.Contains("PimixTest.Configs.PimixConfigsTests.StringListConfig", keys);
             Assert.Contains("PimixTest.Configs.PimixConfigsTests.StringDictConfig", keys);
+            Assert.Contains("PimixTest.Configs.PimixConfigsTests.ComplexConfig", keys);
         }
 
         public static int IntConfig { get; set; }
@@ -95,6 +96,27 @@ namespace PimixTest.Configs {
                     ["a"] = "b", ["c"] = "d", ["d"] = "e"
                 },
                 StringDictConfig);
+        }
+
+        public class ComplexConfigType {
+            public string S { get; set; }
+            public int I { get; set; }
+        }
+
+        public static ComplexConfigType ComplexConfig { get; set; }
+
+        [Fact]
+        public void ConfigureComplexPropertyTest() {
+            var properties = PimixConfigs.GetAllProperties();
+            var config = @"PimixTest.Configs.PimixConfigsTests:
+  ComplexConfig:
+    I: 123
+    S: AS";
+            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+                properties);
+
+            Assert.Equal(123, ComplexConfig.I);
+            Assert.Equal("AS", ComplexConfig.S);
         }
 
         public static int MultiSegmentConfig { get; set; }
