@@ -6,7 +6,7 @@ using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
 namespace Pimix.Configs {
-    public class PimixConfigs {
+    public static class PimixConfigs {
         static string name => AppDomain.CurrentDomain.FriendlyName;
 
         static List<string> ConfigFilePaths => new List<string>
