@@ -127,12 +127,12 @@ namespace Pimix.Cloud.GoogleDrive {
             for (long position = 0; position < size; position += BlockSize) {
                 var blockLength = input.Read(buffer, 0, BlockSize);
                 var targetEndByte = position + blockLength - 1;
+                var content = new ByteArrayContent(buffer, 0, blockLength);
 
                 var done = false;
 
                 while (!done) {
                     var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUri);
-                    var content = new ByteArrayContent(buffer, 0, blockLength);
                     content.Headers.ContentRange =
                         new ContentRangeHeaderValue(position, targetEndByte, size);
                     content.Headers.ContentLength = blockLength;

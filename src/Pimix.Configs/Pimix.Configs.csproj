@@ -1,17 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
-
     <ItemGroup>
-      <PackageReference Include="YamlDotNet" Version="5.0.1" />
+        <PackageReference Include="YamlDotNet" Version="5.0.1"/>
     </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-        <HintPath>..\..\..\..\.nuget\packages\microsoft.csharp\4.3.0\ref\netstandard1.0\Microsoft.CSharp.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
 </Project>

@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using YamlDotNet.RepresentationModel;
+using YamlDotNet.Serialization;
 
 namespace Pimix.Configs {
-    public class PimixConfigs {
-        public static readonly List<string> ConfigFilePaths = new List<string>
-            {"pimix.yaml", "~/.pimix.yaml", "/etc/pimix.yaml"};
+    public static class PimixConfigs {
+        static string name => AppDomain.CurrentDomain.FriendlyName;
+
+        static List<string> ConfigFilePaths => new List<string>
+            {$"~/.{name}.yaml", "~/.pimix.yaml", $"/etc/{name}.yaml", "/etc/pimix.yaml"};
+
+        static readonly Deserializer deserializer = new Deserializer();
 
         public static void LoadFromSystemConfigs(Assembly assembly = null) {
             foreach (var filePath in ConfigFilePaths) {
@@ -68,9 +72,11 @@ namespace Pimix.Configs {
 
                 var id = $"{prefix}{((YamlScalarNode) p.Key).Value}";
                 if (properties.TryGetValue(id, out var prop)) {
-                    var value = Parse(p.Value, prop.PropertyType);
+                    var value = deserializer.Deserialize(
+                        new YamlNodeParser(YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
+                        prop.PropertyType);
                     if (value == null) {
-                        Console.WriteLine($" for {id}");
+                        Console.WriteLine($"Cannot parse for {id}");
                         continue;
                     }
 
@@ -82,78 +88,6 @@ namespace Pimix.Configs {
                     Apply((YamlMappingNode) p.Value, $"{id}.", properties);
                 }
             }
-        }
-
-        static object Parse(YamlNode node, Type propertyType) {
-            if (propertyType == typeof(string)) {
-                if (node.NodeType == YamlNodeType.Scalar) {
-                    return (string) node;
-                }
-
-                Console.Write("Want a string, got {0}", node.NodeType);
-            }
-
-            if (propertyType == typeof(int)) {
-                if (node.NodeType == YamlNodeType.Scalar) {
-                    return int.Parse((string) node);
-                }
-
-                Console.Write("Want an int, got {0}", node.NodeType);
-            }
-
-            if (propertyType.IsGenericType &&
-                propertyType.GetGenericTypeDefinition() == typeof(List<>)) {
-                if (node.NodeType == YamlNodeType.Sequence) {
-                    var itemType = propertyType.GetGenericArguments()[0];
-                    var items = ((YamlSequenceNode) node).Select(n => Parse(n, itemType));
-
-                    if (itemType == typeof(int)) {
-                        return items.Cast<int>().ToList();
-                    }
-
-                    if (itemType == typeof(string)) {
-                        return items.Cast<string>().ToList();
-                    }
-
-                    return items.ToList();
-                }
-
-                Console.Write("Want a list, got {0}", node.NodeType);
-            }
-
-            if (propertyType.IsGenericType &&
-                propertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>)) {
-                if (node.NodeType == YamlNodeType.Mapping) {
-                    var itemType = propertyType.GetGenericArguments();
-                    var keyType = itemType[0];
-                    var valueType = itemType[1];
-
-                    var data = ((YamlMappingNode) node).Select(n
-                        => new KeyValuePair<object, object>(
-                            Parse(n.Key, keyType),
-                            Parse(n.Value, valueType)));
-
-                    if (keyType == typeof(string) && valueType == typeof(string)) {
-                        return data.ToDictionary(p => (string) p.Key, p => (string) p.Value);
-                    }
-
-                    if (keyType == typeof(string) && valueType == typeof(int)) {
-                        return data.ToDictionary(p => (string) p.Key, p => (int) p.Value);
-                    }
-
-                    if (keyType == typeof(int) && valueType == typeof(string)) {
-                        return data.ToDictionary(p => (int) p.Key, p => (string) p.Value);
-                    }
-
-                    if (keyType == typeof(int) && valueType == typeof(int)) {
-                        return data.ToDictionary(p => (int) p.Key, p => (int) p.Value);
-                    }
-                }
-
-                Console.Write("Want a dict, got {0}", node.NodeType);
-            }
-
-            return null;
         }
     }
 }
