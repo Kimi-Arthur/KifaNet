@@ -3,12 +3,15 @@ using System.IO;
 using System.Text;
 using System.Xml;
 using CommandLine;
+using NLog;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("comments", HelpText = "Get comments for the video from Bilibili.")]
     class GetCommentsCommand : SubUtilCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true, HelpText = "Target file to get comments for.")]
         public string FileUri { get; set; }
 
@@ -25,6 +28,10 @@ namespace Pimix.Apps.SubUtil.Commands {
                 var status = 0;
                 var ids = Aid.Split('p');
                 var v = BilibiliVideo.Get(ids[0]);
+                foreach (var page in v.Pages) {
+                    logger.Warn($"{v.Title} {page.Id} {page.Cid} {page.Title}");
+                }
+
                 return status;
             }
 

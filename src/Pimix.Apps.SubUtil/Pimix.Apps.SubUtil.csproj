@@ -17,4 +17,9 @@
       <PackageReference Include="CommandLineParser" Version="2.3.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>
