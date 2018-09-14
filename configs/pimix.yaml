@@ -2,4 +2,10 @@ Pimix.Service.PimixService:
   PimixServerApiAddress: http://www.pimix.tk/api
 
 Pimix.IO.FileStorageClient:
-  PathMap:
+  ServerConfigs:
+    any:
+      Username: user
+      Password: passw0rd
+      Host: 192.168.1.101
+      RemotePrefix: /nfs/Home
+      Prefix: /home
