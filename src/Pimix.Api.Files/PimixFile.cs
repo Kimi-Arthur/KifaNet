@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using NLog;
 using Pimix.Cloud.BaiduCloud;
@@ -13,6 +14,13 @@ using Pimix.IO.FileFormats;
 namespace Pimix.Api.Files {
     public class PimixFile {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        public static string IgnoredFilesPattern { get; set; } = "$^";
+
+        static Regex ignoredFiles;
+
+        static Regex IgnoredFiles
+            => ignoredFiles = ignoredFiles ?? new Regex(IgnoredFilesPattern);
 
         static readonly Dictionary<string, StorageClient> KnownClients =
             new Dictionary<string, StorageClient>();
@@ -84,12 +92,8 @@ namespace Pimix.Api.Files {
         public void Delete() => Client.Delete(Path);
 
         public IEnumerable<PimixFile> List(bool recursive = false)
-            => Client.List(Path, recursive).Where(f => !IsInvisible(f))
+            => Client.List(Path, recursive).Where(f => !IgnoredFiles.IsMatch(f.Id))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
-
-        static bool IsInvisible(FileInformation f)
-            => f.Id.Contains("/.") || f.Id.EndsWith(".!qB") || f.Id.EndsWith(".!ut")
-               || f.Id.EndsWith(".fdmdownload") || f.Id.EndsWith(".crdownload");
 
         public void Copy(PimixFile destination) {
             if (IsCompatible(destination)) {

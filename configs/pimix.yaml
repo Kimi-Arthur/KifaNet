@@ -1,6 +1,10 @@
 Pimix.Service.PimixService:
   PimixServerApiAddress: http://www.pimix.tk/api
 
+
+Pimix.Api.Files.PimixFile:
+  IgnoredFilesPattern: /\.|\.(!qB|!ut|fdmdownload|crdownload)$
+
 Pimix.IO.FileStorageClient:
   ServerConfigs:
     any:
