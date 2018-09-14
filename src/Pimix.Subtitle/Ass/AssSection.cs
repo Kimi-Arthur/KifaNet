@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public abstract class AssSection : AssElement {
         public abstract string SectionTitle { get; }
 

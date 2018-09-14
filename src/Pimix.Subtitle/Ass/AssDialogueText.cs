@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssDialogueText : AssElement {
         public AssAlignment? Alignment { get; set; }
 

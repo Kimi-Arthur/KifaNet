@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssLine : AssElement {
         public virtual string Key { get; protected set; }
         public virtual IEnumerable<string> Values { get; protected set; }

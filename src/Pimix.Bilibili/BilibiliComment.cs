@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Globalization;
-using Pimix.Ass;
+using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
     public struct BilibiliComment {

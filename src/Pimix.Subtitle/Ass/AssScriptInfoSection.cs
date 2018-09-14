@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssScriptInfoSection : AssSection {
         public override string SectionTitle { get; } = "Script Info";
 

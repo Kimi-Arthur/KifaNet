@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public static class AssElementExtensions {
         public static string GenerateAssText(this bool b) => b ? "-1" : "0";
 

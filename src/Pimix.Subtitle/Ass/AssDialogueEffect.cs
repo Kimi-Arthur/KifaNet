@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public abstract class AssDialogueEffect : AssElement {
         public abstract string EffectType { get; }
         public abstract IEnumerable<string> EffectParameters { get; }

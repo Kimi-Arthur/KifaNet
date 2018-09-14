@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssEvent : AssLine {
         public int Layer { get; set; } = 0;
 

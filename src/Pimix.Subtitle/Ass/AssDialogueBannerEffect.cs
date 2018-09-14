@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssDialogueBannerEffect : AssDialogueEffect {
         public enum LeftToRightType {
             RightToLeft = 0,

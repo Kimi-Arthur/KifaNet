@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssDialogueTextElement : AssElement {
         public string Content { get; set; }
 

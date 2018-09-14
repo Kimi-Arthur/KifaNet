@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssStyle : AssLine {
         public enum BorderStyleType {
             OutlineWithDropShadow = 1,

@@ -1,5 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Ass;
+using Pimix.Subtitle.Ass;
 
 namespace PimixTest.Ass {
     [TestClass]

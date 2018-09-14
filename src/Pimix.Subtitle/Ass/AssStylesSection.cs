@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Pimix.Ass {
+namespace Pimix.Subtitle.Ass {
     public class AssStylesSection : AssSection {
         public override string SectionTitle => "V4+ Styles";
 

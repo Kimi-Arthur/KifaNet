@@ -1,4 +1,4 @@
-﻿namespace Pimix.Ass {
+﻿namespace Pimix.Subtitle.Ass {
     public enum AssAlignment {
         BottomLeft = 1,
         BottomCenter = 2,

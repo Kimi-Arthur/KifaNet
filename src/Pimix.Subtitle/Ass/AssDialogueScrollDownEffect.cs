@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace Pimix.Ass {
-    class AssDialogueScrollUpEffect : AssDialogueEffect {
+namespace Pimix.Subtitle.Ass {
+    class AssDialogueScrollDownEffect : AssDialogueEffect {
         public override IEnumerable<string> EffectParameters
             => new List<string> {
                 Y1.GenerateAssText(),
@@ -10,7 +10,7 @@ namespace Pimix.Ass {
                 FadeAwayHeight.GenerateAssText()
             };
 
-        public override string EffectType => "Scroll up";
+        public override string EffectType => "Scroll down";
 
         public int Y1 { get; set; }
 
