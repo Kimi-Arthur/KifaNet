@@ -3,7 +3,10 @@ Pimix.Service.PimixService:
 
 
 Pimix.Api.Files.PimixFile:
-  IgnoredFilesPattern: /\.|\.(!qB|!ut|fdmdownload|crdownload)$
+  IgnoredFilesPattern: "\
+  /\\.|\
+  \\.(!qB|!ut|fdmdownload|crdownload|swp)$|\
+  ^/(Anime|TV Shows|Movies)/.*\\.(xml|ass|srt)$"
 
 Pimix.IO.FileStorageClient:
   ServerConfigs:
