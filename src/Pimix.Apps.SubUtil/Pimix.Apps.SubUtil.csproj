@@ -7,12 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="commandline, Version=2.0.275.0, Culture=neutral, PublicKeyToken=de6f01bd326f8c32">
-        <HintPath>..\..\..\..\.nuget\packages\commandlineparser\2.3.0\lib\netstandard1.5\CommandLine.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
       <ProjectReference Include="..\Pimix.Bilibili\Pimix.Bilibili.csproj" />
       <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />

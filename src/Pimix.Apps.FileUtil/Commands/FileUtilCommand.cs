@@ -15,13 +15,6 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (LoggingTargets != null) {
                 ConfigureLogger();
             }
-
-            CredentialCache.DefaultNetworkCredentials.Domain =
-                ConfigurationManager.AppSettings["DefaultNetworkDomain"];
-            CredentialCache.DefaultNetworkCredentials.UserName =
-                ConfigurationManager.AppSettings["DefaultNetworkUserName"];
-            CredentialCache.DefaultNetworkCredentials.Password =
-                ConfigurationManager.AppSettings["DefaultNetworkPassword"];
         }
 
         static void ConfigureLogger() {

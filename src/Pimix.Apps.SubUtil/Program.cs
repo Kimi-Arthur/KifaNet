@@ -18,6 +18,7 @@ namespace Pimix.Apps.SubUtil {
         }
 
         static int ExecuteCommand(SubUtilCommand command) {
+            command.Initialize();
             try {
                 return command.Execute();
             } catch (Exception ex) {
