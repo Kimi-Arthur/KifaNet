@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using CommandLine;
@@ -25,14 +26,22 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             if (Aid != null) {
-                var status = 0;
+                var files = new PimixFile(FileUri).List(true).ToList();
+
                 var ids = Aid.Split('p');
                 var v = BilibiliVideo.Get(ids[0]);
-                foreach (var page in v.Pages) {
-                    logger.Warn($"{v.Title} {page.Id} {page.Cid} {page.Title}");
+                foreach (var item in v.Pages.Zip(files, Tuple.Create)) {
+                    Console.WriteLine(
+                        $"{v.Title} - {item.Item1.Title}\n" +
+                        $"{item.Item2}\n" +
+                        $"{v.Id}p{item.Item1.Id} (cid={item.Item1.Cid})\n");
                 }
 
-                return status;
+                Console.Write(
+                    $"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
+                Console.ReadLine();
+
+                return 0;
             }
 
             return GetChat(new BilibiliChat {Cid = Cid});
