@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Pimix.Ass\Pimix.Ass.csproj" />
+      <ProjectReference Include="..\..\src\Pimix.Subtitle\Pimix.Subtitle.csproj" />
     </ItemGroup>
 
 </Project>
