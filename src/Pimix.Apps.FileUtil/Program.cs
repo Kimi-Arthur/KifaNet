@@ -7,19 +7,13 @@ using Pimix.Configs;
 
 namespace Pimix.Apps.FileUtil {
     class Program {
-        public static HashSet<string> LoggingTargets { get; set; }
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static int Main(string[] args) {
-
             AppDomain.CurrentDomain.AssemblyLoad +=
                 (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
             PimixConfigs.LoadFromSystemConfigs();
-
-            if (LoggingTargets != null) {
-                ConfigureLogger();
-            }
 
             return Parser.Default.ParseArguments<
                     InfoCommand,
@@ -34,17 +28,6 @@ namespace Pimix.Apps.FileUtil {
                     GetCommand
                 >(args)
                 .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
-        }
-
-        static void ConfigureLogger() {
-            LogManager.Configuration.LoggingRules.Clear();
-
-            foreach (var target in LoggingTargets) {
-                var minLevel = target.EndsWith("_full") ? LogLevel.Trace : LogLevel.Debug;
-                LogManager.Configuration.AddRule(minLevel, LogLevel.Fatal, target);
-            }
-            
-            LogManager.ReconfigExistingLoggers();
         }
 
         static int ExecuteCommand(FileUtilCommand command) {
