@@ -11,8 +11,6 @@ using Pimix.Bilibili;
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("comments", HelpText = "Get comments for the video from Bilibili.")]
     class GetCommentsCommand : SubUtilCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         [Value(0, Required = true, HelpText = "Target file to get comments for.")]
         public string FileUri { get; set; }
 
