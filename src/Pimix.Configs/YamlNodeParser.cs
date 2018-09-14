@@ -6,18 +6,18 @@ using YamlDotNet.RepresentationModel;
 
 namespace Pimix.Configs {
     /// <summary>
-    /// Work around to use YamlNode to deserialize. Taken from https://stackoverflow.com/a/40727087/8212226
+    ///     Work around to use YamlNode to deserialize. Taken from https://stackoverflow.com/a/40727087/8212226
     /// </summary>
     class YamlNodeParser : IParser {
         readonly IEnumerator<ParsingEvent> enumerator;
 
-        public YamlNodeParser(IEnumerable<ParsingEvent> events) => enumerator = events.GetEnumerator();
+        public YamlNodeParser(IEnumerable<ParsingEvent> events) {
+            enumerator = events.GetEnumerator();
+        }
 
         public ParsingEvent Current => enumerator.Current;
 
-        public bool MoveNext() {
-            return enumerator.MoveNext();
-        }
+        public bool MoveNext() => enumerator.MoveNext();
     }
 
     static class YamlNodeToEventStreamConverter {
@@ -38,7 +38,8 @@ namespace Pimix.Configs {
         }
 
         static IEnumerable<ParsingEvent> ConvertToEventStream(YamlScalarNode scalar) {
-            yield return new Scalar(scalar.Anchor, scalar.Tag, scalar.Value, scalar.Style, false, false);
+            yield return new Scalar(scalar.Anchor, scalar.Tag, scalar.Value, scalar.Style, false,
+                false);
         }
 
         static IEnumerable<ParsingEvent> ConvertToEventStream(YamlSequenceNode sequence) {

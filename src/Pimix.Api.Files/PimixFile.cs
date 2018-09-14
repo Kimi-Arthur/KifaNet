@@ -19,8 +19,7 @@ namespace Pimix.Api.Files {
 
         static Regex ignoredFiles;
 
-        static Regex IgnoredFiles
-            => ignoredFiles = ignoredFiles ?? new Regex(IgnoredFilesPattern);
+        static Regex IgnoredFiles => ignoredFiles = ignoredFiles ?? new Regex(IgnoredFilesPattern);
 
         static readonly Dictionary<string, StorageClient> KnownClients =
             new Dictionary<string, StorageClient>();

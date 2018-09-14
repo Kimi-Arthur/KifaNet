@@ -17,10 +17,13 @@ namespace Pimix {
         static string GetString(WebResponse response) {
             var resp = response as HttpWebResponse;
             var encodingName = resp.ContentEncoding;
-            if (string.IsNullOrEmpty(encodingName))
+            if (string.IsNullOrEmpty(encodingName)) {
                 encodingName = resp.CharacterSet;
-            if (string.IsNullOrEmpty(encodingName))
+            }
+
+            if (string.IsNullOrEmpty(encodingName)) {
                 encodingName = "UTF-8";
+            }
 
             // Wrongly encoding name handling.
             encodingName = EncodingNameFixes.GetValueOrDefault(encodingName, encodingName);

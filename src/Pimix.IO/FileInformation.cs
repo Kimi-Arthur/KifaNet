@@ -70,7 +70,7 @@ namespace Pimix.IO {
 
         public static string CreateLocation(string id, string type = null)
             => PimixService.Call<FileInformation, string>("create_location", id,
-                new Dictionary<string, object>{["type"] = type});
+                new Dictionary<string, object> {["type"] = type});
 
         public static string GetLocation(string id, List<string> types = null)
             => PimixService.Call<FileInformation, string>("get_location", id,
@@ -90,8 +90,10 @@ namespace Pimix.IO {
         static FileInformation() {
             Properties = new Dictionary<FileProperties, PropertyInfo>();
             foreach (var prop in
-                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            ) {
                 Properties[(FileProperties) Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
+            }
         }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
@@ -100,13 +102,16 @@ namespace Pimix.IO {
             if (Size == null
                 && (requiredProperties.HasFlag(FileProperties.Size)
                     || (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None
-                    || (requiredProperties & FileProperties.AllHashes) != FileProperties.None))
+                    || (requiredProperties & FileProperties.AllHashes) != FileProperties.None)) {
                 Size = stream.Length;
+            }
 
             var readLength = 0;
             var buffer = new byte[BlockSize];
 
-            if (stream != null && stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
+            if (stream != null && stream.CanSeek) {
+                stream.Seek(0, SeekOrigin.Begin);
+            }
 
             if (requiredProperties.HasFlag(FileProperties.SliceMD5)) {
                 readLength = stream.Read(buffer, 0, SliceLength);
@@ -158,7 +163,9 @@ namespace Pimix.IO {
                         : null
                 };
 
-                foreach (var hasher in additionalHashers) hasher?.Initialize();
+                foreach (var hasher in additionalHashers) {
+                    hasher?.Initialize();
+                }
 
                 while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) !=
                        0) {
@@ -172,22 +179,27 @@ namespace Pimix.IO {
                         hasher => { hasher?.TransformBytes(buffer, 0, readLength); }
                     );
 
-                    if (requiredProperties.HasFlag(FileProperties.BlockMD5))
+                    if (requiredProperties.HasFlag(FileProperties.BlockMD5)) {
                         BlockMD5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength)
                             .ToHexString());
+                    }
 
-                    if (requiredProperties.HasFlag(FileProperties.BlockSHA1))
+                    if (requiredProperties.HasFlag(FileProperties.BlockSHA1)) {
                         BlockSHA1.Add(blockHashers[1].ComputeHash(buffer, 0, readLength)
                             .ToHexString());
+                    }
 
-                    if (requiredProperties.HasFlag(FileProperties.BlockSHA256))
+                    if (requiredProperties.HasFlag(FileProperties.BlockSHA256)) {
                         BlockSHA256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength)
                             .ToHexString());
+                    }
 
                     readLength = 0;
                 }
 
-                foreach (var hasher in hashers) hasher?.TransformFinalBlock(buffer, 0, 0);
+                foreach (var hasher in hashers) {
+                    hasher?.TransformFinalBlock(buffer, 0, 0);
+                }
 
                 MD5 = MD5 ?? hashers[0]?.Hash.ToHexString();
                 SHA1 = SHA1 ?? hashers[1]?.Hash.ToHexString();
@@ -198,16 +210,19 @@ namespace Pimix.IO {
                               .ToArray().ToHexString();
             }
 
-            if (requiredProperties.HasFlag(FileProperties.EncryptionKey))
+            if (requiredProperties.HasFlag(FileProperties.EncryptionKey)) {
                 EncryptionKey = GenerateEncryptionKey();
+            }
 
             return this;
         }
 
         public FileInformation RemoveProperties(FileProperties removedProperties) {
-            foreach (var p in Properties)
-                if (removedProperties.HasFlag(p.Key))
+            foreach (var p in Properties) {
+                if (removedProperties.HasFlag(p.Key)) {
                     p.Value.SetValue(this, null);
+                }
+            }
 
             return this;
         }
@@ -221,17 +236,21 @@ namespace Pimix.IO {
         public FileProperties CompareProperties(FileInformation other,
             FileProperties propertiesToCompare) {
             var result = FileProperties.None;
-            foreach (var p in Properties)
-                if (propertiesToCompare.HasFlag(p.Key))
+            foreach (var p in Properties) {
+                if (propertiesToCompare.HasFlag(p.Key)) {
                     if (p.Value.GetValue(other) != null) {
                         if (p.Value.PropertyType.IsAssignableFrom(typeof(List<string>))) {
                             var olist = p.Value.GetValue(other) as List<string>;
                             var tlist = p.Value.GetValue(this) as List<string>;
-                            if (!tlist.SequenceEqual(olist)) result |= p.Key;
+                            if (!tlist.SequenceEqual(olist)) {
+                                result |= p.Key;
+                            }
                         } else if (!Equals(p.Value.GetValue(other), p.Value.GetValue(this))) {
                             result |= p.Key;
                         }
                     }
+                }
+            }
 
             return result;
         }

@@ -10,7 +10,7 @@ namespace Pimix.Bilibili {
     public class BilibiliChat {
         [JsonProperty("id")]
         public int Id { get; set; }
-        
+
         [JsonProperty("cid")]
         public string Cid { get; set; }
 

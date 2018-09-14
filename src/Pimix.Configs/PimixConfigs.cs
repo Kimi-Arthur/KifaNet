@@ -14,6 +14,7 @@ namespace Pimix.Configs {
                 {$"~/.{name}.yaml", "~/.pimix.yaml", $"/etc/{name}.yaml", "/etc/pimix.yaml"};
 
         static string configFilePath;
+
         static string ConfigFilePath {
             get {
                 if (configFilePath == null) {

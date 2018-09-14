@@ -25,12 +25,14 @@ namespace Pimix.IO {
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
-            foreach (var spec in specs)
-                if (spec.StartsWith("local:"))
+            foreach (var spec in specs) {
+                if (spec.StartsWith("local:")) {
                     return new FileStorageClient {
                         ServerId = spec.Substring(6),
                         Server = ServerConfigs.GetValueOrDefault(spec.Substring(6), null)
                     };
+                }
+            }
 
             return null;
         }
@@ -65,7 +67,9 @@ namespace Pimix.IO {
             using (var client = new SshClient(connectionInfo)) {
                 client.Connect();
                 var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
-                if (result.ExitStatus != 0) throw new Exception("Remote link command failed");
+                if (result.ExitStatus != 0) {
+                    throw new Exception("Remote link command failed");
+                }
             }
         }
 
@@ -78,7 +82,9 @@ namespace Pimix.IO {
                 proc.StartInfo.UseShellExecute = false;
                 proc.Start();
                 proc.WaitForExit();
-                if (proc.ExitCode != 0) throw new Exception("Local link command failed");
+                if (proc.ExitCode != 0) {
+                    throw new Exception("Local link command failed");
+                }
             }
         }
 
@@ -98,7 +104,7 @@ namespace Pimix.IO {
             var directory = new DirectoryInfo(normalizedPath);
             var items = directory.GetFiles("*",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            return items.OrderBy(i => i.Name).Select(i => new FileInformation() {
+            return items.OrderBy(i => i.Name).Select(i => new FileInformation {
                 Id = GetId(i.FullName),
                 Size = i.Length
             });

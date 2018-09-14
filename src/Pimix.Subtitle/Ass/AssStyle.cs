@@ -50,6 +50,7 @@ namespace Pimix.Subtitle.Ass {
                 BottomCommentStyle,
                 RtlCommentStyle
             };
+
         public string Name { get; set; }
 
         public string FontName { get; set; } = DefaultFontName;

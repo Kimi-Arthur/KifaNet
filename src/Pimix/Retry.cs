@@ -3,7 +3,7 @@ using System;
 namespace Pimix {
     public static class Retry {
         public static T Run<T>(Func<T> action, Action<Exception, int> handleException) {
-            for (int i = 1;; i++)
+            for (var i = 1;; i++) {
                 try {
                     return action();
                 } catch (Exception ex) {
@@ -13,10 +13,11 @@ namespace Pimix {
 
                     handleException(ex, i);
                 }
+            }
         }
 
         public static void Run(Action action, Action<Exception, int> handleException) {
-            for (int i = 1;; i++)
+            for (var i = 1;; i++) {
                 try {
                     action();
                 } catch (Exception ex) {
@@ -26,6 +27,7 @@ namespace Pimix {
 
                     handleException(ex, i);
                 }
+            }
         }
     }
 }
