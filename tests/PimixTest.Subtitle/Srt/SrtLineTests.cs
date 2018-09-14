@@ -4,10 +4,10 @@ using Xunit;
 
 namespace PimixTest.Subtitle.Srt {
     public class SrtLineTests {
-        static readonly string SrtLineText = "168\r\n" +
-                                             "00:20:41,150 --> 00:20:45,109\r\n" +
-                                             "- How did he do that?\r\n" +
-                                             "- Made him an offer he couldn't refuse.";
+        const string SrtLineText = "168\r\n" +
+                                   "00:20:41,150 --> 00:20:45,109\r\n" +
+                                   "- How did he do that?\r\n" +
+                                   "- Made him an offer he couldn't refuse.";
 
         [Fact]
         public void ParseTest() {
