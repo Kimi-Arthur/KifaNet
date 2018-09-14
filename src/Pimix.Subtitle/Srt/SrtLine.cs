@@ -7,8 +7,8 @@ namespace Pimix.Subtitle.Srt {
         public TimeSpan EndTime { get; set; }
         public string Text { get; set; }
 
-        public static SrtLine Parse(string text) {
-            var lines = text.Split(new[] {"\r\n"}, 3, StringSplitOptions.RemoveEmptyEntries);
+        public static SrtLine Parse(string s) {
+            var lines = s.Trim().Split(new[] {"\r\n"}, 3, StringSplitOptions.RemoveEmptyEntries);
             var times = lines[1].Replace(',', '.').Split(new[] {" --> "}, StringSplitOptions.None);
             return new SrtLine {
                 Index = int.Parse(lines[0]),
