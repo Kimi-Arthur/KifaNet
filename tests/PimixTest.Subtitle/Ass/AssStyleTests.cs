@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Drawing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Subtitle.Ass;
+using Xunit;
 
 namespace PimixTest.Subtitle.Ass {
-    [TestClass]
     public class AssStyleTests {
-        [TestMethod]
+        [Fact]
         public void BasicTest() {
             AssElement style = new AssStyle {
                 Name = "Default",
@@ -34,12 +33,12 @@ namespace PimixTest.Subtitle.Ass {
                 Encoding = 1
             };
 
-            Assert.AreEqual(
+            Assert.Equal(
                 "Style: Default,simhei,28,&HFF008CFF,&H00000000,&H00111111,&H000D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1",
                 style.GenerateAssText());
         }
 
-        [TestMethod]
+        [Fact]
         public void OutlineArgumentRangeCheckTest() {
             var style = new AssStyle();
             for (var i = 0; i < 5; i++) {
@@ -47,13 +46,13 @@ namespace PimixTest.Subtitle.Ass {
             }
 
             foreach (var o in new[] {-1, 5, 123}) {
-                Assert.AreEqual("Outline", Assert
-                    .ThrowsException<ArgumentOutOfRangeException>(() => style.Outline = o)
+                Assert.Equal("Outline", Assert
+                    .Throws<ArgumentOutOfRangeException>(() => style.Outline = o)
                     .ParamName);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ShadowArgumentRangeCheckTest() {
             var style = new AssStyle();
             for (var i = 0; i < 5; i++) {
@@ -61,19 +60,19 @@ namespace PimixTest.Subtitle.Ass {
             }
 
             foreach (var s in new[] {-1, 5, 123}) {
-                Assert.AreEqual("Shadow", Assert
-                    .ThrowsException<ArgumentOutOfRangeException>(() => style.Shadow = s)
+                Assert.Equal("Shadow", Assert
+                    .Throws<ArgumentOutOfRangeException>(() => style.Shadow = s)
                     .ParamName);
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void ValidNameTest() {
             var style = new AssStyle();
             style.Name = "staff";
-            Assert.AreEqual("staff", style.ValidName);
+            Assert.Equal("staff", style.ValidName);
             style.Name = "Default";
-            Assert.AreEqual("*Default", style.ValidName);
+            Assert.Equal("*Default", style.ValidName);
         }
     }
 }

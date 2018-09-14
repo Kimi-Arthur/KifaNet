@@ -1,23 +1,22 @@
 ﻿using System.Drawing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Subtitle.Ass;
+using Xunit;
 
 namespace PimixTest.Subtitle.Ass {
-    [TestClass]
     public class AssDialogueTextElementTests {
-        [TestMethod]
+        [Fact]
         public void NormalElementTest() {
             AssDialogueTextElement e1 = "test1";
-            Assert.AreEqual("test1", e1.GenerateAssText());
+            Assert.Equal("test1", e1.GenerateAssText());
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyElementTest() {
             var e2 = new AssDialogueTextElement();
-            Assert.AreEqual("", e2.GenerateAssText());
+            Assert.Equal("", e2.GenerateAssText());
         }
 
-        [TestMethod]
+        [Fact]
         public void StyleTest() {
             AssDialogueTextElement e3 = "test3";
             e3.BackColour = Color.AliceBlue;
@@ -25,7 +24,7 @@ namespace PimixTest.Subtitle.Ass {
             e3.StrikeOut = false;
             e3.Italic = null;
             e3.FontRotationX = 12;
-            Assert.AreEqual(@"{\b1\s0\frx12\4a&HFF&\4c&HFFF8F0&}test3", e3.GenerateAssText());
+            Assert.Equal(@"{\b1\s0\frx12\4a&HFF&\4c&HFFF8F0&}test3", e3.GenerateAssText());
         }
     }
 }

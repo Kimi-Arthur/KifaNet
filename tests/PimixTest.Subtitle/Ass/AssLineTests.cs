@@ -1,19 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Subtitle.Ass;
+﻿using Pimix.Subtitle.Ass;
+using Xunit;
 
 namespace PimixTest.Subtitle.Ass {
-    [TestClass]
     public class AssLineTests {
-        [TestMethod]
+        [Fact]
         public void BasicTest() {
             AssElement line = new AssLine("MyKey", new[] {"item1", "item2", "item3"});
-            Assert.AreEqual("MyKey: item1,item2,item3", line.GenerateAssText());
+            Assert.Equal("MyKey: item1,item2,item3", line.GenerateAssText());
         }
 
-        [TestMethod]
+        [Fact]
         public void MultiLineTest() {
             AssElement line = new AssLine("MyKey", new[] {"ite\nm1", "it\rem2", "it\r\nem3"});
-            Assert.AreEqual(@"MyKey: ite\nm1,it\nem2,it\nem3", line.GenerateAssText());
+            Assert.Equal(@"MyKey: ite\nm1,it\nem2,it\nem3", line.GenerateAssText());
         }
     }
 }
