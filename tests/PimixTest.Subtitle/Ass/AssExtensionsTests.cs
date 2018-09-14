@@ -3,7 +3,7 @@ using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Subtitle.Ass;
 
-namespace PimixTest.Ass {
+namespace PimixTest.Subtitle.Ass {
     [TestClass]
     public class AssExtensionsTests {
         [TestMethod]
