@@ -11,14 +11,15 @@ namespace Pimix.Apps.FileUtil {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static int Main(string[] args) {
-            if (LoggingTargets != null) {
-                ConfigureLogger();
-            }
 
             AppDomain.CurrentDomain.AssemblyLoad +=
                 (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
             PimixConfigs.LoadFromSystemConfigs();
+
+            if (LoggingTargets != null) {
+                ConfigureLogger();
+            }
 
             return Parser.Default.ParseArguments<
                     InfoCommand,
