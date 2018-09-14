@@ -6,5 +6,19 @@ namespace Pimix.Subtitle.Srt {
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public string Text { get; set; }
+
+        public static SrtLine Parse(string text) {
+            var lines = text.Split(new[] {"\r\n"}, 3, StringSplitOptions.RemoveEmptyEntries);
+            var times = lines[1].Replace(',', '.').Split(new[] {" --> "}, StringSplitOptions.None);
+            return new SrtLine {
+                Index = int.Parse(lines[0]),
+                StartTime = TimeSpan.Parse(times[0]),
+                EndTime = TimeSpan.Parse(times[1]),
+                Text = lines[2]
+            };
+        }
+
+        public override string ToString()
+            => $"{Index}\r\n{StartTime:hh\\:mm\\:ss\\,fff} --> {EndTime:hh\\:mm\\:ss\\,fff}\r\n{Text}";
     }
 }
