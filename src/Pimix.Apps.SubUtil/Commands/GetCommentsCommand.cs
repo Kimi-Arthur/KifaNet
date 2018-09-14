@@ -24,6 +24,9 @@ namespace Pimix.Apps.SubUtil.Commands {
             "Example: av2044037, av2044037p4")]
         public string Aid { get; set; }
 
+        [Option('g', "group", HelpText = "Group name.")]
+        public string Group { get; set; }
+
         public override int Execute() {
             if (Aid != null) {
                 var files = new PimixFile(FileUri).List(true).ToList();
@@ -56,8 +59,9 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             memoryStream.Seek(0, SeekOrigin.Begin);
 
+            var suffix = Group != null ? $"-{Group}" : "";
             var lastDot = rawFile.ToString().LastIndexOf(".", StringComparison.Ordinal);
-            var targetUri = $"{rawFile.ToString().Substring(0, lastDot)}.{chat.Cid}.xml";
+            var targetUri = $"{rawFile.ToString().Substring(0, lastDot)}.{chat.Cid}{suffix}.xml";
             var target = new PimixFile(targetUri);
             target.Write(memoryStream);
 
