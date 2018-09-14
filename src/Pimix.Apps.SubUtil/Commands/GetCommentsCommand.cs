@@ -41,13 +41,13 @@ namespace Pimix.Apps.SubUtil.Commands {
                     $"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
                 Console.ReadLine();
 
-                return 0;
+                return v.Pages.Zip(files, GetChat).Max();
             }
 
-            return GetChat(new BilibiliChat {Cid = Cid});
+            return GetChat(new BilibiliChat {Cid = Cid}, new PimixFile(FileUri));
         }
 
-        int GetChat(BilibiliChat chat) {
+        int GetChat(BilibiliChat chat, PimixFile rawFile) {
             var memoryStream = new MemoryStream();
             var writer = new XmlTextWriter(memoryStream, new UpperCaseUtf8Encoding()) {
                 Formatting = Formatting.Indented
@@ -56,8 +56,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             memoryStream.Seek(0, SeekOrigin.Begin);
 
-            var lastDot = FileUri.LastIndexOf(".", StringComparison.Ordinal);
-            var targetUri = $"{FileUri.Substring(0, lastDot)}.{Cid}.xml";
+            var lastDot = rawFile.ToString().LastIndexOf(".", StringComparison.Ordinal);
+            var targetUri = $"{rawFile.ToString().Substring(0, lastDot)}.{chat.Cid}.xml";
             var target = new PimixFile(targetUri);
             target.Write(memoryStream);
 
