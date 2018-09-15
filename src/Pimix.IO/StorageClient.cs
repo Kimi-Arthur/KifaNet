@@ -5,7 +5,8 @@ using System.Linq;
 
 namespace Pimix.IO {
     public abstract class StorageClient : IDisposable {
-        public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
+        public virtual IEnumerable<FileInformation> List(string path, string pattern = "*",
+            bool recursive = false)
             => Enumerable.Empty<FileInformation>();
 
         public abstract bool Exists(string path);

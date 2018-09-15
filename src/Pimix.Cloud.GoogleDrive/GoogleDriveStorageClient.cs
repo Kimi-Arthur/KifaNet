@@ -50,7 +50,8 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public AccountInfo Account { get; private set; }
 
-        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+        public override IEnumerable<FileInformation> List(string path, string pattern = "*",
+            bool recursive = false) {
             var fileId = GetFileId(path);
             if (fileId == null) {
                 yield break;

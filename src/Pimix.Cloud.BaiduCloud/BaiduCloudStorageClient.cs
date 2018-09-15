@@ -383,7 +383,8 @@ namespace Pimix.Cloud.BaiduCloud {
             return request;
         }
 
-        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
+        public override IEnumerable<FileInformation> List(string path, string pattern = "*",
+            bool recursive = false) {
             var infoRequest = GetRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
