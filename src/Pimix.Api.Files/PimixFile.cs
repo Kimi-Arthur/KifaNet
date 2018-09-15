@@ -91,7 +91,7 @@ namespace Pimix.Api.Files {
         public void Delete() => Client.Delete(Path);
 
         public IEnumerable<PimixFile> List(bool recursive = false)
-            => Client.List(Path, recursive).Where(f => !IgnoredFiles.IsMatch(f.Id))
+            => Client.List(Path, recursive: recursive).Where(f => !IgnoredFiles.IsMatch(f.Id))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public void Copy(PimixFile destination) {
