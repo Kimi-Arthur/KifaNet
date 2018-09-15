@@ -95,8 +95,8 @@ namespace Pimix.IO {
 
         public override bool Exists(string path) => File.Exists(GetPath(path));
 
-        public override IEnumerable<FileInformation> List(string path, string pattern = "*",
-            bool recursive = false) {
+        public override IEnumerable<FileInformation> List(string path, bool recursive = false,
+            string pattern = "*") {
             var normalizedPath = GetPath(path);
             if (!Directory.Exists(normalizedPath)) {
                 return Enumerable.Empty<FileInformation>();
