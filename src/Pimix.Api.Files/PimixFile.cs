@@ -30,7 +30,12 @@ namespace Pimix.Api.Files {
 
         public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
 
-        public string Name { get; set; }
+        public string BaseName { get; set; }
+
+        public string Extension { get; set; }
+
+        public string Name
+            => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
 
         public string Path => $"{ParentPath}/{Name}";
 
@@ -71,7 +76,16 @@ namespace Pimix.Api.Files {
             var segments = uri.Split('/');
             var pathSegmentCount = segments.Length - 1;
             ParentPath = "/" + string.Join("/", segments.Skip(1).Take(pathSegmentCount - 1));
-            Name = segments.Last();
+            var name = segments.Last();
+            var lastDot = name.LastIndexOf('.');
+            if (lastDot < 0) {
+                BaseName = name;
+                Extension = "";
+            } else {
+                BaseName = name.Substring(0, lastDot);
+                Extension = name.Substring(lastDot + 1);
+            }
+
             Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);
             _fileInfo = fileInfo;
 
