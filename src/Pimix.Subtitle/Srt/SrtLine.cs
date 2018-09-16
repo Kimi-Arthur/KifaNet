@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Pimix.Subtitle.Ass;
 
 namespace Pimix.Subtitle.Srt {
     public class SrtLine {
@@ -21,6 +23,15 @@ namespace Pimix.Subtitle.Srt {
                 }
             };
         }
+
+        public AssDialogue ToAss()
+            => new AssDialogue {
+                Text = new AssDialogueText {
+                    TextElements = Text.Select(x => x.ToAss()).ToList()
+                },
+                Start = StartTime,
+                End = EndTime
+            };
 
         public override string ToString()
             => $"{Index}\r\n" +

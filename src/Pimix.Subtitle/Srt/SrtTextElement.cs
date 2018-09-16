@@ -1,4 +1,5 @@
 using System.Drawing;
+using Pimix.Subtitle.Ass;
 
 namespace Pimix.Subtitle.Srt {
     public class SrtTextElement {
@@ -11,6 +12,14 @@ namespace Pimix.Subtitle.Srt {
         public bool? Underline { get; set; }
 
         public Color? FontColor { get; set; }
+
+        public AssDialogueTextElement ToAss() => new AssDialogueTextElement() {
+            Content = Content,
+            Bold = Bold,
+            Italic = Italic,
+            Underline = Underline,
+            PrimaryColour = FontColor
+        };
 
         public override string ToString() {
             var s = Content;
