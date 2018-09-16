@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Text;
 using CommandLine;
 using Pimix.Api.Files;
+using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
@@ -12,8 +14,12 @@ namespace Pimix.Apps.SubUtil.Commands {
         public override int Execute() {
             var target = new PimixFile(FileUri);
             foreach (var file in target.Parent.List(ignoreFiles: false,
-                pattern: $"{target.BaseName.Normalize(NormalizationForm.FormD)}.*")) {
-                Console.WriteLine(file);
+                pattern: $"{target.BaseName.Normalize(NormalizationForm.FormD)}.??.srt")) {
+                Console.WriteLine($"Subtitle: {file}");
+                using (var sr = new StreamReader(file.OpenRead())) {
+                    var s = SrtDocument.Parse(sr.ReadToEnd());
+                    Console.WriteLine(s.Lines.Count);
+                }
             }
 
             return 0;
