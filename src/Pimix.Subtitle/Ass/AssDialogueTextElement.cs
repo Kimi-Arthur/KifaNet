@@ -42,16 +42,8 @@ namespace Pimix.Subtitle.Ass {
 
         public Color? BackColour { get; set; }
 
-        public AssDialogueTextElement()
-            : this("") {
-        }
-
-        public AssDialogueTextElement(string s) {
-            Content = s;
-        }
-
         public static implicit operator AssDialogueTextElement(string s)
-            => new AssDialogueTextElement(s);
+            => new AssDialogueTextElement {Content = s};
 
         public override string GenerateAssText() {
             var styleText = "";

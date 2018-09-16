@@ -15,11 +15,13 @@ namespace PimixTest.Subtitle.Ass {
 
         [Fact]
         public void StyleTest() {
-            var element = new AssDialogueTextElement("two2");
-            element.Bold = false;
-            element.Italic = true;
-            element.Underline = true;
-            element.StrikeOut = null;
+            var element = new AssDialogueTextElement {
+                Content = "two2",
+                Bold = false,
+                Italic = true,
+                Underline = true,
+                StrikeOut = null
+            };
             var text = new AssDialogueText(element);
             Assert.Equal(@"{\b0\i1\u1}two2", text.GenerateAssText());
 
