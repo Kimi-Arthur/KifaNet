@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 
 namespace Pimix.Subtitle.Srt {
     public class SrtLine {
         public int Index { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
-        public string Text { get; set; }
+        public List<SrtTextElement> Text { get; set; }
 
         public static SrtLine Parse(string s) {
             var lines = s.Trim()
@@ -15,11 +16,15 @@ namespace Pimix.Subtitle.Srt {
                 Index = int.Parse(lines[0]),
                 StartTime = TimeSpan.Parse(times[0]),
                 EndTime = TimeSpan.Parse(times[1]),
-                Text = lines[2]
+                Text = new List<SrtTextElement> {
+                    new SrtTextElement {Content = lines[2]}
+                }
             };
         }
 
         public override string ToString()
-            => $"{Index}\r\n{StartTime:hh\\:mm\\:ss\\,fff} --> {EndTime:hh\\:mm\\:ss\\,fff}\r\n{Text}";
+            => $"{Index}\r\n" +
+               $"{StartTime:hh\\:mm\\:ss\\,fff} --> {EndTime:hh\\:mm\\:ss\\,fff}\r\n" +
+               $"{string.Join("", Text)}";
     }
 }
