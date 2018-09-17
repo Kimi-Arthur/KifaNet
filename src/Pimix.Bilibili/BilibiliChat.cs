@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -25,15 +26,20 @@ namespace Pimix.Bilibili {
         public XmlDocument RawDocument {
             get {
                 if (rawDocument == null) {
-                    rawDocument = new XmlDocument();
                     using (var s = client.GetAsync($"http://comment.bilibili.com/{Cid}.xml")
                         .Result) {
-                        rawDocument.Load(s.Content.ReadAsStreamAsync().Result);
+                        Load(s.Content.ReadAsStreamAsync().Result);
                     }
                 }
 
                 return rawDocument;
             }
+        }
+
+        public void Load(Stream stream) {
+            rawDocument = new XmlDocument();
+            rawDocument.Load(stream);
+            stream.Dispose();
         }
 
         public TimeSpan ChatOffset { get; set; } = TimeSpan.Zero;

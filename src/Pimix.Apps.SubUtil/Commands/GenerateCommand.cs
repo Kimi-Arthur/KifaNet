@@ -1,9 +1,9 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using CommandLine;
 using Pimix.Api.Files;
+using Pimix.Bilibili;
 using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
@@ -22,6 +22,16 @@ namespace Pimix.Apps.SubUtil.Commands {
                     foreach (var line in s.Lines) {
                         Console.WriteLine(line.ToAss().ToString());
                     }
+                }
+            }
+
+            foreach (var file in target.Parent.List(ignoreFiles: false,
+                pattern: $"{target.BaseName.Normalize(NormalizationForm.FormD)}.*.xml")) {
+                Console.WriteLine($"Subtitle: {file}");
+                var chat = new BilibiliChat();
+                chat.Load(file.OpenRead());
+                foreach (var comment in chat.Comments) {
+                    Console.WriteLine(comment.GenerateAssDialogue());
                 }
             }
 
