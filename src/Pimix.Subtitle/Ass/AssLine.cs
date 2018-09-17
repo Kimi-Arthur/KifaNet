@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Pimix.Subtitle.Ass {
-    public class AssLine : AssElement {
+    public class AssLine {
         public virtual string Key { get; protected set; }
         public virtual IEnumerable<string> Values { get; protected set; }
 
@@ -15,7 +15,7 @@ namespace Pimix.Subtitle.Ass {
             Values = values;
         }
 
-        public override string GenerateAssText()
+        public override string ToString()
             => $"{Key}: {string.Join(",", Values.Select(FormatValue))}";
 
         static string FormatValue(string value) => new Regex("[\r\n]+").Replace(value, @"\n");

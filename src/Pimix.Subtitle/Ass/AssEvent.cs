@@ -25,16 +25,16 @@ namespace Pimix.Subtitle.Ass {
 
         public override IEnumerable<string> Values
             => new List<string> {
-                Layer.GenerateAssText(),
-                Start.GenerateAssText(),
-                End.GenerateAssText(),
-                Style.ValidName.GenerateAssText(),
-                Name.GenerateAssText(),
+                AssElementExtensions.ToString(Layer),
+                AssElementExtensions.ToString(Start),
+                AssElementExtensions.ToString(End),
+                AssElementExtensions.ToString(Style.ValidName),
+                AssElementExtensions.ToString(Name),
                 $"{MarginL:D4}",
                 $"{MarginR:D4}",
                 $"{MarginV:D4}",
-                Effect.GenerateAssText(),
-                Text.GenerateAssText()
+                Effect.ToString(),
+                Text.ToString()
             };
     }
 }

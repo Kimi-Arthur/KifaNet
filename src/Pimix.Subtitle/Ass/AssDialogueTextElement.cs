@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 
 namespace Pimix.Subtitle.Ass {
-    public class AssDialogueTextElement : AssElement {
+    public class AssDialogueTextElement {
         public string Content { get; set; }
 
         public bool? Bold { get; set; }
@@ -45,7 +45,7 @@ namespace Pimix.Subtitle.Ass {
         public static implicit operator AssDialogueTextElement(string s)
             => new AssDialogueTextElement {Content = s};
 
-        public override string GenerateAssText() {
+        public override string ToString() {
             var styleText = "";
             styleText += GenerateAssTextForAttribute("b", Bold);
             styleText += GenerateAssTextForAttribute("i", Italic);

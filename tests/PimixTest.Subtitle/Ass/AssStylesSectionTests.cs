@@ -7,7 +7,7 @@ namespace PimixTest.Subtitle.Ass {
     public class AssStylesSectionTests {
         [Fact]
         public void BasicTest() {
-            AssElement stylesSection = new AssStylesSection {
+            var stylesSection = new AssStylesSection {
                 Styles = new List<AssStyle> {
                     new AssStyle {
                         Name = "Default",
@@ -66,7 +66,7 @@ namespace PimixTest.Subtitle.Ass {
                          + "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding\r\n"
                          + "Style: Default,simhei,28,&H00FFFFFF,&H00000000,&H00111111,&H000D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1\r\n"
                          + "Style: staff,youyuan,26,&H00EBEBEB,&H00000000,&H28000000,&H00000000,-1,0,0,0,100,100,0,0.00,1,0,2,2,15,15,10,1\r\n",
-                stylesSection.GenerateAssText());
+                stylesSection.ToString());
         }
     }
 }

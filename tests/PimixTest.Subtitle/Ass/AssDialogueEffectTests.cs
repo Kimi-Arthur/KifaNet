@@ -7,13 +7,13 @@ namespace PimixTest.Subtitle.Ass {
         [Fact]
         public void BannerEffectBasicTest() {
             var effect = new AssDialogueBannerEffect();
-            Assert.Equal("Banner;0;0;0", effect.GenerateAssText());
+            Assert.Equal("Banner;0;0;0", effect.ToString());
             effect = new AssDialogueBannerEffect {
                 Delay = 12,
                 FadeAwayWidth = 2,
                 LeftToRight = AssDialogueBannerEffect.LeftToRightType.LeftToRight
             };
-            Assert.Equal("Banner;12;1;2", effect.GenerateAssText());
+            Assert.Equal("Banner;12;1;2", effect.ToString());
         }
 
         [Fact]

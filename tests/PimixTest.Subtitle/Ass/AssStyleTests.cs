@@ -7,7 +7,7 @@ namespace PimixTest.Subtitle.Ass {
     public class AssStyleTests {
         [Fact]
         public void BasicTest() {
-            AssElement style = new AssStyle {
+            var style = new AssStyle {
                 Name = "Default",
                 FontName = "simhei",
                 FontSize = 28,
@@ -35,7 +35,7 @@ namespace PimixTest.Subtitle.Ass {
 
             Assert.Equal(
                 "Style: Default,simhei,28,&HFF008CFF,&H00000000,&H00111111,&H000D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1",
-                style.GenerateAssText());
+                style.ToString());
         }
 
         [Fact]

@@ -23,7 +23,7 @@ namespace PimixTest.Bilibili {
             Assert.AreEqual(BilibiliVideo.PartModeType.SinglePartMode, video.PartMode);
             var doc = video.GenerateAssDocument();
             Assert.IsTrue(
-                doc.GenerateAssText().StartsWith(
+                doc.ToString().StartsWith(
                     "[Script Info]\r\n" +
                     "Title: 【7月】工作细胞 01【独家正版】\r\n" +
                     "Original Script: Bilibili\r\n" +

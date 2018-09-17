@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
 namespace Pimix.Subtitle.Ass {
-    public class AssDialogueEffect : AssElement {
+    public class AssDialogueEffect {
         public virtual string EffectType => null;
         public virtual IEnumerable<string> EffectParameters => null;
 
-        public override string GenerateAssText()
+        public override string ToString()
             => EffectType == null ? "" : $"{EffectType};{string.Join(";", EffectParameters)}";
     }
 }
