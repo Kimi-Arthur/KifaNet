@@ -9,7 +9,7 @@ namespace Pimix.Subtitle.Ass {
             OpaqueBox = 3
         }
 
-        public const string DefaultFontName = "Simhei";
+        public const string DefaultFontName = "Arial";
 
         public static readonly AssStyle DefaultStyle
             = new AssStyle {
