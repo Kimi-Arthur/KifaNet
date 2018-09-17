@@ -1,9 +1,11 @@
-using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using CommandLine;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
+using Pimix.Subtitle.Ass;
 using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
@@ -14,29 +16,61 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
-            foreach (var file in target.Parent.List(ignoreFiles: false,
-                pattern: $"{target.BaseName.Normalize(NormalizationForm.FormD)}.??.srt")) {
-                Console.WriteLine($"Subtitle: {file}");
-                using (var sr = new StreamReader(file.OpenRead())) {
-                    var s = SrtDocument.Parse(sr.ReadToEnd());
-                    foreach (var line in s.Lines) {
-                        var ass = line.ToAss();
-                        Console.WriteLine(ass);
-                    }
-                }
-            }
+            var srts = GetSrt(target.Parent, target.BaseName.Normalize(NormalizationForm.FormD));
 
-            foreach (var file in target.Parent.List(ignoreFiles: false,
-                pattern: $"{target.BaseName.Normalize(NormalizationForm.FormD)}.*.xml")) {
-                Console.WriteLine($"Subtitle: {file}");
-                var chat = new BilibiliChat();
-                chat.Load(file.OpenRead());
-                foreach (var comment in chat.Comments) {
-                    Console.WriteLine(comment.GenerateAssDialogue());
-                }
-            }
+            var chats = GetBilibiliChats(target.Parent,
+                target.BaseName.Normalize(NormalizationForm.FormD));
+
+            var document = new AssDocument();
+
+            document.Sections.Add(new AssScriptInfoSection {
+                Title = target.BaseName
+            });
+
+            document.Sections.Add(new AssStylesSection {
+                Styles = AssStyle.Styles
+            });
+
+            var events = new AssEventsSection();
+
+            events.Events.AddRange(srts.Values.First().Lines.Select(x => x.ToAss()));
+            events.Events.AddRange(chats.Values.First().Comments
+                .Select(x => x.GenerateAssDialogue()));
+
+            document.Sections.Add(events);
+
+            var assFile =
+                target.Parent.GetFile(
+                    $"{target.BaseName}.{chats.Keys.First()}.{srts.Keys.First()}.ass");
+
+            var bytes = Encoding.UTF8.GetBytes(document.ToString());
+            assFile.Write(new MemoryStream(bytes));
 
             return 0;
+        }
+
+        static Dictionary<string, SrtDocument> GetSrt(PimixFile parent, string baseName) {
+            var result = new Dictionary<string, SrtDocument>();
+            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.??.srt")) {
+                using (var sr = new StreamReader(file.OpenRead())) {
+                    result[file.BaseName.Substring(baseName.Length + 1)] =
+                        SrtDocument.Parse(sr.ReadToEnd());
+                }
+            }
+
+            return result;
+        }
+
+        static Dictionary<string, BilibiliChat>
+            GetBilibiliChats(PimixFile parent, string baseName) {
+            var result = new Dictionary<string, BilibiliChat>();
+            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.xml")) {
+                var chat = new BilibiliChat();
+                chat.Load(file.OpenRead());
+                result[file.BaseName.Substring(baseName.Length + 1)] = chat;
+            }
+
+            return result;
         }
     }
 }

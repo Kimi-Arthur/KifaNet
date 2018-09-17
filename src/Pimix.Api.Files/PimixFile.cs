@@ -103,6 +103,8 @@ namespace Pimix.Api.Files {
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
         }
 
+        public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
+
         public override string ToString() => $"{Host}{Path}";
 
         public bool Exists() => Client.Exists(Path);
