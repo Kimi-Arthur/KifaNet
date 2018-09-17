@@ -13,37 +13,44 @@ namespace Pimix.Subtitle.Ass {
 
         public static readonly AssStyle DefaultStyle
             = new AssStyle {
-                Name = "Default"
+                Name = "Default",
+                Alignment = AssAlignment.BottomCenter
             };
 
         public static readonly AssStyle SubtitleStyle
             = new AssStyle {
-                Name = "Subtitle"
+                Name = "Subtitle",
+                Alignment = AssAlignment.BottomCenter
             };
 
         public static readonly AssStyle ToptitleStyle
             = new AssStyle {
-                Name = "Toptitle"
+                Name = "Toptitle",
+                Alignment = AssAlignment.TopCenter
             };
 
         public static readonly AssStyle NormalCommentStyle
             = new AssStyle {
-                Name = "NormalComment"
-            };
-
-        public static readonly AssStyle TopCommentStyle
-            = new AssStyle {
-                Name = "TopComment"
-            };
-
-        public static readonly AssStyle BottomCommentStyle
-            = new AssStyle {
-                Name = "BottomComment"
+                Name = "NormalComment",
+                Alignment = AssAlignment.TopCenter
             };
 
         public static readonly AssStyle RtlCommentStyle
             = new AssStyle {
-                Name = "RtlComment"
+                Name = "RtlComment",
+                Alignment = AssAlignment.TopCenter
+            };
+
+        public static readonly AssStyle TopCommentStyle
+            = new AssStyle {
+                Name = "TopComment",
+                Alignment = AssAlignment.TopCenter
+            };
+
+        public static readonly AssStyle BottomCommentStyle
+            = new AssStyle {
+                Name = "BottomComment",
+                Alignment = AssAlignment.BottomCenter
             };
 
         public static readonly List<AssStyle> Styles =
@@ -79,17 +86,17 @@ namespace Pimix.Subtitle.Ass {
 
         public bool StrikeOut { get; set; }
 
-        public int ScaleX { get; set; }
+        public int ScaleX { get; set; } = 100;
 
-        public int ScaleY { get; set; }
+        public int ScaleY { get; set; } = 100;
 
         public int Spacing { get; set; }
 
         public double Angle { get; set; }
 
-        public BorderStyleType BorderStyle { get; set; }
+        public BorderStyleType BorderStyle { get; set; } = BorderStyleType.OutlineWithDropShadow;
 
-        int outline;
+        int outline = 1;
 
         public int Outline {
             get => outline;

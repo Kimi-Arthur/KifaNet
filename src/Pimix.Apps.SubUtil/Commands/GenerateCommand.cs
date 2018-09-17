@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,10 +17,6 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
-            var srts = GetSrt(target.Parent, target.BaseName.Normalize(NormalizationForm.FormD));
-
-            var chats = GetBilibiliChats(target.Parent,
-                target.BaseName.Normalize(NormalizationForm.FormD));
 
             var document = new AssDocument();
 
@@ -27,26 +24,37 @@ namespace Pimix.Apps.SubUtil.Commands {
                 Title = target.BaseName
             });
 
+            ConfigureStyles();
+
             document.Sections.Add(new AssStylesSection {
                 Styles = AssStyle.Styles
             });
 
+            var srts = GetSrt(target.Parent, target.BaseName.Normalize(NormalizationForm.FormD));
+            var chats = GetBilibiliChats(target.Parent,
+                target.BaseName.Normalize(NormalizationForm.FormD));
+
             var events = new AssEventsSection();
 
             events.Events.AddRange(srts.Values.First().Lines.Select(x => x.ToAss()));
-            events.Events.AddRange(chats.Values.First().Comments
-                .Select(x => x.GenerateAssDialogue()));
+//            events.Events.AddRange(chats.Values.First().Comments
+//                .Select(x => x.GenerateAssDialogue()));
 
             document.Sections.Add(events);
 
             var assFile =
                 target.Parent.GetFile(
-                    $"{target.BaseName}.{chats.Keys.First()}.{srts.Keys.First()}.ass");
+                    $"{target.BaseName}.{srts.Keys.First()}.{chats.Keys.First()}.ass");
 
             var bytes = Encoding.UTF8.GetBytes(document.ToString());
             assFile.Write(new MemoryStream(bytes));
 
             return 0;
+        }
+
+        void ConfigureStyles() {
+            AssStyle.SubtitleStyle.FontSize = 30;
+            AssStyle.SubtitleStyle.PrimaryColour = Color.White;
         }
 
         static Dictionary<string, SrtDocument> GetSrt(PimixFile parent, string baseName) {
