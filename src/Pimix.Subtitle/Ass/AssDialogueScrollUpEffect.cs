@@ -4,10 +4,10 @@ namespace Pimix.Subtitle.Ass {
     class AssDialogueScrollUpEffect : AssDialogueEffect {
         public override IEnumerable<string> EffectParameters
             => new List<string> {
-                AssElementExtensions.ToString(Y1),
-                AssElementExtensions.ToString(Y2),
-                AssElementExtensions.ToString(Delay),
-                AssElementExtensions.ToString(FadeAwayHeight)
+                Y1.ToString(),
+                Y2.ToString(),
+                Delay.ToString(),
+                FadeAwayHeight.ToString()
             };
 
         public override string EffectType => "Scroll up";

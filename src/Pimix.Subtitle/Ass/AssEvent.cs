@@ -25,11 +25,11 @@ namespace Pimix.Subtitle.Ass {
 
         public override IEnumerable<string> Values
             => new List<string> {
-                AssElementExtensions.ToString(Layer),
-                AssElementExtensions.ToString(Start),
-                AssElementExtensions.ToString(End),
-                AssElementExtensions.ToString(Style.ValidName),
-                AssElementExtensions.ToString(Name),
+                Layer.ToString(),
+                $"{Start:h\\:mm\\:ss\\.ff}",
+                $"{End:h\\:mm\\:ss\\.ff}",
+                Style.ValidName,
+                Name,
                 $"{MarginL:D4}",
                 $"{MarginR:D4}",
                 $"{MarginV:D4}",

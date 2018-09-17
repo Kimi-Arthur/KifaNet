@@ -12,9 +12,9 @@ namespace Pimix.Subtitle.Ass {
 
         public override IEnumerable<string> EffectParameters
             => new List<string> {
-                AssElementExtensions.ToString(Delay),
-                AssElementExtensions.ToString(LeftToRight),
-                AssElementExtensions.ToString(FadeAwayWidth)
+                Delay.ToString(),
+                $"{LeftToRight:d}",
+                FadeAwayWidth.ToString()
             };
 
         int delay;
