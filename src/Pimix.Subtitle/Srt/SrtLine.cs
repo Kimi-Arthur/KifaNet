@@ -30,7 +30,8 @@ namespace Pimix.Subtitle.Srt {
                     TextElements = Text.Select(x => x.ToAss()).ToList()
                 },
                 Start = StartTime,
-                End = EndTime
+                End = EndTime,
+                Style = AssStyle.SubtitleStyle
             };
 
         public override string ToString()

@@ -68,7 +68,23 @@ namespace Pimix.Bilibili {
                 Text = new AssDialogueText(Text),
                 Effect = new AssDialogueBannerEffect {
                     Delay = 1500 / (100 + Text.Length)
-                }
+                },
+                Style = GetStyle(Mode)
             };
+
+        static AssStyle GetStyle(ModeType mode) {
+            switch (mode) {
+                case ModeType.Normal:
+                    return AssStyle.NormalCommentStyle;
+                case ModeType.Reverse:
+                    return AssStyle.RtlCommentStyle;
+                case ModeType.Top:
+                    return AssStyle.TopCommentStyle;
+                case ModeType.Bottom:
+                    return AssStyle.BottomCommentStyle;
+                default:
+                    return AssStyle.DefaultStyle;
+            }
+        }
     }
 }

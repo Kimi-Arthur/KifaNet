@@ -26,6 +26,11 @@ namespace Pimix.Subtitle.Ass {
                 Name = "Toptitle"
             };
 
+        public static readonly AssStyle NormalCommentStyle
+            = new AssStyle {
+                Name = "NormalComment"
+            };
+
         public static readonly AssStyle TopCommentStyle
             = new AssStyle {
                 Name = "TopComment"
@@ -46,6 +51,7 @@ namespace Pimix.Subtitle.Ass {
                 DefaultStyle,
                 SubtitleStyle,
                 ToptitleStyle,
+                NormalCommentStyle,
                 TopCommentStyle,
                 BottomCommentStyle,
                 RtlCommentStyle

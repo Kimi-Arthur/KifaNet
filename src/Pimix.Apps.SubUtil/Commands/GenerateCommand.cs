@@ -20,7 +20,8 @@ namespace Pimix.Apps.SubUtil.Commands {
                 using (var sr = new StreamReader(file.OpenRead())) {
                     var s = SrtDocument.Parse(sr.ReadToEnd());
                     foreach (var line in s.Lines) {
-                        Console.WriteLine(line.ToAss().ToString());
+                        var ass = line.ToAss();
+                        Console.WriteLine(ass);
                     }
                 }
             }
