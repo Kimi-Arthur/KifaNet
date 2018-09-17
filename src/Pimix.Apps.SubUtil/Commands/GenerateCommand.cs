@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using CommandLine;
 using Pimix.Api.Files;
@@ -18,7 +19,9 @@ namespace Pimix.Apps.SubUtil.Commands {
                 Console.WriteLine($"Subtitle: {file}");
                 using (var sr = new StreamReader(file.OpenRead())) {
                     var s = SrtDocument.Parse(sr.ReadToEnd());
-                    Console.WriteLine(s.Lines.Count);
+                    foreach (var line in s.Lines) {
+                        Console.WriteLine(line.ToAss().GenerateAssText());
+                    }
                 }
             }
 

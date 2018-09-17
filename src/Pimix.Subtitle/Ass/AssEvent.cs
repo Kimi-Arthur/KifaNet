@@ -11,15 +11,15 @@ namespace Pimix.Subtitle.Ass {
 
         public AssStyle Style { get; set; } = AssStyle.DefaultStyle;
 
-        public string Name { get; set; } = "NTP";
+        public string Name { get; set; } = "";
 
-        public int? MarginL { get; set; }
+        public int MarginL { get; set; }
 
-        public int? MarginR { get; set; }
+        public int MarginR { get; set; }
 
-        public int? MarginV { get; set; }
+        public int MarginV { get; set; }
 
-        public AssDialogueEffect Effect { get; set; }
+        public AssDialogueEffect Effect { get; set; } = new AssDialogueEffect();
 
         public AssDialogueText Text { get; set; }
 
@@ -30,9 +30,9 @@ namespace Pimix.Subtitle.Ass {
                 End.GenerateAssText(),
                 Style.ValidName.GenerateAssText(),
                 Name.GenerateAssText(),
-                MarginL.HasValue ? $"{MarginL: D4}" : "0000",
-                MarginR.HasValue ? $"{MarginR: D4}" : "0000",
-                MarginV.HasValue ? $"{MarginV: D4}" : "0000",
+                $"{MarginL:D4}",
+                $"{MarginR:D4}",
+                $"{MarginV:D4}",
                 Effect.GenerateAssText(),
                 Text.GenerateAssText()
             };
