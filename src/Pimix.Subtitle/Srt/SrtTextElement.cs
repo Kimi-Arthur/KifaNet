@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using Pimix.Subtitle.Ass;
 
@@ -13,13 +14,15 @@ namespace Pimix.Subtitle.Srt {
 
         public Color? FontColor { get; set; }
 
-        public AssDialogueTextElement ToAss() => new AssDialogueTextElement() {
-            Content = Content,
-            Bold = Bold,
-            Italic = Italic,
-            Underline = Underline,
-            PrimaryColour = FontColor
-        };
+        public AssDialogueTextElement ToAss()
+            => new AssDialogueTextElement {
+                Content = string.Join("\\N",
+                    Content.Split(new[] {"\r\n", "\n"}, StringSplitOptions.RemoveEmptyEntries)),
+                Bold = Bold,
+                Italic = Italic,
+                Underline = Underline,
+                PrimaryColour = FontColor
+            };
 
         public override string ToString() {
             var s = Content;
