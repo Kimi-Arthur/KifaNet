@@ -10,6 +10,12 @@ namespace Pimix.Subtitle.Ass {
 
         public string ScriptType { get; set; } = "V4.00+";
 
+        public string Collisions { get; set; } = "Normal";
+
+        public int PlayResX { get; set; } = 960;
+
+        public int PlayResY { get; set; } = 540;
+
         public override IEnumerable<AssLine> AssLines {
             get {
                 if (!string.IsNullOrEmpty(Title)) {
@@ -22,6 +28,18 @@ namespace Pimix.Subtitle.Ass {
 
                 if (!string.IsNullOrEmpty(ScriptType)) {
                     yield return new AssLine("Script Type", new List<string> {ScriptType});
+                }
+
+                if (!string.IsNullOrEmpty(Collisions)) {
+                    yield return new AssLine("Collisions", new List<string> {Collisions});
+                }
+
+                if (PlayResX > 0) {
+                    yield return new AssLine("PlayResX", new List<string> {PlayResX.ToString()});
+                }
+
+                if (PlayResY > 0) {
+                    yield return new AssLine("PlayResY", new List<string> {PlayResY.ToString()});
                 }
             }
         }
