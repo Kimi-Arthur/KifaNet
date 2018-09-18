@@ -20,7 +20,8 @@ namespace Pimix.Subtitle.Ass {
         public static readonly AssStyle SubtitleStyle
             = new AssStyle {
                 Name = "Subtitle",
-                Alignment = AssAlignment.BottomCenter
+                Alignment = AssAlignment.BottomCenter,
+                FontSize = 80,
             };
 
         public static readonly AssStyle ToptitleStyle
@@ -68,15 +69,15 @@ namespace Pimix.Subtitle.Ass {
 
         public string FontName { get; set; } = DefaultFontName;
 
-        public int FontSize { get; set; }
+        public int FontSize { get; set; } = 60;
 
-        public Color PrimaryColour { get; set; }
+        public Color PrimaryColour { get; set; } = Color.White;
 
-        public Color SecondaryColour { get; set; }
+        public Color SecondaryColour { get; set; } = Color.White;
 
-        public Color OutlineColour { get; set; }
+        public Color OutlineColour { get; set; } = Color.Black;
 
-        public Color BackColour { get; set; }
+        public Color BackColour { get; set; } = Color.Black;
 
         public bool Bold { get; set; }
 
@@ -124,11 +125,11 @@ namespace Pimix.Subtitle.Ass {
 
         public AssAlignment Alignment { get; set; }
 
-        public int MarginL { get; set; }
+        public int MarginL { get; set; } = 10;
 
-        public int MarginR { get; set; }
+        public int MarginR { get; set; } = 10;
 
-        public int MarginV { get; set; }
+        public int MarginV { get; set; } = 10;
 
         public int Encoding { get; set; }
 

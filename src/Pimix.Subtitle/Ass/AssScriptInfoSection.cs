@@ -12,9 +12,9 @@ namespace Pimix.Subtitle.Ass {
 
         public string Collisions { get; set; } = "Normal";
 
-        public int PlayResX { get; set; } = 960;
+        public int PlayResX { get; set; } = 1920;
 
-        public int PlayResY { get; set; } = 540;
+        public int PlayResY { get; set; } = 1080;
 
         public override IEnumerable<AssLine> AssLines {
             get {

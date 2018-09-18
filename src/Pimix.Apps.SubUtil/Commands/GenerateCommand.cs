@@ -60,8 +60,6 @@ namespace Pimix.Apps.SubUtil.Commands {
         }
 
         void ConfigureStyles() {
-            AssStyle.SubtitleStyle.FontSize = 30;
-            AssStyle.SubtitleStyle.PrimaryColour = Color.White;
         }
 
         static Dictionary<string, SrtDocument> GetSrt(PimixFile parent, string baseName) {
