@@ -77,7 +77,7 @@ namespace Pimix.Bilibili {
                 : new AssDialogue {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
-                    Text = new AssDialogueText($"{{\\move({1920 + 80},80,{-80},80)}}" + Text),
+                    Text = new AssDialogueText(Text),
                     Style = GetStyle(Mode)
                 };
 
