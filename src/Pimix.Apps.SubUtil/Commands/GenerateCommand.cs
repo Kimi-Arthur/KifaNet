@@ -37,8 +37,8 @@ namespace Pimix.Apps.SubUtil.Commands {
             var events = new AssEventsSection();
 
             events.Events.AddRange(srts.Values.First().Lines.Select(x => x.ToAss()));
-//            events.Events.AddRange(chats.Values.First().Comments
-//                .Select(x => x.GenerateAssDialogue()));
+            events.Events.AddRange(chats.Values.First().Comments
+                .Select(x => x.GenerateAssDialogue()));
 
             document.Sections.Add(events);
 
