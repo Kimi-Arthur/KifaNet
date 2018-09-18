@@ -46,8 +46,15 @@ namespace Pimix.Apps.SubUtil.Commands {
                 target.Parent.GetFile(
                     $"{target.BaseName}.{srts.Keys.First()}.{chats.Keys.First()}.ass");
 
-            var bytes = Encoding.UTF8.GetBytes(document.ToString());
-            assFile.Write(new MemoryStream(bytes));
+            using (var stream = new MemoryStream()) {
+                using (var sw = new StreamWriter(stream, Encoding.UTF8)) {
+                    sw.Write(document);
+                    sw.Flush();
+
+                    assFile.Write(stream);
+                }
+            }
+
 
             return 0;
         }
