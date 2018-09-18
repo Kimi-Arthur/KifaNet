@@ -5,6 +5,8 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
     public struct BilibiliComment {
+        public static bool UseBannerEffect { get; set; } = false;
+
         public enum ModeType {
             None,
             Normal,
@@ -62,15 +64,22 @@ namespace Pimix.Bilibili {
         }
 
         public AssDialogue GenerateAssDialogue()
-            => new AssDialogue {
-                Start = VideoTime,
-                End = VideoTime + DefaultDuration,
-                Text = new AssDialogueText(Text),
-                Effect = new AssDialogueBannerEffect {
-                    Delay = 1500 / (100 + Text.Length)
-                },
-                Style = GetStyle(Mode)
-            };
+            => UseBannerEffect
+                ? new AssDialogue {
+                    Start = VideoTime,
+                    End = VideoTime + DefaultDuration,
+                    Text = new AssDialogueText(Text),
+                    Effect = new AssDialogueBannerEffect {
+                        Delay = 1500 / (100 + Text.Length)
+                    },
+                    Style = GetStyle(Mode)
+                }
+                : new AssDialogue {
+                    Start = VideoTime,
+                    End = VideoTime + DefaultDuration,
+                    Text = new AssDialogueText($"{{\\move({1920 + 80},80,{-80},80)}}" + Text),
+                    Style = GetStyle(Mode)
+                };
 
         static AssStyle GetStyle(ModeType mode) {
             switch (mode) {
