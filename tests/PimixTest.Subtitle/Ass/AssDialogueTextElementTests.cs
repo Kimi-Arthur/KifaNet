@@ -24,7 +24,7 @@ namespace PimixTest.Subtitle.Ass {
             e3.StrikeOut = false;
             e3.Italic = null;
             e3.FontRotationX = 12;
-            Assert.Equal(@"{\b1\s0\frx12\4a&HFF&\4c&HFFF8F0&}test3", e3.ToString());
+            Assert.Equal(@"{\b1\s0\frx12\4a&H00&\4c&HFFF8F0&}test3", e3.ToString());
         }
     }
 }
