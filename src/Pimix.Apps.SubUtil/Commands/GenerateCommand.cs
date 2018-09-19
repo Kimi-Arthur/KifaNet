@@ -80,10 +80,10 @@ namespace Pimix.Apps.SubUtil.Commands {
                 .Where(i => comments[i].Style == AssStyle.NormalCommentStyle)
                 .OrderBy(i => comments[i].Start).ToList();
 
-            var rows = new List<List<int>>();
+            var rows = new List<int>();
             var maxRows = 14;
             for (int i = 0; i < maxRows; i++) {
-                rows.Add(new List<int>());
+                rows.Add(-1);
             }
 
             var overlap = new Func<int, int, double>((a, b) =>
@@ -97,21 +97,21 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             foreach (var i in indexes) {
                 var movement = 1000.0;
-                List<int> minRow = rows[0];
-                foreach (var row in rows) {
-                    if (row.Count > 0) {
-                        var o = overlap(row.Last(), i);
+                int minRow = -1;
+                for (var r = 0; r < maxRows; ++r) {
+                    if (rows[r] >= 0) {
+                        var o = overlap(rows[r], i);
                         if (o > 0) {
                             if (o < movement) {
                                 movement = Math.Min(movement, o);
-                                minRow = row;
+                                minRow = r;
                             }
 
                             continue;
                         }
                     }
 
-                    row.Add(i);
+                    rows[r] = i;
                     movement = -1;
                     break;
                 }
@@ -119,16 +119,12 @@ namespace Pimix.Apps.SubUtil.Commands {
                 if (movement > 0) {
                     comments[i].Start += TimeSpan.FromSeconds(movement);
                     comments[i].End += TimeSpan.FromSeconds(movement);
-                    minRow.Add(i);
+                    rows[minRow] = i;
 
                     logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
                     totalMoved++;
                     totalMovement += movement;
                 }
-            }
-
-            foreach (var row in rows) {
-                logger.Info("Row has {} comments", row.Count);
             }
 
             logger.Info("{} comments moved, by {}.", totalMoved, totalMovement);
