@@ -2,6 +2,8 @@
 
 namespace Pimix.Subtitle.Ass {
     public class AssDialogueTextElement {
+        public AssTextFunction Function { get; set; }
+
         public string Content { get; set; }
 
         public bool? Bold { get; set; }
@@ -66,7 +68,8 @@ namespace Pimix.Subtitle.Ass {
             styleText += GenerateAssTextForAttribute("2", SecondaryColour);
             styleText += GenerateAssTextForAttribute("3", OutlineColour);
             styleText += GenerateAssTextForAttribute("4", BackColour);
-            return (!string.IsNullOrEmpty(styleText) ? $"{{{styleText}}}" : "") + Content;
+            return Function + (!string.IsNullOrEmpty(styleText) ? $"{{{styleText}}}" : "") +
+                   Content;
         }
 
         static string GenerateAssTextForAttribute(string name, bool? value)
