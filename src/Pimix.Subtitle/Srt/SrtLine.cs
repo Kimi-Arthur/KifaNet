@@ -26,7 +26,7 @@ namespace Pimix.Subtitle.Srt {
 
         public AssDialogue ToAss()
             => new AssDialogue {
-                Layer = 1,
+                Layer = 2,
                 Text = new AssDialogueText {
                     TextElements = Text.Select(x => x.ToAss()).ToList()
                 },

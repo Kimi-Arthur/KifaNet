@@ -68,6 +68,7 @@ namespace Pimix.Bilibili {
                 ? new AssDialogue {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
+                    Layer = GetLayer(Mode),
                     Text = new AssDialogueText(Text),
                     Effect = new AssDialogueBannerEffect {
                         Delay = 1500 / (100 + Text.Length)
@@ -77,9 +78,12 @@ namespace Pimix.Bilibili {
                 : new AssDialogue {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
+                    Layer = GetLayer(Mode),
                     Text = new AssDialogueText(Text),
                     Style = GetStyle(Mode)
                 };
+
+        static int GetLayer(ModeType mode) => mode == ModeType.Normal ? 0 : 1;
 
         static AssStyle GetStyle(ModeType mode) {
             switch (mode) {
