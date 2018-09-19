@@ -22,6 +22,7 @@ namespace Pimix.Subtitle.Ass {
                 Name = "Subtitle",
                 Alignment = AssAlignment.BottomCenter,
                 FontSize = 80,
+                MarginV = 20
             };
 
         public static readonly AssStyle ToptitleStyle
@@ -129,7 +130,7 @@ namespace Pimix.Subtitle.Ass {
 
         public int MarginR { get; set; } = 10;
 
-        public int MarginV { get; set; } = 10;
+        public int MarginV { get; set; } = 2;
 
         public int Encoding { get; set; }
 
