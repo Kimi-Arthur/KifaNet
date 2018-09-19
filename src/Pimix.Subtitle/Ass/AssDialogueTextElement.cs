@@ -36,7 +36,7 @@ namespace Pimix.Subtitle.Ass {
 
         public int? FontRotationZ { get; set; }
 
-        public Color? PrimaryColour { get; set; } = null;
+        public Color? PrimaryColour { get; set; }
 
         public Color? SecondaryColour { get; set; }
 

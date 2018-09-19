@@ -25,13 +25,15 @@ namespace Pimix.Bilibili {
 
         static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(8);
 
+        static readonly int DefaultColor = Color.White.ToArgb();
+
         public string Text { get; set; }
 
         public TimeSpan VideoTime { get; set; }
 
         public DateTime PostTime { get; set; }
 
-        public Color TextColor { get; set; }
+        public Color? TextColor { get; set; }
 
         public ModeType Mode { get; set; }
 
@@ -51,6 +53,10 @@ namespace Pimix.Bilibili {
             Mode = (ModeType) int.Parse(values[1]);
             FontSize = int.Parse(values[2]);
             TextColor = Color.FromArgb(255, Color.FromArgb(int.Parse(values[3])));
+            if (TextColor.Value.ToArgb() == DefaultColor) {
+                TextColor = null;
+            }
+
             PostTime = new DateTime(1970, 1, 1).AddSeconds(double.Parse(values[4]));
             Pool = (PoolType) int.Parse(values[5]);
             UserId = long.Parse(values[6], NumberStyles.HexNumber);
