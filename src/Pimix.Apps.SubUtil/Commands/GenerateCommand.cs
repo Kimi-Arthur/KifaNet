@@ -50,6 +50,8 @@ namespace Pimix.Apps.SubUtil.Commands {
             var assFile =
                 target.Parent.GetFile(
                     $"{target.BaseName}.{srts.Keys.First()}.{chats.Keys.First()}.ass");
+            
+            assFile.Delete();
 
             using (var stream = new MemoryStream()) {
                 using (var sw = new StreamWriter(stream, Encoding.UTF8)) {

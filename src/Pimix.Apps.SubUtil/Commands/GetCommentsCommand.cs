@@ -60,6 +60,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var lastDot = rawFile.ToString().LastIndexOf(".", StringComparison.Ordinal);
             var targetUri = $"{rawFile.ToString().Substring(0, lastDot)}.{chat.Cid}{suffix}.xml";
             var target = new PimixFile(targetUri);
+            target.Delete();
             target.Write(memoryStream);
 
             memoryStream.Dispose();
