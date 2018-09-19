@@ -71,7 +71,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var screenWidth = 1920;
 
             var sizes = comments
-                .Select(x => x.Text.ToString().Length * 50F).ToList();
+                .Select(x => x.Text.TextElements.Sum(e => e.Content.Length) * 50F).ToList();
 
             var speeds = sizes.Zip(comments,
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)

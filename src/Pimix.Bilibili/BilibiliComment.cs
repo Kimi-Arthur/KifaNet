@@ -50,7 +50,7 @@ namespace Pimix.Bilibili {
             VideoTime = TimeSpan.FromSeconds(double.Parse(values[0]));
             Mode = (ModeType) int.Parse(values[1]);
             FontSize = int.Parse(values[2]);
-            TextColor = Color.FromArgb(int.Parse(values[3]));
+            TextColor = Color.FromArgb(255, Color.FromArgb(int.Parse(values[3])));
             PostTime = new DateTime(1970, 1, 1).AddSeconds(double.Parse(values[4]));
             Pool = (PoolType) int.Parse(values[5]);
             UserId = long.Parse(values[6], NumberStyles.HexNumber);
@@ -69,7 +69,10 @@ namespace Pimix.Bilibili {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
                     Layer = GetLayer(Mode),
-                    Text = new AssDialogueText(Text),
+                    Text = new AssDialogueText(new AssDialogueTextElement {
+                        PrimaryColour = TextColor,
+                        Content = Text
+                    }),
                     Effect = new AssDialogueBannerEffect {
                         Delay = 1500 / (100 + Text.Length)
                     },
@@ -79,7 +82,10 @@ namespace Pimix.Bilibili {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
                     Layer = GetLayer(Mode),
-                    Text = new AssDialogueText(Text),
+                    Text = new AssDialogueText(new AssDialogueTextElement {
+                        PrimaryColour = TextColor,
+                        Content = Text
+                    }),
                     Style = GetStyle(Mode)
                 };
 
