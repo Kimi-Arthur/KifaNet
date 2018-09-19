@@ -71,7 +71,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var screenWidth = 1920;
 
             var sizes = comments
-                .Select(x => x.Text.ToString().Length * 50).ToList();
+                .Select(x => x.Text.ToString().Length * 50F).ToList();
 
             var speeds = sizes.Zip(comments,
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
@@ -93,12 +93,11 @@ namespace Pimix.Apps.SubUtil.Commands {
                     (comments[a].End - comments[b].Start).TotalSeconds - screenWidth / speeds[b])
             );
 
-            var addMove = new Action<int, int>((c, row) => {
-                comments[c].Text.TextElements.First().Function = new AssMoveFunction {
-                    Start = new Point(screenWidth, row * 50 + 50),
-                    End = new Point(-sizes[c], row * 50 + 50)
-                };
-            });
+            var addMove = new Action<int, int>((c, row)
+                => comments[c].Text.TextElements.First().Function = new AssMoveFunction {
+                    Start = new PointF(screenWidth + sizes[c] / 2, row * 50),
+                    End = new PointF(-sizes[c] / 2, row * 50)
+                });
 
             var totalMoved = 0;
             var totalMovement = 0.0;
