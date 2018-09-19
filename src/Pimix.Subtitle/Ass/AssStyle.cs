@@ -28,7 +28,9 @@ namespace Pimix.Subtitle.Ass {
         public static readonly AssStyle ToptitleStyle
             = new AssStyle {
                 Name = "Toptitle",
-                Alignment = AssAlignment.TopCenter
+                Alignment = AssAlignment.TopCenter,
+                FontSize = 80,
+                MarginV = 20
             };
 
         public static readonly AssStyle NormalCommentStyle
@@ -52,7 +54,8 @@ namespace Pimix.Subtitle.Ass {
         public static readonly AssStyle BottomCommentStyle
             = new AssStyle {
                 Name = "BottomComment",
-                Alignment = AssAlignment.BottomCenter
+                Alignment = AssAlignment.BottomCenter,
+                MarginV = 200 // Avoid subtitle area.
             };
 
         public static readonly List<AssStyle> Styles =
