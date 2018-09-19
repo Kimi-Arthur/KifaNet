@@ -27,8 +27,6 @@ namespace Pimix.Apps.SubUtil.Commands {
                 Title = target.BaseName
             });
 
-            ConfigureStyles();
-
             document.Sections.Add(new AssStylesSection {
                 Styles = AssStyle.Styles
             });
@@ -66,7 +64,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        void AddMove(List<AssDialogue> comments) {
+        static void AddMove(List<AssDialogue> comments) {
             var screenWidth = 1920;
 
             var sizes = comments
@@ -128,9 +126,6 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
 
             logger.Info("{} comments moved, by {}.", totalMoved, totalMovement);
-        }
-
-        void ConfigureStyles() {
         }
 
         static Dictionary<string, SrtDocument> GetSrt(PimixFile parent, string baseName) {
