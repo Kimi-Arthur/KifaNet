@@ -5,6 +5,6 @@ namespace Pimix.Subtitle.Ass {
         public Point Start { get; set; }
         public Point End { get; set; }
 
-        public override string ToString() => $"\\move({Start.X}, {Start.Y}, {End.X}, {End.Y})";
+        public override string ToString() => $"{{\\move({Start.X}, {Start.Y}, {End.X}, {End.Y})}}";
     }
 }
