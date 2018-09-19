@@ -23,7 +23,7 @@ namespace Pimix.Bilibili {
             Special
         }
 
-        static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(10);
+        static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(8);
 
         public string Text { get; set; }
 
