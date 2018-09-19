@@ -51,7 +51,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var assFile =
                 target.Parent.GetFile(
                     $"{target.BaseName}.{srts.Keys.First()}.{chats.Keys.First()}.ass");
-            
+
             assFile.Delete();
 
             using (var stream = new MemoryStream()) {
@@ -95,8 +95,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var addMove = new Action<int, int>((c, row) => {
                 comments[c].Text.TextElements.First().Function = new AssMoveFunction {
-                    Start = new Point(screenWidth, row * 40),
-                    End = new Point(-sizes[c], row * 40)
+                    Start = new Point(screenWidth, row * 40 + 40),
+                    End = new Point(-sizes[c], row * 40 + 40)
                 };
             });
 
