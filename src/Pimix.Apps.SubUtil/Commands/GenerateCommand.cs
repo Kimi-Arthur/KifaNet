@@ -76,54 +76,54 @@ namespace Pimix.Apps.SubUtil.Commands {
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
                 .ToList();
 
-            var rows = new List<SortedList<TimeSpan, int>>();
+            var indexes = Enumerable.Range(0, comments.Count)
+                .Where(i => comments[i].Style == AssStyle.NormalCommentStyle)
+                .OrderBy(i => comments[i].Start).ToList();
+
+            var rows = new List<List<int>>();
             var maxRows = 14;
             for (int i = 0; i < maxRows; i++) {
-                rows.Add(new SortedList<TimeSpan, int>());
+                rows.Add(new List<int>());
             }
 
-            var collide = new Func<int, int, bool>((a, b) => {
-                if ((comments[b].Start - comments[a].Start).TotalSeconds * speeds[a] <
-                    sizes[a]) {
-                    return true;
-                }
+            var overlap = new Func<int, int, double>((a, b) =>
+                Math.Max(
+                    sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                    (comments[a].End - comments[b].Start).TotalSeconds - screenWidth / speeds[b])
+            );
 
-                if ((comments[a].End - comments[b].Start).TotalSeconds * speeds[b] >
-                    screenWidth) {
-                    return true;
-                }
+            var totalMoved = 0;
+            var totalMovement = 0.0;
 
-                return false;
-            });
-
-            var notAdded = 0;
-
-            for (int i = 0; i < comments.Count; i++) {
-                var added = false;
+            foreach (var i in indexes) {
+                var movement = 1000.0;
+                List<int> minRow = rows[0];
                 foreach (var row in rows) {
-                    if (row.ContainsKey(comments[i].Start)) {
-                        continue;
+                    if (row.Count > 0) {
+                        var o = overlap(row.Last(), i);
+                        if (o > 0) {
+                            if (o < movement) {
+                                movement = Math.Min(movement, o);
+                                minRow = row;
+                            }
+
+                            continue;
+                        }
                     }
 
-                    row.Add(comments[i].Start, i);
-                    var index = row.IndexOfKey(comments[i].Start);
-                    if (index > 0 && collide(row.ElementAt(index - 1).Value, i)) {
-                        row.RemoveAt(index);
-                        continue;
-                    }
-
-                    if (index < row.Count - 1 && collide(i, row.ElementAt(index + 1).Value)) {
-                        row.RemoveAt(index);
-                        continue;
-                    }
-
-                    added = true;
+                    row.Add(i);
+                    movement = -1;
                     break;
                 }
 
-                if (!added) {
-                    logger.Warn("Comment {} not added.", comments[i].Text);
-                    notAdded++;
+                if (movement > 0) {
+                    comments[i].Start += TimeSpan.FromSeconds(movement);
+                    comments[i].End += TimeSpan.FromSeconds(movement);
+                    minRow.Add(i);
+
+                    logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
+                    totalMoved++;
+                    totalMovement += movement;
                 }
             }
 
@@ -131,7 +131,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 logger.Info("Row has {} comments", row.Count);
             }
 
-            logger.Info("{} comments not added.", notAdded);
+            logger.Info("{} comments moved, by {}.", totalMoved, totalMovement);
         }
 
         void ConfigureStyles() {
