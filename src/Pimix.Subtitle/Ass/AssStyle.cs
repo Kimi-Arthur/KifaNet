@@ -11,13 +11,13 @@ namespace Pimix.Subtitle.Ass {
 
         public const string DefaultFontName = "Arial";
 
-        public static readonly AssStyle DefaultStyle
+        public static AssStyle DefaultStyle { get; set; }
             = new AssStyle {
                 Name = "Default",
                 Alignment = AssAlignment.BottomCenter
             };
 
-        public static readonly AssStyle SubtitleStyle
+        public static AssStyle SubtitleStyle { get; set; }
             = new AssStyle {
                 Name = "Subtitle",
                 Alignment = AssAlignment.BottomCenter,
@@ -25,7 +25,7 @@ namespace Pimix.Subtitle.Ass {
                 MarginV = 20
             };
 
-        public static readonly AssStyle ToptitleStyle
+        public static AssStyle ToptitleStyle { get; set; }
             = new AssStyle {
                 Name = "Toptitle",
                 Alignment = AssAlignment.TopCenter,
@@ -33,25 +33,25 @@ namespace Pimix.Subtitle.Ass {
                 MarginV = 20
             };
 
-        public static readonly AssStyle NormalCommentStyle
+        public static AssStyle NormalCommentStyle { get; set; }
             = new AssStyle {
                 Name = "NormalComment",
                 Alignment = AssAlignment.TopCenter
             };
 
-        public static readonly AssStyle RtlCommentStyle
+        public static AssStyle RtlCommentStyle { get; set; }
             = new AssStyle {
                 Name = "RtlComment",
                 Alignment = AssAlignment.TopCenter
             };
 
-        public static readonly AssStyle TopCommentStyle
+        public static AssStyle TopCommentStyle { get; set; }
             = new AssStyle {
                 Name = "TopComment",
                 Alignment = AssAlignment.TopCenter
             };
 
-        public static readonly AssStyle BottomCommentStyle
+        public static AssStyle BottomCommentStyle { get; set; }
             = new AssStyle {
                 Name = "BottomComment",
                 Alignment = AssAlignment.BottomCenter,
