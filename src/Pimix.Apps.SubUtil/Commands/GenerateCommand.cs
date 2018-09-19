@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -92,6 +93,13 @@ namespace Pimix.Apps.SubUtil.Commands {
                     (comments[a].End - comments[b].Start).TotalSeconds - screenWidth / speeds[b])
             );
 
+            var addMove = new Action<int, int>((c, row) => {
+                comments[c].Text.TextElements.First().Function = new AssMoveFunction {
+                    Start = new Point(screenWidth, row * 40),
+                    End = new Point(-sizes[c], row * 40)
+                };
+            });
+
             var totalMoved = 0;
             var totalMovement = 0.0;
 
@@ -111,6 +119,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                         }
                     }
 
+                    addMove(i, r);
                     rows[r] = i;
                     movement = -1;
                     break;
@@ -119,6 +128,8 @@ namespace Pimix.Apps.SubUtil.Commands {
                 if (movement > 0) {
                     comments[i].Start += TimeSpan.FromSeconds(movement);
                     comments[i].End += TimeSpan.FromSeconds(movement);
+
+                    addMove(i, minRow);
                     rows[minRow] = i;
 
                     logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
