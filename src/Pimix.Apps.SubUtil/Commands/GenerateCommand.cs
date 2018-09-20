@@ -21,7 +21,10 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
+            return GenerateComments(target);
+        }
 
+        int GenerateComments(PimixFile target) {
             var document = new AssDocument();
 
             document.Sections.Add(new AssScriptInfoSection {
