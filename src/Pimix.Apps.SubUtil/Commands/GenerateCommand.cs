@@ -95,8 +95,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var addMove = new Action<int, int>((c, row)
                 => comments[c].Text.TextElements.First().Function = new AssMoveFunction {
-                    Start = new PointF(screenWidth + sizes[c] / 2, row * 60),
-                    End = new PointF(-sizes[c] / 2, row * 60)
+                    Start = new PointF(screenWidth + sizes[c] / 2, row * 50),
+                    End = new PointF(-sizes[c] / 2, row * 50)
                 });
 
             var totalMoved = 0;

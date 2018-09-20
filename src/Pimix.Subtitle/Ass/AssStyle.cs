@@ -10,6 +10,7 @@ namespace Pimix.Subtitle.Ass {
         }
 
         public const string DefaultFontName = "Arial";
+        public const int DefaultSemiAlpha = 160;
 
         public static AssStyle DefaultStyle { get; set; }
             = new AssStyle {
@@ -36,25 +37,41 @@ namespace Pimix.Subtitle.Ass {
         public static AssStyle NormalCommentStyle { get; set; }
             = new AssStyle {
                 Name = "NormalComment",
-                Alignment = AssAlignment.TopCenter
+                Alignment = AssAlignment.TopCenter,
+                PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+                BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
             };
 
         public static AssStyle RtlCommentStyle { get; set; }
             = new AssStyle {
                 Name = "RtlComment",
-                Alignment = AssAlignment.TopCenter
+                Alignment = AssAlignment.TopCenter,
+                PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+                BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
             };
 
         public static AssStyle TopCommentStyle { get; set; }
             = new AssStyle {
                 Name = "TopComment",
-                Alignment = AssAlignment.TopCenter
+                Alignment = AssAlignment.TopCenter,
+                PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+                BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
             };
 
         public static AssStyle BottomCommentStyle { get; set; }
             = new AssStyle {
                 Name = "BottomComment",
                 Alignment = AssAlignment.BottomCenter,
+                PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+                OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+                BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
                 MarginV = 200 // Avoid subtitle area.
             };
 
@@ -73,7 +90,7 @@ namespace Pimix.Subtitle.Ass {
 
         public string FontName { get; set; } = DefaultFontName;
 
-        public int FontSize { get; set; } = 60;
+        public int FontSize { get; set; } = 50;
 
         public Color PrimaryColour { get; set; } = Color.White;
 
@@ -114,7 +131,7 @@ namespace Pimix.Subtitle.Ass {
             }
         }
 
-        int shadow;
+        int shadow = 1;
 
         public int Shadow {
             get => shadow;
@@ -129,11 +146,11 @@ namespace Pimix.Subtitle.Ass {
 
         public AssAlignment Alignment { get; set; }
 
-        public int MarginL { get; set; } = 10;
+        public int MarginL { get; set; }
 
-        public int MarginR { get; set; } = 10;
+        public int MarginR { get; set; }
 
-        public int MarginV { get; set; } = 2;
+        public int MarginV { get; set; }
 
         public int Encoding { get; set; }
 
