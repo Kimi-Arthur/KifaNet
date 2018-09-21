@@ -99,23 +99,26 @@ namespace Pimix.Apps.SubUtil.Commands {
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
                 .ToList();
 
+            AddFunction(
+                comments,
+                (a, b) =>
+                    Math.Max(
+                        sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                        (comments[a].End - comments[b].Start).TotalSeconds -
+                        screenWidth / speeds[b]),
+                (c, row) => comments[c].Text.TextElements.First().Function = new AssMoveFunction {
+                    Start = new PointF(screenWidth + sizes[c] / 2, row * 50),
+                    End = new PointF(-sizes[c] / 2, row * 50)
+                });
+        }
+
+        static void AddFunction(List<AssDialogue> comments, Func<int, int, double> getOverlap,
+            Action<int, int> addFunction) {
             var rows = new List<int>();
             var maxRows = 14;
             for (int i = 0; i < maxRows; i++) {
                 rows.Add(-1);
             }
-
-            var overlap = new Func<int, int, double>((a, b) =>
-                Math.Max(
-                    sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
-                    (comments[a].End - comments[b].Start).TotalSeconds - screenWidth / speeds[b])
-            );
-
-            var addMove = new Action<int, int>((c, row)
-                => comments[c].Text.TextElements.First().Function = new AssMoveFunction {
-                    Start = new PointF(screenWidth + sizes[c] / 2, row * 50),
-                    End = new PointF(-sizes[c] / 2, row * 50)
-                });
 
             var totalMoved = 0;
             var totalMovement = 0.0;
@@ -126,7 +129,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 int minRow = -1;
                 for (var r = 0; r < maxRows; ++r) {
                     if (rows[r] >= 0) {
-                        var o = overlap(rows[r], i);
+                        var o = getOverlap(rows[r], i);
                         if (o > 0) {
                             if (o < movement) {
                                 movement = Math.Min(movement, o);
@@ -137,7 +140,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                         }
                     }
 
-                    addMove(i, r);
+                    addFunction(i, r);
                     rows[r] = i;
                     movement = -1;
                     break;
@@ -152,7 +155,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                     comments[i].Start += TimeSpan.FromSeconds(movement);
                     comments[i].End += TimeSpan.FromSeconds(movement);
 
-                    addMove(i, minRow);
+                    addFunction(i, minRow);
                     rows[minRow] = i;
 
                     totalMoved++;
