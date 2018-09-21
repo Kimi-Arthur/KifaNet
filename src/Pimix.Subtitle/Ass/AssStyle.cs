@@ -71,8 +71,7 @@ namespace Pimix.Subtitle.Ass {
                 PrimaryColour = Color.White,
                 SecondaryColour = Color.White,
                 OutlineColour = Color.Black,
-                BackColour = Color.Black,
-                MarginV = 200 // Avoid subtitle area.
+                BackColour = Color.Black
             };
 
         public static List<AssStyle> Styles =>

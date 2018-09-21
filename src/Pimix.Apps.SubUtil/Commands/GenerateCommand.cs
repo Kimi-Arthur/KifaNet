@@ -63,7 +63,16 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var bilibiliComments = chats.Values.First().Comments
                 .Select(x => x.GenerateAssDialogue()).ToList();
-            AddMove(bilibiliComments.Where(c => c.Style == AssStyle.NormalCommentStyle)
+            PositionNormalComments(bilibiliComments
+                .Where(c => c.Style == AssStyle.NormalCommentStyle)
+                .OrderBy(c => c.Start).ToList());
+
+            PositionTopComments(bilibiliComments
+                .Where(c => c.Style == AssStyle.TopCommentStyle)
+                .OrderBy(c => c.Start).ToList());
+
+            PositionBottomComments(bilibiliComments
+                .Where(c => c.Style == AssStyle.BottomCommentStyle)
                 .OrderBy(c => c.Start).ToList());
 
             events.Events.AddRange(bilibiliComments);
@@ -89,7 +98,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        static void AddMove(List<AssDialogue> comments) {
+        static void PositionNormalComments(List<AssDialogue> comments) {
             var screenWidth = 1920;
 
             var sizes = comments
@@ -106,14 +115,32 @@ namespace Pimix.Apps.SubUtil.Commands {
                         sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
-                (c, row) => comments[c].Text.TextElements.First().Function = new AssMoveFunction {
+                (c, row) => new AssMoveFunction {
                     Start = new PointF(screenWidth + sizes[c] / 2, row * 50),
                     End = new PointF(-sizes[c] / 2, row * 50)
                 });
         }
 
+        static void PositionTopComments(List<AssDialogue> comments) {
+            AddFunction(
+                comments,
+                (a, b) => (comments[a].End - comments[b].Start).Seconds,
+                (c, row) => new AssPositionFunction {
+                    Position = new PointF(960, row * 50)
+                });
+        }
+
+        static void PositionBottomComments(List<AssDialogue> comments) {
+            AddFunction(
+                comments,
+                (a, b) => (comments[a].End - comments[b].Start).Seconds,
+                (c, row) => new AssPositionFunction {
+                    Position = new PointF(960, 1080 - 200 - row * 50)
+                });
+        }
+
         static void AddFunction(List<AssDialogue> comments, Func<int, int, double> getOverlap,
-            Action<int, int> addFunction) {
+            Func<int, int, AssTextFunction> getFunction) {
             var rows = new List<int>();
             var maxRows = 14;
             for (int i = 0; i < maxRows; i++) {
@@ -140,7 +167,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                         }
                     }
 
-                    addFunction(i, r);
+                    comments[i].Text.TextElements.First().Function = getFunction(i, r);
                     rows[r] = i;
                     movement = -1;
                     break;
@@ -155,7 +182,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                     comments[i].Start += TimeSpan.FromSeconds(movement);
                     comments[i].End += TimeSpan.FromSeconds(movement);
 
-                    addFunction(i, minRow);
+                    comments[i].Text.TextElements.First().Function = getFunction(i, minRow);
                     rows[minRow] = i;
 
                     totalMoved++;
