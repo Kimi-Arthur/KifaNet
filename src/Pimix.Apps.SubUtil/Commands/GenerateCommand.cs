@@ -20,8 +20,26 @@ namespace Pimix.Apps.SubUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var target = new PimixFile(FileUri);
-            return GenerateComments(target);
+            var source = new PimixFile(FileUri);
+
+            var files = source.List(true).ToList();
+            if (files.Count > 0) {
+                foreach (var file in files) {
+                    Console.WriteLine(file);
+                }
+
+                Console.Write($"Confirm generating comments for the {files.Count} files above?");
+                Console.ReadLine();
+
+                return files.Max(f => GenerateComments(new PimixFile(f.ToString())));
+            }
+
+            if (source.Exists()) {
+                return GenerateComments(source);
+            }
+
+            logger.Error("Source {0} doesn't exist or folder contains no files.", source);
+            return 1;
         }
 
         int GenerateComments(PimixFile target) {
@@ -134,7 +152,6 @@ namespace Pimix.Apps.SubUtil.Commands {
                     addMove(i, minRow);
                     rows[minRow] = i;
 
-                    logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
                     totalMoved++;
                     totalMovement += movement;
                 }
