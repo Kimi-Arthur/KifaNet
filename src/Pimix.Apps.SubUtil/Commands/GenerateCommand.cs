@@ -122,6 +122,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var totalMoved = 0;
             var totalMovement = 0.0;
+            var totalBigMove = 0;
 
             foreach (var i in indexes) {
                 var movement = 1000.0;
@@ -146,6 +147,11 @@ namespace Pimix.Apps.SubUtil.Commands {
                 }
 
                 if (movement > 0) {
+                    if (movement > 10) {
+                        totalBigMove++;
+                        logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
+                    }
+
                     comments[i].Start += TimeSpan.FromSeconds(movement);
                     comments[i].End += TimeSpan.FromSeconds(movement);
 
@@ -157,7 +163,10 @@ namespace Pimix.Apps.SubUtil.Commands {
                 }
             }
 
-            logger.Info("{} comments moved, by {}.", totalMoved, totalMovement);
+            logger.Info("{} comments moved, by {} in total.", totalMoved, totalMovement);
+            if (totalBigMove > 0) {
+                logger.Warn("{} comments are moved by more than 10 seconds!", totalBigMove);
+            }
         }
 
         static Dictionary<string, SrtDocument> GetSrt(PimixFile parent, string baseName) {
