@@ -63,7 +63,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var bilibiliComments = chats.Values.First().Comments
                 .Select(x => x.GenerateAssDialogue()).ToList();
-            AddMove(bilibiliComments);
+            AddMove(bilibiliComments.Where(c => c.Style == AssStyle.NormalCommentStyle)
+                .OrderBy(c => c.Start).ToList());
 
             events.Events.AddRange(bilibiliComments);
 
@@ -98,10 +99,6 @@ namespace Pimix.Apps.SubUtil.Commands {
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
                 .ToList();
 
-            var indexes = Enumerable.Range(0, comments.Count)
-                .Where(i => comments[i].Style == AssStyle.NormalCommentStyle)
-                .OrderBy(i => comments[i].Start).ToList();
-
             var rows = new List<int>();
             var maxRows = 14;
             for (int i = 0; i < maxRows; i++) {
@@ -124,7 +121,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var totalMovement = 0.0;
             var totalBigMove = 0;
 
-            foreach (var i in indexes) {
+            for (var i = 0; i < comments.Count; i++) {
                 var movement = 1000.0;
                 int minRow = -1;
                 for (var r = 0; r < maxRows; ++r) {
