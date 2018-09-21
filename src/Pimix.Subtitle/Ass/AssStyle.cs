@@ -58,20 +58,20 @@ namespace Pimix.Subtitle.Ass {
             = new AssStyle {
                 Name = "TopComment",
                 Alignment = AssAlignment.TopCenter,
-                PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-                SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-                OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
-                BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
+                PrimaryColour = Color.White,
+                SecondaryColour = Color.White,
+                OutlineColour = Color.Black,
+                BackColour = Color.Black
             };
 
         public static AssStyle BottomCommentStyle { get; set; }
             = new AssStyle {
                 Name = "BottomComment",
                 Alignment = AssAlignment.BottomCenter,
-                PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-                SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-                OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
-                BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+                PrimaryColour = Color.White,
+                SecondaryColour = Color.White,
+                OutlineColour = Color.Black,
+                BackColour = Color.Black,
                 MarginV = 200 // Avoid subtitle area.
             };
 

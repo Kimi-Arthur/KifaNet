@@ -82,8 +82,7 @@ namespace Pimix.Subtitle.Ass {
 
         static string GenerateAssTextForAttribute(string name, Color? value)
             => value.HasValue
-                ? $"\\{name}a&H{255 - value.Value.A:X2}&"
-                  + $"\\{name}c&H{value.Value.B:X2}{value.Value.G:X2}{value.Value.R:X2}&"
+                ? $"\\{name}c&H{value.Value.B:X2}{value.Value.G:X2}{value.Value.R:X2}&"
                 : "";
     }
 }

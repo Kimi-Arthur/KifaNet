@@ -53,8 +53,11 @@ namespace Pimix.Bilibili {
             VideoTime = TimeSpan.FromSeconds(double.Parse(values[0]));
             Mode = (ModeType) int.Parse(values[1]);
             FontSize = int.Parse(values[2]);
-            TextColor = Color.FromArgb(AssStyle.DefaultSemiAlpha,
-                Color.FromArgb(int.Parse(values[3])));
+            var alpha = Mode == ModeType.Bottom || Mode == ModeType.Top
+                ? 255
+                : AssStyle.DefaultSemiAlpha;
+
+            TextColor = Color.FromArgb(alpha, Color.FromArgb(int.Parse(values[3])));
             if (TextColor.Value.ToArgb() == DefaultColor) {
                 TextColor = null;
             }
