@@ -75,7 +75,7 @@ namespace Pimix.Subtitle.Ass {
                 MarginV = 200 // Avoid subtitle area.
             };
 
-        public static readonly List<AssStyle> Styles =
+        public static List<AssStyle> Styles =>
             new List<AssStyle> {
                 DefaultStyle,
                 SubtitleStyle,
