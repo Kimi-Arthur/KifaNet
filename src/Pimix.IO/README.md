@@ -30,6 +30,7 @@ Updates:
 - 1.2.2
   - Update dependency logic.- 1.0.0
   - Begin package versioning.
+
 ###1.1
 - Added `Pimix.IO.StorageClient` interface.
 - 1.1.1
