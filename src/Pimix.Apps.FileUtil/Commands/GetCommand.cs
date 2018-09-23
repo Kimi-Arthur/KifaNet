@@ -80,6 +80,18 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
+            foreach (var location in info.Locations) {
+                if (location.Value != null) {
+                    var linkSource = new PimixFile(location.Key);
+                    if (linkSource.Client is FileStorageClient) {
+                        linkSource.Copy(target);
+                        target.Register(true);
+                        logger.Info("Got {0} through copying from {1}.", target, linkSource);
+                        return 0;
+                    }
+                }
+            }
+
             var source = new PimixFile(FileInformation.GetLocation(info.Id,
                 UseBaiduCloud
                     ? new List<string> {"baidu", "google"}

@@ -27,9 +27,14 @@ namespace Pimix.IO {
             var specs = fileSpec.Split(';');
             foreach (var spec in specs) {
                 if (spec.StartsWith("local:")) {
+                    var serverId = spec.Substring(6);
+                    if (!ServerConfigs.ContainsKey(serverId)) {
+                        return null;
+                    }
+
                     return new FileStorageClient {
-                        ServerId = spec.Substring(6),
-                        Server = ServerConfigs.GetValueOrDefault(spec.Substring(6), null)
+                        ServerId = serverId,
+                        Server = ServerConfigs[serverId]
                     };
                 }
             }
