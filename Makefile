@@ -1,23 +1,52 @@
 SHELL := /bin/zsh
 
+bin_folder := /usr/local/bin
+lib_folder := /usr/local/lib/Pimix
+
+sdk_version := netcoreapp2.1
+
+ifeq ($(shell uname), Darwin)
+	os_version := osx-x64
+else
+	os_version := linux-x64
+endif
+
 all: build install
 
 dev: build install_dev
 
 staging: build install_staging
 
+linux: os_version=linux-x64
+linux: build
+
+mac: os_version=osx-x64
+mac: build
+
+win10: os_version=win10-x64
+win10: build
+
+win: os_version=win-x64
+win: build
+
+setup:
+	sudo ln -sf ${lib_folder}/fileutil/fileutil ${bin_folder}/fileutil
+	sudo ln -sf ${lib_folder}/jobutil/jobutil ${bin_folder}/jobutil
+	sudo ln -sf ${lib_folder}/subutil/subutil ${bin_folder}/subutil
+
 build:
-	dotnet publish -c Release src/Pimix.Apps.FileUtil
-	dotnet publish -c Release src/Pimix.Apps.JobUtil
-	dotnet publish -c Release src/Pimix.Apps.SubUtil
+	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.FileUtil
+	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.JobUtil
+	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.SubUtil
 
 install:
-	mkdir -p /usr/local/lib/pimix/fileutil
-	mkdir -p /usr/local/lib/pimix/jobutil
-	mkdir -p /usr/local/lib/pimix/subutil
-	cp -R src/Pimix.Apps.FileUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/fileutil
-	cp -R src/Pimix.Apps.JobUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/jobutil
-	cp -R src/Pimix.Apps.SubUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/subutil
+	rm -rf ${lib_folder}
+	mkdir -p ${lib_folder}/fileutil
+	mkdir -p ${lib_folder}/jobutil
+	mkdir -p ${lib_folder}/subutil
+	cp -R src/Pimix.Apps.FileUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/fileutil
+	cp -R src/Pimix.Apps.JobUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/jobutil
+	cp -R src/Pimix.Apps.SubUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/subutil
 
 install_dev:
 	mkdir -p /usr/local/lib/pimix/fileutil_dev
@@ -36,6 +65,5 @@ install_staging:
 	cp -R src/Pimix.Apps.SubUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/subutil_staging
 
 clean:
-	rm -rf /usr/local/lib/pimix
 	dotnet clean
 
