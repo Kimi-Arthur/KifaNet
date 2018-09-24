@@ -5,12 +5,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj"/>
-        <ProjectReference Include="..\Pimix.Subtitle\Pimix.Subtitle.csproj"/>
+        <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
+        <ProjectReference Include="..\Pimix.Subtitle\Pimix.Subtitle.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="HtmlAgilityPack" Version="1.8.7"/>
+        <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
     </ItemGroup>
 
 </Project>

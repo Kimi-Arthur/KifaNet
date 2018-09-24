@@ -27,7 +27,10 @@ namespace PimixTest.Bilibili {
                     "[Script Info]\r\n" +
                     "Title: 【7月】工作细胞 01【独家正版】\r\n" +
                     "Original Script: Bilibili\r\n" +
-                    "Script Type: V4.00+\r\n\r\n"));
+                    "Script Type: V4.00+\r\n" +
+                    "Collisions: Normal\r\n" +
+                    "PlayResX: 1920\r\n" +
+                    "PlayResY: 1080\r\n\r\n"));
         }
 
         [TestMethod]

@@ -2,6 +2,7 @@
 using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Bilibili;
+using Pimix.Subtitle.Ass;
 
 namespace PimixTest.Bilibili {
     [TestClass]
@@ -14,7 +15,7 @@ namespace PimixTest.Bilibili {
             Assert.AreEqual(TimeSpan.FromSeconds(163.708), comment.VideoTime);
             Assert.AreEqual(BilibiliComment.ModeType.Normal, comment.Mode);
             Assert.AreEqual(25, comment.FontSize);
-            Assert.AreEqual(Color.FromArgb(0, 255, 255, 255), comment.TextColor);
+            Assert.AreEqual(null, comment.TextColor);
             Assert.AreEqual(new DateTime(2015, 1, 3, 19, 11, 8), comment.PostTime);
             Assert.AreEqual(BilibiliComment.PoolType.Normal, comment.Pool);
             Assert.AreEqual(4246950404L, comment.UserId);
