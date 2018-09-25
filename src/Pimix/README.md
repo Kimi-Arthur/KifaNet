@@ -3,7 +3,35 @@
 
 Assembly Name
 ---
-Pimix.dll
+**Pimix.dll**
+
+APIs
+---
+- `Pimix.Retry`
+  - `Retry.Run(action, handleException)`
+- `Pimix.ByteArrayExtensions`
+  - `byte[].ToHexString()`
+  - `long.ToByteArray()`
+  - `byte[].ToInt64()`
+- `Pimix.DictionaryExtensions`
+  - `IDictionary.GetValueOrDefault(key, defaultValue)`
+- `Pimix.MathExtensions`
+  - `long.RoundUp(period)`
+  - `int.RoundUp(period)`
+  - `long.RoundDown(period)`
+  - `int.RoundDown(period)`
+- `Pimix.StringExtensions`
+  - `string.Format(parameters)`
+  - `string.Format(args)`
+  - `string.ParseSizeString()`
+  - `string.ParseHexString()`
+  - `string.ParseTimeSpanString()`
+- `Pimix.WebResponseExtensions`
+  - `WebResponse.GetJToken()`
+  - `WebResponse.GetObject()`
+  - `WebResponse.GetDictionary()`
+  - `HttpResponseMessage.GetJToken()`
+  - `HttpResponseMessage.GetObject()`
 
 Current Version:
 ---
@@ -11,14 +39,14 @@ Current Version:
 
 Dependencies:
 ---
- - **NewtonSoft.Json**: 7.0.1
+- **NewtonSoft.Json**: 11.0.2
+- **NLog**: 4.5.9
 
-Changes:
+Updates:
 ---
- - 1.0.0
-  - Begin package versioning.
- - 1.0.*
-  - Add `.pdb` file into nuget package.
-  - Include this file `README.md` to the package.
-  - Use 3 digit version number now.
-  - Changed assembly version object.
+
+### 2.0
+- Add `Retry` to handle generic retry logic.
+
+### 1.0
+- Add extensions.
