@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using Pimix.Cloud.GoogleDrive;
 using Pimix.IO;
+using Pimix.Service;
 using Xunit;
 
 namespace PimixTest.Cloud.GoogleDrive {
@@ -10,7 +11,7 @@ namespace PimixTest.Cloud.GoogleDrive {
         public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         public GoogleDriveStorageClientTests() {
-            GoogleDriveConfig.PimixServerApiAddress = PimixServerApiAddress;
+            PimixService.PimixServerApiAddress = PimixServerApiAddress;
             GoogleDriveStorageClient.Config = GoogleDriveConfig.Get("default");
 
             GetStorageClient().Delete("/Test/big.bin");

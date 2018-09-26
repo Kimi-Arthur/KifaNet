@@ -23,11 +23,6 @@ namespace Pimix.Cloud.GoogleDrive {
         [JsonProperty("apis")]
         public APIList APIList { get; private set; }
 
-        public static string PimixServerApiAddress {
-            get => PimixService.PimixServerApiAddress;
-            set => PimixService.PimixServerApiAddress = value;
-        }
-
         public static GoogleDriveConfig Get(string id) => PimixService.Get<GoogleDriveConfig>(id);
     }
 

@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace PimixTest.Cloud.BaiduCloud {
     [TestClass]
@@ -133,7 +134,7 @@ namespace PimixTest.Cloud.BaiduCloud {
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx) {
-            BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
+            PimixService.PimixServerApiAddress = PimixServerApiAddress;
             BaiduCloudStorageClient.Config = BaiduCloudConfig.Get("default");
 
             DataCleanup();

@@ -2,16 +2,6 @@
 
 namespace Pimix.Cloud.MegaNz {
     public partial class MegaNzConfig {
-        public static string PimixServerApiAddress {
-            get => PimixService.PimixServerApiAddress;
-            set => PimixService.PimixServerApiAddress = value;
-        }
-
-        public static string PimixServerCredential {
-            get => PimixService.PimixServerCredential;
-            set => PimixService.PimixServerCredential = value;
-        }
-
         public static bool Patch(MegaNzConfig data, string id = null)
             => PimixService.Patch(data, id);
 

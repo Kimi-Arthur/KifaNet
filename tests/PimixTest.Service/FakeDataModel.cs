@@ -25,16 +25,6 @@ namespace PimixTest.Service {
 
         #region PimixService Wrappers
 
-        public static string PimixServerApiAddress {
-            get => PimixService.PimixServerApiAddress;
-            set => PimixService.PimixServerApiAddress = value;
-        }
-
-        public static string PimixServerCredential {
-            get => PimixService.PimixServerCredential;
-            set => PimixService.PimixServerCredential = value;
-        }
-
         public static bool Patch(FakeDataModel data, string id = null)
             => PimixService.Patch(data, id);
 

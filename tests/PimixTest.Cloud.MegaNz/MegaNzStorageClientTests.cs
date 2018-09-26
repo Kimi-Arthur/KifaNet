@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.MegaNz;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace PimixTest.Cloud.MegaNz {
     [TestClass]
@@ -84,7 +85,7 @@ namespace PimixTest.Cloud.MegaNz {
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx) {
-            MegaNzConfig.PimixServerApiAddress = PimixServerApiAddress;
+            PimixService.PimixServerApiAddress = PimixServerApiAddress;
             MegaNzStorageClient.Config = MegaNzConfig.Get("default");
 
             DataCleanup();

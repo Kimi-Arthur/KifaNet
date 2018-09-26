@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Pimix.Service;
 
 namespace PimixTest.Service {
     [TestClass]
@@ -52,7 +53,7 @@ namespace PimixTest.Service {
 
         [TestInitialize]
         public void Initialize() {
-            FakeDataModel.PimixServerApiAddress = PimixServerApiAddress;
+            PimixService.PimixServerApiAddress = PimixServerApiAddress;
 
             FakeDataModel.Reset();
         }

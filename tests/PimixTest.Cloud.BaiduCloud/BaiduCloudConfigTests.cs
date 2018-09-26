@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
+using Pimix.Service;
 
 namespace PimixTest.Cloud.BaiduCloud {
     [TestClass]
@@ -10,7 +11,7 @@ namespace PimixTest.Cloud.BaiduCloud {
 
         [TestMethod]
         public void GetConfigTest() {
-            BaiduCloudConfig.PimixServerApiAddress = PimixServerApiAddress;
+            PimixService.PimixServerApiAddress = PimixServerApiAddress;
             var config = BaiduCloudConfig.Get("default");
             Assert.IsTrue(config.Accounts.Count > 0);
         }

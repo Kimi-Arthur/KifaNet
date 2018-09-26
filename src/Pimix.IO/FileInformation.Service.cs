@@ -2,16 +2,6 @@
 
 namespace Pimix.IO {
     public partial class FileInformation {
-        public static string PimixServerApiAddress {
-            get => PimixService.PimixServerApiAddress;
-            set => PimixService.PimixServerApiAddress = value;
-        }
-
-        public static string PimixServerCredential {
-            get => PimixService.PimixServerCredential;
-            set => PimixService.PimixServerCredential = value;
-        }
-
         public static bool Patch(FileInformation data, string id = null)
             => PimixService.Patch(data, id);
 
