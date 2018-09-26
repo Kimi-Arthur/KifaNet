@@ -19,6 +19,9 @@ namespace Pimix.Apps.SubUtil.Commands {
         [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
         public string FileUri { get; set; }
 
+        List<int> selectedSubtitleIndexes;
+        List<int> selectedBilibiliChatIndexes;
+
         public override int Execute() {
             var source = new PimixFile(FileUri);
 
@@ -57,12 +60,12 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var srts = GetSrtSubtitles(target.Parent,
                 target.BaseName.Normalize(NormalizationForm.FormD));
-            var subtitle = SelectSubtitle(srts);
+            var subtitle = SelectSubtitles(srts);
             events.Events.AddRange(subtitle.dialogs);
 
             var chats = GetBilibiliChats(target.Parent,
                 target.BaseName.Normalize(NormalizationForm.FormD));
-            var comments = SelectBilibiliComments(chats);
+            var comments = SelectBilibiliChats(chats);
             PositionNormalComments(comments.dialogs
                 .Where(c => c.Style == AssStyle.NormalCommentStyle)
                 .OrderBy(c => c.Start).ToList());
@@ -104,20 +107,32 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectBilibiliComments(
+        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(
             Dictionary<string, List<AssDialogue>> chats) {
             var choices = chats.OrderBy(x => x.Key).ToList();
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choices[i].Key}: {choices[i].Value.Count} comments.");
             }
 
-            Console.Write(
-                "Choose 0 or more Bilibili chats from above using comma separated numbers: ");
+            List<int> chosenIndexes;
+            if (selectedBilibiliChatIndexes == null) {
+                Console.Write("Choose Bilibili chats: ");
+                var chosen = Console.ReadLine() ?? "";
+                chosenIndexes = chosen.Trim('a')
+                    .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(int.Parse)
+                    .ToList();
+
+                if (chosen.EndsWith('a')) {
+                    selectedBilibiliChatIndexes = chosenIndexes;
+                }
+            } else {
+                chosenIndexes = selectedBilibiliChatIndexes;
+            }
 
             var ids = new List<string> {"bilibili"};
             var dialogs = new List<AssDialogue>();
-            foreach (var index in (Console.ReadLine() ?? "")
-                .Split(",", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)) {
+            foreach (var index in chosenIndexes) {
                 ids.Add(choices[index].Key);
                 dialogs.AddRange(choices[index].Value);
             }
@@ -125,19 +140,32 @@ namespace Pimix.Apps.SubUtil.Commands {
             return (string.Join("_", ids.Where(id => !string.IsNullOrEmpty(id))), dialogs);
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectSubtitle(
+        (string Id, List<AssDialogue> dialogs) SelectSubtitles(
             Dictionary<string, List<AssDialogue>> srts) {
             var choices = srts.OrderBy(x => x.Key).ToList();
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choices[i].Key}");
             }
 
-            Console.Write("Choose 0 or more subtitles from above using comma separated numbers: ");
+            List<int> chosenIndexes;
+            if (selectedSubtitleIndexes == null) {
+                Console.Write("Choose subtitles: ");
+                var chosen = Console.ReadLine() ?? "";
+                chosenIndexes = chosen.Trim('a')
+                    .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(int.Parse)
+                    .ToList();
+
+                if (chosen.EndsWith('a')) {
+                    selectedSubtitleIndexes = chosenIndexes;
+                }
+            } else {
+                chosenIndexes = selectedSubtitleIndexes;
+            }
 
             var ids = new List<string>();
             var dialogs = new List<AssDialogue>();
-            foreach (var index in (Console.ReadLine() ?? "")
-                .Split(",", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)) {
+            foreach (var index in chosenIndexes) {
                 ids.Add(choices[index].Key);
                 dialogs.AddRange(choices[index].Value);
             }
