@@ -60,23 +60,21 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var events = new AssEventsSection();
 
-            events.Events.AddRange(srts.Values.First().Lines.Select(x => x.ToAss()));
+            events.Events.AddRange(srts.Values.First());
 
-            var bilibiliComments = chats.Values.First().Comments
-                .Select(x => x.GenerateAssDialogue()).ToList();
-            PositionNormalComments(bilibiliComments
+            PositionNormalComments(chats.Values.First()
                 .Where(c => c.Style == AssStyle.NormalCommentStyle)
                 .OrderBy(c => c.Start).ToList());
 
-            PositionTopComments(bilibiliComments
+            PositionTopComments(chats.Values.First()
                 .Where(c => c.Style == AssStyle.TopCommentStyle)
                 .OrderBy(c => c.Start).ToList());
 
-            PositionBottomComments(bilibiliComments
+            PositionBottomComments(chats.Values.First()
                 .Where(c => c.Style == AssStyle.BottomCommentStyle)
                 .OrderBy(c => c.Start).ToList());
 
-            events.Events.AddRange(bilibiliComments);
+            events.Events.AddRange(chats.Values.First());
 
             document.Sections.Add(events);
 
@@ -197,25 +195,27 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
         }
 
-        static Dictionary<string, SrtDocument> GetSrtSubtitles(PimixFile parent, string baseName) {
-            var result = new Dictionary<string, SrtDocument>();
+        static Dictionary<string, List<AssDialogue>> GetSrtSubtitles(PimixFile parent,
+            string baseName) {
+            var result = new Dictionary<string, List<AssDialogue>>();
             foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.??.srt")) {
                 using (var sr = new StreamReader(file.OpenRead())) {
                     result[file.BaseName.Substring(baseName.Length + 1)] =
-                        SrtDocument.Parse(sr.ReadToEnd());
+                        SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList();
                 }
             }
 
             return result;
         }
 
-        static Dictionary<string, BilibiliChat>
+        static Dictionary<string, List<AssDialogue>>
             GetBilibiliChats(PimixFile parent, string baseName) {
-            var result = new Dictionary<string, BilibiliChat>();
+            var result = new Dictionary<string, List<AssDialogue>>();
             foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.xml")) {
                 var chat = new BilibiliChat();
                 chat.Load(file.OpenRead());
-                result[file.BaseName.Substring(baseName.Length + 1)] = chat;
+                result[file.BaseName.Substring(baseName.Length + 1)] = chat.Comments
+                    .Select(x => x.GenerateAssDialogue()).ToList();
             }
 
             return result;
