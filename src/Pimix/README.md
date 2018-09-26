@@ -40,7 +40,7 @@ Current Version:
 Dependencies:
 ---
 - **NewtonSoft.Json**: 11.0.2
-- **NLog**: 4.5.9
+- **NLog**: 4.5.10
 
 Updates:
 ---
