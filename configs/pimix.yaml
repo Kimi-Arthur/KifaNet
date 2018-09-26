@@ -17,6 +17,10 @@ Pimix.IO.FileStorageClient:
       RemotePrefix: /nfs/Home
       Prefix: /home
 
+Pimix.Apps.JobUtil.JobUtilCommand:
+  ClientName: pimix
+  HeartbeatInterval: 10:00
+
 Pimix.Apps.FileUtil.Commands.FileUtilCommand:
   LoggingTargets:
   - console_full
