@@ -3,7 +3,7 @@ Job Utility Application
 
 Assembly Name
 ---
-jobutil.exe
+**jobutil**
 
 Current Version:
 ---
@@ -11,19 +11,18 @@ Current Version:
 
 Dependencies:
 ---
- - **CommandLineParser**: 2.0.93-alpha
- - **NewtonSoft.Json**: 7.0.1
- - **Pimix**: 1.0.3
- - **Pimix.Service**: 1.1.1
+ - **CommandLineParser**: 2.3.0
+ - **Pimix.Configs**
+ - **Pimix.Service**
 
-Changes:
+Updates:
 ---
- - 1.0.0
-  - Begin package versioning.
- - 1.0.*
-  - Update package title.
-  - Fix 'id'.
+
+### 2.0
+- Package as a dotnet global tool.
+
+### 1.0
+- Support running job.
+- 1.1
   - Added retry logic for uploading logs.
   - Incorporated Pimix.Service's retry logic.
-  - Updated Pimix.Service to 1.3.0 to use the correct retry logic.
-  - Update dependency logic.
