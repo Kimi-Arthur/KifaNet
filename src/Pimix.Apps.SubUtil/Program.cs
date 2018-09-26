@@ -13,7 +13,7 @@ namespace Pimix.Apps.SubUtil {
             PimixConfigs.LoadFromSystemConfigs();
 
             return Parser.Default
-                .ParseArguments<GenerateCommand, GetCommentsCommand>(args)
+                .ParseArguments<GenerateSubtitleCommand, GetBilibiliChatCommand>(args)
                 .MapResult<SubUtilCommand, int>(ExecuteCommand, HandleParseFail);
         }
 

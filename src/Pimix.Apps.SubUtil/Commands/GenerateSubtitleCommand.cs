@@ -13,7 +13,7 @@ using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
-    class GenerateCommand : SubUtilCommand {
+    class GenerateSubtitleCommand : SubUtilCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
@@ -53,7 +53,8 @@ namespace Pimix.Apps.SubUtil.Commands {
                 Styles = AssStyle.Styles
             });
 
-            var srts = GetSrt(target.Parent, target.BaseName.Normalize(NormalizationForm.FormD));
+            var srts = GetSrtSubtitles(target.Parent,
+                target.BaseName.Normalize(NormalizationForm.FormD));
             var chats = GetBilibiliChats(target.Parent,
                 target.BaseName.Normalize(NormalizationForm.FormD));
 
@@ -196,7 +197,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
         }
 
-        static Dictionary<string, SrtDocument> GetSrt(PimixFile parent, string baseName) {
+        static Dictionary<string, SrtDocument> GetSrtSubtitles(PimixFile parent, string baseName) {
             var result = new Dictionary<string, SrtDocument>();
             foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.??.srt")) {
                 using (var sr = new StreamReader(file.OpenRead())) {
