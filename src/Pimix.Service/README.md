@@ -3,7 +3,23 @@ Pimix Service Library
 
 Assembly Name
 ---
-Pimix.Service.dll
+**Pimix.Service.dll**
+
+Configurable properties
+---
+- `Pimix.Service.PimixService`
+  - `PimixServerApiAddress`
+  - `PimixServerCredential`
+
+APIs
+---
+- `Pimix.Service.PimixService`
+  - `Patch`
+  - `Post`
+  - `Get`
+  - `Link`
+  - `Delete`
+  - `Call`
 
 Current Version:
 ---
@@ -11,28 +27,24 @@ Current Version:
 
 Dependencies:
 ---
- - **NewtonSoft.Json**: 7.0.1
- - **Pimix**: 1.0.3
+ - **Pimix**
 
-Changes:
+Updates:
 ---
- - 1.0.0
-  - Begin package versioning.
- - 1.1.0
-  - Add standard ActionView's Call support.
- - 1.1.*
+
+### 2.0
+- Use `Pimix.Retry` to do retry.
+
+### 1.0
+- Add standard ActionView's Call support.
+- 1.1
   - Add README.md etc.
- - 1.2.0
-  - Add retry support for PimixService.
- - 1.2.*
+- 1.2
+  - Add retry support for `PimixService`.
   - Print exception info in retrying.
   - Longer wait period for retrying.
- - **1.3.0 BREAKING change**
+- 1.3
   - New correct way to implement retry logic in PimixService.
-  - Steps to resolve breakage:
-    1. Recompilation needed!
-    2. No code change needed!
- - 1.4.0
+- 1.4
   - New (status + message + response) format contacting PimixServer.
- - 1.4.*
   - Update dependency logic.
