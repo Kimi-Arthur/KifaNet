@@ -23,3 +23,6 @@ Updates:
 
 ### 1.0
 - Add `PimixConfigs.LoadFromSystemConfigs` to load configs in system folders.
+
+### Latest Fixes
+- 1.0.1: Do nothing when no config is found.

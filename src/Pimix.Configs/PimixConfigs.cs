@@ -38,7 +38,9 @@ namespace Pimix.Configs {
         public static void LoadFromSystemConfigs(Assembly assembly = null) {
             var properties =
                 assembly == null ? GetAllProperties() : GetProperties(assembly);
-            LoadFromStream(File.OpenRead(ConfigFilePath), properties);
+            if (ConfigFilePath != null) {
+                LoadFromStream(File.OpenRead(ConfigFilePath), properties);
+            }
         }
 
         public static void LoadFromStream(Stream stream,
