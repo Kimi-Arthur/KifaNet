@@ -53,34 +53,41 @@ namespace Pimix.Apps.SubUtil.Commands {
                 Styles = AssStyle.Styles
             });
 
-            var srts = GetSrtSubtitles(target.Parent,
-                target.BaseName.Normalize(NormalizationForm.FormD));
-            var chats = GetBilibiliChats(target.Parent,
-                target.BaseName.Normalize(NormalizationForm.FormD));
-
             var events = new AssEventsSection();
 
-            events.Events.AddRange(srts.Values.First());
+            var srts = GetSrtSubtitles(target.Parent,
+                target.BaseName.Normalize(NormalizationForm.FormD));
+            var subtitle = SelectSubtitle(srts);
+            events.Events.AddRange(subtitle.dialogs);
 
-            PositionNormalComments(chats.Values.First()
+            var chats = GetBilibiliChats(target.Parent,
+                target.BaseName.Normalize(NormalizationForm.FormD));
+            var comments = SelectBilibiliComments(chats);
+            PositionNormalComments(comments.dialogs
                 .Where(c => c.Style == AssStyle.NormalCommentStyle)
                 .OrderBy(c => c.Start).ToList());
-
-            PositionTopComments(chats.Values.First()
+            PositionTopComments(comments.dialogs
                 .Where(c => c.Style == AssStyle.TopCommentStyle)
                 .OrderBy(c => c.Start).ToList());
-
-            PositionBottomComments(chats.Values.First()
+            PositionBottomComments(comments.dialogs
                 .Where(c => c.Style == AssStyle.BottomCommentStyle)
                 .OrderBy(c => c.Start).ToList());
-
-            events.Events.AddRange(chats.Values.First());
+            events.Events.AddRange(comments.dialogs);
 
             document.Sections.Add(events);
 
+            var subtitleIds = new List<string>();
+            if (comments.dialogs.Count > 0) {
+                subtitleIds.Add(comments.Id);
+            }
+
+            if (subtitle.dialogs.Count > 0) {
+                subtitleIds.Add(subtitle.Id);
+            }
+
             var assFile =
                 target.Parent.GetFile(
-                    $"{target.BaseName}.{srts.Keys.First()}.{chats.Keys.First()}.ass");
+                    $"{target.BaseName}.{string.Join("-", subtitleIds)}.ass");
 
             assFile.Delete();
 
@@ -95,6 +102,47 @@ namespace Pimix.Apps.SubUtil.Commands {
 
 
             return 0;
+        }
+
+        (string Id, List<AssDialogue> dialogs) SelectBilibiliComments(
+            Dictionary<string, List<AssDialogue>> chats) {
+            var choices = chats.OrderBy(x => x.Key).ToList();
+            for (int i = 0; i < choices.Count; i++) {
+                Console.WriteLine($"[{i}] {choices[i].Key}: {choices[i].Value.Count} comments.");
+            }
+
+            Console.Write(
+                "Choose 0 or more Bilibili chats from above using comma separated numbers: ");
+
+            var ids = new List<string> {"bilibili"};
+            var dialogs = new List<AssDialogue>();
+            foreach (var index in (Console.ReadLine() ?? "")
+                .Split(",", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)) {
+                ids.Add(choices[index].Key);
+                dialogs.AddRange(choices[index].Value);
+            }
+
+            return (string.Join("_", ids.Where(id => !string.IsNullOrEmpty(id))), dialogs);
+        }
+
+        (string Id, List<AssDialogue> dialogs) SelectSubtitle(
+            Dictionary<string, List<AssDialogue>> srts) {
+            var choices = srts.OrderBy(x => x.Key).ToList();
+            for (int i = 0; i < choices.Count; i++) {
+                Console.WriteLine($"[{i}] {choices[i].Key}");
+            }
+
+            Console.Write("Choose 0 or more subtitles from above using comma separated numbers: ");
+
+            var ids = new List<string>();
+            var dialogs = new List<AssDialogue>();
+            foreach (var index in (Console.ReadLine() ?? "")
+                .Split(",", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)) {
+                ids.Add(choices[index].Key);
+                dialogs.AddRange(choices[index].Value);
+            }
+
+            return (string.Join("_", ids), dialogs);
         }
 
         static void PositionNormalComments(List<AssDialogue> comments) {
@@ -214,7 +262,9 @@ namespace Pimix.Apps.SubUtil.Commands {
             foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.xml")) {
                 var chat = new BilibiliChat();
                 chat.Load(file.OpenRead());
-                result[file.BaseName.Substring(baseName.Length + 1)] = chat.Comments
+                var ids = file.BaseName.Substring(baseName.Length + 1).Split('-', 2);
+                result[ids.Length == 2 ? ids[1] : ""] = chat
+                    .Comments
                     .Select(x => x.GenerateAssDialogue()).ToList();
             }
 
