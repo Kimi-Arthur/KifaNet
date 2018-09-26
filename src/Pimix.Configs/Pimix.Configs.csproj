@@ -1,6 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <Version>1.0.0</Version>
+        <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
+        <Description>Library to configure global properties based on .yaml file.</Description>
+        <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
+        <PackageTags>Pimix lib</PackageTags>
+        <Authors>Kimi Arthur</Authors>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="YamlDotNet" Version="5.1.0" />
