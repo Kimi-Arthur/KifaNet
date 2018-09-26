@@ -30,7 +30,9 @@ namespace Pimix {
 
             using (var sr = new StreamReader(resp.GetResponseStream(),
                 Encoding.GetEncoding(encodingName))) {
-                return sr.ReadToEnd();
+                var data = sr.ReadToEnd();
+                logger.Trace(data);
+                return data;
             }
         }
 

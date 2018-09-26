@@ -47,6 +47,8 @@ Updates:
 
 ### 2.0
 - Add `Retry` to handle generic retry logic.
+- 2.1
+  - Trace string output in `WebResponse.GetXxx`.
 
 ### 1.0
 - Add extensions.
