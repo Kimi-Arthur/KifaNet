@@ -1,9 +1,14 @@
-Job Utility Application
+Subtitle Utility Application
 ===
 
 Assembly Name
 ---
-**jobutil**
+**subutil**
+
+Commands
+---
+- `subutil bilibili`
+- `subutil generate`
 
 Current Version:
 ---
@@ -11,18 +16,17 @@ Current Version:
 
 Dependencies:
 ---
- - **CommandLineParser**: 2.3.0
- - **Pimix.Configs**
- - **Pimix.Service**
+- **CommandLineParser**: 2.3.0
+- **Pimix.Api.Files**
+- **Pimix.Bilibili**
+- **Pimix.Configs**
+- **Pimix.Service**
 
 Updates:
 ---
-
-### 2.0
-- Package as a dotnet global tool.
-
 ### 1.0
-- Support running job.
+- Added `subutil comments` to get comments from Bilibili.
 - 1.1
-  - Added retry logic for uploading logs.
-  - Incorporated Pimix.Service's retry logic.
+  - Renamed `subutil comments` to `subutil bilibili`.
+- 1.2
+  - Added `subutil generate` to generate ASS subtitle.
