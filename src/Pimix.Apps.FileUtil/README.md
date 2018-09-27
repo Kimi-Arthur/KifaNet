@@ -3,7 +3,16 @@ File Utility Application
 
 Assembly Name
 ---
-fileutil.exe
+**fileutil**
+
+Commands
+---
+- `fileutil upload`
+- `fileutil get`
+- `fileutil ln`
+- `fileutil add`
+- `fileutil rm`
+- `fileutil ls`
 
 Current Version:
 ---
@@ -11,27 +20,23 @@ Current Version:
 
 Dependencies:
 ---
- - **CommandLineParser**: 2.0.93-alpha
- - **NewtonSoft.Json**: 7.0.1
- - **Pimix**: 1.0.3
- - **Pimix.IO**: 1.1.2
- - **Pimix.IO.FileFormats**: 1.0.0
- - **Pimix.Cloud.BaiduCloud**: 1.0.1
+- **CommandLineParser**: 2.3.0
+- **Pimix.Api.Files**
+- **Pimix.Configs**
+- **Pimix.IO**
 
-Changes:
+Updates:
 ---
- - 1.0.0
-  - Begin package versioning.
- - 1.0.*
-  - Renamed method calls to support new `StorageClient` interface.
-  - Namespace renames and packaging.
-  - Update package title.
-  - Create parent folder before writing file.
-  - Package updates.
- - 1.1.0
+### 2.0
+- Abandoned old style commands. Use safer ones.
+- Added `fileutil upload` etc.
+- 2.1
+  - Added `fileutil get`
+- 2.2
+  - Added `fileutil ln`
+  
+
+### 1.0
+- Added `fileutil cp` etc.
+- 1.1
   - Do precheck based on FileInformation's status.
- - 1.1.*
-  - Fixed: should fire precheck when the location doesn't exist.
-  - Fixed: should fire precheck when AT LEAST all items in `FileProperties.All` exist.
-  - Refactored: use `StorageClient.DeleteFile` to delete files.
-  - Update dependency logic.

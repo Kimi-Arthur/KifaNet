@@ -1,28 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.1</TargetFramework>
-        <Version>2.0.0-preview1</Version>
+        <OutputType>Exe</OutputType>
+        <ToolCommandName>fileutil</ToolCommandName>
+        <PackAsTool>true</PackAsTool>
+        <Version>2.2.0</Version>
         <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
         <Description>Utility to manage pimix jobs.</Description>
-        <Copyright>Copyright © 2015-2017 Kimi Arthur</Copyright>
+        <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
         <PackageTags>Pimix Apps FileUtil app</PackageTags>
         <Authors>Kimi Arthur</Authors>
-        <AssemblyName>fileutil</AssemblyName>
-        <NoWarn>NU1605</NoWarn>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.3.0" />
-        <PackageReference Include="NLog.Config" Version="4.5.10" />
+        <PackageReference Include="NLog.Schema" Version="4.5.10" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
         <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
-        <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj" />
-        <ProjectReference Include="..\Pimix.Cloud.BaiduCloud\Pimix.Cloud.BaiduCloud.csproj" />
-        <ProjectReference Include="..\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj" />
         <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
     </ItemGroup>
     <ItemGroup>
