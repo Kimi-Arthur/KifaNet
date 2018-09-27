@@ -3,11 +3,12 @@ Pimix Cryptography Library
 
 Assembly Name
 ---
-Pimix.Cryptography.dll
+**Pimix.Cryptography.dll**
 
-Classes
+APIs
 ---
- - `PimixCryptoStream` used to wrap other stream with Cryptographic processing.
+- `Pimix.Cryptography.PimixCryptoStream`
+  - A `Stream` wrapping other stream with Cryptographic processing.
 
 Current Version:
 ---
@@ -15,11 +16,12 @@ Current Version:
 
 Dependencies:
 ---
- - **Pimix**: 1.0.3
+- **Pimix**
 
-Changes:
+Updates:
 ---
- - 1.0.0
-  - Begin package versioning.
- - 1.0.*
-  - Update dependency logic.
+
+### 1.0
+- Add `PimixCryptoStream`.
+- 1.1
+  - Removed unneeded dependency.
