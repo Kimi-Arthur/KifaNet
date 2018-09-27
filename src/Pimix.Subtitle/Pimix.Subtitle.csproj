@@ -10,10 +10,4 @@
         <PackageTags>Pimix lib</PackageTags>
         <Authors>Kimi Arthur</Authors>
     </PropertyGroup>
-    <ItemGroup>
-        <Content Include="README.md">
-            <Pack>true</Pack>
-            <PackagePath>\</PackagePath>
-        </Content>
-    </ItemGroup>
 </Project>
