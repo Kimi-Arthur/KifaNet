@@ -12,7 +12,7 @@ Commands
 
 Current Version:
 ---
-[![Nuget](https://img.shields.io/nuget/v/Pimix.Apps.SubUtil.svg)](http://nuget.org/packages/Pimix.Apps.SubUtil)
+[![Nuget](https://img.shields.io/nuget/v/Pimix.Apps.JobUtil.svg)](http://nuget.org/packages/Pimix.Apps.JobUtil)
 
 Dependencies:
 ---
