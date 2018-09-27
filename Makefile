@@ -1,5 +1,7 @@
 SHELL := /bin/zsh
 
+.PHONY: publish
+
 bin_folder := /usr/local/bin
 lib_folder := /usr/local/lib/Pimix
 
@@ -33,6 +35,11 @@ setup:
 	sudo ln -sf ${lib_folder}/fileutil/fileutil ${bin_folder}/fileutil
 	sudo ln -sf ${lib_folder}/jobutil/jobutil ${bin_folder}/jobutil
 	sudo ln -sf ${lib_folder}/subutil/subutil ${bin_folder}/subutil
+
+publish:
+	rm -rf publish
+	dotnet pack -o ../../publish -c Release --include-symbols ${target}
+	dotnet nuget push publish/*.symbols.nupkg -k oy2bkvsw65bqe4clccfawdv2s25hqmbe7ccuiph6yowrmq
 
 build:
 	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.FileUtil
