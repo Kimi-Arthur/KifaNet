@@ -3,7 +3,14 @@ Pimix File Formats Library
 
 Assembly Name
 ---
-Pimix.IO.FileFormats.dll
+**Pimix.IO.FileFormats.dll**
+
+APIs
+---
+- `Pimix.IO.FileFormats.PimixFileFormat`
+- `Pimix.IO.FileFormats.PimixFileV0Format`
+- `Pimix.IO.FileFormats.PimixFileV1Format`
+- `Pimix.IO.FileFormats.RawFileFormat`
 
 Current Version:
 ---
@@ -11,14 +18,14 @@ Current Version:
 
 Dependencies:
 ---
- - **Pimix**: 1.0.3
- - **Pimix.IO**: 1.1.2
- - **Pimix.Cryptography**: 1.0.0
+- **Pimix.IO**
+- **Pimix.Cryptography**
 
-Changes:
+Updates:
 ---
- - 1.0.0
-  - Begin package versioning.
- - 1.0.1
-  - Updated Pimix.IO to 1.1.5.
-  - Update dependency logic.
+
+### 1.0
+- Added `PimixFileV1Format`
+- 1.1
+  - Added `PimixFileV0Format`
+  - Added `RawFileFormat`
