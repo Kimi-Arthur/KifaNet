@@ -38,7 +38,7 @@ namespace Pimix.Apps.JobUtil {
 
         IEnumerable<Job> GetJobs(string runnerName) {
             while (true) {
-                Job j = null;
+                Job j;
                 try {
                     j = Job.PullJob(idPrefix: ClientName + "-", runner: runnerName);
                     var c = Console.ForegroundColor;
