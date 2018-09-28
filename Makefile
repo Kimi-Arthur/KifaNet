@@ -42,9 +42,9 @@ publish:
 	dotnet nuget push publish/*.symbols.nupkg -k oy2bkvsw65bqe4clccfawdv2s25hqmbe7ccuiph6yowrmq
 
 build:
-	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.FileUtil
-	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.JobUtil
-	dotnet publish -c Release -r ${os_version} src/Pimix.Apps.SubUtil
+	dotnet publish -c Release src/Pimix.Apps.FileUtil
+	dotnet publish -c Release src/Pimix.Apps.JobUtil
+	dotnet publish -c Release src/Pimix.Apps.SubUtil
 
 install:
 	rm -rf ${lib_folder}
@@ -56,9 +56,10 @@ install:
 	cp -R src/Pimix.Apps.SubUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/subutil
 
 install_dev:
-	mkdir -p /usr/local/lib/pimix/fileutil_dev
-	mkdir -p /usr/local/lib/pimix/jobutil_dev
-	mkdir -p /usr/local/lib/pimix/subutil_dev
+	rm -rf ${lib_folder}
+	mkdir -p ${lib_folder}/fileutil_dev
+	mkdir -p ${lib_folder}/jobutil_dev
+	mkdir -p ${lib_folder}/subutil_dev
 	cp -R src/Pimix.Apps.FileUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/fileutil_dev
 	cp -R src/Pimix.Apps.JobUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/jobutil_dev
 	cp -R src/Pimix.Apps.SubUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/subutil_dev
