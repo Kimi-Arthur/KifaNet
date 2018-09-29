@@ -13,7 +13,8 @@ namespace Pimix.Apps.SubUtil {
             PimixConfigs.LoadFromSystemConfigs();
 
             return Parser.Default
-                .ParseArguments<GenerateSubtitleCommand, GetBilibiliChatCommand>(args)
+                .ParseArguments<GenerateSubtitleCommand, GetBilibiliChatCommand,
+                    NormalizeSubtitleCommand>(args)
                 .MapResult<SubUtilCommand, int>(ExecuteCommand, HandleParseFail);
         }
 
