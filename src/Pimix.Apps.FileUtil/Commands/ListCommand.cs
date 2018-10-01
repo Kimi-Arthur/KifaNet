@@ -26,7 +26,13 @@ namespace Pimix.Apps.FileUtil.Commands {
                     counter++;
                 }
             } else {
-                foreach (var file in new PimixFile(FolderUri).List(Recursive)) {
+                var target = new PimixFile(FolderUri);
+                if (target.Client == null) {
+                    Console.WriteLine($"Folder {FolderUri} not accessible. Wrong server?");
+                    return 1;
+                }
+
+                foreach (var file in target.List(Recursive)) {
                     Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.Path);
                     counter++;
                 }

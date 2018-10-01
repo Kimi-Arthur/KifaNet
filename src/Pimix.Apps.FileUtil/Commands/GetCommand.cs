@@ -22,6 +22,10 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
+            if (target.Client == null) {
+                Console.WriteLine($"Target {FileUri} not accessible. Wrong server?");
+                return 1;
+            }
 
             var files = FileInformation.ListFolder(target.Id, true);
             if (files.Count > 0) {
