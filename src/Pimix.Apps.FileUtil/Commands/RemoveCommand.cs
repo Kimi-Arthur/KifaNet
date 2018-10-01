@@ -18,6 +18,10 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('l', "link", HelpText = "Remove link only.")]
         public bool RemoveLinkOnly { get; set; }
 
+        [Option('f', "force", HelpText =
+            "Remove all instances of the file, including file with different name and in cloud.")]
+        public bool ForceRemove { get; set; }
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
@@ -64,7 +68,13 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (!RemoveLinkOnly && info.Locations != null) {
                 foreach (var location in info.Locations.Keys) {
                     var file = new PimixFile(location);
-                    if (file.Id == info.Id) {
+                    var toRemove = file.Id == info.Id;
+                    if (!toRemove && ForceRemove) {
+                        Console.Write($"Confirm removing instance {file}, not matching file name? [Y/n] ");
+                        toRemove = !Console.ReadLine().ToLower().StartsWith("n");
+                    }
+
+                    if (toRemove) {
                         if (file.Exists()) {
                             file.Delete();
                             logger.Info($"File {file} deleted.");

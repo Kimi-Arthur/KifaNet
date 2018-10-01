@@ -36,7 +36,8 @@ Updates:
   - Added `fileutil ln`
 - 2.3
   - Support folder in `fileutil rm`
-  
+- 2.4
+  - Allow removal of file instances with different name (like linked file, uploaded file).
 
 ### 1.0
 - Added `fileutil cp` etc.
