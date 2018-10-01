@@ -8,6 +8,7 @@ using Renci.SshNet;
 
 namespace Pimix.IO {
     public class ServerConfig {
+        public bool Removed { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
         public string Host { get; set; }
@@ -98,7 +99,7 @@ namespace Pimix.IO {
         public override void Move(string sourcePath, string destinationPath)
             => File.Move(GetPath(sourcePath), GetPath(destinationPath));
 
-        public override bool Exists(string path) => File.Exists(GetPath(path));
+        public override bool Exists(string path) => !Server.Removed && File.Exists(GetPath(path));
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false,
             string pattern = "*") {
