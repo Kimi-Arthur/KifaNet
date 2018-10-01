@@ -34,6 +34,8 @@ Updates:
   - Added `fileutil get`
 - 2.2
   - Added `fileutil ln`
+- 2.3
+  - Support folder in `fileutil rm`
   
 
 ### 1.0

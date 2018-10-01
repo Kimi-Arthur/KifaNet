@@ -4,7 +4,7 @@
         <OutputType>Exe</OutputType>
         <ToolCommandName>fileutil</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>2.2.2</Version>
+        <Version>2.3.0</Version>
         <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>

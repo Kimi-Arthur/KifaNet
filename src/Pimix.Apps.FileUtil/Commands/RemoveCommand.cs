@@ -1,4 +1,6 @@
-﻿using CommandLine;
+﻿using System;
+using System.Linq;
+using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
@@ -20,17 +22,49 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             if (string.IsNullOrEmpty(FileUri)) {
+                var files = FileInformation.ListFolder(FileId, true);
+                if (files.Count > 0) {
+                    foreach (var file in files) {
+                        Console.WriteLine(file);
+                    }
+
+                    var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
+                    Console.Write($"Confirm deleting the {files.Count} files above{removalText}?");
+                    Console.ReadLine();
+
+                    return files.Select(f => RemoveLogicalFile(FileInformation.Get(f))).Max();
+                }
+
                 return RemoveLogicalFile(FileInformation.Get(FileId));
             }
 
-            return RemoveFileInstance(new PimixFile(FileUri, FileId));
+            var source = new PimixFile(FileUri);
+            if (source.Client == null) {
+                Console.WriteLine($"Source {FileUri} not accessible. Wrong server?");
+                return 1;
+            }
+
+            var localFiles = source.List(true).ToList();
+            if (localFiles.Count > 0) {
+                foreach (var file in localFiles) {
+                    Console.WriteLine(file);
+                }
+
+                var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
+                Console.Write($"Confirm deleting the {localFiles.Count} files above{removalText}?");
+                Console.ReadLine();
+
+                return localFiles.Select(f => RemoveFileInstance(new PimixFile(f.ToString()))).Max();
+            }
+
+            return RemoveFileInstance(source);
         }
 
         int RemoveLogicalFile(FileInformation info) {
             if (!RemoveLinkOnly && info.Locations != null) {
                 foreach (var location in info.Locations.Keys) {
                     var file = new PimixFile(location);
-                    if (file.Id == FileId) {
+                    if (file.Id == info.Id) {
                         if (file.Exists()) {
                             file.Delete();
                             logger.Info($"File {file} deleted.");
@@ -38,7 +72,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                             logger.Warn($"File {file} not found.");
                         }
 
-                        FileInformation.RemoveLocation(FileId, location);
+                        FileInformation.RemoveLocation(info.Id, location);
                         logger.Info($"Entry {location} removed.");
                     }
                 }
@@ -51,8 +85,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         int RemoveFileInstance(PimixFile file) {
-            var f = new PimixFile(FileUri);
-            if (file.FileInfo.Locations?.ContainsKey(f.ToString()) != true) {
+            if (file.FileInfo.Locations?.ContainsKey(file.ToString()) != true) {
                 if (file.Exists()) {
                     file.Delete();
                     logger.Warn($"File {file} deleted, no entry found though.");
@@ -73,7 +106,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            FileInformation.RemoveLocation(file.Id, f.ToString());
+            FileInformation.RemoveLocation(file.Id, file.ToString());
             logger.Info($"Entry {file} removed.");
 
             return 0;
