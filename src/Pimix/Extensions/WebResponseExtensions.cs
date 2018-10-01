@@ -31,7 +31,7 @@ namespace Pimix {
             using (var sr = new StreamReader(resp.GetResponseStream(),
                 Encoding.GetEncoding(encodingName))) {
                 var data = sr.ReadToEnd();
-                logger.Trace(data);
+                logger.Trace("Response ({0:D}): {1}", resp.StatusCode, data);
                 return data;
             }
         }
@@ -49,7 +49,7 @@ namespace Pimix {
             using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
                 Encoding.GetEncoding("UTF-8"))) {
                 var data = sr.ReadToEnd();
-                logger.Trace(data);
+                logger.Trace("Response ({0:D}): {1}", response.StatusCode, data);
                 return data;
             }
         }
