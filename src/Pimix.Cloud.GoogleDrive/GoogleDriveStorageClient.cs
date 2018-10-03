@@ -16,13 +16,15 @@ namespace Pimix.Cloud.GoogleDrive {
         static readonly TimeSpan RefreshAccountInterval = TimeSpan.FromMinutes(50);
         const int BlockSize = 32 << 20;
 
-        public static GoogleDriveConfig Config { get; set; }
+        static GoogleDriveConfig config;
+
+        static GoogleDriveConfig Config =>
+            LazyInitializer.EnsureInitialized(ref config, () => GoogleDriveConfig.Get("default"));
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
             foreach (var spec in specs) {
                 if (spec.StartsWith("google:")) {
-                    Config = GoogleDriveConfig.Get("default");
                     return new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
                 }
             }

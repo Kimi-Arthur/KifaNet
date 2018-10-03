@@ -12,8 +12,6 @@ namespace PimixTest.Cloud.GoogleDrive {
 
         public GoogleDriveStorageClientTests() {
             PimixService.PimixServerApiAddress = PimixServerApiAddress;
-            GoogleDriveStorageClient.Config = GoogleDriveConfig.Get("default");
-
             GetStorageClient().Delete("/Test/big.bin");
         }
 

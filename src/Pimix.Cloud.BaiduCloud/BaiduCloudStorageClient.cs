@@ -17,13 +17,15 @@ namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static BaiduCloudConfig Config { get; set; }
+        static BaiduCloudConfig config;
+
+        static BaiduCloudConfig Config =>
+            LazyInitializer.EnsureInitialized(ref config, () => BaiduCloudConfig.Get("default"));
 
         public static StorageClient Get(string fileSpec) {
             var specs = fileSpec.Split(';');
             foreach (var spec in specs) {
                 if (spec.StartsWith("baidu:")) {
-                    Config = BaiduCloudConfig.Get("default");
                     var client = new BaiduCloudStorageClient {AccountId = spec.Substring(6)};
 
                     return client;

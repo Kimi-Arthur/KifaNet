@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Threading;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
 
@@ -9,7 +10,6 @@ namespace Pimix.Cloud.MegaNz {
             var specs = fileSpec.Split(';');
             foreach (var spec in specs) {
                 if (spec.StartsWith("mega:")) {
-                    Config = MegaNzConfig.Get("default");
                     return new MegaNzStorageClient {
                         AccountId = spec.Substring(5)
                     };
@@ -40,7 +40,9 @@ namespace Pimix.Cloud.MegaNz {
 
         public MegaApiClient Client { get; private set; }
 
-        public static MegaNzConfig Config { get; set; }
+        static MegaNzConfig config;
+
+        static MegaNzConfig Config => LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Get("default"));
 
         // Comment out as this doesn't work now.
         //public override void Move(string sourcePath, string destinationPath)
