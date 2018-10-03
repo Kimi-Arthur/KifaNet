@@ -35,7 +35,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
         public override string ToString() => $"baidu:{AccountId}";
 
-        readonly HttpClient client;
+        readonly HttpClient client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
 
         string accountId;
 
@@ -48,10 +48,6 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public AccountInfo Account { get; private set; }
-
-        public BaiduCloudStorageClient() {
-            client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
-        }
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
             int count = -1) {
