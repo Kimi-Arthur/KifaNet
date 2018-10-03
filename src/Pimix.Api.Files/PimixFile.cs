@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Newtonsoft.Json;
 using NLog;
 using Pimix.Cloud.BaiduCloud;
@@ -19,7 +20,9 @@ namespace Pimix.Api.Files {
 
         static Regex ignoredFiles;
 
-        static Regex IgnoredFiles => ignoredFiles = ignoredFiles ?? new Regex(IgnoredFilesPattern);
+        static Regex IgnoredFiles =>
+            LazyInitializer.EnsureInitialized(ref ignoredFiles,
+                () => new Regex(IgnoredFilesPattern, RegexOptions.Compiled));
 
         static readonly Dictionary<string, StorageClient> KnownClients =
             new Dictionary<string, StorageClient>();
