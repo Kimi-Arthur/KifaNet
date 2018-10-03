@@ -24,7 +24,7 @@ namespace Pimix.Api.Files {
             LazyInitializer.EnsureInitialized(ref ignoredFiles,
                 () => new Regex(IgnoredFilesPattern, RegexOptions.Compiled));
 
-        static readonly Dictionary<string, StorageClient> KnownClients =
+        static readonly Dictionary<string, StorageClient> knownClients =
             new Dictionary<string, StorageClient>();
 
         public string Id { get; set; }
@@ -47,8 +47,8 @@ namespace Pimix.Api.Files {
 
         PimixFileFormat FileFormat { get; set; }
 
-        readonly FileInformation _fileInfo;
-        public FileInformation FileInfo => _fileInfo ?? FileInformation.Get(Id);
+        readonly FileInformation fileInfo;
+        public FileInformation FileInfo => fileInfo ?? FileInformation.Get(Id);
 
         public PimixFile(string uri, string id = null, FileInformation fileInfo = null) {
             // Example uri:
@@ -89,7 +89,7 @@ namespace Pimix.Api.Files {
             }
 
             Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);
-            _fileInfo = fileInfo;
+            this.fileInfo = fileInfo;
 
             Client = GetClient(segments[0]);
 
@@ -230,23 +230,23 @@ namespace Pimix.Api.Files {
             => Host == other.Host && FileFormat == other.FileFormat;
 
         static StorageClient GetClient(string spec) {
-            if (KnownClients.ContainsKey(spec)) {
-                return KnownClients[spec];
+            if (knownClients.ContainsKey(spec)) {
+                return knownClients[spec];
             }
 
             var specs = spec.Split(':');
             switch (specs[0]) {
                 case "baidu":
-                    return KnownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
                 case "google":
-                    return KnownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
                 case "mega":
-                    return KnownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
                 case "local":
-                    return KnownClients[spec] = new FileStorageClient {ServerId = specs[1]};
+                    return knownClients[spec] = new FileStorageClient {ServerId = specs[1]};
             }
 
-            return KnownClients[spec];
+            return knownClients[spec];
         }
     }
 }
