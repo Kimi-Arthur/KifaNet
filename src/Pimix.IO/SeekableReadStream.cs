@@ -11,11 +11,9 @@ namespace Pimix.IO {
 
         readonly Reader reader;
 
-        readonly bool isOpen = true;
+        public override bool CanRead => true;
 
-        public override bool CanRead => isOpen;
-
-        public override bool CanSeek => isOpen;
+        public override bool CanSeek => true;
 
         public override bool CanWrite => false;
 
@@ -29,18 +27,10 @@ namespace Pimix.IO {
         }
 
         public override void Flush() {
-            if (!isOpen) {
-                throw new ObjectDisposedException(null);
-            }
-
             // Intentionally doing nothing.
         }
 
         public override long Seek(long offset, SeekOrigin origin) {
-            if (!isOpen) {
-                throw new ObjectDisposedException(null);
-            }
-
             switch (origin) {
                 case SeekOrigin.Begin:
                     Position = offset;
@@ -60,15 +50,10 @@ namespace Pimix.IO {
             return Position;
         }
 
-        public override void SetLength(long value) {
-            throw new NotSupportedException("The download stream is not writable.");
-        }
+        public override void SetLength(long value) =>
+            throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
 
         public override int Read(byte[] buffer, int offset, int count) {
-            if (!isOpen) {
-                throw new ObjectDisposedException(null);
-            }
-
             if (buffer == null) {
                 throw new ArgumentNullException(nameof(buffer));
             }
@@ -92,8 +77,7 @@ namespace Pimix.IO {
             return readCount;
         }
 
-        public override void Write(byte[] buffer, int offset, int count) {
-            throw new NotSupportedException("The download stream is not writable.");
-        }
+        public override void Write(byte[] buffer, int offset, int count) =>
+            throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
     }
 }
