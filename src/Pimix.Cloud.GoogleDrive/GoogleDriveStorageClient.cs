@@ -21,17 +21,6 @@ namespace Pimix.Cloud.GoogleDrive {
         static GoogleDriveConfig Config =>
             LazyInitializer.EnsureInitialized(ref config, () => GoogleDriveConfig.Get("default"));
 
-        public static StorageClient Get(string fileSpec) {
-            var specs = fileSpec.Split(';');
-            foreach (var spec in specs) {
-                if (spec.StartsWith("google:")) {
-                    return new GoogleDriveStorageClient {AccountId = spec.Substring(7)};
-                }
-            }
-
-            return null;
-        }
-
         public override string ToString() => $"google:{AccountId}";
 
         readonly HttpClient client = new HttpClient(new HttpClientHandler {

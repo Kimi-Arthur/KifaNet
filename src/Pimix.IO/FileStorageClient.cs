@@ -24,28 +24,17 @@ namespace Pimix.IO {
         public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } =
             new Dictionary<string, ServerConfig>();
 
-        public static StorageClient Get(string fileSpec) {
-            var specs = fileSpec.Split(';');
-            foreach (var spec in specs) {
-                if (spec.StartsWith("local:")) {
-                    var serverId = spec.Substring(6);
-                    if (!ServerConfigs.ContainsKey(serverId)) {
-                        return null;
-                    }
-
-                    return new FileStorageClient {
-                        ServerId = serverId,
-                        Server = ServerConfigs[serverId]
-                    };
-                }
-            }
-
-            return null;
-        }
-
         public override string ToString() => $"local:{ServerId}";
 
-        string ServerId { get; set; }
+        string serverId;
+
+        public string ServerId {
+            get => serverId;
+            set {
+                serverId = value;
+                Server = ServerConfigs[serverId];
+            }
+        }
 
         ServerConfig Server { get; set; }
 

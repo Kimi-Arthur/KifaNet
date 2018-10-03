@@ -89,15 +89,7 @@ namespace Pimix.Api.Files {
             Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);
             _fileInfo = fileInfo;
 
-            var spec = segments[0];
-
-            if (!KnownClients.ContainsKey(spec)) {
-                KnownClients[spec] = BaiduCloudStorageClient.Get(spec) ??
-                                     GoogleDriveStorageClient.Get(spec) ??
-                                     MegaNzStorageClient.Get(spec) ?? FileStorageClient.Get(spec);
-            }
-
-            Client = KnownClients[spec];
+            Client = GetClient(segments[0]);
 
             FileFormat = PimixFileV1Format.Get(uri) ??
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
@@ -234,5 +226,25 @@ namespace Pimix.Api.Files {
 
         public bool IsCompatible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
+
+        static StorageClient GetClient(string spec) {
+            if (KnownClients.ContainsKey(spec)) {
+                return KnownClients[spec];
+            }
+
+            var specs = spec.Split(':');
+            switch (specs[0]) {
+                case "baidu":
+                    return KnownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
+                case "google":
+                    return KnownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
+                case "mega":
+                    return KnownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
+                case "local":
+                    return KnownClients[spec] = new FileStorageClient {ServerId = specs[1]};
+            }
+
+            return KnownClients[spec];
+        }
     }
 }

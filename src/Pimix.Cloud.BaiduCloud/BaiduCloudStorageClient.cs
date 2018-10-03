@@ -22,19 +22,6 @@ namespace Pimix.Cloud.BaiduCloud {
         static BaiduCloudConfig Config =>
             LazyInitializer.EnsureInitialized(ref config, () => BaiduCloudConfig.Get("default"));
 
-        public static StorageClient Get(string fileSpec) {
-            var specs = fileSpec.Split(';');
-            foreach (var spec in specs) {
-                if (spec.StartsWith("baidu:")) {
-                    var client = new BaiduCloudStorageClient {AccountId = spec.Substring(6)};
-
-                    return client;
-                }
-            }
-
-            return null;
-        }
-
         public override string ToString() => $"baidu:{AccountId}";
 
         readonly HttpClient client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
