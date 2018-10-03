@@ -26,16 +26,15 @@ namespace Pimix.Api.Files {
 
         public string Id { get; set; }
 
-        public string ParentPath { get; set; }
+        string ParentPath { get; set; }
 
         public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
 
         public string BaseName { get; set; }
 
-        public string Extension { get; set; }
+        string Extension { get; set; }
 
-        public string Name
-            => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+        string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
 
         public string Path => $"{ParentPath}/{Name}";
 
@@ -43,7 +42,7 @@ namespace Pimix.Api.Files {
 
         public StorageClient Client { get; set; }
 
-        public PimixFileFormat FileFormat { get; set; }
+        PimixFileFormat FileFormat { get; set; }
 
         readonly FileInformation _fileInfo;
         public FileInformation FileInfo => _fileInfo ?? FileInformation.Get(Id);

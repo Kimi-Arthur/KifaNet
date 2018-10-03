@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Configuration;
-using System.Text;
 using CommandLine;
-using Pimix.Service;
 
 namespace Pimix.Apps.JobUtil {
     abstract class JobUtilCommand {

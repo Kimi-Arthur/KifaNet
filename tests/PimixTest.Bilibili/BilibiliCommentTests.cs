@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Bilibili;
-using Pimix.Subtitle.Ass;
 
 namespace PimixTest.Bilibili {
     [TestClass]
