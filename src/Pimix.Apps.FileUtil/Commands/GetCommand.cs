@@ -89,7 +89,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     var linkSource = new PimixFile(location.Key);
                     if (linkSource.Client is FileStorageClient) {
                         linkSource.Copy(target);
-                        target.Register(true);
+                        target.Add();
                         logger.Info("Got {0} through copying from {1}.", target, linkSource);
                         return 0;
                     }
