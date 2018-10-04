@@ -60,7 +60,7 @@ namespace Pimix.Api.Files {
             //   C:/files/a.txt
             //   ~/a.txt
             //   ../a.txt
-            if (!uri.Contains(":") || uri.Contains(":/")) {
+            if (!uri.Contains(":") || uri.Contains(":/") || uri.Contains(":\\")) {
                 // Local path, convert to canonical one.
                 var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
                 foreach (var p in FileStorageClient.ServerConfigs) {
