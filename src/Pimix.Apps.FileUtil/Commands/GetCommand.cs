@@ -89,6 +89,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     var linkSource = new PimixFile(location.Key);
                     if (linkSource.Client is FileStorageClient) {
                         linkSource.Copy(target);
+                        logger.Info("Verifying {0}...", target);
                         target.Add();
                         logger.Info("Got {0} through copying from {1}.", target, linkSource);
                         return 0;
@@ -103,6 +104,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             source.Copy(target);
 
             if (target.Exists()) {
+                logger.Info("Verifying {0}...", target);
                 var destinationCheckResult = target.Add();
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Successfully got {1} from {0}!", source, target);
