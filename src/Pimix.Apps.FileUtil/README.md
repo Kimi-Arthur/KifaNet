@@ -1,22 +1,28 @@
-File Utility Application
+File Utility
 ===
 
-Assembly Name
+Package
 ---
-**fileutil**
+**Pimix.Apps.FileUtil**
+
+[![Nuget](https://img.shields.io/nuget/v/Pimix.Apps.FileUtil.svg)](http://nuget.org/packages/Pimix.Apps.FileUtil)
 
 Commands
 ---
-- `fileutil upload`
-- `fileutil get`
-- `fileutil ln`
-- `fileutil add`
-- `fileutil rm`
-- `fileutil ls`
-
-Current Version:
----
-[![Nuget](https://img.shields.io/nuget/v/Pimix.Apps.FileUtil.svg)](http://nuget.org/packages/Pimix.Apps.FileUtil)
+- `f add <file_url>`
+  - `-f` `--force-check` Check file integrity even if it is already recorded.
+- `f upload`
+- `f get`
+- `f ln`
+- `f rm`
+- `f ls`
+- Other notes
+  - `<file_url>` can be of the following formats
+    - `baidu:Account/path/to/file`
+    - `local:wd0/path/to/file`
+    - `/absolute/system/path/to/file`
+    - `../relative/path/to/file`
+    - `C:\windows\path\to\file`
 
 Dependencies:
 ---
@@ -39,7 +45,7 @@ Updates:
 - 2.4
   - Allow removal of file instances with different name (like linked file, uploaded file).
 - 2.5
-  - Re
+  - Rename to `f` as binary name.
 
 ### 1.0
 - Added `fileutil cp` etc.
