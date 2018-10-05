@@ -20,8 +20,8 @@ namespace Pimix.Api.Files {
 
         static Regex ignoredFiles;
 
-        static Regex IgnoredFiles =>
-            LazyInitializer.EnsureInitialized(ref ignoredFiles,
+        static Regex IgnoredFiles
+            => LazyInitializer.EnsureInitialized(ref ignoredFiles,
                 () => new Regex(IgnoredFilesPattern, RegexOptions.Compiled));
 
         static readonly Dictionary<string, StorageClient> knownClients =
@@ -243,7 +243,12 @@ namespace Pimix.Api.Files {
                 case "mega":
                     return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
                 case "local":
-                    return knownClients[spec] = new FileStorageClient {ServerId = specs[1]};
+                    var c = new FileStorageClient {ServerId = specs[1]};
+                    if (c.Server == null) {
+                        c = null;
+                    }
+
+                    return knownClients[spec] = c;
             }
 
             return knownClients[spec];

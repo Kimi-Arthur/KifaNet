@@ -32,11 +32,11 @@ namespace Pimix.IO {
             get => serverId;
             set {
                 serverId = value;
-                Server = ServerConfigs[serverId];
+                Server = ServerConfigs.GetValueOrDefault(serverId, null);
             }
         }
 
-        ServerConfig Server { get; set; }
+        public ServerConfig Server { get; set; }
 
         static bool IsUnixLike
             => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||

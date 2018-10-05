@@ -68,6 +68,11 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (!RemoveLinkOnly && info.Locations != null) {
                 foreach (var location in info.Locations.Keys) {
                     var file = new PimixFile(location);
+                    if (file.Client == null) {
+                        Console.WriteLine($"{file} not accessible.");
+                        return 1;
+                    }
+
                     var toRemove = file.Id == info.Id;
                     if (!toRemove && ForceRemove) {
                         Console.Write($"Confirm removing instance {file}, not matching file name? [Y/n] ");
