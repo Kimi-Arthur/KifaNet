@@ -70,7 +70,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             foreach (var location in info.Locations) {
                 if (location.Value != null) {
                     var linkSource = new PimixFile(location.Key);
-                    if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(target)) {
+                    if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(target) &&
+                        linkSource.Exists()) {
                         linkSource.Copy(target);
                         target.Register(true);
                         logger.Info("Got {0} through hard linking to {1}.", target, linkSource);
@@ -87,7 +88,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             foreach (var location in info.Locations) {
                 if (location.Value != null) {
                     var linkSource = new PimixFile(location.Key);
-                    if (linkSource.Client is FileStorageClient) {
+                    if (linkSource.Client is FileStorageClient && linkSource.Exists()) {
                         linkSource.Copy(target);
                         logger.Info("Verifying {0}...", target);
                         target.Add();
