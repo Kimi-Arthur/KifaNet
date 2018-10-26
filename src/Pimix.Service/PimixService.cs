@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NLog;
 
 namespace Pimix.Service {
@@ -178,6 +179,9 @@ namespace Pimix.Service {
         static void Init(Type typeInfo) {
             JsonConvert.DefaultSettings =
                 () => new JsonSerializerSettings {
+                    ContractResolver = new DefaultContractResolver {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    },
                     NullValueHandling = NullValueHandling.Ignore,
                     MetadataPropertyHandling = MetadataPropertyHandling.Ignore
                 };
