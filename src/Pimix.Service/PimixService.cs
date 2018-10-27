@@ -14,7 +14,7 @@ namespace Pimix.Service {
         static readonly Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
             = new Dictionary<Type, Tuple<PropertyInfo, string>>();
 
-        static readonly JsonSerializerSettings defaultSettings = new JsonSerializerSettings {
+        static readonly JsonSerializerSettings serializeSettings = new JsonSerializerSettings {
             ContractResolver = new DefaultContractResolver {
                 NamingStrategy = new SnakeCaseNamingStrategy()
             },
@@ -40,7 +40,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, defaultSettings),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, serializeSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -64,7 +64,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, defaultSettings),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, serializeSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -153,7 +153,7 @@ namespace Pimix.Service {
                             parameters["id"] = id;
                         }
 
-                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters, defaultSettings),
+                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters, serializeSettings),
                             Encoding.UTF8,
                             "application/json");
                     }

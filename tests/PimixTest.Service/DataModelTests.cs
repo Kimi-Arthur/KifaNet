@@ -34,7 +34,7 @@ namespace PimixTest.Service {
                 new List<string> {
                     "sub prop 2 value 1",
                     "sub prop 2 value 2"
-                }, data.SubProp.SubProp2);
+                }, data.SubProp.Sub2);
         }
 
         [Fact]
