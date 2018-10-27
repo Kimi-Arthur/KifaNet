@@ -14,6 +14,14 @@ namespace Pimix.Service {
         static readonly Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
             = new Dictionary<Type, Tuple<PropertyInfo, string>>();
 
+        static readonly JsonSerializerSettings defaultSettings = new JsonSerializerSettings {
+            ContractResolver = new DefaultContractResolver {
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            },
+            NullValueHandling = NullValueHandling.Ignore,
+            MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+        };
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static string PimixServerApiAddress { get; set; }
@@ -32,7 +40,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, defaultSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -56,7 +64,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, defaultSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -145,7 +153,7 @@ namespace Pimix.Service {
                             parameters["id"] = id;
                         }
 
-                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters),
+                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters, defaultSettings),
                             Encoding.UTF8,
                             "application/json");
                     }
@@ -177,15 +185,6 @@ namespace Pimix.Service {
         }
 
         static void Init(Type typeInfo) {
-            JsonConvert.DefaultSettings =
-                () => new JsonSerializerSettings {
-                    ContractResolver = new DefaultContractResolver {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    },
-                    NullValueHandling = NullValueHandling.Ignore,
-                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-                };
-
             if (!typeCache.ContainsKey(typeInfo)) {
                 // TODO: Will throw. Can add custom exceptions.
                 var idProp = typeInfo.GetProperty("Id");
