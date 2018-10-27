@@ -7,7 +7,7 @@ using Pimix.Service;
 
 namespace Pimix.Apps.JobUtil {
     [DataModel("jobs")]
-    partial class Job {
+    class Job {
         [JsonProperty("id")]
         public string Id { get; set; }
 

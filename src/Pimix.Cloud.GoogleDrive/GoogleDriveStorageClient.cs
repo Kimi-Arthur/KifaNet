@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using NLog;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {
@@ -19,7 +20,7 @@ namespace Pimix.Cloud.GoogleDrive {
         static GoogleDriveConfig config;
 
         static GoogleDriveConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => GoogleDriveConfig.Get("default"));
+            LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<GoogleDriveConfig>("default"));
 
         public override string ToString() => $"google:{AccountId}";
 

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Pimix.Cryptography;
+using Pimix.Service;
 
 namespace Pimix.IO.FileFormats {
     /// <summary>
@@ -37,7 +38,7 @@ namespace Pimix.IO.FileFormats {
                 encodedStream.Read(sha256Bytes, 0, 64);
                 var id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
 
-                encryptionKey = FileInformation.Get(id).EncryptionKey;
+                encryptionKey = PimixService.Get<FileInformation>(id).EncryptionKey;
             }
 
             encodedStream.Seek(1854, SeekOrigin.Begin);

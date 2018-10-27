@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using Pimix.Cryptography;
+using Pimix.Service;
 
 namespace Pimix.IO.FileFormats {
     /// <summary>
@@ -38,7 +39,7 @@ namespace Pimix.IO.FileFormats {
                 encodedStream.Read(sha256Bytes, 0, 32);
                 var id = ":" + sha256Bytes.ToHexString();
 
-                encryptionKey = FileInformation.Get(id).EncryptionKey;
+                encryptionKey = PimixService.Get<FileInformation>(id).EncryptionKey;
             }
 
             var sizeBytes = new byte[8];

@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {
@@ -20,7 +21,7 @@ namespace Pimix.Cloud.BaiduCloud {
         static BaiduCloudConfig config;
 
         static BaiduCloudConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => BaiduCloudConfig.Get("default"));
+            LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<BaiduCloudConfig>("default"));
 
         public override string ToString() => $"baidu:{AccountId}";
 

@@ -6,6 +6,7 @@ using System.Xml;
 using CommandLine;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
+using Pimix.Service;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("bilibili", HelpText = "Get Bilibili chat as xml document.")]
@@ -29,7 +30,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 var files = new PimixFile(FileUri).List(true).ToList();
 
                 var ids = Aid.Split('p');
-                var v = BilibiliVideo.Get(ids[0]);
+                var v = PimixService.Get<BilibiliVideo>(ids[0]);
                 foreach (var item in v.Pages.Zip(files, Tuple.Create)) {
                     Console.WriteLine(
                         $"{v.Title} - {item.Item1.Title}\n" +

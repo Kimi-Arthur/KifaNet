@@ -11,7 +11,7 @@ using Pimix.Service;
 
 namespace Pimix.IO {
     [DataModel("files")]
-    public partial class FileInformation {
+    public class FileInformation {
         const int SliceLength = 256 << 10;
 
         public const int BlockSize = 32 << 20;

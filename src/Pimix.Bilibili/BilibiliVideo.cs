@@ -66,8 +66,6 @@ namespace Pimix.Bilibili {
             }
         }
 
-        public static BilibiliVideo Get(string id) => PimixService.Get<BilibiliVideo>(id);
-
         public AssDocument GenerateAssDocument() {
             var result = new AssDocument();
             result.Sections.Add(new AssScriptInfoSection
