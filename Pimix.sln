@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.IO", "src\Pimix.IO\Pi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Service", "src\Pimix.Service\Pimix.Service.csproj", "{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PimixTest.Service", "tests\PimixTest.Service\PimixTest.Service.csproj", "{0C24E9DA-5F0E-4CAD-9D17-E720FE734EDC}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.IO.FileFormats", "src\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{F303C16E-D5DD-4453-818A-3926F7F9C8EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Cryptography", "src\Pimix.Cryptography\Pimix.Cryptography.csproj", "{D24F82E0-2851-4564-9A1E-13CE7C9B8567}"
@@ -55,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Subtitle", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Web.Api", "src\Pimix.Web.Api\Pimix.Web.Api.csproj", "{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Service", "tests\PimixTest.Service\PimixTest.Service.csproj", "{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,10 +73,6 @@ Global
 		{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0C24E9DA-5F0E-4CAD-9D17-E720FE734EDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C24E9DA-5F0E-4CAD-9D17-E720FE734EDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C24E9DA-5F0E-4CAD-9D17-E720FE734EDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0C24E9DA-5F0E-4CAD-9D17-E720FE734EDC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -165,6 +161,10 @@ Global
 		{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
