@@ -7,7 +7,7 @@ namespace PimixTest.Service {
     class FakeDataModel {
         public string Id { get; set; }
 
-        public int? IntProp { get; set; }
+        public int? IntPROP { get; set; }
 
         public string StrProp { get; set; }
 

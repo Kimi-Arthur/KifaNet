@@ -6,21 +6,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using NLog;
 
 namespace Pimix.Service {
     public static class PimixService {
         static readonly Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
             = new Dictionary<Type, Tuple<PropertyInfo, string>>();
-
-        static readonly JsonSerializerSettings serializeSettings = new JsonSerializerSettings {
-            ContractResolver = new DefaultContractResolver {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            },
-            NullValueHandling = NullValueHandling.Ignore,
-            MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-        };
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -40,7 +31,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, serializeSettings),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -64,7 +55,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, serializeSettings),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -153,7 +144,8 @@ namespace Pimix.Service {
                             parameters["id"] = id;
                         }
 
-                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters, serializeSettings),
+                        request.Content = new StringContent(
+                            JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json");
                     }

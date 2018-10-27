@@ -14,7 +14,7 @@ namespace PimixTest.Service {
         public void DataModelGetBasicTest() {
             var data = FakeDataModel.Get("item0");
             Assert.Equal("item0", data.Id);
-            Assert.Equal(1225, data.IntProp);
+            Assert.Equal(1225, data.IntPROP);
             Assert.Equal("str prop value", data.StrProp);
             Assert.Equal(
                 new List<string> {
@@ -45,12 +45,12 @@ namespace PimixTest.Service {
         [Fact]
         public void DataModelPatchBasicTest() {
             var data = FakeDataModel.Get("item0");
-            Assert.Equal(1225, data.IntProp);
+            Assert.Equal(1225, data.IntPROP);
             Assert.Equal("str prop value", data.StrProp);
-            FakeDataModel.Patch(new FakeDataModel {IntProp = 19910123}, "item0");
+            FakeDataModel.Patch(new FakeDataModel {IntPROP = 19910123}, "item0");
             FakeDataModel.Patch(new FakeDataModel {StrProp = "new str", Id = "item0"});
             data = FakeDataModel.Get("item0");
-            Assert.Equal(19910123, data.IntProp);
+            Assert.Equal(19910123, data.IntPROP);
             Assert.Equal("new str", data.StrProp);
         }
     }
