@@ -5,22 +5,16 @@ using Pimix.Service;
 namespace PimixTest.Service {
     [DataModel("api_test")]
     class FakeDataModel {
-        [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("int_prop")]
-        public int? IntProp { get; set; }
+        public int? IntPROP { get; set; }
 
-        [JsonProperty("str_prop")]
         public string StrProp { get; set; }
 
-        [JsonProperty("list_prop")]
         public List<string> ListProp { get; set; }
 
-        [JsonProperty("dict_prop")]
         public Dictionary<string, string> DictProp { get; set; }
 
-        [JsonProperty("sub_prop")]
         public FakeSubDataModel SubProp { get; set; }
 
         #region PimixService Wrappers
@@ -36,10 +30,9 @@ namespace PimixTest.Service {
     }
 
     class FakeSubDataModel {
-        [JsonProperty("sub_prop1")]
         public string SubProp1 { get; set; }
 
         [JsonProperty("sub_prop2")]
-        public List<string> SubProp2 { get; set; }
+        public List<string> Sub2 { get; set; }
     }
 }

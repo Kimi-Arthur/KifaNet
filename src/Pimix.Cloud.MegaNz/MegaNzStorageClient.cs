@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Cloud.MegaNz {
     public class MegaNzStorageClient : StorageClient {
@@ -29,7 +30,7 @@ namespace Pimix.Cloud.MegaNz {
 
         static MegaNzConfig config;
 
-        static MegaNzConfig Config => LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Get("default"));
+        static MegaNzConfig Config => LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<MegaNzConfig>("default"));
 
         // Comment out as this doesn't work now.
         //public override void Move(string sourcePath, string destinationPath)

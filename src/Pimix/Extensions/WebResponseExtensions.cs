@@ -40,7 +40,7 @@ namespace Pimix {
             => JToken.Parse(GetString(response));
 
         public static T GetObject<T>(this WebResponse response)
-            => JsonConvert.DeserializeObject<T>(GetString(response));
+            => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
         public static Dictionary<string, object> GetDictionary(this WebResponse response)
             => response.GetObject<Dictionary<string, object>>();
@@ -58,6 +58,6 @@ namespace Pimix {
             => JToken.Parse(GetString(response));
 
         public static T GetObject<T>(this HttpResponseMessage response)
-            => JsonConvert.DeserializeObject<T>(GetString(response));
+            => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
     }
 }

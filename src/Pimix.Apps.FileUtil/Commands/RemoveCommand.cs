@@ -4,6 +4,7 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("rm", HelpText =
@@ -36,10 +37,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.Write($"Confirm deleting the {files.Count} files above{removalText}?");
                     Console.ReadLine();
 
-                    return files.Select(f => RemoveLogicalFile(FileInformation.Get(f))).Max();
+                    return files.Select(f => RemoveLogicalFile(PimixService.Get<FileInformation>(f))).Max();
                 }
 
-                return RemoveLogicalFile(FileInformation.Get(FileId));
+                return RemoveLogicalFile(PimixService.Get<FileInformation>(FileId));
             }
 
             var source = new PimixFile(FileUri);
@@ -94,7 +95,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             // Logical removal.
-            FileInformation.Delete(info.Id);
+            PimixService.Delete<FileInformation>(info.Id);
             logger.Info($"FileInfo {info.Id} removed.");
             return 0;
         }

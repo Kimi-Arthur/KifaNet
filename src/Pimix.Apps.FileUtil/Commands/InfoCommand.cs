@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("info", HelpText = "Generate information of the specified file.")]
@@ -61,7 +62,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             if (Update) {
-                FileInformation.Patch(info);
+                PimixService.Patch(info);
                 FileInformation.AddLocation(f.Id, FileUri, true);
             }
 

@@ -2,6 +2,7 @@
 using CommandLine;
 using NLog;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
@@ -22,7 +23,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            var result = FileInformation.Link(Target, LinkName);
+            var result = PimixService.Link<FileInformation>(Target, LinkName);
             if (result) {
                 logger.Info("Successfully linked {0} with {1}!", LinkName, Target);
             } else {

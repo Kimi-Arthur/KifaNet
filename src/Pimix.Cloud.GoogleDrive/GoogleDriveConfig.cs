@@ -22,8 +22,6 @@ namespace Pimix.Cloud.GoogleDrive {
 
         [JsonProperty("apis")]
         public APIList APIList { get; private set; }
-
-        public static GoogleDriveConfig Get(string id) => PimixService.Get<GoogleDriveConfig>(id);
     }
 
     public class AccountInfo {

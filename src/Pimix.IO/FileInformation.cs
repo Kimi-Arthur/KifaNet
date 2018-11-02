@@ -11,50 +11,37 @@ using Pimix.Service;
 
 namespace Pimix.IO {
     [DataModel("files")]
-    public partial class FileInformation {
+    public class FileInformation {
         const int SliceLength = 256 << 10;
 
         public const int BlockSize = 32 << 20;
 
         static readonly Dictionary<FileProperties, PropertyInfo> Properties;
 
-        [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("size")]
         public long? Size { get; set; }
 
-        [JsonProperty("md5")]
         public string MD5 { get; set; }
 
-        [JsonProperty("sha1")]
         public string SHA1 { get; set; }
 
-        [JsonProperty("sha256")]
         public string SHA256 { get; set; }
 
-        [JsonProperty("crc32")]
         public string CRC32 { get; set; }
 
-        [JsonProperty("adler32")]
         public string Adler32 { get; set; }
 
-        [JsonProperty("block_md5")]
         public List<string> BlockMD5 { get; set; }
 
-        [JsonProperty("block_sha1")]
         public List<string> BlockSHA1 { get; set; }
 
-        [JsonProperty("block_sha256")]
         public List<string> BlockSHA256 { get; set; }
 
-        [JsonProperty("slice_md5")]
         public string SliceMD5 { get; set; }
 
-        [JsonProperty("encryption_key")]
         public string EncryptionKey { get; set; }
 
-        [JsonProperty("locations")]
         public Dictionary<string, DateTime?> Locations { get; set; }
 
         public static void AddLocation(string id, string location, bool verified = false)

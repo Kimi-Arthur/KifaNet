@@ -11,6 +11,7 @@ using Pimix.Cloud.GoogleDrive;
 using Pimix.Cloud.MegaNz;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
+using Pimix.Service;
 
 namespace Pimix.Api.Files {
     public class PimixFile {
@@ -48,7 +49,7 @@ namespace Pimix.Api.Files {
         PimixFileFormat FileFormat { get; set; }
 
         readonly FileInformation fileInfo;
-        public FileInformation FileInfo => fileInfo ?? FileInformation.Get(Id);
+        public FileInformation FileInfo => fileInfo ?? PimixService.Get<FileInformation>(Id);
 
         public PimixFile(string uri, string id = null, FileInformation fileInfo = null) {
             // Example uri:
@@ -187,10 +188,10 @@ namespace Pimix.Api.Files {
                 return quickCompareResult;
             }
 
-            var sha256Info = FileInformation.Get($"/$/{info.SHA256}");
+            var sha256Info = PimixService.Get<FileInformation>($"/$/{info.SHA256}");
 
             if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {
-                FileInformation.Link(sha256Info.Id, info.Id);
+                PimixService.Link<FileInformation>(sha256Info.Id, info.Id);
             }
 
             oldInfo = FileInfo;
@@ -201,7 +202,7 @@ namespace Pimix.Api.Files {
                     oldInfo.EncryptionKey ??
                     info.EncryptionKey; // Only happens for unencrypted file.
 
-                FileInformation.Patch(info);
+                PimixService.Patch(info);
                 Register(true);
             } else {
                 logger.Warn(
