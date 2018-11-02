@@ -1,11 +1,10 @@
 Pimix.Service.PimixService:
   PimixServerApiAddress: http://www.pimix.tk/api
 
-
 Pimix.Api.Files.PimixFile:
   IgnoredFilesPattern: "\
-  /\\.|\
-  \\.(!qB|!ut|fdmdownload|crdownload|swp)$|\
+  /\\.|/!|/@|\
+  \\.(!qB|!ut|fdmdownload|crdownload|swp|idx2)$|\
   ^/(Anime|TV Shows|Movies)/.*\\.(xml|ass|srt)$"
 
 Pimix.IO.FileStorageClient:
