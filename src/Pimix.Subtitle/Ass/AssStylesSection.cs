@@ -31,7 +31,7 @@ namespace Pimix.Subtitle.Ass {
                 "Encoding"
             };
 
-        public List<AssStyle> Styles { get; set; }
+        public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
 
         public override IEnumerable<AssLine> AssLines {
             get {

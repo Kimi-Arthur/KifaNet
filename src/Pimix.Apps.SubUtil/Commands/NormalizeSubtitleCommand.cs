@@ -1,6 +1,8 @@
+using System;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
+using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("normalize", HelpText = "Normalize subtitle.")]
@@ -12,11 +14,13 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
-            return NormalizeSubtitle(target);
+            var sub = NormalizeSubtitle(AssDocument.Parse(target.OpenRead()));
+            Console.WriteLine(sub.ToString());
+            return 0;
         }
 
-        int NormalizeSubtitle(PimixFile target) {
-            return 0;
+        AssDocument NormalizeSubtitle(AssDocument sub) {
+            return sub;
         }
     }
 }
