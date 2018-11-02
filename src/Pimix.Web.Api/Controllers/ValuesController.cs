@@ -1,59 +1,59 @@
-﻿using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase {
-        HttpClient client;
-        HttpClient Client => client = client ?? new HttpClient();
-        ILogger _logger;
+        readonly IMongoCollection<SoccerTeam> data;
 
-        public ValuesController(ILogger<ValuesController> logger) {
-            _logger = logger;
+        public ValuesController() {
+            var client = new MongoClient("mongodb://www.pimix.tk:27017");
+            var db = client.GetDatabase("soccer");
+            data = db.GetCollection<SoccerTeam>("teams");
         }
 
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get() {
-            return new string[] {"value1", "value2"};
+        public ActionResult<Dictionary<string, SoccerTeam>> Get() {
+            return data.Find(x => true).ToList().ToDictionary(x => x.Id, x => x);
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id) {
-            var request =
-                new HttpRequestMessage(HttpMethod.Post,
-                    "https://applens.azurewebsites.net/api/invoke");
-
-            foreach (var header in HttpContext.Request.Headers) {
-                if (header.Key == "Authorization" || header.Key.StartsWith("x-ms-")) {
-                    request.Headers.Add(header.Key, header.Value.ToString());
-                }
-            }
-            
-            request.Content = new StringContent("");
-            request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-
-            return Client.SendAsync(request).Result.Content.ReadAsStringAsync().Result;
+        public ActionResult<SoccerTeam> Get(string id) {
+            return data.Find(x => x.Id == id).Single();
         }
 
         // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value) {
-        }
+        [HttpPost("{id}")]
+        public void Post(string id, [FromBody] SoccerTeam value) {
+            if (value.Id == null) {
+                value.Id = id;
+            }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value) {
+            data.InsertOne(value);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id) {
+        public void Delete(string id) {
+            data.DeleteOne(x => x.Id == id);
         }
+    }
+
+    public class SoccerTeam {
+        public string Id { get; set; }
+
+        [BsonElement("short_name")]
+        public string ShortName { get; set; }
+
+        [BsonElement("full_name")]
+        public string FullName { get; set; }
     }
 }

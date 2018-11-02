@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Pimix.Web.Api {
     public class Startup {
@@ -22,24 +16,23 @@ namespace Pimix.Web.Api {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddJsonOptions(opt => {
+                    opt.SerializerSettings.ContractResolver = new DefaultContractResolver {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    };
+                    opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    opt.SerializerSettings.MetadataPropertyHandling = MetadataPropertyHandling.Ignore;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
-
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
             } else {
                 app.UseHsts();
             }
-
-            app.UseCors(cors =>
-                cors
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowAnyOrigin()
-            );
 
             app.UseHttpsRedirection();
             app.UseMvc();
