@@ -51,18 +51,18 @@ install:
 	mkdir -p ${lib_folder}/fileutil
 	mkdir -p ${lib_folder}/jobutil
 	mkdir -p ${lib_folder}/subutil
-	cp -R src/Pimix.Apps.FileUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/fileutil
-	cp -R src/Pimix.Apps.JobUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/jobutil
-	cp -R src/Pimix.Apps.SubUtil/bin/Release/${sdk_version}/${os_version}/publish/* ${lib_folder}/subutil
+	cp -R src/Pimix.Apps.FileUtil/bin/Release/${sdk_version}/publish/* ${lib_folder}/fileutil
+	cp -R src/Pimix.Apps.JobUtil/bin/Release/${sdk_version}/publish/* ${lib_folder}/jobutil
+	cp -R src/Pimix.Apps.SubUtil/bin/Release/${sdk_version}/publish/* ${lib_folder}/subutil
 
 install_dev:
 	rm -rf ${lib_folder}
 	mkdir -p ${lib_folder}/fileutil_dev
 	mkdir -p ${lib_folder}/jobutil_dev
 	mkdir -p ${lib_folder}/subutil_dev
-	cp -R src/Pimix.Apps.FileUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/fileutil_dev
-	cp -R src/Pimix.Apps.JobUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/jobutil_dev
-	cp -R src/Pimix.Apps.SubUtil/bin/Release/netcoreapp2.1/publish/* /usr/local/lib/pimix/subutil_dev
+	cp -R src/Pimix.Apps.FileUtil/bin/Release/${sdk_version}/publish/* ${lib_folder}/fileutil_dev
+	cp -R src/Pimix.Apps.JobUtil/bin/Release/${sdk_version}/publish/* ${lib_folder}/jobutil_dev
+	cp -R src/Pimix.Apps.SubUtil/bin/Release/${sdk_version}/publish/* ${lib_folder}/subutil_dev
 
 install_staging:
 	mkdir -p /usr/local/lib/pimix/fileutil_staging
