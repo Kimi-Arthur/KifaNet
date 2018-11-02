@@ -12,7 +12,7 @@ namespace Pimix.Subtitle.Ass {
             => $"[{SectionTitle}]\r\n{string.Join("\r\n", AssLines.Select(line => line.ToString()))}\r\n";
 
         public static AssSection Parse(string content) {
-            var lines = content.Split(new[] {"\r\n"}, StringSplitOptions.None);
+            var lines = content.Split("\r\n");
             var title = lines[0].Substring(1, lines[0].Length - 2);
             switch (title) {
                 case "Script Info":

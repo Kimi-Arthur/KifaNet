@@ -18,8 +18,7 @@ namespace Pimix.Subtitle.Ass {
 
         static AssDocument Parse(string content) {
             return new AssDocument {
-                Sections = content.Split(new[] {"\r\n\r\n"}, StringSplitOptions.None)
-                    .Select(AssSection.Parse).ToList()
+                Sections = content.Split("\r\n\r\n").Select(AssSection.Parse).ToList()
             };
         }
     }
