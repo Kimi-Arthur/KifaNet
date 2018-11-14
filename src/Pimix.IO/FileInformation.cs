@@ -100,7 +100,7 @@ namespace Pimix.IO {
                 stream.Seek(0, SeekOrigin.Begin);
             }
 
-            if (requiredProperties.HasFlag(FileProperties.SliceMD5)) {
+            if (requiredProperties.HasFlag(FileProperties.SliceMd5)) {
                 readLength = stream.Read(buffer, 0, SliceLength);
                 SliceMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength)
                     .ToHexString();
@@ -108,41 +108,41 @@ namespace Pimix.IO {
 
             if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None) {
                 var hashers = new List<HashAlgorithm> {
-                    requiredProperties.HasFlag(FileProperties.MD5)
+                    requiredProperties.HasFlag(FileProperties.Md5)
                         ? new MD5CryptoServiceProvider()
                         : null,
-                    requiredProperties.HasFlag(FileProperties.SHA1)
+                    requiredProperties.HasFlag(FileProperties.Sha1)
                         ? new SHA1CryptoServiceProvider()
                         : null,
-                    requiredProperties.HasFlag(FileProperties.SHA256)
+                    requiredProperties.HasFlag(FileProperties.Sha256)
                         ? new SHA256CryptoServiceProvider()
                         : null
                 };
 
-                BlockMd5 = requiredProperties.HasFlag(FileProperties.BlockMD5)
+                BlockMd5 = requiredProperties.HasFlag(FileProperties.BlockMd5)
                     ? new List<string>()
                     : BlockMd5;
-                BlockSha1 = requiredProperties.HasFlag(FileProperties.BlockSHA1)
+                BlockSha1 = requiredProperties.HasFlag(FileProperties.BlockSha1)
                     ? new List<string>()
                     : BlockSha1;
-                BlockSha256 = requiredProperties.HasFlag(FileProperties.BlockSHA256)
+                BlockSha256 = requiredProperties.HasFlag(FileProperties.BlockSha256)
                     ? new List<string>()
                     : BlockSha256;
 
                 var blockHashers = new List<HashAlgorithm> {
-                    requiredProperties.HasFlag(FileProperties.BlockMD5)
+                    requiredProperties.HasFlag(FileProperties.BlockMd5)
                         ? new MD5CryptoServiceProvider()
                         : null,
-                    requiredProperties.HasFlag(FileProperties.BlockSHA1)
+                    requiredProperties.HasFlag(FileProperties.BlockSha1)
                         ? new SHA1CryptoServiceProvider()
                         : null,
-                    requiredProperties.HasFlag(FileProperties.BlockSHA256)
+                    requiredProperties.HasFlag(FileProperties.BlockSha256)
                         ? new SHA256CryptoServiceProvider()
                         : null
                 };
 
                 var additionalHashers = new List<IHash> {
-                    requiredProperties.HasFlag(FileProperties.CRC32)
+                    requiredProperties.HasFlag(FileProperties.Crc32)
                         ? HashFactory.Checksum.CreateCRC32_IEEE()
                         : null,
                     requiredProperties.HasFlag(FileProperties.Adler32)
@@ -166,17 +166,17 @@ namespace Pimix.IO {
                         hasher => { hasher?.TransformBytes(buffer, 0, readLength); }
                     );
 
-                    if (requiredProperties.HasFlag(FileProperties.BlockMD5)) {
+                    if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
                         BlockMd5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength)
                             .ToHexString());
                     }
 
-                    if (requiredProperties.HasFlag(FileProperties.BlockSHA1)) {
+                    if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
                         BlockSha1.Add(blockHashers[1].ComputeHash(buffer, 0, readLength)
                             .ToHexString());
                     }
 
-                    if (requiredProperties.HasFlag(FileProperties.BlockSHA256)) {
+                    if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
                         BlockSha256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength)
                             .ToHexString());
                     }

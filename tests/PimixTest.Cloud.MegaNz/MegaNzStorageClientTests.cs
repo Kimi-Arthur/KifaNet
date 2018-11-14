@@ -29,7 +29,7 @@ namespace PimixTest.Cloud.MegaNz {
 
             using (var s = client.OpenRead("/Test/2010-11-25.bin")) {
                 Assert.AreEqual(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).Sha256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
         }
 
@@ -43,7 +43,7 @@ namespace PimixTest.Cloud.MegaNz {
 
             using (var s = client.OpenRead("/Test/new/upload.bin")) {
                 Assert.AreEqual(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).Sha256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/new/upload.bin");
@@ -57,7 +57,7 @@ namespace PimixTest.Cloud.MegaNz {
             client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
             using (var s = client.OpenRead("/Test/2010-11-25.bin_bak")) {
                 Assert.AreEqual(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).Sha256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/2010-11-25.bin_bak");
@@ -77,7 +77,7 @@ namespace PimixTest.Cloud.MegaNz {
 
             using (var s = client.OpenRead("/Test/2010-11-25.bin_2")) {
                 Assert.AreEqual(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).Sha256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/2010-11-25.bin_2");

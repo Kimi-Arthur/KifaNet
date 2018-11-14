@@ -40,7 +40,7 @@ namespace PimixTest.Cryptography {
                 using (var stream = new PimixCryptoStream(File.OpenRead(item.Item1), transform,
                     item.Item3, true)) {
                     var info = FileInformation.GetInformation(stream,
-                        FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                        FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
                     Assert.AreEqual(item.Item3, info.Size);
                     Assert.AreEqual(item.Item2, info.Sha256);
 
@@ -50,7 +50,7 @@ namespace PimixTest.Cryptography {
                         stream.CopyTo(output, b);
 
                         info = FileInformation.GetInformation(output,
-                            FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                            FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
                         Assert.AreEqual(item.Item3, info.Size);
                         Assert.AreEqual(item.Item2, info.Sha256);
                     }
@@ -88,7 +88,7 @@ namespace PimixTest.Cryptography {
                 using (var stream = new PimixCryptoStream(File.OpenRead(item.Item1), transform,
                     item.Item3, false)) {
                     var info = FileInformation.GetInformation(stream,
-                        FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                        FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
                     Assert.AreEqual(item.Item3, info.Size);
                     Assert.AreEqual(item.Item2, info.Sha256);
 
@@ -98,7 +98,7 @@ namespace PimixTest.Cryptography {
                         stream.CopyTo(output, b);
 
                         info = FileInformation.GetInformation(output,
-                            FileProperties.SHA256 | FileProperties.Size | FileProperties.SliceMD5);
+                            FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
                         Assert.AreEqual(item.Item3, info.Size);
                         Assert.AreEqual(item.Item2, info.Sha256);
                     }

@@ -60,7 +60,7 @@ namespace Pimix.IO.FileFormats {
         }
 
         public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
-            info.AddProperties(rawStream, FileProperties.Size | FileProperties.SHA256);
+            info.AddProperties(rawStream, FileProperties.Size | FileProperties.Sha256);
 
             if (info.EncryptionKey == null) {
                 throw new ArgumentException("Encryption key must be given before calling");

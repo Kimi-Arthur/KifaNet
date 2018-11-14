@@ -54,7 +54,7 @@ namespace PimixTest.Storage {
         [TestMethod]
         public void GetInformationSomeHashesTest() {
             var info = FileInformation.GetInformation("Test1.txt",
-                FileProperties.MD5 | FileProperties.SHA256);
+                FileProperties.Md5 | FileProperties.Sha256);
             Assert.AreEqual("E1B849F9631FFC1829B2E31402373E3C", info.Md5);
             Assert.AreEqual(null, info.Sha1);
             Assert.AreEqual("8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F",
