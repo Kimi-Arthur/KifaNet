@@ -28,8 +28,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            var destinationSha256 = destination.FileInfo.SHA256;
-            if (destinationSha256 != null && destinationSha256 != source.FileInfo.SHA256) {
+            var destinationSha256 = destination.FileInfo.Sha256;
+            if (destinationSha256 != null && destinationSha256 != source.FileInfo.Sha256) {
                 logger.Error("Cannot move file between different entities.");
                 return 1;
             }

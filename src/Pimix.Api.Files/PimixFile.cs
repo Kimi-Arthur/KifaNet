@@ -188,9 +188,9 @@ namespace Pimix.Api.Files {
                 return quickCompareResult;
             }
 
-            var sha256Info = PimixService.Get<FileInformation>($"/$/{info.SHA256}");
+            var sha256Info = PimixService.Get<FileInformation>($"/$/{info.Sha256}");
 
-            if (FileInfo.SHA256 == null && sha256Info.SHA256 == info.SHA256) {
+            if (FileInfo.Sha256 == null && sha256Info.Sha256 == info.Sha256) {
                 PimixService.Link<FileInformation>(sha256Info.Id, info.Id);
             }
 
