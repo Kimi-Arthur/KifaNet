@@ -11,7 +11,7 @@
         <Description>Utility to manage pimix jobs.</Description>
         <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
         <PackageTags>Pimix Apps FileUtil app</PackageTags>
-        <Authors>Kimi Arthur</Authors>
+        <Authors>Kimi6Arthur</Authors>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.3.0" />
