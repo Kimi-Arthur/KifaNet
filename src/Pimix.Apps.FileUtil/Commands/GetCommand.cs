@@ -13,7 +13,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public string FileUri { get; set; }
 
         [Option('b', "use-baidu-cloud", HelpText = "Prefer baidu cloud storage first.")]
-        public bool UseBaiduCloud { get; set; } = false;
+        public bool? PreferBaiduCloud { get; set; }
 
         [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
         public bool LightweightOnly { get; set; } = false;
@@ -85,23 +85,11 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            foreach (var location in info.Locations) {
-                if (location.Value != null) {
-                    var linkSource = new PimixFile(location.Key);
-                    if (linkSource.Client is FileStorageClient && linkSource.Exists()) {
-                        linkSource.Copy(target);
-                        logger.Info("Verifying {0}...", target);
-                        target.Add();
-                        logger.Info("Got {0} through copying from {1}.", target, linkSource);
-                        return 0;
-                    }
-                }
+            if (PreferBaiduCloud.HasValue) {
+                PimixFile.PreferBaiduCloud = PreferBaiduCloud.Value;
             }
 
-            var source = new PimixFile(FileInformation.GetLocation(info.Id,
-                UseBaiduCloud
-                    ? new List<string> {"baidu", "google"}
-                    : new List<string> {"google", "baidu"}));
+            var source = new PimixFile(fileInfo: info);
             source.Copy(target);
 
             if (target.Exists()) {

@@ -19,6 +19,8 @@ namespace Pimix.Api.Files {
 
         public static string IgnoredFilesPattern { get; set; } = "$^";
 
+        public static bool PreferBaiduCloud { get; set; } = false;
+
         static Regex ignoredFiles;
 
         static Regex IgnoredFiles
@@ -51,7 +53,12 @@ namespace Pimix.Api.Files {
         readonly FileInformation fileInfo;
         public FileInformation FileInfo => fileInfo ?? PimixService.Get<FileInformation>(Id);
 
-        public PimixFile(string uri, string id = null, FileInformation fileInfo = null) {
+        public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null) {
+            if (uri == null) {
+                // Infer uri from id.
+                uri = GetUri(id ?? fileInfo?.Id);
+            }
+
             // Example uri:
             //   baidu:Pimix_1;v1/a/b/c/d.txt
             //   mega:0z/a/b/c/d.txt
@@ -96,6 +103,31 @@ namespace Pimix.Api.Files {
 
             FileFormat = PimixFileV1Format.Get(uri) ??
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
+        }
+
+        static string GetUri(string id) {
+            var bestRemoteLocation = "";
+            var bestScore = 0;
+            foreach (var location in PimixService.Get<FileInformation>(id).Locations) {
+                if (location.Value != null) {
+                    var file = new PimixFile(location.Key);
+                    if (file.Client is FileStorageClient && file.Exists()) {
+                        return location.Key;
+                    }
+
+                    var score = (PreferBaiduCloud
+                        ? file.Client is BaiduCloudStorageClient
+                        : file.Client is GoogleDriveStorageClient) ? 8 : 4;
+                    score += file.FileFormat is PimixFileV1Format ? 2 :
+                        file.FileFormat is PimixFileV0Format ? 1 : 0;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestRemoteLocation = location.Key;
+                    }
+                }
+            }
+
+            return bestRemoteLocation;
         }
 
         public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
