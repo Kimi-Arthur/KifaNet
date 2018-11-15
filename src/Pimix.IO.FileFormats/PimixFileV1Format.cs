@@ -60,7 +60,7 @@ namespace Pimix.IO.FileFormats {
         }
 
         public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
-            info.AddProperties(rawStream, FileProperties.Size | FileProperties.SHA256);
+            info.AddProperties(rawStream, FileProperties.Size | FileProperties.Sha256);
 
             if (info.EncryptionKey == null) {
                 throw new ArgumentException("Encryption key must be given before calling");
@@ -69,7 +69,7 @@ namespace Pimix.IO.FileFormats {
             var header = new byte[48];
             new byte[] {0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30}.CopyTo(header, 0);
             info.Size.Value.ToByteArray().CopyTo(header, 8);
-            info.SHA256.ParseHexString().CopyTo(header, 16);
+            info.Sha256.ParseHexString().CopyTo(header, 16);
 
             ICryptoTransform encoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider()) {

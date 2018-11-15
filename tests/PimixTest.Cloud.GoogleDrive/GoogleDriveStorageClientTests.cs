@@ -27,11 +27,11 @@ namespace PimixTest.Cloud.GoogleDrive {
 
             using (var s = client.OpenRead("/Test/2010-11-25.bin")) {
                 Assert.Equal(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
 
                 // Test again for seekness.
                 Assert.Equal(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
         }
 
@@ -61,7 +61,7 @@ namespace PimixTest.Cloud.GoogleDrive {
 
             using (var s = client.OpenRead("/Test/big.bin")) {
                 Assert.Equal(BigFileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.SHA256).SHA256);
+                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/big.bin");

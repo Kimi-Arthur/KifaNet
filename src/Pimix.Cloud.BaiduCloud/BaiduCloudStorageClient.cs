@@ -298,8 +298,8 @@ namespace Pimix.Cloud.BaiduCloud {
                 new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/')),
                     ["content_length"] = fileInformation.Size.ToString(),
-                    ["content_md5"] = fileInformation.MD5,
-                    ["slice_md5"] = fileInformation.SliceMD5,
+                    ["content_md5"] = fileInformation.Md5,
+                    ["slice_md5"] = fileInformation.SliceMd5,
                     ["content_crc32"] = fileInformation.Adler32
                 });
 
@@ -307,7 +307,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
             using (var response = request.GetResponse()) {
                 if (!response.GetDictionary()
-                    .Contains(new KeyValuePair<string, object>("md5", fileInformation.MD5))) {
+                    .Contains(new KeyValuePair<string, object>("md5", fileInformation.Md5))) {
                     throw new Exception("Response is unexpected!");
                 }
             }
@@ -438,7 +438,7 @@ namespace Pimix.Cloud.BaiduCloud {
                     yield return new FileInformation {
                         Id = id,
                         Size = (long) file["size"],
-                        MD5 = ((string) file["md5"]).ToUpper()
+                        Md5 = ((string) file["md5"]).ToUpper()
                     };
                 }
             }

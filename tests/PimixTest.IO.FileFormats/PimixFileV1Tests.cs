@@ -36,11 +36,11 @@ namespace PimixTest.IO.FileFormats {
                     using (var output =
                         new PimixFileV1Format().GetDecodeStream(encrypted, EncryptionKey)) {
                         var fs1 = FileInformation.GetInformation(ms,
-                            FileProperties.Size | FileProperties.SHA256);
+                            FileProperties.Size | FileProperties.Sha256);
                         var fs2 = FileInformation.GetInformation(output,
-                            FileProperties.Size | FileProperties.SHA256);
+                            FileProperties.Size | FileProperties.Sha256);
                         Assert.AreEqual(fs1.Size, fs2.Size);
-                        Assert.AreEqual(fs1.SHA256, fs2.SHA256);
+                        Assert.AreEqual(fs1.Sha256, fs2.Sha256);
                     }
                 }
             }

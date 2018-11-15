@@ -170,9 +170,9 @@ namespace Pimix.IO {
             bool? result = null;
 
             var md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
-            if (info.BlockMD5 != null) {
+            if (info.BlockMd5 != null) {
                 result = true;
-                var expectedMd5 = info.BlockMD5[blockId];
+                var expectedMd5 = info.BlockMd5[blockId];
 
                 if (md5 != expectedMd5) {
                     logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedMd5, md5);
@@ -181,9 +181,9 @@ namespace Pimix.IO {
             }
 
             var sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
-            if (info.BlockSHA1 != null) {
+            if (info.BlockSha1 != null) {
                 result = result ?? true;
-                var expectedSha1 = info.BlockSHA1[blockId];
+                var expectedSha1 = info.BlockSha1[blockId];
 
                 if (sha1 != expectedSha1) {
                     logger.Warn("SHA1 mismatch: expected {0}, got {1}", expectedSha1, sha1);
@@ -193,9 +193,9 @@ namespace Pimix.IO {
 
             var sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
-            if (info.BlockSHA256 != null) {
+            if (info.BlockSha256 != null) {
                 result = result ?? true;
-                var expectedSha256 = info.BlockSHA256[blockId];
+                var expectedSha256 = info.BlockSha256[blockId];
 
                 if (sha256 != expectedSha256) {
                     logger.Warn("SHA256 mismatch: expected {0}, got {1}", expectedSha256, sha256);
