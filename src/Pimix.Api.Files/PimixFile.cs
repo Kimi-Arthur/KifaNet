@@ -108,16 +108,19 @@ namespace Pimix.Api.Files {
         static string GetUri(string id) {
             var bestRemoteLocation = "";
             var bestScore = 0;
-            foreach (var location in PimixService.Get<FileInformation>(id).Locations) {
+            var info = PimixService.Get<FileInformation>(id);
+            foreach (var location in info.Locations) {
                 if (location.Value != null) {
-                    var file = new PimixFile(location.Key);
+                    var file = new PimixFile(location.Key, fileInfo: info);
                     if (file.Client is FileStorageClient && file.Exists()) {
                         return location.Key;
                     }
 
                     var score = (PreferBaiduCloud
                         ? file.Client is BaiduCloudStorageClient
-                        : file.Client is GoogleDriveStorageClient) ? 8 : 4;
+                        : file.Client is GoogleDriveStorageClient)
+                        ? 8
+                        : 4;
                     score += file.FileFormat is PimixFileV1Format ? 2 :
                         file.FileFormat is PimixFileV0Format ? 1 : 0;
                     if (score > bestScore) {

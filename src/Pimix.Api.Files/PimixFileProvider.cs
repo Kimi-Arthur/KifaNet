@@ -5,7 +5,8 @@ using Microsoft.Extensions.Primitives;
 
 namespace Pimix.Api.Files {
     public class PimixFileProvider : IFileProvider {
-        public IFileInfo GetFileInfo(string path) => new PimixFileInfo(new PimixFile(path));
+        public IFileInfo GetFileInfo(string path)
+            => new PimixFileInfo(new PimixFile(id: path));
 
         public IDirectoryContents GetDirectoryContents(string path)
             => new NotFoundDirectoryContents();
@@ -26,7 +27,9 @@ namespace Pimix.Api.Files {
         public long Length => file.FileInfo.Size.GetValueOrDefault();
         public string PhysicalPath => null;
         public string Name => file.BaseName;
-        public DateTimeOffset LastModified => DateTimeOffset.MinValue;
+
+        public DateTimeOffset LastModified { get; } = DateTimeOffset.Parse("2010-11-25 00:00:00Z");
+
         public bool IsDirectory => file.Exists();
     }
 }

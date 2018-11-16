@@ -36,11 +36,12 @@ namespace Pimix.Cloud.GoogleDrive {
             get => accountId;
             set {
                 accountId = value;
-                Account = Config.Accounts[accountId];
+                account = null;
             }
         }
 
-        public AccountInfo Account { get; private set; }
+        AccountInfo account;
+        public AccountInfo Account => account = account ?? Config.Accounts[accountId];
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false,
             string pattern = "*") {
