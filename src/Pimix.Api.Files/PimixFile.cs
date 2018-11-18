@@ -147,7 +147,7 @@ namespace Pimix.Api.Files {
         public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true,
             string pattern = "*")
             => Client.List(Path, recursive, pattern)
-                .Where(f => !ignoreFiles || !IgnoredFiles.IsMatch(f.Id))
+                .Where(f => !ignoreFiles || !IgnoredFiles.IsMatch(f.Id.Substring(Path.Length)))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public void Copy(PimixFile destination) {
