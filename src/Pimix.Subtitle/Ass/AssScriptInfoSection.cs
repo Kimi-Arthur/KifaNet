@@ -2,6 +2,12 @@
 
 namespace Pimix.Subtitle.Ass {
     public class AssScriptInfoSection : AssSection {
+        public const int DefaultPlayResX = 384;
+        public const int DefaultPlayResY = 288;
+
+        public const int PreferredPlayResX = 1920;
+        public const int PreferredPlayResY = 1080;
+
         public override string SectionTitle { get; } = "Script Info";
 
         public string Title { get; set; }
@@ -12,9 +18,9 @@ namespace Pimix.Subtitle.Ass {
 
         public string Collisions { get; set; } = "Normal";
 
-        public int PlayResX { get; set; } = 1920;
+        public int PlayResX { get; set; }
 
-        public int PlayResY { get; set; } = 1080;
+        public int PlayResY { get; set; }
 
         public override IEnumerable<AssLine> AssLines {
             get {

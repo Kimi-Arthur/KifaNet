@@ -155,6 +155,15 @@ namespace Pimix.Subtitle.Ass {
 
         public override string Key => "Style";
 
+        public AssStyle Scale(double scale) {
+            FontSize = (FontSize * scale).RoundUp(10);
+            MarginL = (MarginL * scale).RoundUp(10);
+            MarginR = (MarginR * scale).RoundUp(10);
+            MarginV = (MarginV * scale).RoundUp(10);
+
+            return this;
+        }
+        
         public override IEnumerable<string> Values
             => new List<string> {
                 Name,

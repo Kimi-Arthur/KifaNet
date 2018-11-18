@@ -10,4 +10,7 @@
         <PackageTags>Pimix lib</PackageTags>
         <Authors>Kimi Arthur</Authors>
     </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Pimix\Pimix.csproj" />
+    </ItemGroup>
 </Project>
