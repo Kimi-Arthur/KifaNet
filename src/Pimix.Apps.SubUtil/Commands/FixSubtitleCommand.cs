@@ -34,6 +34,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 header.PlayResY = AssScriptInfoSection.PreferredPlayResY;
                 
                 var scale = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
+                logger.Info("Scale by {0}", scale);
 
                 foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
                     foreach (var line in styleSection.AssLines) {

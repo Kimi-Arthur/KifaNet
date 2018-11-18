@@ -1,7 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using NLog;
 
 namespace Pimix.Subtitle.Ass {
     public class AssStylesSection : AssSection {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public override string SectionTitle => "V4+ Styles";
 
         public List<string> Format
@@ -30,6 +34,33 @@ namespace Pimix.Subtitle.Ass {
                 "MarginV",
                 "Encoding"
             };
+
+        public static AssStylesSection Parse(IEnumerable<string> lines) {
+            var section = new AssStylesSection();
+            List<string> headers = null;
+            foreach (var line in lines) {
+                if (line.Contains(": ")) {
+                    var segments = line.Split(": ");
+                    switch (segments[0]) {
+                        case "Format":
+                            headers = segments[1].Split(",").Select(s => s.Trim()).ToList();
+                            break;
+                        case "Style":
+                            if (headers == null) {
+                                logger.Warn(
+                                    "Should see header line before style line in style section.");
+                                break;
+                            }
+
+                            section.Styles.Add(AssStyle.Parse(
+                                segments[1].Split(",").Select(s => s.Trim()), headers));
+                            break;
+                    }
+                }
+            }
+
+            return section;
+        }
 
         public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
 

@@ -16,9 +16,9 @@ namespace Pimix.Subtitle.Ass {
             var title = lines[0].Substring(1, lines[0].Length - 2);
             switch (title) {
                 case "Script Info":
-                    return new AssScriptInfoSection();
+                    return AssScriptInfoSection.Parse(lines.Skip(1));
                 case "V4+ Styles":
-                    return new AssStylesSection();
+                    return AssStylesSection.Parse(lines.Skip(1));
                 case "Events":
                     return new AssEventsSection();
                 default:

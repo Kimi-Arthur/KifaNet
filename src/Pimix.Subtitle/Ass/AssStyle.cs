@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace Pimix.Subtitle.Ass {
     public class AssStyle : AssLine {
@@ -74,8 +75,8 @@ namespace Pimix.Subtitle.Ass {
                 BackColour = Color.Black
             };
 
-        public static List<AssStyle> Styles =>
-            new List<AssStyle> {
+        public static List<AssStyle> Styles
+            => new List<AssStyle> {
                 DefaultStyle,
                 SubtitleStyle,
                 ToptitleStyle,
@@ -163,7 +164,7 @@ namespace Pimix.Subtitle.Ass {
 
             return this;
         }
-        
+
         public override IEnumerable<string> Values
             => new List<string> {
                 Name,
@@ -192,5 +193,24 @@ namespace Pimix.Subtitle.Ass {
             };
 
         public string ValidName => Name == "Default" ? "*Default" : Name;
+
+        public static AssStyle Parse(IEnumerable<string> content, IEnumerable<string> headers) {
+            var style = new AssStyle();
+            foreach (var p in content.Zip(headers, Tuple.Create)) {
+                switch (p.Item2) {
+                    case "Name":
+                        style.Name = p.Item1;
+                        break;
+                    case "Fontname":
+                        style.FontName = p.Item1;
+                        break;
+                    case "Fontsize":
+                        style.FontSize = int.Parse(p.Item1);
+                        break;
+                }
+            }
+
+            return style;
+        }
     }
 }

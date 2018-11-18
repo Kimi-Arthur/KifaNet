@@ -22,6 +22,25 @@ namespace Pimix.Subtitle.Ass {
 
         public int PlayResY { get; set; }
 
+        public static AssScriptInfoSection Parse(IEnumerable<string> lines) {
+            var section = new AssScriptInfoSection();
+            foreach (var line in lines) {
+                if (line.Contains(": ")) {
+                    var segments = line.Split(": ");
+                    switch (segments[0]) {
+                        case "PlayResX":
+                            section.PlayResX = int.Parse(segments[1]);
+                            break;
+                        case "PlayResY":
+                            section.PlayResY = int.Parse(segments[1]);
+                            break;
+                    }
+                }
+            }
+
+            return section;
+        }
+
         public override IEnumerable<AssLine> AssLines {
             get {
                 if (!string.IsNullOrEmpty(Title)) {
