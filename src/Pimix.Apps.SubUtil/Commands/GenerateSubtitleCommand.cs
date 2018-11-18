@@ -49,7 +49,9 @@ namespace Pimix.Apps.SubUtil.Commands {
             var document = new AssDocument();
 
             document.Sections.Add(new AssScriptInfoSection {
-                Title = target.BaseName
+                Title = target.BaseName,
+                PlayResX = AssScriptInfoSection.PreferredPlayResX,
+                PlayResY = AssScriptInfoSection.PreferredPlayResY
             });
 
             document.Sections.Add(new AssStylesSection {
