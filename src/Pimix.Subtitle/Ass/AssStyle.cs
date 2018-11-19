@@ -170,14 +170,14 @@ namespace Pimix.Subtitle.Ass {
                 Name,
                 FontName,
                 FontSize.ToString(),
-                AssFormatter.ToString(PrimaryColour),
-                AssFormatter.ToString(SecondaryColour),
-                AssFormatter.ToString(OutlineColour),
-                AssFormatter.ToString(BackColour),
-                Bold ? "-1" : "0",
-                Italic ? "-1" : "0",
-                Underline ? "-1" : "0",
-                StrikeOut ? "-1" : "0",
+                PrimaryColour.ToAss(),
+                SecondaryColour.ToAss(),
+                OutlineColour.ToAss(),
+                BackColour.ToAss(),
+                Bold.ToAss(),
+                Italic.ToAss(),
+                Underline.ToAss(),
+                StrikeOut.ToAss(),
                 ScaleX.ToString(),
                 ScaleY.ToString(),
                 Spacing.ToString(),
@@ -206,6 +206,66 @@ namespace Pimix.Subtitle.Ass {
                         break;
                     case "Fontsize":
                         style.FontSize = int.Parse(p.Item1);
+                        break;
+                    case "PrimaryColour":
+                        style.PrimaryColour = AssFormatter.ParseColor(p.Item1);
+                        break;
+                    case "SecondaryColour":
+                        style.SecondaryColour = AssFormatter.ParseColor(p.Item1);
+                        break;
+                    case "OutlineColour":
+                        style.OutlineColour = AssFormatter.ParseColor(p.Item1);
+                        break;
+                    case "BackColour":
+                        style.BackColour = AssFormatter.ParseColor(p.Item1);
+                        break;
+                    case "Bold":
+                        style.Bold = AssFormatter.ParseBool(p.Item1);
+                        break;
+                    case "Italic":
+                        style.Italic = AssFormatter.ParseBool(p.Item1);
+                        break;
+                    case "Underline":
+                        style.Underline = AssFormatter.ParseBool(p.Item1);
+                        break;
+                    case "Strikeout":
+                        style.StrikeOut = AssFormatter.ParseBool(p.Item1);
+                        break;
+                    case "ScaleX":
+                        style.ScaleX = int.Parse(p.Item1);
+                        break;
+                    case "ScaleY":
+                        style.ScaleY = int.Parse(p.Item1);
+                        break;
+                    case "Spacing":
+                        style.Spacing = int.Parse(p.Item1);
+                        break;
+                    case "Angle":
+                        style.Angle = double.Parse(p.Item1);
+                        break;
+                    case "BorderStyle":
+                        style.BorderStyle = (BorderStyleType) int.Parse(p.Item1);
+                        break;
+                    case "Outline":
+                        style.Outline = int.Parse(p.Item1);
+                        break;
+                    case "Shadow":
+                        style.Shadow = int.Parse(p.Item1);
+                        break;
+                    case "Alignment":
+                        style.Alignment = (AssAlignment) int.Parse(p.Item1);
+                        break;
+                    case "MarginL":
+                        style.MarginL = int.Parse(p.Item1);
+                        break;
+                    case "MarginR":
+                        style.MarginR = int.Parse(p.Item1);
+                        break;
+                    case "MarginV":
+                        style.MarginV = int.Parse(p.Item1);
+                        break;
+                    case "Encoding":
+                        style.Encoding = int.Parse(p.Item1);
                         break;
                 }
             }
