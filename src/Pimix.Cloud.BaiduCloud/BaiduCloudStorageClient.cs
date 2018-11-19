@@ -18,10 +18,13 @@ namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        public static int DownloadThreadCount { get; set; } = 4;
+
         static BaiduCloudConfig config;
 
-        static BaiduCloudConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<BaiduCloudConfig>("default"));
+        static BaiduCloudConfig Config
+            => LazyInitializer.EnsureInitialized(ref config,
+                () => PimixService.Get<BaiduCloudConfig>("default"));
 
         public override string ToString() => $"baidu:{AccountId}";
 
@@ -50,6 +53,7 @@ namespace Pimix.Cloud.BaiduCloud {
             // The thread limit will help prevent errors with code 31326 and message like
             // "user is not authorized, hitcode:120".
             Parallel.For(0, (count - 1) / maxChunkSize + 1,
+                new ParallelOptions {MaxDegreeOfParallelism = DownloadThreadCount},
                 i => {
                     Thread.Sleep(TimeSpan.FromSeconds(i * 4));
                     var chunkOffset = i * maxChunkSize;
