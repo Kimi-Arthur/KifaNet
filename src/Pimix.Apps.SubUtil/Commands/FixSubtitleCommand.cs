@@ -15,32 +15,35 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
-            var sub = FixSubtitleResolution(AssDocument.Parse(target.OpenRead()));
+            var sub = AssDocument.Parse(target.OpenRead());
+            sub = FixSubtitleResolution(sub);
             Console.WriteLine(sub.ToString());
             return 0;
         }
 
         AssDocument FixSubtitleResolution(AssDocument sub) {
-            if (sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header) {
-                var scriptHeight = header.PlayResY > 0
-                    ? header.PlayResY
-                    : AssScriptInfoSection.DefaultPlayResY;
+            if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header)) {
+                return sub;
+            }
 
-                if (scriptHeight == AssScriptInfoSection.PreferredPlayResY) {
-                    return sub;
-                }
+            var scriptHeight = header.PlayResY > 0
+                ? header.PlayResY
+                : AssScriptInfoSection.DefaultPlayResY;
 
-                header.PlayResX = AssScriptInfoSection.PreferredPlayResX;
-                header.PlayResY = AssScriptInfoSection.PreferredPlayResY;
-                
-                var scale = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
-                logger.Info("Scale by {0}", scale);
+            if (scriptHeight == AssScriptInfoSection.PreferredPlayResY) {
+                return sub;
+            }
 
-                foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
-                    foreach (var line in styleSection.AssLines) {
-                        if (line is AssStyle styleLine) {
-                            styleLine.Scale(scale);
-                        }
+            header.PlayResX = AssScriptInfoSection.PreferredPlayResX;
+            header.PlayResY = AssScriptInfoSection.PreferredPlayResY;
+
+            var scale = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
+            logger.Info("Scale by {0}", scale);
+
+            foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
+                foreach (var line in styleSection.AssLines) {
+                    if (line is AssStyle styleLine) {
+                        styleLine.Scale(scale);
                     }
                 }
             }
