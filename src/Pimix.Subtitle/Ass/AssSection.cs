@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Pimix.Subtitle.Ass {
@@ -11,15 +10,13 @@ namespace Pimix.Subtitle.Ass {
         public override string ToString()
             => $"[{SectionTitle}]\r\n{string.Join("\r\n", AssLines.Select(line => line.ToString()))}\r\n";
 
-        public static AssSection Parse(string content) {
-            var lines = content.Split("\r\n");
-            var title = lines[0].Substring(1, lines[0].Length - 2);
+        public static AssSection Parse(string title, IEnumerable<string> lines) {
             switch (title) {
-                case "Script Info":
-                    return AssScriptInfoSection.Parse(lines.Skip(1));
-                case "V4+ Styles":
-                    return AssStylesSection.Parse(lines.Skip(1));
-                case "Events":
+                case "[Script Info]":
+                    return AssScriptInfoSection.Parse(lines);
+                case "[V4+ Styles]":
+                    return AssStylesSection.Parse(lines);
+                case "[Events]":
                     return new AssEventsSection();
                 default:
                     return null;
