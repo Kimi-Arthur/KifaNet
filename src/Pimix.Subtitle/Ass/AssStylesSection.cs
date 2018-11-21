@@ -37,6 +37,7 @@ namespace Pimix.Subtitle.Ass {
             };
 
         public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
+        public Dictionary<string, AssStyle> NamedStyles { get; set; } = new Dictionary<string, AssStyle>();
 
         public static AssStylesSection Parse(IEnumerable<string> lines) {
             var section = new AssStylesSection();
@@ -55,8 +56,9 @@ namespace Pimix.Subtitle.Ass {
                                 break;
                             }
 
-                            section.Styles.Add(AssStyle.Parse(
-                                segments[1].Split(",").Select(s => s.Trim()), headers));
+                            var style = AssStyle.Parse(segments[1].Split(",").Select(s => s.Trim()), headers);
+                            section.NamedStyles[style.Name] = style;
+                            section.Styles.Add(style);
                             break;
                     }
                 }

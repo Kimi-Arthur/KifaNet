@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Pimix.Subtitle.Ass {
     public class AssEvent : AssLine {
@@ -36,5 +37,56 @@ namespace Pimix.Subtitle.Ass {
                 Effect.ToString(),
                 Text.ToString()
             };
+
+        public static AssEvent Parse(Dictionary<string, AssStyle> styles, string eventType, IEnumerable<string> content,
+            IEnumerable<string> headers) {
+            AssEvent assEvent = null;
+            switch (eventType) {
+                case AssDialogue.EventType:
+                    assEvent = new AssDialogue();
+                    break;
+            }
+
+            if (assEvent == null) {
+                return null;
+            }
+
+            foreach (var p in content.Zip(headers, Tuple.Create)) {
+                switch (p.Item2) {
+                    case "Layer":
+                        assEvent.Layer = int.Parse(p.Item1);
+                        break;
+                    case "Start":
+                        assEvent.Start = TimeSpan.Parse(p.Item1);
+                        break;
+                    case "End":
+                        assEvent.End = TimeSpan.Parse(p.Item1);
+                        break;
+                    case "Style":
+                        assEvent.Style = styles[p.Item1];
+                        break;
+                    case "Name":
+                        assEvent.Name = p.Item1;
+                        break;
+                    case "MarginL":
+                        assEvent.MarginL = int.Parse(p.Item1);
+                        break;
+                    case "MarginR":
+                        assEvent.MarginR = int.Parse(p.Item1);
+                        break;
+                    case "MarginV":
+                        assEvent.MarginV = int.Parse(p.Item1);
+                        break;
+                    case "Effect":
+                        assEvent.Effect = AssDialogueEffect.Parse(p.Item1);
+                        break;
+                    case "Text":
+                        assEvent.Text = new AssDialogueText();
+                        break;
+                }
+            }
+
+            return assEvent;
+        }
     }
 }

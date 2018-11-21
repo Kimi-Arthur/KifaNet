@@ -8,7 +8,8 @@ namespace Pimix.Subtitle.Ass {
             LeftToRight = 1
         }
 
-        public override string EffectType => "Banner";
+        public const string EffectTypeName = "Banner";
+        public override string EffectType => EffectTypeName;
 
         public override IEnumerable<string> EffectParameters
             => new List<string> {

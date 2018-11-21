@@ -6,7 +6,7 @@ namespace Pimix.Subtitle.Ass {
     public class AssDialogueText {
         public AssAlignment? Alignment { get; set; }
 
-        public List<AssDialogueTextElement> TextElements { get; set; }
+        public List<AssDialogueTextElement> TextElements { get; set; } = new List<AssDialogueTextElement>();
 
         public AssDialogueText() {
         }

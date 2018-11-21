@@ -10,14 +10,14 @@ namespace Pimix.Subtitle.Ass {
         public override string ToString()
             => $"{SectionTitle}\r\n{string.Join("\r\n", AssLines.Select(line => line.ToString()))}\r\n";
 
-        public static AssSection Parse(string title, IEnumerable<string> lines) {
+        public static AssSection Parse(AssStylesSection stylesSection, string title, IEnumerable<string> lines) {
             switch (title) {
                 case AssScriptInfoSection.SectionHeader:
                     return AssScriptInfoSection.Parse(lines);
                 case AssStylesSection.SectionHeader:
                     return AssStylesSection.Parse(lines);
                 case AssEventsSection.SectionHeader:
-                    return new AssEventsSection();
+                    return AssEventsSection.Parse(stylesSection, lines);
                 default:
                     return null;
             }

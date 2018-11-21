@@ -21,12 +21,17 @@ namespace Pimix.Subtitle.Ass {
         static AssDocument Parse(string content) {
             var document = new AssDocument();
 
+            AssStylesSection stylesSection = null;
             var lines = content.Split("\r\n");
             var startLine = -1;
             for (int i = 0; i < lines.Length; i++) {
                 if (sectionHeaderPattern.Match(lines[i]).Success) {
                     if (startLine >= 0) {
-                        document.Sections.Add(AssSection.Parse(lines[startLine], lines.Take(i).Skip(startLine + 1)));
+                        var section = AssSection.Parse(stylesSection, lines[startLine], lines.Take(i).Skip(startLine + 1));
+                        document.Sections.Add(section);
+                        if (section is AssStylesSection) {
+                            stylesSection = section as AssStylesSection;
+                        }
                     }
 
                     startLine = i;
@@ -34,7 +39,8 @@ namespace Pimix.Subtitle.Ass {
             }
 
             if (startLine >= 0) {
-                document.Sections.Add(AssSection.Parse(lines[startLine], lines.Skip(startLine + 1)));
+                // No need to check styles section as this is the last one.
+                document.Sections.Add(AssSection.Parse(stylesSection, lines[startLine], lines.Skip(startLine + 1)));
             }
 
             return document;
