@@ -50,8 +50,10 @@ namespace Pimix.Api.Files {
 
         PimixFileFormat FileFormat { get; set; }
 
-        readonly FileInformation fileInfo;
-        public FileInformation FileInfo => fileInfo ?? PimixService.Get<FileInformation>(Id);
+        FileInformation fileInfo;
+
+        public FileInformation FileInfo =>
+            fileInfo = fileInfo ?? PimixService.GetOr(Id, id => new FileInformation {Id = id});
 
         public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null) {
             if (uri == null) {
@@ -168,8 +170,7 @@ namespace Pimix.Api.Files {
         }
 
         public Stream OpenRead()
-            => new VerifiableStream(
-                FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
+            => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
         public void Write(Stream stream)
@@ -210,15 +211,11 @@ namespace Pimix.Api.Files {
                 info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
 
             if (quickCompareResult != FileProperties.None) {
-                logger.Warn(
-                    "Quick data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                logger.Warn("Quick data:\n{0}",
+                    JsonConvert.SerializeObject(quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
-                logger.Warn(
-                    "Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                logger.Warn("Actual data:\n{0}",
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 return quickCompareResult;
             }
@@ -240,15 +237,11 @@ namespace Pimix.Api.Files {
                 PimixService.Patch(info);
                 Register(true);
             } else {
-                logger.Warn(
-                    "Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                logger.Warn("Expected data:\n{0}",
+                    JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
-                logger.Warn(
-                    "Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ compareResult),
+                logger.Warn("Actual data:\n{0}",
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
             }
 
