@@ -4,15 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HashLib;
-using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.IO {
     [DataModel("files")]
     public class FileInformation {
         const int SliceLength = 256 << 10;
+        static readonly Regex idPattern = new Regex(@"^(/(local|baidu|mega|google)/)?[^/]*(/.*?)(\.v1|\.v0)?$");
 
         public const int BlockSize = 32 << 20;
 
@@ -63,9 +64,10 @@ namespace Pimix.IO {
             => PimixService.Call<FileInformation, string>("get_location", id,
                 new Dictionary<string, object> {["types"] = types});
 
-        public static string GetId(string location)
-            => PimixService.Call<FileInformation, string>("get_id",
-                parameters: new Dictionary<string, object> {["location"] = location});
+        public static string GetId(string location) {
+            var m = idPattern.Match(location);
+            return m.Success ? m.Groups[3].Value : null;
+        }
 
         public static List<string> ListFolder(string folder, bool recursive = false)
             => PimixService.Call<FileInformation, List<string>>("list_folder",
@@ -156,15 +158,11 @@ namespace Pimix.IO {
 
                 while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) !=
                        0) {
-                    Parallel.ForEach(
-                        hashers,
-                        hasher => { hasher?.TransformBlock(buffer, 0, readLength, buffer, 0); }
-                    );
+                    Parallel.ForEach(hashers,
+                        hasher => { hasher?.TransformBlock(buffer, 0, readLength, buffer, 0); });
 
-                    Parallel.ForEach(
-                        additionalHashers,
-                        hasher => { hasher?.TransformBytes(buffer, 0, readLength); }
-                    );
+                    Parallel.ForEach(additionalHashers,
+                        hasher => { hasher?.TransformBytes(buffer, 0, readLength); });
 
                     if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
                         BlockMd5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength)
