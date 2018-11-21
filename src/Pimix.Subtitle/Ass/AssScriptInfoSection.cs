@@ -8,7 +8,8 @@ namespace Pimix.Subtitle.Ass {
         public const int PreferredPlayResX = 1920;
         public const int PreferredPlayResY = 1080;
 
-        public override string SectionTitle { get; } = "Script Info";
+        public const string SectionHeader = "[Script Info]";
+        public override string SectionTitle => SectionHeader;
 
         public string Title { get; set; }
 

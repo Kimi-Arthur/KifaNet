@@ -2,7 +2,8 @@
 
 namespace Pimix.Subtitle.Ass {
     public class AssEventsSection : AssSection {
-        public override string SectionTitle { get; } = "Events";
+        public const string SectionHeader = "[Events]";
+        public override string SectionTitle => SectionHeader;
 
         public List<string> Format
             => new List<string> {

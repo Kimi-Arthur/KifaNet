@@ -6,7 +6,8 @@ namespace Pimix.Subtitle.Ass {
     public class AssStylesSection : AssSection {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override string SectionTitle => "V4+ Styles";
+        public const string SectionHeader = "[V4+ Styles]";
+        public override string SectionTitle => SectionHeader;
 
         public List<string> Format
             => new List<string> {
