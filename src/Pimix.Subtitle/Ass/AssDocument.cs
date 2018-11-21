@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace Pimix.Subtitle.Ass {
     public class AssDocument {
         static readonly Regex sectionHeaderPattern = new Regex(@"^\[.*\]$");
-        
+
         public List<AssSection> Sections { get; set; } = new List<AssSection>();
 
         public override string ToString()
@@ -31,6 +31,10 @@ namespace Pimix.Subtitle.Ass {
 
                     startLine = i;
                 }
+            }
+
+            if (startLine >= 0) {
+                document.Sections.Add(AssSection.Parse(lines[startLine], lines.Skip(startLine + 1)));
             }
 
             return document;
