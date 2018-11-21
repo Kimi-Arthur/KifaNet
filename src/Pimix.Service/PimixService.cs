@@ -195,5 +195,8 @@ namespace Pimix.Service {
                 typeCache[typeInfo] = Tuple.Create(idProp, dmAttr.ModelId);
             }
         }
+
+        public static TDataModel Copy<TDataModel>(TDataModel data) =>
+            JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));
     }
 }
