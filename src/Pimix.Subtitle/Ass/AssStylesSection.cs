@@ -36,6 +36,8 @@ namespace Pimix.Subtitle.Ass {
                 "Encoding"
             };
 
+        public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
+
         public static AssStylesSection Parse(IEnumerable<string> lines) {
             var section = new AssStylesSection();
             List<string> headers = null;
@@ -62,8 +64,6 @@ namespace Pimix.Subtitle.Ass {
 
             return section;
         }
-
-        public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
 
         public override IEnumerable<AssLine> AssLines {
             get {
