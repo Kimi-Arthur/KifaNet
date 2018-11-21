@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -87,6 +88,14 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {typeInfo.Item2}({id})"));
         }
 
+        public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
+            try {
+                return Get<TDataModel>(id);
+            } catch (Exception) {
+                return defaultValue != null ? defaultValue(id) : default(TDataModel);
+            }
+        }
+
         public static bool Link<TDataModel>(string targetId, string linkId) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
@@ -168,7 +177,9 @@ namespace Pimix.Service {
             => Call<TDataModel, object>(action, id, parameters);
 
         static void HandleException(Exception ex, int index, string message) {
-            if (ex is ActionFailedException) {
+            if (index >= 5 ||
+                ex is ActionFailedException ||
+                ex is HttpRequestException && ex.InnerException is SocketException) {
                 throw ex;
             }
 
