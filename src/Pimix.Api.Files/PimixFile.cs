@@ -177,7 +177,7 @@ namespace Pimix.Api.Files {
             => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
         public FileInformation CalculateInfo(FileProperties properties) {
-            var info = FileInfo;
+            var info = PimixService.Copy(FileInfo);
             info.RemoveProperties((FileProperties.AllVerifiable & properties) |
                                   FileProperties.Locations);
 
@@ -226,19 +226,19 @@ namespace Pimix.Api.Files {
                 PimixService.Link<FileInformation>(sha256Info.Id, info.Id);
             }
 
-            oldInfo = FileInfo;
-
-            var compareResult = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
             if (compareResult == FileProperties.None) {
                 info.EncryptionKey =
-                    oldInfo.EncryptionKey ??
+                    sha256Info.EncryptionKey ??
                     info.EncryptionKey; // Only happens for unencrypted file.
 
                 PimixService.Patch(info);
                 Register(true);
+
+                fileInfo = null;
             } else {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
                     JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
