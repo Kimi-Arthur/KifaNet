@@ -81,7 +81,7 @@ namespace Pimix.Subtitle.Ass {
                         assEvent.Effect = AssDialogueEffect.Parse(p.Item1);
                         break;
                     case "Text":
-                        assEvent.Text = new AssDialogueText();
+                        assEvent.Text = AssDialogueText.Parse(p.Item1);
                         break;
                 }
             }

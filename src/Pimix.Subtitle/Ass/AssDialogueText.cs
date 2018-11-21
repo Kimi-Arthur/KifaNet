@@ -25,5 +25,9 @@ namespace Pimix.Subtitle.Ass {
 
         static string GenerateAssTextForAttribute(string name, Enum value)
             => value != null ? $"\\{name}{value:d}" : "";
+
+        public static AssDialogueText Parse(string content) {
+            return new AssDialogueText(content); 
+        }
     }
 }
