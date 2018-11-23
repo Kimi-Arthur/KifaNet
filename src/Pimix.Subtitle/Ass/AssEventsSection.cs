@@ -37,15 +37,13 @@ namespace Pimix.Subtitle.Ass {
                             break;
                         case "Dialogue":
                             if (headers == null) {
-                                logger.Warn(
-                                    "Should see header line before event line in events section.");
+                                logger.Warn("Should see header line before event line in events section.");
                                 break;
                             }
 
-                            section.Events.Add(AssEvent.Parse(
-                                stylesSection.NamedStyles,
+                            section.Events.Add(AssEvent.Parse(stylesSection.NamedStyles,
                                 segments[0],
-                                segments[1].Split(",").Select(s => s.Trim()), headers));
+                                segments[1].Split(",", headers.Count).Select(s => s.Trim()), headers));
                             break;
                     }
                 }
