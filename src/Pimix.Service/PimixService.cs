@@ -91,8 +91,10 @@ namespace Pimix.Service {
         public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
             try {
                 return Get<TDataModel>(id);
-            } catch (Exception) {
-                return defaultValue != null ? defaultValue(id) : default(TDataModel);
+            } catch (Exception ex) {
+                var value = defaultValue != null ? defaultValue(id) : default(TDataModel);
+                logger.Warn(ex, "Cannot get a value for {0}, using default value: {1}.", id, value);
+                return value;
             }
         }
 
