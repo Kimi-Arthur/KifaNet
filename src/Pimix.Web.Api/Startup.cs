@@ -22,21 +22,13 @@ namespace Pimix.Web.Api {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
             var prettyJsonFormatter = new JsonOutputFormatter(
-                new JsonSerializerSettings {
-                    Formatting = Formatting.Indented,
-                    ContractResolver = new DefaultContractResolver {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    },
-                    NullValueHandling = NullValueHandling.Ignore,
-                    MetadataPropertyHandling = MetadataPropertyHandling.Ignore
-                }, ArrayPool<char>.Shared);
+                Defaults.PrettyJsonSerializerSettings, ArrayPool<char>.Shared);
             prettyJsonFormatter.SupportedMediaTypes.Clear();
             prettyJsonFormatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));
 
             services.AddMvc(options => {
                     options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
-                    options.OutputFormatters.Add(
-                        new YamlOutputFormatter(new YamlFormatterOptions()));
+                    options.OutputFormatters.Add(new YamlOutputFormatter(new YamlFormatterOptions()));
                     options.OutputFormatters.Insert(0, prettyJsonFormatter);
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
