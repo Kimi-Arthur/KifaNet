@@ -46,6 +46,8 @@ Updates:
   - Allow removal of file instances with different name (like linked file, uploaded file).
 - 2.5
   - Rename to `f` as binary name.
+- 2.6
+  - Add quick mode for `fileutil upload` with flag `-q`, which skips verification of destination.
 
 ### 1.0
 - Added `fileutil cp` etc.

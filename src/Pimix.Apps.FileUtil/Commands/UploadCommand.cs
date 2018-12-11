@@ -14,6 +14,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
         public bool RemoveSource { get; set; } = false;
 
+        [Option('q', "quick", HelpText = "Finish quickly by not verifying validity of destination.")]
+        public bool QuickMode { get; set; } = false;
+
         [Option('g', "use-google-drive", HelpText = "Use Google Drive as backend storage.")]
         public bool UseGoogleDrive { get; set; } = false;
 
@@ -66,6 +69,12 @@ namespace Pimix.Apps.FileUtil.Commands {
                 destination.Register();
 
                 if (destination.Exists()) {
+                    destination.Register();
+                    if (QuickMode) {
+                        Console.WriteLine($"Skipped verifying of {destination} as quick mode is enabled.");
+                        return 0;
+                    }
+
                     var destinationCheckResult = destination.Add();
 
                     if (destinationCheckResult == FileProperties.None) {
@@ -90,6 +99,12 @@ namespace Pimix.Apps.FileUtil.Commands {
                 source.Copy(destination);
 
                 if (destination.Exists()) {
+                    destination.Register();
+                    if (QuickMode) {
+                        Console.WriteLine($"Skipped verifying of {destination} as quick mode is enabled.");
+                        return 0;
+                    }
+
                     logger.Info("Checking {0}...", destination);
                     var destinationCheckResult = destination.Add();
                     if (destinationCheckResult == FileProperties.None) {
