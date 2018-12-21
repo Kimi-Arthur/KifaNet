@@ -5,34 +5,35 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
+using Pimix.IO;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase {
-        readonly IMongoCollection<SoccerTeam> data;
+        readonly IMongoCollection<FileInformation> data;
 
         public ValuesController() {
-            var client = new MongoClient("mongodb://www.pimix.tk:27017");
-            var db = client.GetDatabase("soccer");
-            data = db.GetCollection<SoccerTeam>("teams");
+            var client = new MongoClient("mongodb://new.pimix.tk:27017");
+            var db = client.GetDatabase("pimix");
+            data = db.GetCollection<FileInformation>("files");
         }
 
         // GET api/values
         [HttpGet]
-        public ActionResult<Dictionary<string, SoccerTeam>> Get() {
+        public ActionResult<Dictionary<string, FileInformation>> Get() {
             return data.Find(x => true).ToList().ToDictionary(x => x.Id, x => x);
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<SoccerTeam> Get(string id) {
+        public ActionResult<FileInformation> Get(string id) {
             return data.Find(x => x.Id == id).Single();
         }
 
         // POST api/values
         [HttpPost("{id}")]
-        public void Post(string id, [FromBody] SoccerTeam value) {
+        public void Post(string id, [FromBody] FileInformation value) {
             if (value.Id == null) {
                 value.Id = id;
             }
