@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -18,11 +20,14 @@ namespace Pimix.Apps.SubUtil.Commands {
             var sub = AssDocument.Parse(target.OpenRead());
             sub = FixSubtitleResolution(sub);
             Console.WriteLine(sub.ToString());
+            target.Delete();
+            target.Write(new MemoryStream(new UTF8Encoding(false).GetBytes(sub.ToString())));
             return 0;
         }
 
         AssDocument FixSubtitleResolution(AssDocument sub) {
-            if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header)) {
+            if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is
+                AssScriptInfoSection header)) {
                 return sub;
             }
 
