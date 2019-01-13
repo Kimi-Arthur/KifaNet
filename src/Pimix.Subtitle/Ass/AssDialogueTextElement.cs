@@ -84,5 +84,7 @@ namespace Pimix.Subtitle.Ass {
             => value.HasValue
                 ? $"\\{name}c&H{value.Value.B:X2}{value.Value.G:X2}{value.Value.R:X2}&"
                 : "";
+
+        public static AssDialogueTextElement Parse(string content) => content;
     }
 }

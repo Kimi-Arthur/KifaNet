@@ -22,7 +22,10 @@ namespace PimixTest.Subtitle.Ass {
                 Underline = true,
                 StrikeOut = null
             };
-            var text = new AssDialogueText(element);
+            var text = new AssDialogueText {
+                TextElements = new List<AssDialogueTextElement> {element}
+            };
+
             Assert.Equal(@"{\b0\i1\u1}two2", text.ToString());
 
             text.Alignment = AssAlignment.BottomCenter;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using Pimix.Subtitle.Ass;
@@ -80,10 +81,14 @@ namespace Pimix.Bilibili {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
                     Layer = GetLayer(Mode),
-                    Text = new AssDialogueText(new AssDialogueTextElement {
-                        PrimaryColour = TextColor,
-                        Content = Text
-                    }),
+                    Text = new AssDialogueText {
+                        TextElements = new List<AssDialogueTextElement> {
+                            new AssDialogueTextElement {
+                                PrimaryColour = TextColor,
+                                Content = Text
+                            }
+                        }
+                    },
                     Effect = new AssDialogueBannerEffect {
                         Delay = 1500 / (100 + Text.Length)
                     },
@@ -93,10 +98,14 @@ namespace Pimix.Bilibili {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
                     Layer = GetLayer(Mode),
-                    Text = new AssDialogueText(new AssDialogueTextElement {
-                        PrimaryColour = TextColor,
-                        Content = Text
-                    }),
+                    Text = new AssDialogueText {
+                        TextElements = new List<AssDialogueTextElement> {
+                            new AssDialogueTextElement {
+                                PrimaryColour = TextColor,
+                                Content = Text
+                            }
+                        }
+                    },
                     Style = GetStyle(Mode)
                 };
 
