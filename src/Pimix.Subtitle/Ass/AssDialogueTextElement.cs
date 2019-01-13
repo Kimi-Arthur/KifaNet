@@ -87,7 +87,7 @@ namespace Pimix.Subtitle.Ass {
 
         public static AssDialogueTextElement Parse(string content)
             => content.StartsWith('{')
-                ? AssDialogueTextControlElement.Parse(content)
+                ? AssDialogueControlTextElement.Parse(content)
                 : AssDialogueRawTextElement.Parse(content);
     }
 }
