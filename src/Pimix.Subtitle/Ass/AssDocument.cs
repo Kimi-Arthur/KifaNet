@@ -27,10 +27,13 @@ namespace Pimix.Subtitle.Ass {
             for (int i = 0; i < lines.Length; i++) {
                 if (sectionHeaderPattern.Match(lines[i]).Success) {
                     if (startLine >= 0) {
-                        var section = AssSection.Parse(stylesSection, lines[startLine], lines.Take(i).Skip(startLine + 1));
-                        document.Sections.Add(section);
-                        if (section is AssStylesSection) {
-                            stylesSection = section as AssStylesSection;
+                        var section = AssSection.Parse(stylesSection, lines[startLine],
+                            lines.Take(i).Skip(startLine + 1));
+                        if (section != null) {
+                            document.Sections.Add(section);
+                            if (section is AssStylesSection assStylesSection) {
+                                stylesSection = assStylesSection;
+                            }
                         }
                     }
 
@@ -40,7 +43,8 @@ namespace Pimix.Subtitle.Ass {
 
             if (startLine >= 0) {
                 // No need to check styles section as this is the last one.
-                document.Sections.Add(AssSection.Parse(stylesSection, lines[startLine], lines.Skip(startLine + 1)));
+                document.Sections.Add(AssSection.Parse(stylesSection, lines[startLine],
+                    lines.Skip(startLine + 1)));
             }
 
             return document;
