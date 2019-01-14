@@ -30,3 +30,5 @@ Updates:
   - Renamed `subutil comments` to `subutil bilibili`.
 - 1.2
   - Added `subutil generate` to generate ASS subtitle.
+- 1.3
+  - Added `subutil fix` to fix ASS subtitle, like resize to 1080p.
