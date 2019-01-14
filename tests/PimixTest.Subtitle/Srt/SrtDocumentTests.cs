@@ -20,7 +20,7 @@ namespace PimixTest.Subtitle.Srt {
             Assert.Equal(2, document.Lines.Count);
             Assert.Equal(168, document.Lines[0].Index);
             Assert.Equal("- How did he do that?\r\n- Made him an offer he refused.",
-                document.Lines[1].Text[0].ToString());
+                document.Lines[1].Text.ToString());
         }
 
         [Theory]

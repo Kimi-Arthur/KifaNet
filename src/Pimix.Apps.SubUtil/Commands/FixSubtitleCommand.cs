@@ -53,6 +53,20 @@ namespace Pimix.Apps.SubUtil.Commands {
                 }
             }
 
+            foreach (var eventsSection in sub.Sections.Where(s => s is AssEventsSection)) {
+                foreach (var line in eventsSection.AssLines) {
+                    if (line is AssDialogue dialogue) {
+                        foreach (var element in dialogue.Text.TextElements) {
+                            if (element is AssDialogueControlTextElement controlTextElement) {
+                                foreach (var e in controlTextElement.Elements) {
+                                    e.Scale(scale);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             return sub;
         }
     }

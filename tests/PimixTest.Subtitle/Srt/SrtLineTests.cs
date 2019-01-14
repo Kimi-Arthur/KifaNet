@@ -16,7 +16,7 @@ namespace PimixTest.Subtitle.Srt {
             Assert.Equal(new TimeSpan(0, 0, 20, 41, 150), line.StartTime);
             Assert.Equal(new TimeSpan(0, 0, 20, 45, 109), line.EndTime);
             Assert.Equal("- How did he do that?\r\n- Made him an offer he couldn't refuse.",
-                line.Text[0].ToString());
+                line.Text.ToString());
         }
 
         [Fact]

@@ -178,7 +178,9 @@ namespace Pimix.Apps.SubUtil.Commands {
             var screenWidth = 1920;
 
             var sizes = comments
-                .Select(x => x.Text.TextElements.Sum(e => e.Content.Length) * 50F).ToList();
+                .Select(x => x.Text.TextElements.Where(e => e is AssDialogueRawTextElement)
+                                 .Sum(e => ((AssDialogueRawTextElement) e).Content.Length) * 50F)
+                .ToList();
 
             var speeds = sizes.Zip(comments,
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
@@ -191,9 +193,13 @@ namespace Pimix.Apps.SubUtil.Commands {
                         sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
-                (c, row) => new AssMoveFunction {
-                    Start = new PointF(screenWidth + sizes[c] / 2, row * 50),
-                    End = new PointF(-sizes[c] / 2, row * 50)
+                (c, row) => new AssDialogueControlTextElement {
+                    Elements = new List<AssControlElement> {
+                        new MoveFunction {
+                            StartPosition = new PointF(screenWidth + sizes[c] / 2, row * 50),
+                            EndPosition = new PointF(-sizes[c] / 2, row * 50)
+                        }
+                    }
                 });
         }
 
@@ -201,8 +207,12 @@ namespace Pimix.Apps.SubUtil.Commands {
             AddFunction(
                 comments,
                 (a, b) => (comments[a].End - comments[b].Start).Seconds,
-                (c, row) => new AssPositionFunction {
-                    Position = new PointF(960, row * 50)
+                (c, row) => new AssDialogueControlTextElement {
+                    Elements = new List<AssControlElement> {
+                        new PositionFunction {
+                            Position = new PointF(960, row * 50)
+                        }
+                    }
                 });
         }
 
@@ -210,13 +220,17 @@ namespace Pimix.Apps.SubUtil.Commands {
             AddFunction(
                 comments,
                 (a, b) => (comments[a].End - comments[b].Start).Seconds,
-                (c, row) => new AssPositionFunction {
-                    Position = new PointF(960, 1080 - 200 - row * 50)
+                (c, row) => new AssDialogueControlTextElement {
+                    Elements = new List<AssControlElement> {
+                        new PositionFunction {
+                            Position = new PointF(960, 1080 - 200 - row * 50)
+                        }
+                    }
                 });
         }
 
         static void AddFunction(List<AssDialogue> comments, Func<int, int, double> getOverlap,
-            Func<int, int, AssTextFunction> getFunction) {
+            Func<int, int, AssDialogueTextElement> getFunction) {
             var rows = new List<int>();
             var maxRows = 14;
             for (int i = 0; i < maxRows; i++) {
@@ -226,7 +240,6 @@ namespace Pimix.Apps.SubUtil.Commands {
             var totalMoved = 0;
             var totalMovement = 0.0;
             var totalBigMove = 0;
-
             for (var i = 0; i < comments.Count; i++) {
                 var movement = 1000.0;
                 int minRow = -1;
@@ -243,7 +256,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                         }
                     }
 
-                    comments[i].Text.TextElements.First().Function = getFunction(i, r);
+                    comments[i].Text.TextElements.Insert(0, getFunction(i, r));
                     rows[r] = i;
                     movement = -1;
                     break;
@@ -258,7 +271,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                     comments[i].Start += TimeSpan.FromSeconds(movement);
                     comments[i].End += TimeSpan.FromSeconds(movement);
 
-                    comments[i].Text.TextElements.First().Function = getFunction(i, minRow);
+                    comments[i].Text.TextElements.Insert(0, getFunction(i, minRow));
                     rows[minRow] = i;
 
                     totalMoved++;

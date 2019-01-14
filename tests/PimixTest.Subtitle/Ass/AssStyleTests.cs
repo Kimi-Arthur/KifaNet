@@ -34,7 +34,7 @@ namespace PimixTest.Subtitle.Ass {
             };
 
             Assert.Equal(
-                "Style: Default,simhei,28,&H00008CFF,&HFF000000,&HFF111111,&HFF0D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1",
+                "Style: Default,simhei,28,&H008CFF,&HFF000000,&HFF111111,&HFF0D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1",
                 style.ToString());
         }
 

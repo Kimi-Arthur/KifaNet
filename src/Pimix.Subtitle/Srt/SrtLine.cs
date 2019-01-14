@@ -8,7 +8,7 @@ namespace Pimix.Subtitle.Srt {
         public int Index { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
-        public List<SrtTextElement> Text { get; set; }
+        public SrtTextElement Text { get; set; }
 
         public static SrtLine Parse(string s) {
             var lines = s.Trim()
@@ -18,18 +18,14 @@ namespace Pimix.Subtitle.Srt {
                 Index = int.Parse(lines[0]),
                 StartTime = TimeSpan.Parse(times[0]),
                 EndTime = TimeSpan.Parse(times[1]),
-                Text = new List<SrtTextElement> {
-                    new SrtTextElement {Content = lines[2]}
-                }
+                Text = new SrtTextElement {Content = lines[2]}
             };
         }
 
         public AssDialogue ToAss()
             => new AssDialogue {
                 Layer = 2,
-                Text = new AssDialogueText {
-                    TextElements = Text.Select(x => x.ToAss()).ToList()
-                },
+                Text = Text.ToAss(),
                 Start = StartTime,
                 End = EndTime,
                 Style = AssStyle.SubtitleStyle

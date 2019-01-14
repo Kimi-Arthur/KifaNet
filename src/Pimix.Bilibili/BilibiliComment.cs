@@ -75,19 +75,29 @@ namespace Pimix.Bilibili {
             return result;
         }
 
-        public AssDialogue GenerateAssDialogue()
-            => UseBannerEffect
+        public AssDialogue GenerateAssDialogue() {
+            var textElements = new List<AssDialogueTextElement>();
+            if (TextColor.HasValue) {
+                textElements.Add(new AssDialogueControlTextElement {
+                    Elements = new List<AssControlElement> {
+                        new PrimaryColourStyle {
+                            Value = TextColor.Value
+                        }
+                    }
+                });
+            }
+
+            textElements.Add(new AssDialogueRawTextElement {
+                Content = Text
+            });
+
+            return UseBannerEffect
                 ? new AssDialogue {
                     Start = VideoTime,
                     End = VideoTime + DefaultDuration,
                     Layer = GetLayer(Mode),
                     Text = new AssDialogueText {
-                        TextElements = new List<AssDialogueTextElement> {
-                            new AssDialogueTextElement {
-                                PrimaryColour = TextColor,
-                                Content = Text
-                            }
-                        }
+                        TextElements = textElements
                     },
                     Effect = new AssDialogueBannerEffect {
                         Delay = 1500 / (100 + Text.Length)
@@ -99,15 +109,11 @@ namespace Pimix.Bilibili {
                     End = VideoTime + DefaultDuration,
                     Layer = GetLayer(Mode),
                     Text = new AssDialogueText {
-                        TextElements = new List<AssDialogueTextElement> {
-                            new AssDialogueTextElement {
-                                PrimaryColour = TextColor,
-                                Content = Text
-                            }
-                        }
+                        TextElements = textElements
                     },
                     Style = GetStyle(Mode)
                 };
+        }
 
         static int GetLayer(ModeType mode) => mode == ModeType.Normal ? 0 : 1;
 
