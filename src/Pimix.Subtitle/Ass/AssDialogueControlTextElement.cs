@@ -147,7 +147,7 @@ namespace Pimix.Subtitle.Ass {
 
         public override string ToString() => $"\\{Name}";
 
-        public virtual void Scale(double scale) {
+        public virtual void Scale(double scaleX, double scaleY) {
         }
     }
 
@@ -274,8 +274,8 @@ namespace Pimix.Subtitle.Ass {
 
         public override string Name => Key;
 
-        public override void Scale(double scale) {
-            Value = (Value * scale).RoundUp(10);
+        public override void Scale(double scaleX, double scaleY) {
+            Value = (Value * scaleY).RoundUp(10);
         }
     }
 
@@ -381,9 +381,9 @@ namespace Pimix.Subtitle.Ass {
             return this;
         }
 
-        public override void Scale(double scale) {
-            Position = new PointF((Position.X * scale).RoundUp(10),
-                (Position.Y * scale).RoundUp(10));
+        public override void Scale(double scaleX, double scaleY) {
+            Position = new PointF((Position.X * scaleX).RoundUp(10),
+                (Position.Y * scaleY).RoundUp(10));
         }
 
         public override string ToString() => $"\\{Name}({Position.X},{Position.Y})";
@@ -401,12 +401,12 @@ namespace Pimix.Subtitle.Ass {
             return this;
         }
 
-        public override void Scale(double scale) {
-            Position1 = new PointF((Position1.X * scale).RoundUp(10),
-                (Position1.Y * scale).RoundUp(10));
+        public override void Scale(double scaleX, double scaleY) {
+            Position1 = new PointF((Position1.X * scaleX).RoundUp(10),
+                (Position1.Y * scaleY).RoundUp(10));
 
-            Position2 = new PointF((Position2.X * scale).RoundUp(10),
-                (Position2.Y * scale).RoundUp(10));
+            Position2 = new PointF((Position2.X * scaleX).RoundUp(10),
+                (Position2.Y * scaleY).RoundUp(10));
         }
 
         public override string ToString()
@@ -438,7 +438,7 @@ namespace Pimix.Subtitle.Ass {
             return this;
         }
 
-        public override void Scale(double scale) {
+        public void Scale(double scale) {
             StartPosition = new PointF((StartPosition.X * scale).RoundUp(10),
                 (StartPosition.Y * scale).RoundUp(10));
 

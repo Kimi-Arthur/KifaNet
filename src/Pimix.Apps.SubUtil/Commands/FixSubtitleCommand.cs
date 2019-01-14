@@ -35,20 +35,26 @@ namespace Pimix.Apps.SubUtil.Commands {
                 ? header.PlayResY
                 : AssScriptInfoSection.DefaultPlayResY;
 
-            if (scriptHeight == AssScriptInfoSection.PreferredPlayResY) {
+            var scriptWidth = header.PlayResX > 0
+                ? header.PlayResX
+                : AssScriptInfoSection.DefaultPlayResX;
+
+            if (scriptWidth == AssScriptInfoSection.PreferredPlayResX &&
+                scriptHeight == AssScriptInfoSection.PreferredPlayResY) {
                 return sub;
             }
 
             header.PlayResX = AssScriptInfoSection.PreferredPlayResX;
             header.PlayResY = AssScriptInfoSection.PreferredPlayResY;
 
-            var scale = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
-            logger.Info("Scale by {0}", scale);
+            var scaleX = AssScriptInfoSection.PreferredPlayResX * 1.0 / scriptWidth;
+            var scaleY = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
+            logger.Info("Scale by {0}", scaleY);
 
             foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
                 foreach (var line in styleSection.AssLines) {
                     if (line is AssStyle styleLine) {
-                        styleLine.Scale(scale);
+                        styleLine.Scale(scaleY);
                     }
                 }
             }
@@ -59,7 +65,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                         foreach (var element in dialogue.Text.TextElements) {
                             if (element is AssDialogueControlTextElement controlTextElement) {
                                 foreach (var e in controlTextElement.Elements) {
-                                    e.Scale(scale);
+                                    e.Scale(scaleX, scaleY);
                                 }
                             }
                         }
