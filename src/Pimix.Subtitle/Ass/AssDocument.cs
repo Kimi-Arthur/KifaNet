@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 namespace Pimix.Subtitle.Ass {
     public class AssDocument {
         static readonly Regex sectionHeaderPattern = new Regex(@"^\[.*\]$");
+        static readonly Regex separator = new Regex("(\r)?\n");
 
         public List<AssSection> Sections { get; set; } = new List<AssSection>();
 
@@ -22,7 +23,7 @@ namespace Pimix.Subtitle.Ass {
             var document = new AssDocument();
 
             AssStylesSection stylesSection = null;
-            var lines = content.Split("\r\n");
+            var lines = separator.Split(content);
             var startLine = -1;
             for (int i = 0; i < lines.Length; i++) {
                 if (sectionHeaderPattern.Match(lines[i]).Success) {

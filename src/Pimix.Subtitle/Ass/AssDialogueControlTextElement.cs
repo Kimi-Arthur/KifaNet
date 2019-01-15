@@ -438,12 +438,12 @@ namespace Pimix.Subtitle.Ass {
             return this;
         }
 
-        public void Scale(double scale) {
-            StartPosition = new PointF((StartPosition.X * scale).RoundUp(10),
-                (StartPosition.Y * scale).RoundUp(10));
+        public override void Scale(double scaleX, double scaleY) {
+            StartPosition = new PointF((StartPosition.X * scaleX).RoundUp(10),
+                (StartPosition.Y * scaleY).RoundUp(10));
 
-            EndPosition = new PointF((EndPosition.X * scale).RoundUp(10),
-                (EndPosition.Y * scale).RoundUp(10));
+            EndPosition = new PointF((EndPosition.X * scaleX).RoundUp(10),
+                (EndPosition.Y * scaleY).RoundUp(10));
         }
 
         public override string ToString() {
