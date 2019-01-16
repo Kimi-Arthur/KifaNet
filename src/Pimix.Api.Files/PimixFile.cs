@@ -61,7 +61,7 @@ namespace Pimix.Api.Files {
         FileInformation fileInfo;
 
         public FileInformation FileInfo =>
-            fileInfo = fileInfo ?? PimixService.GetOr(Id, id => new FileInformation {Id = id});
+            fileInfo = fileInfo ?? PimixService.GetOr<FileInformation>(Id);
 
         public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null) {
             if (uri == null) {
