@@ -45,6 +45,12 @@ namespace Pimix.Apps.SubUtil.Commands {
                 return v.Pages.Zip(files, GetChat).Max();
             }
 
+            if (Cid == null) {
+                // Needs to infer cid.
+                var segments = FileUri.Split('.');
+                Cid = segments[segments.Length - 2];
+            }
+
             return GetChat(new BilibiliChat {Cid = Cid}, new PimixFile(FileUri));
         }
 
