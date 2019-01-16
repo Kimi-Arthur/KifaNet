@@ -21,7 +21,7 @@ namespace Pimix.Api.Files {
 
         public static string FullPathIgnorePattern { get; set; } = "$^";
 
-        public static bool PreferBaiduCloud { get; set; } = false;
+        public static bool PreferBaiduCloud { get; set; }
 
         static Regex subPathIgnoredFiles;
 
