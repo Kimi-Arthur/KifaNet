@@ -17,15 +17,23 @@ namespace Pimix.Api.Files {
     public class PimixFile {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static string IgnoredFilesPattern { get; set; } = "$^";
+        public static string SubPathIgnorePattern { get; set; } = "$^";
+
+        public static string FullPathIgnorePattern { get; set; } = "$^";
 
         public static bool PreferBaiduCloud { get; set; } = false;
 
-        static Regex ignoredFiles;
+        static Regex subPathIgnoredFiles;
 
-        static Regex IgnoredFiles
-            => LazyInitializer.EnsureInitialized(ref ignoredFiles,
-                () => new Regex(IgnoredFilesPattern, RegexOptions.Compiled));
+        static Regex fullPathIgnoredFiles;
+
+        static Regex SubPathIgnoredFiles
+            => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
+                () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
+
+        static Regex FullPathIgnoredFiles
+            => LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
+                () => new Regex(FullPathIgnorePattern, RegexOptions.Compiled));
 
         static readonly Dictionary<string, StorageClient> knownClients =
             new Dictionary<string, StorageClient>();
@@ -149,7 +157,8 @@ namespace Pimix.Api.Files {
         public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true,
             string pattern = "*")
             => Client.List(Path, recursive, pattern)
-                .Where(f => !ignoreFiles || !IgnoredFiles.IsMatch(f.Id.Substring(Path.Length)))
+                .Where(f => !ignoreFiles || !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
+                            !FullPathIgnoredFiles.IsMatch(f.Id))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public void Copy(PimixFile destination) {
