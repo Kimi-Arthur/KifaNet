@@ -179,7 +179,9 @@ namespace Pimix.Service {
             => Call<TDataModel, object>(action, id, parameters);
 
         static void HandleException(Exception ex, int index, string message) {
-            if (index >= 5 || ex is ActionFailedException) {
+            if (index >= 5 || ex is ActionFailedException ||
+                ex is HttpRequestException && ex.InnerException is SocketException socketException &&
+                socketException.Message == "Device not configured") {
                 throw ex;
             }
 
