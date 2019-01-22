@@ -48,6 +48,8 @@ Updates:
   - Rename to `f` as binary name.
 - 2.6
   - Add quick mode for `fileutil upload` with flag `-q`, which skips verification of destination.
+- 2.7
+  - Add `fileutil touch`
 
 ### 1.0
 - Added `fileutil cp` etc.
