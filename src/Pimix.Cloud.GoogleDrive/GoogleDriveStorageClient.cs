@@ -93,6 +93,10 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
+        public override void Touch(string path) {
+            throw new NotImplementedException();
+        }
+
         public override Stream OpenRead(string path) {
             var fileId = GetFileId(path);
             var fileSize = GetFileSize(fileId);

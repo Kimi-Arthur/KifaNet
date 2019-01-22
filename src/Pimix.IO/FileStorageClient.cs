@@ -85,8 +85,19 @@ namespace Pimix.IO {
 
         public override void Delete(string path) => File.Delete(GetPath(path));
 
-        public override void Move(string sourcePath, string destinationPath)
-            => File.Move(GetPath(sourcePath), GetPath(destinationPath));
+        public override void Touch(string path) {
+            path = GetPath(path);
+            EnsureParent(path);
+
+            File.Create(path).Close();
+        }
+
+        public override void Move(string sourcePath, string destinationPath) {
+            destinationPath = GetPath(destinationPath);
+            EnsureParent(destinationPath);
+
+            File.Move(GetPath(sourcePath), destinationPath);
+        }
 
         public override bool Exists(string path) => !Server.Removed && File.Exists(GetPath(path));
 
@@ -129,7 +140,7 @@ namespace Pimix.IO {
         public override void Write(string path, Stream stream) {
             var blockSize = DefaultBlockSize;
             path = GetPath(path);
-            Directory.GetParent(path).Create();
+            EnsureParent(path);
             using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
                 fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
                 stream.Seek(fs.Position, SeekOrigin.Begin);
@@ -141,6 +152,9 @@ namespace Pimix.IO {
 
         string GetPath(string path) => $"{Server.Prefix}{path}";
 
+        void EnsureParent(string path) {
+            Directory.GetParent(path).Create();
+        }
         string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using CG.Web.MegaApiClient;
@@ -43,6 +44,10 @@ namespace Pimix.Cloud.MegaNz {
             if (node != null) {
                 Client.Delete(node, false);
             }
+        }
+
+        public override void Touch(string path) {
+            throw new NotImplementedException();
         }
 
         public override bool Exists(string path) => GetNode(path) != null;

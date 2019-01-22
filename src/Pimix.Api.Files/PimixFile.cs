@@ -154,6 +154,8 @@ namespace Pimix.Api.Files {
 
         public void Delete() => Client.Delete(Path);
 
+        public void Touch() => Client.Touch(Path);
+
         public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true,
             string pattern = "*")
             => Client.List(Path, recursive, pattern)

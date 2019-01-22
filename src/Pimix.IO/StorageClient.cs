@@ -15,6 +15,8 @@ namespace Pimix.IO {
 
         public abstract void Delete(string path);
 
+        public abstract void Touch(string path);
+
         public virtual void Copy(string sourcePath, string destinationPath) {
             Write(destinationPath, OpenRead(sourcePath));
         }

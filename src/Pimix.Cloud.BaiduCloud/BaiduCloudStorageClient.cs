@@ -143,6 +143,10 @@ namespace Pimix.Cloud.BaiduCloud {
             }
         }
 
+        public override void Touch(string path) {
+            throw new NotImplementedException();
+        }
+
         void UploadNormal(string path, Stream input) {
             var size = input.Length;
 

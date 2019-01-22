@@ -25,7 +25,8 @@ namespace Pimix.Apps.FileUtil {
                     ListCommand,
                     UploadCommand,
                     AddCommand,
-                    GetCommand
+                    GetCommand,
+                    TouchCommand
                 >(args)
                 .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
         }
