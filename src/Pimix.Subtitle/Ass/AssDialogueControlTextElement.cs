@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace Pimix.Subtitle.Ass {
                 if (elementContent.EndsWith('&')) {
                     var segments = elementContent.Split('&');
                     name = segments[0];
-                    valueContent = $"&{segments[1]}";
+                    valueContent = $"&{segments[1]}&";
                 } else {
                     var valueMatch = valuePattern.Match(elementContent);
                     if (!valueMatch.Success) {
@@ -214,7 +214,7 @@ namespace Pimix.Subtitle.Ass {
         public Color Value { get; set; }
 
         public override AssControlElement ParseValue(string content) {
-            Value = AssFormatter.ParseColor(content);
+            Value = AssFormatter.ParseColor(content.Trim('&'));
             return this;
         }
 
