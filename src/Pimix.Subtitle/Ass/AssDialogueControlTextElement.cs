@@ -12,7 +12,7 @@ namespace Pimix.Subtitle.Ass {
         static readonly Regex subElementPattern =
             new Regex(@"\\([^\\(]*(\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!)))?)");
 
-        static readonly Regex valuePattern = new Regex(@"\(|\d");
+        static readonly Regex valuePattern = new Regex(@"\(|\d|-");
 
         public List<AssControlElement> Elements { get; set; } = new List<AssControlElement>();
 
