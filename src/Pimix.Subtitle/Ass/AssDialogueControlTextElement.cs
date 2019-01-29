@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -9,7 +9,9 @@ namespace Pimix.Subtitle.Ass {
     public class AssDialogueControlTextElement : AssDialogueTextElement {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        static readonly Regex subElementPattern = new Regex(@"\\([^\\(]*(\([^)]*\))?)");
+        static readonly Regex subElementPattern =
+            new Regex(@"\\([^\\(]*(\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!)))?)");
+
         static readonly Regex valuePattern = new Regex(@"\(|\d");
 
         public List<AssControlElement> Elements { get; set; } = new List<AssControlElement>();
@@ -19,11 +21,14 @@ namespace Pimix.Subtitle.Ass {
                 ? ""
                 : "{" + string.Join("", Elements.Select(e => e.ToString())) + "}";
 
-        public new static AssDialogueTextElement Parse(string content) {
+        public new static AssDialogueControlTextElement Parse(string content) {
             var result = new AssDialogueControlTextElement();
 
-            foreach (Match elementMatch in subElementPattern.Matches(
-                content.Substring(1, content.Length - 2))) {
+            content = content.Substring(1, content.Length - 2).TrimEnd(')');
+
+            content += new string(')', content.Sum(x => (x == '(' ? 1 : 0) - (x == ')' ? 1 : 0)));
+
+            foreach (Match elementMatch in subElementPattern.Matches(content)) {
                 var elementContent = elementMatch.Groups[1].Value;
                 string name, valueContent = null;
                 if (elementContent.EndsWith('&')) {
@@ -111,6 +116,9 @@ namespace Pimix.Subtitle.Ass {
                     case OldAlignmentStyle.Key:
                         s = new OldAlignmentStyle();
                         break;
+                    case AnimationFunction.Key:
+                        s = new AnimationFunction();
+                        break;
                     case MoveFunction.Key:
                         s = new MoveFunction();
                         break;
@@ -128,7 +136,7 @@ namespace Pimix.Subtitle.Ass {
                         break;
                     default:
                         s = new UnknownElement(name);
-                        logger.Warn("Unknown element: {0},{1}", name, valueContent);
+                        logger.Warn("Unknown element: {0}({1})", name, valueContent);
                         break;
                 }
 
@@ -214,7 +222,7 @@ namespace Pimix.Subtitle.Ass {
         public Color Value { get; set; }
 
         public override AssControlElement ParseValue(string content) {
-            Value = AssFormatter.ParseColor(content.Trim('&'));
+            Value = AssFormatter.ParseColor(content.TrimEnd('&'));
             return this;
         }
 
@@ -411,6 +419,58 @@ namespace Pimix.Subtitle.Ass {
 
         public override string ToString()
             => $"\\{Name}({Position1.X},{Position1.Y},{Position2.X},{Position2.Y})";
+    }
+
+    public class AnimationFunction : AssControlElement {
+        public const string Key = "t";
+
+        public override string Name => Key;
+
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+
+        public double Acceleration { get; set; } = -1;
+
+        public List<AssControlElement> Inner { get; set; }
+
+        public override AssControlElement ParseValue(string content) {
+            var segments = content.Substring(1, content.Length - 2).Split('\\', 2).Select(s => s.Trim())
+                .ToList();
+
+            var optionSegments = segments[0].Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+            if (optionSegments.Length == 3 || optionSegments.Length == 2) {
+                StartTime = TimeSpan.FromMilliseconds(int.Parse(optionSegments[0]));
+                EndTime = TimeSpan.FromMilliseconds(int.Parse(optionSegments[1]));
+            }
+
+            if (optionSegments.Length == 3 || optionSegments.Length == 1) {
+                Acceleration = double.Parse(optionSegments.Last());
+            }
+
+            Inner = AssDialogueControlTextElement.Parse($"{{\\{segments.Last()}}}").Elements.ToList();
+
+            return this;
+        }
+
+        public override void Scale(double scaleX, double scaleY) {
+            foreach (var element in Inner) {
+                element.Scale(scaleX, scaleY);
+            }
+        }
+
+        public override string ToString() {
+            var result = $"\\{Name}(";
+            if (StartTime != TimeSpan.Zero || EndTime != TimeSpan.Zero) {
+                result += $"{StartTime.TotalMilliseconds},{EndTime.TotalMilliseconds},";
+            }
+
+            if (Acceleration >= 0) {
+                result += $"{Acceleration},";
+            }
+
+            return $"{result}{string.Join("", Inner.Select(i => i.ToString()))})";
+        }
     }
 
     public class MoveFunction : AssControlElement {
