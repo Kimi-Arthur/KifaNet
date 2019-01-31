@@ -32,14 +32,12 @@ namespace Pimix.Apps.SubUtil.Commands {
                 var ids = Aid.Split('p');
                 var v = PimixService.Get<BilibiliVideo>(ids[0]);
                 foreach (var item in v.Pages.Zip(files, Tuple.Create)) {
-                    Console.WriteLine(
-                        $"{v.Title} - {item.Item1.Title}\n" +
-                        $"{item.Item2}\n" +
-                        $"{v.Id}p{item.Item1.Id} (cid={item.Item1.Cid})\n");
+                    Console.WriteLine($"{v.Title} - {item.Item1.Title}\n" +
+                                      $"{item.Item2}\n" +
+                                      $"{v.Id}p{item.Item1.Id} (cid={item.Item1.Cid})\n");
                 }
 
-                Console.Write(
-                    $"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
+                Console.Write($"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
                 Console.ReadLine();
 
                 return v.Pages.Zip(files, GetChat).Max();
@@ -48,7 +46,12 @@ namespace Pimix.Apps.SubUtil.Commands {
             if (Cid == null) {
                 // Needs to infer cid.
                 var segments = FileUri.Split('.');
-                Cid = segments[segments.Length - 2];
+                if (!segments[segments.Length - 2].StartsWith("c")) {
+                    Console.WriteLine("Cannot infer CID from Bilibili.");
+                    return 1;
+                }
+
+                Cid = segments[segments.Length - 2].Substring(1);
             }
 
             return GetChat(new BilibiliChat {Cid = Cid}, new PimixFile(FileUri));
@@ -63,9 +66,10 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             memoryStream.Seek(0, SeekOrigin.Begin);
 
-            var suffix = Group != null ? $"-{Group}" : "";
-            var lastDot = rawFile.ToString().LastIndexOf(".", StringComparison.Ordinal);
-            var targetUri = $"{rawFile.ToString().Substring(0, lastDot)}.{chat.Cid}{suffix}.xml";
+            var suffix = Group != null ? $"c{chat.Cid}-{Group}" : $"c{chat.Cid}";
+            var segments = rawFile.ToString().Split(".");
+            var skippedSegments = segments[segments.Length - 2] == suffix ? 2 : 1;
+            var targetUri = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
             var target = new PimixFile(targetUri);
             target.Delete();
             target.Write(memoryStream);
