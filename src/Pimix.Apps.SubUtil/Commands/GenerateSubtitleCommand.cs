@@ -91,8 +91,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
 
             var assFile =
-                target.Parent.GetFile(
-                    $"{target.BaseName}.{string.Join("-", subtitleIds)}.ass");
+                target.Parent.GetFile($"{target.BaseName}.ass");
 
             assFile.Delete();
 
@@ -108,8 +107,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(
-            Dictionary<string, List<AssDialogue>> chats) {
+        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(Dictionary<string, List<AssDialogue>> chats) {
             var choices = chats.OrderBy(x => x.Key).ToList();
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choices[i].Key}: {choices[i].Value.Count} comments.");
@@ -141,8 +139,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             return (string.Join("_", ids.Where(id => !string.IsNullOrEmpty(id))), dialogs);
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectSubtitles(
-            Dictionary<string, List<AssDialogue>> srts) {
+        (string Id, List<AssDialogue> dialogs) SelectSubtitles(Dictionary<string, List<AssDialogue>> srts) {
             var choices = srts.OrderBy(x => x.Key).ToList();
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choices[i].Key}");
@@ -186,11 +183,9 @@ namespace Pimix.Apps.SubUtil.Commands {
                     (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
                 .ToList();
 
-            AddFunction(
-                comments,
+            AddFunction(comments,
                 (a, b) =>
-                    Math.Max(
-                        sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                    Math.Max(sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
                 (c, row) => new AssDialogueControlTextElement {
@@ -204,8 +199,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         }
 
         static void PositionTopComments(List<AssDialogue> comments) {
-            AddFunction(
-                comments,
+            AddFunction(comments,
                 (a, b) => (comments[a].End - comments[b].Start).Seconds,
                 (c, row) => new AssDialogueControlTextElement {
                     Elements = new List<AssControlElement> {
@@ -217,8 +211,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         }
 
         static void PositionBottomComments(List<AssDialogue> comments) {
-            AddFunction(
-                comments,
+            AddFunction(comments,
                 (a, b) => (comments[a].End - comments[b].Start).Seconds,
                 (c, row) => new AssDialogueControlTextElement {
                     Elements = new List<AssControlElement> {
@@ -301,11 +294,10 @@ namespace Pimix.Apps.SubUtil.Commands {
         static Dictionary<string, List<AssDialogue>>
             GetBilibiliChats(PimixFile parent, string baseName) {
             var result = new Dictionary<string, List<AssDialogue>>();
-            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.xml")) {
+            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}*.xml")) {
                 var chat = new BilibiliChat();
                 chat.Load(file.OpenRead());
-                var ids = file.BaseName.Substring(baseName.Length + 1).Split('-', 2);
-                result[ids.Length == 2 ? ids[1] : ""] = chat
+                result[file.BaseName.Split('.').Last()] = chat
                     .Comments
                     .Select(x => x.GenerateAssDialogue()).ToList();
             }
