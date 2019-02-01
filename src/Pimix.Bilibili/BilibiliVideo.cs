@@ -41,13 +41,14 @@ namespace Pimix.Bilibili {
         public string Cover { get; set; }
 
         [JsonProperty("uploaded")]
-        public DateTime Uploaded { get; set; }
+        public DateTime? Uploaded { get; set; }
 
         [JsonProperty("pages")]
         public List<BilibiliChat> Pages { get; set; }
 
         PartModeType partMode;
 
+        [JsonIgnore]
         public PartModeType PartMode {
             get => partMode;
             set {

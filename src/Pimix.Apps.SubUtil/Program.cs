@@ -14,7 +14,7 @@ namespace Pimix.Apps.SubUtil {
 
             return Parser.Default
                 .ParseArguments<GenerateSubtitleCommand, GetBilibiliChatCommand,
-                    FixSubtitleCommand, UpdateCommand>(args)
+                    FixSubtitleCommand, UpdateCommand, RenameVideoCommand>(args)
                 .MapResult<SubUtilCommand, int>(ExecuteCommand, HandleParseFail);
         }
 

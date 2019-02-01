@@ -46,9 +46,9 @@ namespace Pimix.Api.Files {
 
         public string BaseName { get; set; }
 
-        string Extension { get; set; }
+        public string Extension { get; set; }
 
-        string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+        public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
 
         public string Path => $"{ParentPath}/{Name}";
 
