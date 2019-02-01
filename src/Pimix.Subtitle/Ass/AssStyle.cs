@@ -11,7 +11,7 @@ namespace Pimix.Subtitle.Ass {
         }
 
         public const string DefaultFontName = "Arial";
-        public const int DefaultSemiAlpha = 160;
+        public const int DefaultSemiAlpha = 224;
 
         public static AssStyle DefaultStyle { get; set; }
             = new AssStyle {
