@@ -9,6 +9,8 @@ Commands
 ---
 - `subutil bilibili`
 - `subutil generate`
+- `subutil fix`
+- `subutil rename`
 
 Current Version:
 ---
@@ -32,3 +34,5 @@ Updates:
   - Added `subutil generate` to generate ASS subtitle.
 - 1.3
   - Added `subutil fix` to fix ASS subtitle, like resize to 1080p.
+- 1.4
+  - Added `subutil rename` to rename video downloaded from biliplus to standard name.
