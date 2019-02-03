@@ -61,7 +61,9 @@ namespace Pimix.Apps.SubUtil.Commands {
                 return null;
             }
 
-            return $"{v.Title} {p.Title}-{aid}.c{cid}";
+            return v.Pages.Count > 1
+                ? $"{v.Title} P{pid} {p.Title}-{aid}p{pid}.c{cid}"
+                : $"{v.Title} {p.Title}-{aid}.c{cid}";
         }
     }
 }
