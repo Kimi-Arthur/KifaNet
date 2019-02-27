@@ -2,10 +2,10 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
         <OutputType>Exe</OutputType>
-        <ToolCommandName>f</ToolCommandName>
+        <ToolCommandName>filex</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>2.7.0</Version>
-        <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
+        <Version>2.7.1</Version>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
         <Description>Utility to manage pimix jobs.</Description>
