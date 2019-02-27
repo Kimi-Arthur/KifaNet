@@ -2,9 +2,9 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.1</TargetFramework>
         <OutputType>Exe</OutputType>
-        <ToolCommandName>subutil</ToolCommandName>
+        <ToolCommandName>subx</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>1.4.0</Version>
+        <Version>1.5.0</Version>
         <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>

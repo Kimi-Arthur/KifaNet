@@ -36,3 +36,6 @@ Updates:
   - Added `subutil fix` to fix ASS subtitle, like resize to 1080p.
 - 1.4
   - Added `subutil rename` to rename video downloaded from biliplus to standard name.
+- 1.5
+  - Renamed to `subx`.
+  - Support multiple-P videos.
