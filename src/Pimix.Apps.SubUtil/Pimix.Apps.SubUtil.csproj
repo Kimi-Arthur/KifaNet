@@ -4,8 +4,8 @@
         <OutputType>Exe</OutputType>
         <ToolCommandName>subx</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>1.5.0</Version>
-        <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
+        <Version>1.5.1</Version>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
         <Description>Utility to manage pimix jobs.</Description>
