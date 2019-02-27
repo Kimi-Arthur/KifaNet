@@ -7,9 +7,9 @@ using Pimix.Api.Files;
 using Pimix.Bilibili;
 using Pimix.Service;
 
-namespace Pimix.Apps.SubUtil.Commands {
+namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("rename", HelpText = "Rename video file to comply.")]
-    class RenameVideoCommand : SubUtilCommand {
+    class RenameVideoCommand : BiliUtilCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static readonly Regex fileNamePattern = new Regex(@"^AV(\d+) P(\d+) .* cid (\d+)$");

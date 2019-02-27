@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CommandLine;
-using Pimix.Apps.SubUtil.Commands;
+using Pimix.Apps.BiliUtil.Commands;
 using Pimix.Configs;
 
-namespace Pimix.Apps.SubUtil {
+
+namespace Pimix.Apps.BiliUtil {
     class Program {
         static int Main(string[] args) {
             AppDomain.CurrentDomain.AssemblyLoad +=
@@ -13,11 +14,11 @@ namespace Pimix.Apps.SubUtil {
             PimixConfigs.LoadFromSystemConfigs();
 
             return Parser.Default
-                .ParseArguments<GenerateSubtitleCommand, FixSubtitleCommand, UpdateCommand>(args)
-                .MapResult<SubUtilCommand, int>(ExecuteCommand, HandleParseFail);
+                .ParseArguments<GetBilibiliChatCommand, RenameVideoCommand>(args)
+                .MapResult<BiliUtilCommand, int>(ExecuteCommand, HandleParseFail);
         }
 
-        static int ExecuteCommand(SubUtilCommand command) {
+        static int ExecuteCommand(BiliUtilCommand command) {
             command.Initialize();
             try {
                 return command.Execute();

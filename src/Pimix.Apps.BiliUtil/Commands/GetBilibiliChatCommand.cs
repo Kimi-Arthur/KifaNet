@@ -8,9 +8,9 @@ using Pimix.Api.Files;
 using Pimix.Bilibili;
 using Pimix.Service;
 
-namespace Pimix.Apps.SubUtil.Commands {
-    [Verb("bilibili", HelpText = "Get Bilibili chat as xml document.")]
-    class GetBilibiliChatCommand : SubUtilCommand {
+namespace Pimix.Apps.BiliUtil.Commands {
+    [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
+    class GetBilibiliChatCommand : BiliUtilCommand {
         [Value(0, Required = true, HelpText = "Target file to get comments for.")]
         public string FileUri { get; set; }
 
