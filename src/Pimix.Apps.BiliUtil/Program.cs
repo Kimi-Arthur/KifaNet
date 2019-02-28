@@ -14,7 +14,7 @@ namespace Pimix.Apps.BiliUtil {
             PimixConfigs.LoadFromSystemConfigs();
 
             return Parser.Default
-                .ParseArguments<GetBilibiliChatCommand, RenameVideoCommand>(args)
+                .ParseArguments<GetChatCommand, RenameVideoCommand>(args)
                 .MapResult<BiliUtilCommand, int>(ExecuteCommand, HandleParseFail);
         }
 

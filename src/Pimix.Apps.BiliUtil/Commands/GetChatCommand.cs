@@ -10,7 +10,7 @@ using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
-    class GetBilibiliChatCommand : BiliUtilCommand {
+    class GetChatCommand : BiliUtilCommand {
         [Value(0, Required = true, HelpText = "Target file to get comments for.")]
         public string FileUri { get; set; }
 
