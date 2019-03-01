@@ -40,6 +40,7 @@ namespace Pimix.Api.Files {
 
         public string Id { get; set; }
 
+        // Ends with a slash.
         string ParentPath { get; set; }
 
         public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
@@ -50,7 +51,7 @@ namespace Pimix.Api.Files {
 
         public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
 
-        public string Path => $"{ParentPath}/{Name}";
+        public string Path => $"{ParentPath}{Name}";
 
         public string Host => Client.ToString();
 
@@ -96,6 +97,9 @@ namespace Pimix.Api.Files {
             var segments = uri.Split('/');
             var pathSegmentCount = segments.Length - 1;
             ParentPath = "/" + string.Join("/", segments.Skip(1).Take(pathSegmentCount - 1));
+            if (!ParentPath.EndsWith("/")) {
+                ParentPath += "/";
+            }
             var name = segments.Last();
             var lastDot = name.LastIndexOf('.');
             if (lastDot < 0) {
