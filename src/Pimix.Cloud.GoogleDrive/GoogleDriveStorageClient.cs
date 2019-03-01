@@ -100,11 +100,9 @@ namespace Pimix.Cloud.GoogleDrive {
         public override Stream OpenRead(string path) {
             var fileId = GetFileId(path);
             var fileSize = GetFileSize(fileId);
-            return new SeekableReadStream(
-                fileSize,
+            return new SeekableReadStream(fileSize,
                 (buffer, bufferOffset, offset, count)
-                    => Download(buffer, fileId, bufferOffset, offset, count)
-            );
+                    => Download(buffer, fileId, bufferOffset, offset, count));
         }
 
         public override void Write(string path, Stream input) {
@@ -148,8 +146,7 @@ namespace Pimix.Cloud.GoogleDrive {
                                 var fromByte = range.Ranges.First().From;
                                 var toByte = range.Ranges.First().To;
                                 if (fromByte != 0) {
-                                    throw new Exception(
-                                        $"Unexpected exception: from byte is {fromByte}");
+                                    throw new Exception($"Unexpected exception: from byte is {fromByte}");
                                 }
 
                                 if (toByte != targetEndByte) {
@@ -207,7 +204,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
         string GetFileId(string path, bool createParents = false) {
             var fileId = "root";
-            foreach (var segment in $"{Config.RootFolder}{path}".Split('/')) {
+            foreach (var segment in $"{Config.RootFolder}{path}".Split('/', StringSplitOptions.RemoveEmptyEntries)) {
                 var request = GetRequest(Config.APIList.FindFile, new Dictionary<string, string> {
                     ["name"] = segment,
                     ["parent_id"] = fileId
