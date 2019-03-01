@@ -17,7 +17,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
         [Value(0, Required = true, HelpText = "Target file to rename.")]
         public string FileUri { get; set; }
 
-        protected override int Execute() {
+        public override int Execute() {
             var target = new PimixFile(FileUri);
             var newName = getDesiredFileName(target.BaseName);
             if (newName == null) {

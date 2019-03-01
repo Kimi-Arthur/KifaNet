@@ -7,7 +7,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("upload", HelpText = "Upload file to a cloud location.")]
-    class UploadCommand : FileUtilCommand {
+    class UploadCommand : PimixCommand {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 

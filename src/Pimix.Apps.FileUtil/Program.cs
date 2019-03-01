@@ -7,15 +7,9 @@ using Pimix.Configs;
 
 namespace Pimix.Apps.FileUtil {
     class Program {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        static int Main(string[] args) {
-            AppDomain.CurrentDomain.AssemblyLoad +=
-                (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
-
-            PimixConfigs.LoadFromSystemConfigs();
-
-            return Parser.Default.ParseArguments<
+        static int Main(string[] args) =>
+            PimixCommand.Run(Parser.Default
+                .ParseArguments<
                     InfoCommand,
                     CopyCommand,
                     VerifyCommand,
@@ -27,21 +21,6 @@ namespace Pimix.Apps.FileUtil {
                     AddCommand,
                     GetCommand,
                     TouchCommand
-                >(args)
-                .MapResult<FileUtilCommand, int>(ExecuteCommand, HandleParseFail);
-        }
-
-        static int ExecuteCommand(FileUtilCommand command) {
-            command.Initialize();
-
-            try {
-                return command.Execute();
-            } catch (Exception ex) {
-                logger.Fatal(ex, "Unexpected error happened");
-                return 1;
-            }
-        }
-
-        static int HandleParseFail(IEnumerable<Error> errors) => 2;
+                >(args));
     }
 }

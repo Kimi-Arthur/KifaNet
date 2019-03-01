@@ -50,6 +50,6 @@ namespace Pimix.Apps {
             LogManager.ReconfigExistingLoggers();
         }
 
-        protected abstract int Execute();
+        public abstract int Execute();
     }
 }

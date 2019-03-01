@@ -9,7 +9,7 @@ using Pimix.Service;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("rm", HelpText =
         "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
-    class RemoveCommand : FileUtilCommand {
+    class RemoveCommand : PimixCommand {
         [Value(0, MetaName = "FILE", MetaValue = "STRING", HelpText = "File to be removed.")]
         public string FileUri { get; set; }
 

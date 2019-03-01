@@ -5,7 +5,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
-    class MoveCommand : FileUtilCommand {
+    class MoveCommand : PimixCommand {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
 

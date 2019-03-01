@@ -8,7 +8,7 @@ using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("info", HelpText = "Generate information of the specified file.")]
-    class InfoCommand : FileUtilCommand {
+    class InfoCommand : PimixCommand {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 

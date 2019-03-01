@@ -25,7 +25,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
         [Option('g', "group", HelpText = "Group name.")]
         public string Group { get; set; }
 
-        protected override int Execute() {
+        public override int Execute() {
             if (Aid != null) {
                 var files = new PimixFile(FileUri).List(true).ToList();
 

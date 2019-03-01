@@ -5,7 +5,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
-    class ListCommand : FileUtilCommand {
+    class ListCommand : PimixCommand {
         [Value(0, MetaName = "FOLDER", MetaValue = "STRING", HelpText = "Folder to be listed.")]
         public string FolderUri { get; set; }
 

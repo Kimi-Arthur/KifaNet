@@ -6,7 +6,7 @@ using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
-    class LinkCommand : FileUtilCommand {
+    class LinkCommand : PimixCommand {
         [Value(0, MetaName = "TARGET", MetaValue = "STRING", Required = true,
             HelpText = "The target for this link.")]
         public string Target { get; set; }

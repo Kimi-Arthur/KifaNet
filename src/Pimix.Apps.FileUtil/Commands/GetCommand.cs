@@ -8,7 +8,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("get", HelpText = "Get file.")]
-    class GetCommand : FileUtilCommand {
+    class GetCommand : PimixCommand {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 

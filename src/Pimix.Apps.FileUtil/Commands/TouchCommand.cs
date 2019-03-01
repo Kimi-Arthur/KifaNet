@@ -7,7 +7,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("touch", HelpText = "Touch file.")]
-    class TouchCommand : FileUtilCommand {
+    class TouchCommand : PimixCommand {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 

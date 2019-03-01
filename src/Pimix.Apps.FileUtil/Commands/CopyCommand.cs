@@ -5,7 +5,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
-    class CopyCommand : FileUtilCommand {
+    class CopyCommand : PimixCommand {
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
 

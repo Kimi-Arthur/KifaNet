@@ -7,7 +7,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("add", HelpText = "Add file entry.")]
-    class AddCommand : FileUtilCommand {
+    class AddCommand : PimixCommand {
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
