@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
         <ToolCommandName>jobutil</ToolCommandName>
         <PackAsTool>true</PackAsTool>
         <Version>2.0.1</Version>
@@ -14,7 +14,7 @@
         <Authors>Kimi Arthur</Authors>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.3.0" />
+        <PackageReference Include="CommandLineParser" Version="2.4.3" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
