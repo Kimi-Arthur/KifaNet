@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CommandLine;
 using NLog;
 using Pimix.Configs;
 
@@ -7,7 +8,27 @@ namespace Pimix.Apps {
     public abstract class PimixCommand {
         public static HashSet<string> LoggingTargets { get; set; }
 
-        public void Initialize() {
+        public static int Run(ParserResult<object> parserResult) =>
+            parserResult.MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
+
+        static int ExecuteCommand(PimixCommand command) {
+            Initialize();
+            try {
+                return command.Execute();
+            } catch (Exception ex) {
+                while (ex != null) {
+                    Console.WriteLine("Caused by:");
+                    Console.WriteLine(ex);
+                    ex = ex.InnerException;
+                }
+
+                return 1;
+            }
+        }
+
+        static int HandleParseFail(IEnumerable<Error> errors) => 2;
+
+        static void Initialize() {
             AppDomain.CurrentDomain.AssemblyLoad +=
                 (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
@@ -29,6 +50,6 @@ namespace Pimix.Apps {
             LogManager.ReconfigExistingLoggers();
         }
 
-        public abstract int Execute();
+        protected abstract int Execute();
     }
 }
