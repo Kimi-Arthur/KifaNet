@@ -45,7 +45,7 @@ namespace Pimix {
         public static Dictionary<string, object> GetDictionary(this WebResponse response)
             => response.GetObject<Dictionary<string, object>>();
 
-        static string GetString(HttpResponseMessage response) {
+        public static string GetString(this HttpResponseMessage response) {
             using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
                 Encoding.GetEncoding("UTF-8"))) {
                 var data = sr.ReadToEnd();

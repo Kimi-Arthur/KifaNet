@@ -60,7 +60,8 @@ namespace Pimix.Cloud.GoogleDrive {
 
                 using (var response = client.SendAsync(request).Result) {
                     if (!response.IsSuccessStatusCode) {
-                        throw new Exception("List Files is not successful.");
+                        throw new Exception(
+                            $"List Files is not successful ({response.ReasonPhrase}):\n{response.GetString()}");
                     }
 
                     var token = response.GetJToken();
@@ -68,7 +69,8 @@ namespace Pimix.Cloud.GoogleDrive {
 
                     foreach (var fileToken in token["files"]) {
                         yield return new FileInformation {
-                            Id = $"{path}/{(string) fileToken["name"]}"
+                            Id = $"{path}/{(string) fileToken["name"]}",
+                            Size = long.Parse((string) fileToken["size"])
                         };
                     }
                 }
