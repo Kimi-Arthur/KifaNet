@@ -8,11 +8,6 @@ using Pimix.Configs;
 namespace Pimix.Apps.BiliUtil {
     class Program {
         static int Main(string[] args) {
-            AppDomain.CurrentDomain.AssemblyLoad +=
-                (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
-
-            PimixConfigs.LoadFromSystemConfigs();
-
             return Parser.Default
                 .ParseArguments<GetChatCommand, RenameVideoCommand>(args)
                 .MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);

@@ -3,7 +3,7 @@ Pimix.Service.PimixService:
 
 Pimix.Api.Files.PimixFile:
   SubPathIgnorePattern: "\
-  /\\.|/!|/@|\
+  (^|/)(\\.|!|@)|\
   \\.(!qB|!ut|fdmdownload|crdownload|swp|idx2)$"
   FullPathIgnorePattern: "\
   ^/(Anime|TV Shows|Movies|Downloads/Bilibili)/.*\\.(xml|ass|srt)$"
@@ -21,6 +21,6 @@ Pimix.Apps.JobUtil.JobUtilCommand:
   ClientName: pimix
   HeartbeatInterval: 10:00
 
-Pimix.Apps.FileUtil.Commands.FileUtilCommand:
+Pimix.Apps.PimixCommand:
   LoggingTargets:
   - console_full

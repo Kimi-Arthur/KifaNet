@@ -1,11 +1,18 @@
+using System;
 using System.Collections.Generic;
 using NLog;
+using Pimix.Configs;
 
 namespace Pimix.Apps {
     public abstract class PimixCommand {
         public static HashSet<string> LoggingTargets { get; set; }
 
         public void Initialize() {
+            AppDomain.CurrentDomain.AssemblyLoad +=
+                (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+
+            PimixConfigs.LoadFromSystemConfigs();
+
             if (LoggingTargets != null) {
                 ConfigureLogger();
             }
