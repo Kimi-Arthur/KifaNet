@@ -15,10 +15,10 @@ namespace Pimix.Apps.BiliUtil {
 
             return Parser.Default
                 .ParseArguments<GetChatCommand, RenameVideoCommand>(args)
-                .MapResult<BiliUtilCommand, int>(ExecuteCommand, HandleParseFail);
+                .MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
         }
 
-        static int ExecuteCommand(BiliUtilCommand command) {
+        static int ExecuteCommand(PimixCommand command) {
             command.Initialize();
             try {
                 return command.Execute();

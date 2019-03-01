@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using NLog;
 
-namespace Pimix.Apps.BiliUtil.Commands {
-    abstract class BiliUtilCommand {
+namespace Pimix.Apps {
+    public abstract class PimixCommand {
         public static HashSet<string> LoggingTargets { get; set; }
 
         public void Initialize() {
