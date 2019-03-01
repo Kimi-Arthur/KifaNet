@@ -33,7 +33,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 foreach (var file in target.List(Recursive)) {
-                    Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.Path);
+                    Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.ToString());
                     counter++;
                 }
             }
