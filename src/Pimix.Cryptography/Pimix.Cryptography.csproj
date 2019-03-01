@@ -1,19 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.1.0</Version>
-    <PackageLicenseUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
-    <Description>Cryptographic libraries.</Description>
-    <Copyright>Copyright © 2015-2017 Kimi Arthur</Copyright>
-    <PackageTags>Pimix lib</PackageTags>
-    <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Pimix\Pimix.csproj" />
+    <ProjectReference Include="..\Pimix\Pimix.csproj"/>
   </ItemGroup>
-
 </Project>
