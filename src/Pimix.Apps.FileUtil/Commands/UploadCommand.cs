@@ -14,15 +14,27 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
         public bool RemoveSource { get; set; } = false;
 
-        [Option('q', "quick", HelpText = "Finish quickly by not verifying validity of destination.")]
+        [Option('q', "quick", HelpText =
+            "Finish quickly by not verifying validity of destination.")]
         public bool QuickMode { get; set; } = false;
 
-        [Option('g', "use-google-drive", HelpText = "Use Google Drive as backend storage.")]
+        [Option('b', "use-baidu-cloud", HelpText = "Use Baidu Cloud as backend storage.")]
+        public bool UseBaiduCloud { get; set; } = false;
+
+        [Option('g', "use-google-drive", HelpText =
+            "Use Google Drive as backend storage. Default case.")]
         public bool UseGoogleDrive { get; set; } = false;
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
+            if (UseBaiduCloud && UseGoogleDrive) {
+                logger.Error(
+                    "Cannot set both --use-google-drive and --use-baidu-cloud. " +
+                    "Choose one.");
+                return 1;
+            }
+
             var source = new PimixFile(FileUri);
             if (source.Client == null) {
                 Console.WriteLine($"Source {FileUri} not accessible. Wrong server?");
@@ -64,14 +76,15 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 var destinationLocation =
-                    FileInformation.CreateLocation(source.Id, UseGoogleDrive ? "google" : "baidu");
+                    FileInformation.CreateLocation(source.Id, UseBaiduCloud ? "baidu" : "google");
                 var destination = new PimixFile(destinationLocation);
                 destination.Register();
 
                 if (destination.Exists()) {
                     destination.Register();
                     if (QuickMode) {
-                        Console.WriteLine($"Skipped verifying of {destination} as quick mode is enabled.");
+                        Console.WriteLine(
+                            $"Skipped verifying of {destination} as quick mode is enabled.");
                         return 0;
                     }
 
@@ -101,7 +114,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (destination.Exists()) {
                     destination.Register();
                     if (QuickMode) {
-                        Console.WriteLine($"Skipped verifying of {destination} as quick mode is enabled.");
+                        Console.WriteLine(
+                            $"Skipped verifying of {destination} as quick mode is enabled.");
                         return 0;
                     }
 
