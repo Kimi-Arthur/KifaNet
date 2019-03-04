@@ -13,7 +13,7 @@ using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
-    class GenerateSubtitleCommand : SubUtilCommand {
+    class GenerateCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
