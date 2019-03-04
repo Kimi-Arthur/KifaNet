@@ -92,8 +92,8 @@ namespace Pimix.Apps.SubUtil.Commands {
                 subtitleIds.Add(subtitle.Id);
             }
 
-            var assFile =
-                target.Parent.GetFile($"{target.BaseName}.ass").GetFilePrefixed(SubtitlesPrefix);
+            var actualFile = target.Parent.GetFile($"{target.BaseName}.ass");
+            var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
             assFile.Delete();
 
@@ -105,6 +105,9 @@ namespace Pimix.Apps.SubUtil.Commands {
                     assFile.Write(stream);
                 }
             }
+
+            actualFile.Delete();
+            assFile.Copy(actualFile);
 
             return 0;
         }
