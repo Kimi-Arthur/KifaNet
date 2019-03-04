@@ -14,15 +14,15 @@
     <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj"/>
-    <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj"/>
-    <ProjectReference Include="..\Pimix.Bilibili\Pimix.Bilibili.csproj"/>
-    <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj"/>
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj"/>
+    <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
+    <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj" />
+    <ProjectReference Include="..\Pimix.Bilibili\Pimix.Bilibili.csproj" />
+    <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
+    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.4.3"/>
-    <PackageReference Include="NLog.Schema" Version="4.5.10"/>
+    <PackageReference Include="CommandLineParser" Version="2.4.3" />
+    <PackageReference Include="NLog.Schema" Version="4.5.10" />
   </ItemGroup>
   <ItemGroup>
     <None Update="NLog.config">
