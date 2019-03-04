@@ -16,6 +16,8 @@ namespace Pimix.Apps.SubUtil.Commands {
     class GenerateCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        const string SubtitlesPrefix = "/Subtitles";
+
         [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
         public string FileUri { get; set; }
 
@@ -60,12 +62,12 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var events = new AssEventsSection();
 
-            var srts = GetSrtSubtitles(target.Parent,
+            var srts = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
                 target.BaseName.Normalize(NormalizationForm.FormD));
             var subtitle = SelectSubtitles(srts);
             events.Events.AddRange(subtitle.dialogs);
 
-            var chats = GetBilibiliChats(target.Parent,
+            var chats = GetBilibiliChats(target.Parent.GetFilePrefixed(SubtitlesPrefix),
                 target.BaseName.Normalize(NormalizationForm.FormD));
             var comments = SelectBilibiliChats(chats);
             PositionNormalComments(comments.dialogs
@@ -91,7 +93,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
 
             var assFile =
-                target.Parent.GetFile($"{target.BaseName}.ass");
+                target.Parent.GetFile($"{target.BaseName}.ass").GetFilePrefixed(SubtitlesPrefix);
 
             assFile.Delete();
 

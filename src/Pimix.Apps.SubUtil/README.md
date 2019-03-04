@@ -39,3 +39,5 @@ Updates:
 - 1.5
   - Renamed to `subx`.
   - Support multiple-P videos.
+- 1.6
+  - Direct `subx generate`'s input and output to /Subtitles folder.
