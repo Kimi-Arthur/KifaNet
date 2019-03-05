@@ -52,7 +52,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var pid = int.Parse(match.Groups[2].Value);
             var cid = match.Groups[3].Value;
 
-            PimixService.Patch(new BilibiliVideo {Id = aid});
+            PimixService.Update(new BilibiliVideo {Id = aid});
             var v = PimixService.Get<BilibiliVideo>(aid);
             var p = v.Pages.First(x => x.Id == pid);
 

@@ -255,7 +255,7 @@ namespace Pimix.Api.Files {
                     sha256Info.EncryptionKey ??
                     info.EncryptionKey; // Only happens for unencrypted file.
 
-                PimixService.Patch(info);
+                PimixService.Update(info);
                 Register(true);
 
                 fileInfo = null;

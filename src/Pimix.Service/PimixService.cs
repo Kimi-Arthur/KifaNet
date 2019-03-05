@@ -32,13 +32,13 @@ namespace Pimix.Service {
 
         static readonly HttpClient client = new HttpClient();
 
-        public static bool Patch<TDataModel>(TDataModel data, string id = null) {
+        public static void Update<TDataModel>(TDataModel data, string id = null) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
             id = id ?? typeInfo.Item1.GetValue(data) as string;
 
-            return Retry.Run(() => {
+            Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
@@ -56,13 +56,13 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {typeInfo.Item2}({id})"));
         }
 
-        public static bool Post<TDataModel>(TDataModel data, string id = null) {
+        public static void Create<TDataModel>(TDataModel data, string id = null) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
             id = id ?? typeInfo.Item1.GetValue(data) as string;
 
-            return Retry.Run(() => {
+            Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
@@ -108,11 +108,11 @@ namespace Pimix.Service {
             }
         }
 
-        public static bool Link<TDataModel>(string targetId, string linkId) {
+        public static void Link<TDataModel>(string targetId, string linkId) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
-            return Retry.Run(() => {
+            Retry.Run(() => {
                     var request =
                         new HttpRequestMessage(HttpMethod.Get,
                             $"{PimixServerApiAddress}/{typeInfo.Item2}/" +
@@ -129,11 +129,11 @@ namespace Pimix.Service {
                     $"Failure in LINK {typeInfo.Item2}({linkId}) to {typeInfo.Item2}({targetId})"));
         }
 
-        public static bool Delete<TDataModel>(string id) {
+        public static void Delete<TDataModel>(string id) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
-            return Retry.Run(() => {
+            Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Delete,
                         $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}");

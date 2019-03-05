@@ -19,8 +19,8 @@ namespace PimixTest.Service {
 
         #region PimixService Wrappers
 
-        public static bool Patch(FakeDataModel data, string id = null)
-            => PimixService.Patch(data, id);
+        public static void Patch(FakeDataModel data, string id = null)
+            => PimixService.Update(data, id);
 
         public static FakeDataModel Get(string id) => PimixService.Get<FakeDataModel>(id);
 
