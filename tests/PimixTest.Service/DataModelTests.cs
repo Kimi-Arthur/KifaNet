@@ -6,7 +6,7 @@ namespace PimixTest.Service {
     public class DataModelTests {
 
         public DataModelTests() {
-            PimixService.PimixServerApiAddress = "http://www.pimix.tk/api";
+            PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
             FakeDataModel.Reset();
         }
 

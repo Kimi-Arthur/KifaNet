@@ -1,4 +1,4 @@
-Pimix.Service.PimixService:
+Pimix.Service.PimixServiceRestClient:
   PimixServerApiAddress: http://www.pimix.tk/api
 
 Pimix.Api.Files.PimixFile:

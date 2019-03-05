@@ -21,6 +21,44 @@ namespace Pimix.Service {
     }
 
     public static class PimixService {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        static PimixServiceClient client = new PimixServiceRestClient();
+
+        public static TDataModel Get<TDataModel>(string id) => client.Get<TDataModel>(id);
+
+        public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
+            try {
+                return Get<TDataModel>(id);
+            } catch (Exception ex) {
+                var value = defaultValue != null ? defaultValue(id) : default(TDataModel);
+                logger.Warn(ex, "Cannot get a value for {0}, using default value: {1}.", id, value);
+                return value;
+            }
+        }
+
+        public static void Create<TDataModel>(TDataModel data, string id = null) => client.Create(data, id);
+
+        public static void Update<TDataModel>(TDataModel data, string id = null) => client.Update(data, id);
+
+        public static void Delete<TDataModel>(string id) => client.Delete<TDataModel>(id);
+
+        public static void Link<TDataModel>(string targetId, string linkId) =>
+            client.Link<TDataModel>(targetId, linkId);
+
+        public static TResponse Call<TDataModel, TResponse>(string action,
+            string id = null, Dictionary<string, object> parameters = null) =>
+            client.Call<TDataModel, TResponse>(action, id, parameters);
+
+        public static void Call<TDataModel>(string action,
+            string id = null, Dictionary<string, object> parameters = null)
+            => Call<TDataModel, object>(action, id, parameters);
+
+        public static TDataModel Copy<TDataModel>(TDataModel data) =>
+            JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));
+    }
+
+    public class PimixServiceRestClient : PimixServiceClient {
         static readonly Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
             = new Dictionary<Type, Tuple<PropertyInfo, string>>();
 
@@ -32,7 +70,7 @@ namespace Pimix.Service {
 
         static readonly HttpClient client = new HttpClient();
 
-        public static void Update<TDataModel>(TDataModel data, string id = null) {
+        public override void Update<TDataModel>(TDataModel data, string id = null) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
@@ -56,7 +94,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {typeInfo.Item2}({id})"));
         }
 
-        public static void Create<TDataModel>(TDataModel data, string id = null) {
+        public override void Create<TDataModel>(TDataModel data, string id = null) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
@@ -80,7 +118,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {typeInfo.Item2}({id})"));
         }
 
-        public static TDataModel Get<TDataModel>(string id) {
+        public override TDataModel Get<TDataModel>(string id) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
@@ -98,17 +136,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {typeInfo.Item2}({id})"));
         }
 
-        public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
-            try {
-                return Get<TDataModel>(id);
-            } catch (Exception ex) {
-                var value = defaultValue != null ? defaultValue(id) : default(TDataModel);
-                logger.Warn(ex, "Cannot get a value for {0}, using default value: {1}.", id, value);
-                return value;
-            }
-        }
-
-        public static void Link<TDataModel>(string targetId, string linkId) {
+        public override void Link<TDataModel>(string targetId, string linkId) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
@@ -129,7 +157,7 @@ namespace Pimix.Service {
                     $"Failure in LINK {typeInfo.Item2}({linkId}) to {typeInfo.Item2}({targetId})"));
         }
 
-        public static void Delete<TDataModel>(string id) {
+        public override void Delete<TDataModel>(string id) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
 
@@ -147,7 +175,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {typeInfo.Item2}({id})"));
         }
 
-        public static TResponse Call<TDataModel, TResponse>(string action,
+        public override TResponse Call<TDataModel, TResponse>(string action,
             string id = null, Dictionary<string, object> parameters = null) {
             Init(typeof(TDataModel));
             var typeInfo = typeCache[typeof(TDataModel)];
@@ -184,9 +212,6 @@ namespace Pimix.Service {
                     $"Failure in CALL {typeInfo.Item2}({id}).{action}({id})"));
         }
 
-        public static void Call<TDataModel>(string action,
-            string id = null, Dictionary<string, object> parameters = null)
-            => Call<TDataModel, object>(action, id, parameters);
 
         static void HandleException(Exception ex, int index, string message) {
             if (index >= 5 || ex is ActionFailedException ||
@@ -207,8 +232,5 @@ namespace Pimix.Service {
                 typeCache[typeInfo] = Tuple.Create(idProp, dmAttr.ModelId);
             }
         }
-
-        public static TDataModel Copy<TDataModel>(TDataModel data) =>
-            JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));
     }
 }
