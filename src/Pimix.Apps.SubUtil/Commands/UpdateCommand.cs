@@ -8,7 +8,7 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("up", HelpText = "Update subtitle with given modification.")]
-    class UpdateCommand : SubUtilCommand {
+    class UpdateCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to update.")]

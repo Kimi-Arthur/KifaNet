@@ -13,8 +13,10 @@ using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
-    class GenerateSubtitleCommand : SubUtilCommand {
+    class GenerateCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        const string SubtitlesPrefix = "/Subtitles";
 
         [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
         public string FileUri { get; set; }
@@ -60,13 +62,13 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var events = new AssEventsSection();
 
-            var srts = GetSrtSubtitles(target.Parent,
-                target.BaseName.Normalize(NormalizationForm.FormD));
+            var srts = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
+                target.BaseName);
             var subtitle = SelectSubtitles(srts);
             events.Events.AddRange(subtitle.dialogs);
 
-            var chats = GetBilibiliChats(target.Parent,
-                target.BaseName.Normalize(NormalizationForm.FormD));
+            var chats = GetBilibiliChats(target.Parent.GetFilePrefixed(SubtitlesPrefix),
+                target.BaseName);
             var comments = SelectBilibiliChats(chats);
             PositionNormalComments(comments.dialogs
                 .Where(c => c.Style == AssStyle.NormalCommentStyle)
@@ -91,7 +93,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
 
             var assFile =
-                target.Parent.GetFile($"{target.BaseName}.ass");
+                target.Parent.GetFile($"{target.BaseName}.ass").GetFilePrefixed(SubtitlesPrefix);
 
             assFile.Delete();
 
@@ -107,7 +109,8 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(Dictionary<string, List<AssDialogue>> chats) {
+        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(
+            Dictionary<string, List<AssDialogue>> chats) {
             var choices = chats.OrderBy(x => x.Key).ToList();
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choices[i].Key}: {choices[i].Value.Count} comments.");
@@ -139,7 +142,8 @@ namespace Pimix.Apps.SubUtil.Commands {
             return (string.Join("_", ids.Where(id => !string.IsNullOrEmpty(id))), dialogs);
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectSubtitles(Dictionary<string, List<AssDialogue>> srts) {
+        (string Id, List<AssDialogue> dialogs) SelectSubtitles(
+            Dictionary<string, List<AssDialogue>> srts) {
             var choices = srts.OrderBy(x => x.Key).ToList();
             for (int i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choices[i].Key}");
@@ -185,7 +189,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             AddFunction(comments,
                 (a, b) =>
-                    Math.Max(sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                    Math.Max(
+                        sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
                 (c, row) => new AssDialogueControlTextElement {

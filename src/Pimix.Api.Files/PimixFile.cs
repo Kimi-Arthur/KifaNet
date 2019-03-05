@@ -49,7 +49,8 @@ namespace Pimix.Api.Files {
 
         public string Extension { get; set; }
 
-        public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+        public string Name
+            => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
 
         public string Path => $"{ParentPath}{Name}";
 
@@ -61,8 +62,8 @@ namespace Pimix.Api.Files {
 
         FileInformation fileInfo;
 
-        public FileInformation FileInfo =>
-            fileInfo = fileInfo ?? PimixService.GetOr<FileInformation>(Id);
+        public FileInformation FileInfo
+            => fileInfo = fileInfo ?? PimixService.GetOr<FileInformation>(Id);
 
         public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null) {
             if (uri == null) {
@@ -100,6 +101,7 @@ namespace Pimix.Api.Files {
             if (!ParentPath.EndsWith("/")) {
                 ParentPath += "/";
             }
+
             var name = segments.Last();
             var lastDot = name.LastIndexOf('.');
             if (lastDot < 0) {
@@ -149,6 +151,8 @@ namespace Pimix.Api.Files {
 
         public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
 
+        public PimixFile GetFilePrefixed(string prefix) => new PimixFile($"{Host}{prefix}{Path}");
+
         public override string ToString() => $"{Host}{Path}";
 
         public bool Exists() => Client.Exists(Path);
@@ -163,7 +167,8 @@ namespace Pimix.Api.Files {
         public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true,
             string pattern = "*")
             => Client.List(Path, recursive, pattern)
-                .Where(f => !ignoreFiles || !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
+                .Where(f => !ignoreFiles ||
+                            !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
                             !FullPathIgnoredFiles.IsMatch(f.Id))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
@@ -185,7 +190,8 @@ namespace Pimix.Api.Files {
         }
 
         public Stream OpenRead()
-            => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
+            => new VerifiableStream(
+                FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
         public void Write(Stream stream)
@@ -227,10 +233,12 @@ namespace Pimix.Api.Files {
 
             if (quickCompareResult != FileProperties.None) {
                 logger.Warn("Quick data:\n{0}",
-                    JsonConvert.SerializeObject(quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(
+                        quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 return quickCompareResult;
             }
@@ -253,10 +261,12 @@ namespace Pimix.Api.Files {
                 fileInfo = null;
             } else {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(
+                        sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
             }
 

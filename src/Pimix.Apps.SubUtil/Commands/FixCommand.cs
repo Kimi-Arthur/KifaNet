@@ -9,7 +9,7 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("fix", HelpText = "Fix subtitle.")]
-    class FixSubtitleCommand : SubUtilCommand {
+    class FixCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to normalize subtitle for.")]
