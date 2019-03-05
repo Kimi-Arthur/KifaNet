@@ -10,6 +10,16 @@ using Newtonsoft.Json;
 using NLog;
 
 namespace Pimix.Service {
+    public abstract class PimixServiceClient {
+        public abstract TDataModel Get<TDataModel>(string id);
+        public abstract void Create<TDataModel>(TDataModel data, string id = null);
+        public abstract void Update<TDataModel>(TDataModel data, string id = null);
+        public abstract void Delete<TDataModel>(string id);
+        public abstract void Link<TDataModel>(string targetId, string linkId);
+        public abstract TResponse Call<TDataModel, TResponse>(string action,
+            string id = null, Dictionary<string, object> parameters = null);
+    }
+
     public static class PimixService {
         static readonly Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
             = new Dictionary<Type, Tuple<PropertyInfo, string>>();
