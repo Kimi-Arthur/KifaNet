@@ -83,7 +83,12 @@ namespace Pimix.IO {
             }
         }
 
-        public override void Delete(string path) => File.Delete(GetPath(path));
+        public override void Delete(string path) {
+            path = GetPath(path);
+            if (File.Exists(path)) {
+                File.Delete(path);
+            }
+        }
 
         public override void Touch(string path) {
             path = GetPath(path);
