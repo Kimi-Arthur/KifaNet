@@ -64,7 +64,7 @@ namespace Pimix.Service {
         }
 
         public override TDataModel Get<TDataModel>(string id) {
-            var (_, modelId) = GetModelInfo<TDataModel>();
+            var modelId = GetModelInfo<TDataModel>().modelId;
 
             return Retry.Run(() => {
                 var request =
@@ -81,7 +81,7 @@ namespace Pimix.Service {
         }
 
         public override void Link<TDataModel>(string targetId, string linkId) {
-            var (_, modelId) = GetModelInfo<TDataModel>();
+            var modelId = GetModelInfo<TDataModel>().modelId;
 
             Retry.Run(() => {
                     var request =
@@ -101,7 +101,7 @@ namespace Pimix.Service {
         }
 
         public override void Delete<TDataModel>(string id) {
-            var (_, modelId) = GetModelInfo<TDataModel>();
+            var modelId = GetModelInfo<TDataModel>().modelId;
 
             Retry.Run(() => {
                 var request =
@@ -119,7 +119,7 @@ namespace Pimix.Service {
 
         public override TResponse Call<TDataModel, TResponse>(string action,
             string id = null, Dictionary<string, object> parameters = null) {
-            var (_, modelId) = GetModelInfo<TDataModel>();
+            var modelId = GetModelInfo<TDataModel>().modelId;
 
             return Retry.Run(() => {
                     var request =
