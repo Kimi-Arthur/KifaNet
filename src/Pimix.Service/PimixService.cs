@@ -21,7 +21,7 @@ namespace Pimix.Service {
         }
 
         public abstract TDataModel Get<TDataModel>(string id);
-        public abstract void Create<TDataModel>(TDataModel data, string id = null);
+        public abstract void Set<TDataModel>(TDataModel data, string id = null);
         public abstract void Update<TDataModel>(TDataModel data, string id = null);
         public abstract void Delete<TDataModel>(string id);
         public abstract void Link<TDataModel>(string targetId, string linkId);
@@ -47,7 +47,7 @@ namespace Pimix.Service {
             }
         }
 
-        public static void Create<TDataModel>(TDataModel data, string id = null) => client.Create(data, id);
+        public static void Create<TDataModel>(TDataModel data, string id = null) => client.Set(data, id);
 
         public static void Update<TDataModel>(TDataModel data, string id = null) => client.Update(data, id);
 

@@ -41,7 +41,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({id})"));
         }
 
-        public override void Create<TDataModel>(TDataModel data, string id = null) {
+        public override void Set<TDataModel>(TDataModel data, string id = null) {
             var (idProperty, modelId) = GetModelInfo<TDataModel>();
             id = id ?? idProperty.GetValue(data) as string;
 
