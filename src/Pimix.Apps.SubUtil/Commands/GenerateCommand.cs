@@ -62,10 +62,10 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var events = new AssEventsSection();
 
-            var srts = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
-                target.BaseName);
-            var subtitle = SelectSubtitles(srts);
-            events.Events.AddRange(subtitle.dialogs);
+            var rawSubtitles = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix), target.BaseName);
+            rawSubtitles.AddRange(GetAssSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix), target.BaseName));
+            var subtitles = SelectSubtitles(rawSubtitles);
+            events.Events.AddRange(subtitles.dialogs);
 
             var chats = GetBilibiliChats(target.Parent.GetFilePrefixed(SubtitlesPrefix),
                 target.BaseName);
@@ -88,8 +88,8 @@ namespace Pimix.Apps.SubUtil.Commands {
                 subtitleIds.Add(comments.Id);
             }
 
-            if (subtitle.dialogs.Count > 0) {
-                subtitleIds.Add(subtitle.Id);
+            if (subtitles.dialogs.Count > 0) {
+                subtitleIds.Add(subtitles.Id);
             }
 
             var assFile =
@@ -109,11 +109,9 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(
-            Dictionary<string, List<AssDialogue>> chats) {
-            var choices = chats.OrderBy(x => x.Key).ToList();
-            for (int i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i}] {choices[i].Key}: {choices[i].Value.Count} comments.");
+        (string Id, List<AssDialogue> dialogs) SelectBilibiliChats(List<(string id, List<AssDialogue> content)> chats) {
+            for (int i = 0; i < chats.Count; i++) {
+                Console.WriteLine($"[{i}] {chats[i].id}: {chats[i].content.Count} comments.");
             }
 
             List<int> chosenIndexes;
@@ -135,18 +133,17 @@ namespace Pimix.Apps.SubUtil.Commands {
             var ids = new List<string> {"bilibili"};
             var dialogs = new List<AssDialogue>();
             foreach (var index in chosenIndexes) {
-                ids.Add(choices[index].Key);
-                dialogs.AddRange(choices[index].Value);
+                ids.Add(chats[index].id);
+                dialogs.AddRange(chats[index].content);
             }
 
             return (string.Join("_", ids.Where(id => !string.IsNullOrEmpty(id))), dialogs);
         }
 
         (string Id, List<AssDialogue> dialogs) SelectSubtitles(
-            Dictionary<string, List<AssDialogue>> srts) {
-            var choices = srts.OrderBy(x => x.Key).ToList();
-            for (int i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i}] {choices[i].Key}");
+            List<(string id, List<AssDialogue> content)> rawSubtitles) {
+            for (int i = 0; i < rawSubtitles.Count; i++) {
+                Console.WriteLine($"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
             }
 
             List<int> chosenIndexes;
@@ -168,8 +165,8 @@ namespace Pimix.Apps.SubUtil.Commands {
             var ids = new List<string>();
             var dialogs = new List<AssDialogue>();
             foreach (var index in chosenIndexes) {
-                ids.Add(choices[index].Key);
-                dialogs.AddRange(choices[index].Value);
+                ids.Add(rawSubtitles[index].id);
+                dialogs.AddRange(rawSubtitles[index].content);
             }
 
             return (string.Join("_", ids), dialogs);
@@ -189,8 +186,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             AddFunction(comments,
                 (a, b) =>
-                    Math.Max(
-                        sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                    Math.Max(sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
                 (c, row) => new AssDialogueControlTextElement {
@@ -283,28 +279,39 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
         }
 
-        static Dictionary<string, List<AssDialogue>> GetSrtSubtitles(PimixFile parent,
+        static List<(string id, List<AssDialogue> content)> GetSrtSubtitles(PimixFile parent,
             string baseName) {
-            var result = new Dictionary<string, List<AssDialogue>>();
-            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.??.srt")) {
+            var result = new List<(string id, List<AssDialogue> content)>();
+            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt")) {
                 using (var sr = new StreamReader(file.OpenRead())) {
-                    result[file.BaseName.Substring(baseName.Length + 1)] =
-                        SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList();
+                    result.Add((file.BaseName.Substring(baseName.Length + 1),
+                        SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList()));
                 }
             }
 
             return result;
         }
 
-        static Dictionary<string, List<AssDialogue>>
+        static List<(string id, List<AssDialogue> content)> GetAssSubtitles(PimixFile parent,
+            string baseName) {
+            var result = new List<(string id, List<AssDialogue> content)>();
+            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass")) {
+                result.Add((file.BaseName.Substring(baseName.Length + 1),
+                    AssDocument.Parse(file.OpenRead()).Sections.First(s => s is AssEventsSection).AssLines
+                        .OfType<AssDialogue>().ToList()));
+            }
+
+            return result;
+        }
+
+        static List<(string id, List<AssDialogue> content)>
             GetBilibiliChats(PimixFile parent, string baseName) {
-            var result = new Dictionary<string, List<AssDialogue>>();
+            var result = new List<(string id, List<AssDialogue> content)>();
             foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}*.xml")) {
                 var chat = new BilibiliChat();
                 chat.Load(file.OpenRead());
-                result[file.BaseName.Split('.').Last()] = chat
-                    .Comments
-                    .Select(x => x.GenerateAssDialogue()).ToList();
+                result.Add((file.BaseName.Split('.').Last(),
+                    chat.Comments.Select(x => x.GenerateAssDialogue()).ToList()));
             }
 
             return result;
