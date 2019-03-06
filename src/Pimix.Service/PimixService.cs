@@ -1,92 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
-using System.Threading;
 using Newtonsoft.Json;
 using NLog;
 
 namespace Pimix.Service {
-    public static class PimixService {
-        static readonly Dictionary<Type, Tuple<PropertyInfo, string>> typeCache
-            = new Dictionary<Type, Tuple<PropertyInfo, string>>();
+    public abstract class PimixServiceClient {
+        public abstract TDataModel Get<TDataModel>(string id);
+        public abstract void Create<TDataModel>(TDataModel data, string id = null);
+        public abstract void Update<TDataModel>(TDataModel data, string id = null);
+        public abstract void Delete<TDataModel>(string id);
+        public abstract void Link<TDataModel>(string targetId, string linkId);
+        public abstract TResponse Call<TDataModel, TResponse>(string action,
+            string id = null, Dictionary<string, object> parameters = null);
+    }
 
+    public static class PimixService {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static string PimixServerApiAddress { get; set; }
+        static PimixServiceClient client = new PimixServiceRestClient();
 
-        public static string PimixServerCredential { get; set; }
-
-        static readonly HttpClient client = new HttpClient();
-
-        public static bool Patch<TDataModel>(TDataModel data, string id = null) {
-            Init(typeof(TDataModel));
-            var typeInfo = typeCache[typeof(TDataModel)];
-
-            id = id ?? typeInfo.Item1.GetValue(data) as string;
-
-            return Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(new HttpMethod("PATCH"),
-                        $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8,
-                            "application/json")
-                    };
-
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServerCredential);
-
-                using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
-                }
-            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {typeInfo.Item2}({id})"));
-        }
-
-        public static bool Post<TDataModel>(TDataModel data, string id = null) {
-            Init(typeof(TDataModel));
-            var typeInfo = typeCache[typeof(TDataModel)];
-
-            id = id ?? typeInfo.Item1.GetValue(data) as string;
-
-            return Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Post,
-                        $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8,
-                            "application/json")
-                    };
-
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServerCredential);
-
-                using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
-                }
-            }, (ex, i) => HandleException(ex, i, $"Failure in POST {typeInfo.Item2}({id})"));
-        }
-
-        public static TDataModel Get<TDataModel>(string id) {
-            Init(typeof(TDataModel));
-            var typeInfo = typeCache[typeof(TDataModel)];
-
-            return Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Get,
-                        $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}");
-
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServerCredential);
-
-                using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<TDataModel>();
-                }
-            }, (ex, i) => HandleException(ex, i, $"Failure in GET {typeInfo.Item2}({id})"));
-        }
+        public static TDataModel Get<TDataModel>(string id) => client.Get<TDataModel>(id);
 
         public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
             try {
@@ -98,105 +31,22 @@ namespace Pimix.Service {
             }
         }
 
-        public static bool Link<TDataModel>(string targetId, string linkId) {
-            Init(typeof(TDataModel));
-            var typeInfo = typeCache[typeof(TDataModel)];
+        public static void Create<TDataModel>(TDataModel data, string id = null) => client.Create(data, id);
 
-            return Retry.Run(() => {
-                    var request =
-                        new HttpRequestMessage(HttpMethod.Get,
-                            $"{PimixServerApiAddress}/{typeInfo.Item2}/" +
-                            $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
+        public static void Update<TDataModel>(TDataModel data, string id = null) => client.Update(data, id);
 
-                    request.Headers.Authorization =
-                        new AuthenticationHeaderValue("Basic", PimixServerCredential);
+        public static void Delete<TDataModel>(string id) => client.Delete<TDataModel>(id);
 
-                    using (var response = client.SendAsync(request).Result) {
-                        return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
-                    }
-                },
-                (ex, i) => HandleException(ex, i,
-                    $"Failure in LINK {typeInfo.Item2}({linkId}) to {typeInfo.Item2}({targetId})"));
-        }
-
-        public static bool Delete<TDataModel>(string id) {
-            Init(typeof(TDataModel));
-            var typeInfo = typeCache[typeof(TDataModel)];
-
-            return Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Delete,
-                        $"{PimixServerApiAddress}/{typeInfo.Item2}/{Uri.EscapeDataString(id)}");
-
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServerCredential);
-
-                using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
-                }
-            }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {typeInfo.Item2}({id})"));
-        }
+        public static void Link<TDataModel>(string targetId, string linkId) =>
+            client.Link<TDataModel>(targetId, linkId);
 
         public static TResponse Call<TDataModel, TResponse>(string action,
-            string id = null, Dictionary<string, object> parameters = null) {
-            Init(typeof(TDataModel));
-            var typeInfo = typeCache[typeof(TDataModel)];
-
-            return Retry.Run(() => {
-                    var request =
-                        new HttpRequestMessage(HttpMethod.Post,
-                            $"{PimixServerApiAddress}/{typeInfo.Item2}/${action}");
-
-                    request.Headers.Authorization =
-                        new AuthenticationHeaderValue("Basic", PimixServerCredential);
-
-                    if (parameters != null) {
-                        if (id != null) {
-                            parameters["id"] = id;
-                        }
-
-                        request.Content = new StringContent(
-                            JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8,
-                            "application/json");
-                    }
-
-                    using (var response = client.SendAsync(request).Result) {
-                        var result = response.GetObject<ActionResult<TResponse>>();
-                        if (result.StatusCode == ActionStatusCode.OK) {
-                            return result.Response;
-                        }
-
-                        throw new ActionFailedException {Result = result};
-                    }
-                },
-                (ex, i) => HandleException(ex, i,
-                    $"Failure in CALL {typeInfo.Item2}({id}).{action}({id})"));
-        }
+            string id = null, Dictionary<string, object> parameters = null) =>
+            client.Call<TDataModel, TResponse>(action, id, parameters);
 
         public static void Call<TDataModel>(string action,
             string id = null, Dictionary<string, object> parameters = null)
             => Call<TDataModel, object>(action, id, parameters);
-
-        static void HandleException(Exception ex, int index, string message) {
-            if (index >= 5 || ex is ActionFailedException ||
-                ex is HttpRequestException && ex.InnerException is SocketException socketException &&
-                socketException.Message == "Device not configured") {
-                throw ex;
-            }
-
-            logger.Warn(ex, $"{message} ({index})");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-        }
-
-        static void Init(Type typeInfo) {
-            if (!typeCache.ContainsKey(typeInfo)) {
-                // TODO: Will throw. Can add custom exceptions.
-                var idProp = typeInfo.GetProperty("Id");
-                var dmAttr = typeInfo.GetCustomAttribute<DataModelAttribute>();
-                typeCache[typeInfo] = Tuple.Create(idProp, dmAttr.ModelId);
-            }
-        }
 
         public static TDataModel Copy<TDataModel>(TDataModel data) =>
             JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));

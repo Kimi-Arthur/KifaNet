@@ -23,14 +23,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            var result = PimixService.Link<FileInformation>(Target, LinkName);
-            if (result) {
-                logger.Info("Successfully linked {0} with {1}!", LinkName, Target);
-            } else {
-                logger.Fatal("Linking {0} to {1} is unsuccessful!", LinkName, Target);
-            }
+            PimixService.Link<FileInformation>(Target, LinkName);
+            logger.Info("Successfully linked {0} with {1}!", LinkName, Target);
 
-            return result ? 0 : 1;
+            return 0;
         }
     }
 }

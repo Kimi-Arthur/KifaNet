@@ -58,7 +58,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             if (Update) {
-                PimixService.Patch(info);
+                PimixService.Update(info);
                 FileInformation.AddLocation(f.Id, FileUri, true);
             }
 

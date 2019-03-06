@@ -28,12 +28,14 @@ namespace Pimix.Web.Api.Controllers {
         // GET api/values/5
         [HttpGet("{id}")]
         public ActionResult<FileInformation> Get(string id) {
+            id = Uri.UnescapeDataString(id);
             return data.Find(x => x.Id == id).Single();
         }
 
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody] FileInformation value) {
+            id = Uri.UnescapeDataString(id);
             if (value.Id == null) {
                 value.Id = id;
             }
@@ -44,6 +46,7 @@ namespace Pimix.Web.Api.Controllers {
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public void Delete(string id) {
+            id = Uri.UnescapeDataString(id);
             data.DeleteOne(x => x.Id == id);
         }
     }
