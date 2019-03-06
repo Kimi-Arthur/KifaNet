@@ -70,7 +70,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var segments = rawFile.ToString().Split(".");
             var skippedSegments = segments[segments.Length - 2] == suffix ? 2 : 1;
             var targetUri = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
-            var target = new PimixFile(targetUri);
+            var target = new PimixFile(targetUri).GetFilePrefixed("/Subtitles");
             target.Delete();
             target.Write(memoryStream);
 
