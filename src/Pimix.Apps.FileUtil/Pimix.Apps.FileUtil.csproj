@@ -4,11 +4,11 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>filex</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>2.7.4</Version>
+    <Version>2.7.6</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
-    <Description>Utility to manage pimix jobs.</Description>
+    <Description>Utility to manage files.</Description>
     <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
     <PackageTags>Pimix Apps FileUtil app</PackageTags>
     <Authors>KimiArthur</Authors>
