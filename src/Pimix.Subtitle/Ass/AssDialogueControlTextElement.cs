@@ -299,7 +299,7 @@ namespace Pimix.Subtitle.Ass {
         public override string Name => Key;
     }
 
-    public class FontSpaceStyle : IntElement {
+    public class FontSpaceStyle : FloatElement {
         public const string Key = "fsp";
 
         public override string Name => Key;
