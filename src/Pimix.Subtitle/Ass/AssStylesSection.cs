@@ -36,6 +36,7 @@ namespace Pimix.Subtitle.Ass {
                 "Encoding"
             };
 
+        // TODO: solve sync problem between these two.
         public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
 
         public Dictionary<string, AssStyle> NamedStyles { get; set; } =
