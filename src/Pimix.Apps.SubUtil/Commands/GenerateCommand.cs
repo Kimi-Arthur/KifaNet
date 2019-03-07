@@ -96,15 +96,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
             assFile.Delete();
-
-            using (var stream = new MemoryStream()) {
-                using (var sw = new StreamWriter(stream, Encoding.UTF8)) {
-                    sw.Write(document);
-                    sw.Flush();
-
-                    assFile.Write(stream);
-                }
-            }
+            assFile.Write(new MemoryStream(new UTF8Encoding(false).GetBytes(document.ToString())));
 
             actualFile.Delete();
             assFile.Copy(actualFile);
