@@ -21,6 +21,9 @@ namespace Pimix.Apps.SubUtil.Commands {
         [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
         public string FileUri { get; set; }
 
+        [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
+        public bool Force { get; set; }
+
         List<int> selectedSubtitleIndexes;
         List<int> selectedBilibiliChatIndexes;
 
@@ -48,63 +51,69 @@ namespace Pimix.Apps.SubUtil.Commands {
         }
 
         int GenerateComments(PimixFile target) {
-            var document = new AssDocument();
-
-            var scriptInfo = new AssScriptInfoSection {
-                Title = target.BaseName,
-                PlayResX = AssScriptInfoSection.PreferredPlayResX,
-                PlayResY = AssScriptInfoSection.PreferredPlayResY
-            };
-            document.Sections.Add(scriptInfo);
-
-            var styles = AssStyle.Styles;
-            document.Sections.Add(new AssStylesSection {
-                Styles = styles
-            });
-
-            var events = new AssEventsSection();
-
-            var rawSubtitles = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix), target.BaseName);
-            rawSubtitles.AddRange(GetAssSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix), target.BaseName));
-            var subtitles = SelectSubtitles(rawSubtitles);
-            events.Events.AddRange(subtitles.dialogs);
-
-            // TODO: Do duplication check.
-            styles.AddRange(subtitles.styles);
-
-            var chats = GetBilibiliChats(target.Parent.GetFilePrefixed(SubtitlesPrefix),
-                target.BaseName);
-            var comments = SelectBilibiliChats(chats);
-            PositionNormalComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.NormalCommentStyle)
-                .OrderBy(c => c.Start).ToList());
-            PositionTopComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.TopCommentStyle)
-                .OrderBy(c => c.Start).ToList());
-            PositionBottomComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.BottomCommentStyle)
-                .OrderBy(c => c.Start).ToList());
-            events.Events.AddRange(comments.dialogs);
-
-            document.Sections.Add(events);
-
-            var subtitleIds = new List<string>();
-
-            if (subtitles.dialogs.Count > 0) {
-                subtitleIds.AddRange(subtitles.ids);
-            }
-
-            if (comments.dialogs.Count > 0) {
-                subtitleIds.AddRange(comments.ids);
-            }
-
-            scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
-
             var actualFile = target.Parent.GetFile($"{target.BaseName}.ass");
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
-            assFile.Delete();
-            assFile.Write(new MemoryStream(new UTF8Encoding(false).GetBytes(document.ToString())));
+            if (!assFile.Exists() || Force) {
+                var document = new AssDocument();
+
+                var scriptInfo = new AssScriptInfoSection {
+                    Title = target.BaseName,
+                    PlayResX = AssScriptInfoSection.PreferredPlayResX,
+                    PlayResY = AssScriptInfoSection.PreferredPlayResY
+                };
+                document.Sections.Add(scriptInfo);
+
+                var styles = AssStyle.Styles;
+                document.Sections.Add(new AssStylesSection {
+                    Styles = styles
+                });
+
+                var events = new AssEventsSection();
+
+                var rawSubtitles = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
+                    target.BaseName);
+                rawSubtitles.AddRange(
+                    GetAssSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
+                        target.BaseName));
+                var subtitles = SelectSubtitles(rawSubtitles);
+                events.Events.AddRange(subtitles.dialogs);
+
+                // TODO: Do duplication check.
+                styles.AddRange(subtitles.styles);
+
+                var chats = GetBilibiliChats(target.Parent.GetFilePrefixed(SubtitlesPrefix),
+                    target.BaseName);
+                var comments = SelectBilibiliChats(chats);
+                PositionNormalComments(comments.dialogs
+                    .Where(c => c.Style == AssStyle.NormalCommentStyle)
+                    .OrderBy(c => c.Start).ToList());
+                PositionTopComments(comments.dialogs
+                    .Where(c => c.Style == AssStyle.TopCommentStyle)
+                    .OrderBy(c => c.Start).ToList());
+                PositionBottomComments(comments.dialogs
+                    .Where(c => c.Style == AssStyle.BottomCommentStyle)
+                    .OrderBy(c => c.Start).ToList());
+                events.Events.AddRange(comments.dialogs);
+
+                document.Sections.Add(events);
+
+                var subtitleIds = new List<string>();
+
+                if (subtitles.dialogs.Count > 0) {
+                    subtitleIds.AddRange(subtitles.ids);
+                }
+
+                if (comments.dialogs.Count > 0) {
+                    subtitleIds.AddRange(comments.ids);
+                }
+
+                scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
+
+                assFile.Delete();
+                assFile.Write(
+                    new MemoryStream(new UTF8Encoding(false).GetBytes(document.ToString())));
+            }
 
             actualFile.Delete();
             assFile.Copy(actualFile);
