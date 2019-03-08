@@ -50,11 +50,12 @@ namespace Pimix.Apps.SubUtil.Commands {
         int GenerateComments(PimixFile target) {
             var document = new AssDocument();
 
-            document.Sections.Add(new AssScriptInfoSection {
+            var scriptInfo = new AssScriptInfoSection {
                 Title = target.BaseName,
                 PlayResX = AssScriptInfoSection.PreferredPlayResX,
                 PlayResY = AssScriptInfoSection.PreferredPlayResY
-            });
+            };
+            document.Sections.Add(scriptInfo);
 
             var styles = AssStyle.Styles;
             document.Sections.Add(new AssStylesSection {
@@ -88,13 +89,16 @@ namespace Pimix.Apps.SubUtil.Commands {
             document.Sections.Add(events);
 
             var subtitleIds = new List<string>();
-            if (comments.dialogs.Count > 0) {
-                subtitleIds.AddRange(comments.ids);
-            }
 
             if (subtitles.dialogs.Count > 0) {
                 subtitleIds.AddRange(subtitles.ids);
             }
+
+            if (comments.dialogs.Count > 0) {
+                subtitleIds.AddRange(comments.ids);
+            }
+
+            scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
 
             var actualFile = target.Parent.GetFile($"{target.BaseName}.ass");
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
@@ -108,7 +112,8 @@ namespace Pimix.Apps.SubUtil.Commands {
             return 0;
         }
 
-        (List<string> ids, List<AssDialogue> dialogs) SelectBilibiliChats(List<(string id, List<AssDialogue> content)> chats) {
+        (List<string> ids, List<AssDialogue> dialogs) SelectBilibiliChats(
+            List<(string id, List<AssDialogue> content)> chats) {
             for (int i = 0; i < chats.Count; i++) {
                 Console.WriteLine($"[{i}] {chats[i].id}: {chats[i].content.Count} comments.");
             }
@@ -129,7 +134,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 chosenIndexes = selectedBilibiliChatIndexes;
             }
 
-            var ids = new List<string> {"bilibili"};
+            var ids = new List<string>();
             var dialogs = new List<AssDialogue>();
             foreach (var index in chosenIndexes) {
                 ids.Add(chats[index].id);
@@ -284,7 +289,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             string baseName) =>
             parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
                 using (var sr = new StreamReader(file.OpenRead())) {
-                    return (file.Name.Substring(baseName.Length + 1),
+                    return (file.BaseName.Substring(baseName.Length + 1),
                         SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(), new List<AssStyle>());
                 }
             }).ToList();
@@ -293,7 +298,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             string baseName) =>
             parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
                 var document = AssDocument.Parse(file.OpenRead());
-                return (file.Name.Substring(baseName.Length + 1),
+                return (file.BaseName.Substring(baseName.Length + 1),
                     document.Sections.OfType<AssEventsSection>().First().Events.OfType<AssDialogue>().ToList(),
                     document.Sections.OfType<AssStylesSection>().First().Styles);
             }).ToList();
