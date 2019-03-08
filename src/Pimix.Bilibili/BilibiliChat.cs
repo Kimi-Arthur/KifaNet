@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Xml;
 using Newtonsoft.Json;
 
@@ -28,7 +29,8 @@ namespace Pimix.Bilibili {
                 if (rawDocument == null) {
                     using (var s = client.GetAsync($"http://comment.bilibili.com/{Cid}.xml")
                         .Result) {
-                        Load(s.Content.ReadAsStreamAsync().Result);
+                        var content = string.Concat(s.Content.ReadAsStringAsync().Result.Where(XmlConvert.IsXmlChar));
+                        Load(new MemoryStream(Encoding.UTF8.GetBytes(content)));
                     }
                 }
 
