@@ -1,6 +1,6 @@
-﻿using System;
-using CommandLine;
+﻿using CommandLine;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.IO;
 using Pimix.Service;
 
@@ -15,16 +15,28 @@ namespace Pimix.Apps.FileUtil.Commands {
             HelpText = "The link's name.")]
         public string LinkName { get; set; }
 
+        [Option('i', "id", HelpText =
+            "Treat all file names as id. Note that linking is always about conceptual files.")]
+        public bool ById { get; set; } = false;
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
-            if (!Target.StartsWith("/") || !LinkName.StartsWith("/")) {
-                Console.Error.WriteLine("You should use absolute file path for the two arguments.");
+            if (ById) {
+                return LinkFile(Target, LinkName);
+            }
+
+            return LinkFile(new PimixFile(Target).Id, new PimixFile(LinkName).Id);
+        }
+
+        static int LinkFile(string target, string linkName) {
+            if (!target.StartsWith("/") || !linkName.StartsWith("/")) {
+                logger.Error("You should use absolute file path for the two arguments.");
                 return 1;
             }
 
-            PimixService.Link<FileInformation>(Target, LinkName);
-            logger.Info("Successfully linked {0} with {1}!", LinkName, Target);
+            PimixService.Link<FileInformation>(target, linkName);
+            logger.Info("Successfully linked {0} with {1}!", linkName, target);
 
             return 0;
         }
