@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 
 namespace Pimix.Subtitle.Ass {
     public class AssLine {
+        public const string Separator = ":";
+
         public virtual string Key { get; protected set; }
         public virtual IEnumerable<string> Values { get; protected set; }
 

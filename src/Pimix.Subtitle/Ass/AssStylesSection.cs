@@ -46,11 +46,12 @@ namespace Pimix.Subtitle.Ass {
             var section = new AssStylesSection();
             List<string> headers = null;
             foreach (var line in lines) {
-                if (line.Contains(": ")) {
-                    var segments = line.Split(": ");
-                    switch (segments[0]) {
+                var separatorIndex = line.IndexOf(AssLine.Separator);
+                if (separatorIndex >= 0) {
+                    switch (line.Substring(0, separatorIndex)) {
                         case "Format":
-                            headers = segments[1].Split(",").Select(s => s.Trim()).ToList();
+                            headers = line.Substring(separatorIndex + 1).Trim().Split(",")
+                                .Select(s => s.Trim()).ToList();
                             break;
                         case "Style":
                             if (headers == null) {
@@ -59,7 +60,9 @@ namespace Pimix.Subtitle.Ass {
                                 break;
                             }
 
-                            var style = AssStyle.Parse(segments[1].Split(",").Select(s => s.Trim()),
+                            var style = AssStyle.Parse(
+                                line.Substring(separatorIndex + 1).Trim().Split(",")
+                                    .Select(s => s.Trim()),
                                 headers);
                             section.NamedStyles[style.ValidName] = style;
                             section.Styles.Add(style);

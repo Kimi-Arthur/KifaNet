@@ -25,25 +25,29 @@ namespace Pimix.Subtitle.Ass {
 
         public List<AssEvent> Events { get; set; } = new List<AssEvent>();
 
-        public static AssEventsSection Parse(AssStylesSection stylesSection, IEnumerable<string> lines) {
+        public static AssEventsSection Parse(AssStylesSection stylesSection,
+            IEnumerable<string> lines) {
             var section = new AssEventsSection();
             List<string> headers = null;
             foreach (var line in lines) {
-                if (line.Contains(": ")) {
-                    var segments = line.Split(": ");
-                    switch (segments[0]) {
+                var separatorIndex = line.IndexOf(AssLine.Separator);
+                if (separatorIndex >= 0) {
+                    switch (line.Substring(0, separatorIndex)) {
                         case "Format":
-                            headers = segments[1].Split(",").Select(s => s.Trim()).ToList();
+                            headers = line.Substring(separatorIndex + 1).Trim().Split(",")
+                                .Select(s => s.Trim()).ToList();
                             break;
                         case "Dialogue":
                             if (headers == null) {
-                                logger.Warn("Should see header line before event line in events section.");
+                                logger.Warn(
+                                    "Should see header line before event line in events section.");
                                 break;
                             }
 
                             section.Events.Add(AssEvent.Parse(stylesSection.NamedStyles,
-                                segments[0],
-                                segments[1].Split(",", headers.Count).Select(s => s.Trim()), headers));
+                                line.Substring(0, separatorIndex),
+                                line.Substring(separatorIndex + 1).Trim().Split(",", headers.Count)
+                                    .Select(s => s.Trim()), headers));
                             break;
                     }
                 }

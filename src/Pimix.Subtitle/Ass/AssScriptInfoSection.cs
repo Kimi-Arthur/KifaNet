@@ -26,14 +26,14 @@ namespace Pimix.Subtitle.Ass {
         public static AssScriptInfoSection Parse(IEnumerable<string> lines) {
             var section = new AssScriptInfoSection();
             foreach (var line in lines) {
-                if (line.Contains(": ")) {
-                    var segments = line.Split(": ");
-                    switch (segments[0]) {
+                var separatorIndex = line.IndexOf(AssLine.Separator);
+                if (separatorIndex >= 0) {
+                    switch (line.Substring(0, separatorIndex)) {
                         case "PlayResX":
-                            section.PlayResX = int.Parse(segments[1]);
+                            section.PlayResX = int.Parse(line.Substring(separatorIndex + 1).Trim());
                             break;
                         case "PlayResY":
-                            section.PlayResY = int.Parse(segments[1]);
+                            section.PlayResY = int.Parse(line.Substring(separatorIndex + 1).Trim());
                             break;
                     }
                 }
