@@ -28,12 +28,27 @@ namespace Pimix.Subtitle.Ass {
             foreach (var line in lines) {
                 var separatorIndex = line.IndexOf(AssLine.Separator);
                 if (separatorIndex >= 0) {
-                    switch (line.Substring(0, separatorIndex)) {
+                    var type = line.Substring(0, separatorIndex);
+                    var content = line.Substring(separatorIndex + 1).Trim();
+
+                    switch (type) {
+                        case "Title":
+                            section.Title = content;
+                            break;
+                        case "Original Script":
+                            section.OriginalScript = content;
+                            break;
+                        case "Script Type":
+                            section.ScriptType = content;
+                            break;
+                        case "Collisions":
+                            section.Collisions = content;
+                            break;
                         case "PlayResX":
-                            section.PlayResX = int.Parse(line.Substring(separatorIndex + 1).Trim());
+                            section.PlayResX = int.Parse(content);
                             break;
                         case "PlayResY":
-                            section.PlayResY = int.Parse(line.Substring(separatorIndex + 1).Trim());
+                            section.PlayResY = int.Parse(content);
                             break;
                     }
                 }

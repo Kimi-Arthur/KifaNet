@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>subx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>1.6.9</Version>
+    <Version>1.6.10</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>

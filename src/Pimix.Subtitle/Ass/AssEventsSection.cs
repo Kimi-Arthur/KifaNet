@@ -32,10 +32,12 @@ namespace Pimix.Subtitle.Ass {
             foreach (var line in lines) {
                 var separatorIndex = line.IndexOf(AssLine.Separator);
                 if (separatorIndex >= 0) {
+                    var type = line.Substring(0, separatorIndex);
+                    var content = line.Substring(separatorIndex + 1).Trim();
+
                     switch (line.Substring(0, separatorIndex)) {
                         case "Format":
-                            headers = line.Substring(separatorIndex + 1).Trim().Split(",")
-                                .Select(s => s.Trim()).ToList();
+                            headers = content.Split(",").Select(s => s.Trim()).ToList();
                             break;
                         case "Dialogue":
                             if (headers == null) {
@@ -44,10 +46,8 @@ namespace Pimix.Subtitle.Ass {
                                 break;
                             }
 
-                            section.Events.Add(AssEvent.Parse(stylesSection.NamedStyles,
-                                line.Substring(0, separatorIndex),
-                                line.Substring(separatorIndex + 1).Trim().Split(",", headers.Count)
-                                    .Select(s => s.Trim()), headers));
+                            section.Events.Add(AssEvent.Parse(stylesSection.NamedStyles, type,
+                                content.Split(",", headers.Count).Select(s => s.Trim()), headers));
                             break;
                     }
                 }
