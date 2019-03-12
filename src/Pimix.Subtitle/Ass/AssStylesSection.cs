@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NLog;
 
@@ -46,7 +47,7 @@ namespace Pimix.Subtitle.Ass {
             var section = new AssStylesSection();
             List<string> headers = null;
             foreach (var line in lines) {
-                var separatorIndex = line.IndexOf(AssLine.Separator);
+                var separatorIndex = line.IndexOf(AssLine.Separator, StringComparison.Ordinal);
                 if (separatorIndex >= 0) {
                     var type = line.Substring(0, separatorIndex);
                     var content = line.Substring(separatorIndex + 1).Trim();
