@@ -65,6 +65,7 @@ namespace Pimix.Subtitle.Ass {
                     case "Style":
                         assEvent.Style = styles[p.Item1];
                         break;
+                    case "Actor":
                     case "Name":
                         assEvent.Name = p.Item1;
                         break;
