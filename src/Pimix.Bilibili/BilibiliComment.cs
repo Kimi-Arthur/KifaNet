@@ -88,7 +88,7 @@ namespace Pimix.Bilibili {
             }
 
             textElements.Add(new AssDialogueRawTextElement {
-                Content = Text
+                Content = Text.Trim()
             });
 
             return UseBannerEffect
