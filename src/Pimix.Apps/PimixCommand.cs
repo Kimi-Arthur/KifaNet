@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Configs;
@@ -52,5 +53,25 @@ namespace Pimix.Apps {
         }
 
         public abstract int Execute();
+
+        protected TChoice SelectOne<TChoice>(List<TChoice> choices,
+            Func<TChoice, string> choiceToString = null, string choiceName = null) {
+            var choiceStrings = choiceToString == null
+                ? choices.Select(c => c.ToString()).ToList()
+                : choices.Select(choiceToString).ToList();
+
+            choiceName = choiceName ?? "items";
+
+            for (int i = 0; i < choices.Count; i++) {
+                Console.WriteLine($"[{i}] {choiceStrings[i]}");
+            }
+
+            Console.Write($"Choose one {choiceName} from above [0-{choices.Count - 1}]: ");
+            return choices[int.Parse(Console.ReadLine() ?? "0")];
+        }
+
+        protected List<TChoice> SelectMany<TChoice>(List<TChoice> choices) {
+            return choices;
+        }
     }
 }
