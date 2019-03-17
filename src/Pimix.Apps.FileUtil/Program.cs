@@ -7,8 +7,8 @@ using Pimix.Configs;
 
 namespace Pimix.Apps.FileUtil {
     class Program {
-        static int Main(string[] args) =>
-            PimixCommand.Run(Parser.Default
+        static int Main(string[] args)
+            => PimixCommand.Run(() => Parser.Default
                 .ParseArguments<
                     InfoCommand,
                     CopyCommand,

@@ -8,11 +8,12 @@ namespace Pimix.Apps {
     public abstract class PimixCommand {
         public static HashSet<string> LoggingTargets { get; set; }
 
-        public static int Run(ParserResult<object> parserResult) =>
-            parserResult.MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
+        public static int Run(Func<ParserResult<object>> parse) {
+            Initialize();
+            return parse().MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
+        }
 
         static int ExecuteCommand(PimixCommand command) {
-            Initialize();
             try {
                 return command.Execute();
             } catch (Exception ex) {
@@ -28,7 +29,7 @@ namespace Pimix.Apps {
 
         static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
-        static void Initialize() {
+        public static void Initialize() {
             AppDomain.CurrentDomain.AssemblyLoad +=
                 (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
