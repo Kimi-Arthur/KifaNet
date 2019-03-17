@@ -148,7 +148,10 @@ namespace Pimix.IO {
             EnsureParent(path);
             using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
                 fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
-                stream.Seek(fs.Position, SeekOrigin.Begin);
+                if (fs.Position != 0) {
+                    stream.Seek(fs.Position, SeekOrigin.Begin);
+                }
+
                 stream.CopyTo(fs, blockSize);
             }
         }
@@ -160,6 +163,7 @@ namespace Pimix.IO {
         void EnsureParent(string path) {
             Directory.GetParent(path).Create();
         }
+
         string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";
     }
 }
