@@ -8,9 +8,9 @@ namespace Pimix.Apps {
     public abstract class PimixCommand {
         public static HashSet<string> LoggingTargets { get; set; }
 
-        public static int Run(Func<ParserResult<object>> parse) {
+        public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
             Initialize();
-            return parse().MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
+            return parse(args).MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
         }
 
         static int ExecuteCommand(PimixCommand command) {
