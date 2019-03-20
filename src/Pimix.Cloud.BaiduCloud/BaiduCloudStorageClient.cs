@@ -66,8 +66,7 @@ namespace Pimix.Cloud.BaiduCloud {
                                 offset + chunkOffset,
                                 chunkSize);
                             if (readCount != chunkSize) {
-                                logger.Warn(
-                                    "Internal failure downloading {0} bytes from {1}: only got {2}",
+                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
                                     chunkSize, offset + chunkOffset, readCount);
                                 Thread.Sleep(TimeSpan.FromSeconds(5));
                             }
@@ -112,6 +111,9 @@ namespace Pimix.Cloud.BaiduCloud {
                     logger.Trace($"Redirecting to {response.Headers.Location}");
                     request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
                     response.Dispose();
+                } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
+                    config = null;
                 } else {
                     logger.Fatal(response.Content.ReadAsStringAsync().Result);
                     throw new Exception($"Unexpected download response: {response}");
@@ -239,8 +241,7 @@ namespace Pimix.Cloud.BaiduCloud {
             using (var response = request.GetResponse()) {
                 var result = response.GetDictionary();
                 if (!result["path"].ToString().EndsWith(path.TrimStart('/'))) {
-                    throw new Exception(
-                        $"Direct upload may fail: {path}, real path: {result["path"]}");
+                    throw new Exception($"Direct upload may fail: {path}, real path: {result["path"]}");
                 }
             }
         }
@@ -278,22 +279,15 @@ namespace Pimix.Cloud.BaiduCloud {
 
             using (var sw = new StreamWriter(request.GetRequestStream())) {
                 sw.Write("param=");
-                sw.Write(
-                    Uri.EscapeDataString(
-                        JsonConvert.SerializeObject(
-                            new Dictionary<string, List<string>> {
-                                ["block_list"] = blockList
-                            }
-                        )
-                    )
-                );
+                sw.Write(Uri.EscapeDataString(JsonConvert.SerializeObject(new Dictionary<string, List<string>> {
+                    ["block_list"] = blockList
+                })));
             }
 
             using (var response = request.GetResponse()) {
                 var result = response.GetDictionary();
                 if (!result["path"].ToString().EndsWith(path)) {
-                    throw new Exception(
-                        $"Merge may fail! Original path: {path}, real path: {result["path"]}");
+                    throw new Exception($"Merge may fail! Original path: {path}, real path: {result["path"]}");
                 }
             }
         }
@@ -352,22 +346,20 @@ namespace Pimix.Cloud.BaiduCloud {
                     => Download(buffer, path, bufferOffset, offset, count));
 
         HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null) {
-            var address = api.Url.Format(parameters).Format(
-                new Dictionary<string, string> {
-                    ["access_token"] = Account.AccessToken,
-                    ["remote_path_prefix"] = Config.RemotePathPrefix
-                });
+            var address = api.Url.Format(parameters).Format(new Dictionary<string, string> {
+                ["access_token"] = Account.AccessToken,
+                ["remote_path_prefix"] = Config.RemotePathPrefix
+            });
 
             logger.Trace($"{api.Method} {address}");
             return new HttpRequestMessage(new HttpMethod(api.Method), address);
         }
 
         HttpWebRequest ConstructRequest(APIInfo api, Dictionary<string, string> parameters = null) {
-            var address = api.Url.Format(parameters).Format(
-                new Dictionary<string, string> {
-                    ["access_token"] = Account.AccessToken,
-                    ["remote_path_prefix"] = Config.RemotePathPrefix
-                });
+            var address = api.Url.Format(parameters).Format(new Dictionary<string, string> {
+                ["access_token"] = Account.AccessToken,
+                ["remote_path_prefix"] = Config.RemotePathPrefix
+            });
 
             logger.Trace("Constructed address: {0}", address);
             var request = WebRequest.CreateHttp(address);
