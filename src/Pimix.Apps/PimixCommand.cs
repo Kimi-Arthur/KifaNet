@@ -73,5 +73,17 @@ namespace Pimix.Apps {
         protected List<TChoice> SelectMany<TChoice>(List<TChoice> choices) {
             return choices;
         }
+
+        protected static string Confirm(string prefix, string suggested) {
+            while (true) {
+                Console.WriteLine($"{prefix}{suggested}?");
+                var line = Console.ReadLine();
+                if (line == "") {
+                    return suggested;
+                }
+
+                suggested = line;
+            }
+        }
     }
 }
