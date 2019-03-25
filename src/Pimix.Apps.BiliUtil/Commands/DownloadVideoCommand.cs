@@ -22,13 +22,16 @@ namespace Pimix.Apps.BiliUtil.Commands {
             HelpText = "The video id from Bilibili. With possible p{n} as a suffix.")]
         public string Aid { get; set; }
 
+        [Value(1, Required = true, HelpText = "Download file to this folder.")]
+        public string DownloadFolder { get; set; }
+
         [Option('i', "interactive", HelpText = "Choose source interactively.")]
         public bool Interactive { get; set; }
 
         [Option('s', "source", HelpText = "Override default source choice.")]
         public int SourceChoice { get; set; } = DefaultChoice;
 
-        static HttpClient biliplusClient = new HttpClient();
+        static readonly HttpClient biliplusClient = new HttpClient();
 
         public override int Execute() {
             biliplusClient.DefaultRequestHeaders.Add("cookie", Cookies);
@@ -42,10 +45,8 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var doc = new HtmlDocument();
             doc.LoadHtml(GetDownloadPage(cid));
 
-            var choices = new List<(string name, string link)>();
-            foreach (var linkNode in doc.DocumentNode.SelectNodes("//a")) {
-                choices.Add((linkNode.InnerText, linkNode.Attributes["href"].Value));
-            }
+            var choices = doc.DocumentNode.SelectNodes("//a").Select(linkNode
+                => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
 
             if (Interactive) {
                 for (int i = 0; i < choices.Count; i++) {
@@ -56,7 +57,11 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 SourceChoice = int.Parse(Console.ReadLine());
             }
 
-            DownloadVideo(choices[SourceChoice].link);
+            var fileName = Confirm("Confirming download file name: ",
+                Helper.GetDesiredFileName(aid, pid, cid));
+
+            DownloadVideo(choices[SourceChoice].link,
+                new PimixFile(DownloadFolder).GetFile($"{fileName}.mp4"));
 
             return 0;
         }
@@ -65,15 +70,17 @@ namespace Pimix.Apps.BiliUtil.Commands {
             using (var response = biliplusClient
                 .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4")
                 .Result) {
-                return response.GetString();
+                var content = response.GetString();
+                logger.Debug($"Downloaded page content: {content}");
+
+                return content;
             }
         }
 
-        static void DownloadVideo(string url) {
-            logger.Info($"Downloading {url} to test.");
-            var targetFile = new PimixFile("local:mac/Downloads/a.mp4");
+        static void DownloadVideo(string url, PimixFile target) {
+            logger.Info($"Downloading {url} to {target}.");
             using (var stream = biliplusClient.GetStreamAsync(url).Result) {
-                targetFile.Write(stream);
+                target.Write(stream);
             }
         }
     }
