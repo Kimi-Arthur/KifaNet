@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System;
+using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
@@ -23,7 +24,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             if (ById) {
-                return LinkFile(Target, LinkName);
+                return LinkFile(Target.TrimEnd('/'), LinkName.TrimEnd('/'));
             }
 
             return LinkFile(new PimixFile(Target).Id, new PimixFile(LinkName).Id);
@@ -35,8 +36,26 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            PimixService.Link<FileInformation>(target, linkName);
-            logger.Info("Successfully linked {0} with {1}!", linkName, target);
+            var files = FileInformation.ListFolder(target, true);
+            if (files.Count == 0) {
+                PimixService.Link<FileInformation>(target, linkName);
+                logger.Info($"Successfully linked {linkName} => {target}!");
+            } else {
+                foreach (var file in files) {
+                    var linkFile = linkName + file.Substring(target.Length);
+                    PimixService.Link<FileInformation>(file, linkFile);
+                    Console.WriteLine($"{linkFile} => {file}");
+                }
+
+                Console.Write($"Confirm the {files.Count} linkings above?");
+                Console.ReadLine();
+
+                foreach (var file in files) {
+                    var linkFile = linkName + file.Substring(target.Length);
+                    PimixService.Link<FileInformation>(file, linkFile);
+                    logger.Info($"Successfully linked {linkFile} => {file}!");
+                }
+            }
 
             return 0;
         }
