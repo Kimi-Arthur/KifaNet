@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using CommandLine;
 using NLog;
@@ -7,37 +9,47 @@ using Pimix.Api.Files;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
-    [Verb("up", HelpText = "Update subtitle with given modification.")]
+    [Verb("update", HelpText = "Update subtitle with given modification.")]
     class UpdateCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to update.")]
         public string FileUri { get; set; }
 
-        [Option('t', "time", HelpText = "Shift subtitles' time by given shift.")]
-        public string TimeShift { get; set; }
-
         public override int Execute() {
             var target = new PimixFile(FileUri);
             var sub = AssDocument.Parse(target.OpenRead());
 
-            Console.Write(TimeShift);
-            var shift = TimeSpan.Parse(TimeShift);
-            foreach (var section in sub.Sections) {
-                if (section is AssEventsSection) {
-                    foreach (var line in section.AssLines) {
-                        if (line is AssDialogue dialogue) {
-                            dialogue.Start += shift;
-                            dialogue.End += shift;
-                        }
-                    }
-                }
-            }
-            
+            var actions = new List<Action> {new TimeShiftAction()};
+            SelectOne(actions, choiceName: "actions").Update(sub);
+
             logger.Info(sub.ToString());
             target.Delete();
             target.Write(new MemoryStream(new UTF8Encoding(false).GetBytes(sub.ToString())));
             return 0;
         }
+    }
+
+    abstract class Action {
+        abstract public void Update(AssDocument sub);
+    }
+
+    class TimeShiftAction : Action {
+        public override void Update(AssDocument sub) {
+            var selectedLines = PimixCommand.SelectMany(
+                sub.Sections.OfType<AssEventsSection>().First().Events.ToList());
+            var shift = PimixCommand.Confirm("Input the amount of time to shift")
+                .ParseTimeSpanString();
+            ShiftTime(selectedLines, shift);
+        }
+
+        static void ShiftTime(IEnumerable<AssEvent> selectedLines, TimeSpan shift) {
+            foreach (var line in selectedLines) {
+                line.Start += shift;
+                line.End += shift;
+            }
+        }
+
+        public override string ToString() => "Shift subtitles in time.";
     }
 }

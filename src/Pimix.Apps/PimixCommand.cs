@@ -7,6 +7,8 @@ using Pimix.Configs;
 
 namespace Pimix.Apps {
     public abstract class PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public static HashSet<string> LoggingTargets { get; set; }
 
         public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
@@ -54,7 +56,7 @@ namespace Pimix.Apps {
 
         public abstract int Execute();
 
-        protected TChoice SelectOne<TChoice>(List<TChoice> choices,
+        public static TChoice SelectOne<TChoice>(List<TChoice> choices,
             Func<TChoice, string> choiceToString = null, string choiceName = null) {
             var choiceStrings = choiceToString == null
                 ? choices.Select(c => c.ToString()).ToList()
@@ -66,17 +68,36 @@ namespace Pimix.Apps {
                 Console.WriteLine($"[{i}] {choiceStrings[i]}");
             }
 
-            Console.Write($"Choose one {choiceName} from above [0-{choices.Count - 1}]: ");
+            Console.Write($"Choose one from above {choiceName} [0-{choices.Count - 1}]: ");
             return choices[int.Parse(Console.ReadLine() ?? "0")];
         }
 
-        protected List<TChoice> SelectMany<TChoice>(List<TChoice> choices) {
-            return choices;
+        public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
+            Func<TChoice, string> choiceToString = null, string choiceName = null) {
+            var choiceStrings = choiceToString == null
+                ? choices.Select(c => c.ToString()).ToList()
+                : choices.Select(choiceToString).ToList();
+
+            choiceName = choiceName ?? "items";
+
+            for (int i = 0; i < choices.Count; i++) {
+                Console.WriteLine($"[{i}] {choiceStrings[i]}");
+            }
+
+            Console.Write($"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}]: ");
+            var chosen = (Console.ReadLine() ?? "").Split(',').SelectMany(i
+                => i.Contains('-')
+                    ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
+                        .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
+                    : new List<TChoice> {choices[int.Parse(i)]}).ToList();
+            logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
+            return chosen;
         }
 
-        protected static string Confirm(string prefix, string suggested) {
+        public static string Confirm(string prefix, string suggested = "") {
             while (true) {
                 Console.WriteLine($"{prefix}{suggested}?");
+
                 var line = Console.ReadLine();
                 if (line == "") {
                     return suggested;
