@@ -7,10 +7,10 @@ Assembly Name
 
 Commands
 ---
-- `subutil bilibili`
-- `subutil generate`
-- `subutil fix`
-- `subutil rename`
+- `subx fix`
+- `subx generate`
+- `subx update`
+- `subx clean`
 
 Current Version:
 ---
@@ -41,3 +41,7 @@ Updates:
   - Support multiple-P videos.
 - 1.6
   - Direct `subx generate`'s input and output to /Subtitles folder.
+
+### 2.0
+- New way of versioning.
+- Added `subx clean` to convert files to UTF-8 with LF line ending.
