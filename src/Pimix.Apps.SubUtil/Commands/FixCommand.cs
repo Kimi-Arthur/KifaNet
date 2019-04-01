@@ -9,23 +9,19 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("fix", HelpText = "Fix subtitle.")]
-    class FixCommand : PimixCommand {
+    class FixCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true, HelpText = "Target file to normalize subtitle for.")]
-        public string FileUri { get; set; }
-
-        public override int Execute() {
-            var target = new PimixFile(FileUri);
-            var sub = AssDocument.Parse(target.OpenRead());
+        protected override int ExecuteOneInstance(PimixFile file) {
+            var sub = AssDocument.Parse(file.OpenRead());
             sub = FixSubtitleResolution(sub);
             Console.WriteLine(sub.ToString());
-            target.Delete();
-            target.Write(new MemoryStream(new UTF8Encoding(false).GetBytes(sub.ToString())));
+            file.Delete();
+            file.Write(sub.ToString());
             return 0;
         }
 
-        AssDocument FixSubtitleResolution(AssDocument sub) {
+        static AssDocument FixSubtitleResolution(AssDocument sub) {
             if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is
                 AssScriptInfoSection header)) {
                 return sub;

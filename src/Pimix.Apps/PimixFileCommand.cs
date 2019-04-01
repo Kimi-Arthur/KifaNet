@@ -60,11 +60,11 @@ namespace Pimix.Apps {
             return 0;
         }
 
-        public virtual int ExecuteOne(string file) {
+        protected virtual int ExecuteOne(string file) {
             return -1;
         }
 
-        public virtual int ExecuteOneInstance(PimixFile file) {
+        protected virtual int ExecuteOneInstance(PimixFile file) {
             return -1;
         }
     }

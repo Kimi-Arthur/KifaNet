@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -25,7 +23,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             logger.Info(sub.ToString());
             target.Delete();
-            target.Write(new MemoryStream(new UTF8Encoding(false).GetBytes(sub.ToString())));
+            target.Write(sub.ToString());
             return 0;
         }
     }

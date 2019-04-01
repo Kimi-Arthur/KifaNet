@@ -27,7 +27,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         List<int> selectedSubtitleIndexes;
         List<int> selectedBilibiliChatIndexes;
 
-        public override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOneInstance(PimixFile file) {
             var actualFile = file.Parent.GetFile($"{file.BaseName}.ass");
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
@@ -88,8 +88,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
 
                 assFile.Delete();
-                assFile.Write(
-                    new MemoryStream(new UTF8Encoding(false).GetBytes(document.ToString())));
+                assFile.Write(document.ToString());
             }
 
             actualFile.Delete();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Newtonsoft.Json;
@@ -196,6 +197,10 @@ namespace Pimix.Api.Files {
 
         public void Write(Stream stream)
             => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+
+        public void Write(byte[] data) => Write(new MemoryStream(data));
+
+        public void Write(string text) => Write(new UTF8Encoding(false).GetBytes(text));
 
         public FileInformation CalculateInfo(FileProperties properties) {
             var info = PimixService.Copy(FileInfo);

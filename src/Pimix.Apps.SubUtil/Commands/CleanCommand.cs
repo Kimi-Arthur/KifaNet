@@ -11,7 +11,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         public override Func<List<PimixFile>, string> InstanceConfirmText
             => files => $"Confirm cleaning comments for the {files.Count} files above?";
 
-        public override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOneInstance(PimixFile file) {
             var lines = new List<string>();
             using (var sr = new StreamReader(file.OpenRead())) {
                 string line;
@@ -21,9 +21,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
 
             file.Delete();
-            file.Write(
-                new MemoryStream(
-                    new UTF8Encoding(false).GetBytes(string.Join("\n", lines) + "\n")));
+            file.Write(string.Join("\n", lines) + "\n");
             return 0;
         }
     }
