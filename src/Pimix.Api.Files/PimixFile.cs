@@ -14,7 +14,7 @@ using Pimix.IO.FileFormats;
 using Pimix.Service;
 
 namespace Pimix.Api.Files {
-    public class PimixFile {
+    public class PimixFile : IComparable<PimixFile> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static string SubPathIgnorePattern { get; set; } = "$^";
@@ -306,6 +306,18 @@ namespace Pimix.Api.Files {
             }
 
             return knownClients[spec];
+        }
+
+        public int CompareTo(PimixFile other) {
+            if (ReferenceEquals(this, other)) {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, other)) {
+                return 1;
+            }
+
+            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
         }
     }
 }
