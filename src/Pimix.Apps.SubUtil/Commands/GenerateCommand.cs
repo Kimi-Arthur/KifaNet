@@ -13,52 +13,29 @@ using Pimix.Subtitle.Srt;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
-    class GenerateCommand : PimixCommand {
+    class GenerateCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         const string SubtitlesPrefix = "/Subtitles";
 
-        [Value(0, Required = true, HelpText = "Target file to generate subtitle for.")]
-        public string FileUri { get; set; }
-
         [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
         public bool Force { get; set; }
+
+        public override Func<List<PimixFile>, string> InstanceConfirmText
+            => files => $"Confirm generating comments for the {files.Count} files above?";
 
         List<int> selectedSubtitleIndexes;
         List<int> selectedBilibiliChatIndexes;
 
-        public override int Execute() {
-            var source = new PimixFile(FileUri);
-
-            var files = source.List(true).ToList();
-            if (files.Count > 0) {
-                foreach (var file in files) {
-                    Console.WriteLine(file);
-                }
-
-                Console.Write($"Confirm generating comments for the {files.Count} files above?");
-                Console.ReadLine();
-
-                return files.Max(f => GenerateComments(new PimixFile(f.ToString())));
-            }
-
-            if (source.Exists()) {
-                return GenerateComments(source);
-            }
-
-            logger.Error("Source {0} doesn't exist or folder contains no files.", source);
-            return 1;
-        }
-
-        int GenerateComments(PimixFile target) {
-            var actualFile = target.Parent.GetFile($"{target.BaseName}.ass");
+        public override int ExecuteOneInstance(PimixFile file) {
+            var actualFile = file.Parent.GetFile($"{file.BaseName}.ass");
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
             if (!assFile.Exists() || Force) {
                 var document = new AssDocument();
 
                 var scriptInfo = new AssScriptInfoSection {
-                    Title = target.BaseName,
+                    Title = file.BaseName,
                     PlayResX = AssScriptInfoSection.PreferredPlayResX,
                     PlayResY = AssScriptInfoSection.PreferredPlayResY
                 };
@@ -71,19 +48,19 @@ namespace Pimix.Apps.SubUtil.Commands {
 
                 var events = new AssEventsSection();
 
-                var rawSubtitles = GetSrtSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
-                    target.BaseName);
+                var rawSubtitles = GetSrtSubtitles(file.Parent.GetFilePrefixed(SubtitlesPrefix),
+                    file.BaseName);
                 rawSubtitles.AddRange(
-                    GetAssSubtitles(target.Parent.GetFilePrefixed(SubtitlesPrefix),
-                        target.BaseName));
+                    GetAssSubtitles(file.Parent.GetFilePrefixed(SubtitlesPrefix),
+                        file.BaseName));
                 var subtitles = SelectSubtitles(rawSubtitles);
                 events.Events.AddRange(subtitles.dialogs);
 
                 // TODO: Do duplication check.
                 styles.AddRange(subtitles.styles);
 
-                var chats = GetBilibiliChats(target.Parent.GetFilePrefixed(SubtitlesPrefix),
-                    target.BaseName);
+                var chats = GetBilibiliChats(file.Parent.GetFilePrefixed(SubtitlesPrefix),
+                    file.BaseName);
                 var comments = SelectBilibiliChats(chats);
                 PositionNormalComments(comments.dialogs
                     .Where(c => c.Style == AssStyle.NormalCommentStyle)
@@ -156,7 +133,8 @@ namespace Pimix.Apps.SubUtil.Commands {
         (List<string> ids, List<AssDialogue> dialogs, List<AssStyle> styles) SelectSubtitles(
             List<(string id, List<AssDialogue> content, List<AssStyle> styles)> rawSubtitles) {
             for (int i = 0; i < rawSubtitles.Count; i++) {
-                Console.WriteLine($"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
+                Console.WriteLine(
+                    $"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
             }
 
             List<int> chosenIndexes;
@@ -201,7 +179,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             AddFunction(comments,
                 (a, b) =>
-                    Math.Max(sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                    Math.Max(
+                        sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
                 (c, row) => new AssDialogueControlTextElement {
@@ -294,21 +273,25 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
         }
 
-        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(PimixFile parent,
-            string baseName) =>
-            parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
+        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(
+            PimixFile parent,
+            string baseName)
+            => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
                 using (var sr = new StreamReader(file.OpenRead())) {
                     return (file.BaseName.Substring(baseName.Length + 1),
-                        SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(), new List<AssStyle>());
+                        SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(),
+                        new List<AssStyle>());
                 }
             }).ToList();
 
-        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(PimixFile parent,
-            string baseName) =>
-            parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
+        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(
+            PimixFile parent,
+            string baseName)
+            => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
                 var document = AssDocument.Parse(file.OpenRead());
                 return (file.BaseName.Substring(baseName.Length + 1),
-                    document.Sections.OfType<AssEventsSection>().First().Events.OfType<AssDialogue>().ToList(),
+                    document.Sections.OfType<AssEventsSection>().First().Events
+                        .OfType<AssDialogue>().ToList(),
                     document.Sections.OfType<AssStylesSection>().First().Styles);
             }).ToList();
 
