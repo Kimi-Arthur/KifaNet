@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
+using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps {
     public abstract class PimixFileCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
         public IEnumerable<string> FileNames { get; set; }
 
@@ -42,32 +45,64 @@ namespace Pimix.Apps {
                     Console.ReadLine();
                 }
 
-                return fileIds.Select(ExecuteOne).Max();
-            }
+                var errors = new Dictionary<string, Exception>();
+                var result = fileIds.Select(s => {
+                    try {
+                        return ExecuteOne(s);
+                    } catch (Exception ex) {
+                        errors[s] = ex;
+                        return 255;
+                    }
+                }).Max();
 
-            var files = new List<PimixFile>();
-            foreach (var fileName in FileNames) {
-                var fileInfo = new PimixFile(fileName);
-
-                var thisFolder = fileInfo.List(Recursive).ToList();
-                if (thisFolder.Count > 0) {
-                    multi = true;
-                    files.AddRange(thisFolder);
-                } else {
-                    files.Add(fileInfo);
+                foreach (var (key, value) in errors) {
+                    logger.Error($"{key}: {value}");
                 }
+
+                logger.Error($"{errors.Count} files failed to be taken action on.");
+
+                return result;
+            } else {
+                var files = new List<PimixFile>();
+                foreach (var fileName in FileNames) {
+                    var fileInfo = new PimixFile(fileName);
+
+                    var thisFolder = fileInfo.List(Recursive).ToList();
+                    if (thisFolder.Count > 0) {
+                        multi = true;
+                        files.AddRange(thisFolder);
+                    } else {
+                        files.Add(fileInfo);
+                    }
+                }
+
+                files.Sort();
+
+                if (multi && InstanceConfirmText != null) {
+                    files.ForEach(Console.WriteLine);
+
+                    Console.Write(InstanceConfirmText(files));
+                    Console.ReadLine();
+                }
+
+                var errors = new Dictionary<string, Exception>();
+                var result = files.Select(s => {
+                    try {
+                        return ExecuteOneInstance(s);
+                    } catch (Exception ex) {
+                        errors[s.ToString()] = ex;
+                        return 255;
+                    }
+                }).Max();
+
+                foreach (var (key, value) in errors) {
+                    logger.Error($"{key}: {value}");
+                }
+
+                logger.Error($"{errors.Count} files failed to be taken action on.");
+
+                return result;
             }
-
-            files.Sort();
-
-            if (multi && InstanceConfirmText != null) {
-                files.ForEach(Console.WriteLine);
-
-                Console.Write(InstanceConfirmText(files));
-                Console.ReadLine();
-            }
-
-            return files.Select(ExecuteOneInstance).Max();
         }
 
         protected virtual int ExecuteOne(string file) {

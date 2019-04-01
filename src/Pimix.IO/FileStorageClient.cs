@@ -116,9 +116,18 @@ namespace Pimix.IO {
             var directory = new DirectoryInfo(normalizedPath);
             var items = directory.GetFiles(pattern,
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            return items.OrderBy(i => i.Name).Select(i => new FileInformation {
-                Id = GetId(i.FullName),
-                Size = i.Length
+            return items.OrderBy(i => i.Name).Select(i => {
+                try {
+                    return new FileInformation {
+                        Id = GetId(i.FullName),
+                        Size = i.Length
+                    };
+                } catch (Exception) {
+                    return new FileInformation {
+                        Id = GetId(i.FullName),
+                        Size = 0
+                    };
+                }
             });
         }
 
