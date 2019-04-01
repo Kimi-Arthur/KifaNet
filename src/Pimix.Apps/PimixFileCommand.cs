@@ -99,7 +99,9 @@ namespace Pimix.Apps {
                     logger.Error($"{key}: {value}");
                 }
 
-                logger.Error($"{errors.Count} files failed to be taken action on.");
+                if (errors.Count > 0) {
+                    logger.Error($"{errors.Count} files failed to be taken action on.");
+                }
 
                 return result;
             }
