@@ -21,43 +21,53 @@ namespace Pimix.Apps {
         public virtual Func<List<PimixFile>, string> InstanceConfirmText => null;
 
         public override int Execute() {
-            foreach (var fileName in FileNames) {
-                if (ById) {
-                    var fileInfos = FileInformation.ListFolder(fileName, Recursive);
-                    fileInfos.Sort();
-                    if (fileInfos.Count > 0) {
-                        if (ConfirmText != null) {
-                            fileInfos.ForEach(Console.WriteLine);
-
-                            Console.Write(ConfirmText(fileInfos));
-                            Console.ReadLine();
-                        }
-
-                        return fileInfos.Select(ExecuteOne).Max();
+            var multi = FileNames.Count() > 1;
+            if (ById) {
+                var fileIds = new List<string>();
+                foreach (var fileName in FileNames) {
+                    var thisFolder = FileInformation.ListFolder(fileName, Recursive);
+                    if (thisFolder.Count > 0) {
+                        multi = true;
+                        fileIds.AddRange(thisFolder);
+                    } else {
+                        fileIds.Add(fileName);
                     }
-
-                    return ExecuteOne(fileName);
                 }
 
-                var fileInfo = new PimixFile(fileName);
+                fileIds.Sort();
+                if (multi && ConfirmText != null) {
+                    fileIds.ForEach(Console.WriteLine);
 
-                var files = fileInfo.List(Recursive).ToList();
-                files.Sort();
-                if (files.Count > 0) {
-                    if (InstanceConfirmText != null) {
-                        files.ForEach(Console.WriteLine);
-
-                        Console.Write(InstanceConfirmText(files));
-                        Console.ReadLine();
-                    }
-
-                    return files.Select(ExecuteOneInstance).Max();
+                    Console.Write(ConfirmText(fileIds));
+                    Console.ReadLine();
                 }
 
-                return ExecuteOneInstance(fileInfo);
+                return fileIds.Select(ExecuteOne).Max();
             }
 
-            return 0;
+            var files = new List<PimixFile>();
+            foreach (var fileName in FileNames) {
+                var fileInfo = new PimixFile(fileName);
+
+                var thisFolder = fileInfo.List(Recursive).ToList();
+                if (thisFolder.Count > 0) {
+                    multi = true;
+                    files.AddRange(thisFolder);
+                } else {
+                    files.Add(fileInfo);
+                }
+            }
+
+            files.Sort();
+
+            if (multi && InstanceConfirmText != null) {
+                files.ForEach(Console.WriteLine);
+
+                Console.Write(InstanceConfirmText(files));
+                Console.ReadLine();
+            }
+
+            return files.Select(ExecuteOneInstance).Max();
         }
 
         protected virtual int ExecuteOne(string file) {
