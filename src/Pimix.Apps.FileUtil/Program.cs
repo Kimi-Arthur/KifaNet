@@ -20,7 +20,8 @@ namespace Pimix.Apps.FileUtil {
                     UploadCommand,
                     AddCommand,
                     GetCommand,
-                    TouchCommand
+                    TouchCommand,
+                    CleanCommand
                 >, args);
     }
 }

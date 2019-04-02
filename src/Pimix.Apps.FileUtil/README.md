@@ -9,13 +9,14 @@ Package
 
 Commands
 ---
-- `f add <file_url>`
+- `filex add <file_url>`
   - `-f` `--force-check` Check file integrity even if it is already recorded.
-- `f upload`
-- `f get`
-- `f ln`
-- `f rm`
-- `f ls`
+- `filex upload`
+- `filex get`
+- `filex ln`
+- `filex rm`
+- `filex ls`
+- `filex clean`
 - Other notes
   - `<file_url>` can be of the following formats
     - `baidu:Account/path/to/file`
@@ -33,6 +34,11 @@ Dependencies:
 
 Updates:
 ---
+### 1.0
+- Added `fileutil cp` etc.
+- 1.1
+  - Do precheck based on FileInformation's status.
+
 ### 2.0
 - Abandoned old style commands. Use safer ones.
 - Added `fileutil upload` etc.
@@ -51,7 +57,5 @@ Updates:
 - 2.7
   - Add `fileutil touch`
 
-### 1.0
-- Added `fileutil cp` etc.
-- 1.1
-  - Do precheck based on FileInformation's status.
+### 3.0
+- Added `filex clean`.
