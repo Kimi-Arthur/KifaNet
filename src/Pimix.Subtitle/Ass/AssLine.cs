@@ -20,6 +20,6 @@ namespace Pimix.Subtitle.Ass {
         public override string ToString()
             => $"{Key}: {string.Join(",", Values.Select(FormatValue))}";
 
-        static string FormatValue(string value) => new Regex("[\r\n]+").Replace(value, @"\n");
+        static string FormatValue(string value) => new Regex("[\n]+").Replace(value, @"\n");
     }
 }

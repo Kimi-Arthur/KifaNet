@@ -24,13 +24,13 @@ namespace PimixTest.Bilibili {
             var doc = video.GenerateAssDocument();
             Assert.IsTrue(
                 doc.ToString().StartsWith(
-                    "[Script Info]\r\n" +
-                    "Title: 【7月】工作细胞 01【独家正版】\r\n" +
-                    "Original Script: Bilibili\r\n" +
-                    "Script Type: V4.00+\r\n" +
-                    "Collisions: Normal\r\n" +
-                    "PlayResX: 1920\r\n" +
-                    "PlayResY: 1080\r\n\r\n"));
+                    "[Script Info]\n" +
+                    "Title: 【7月】工作细胞 01【独家正版】\n" +
+                    "Original Script: Bilibili\n" +
+                    "Script Type: V4.00+\n" +
+                    "Collisions: Normal\n" +
+                    "PlayResX: 1920\n" +
+                    "PlayResY: 1080\n\n"));
         }
 
         [TestMethod]
@@ -40,7 +40,7 @@ namespace PimixTest.Bilibili {
             video.PartMode = BilibiliVideo.PartModeType.ContinuousPartMode;
             Assert.AreEqual("av2044037", video.Id);
             Assert.AreEqual("【日语学习】发音入门基础：50音图", video.Title);
-            Assert.AreEqual("【封面爸爸去哪儿】\r\n日语发音基础详解，查漏补缺。", video.Description);
+            Assert.AreEqual("【封面爸爸去哪儿】\n日语发音基础详解，查漏补缺。", video.Description);
             Assert.IsTrue(video.Tags.SequenceEqual(
                     new[] {
                         "日语教程",

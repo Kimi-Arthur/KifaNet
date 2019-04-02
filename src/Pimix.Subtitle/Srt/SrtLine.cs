@@ -12,7 +12,7 @@ namespace Pimix.Subtitle.Srt {
 
         public static SrtLine Parse(string s) {
             var lines = s.Trim()
-                .Split(new[] {"\r\n", "\n"}, 3, StringSplitOptions.RemoveEmptyEntries);
+                .Split(new[] {"\n", "\n"}, 3, StringSplitOptions.RemoveEmptyEntries);
             var times = lines[1].Replace(',', '.').Split(new[] {" --> "}, StringSplitOptions.None);
             return new SrtLine {
                 Index = int.Parse(lines[0]),
@@ -32,8 +32,8 @@ namespace Pimix.Subtitle.Srt {
             };
 
         public override string ToString()
-            => $"{Index}\r\n" +
-               $"{StartTime:hh\\:mm\\:ss\\,fff} --> {EndTime:hh\\:mm\\:ss\\,fff}\r\n" +
+            => $"{Index}\n" +
+               $"{StartTime:hh\\:mm\\:ss\\,fff} --> {EndTime:hh\\:mm\\:ss\\,fff}\n" +
                $"{string.Join("", Text)}";
     }
 }

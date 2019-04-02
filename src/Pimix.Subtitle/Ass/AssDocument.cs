@@ -11,7 +11,7 @@ namespace Pimix.Subtitle.Ass {
         public List<AssSection> Sections { get; set; } = new List<AssSection>();
 
         public override string ToString()
-            => string.Join("\r\n", Sections.Select(s => s.ToString()));
+            => string.Join("\n", Sections.Select(s => s.ToString()));
 
         public static AssDocument Parse(Stream stream) {
             using (var sr = new StreamReader(stream)) {

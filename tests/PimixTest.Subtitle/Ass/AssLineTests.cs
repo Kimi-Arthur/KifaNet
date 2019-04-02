@@ -11,7 +11,7 @@ namespace PimixTest.Subtitle.Ass {
 
         [Fact]
         public void MultiLineTest() {
-            var line = new AssLine("MyKey", new[] {"ite\nm1", "it\rem2", "it\r\nem3"});
+            var line = new AssLine("MyKey", new[] {"ite\nm1", "it\rem2", "it\nem3"});
             Assert.Equal(@"MyKey: ite\nm1,it\nem2,it\nem3", line.ToString());
         }
     }

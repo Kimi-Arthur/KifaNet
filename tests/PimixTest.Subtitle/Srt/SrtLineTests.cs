@@ -4,9 +4,9 @@ using Xunit;
 
 namespace PimixTest.Subtitle.Srt {
     public class SrtLineTests {
-        const string SrtLineText = "168\r\n" +
-                                   "00:20:41,150 --> 00:20:45,109\r\n" +
-                                   "- How did he do that?\r\n" +
+        const string SrtLineText = "168\n" +
+                                   "00:20:41,150 --> 00:20:45,109\n" +
+                                   "- How did he do that?\n" +
                                    "- Made him an offer he couldn't refuse.";
 
         [Fact]
@@ -15,7 +15,7 @@ namespace PimixTest.Subtitle.Srt {
             Assert.Equal(168, line.Index);
             Assert.Equal(new TimeSpan(0, 0, 20, 41, 150), line.StartTime);
             Assert.Equal(new TimeSpan(0, 0, 20, 45, 109), line.EndTime);
-            Assert.Equal("- How did he do that?\r\n- Made him an offer he couldn't refuse.",
+            Assert.Equal("- How did he do that?\n- Made him an offer he couldn't refuse.",
                 line.Text.ToString());
         }
 

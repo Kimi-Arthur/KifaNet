@@ -8,7 +8,7 @@ namespace Pimix.Subtitle.Srt {
 
         public static SrtDocument Parse(string s)
             => new SrtDocument {
-                Lines = s.Trim().Split(new[] {"\r\n\r\n", "\n\n"}, StringSplitOptions.RemoveEmptyEntries)
+                Lines = s.Trim().Split(new[] {"\n\n", "\n\n"}, StringSplitOptions.RemoveEmptyEntries)
                     .Select(SrtLine.Parse).ToList()
             };
 
@@ -22,6 +22,6 @@ namespace Pimix.Subtitle.Srt {
             }
         }
 
-        public override string ToString() => string.Join("\r\n\r\n", Lines);
+        public override string ToString() => string.Join("\n\n", Lines);
     }
 }

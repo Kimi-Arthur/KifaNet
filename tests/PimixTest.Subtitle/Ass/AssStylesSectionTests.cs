@@ -62,10 +62,10 @@ namespace PimixTest.Subtitle.Ass {
                 }
             };
 
-            Assert.Equal("[V4+ Styles]\r\n"
-                         + "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding\r\n"
-                         + "Style: Default,simhei,28,&HFFFFFFFF,&HFF000000,&HFF111111,&HFF0D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1\r\n"
-                         + "Style: staff,youyuan,26,&HFFEBEBEB,&HFF000000,&HD7000000,&HFF000000,-1,0,0,0,100,100,0,0.00,1,0,2,2,15,15,10,1\r\n",
+            Assert.Equal("[V4+ Styles]\n"
+                         + "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding\n"
+                         + "Style: Default,simhei,28,&HFFFFFFFF,&HFF000000,&HFF111111,&HFF0D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1\n"
+                         + "Style: staff,youyuan,26,&HFFEBEBEB,&HFF000000,&HD7000000,&HFF000000,-1,0,0,0,100,100,0,0.00,1,0,2,2,15,15,10,1\n",
                 stylesSection.ToString());
         }
     }

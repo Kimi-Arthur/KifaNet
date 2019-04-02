@@ -37,7 +37,7 @@ namespace Pimix.Subtitle.Srt {
                     controlElement,
                     new AssDialogueRawTextElement {
                         Content = string.Join("\\N",
-                            Content.Split(new[] {"\r\n", "\n"},
+                            Content.Split(new[] {"\n", "\n"},
                                 StringSplitOptions.RemoveEmptyEntries))
                     }
                 }

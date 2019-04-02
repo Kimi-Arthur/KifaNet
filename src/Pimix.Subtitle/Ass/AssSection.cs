@@ -8,7 +8,7 @@ namespace Pimix.Subtitle.Ass {
         public virtual IEnumerable<AssLine> AssLines => new List<AssLine>();
 
         public override string ToString()
-            => $"{SectionTitle}\r\n{string.Join("\r\n", AssLines.Select(line => line.ToString()))}\r\n";
+            => $"{SectionTitle}\n{string.Join("\n", AssLines.Select(line => line.ToString()))}\n";
 
         public static AssSection Parse(AssStylesSection stylesSection, string title, IEnumerable<string> lines) {
             switch (title) {
