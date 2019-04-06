@@ -1,16 +1,36 @@
 ### Refresh
-GET {{server}}/api/tv_shows/$refresh?id=Westworld
+GET {{server}}/api/tv_shows/$refresh?id=Game of Thrones
 Accept: application/x-yaml
 
+### Add
+POST {{server}}/api/tv_shows/Game of Thrones
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+# pattern_id: tv_multi
+# season_id_width: 2
+# episode_id_width: 2
+
+# pattern_id: tv_single
+# episode_id_width: 2
+
+tmdb_id: '1399'
+language: en
+pattern_id: tv_multi
+season_id_width: 2
+episode_id_width: 2
+
 ### Get
-GET {{server}}/api/tv_shows/Westworld
+GET {{server}}/api/tv_shows/Game of Thrones
 Accept: application/x-yaml
 
 ### List
-GET {{server}}/api/tv_shows/$format_path?path=Westworld/2
+GET {{server}}/api/tv_shows/$format_path?path=Game of Thrones/2
 Accept: application/x-yaml
 
-### TMDB
-GET https://api.themoviedb.org/3/tv/63247/season/2?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
+### TMDB episode
+GET https://api.themoviedb.org/3/tv/1399?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
+
+### TMDB Season
+GET https://api.themoviedb.org/3/tv/60573/season/1?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
 
 ###
