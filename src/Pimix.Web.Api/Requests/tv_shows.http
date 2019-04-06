@@ -1,0 +1,16 @@
+### Refresh
+GET {{server}}/api/tv_shows/$refresh?id=Westworld
+Accept: application/x-yaml
+
+### Get
+GET {{server}}/api/tv_shows/Westworld
+Accept: application/x-yaml
+
+### List
+GET {{server}}/api/tv_shows/$format_path?path=Westworld/2
+Accept: application/x-yaml
+
+### TMDB
+GET https://api.themoviedb.org/3/tv/63247/season/2?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
+
+###
