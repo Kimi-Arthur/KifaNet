@@ -22,8 +22,9 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 0;
             }
 
-            file.Move(new PimixFile(path.Normalize(NormalizationForm.FormC)));
-            logger.Info($"Successfully normalized {path}.");
+            var newPath = path.Normalize(NormalizationForm.FormC);
+            file.Move(new PimixFile(newPath));
+            logger.Info($"Successfully normalized {path} to {newPath}.");
             return 0;
         }
     }
