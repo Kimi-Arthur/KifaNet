@@ -1,0 +1,36 @@
+### Add
+POST {{server}}/api/downloads/
+Content-Type: application/x-yaml
+Accept: application/x-yaml
+
+id: TV Shows/Westworld.S02.2160p.UHD.BluRay.x265-SCOTLUHD[rartv]
+sources:
+- links:
+  - /Torrents/Westworld.S02.2160p.UHD.BluRay.x265-SCOTLUHD[rartv].torrent
+  - https://rarbgmirror.org/torrent/pq3mnio
+  type: torrent
+# type: baidu
+# type: direct
+# metadata:
+#   baidu_password: ltq3
+#   rar_password: 3n5b.com+135ayajie+1856472
+
+### Get
+GET {{server}}/api/downloads/TV Shows/Westworld.S02.2160p.UHD.BluRay.x265-SCOTLUHD%5Brartv%5D
+Accept: application/x-yaml
+
+### All
+GET {{server}}/api/downloads/?query=$.*.id
+Accept: application/x-yaml
+
+### Match
+POST {{server}}/api/downloads/$match
+Content-Type: application/x-yaml
+Accept: application/x-yaml
+
+id: TV Shows/Westworld.S01.2160p.UHD.BluRay.x265-DEPTH
+resource: tv_shows/Westworld/1
+count: 10
+cell: wdg
+
+###

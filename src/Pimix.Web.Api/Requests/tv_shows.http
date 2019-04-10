@@ -24,7 +24,7 @@ GET {{server}}/api/tv_shows/Game of Thrones
 Accept: application/x-yaml
 
 ### List
-GET {{server}}/api/tv_shows/$format_path?path=Game of Thrones/2
+GET {{server}}/api/tv_shows/$format_path?path=Westworld
 Accept: application/x-yaml
 
 ### TMDB episode
