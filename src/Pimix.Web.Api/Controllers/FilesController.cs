@@ -8,13 +8,15 @@ using Pimix.Service;
 namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase {
+    public class FilesController : ControllerBase {
+        PimixServiceClient client = new PimixServiceJsonClient();
+        
         // GET api/values
         [HttpGet]
         public Microsoft.AspNetCore.Mvc.ActionResult<Dictionary<string, FileInformation>> Get() {
             return new Dictionary<string, FileInformation> {
                 ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
-                    PimixService.Get<FileInformation>(
+                    client.Get<FileInformation>(
                         "/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
             };
         }
@@ -23,21 +25,21 @@ namespace Pimix.Web.Api.Controllers {
         [HttpGet("{id}")]
         public Microsoft.AspNetCore.Mvc.ActionResult<FileInformation> Get(string id) {
             id = Uri.UnescapeDataString(id);
-            return PimixService.Get<FileInformation>(id);
+            return client.Get<FileInformation>(id);
         }
 
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody] FileInformation value) {
             id = Uri.UnescapeDataString(id);
-            PimixService.Get<FileInformation>(id);
+            client.Get<FileInformation>(id);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public void Delete(string id) {
             id = Uri.UnescapeDataString(id);
-            PimixService.Delete<FileInformation>(id);
+            client.Delete<FileInformation>(id);
         }
     }
 
