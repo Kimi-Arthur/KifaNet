@@ -1,0 +1,12 @@
+POST {{server}}/api/files/$list_folder
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+folder: "/Downloads/Bilibili/盖世豪侠段飞-108809784"
+recursive: true
+
+###
+
+GET {{server}}/api/values/%2FDownloads%2FMovies%2F3.Idiots.2009.Bluray.1080p.DTS.x264-CHD%2F3.Idiots.2009.Bluray.1080p.DTS.x264-CHD.mkv
+
+###
