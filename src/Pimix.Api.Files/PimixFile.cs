@@ -152,7 +152,8 @@ namespace Pimix.Api.Files {
 
         public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
 
-        public PimixFile GetFilePrefixed(string prefix) => new PimixFile($"{Host}{prefix}{Path}");
+        public PimixFile GetFilePrefixed(string prefix)
+            => prefix == null ? this : new PimixFile($"{Host}{prefix}{Path}");
 
         public override string ToString() => $"{Host}{Path}";
 

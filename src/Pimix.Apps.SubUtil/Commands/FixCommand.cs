@@ -12,6 +12,8 @@ namespace Pimix.Apps.SubUtil.Commands {
     class FixCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        public override string Prefix => "/Subtitles";
+
         protected override int ExecuteOneInstance(PimixFile file) {
             var sub = AssDocument.Parse(file.OpenRead());
             sub = FixSubtitleResolution(sub);

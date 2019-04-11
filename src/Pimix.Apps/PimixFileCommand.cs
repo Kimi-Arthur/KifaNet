@@ -23,17 +23,20 @@ namespace Pimix.Apps {
 
         public virtual Func<List<PimixFile>, string> InstanceConfirmText => null;
 
+        public virtual string Prefix => null;
+
         public override int Execute() {
             var multi = FileNames.Count() > 1;
             if (ById) {
                 var fileIds = new List<string>();
                 foreach (var fileName in FileNames) {
-                    var thisFolder = FileInformation.ListFolder(fileName, Recursive);
+                    var path = Prefix == null ? fileName : $"{Prefix}{fileName}";
+                    var thisFolder = FileInformation.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
                         fileIds.AddRange(thisFolder);
                     } else {
-                        fileIds.Add(fileName);
+                        fileIds.Add(path);
                     }
                 }
 
@@ -66,6 +69,9 @@ namespace Pimix.Apps {
                 var files = new List<PimixFile>();
                 foreach (var fileName in FileNames) {
                     var fileInfo = new PimixFile(fileName);
+                    if (Prefix != null && !fileInfo.Path.StartsWith(Prefix)) {
+                        fileInfo = fileInfo.GetFilePrefixed(Prefix);
+                    }
 
                     var thisFolder = fileInfo.List(Recursive).ToList();
                     if (thisFolder.Count > 0) {

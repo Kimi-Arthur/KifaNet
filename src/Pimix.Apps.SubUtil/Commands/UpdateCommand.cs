@@ -11,11 +11,17 @@ namespace Pimix.Apps.SubUtil.Commands {
     class UpdateCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        const string SubtitlesPrefix = "/Subtitles";
+
         [Value(0, Required = true, HelpText = "Target file to update.")]
         public string FileUri { get; set; }
 
         public override int Execute() {
             var target = new PimixFile(FileUri);
+            if (!target.Path.StartsWith(SubtitlesPrefix)) {
+                target = target.GetFilePrefixed(SubtitlesPrefix);
+            }
+
             var sub = AssDocument.Parse(target.OpenRead());
 
             var actions = new List<Action> {new TimeShiftAction()};

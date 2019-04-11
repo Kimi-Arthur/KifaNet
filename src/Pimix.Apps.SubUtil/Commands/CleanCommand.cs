@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using CommandLine;
 using Pimix.Api.Files;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("clean", HelpText = "Clean subtitle file.")]
     class CleanCommand : PimixFileCommand {
+        public override string Prefix => "/Subtitles";
+
         public override Func<List<PimixFile>, string> InstanceConfirmText
             => files => $"Confirm cleaning comments for the {files.Count} files above?";
 
