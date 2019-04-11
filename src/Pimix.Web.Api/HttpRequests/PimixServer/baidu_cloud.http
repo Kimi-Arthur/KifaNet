@@ -1,0 +1,22 @@
+GET {{server}}/api/configs/baidu_cloud/default
+Accept: application/x-yaml
+
+###
+
+GET {{server}}/api/configs/baidu_cloud/$update_quota?id=default&account_id=Kimi_Arthur
+Accept: application/x-yaml
+
+###
+
+POST {{server}}/api/configs/baidu_cloud/$update_quota
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+id: default
+account_id: Kimi_Arthur
+
+###
+
+HEAD https://pcs.baidu.com/rest/2.0/pcs/file?method=download&path=/apps/Pimix/Venus%2FDownloads%2Fhonghuatu.net%2F%E6%A3%AE%E8%90%9D%E8%B4%A2%E5%9B%A2%2FR15%2FR15-003.7z&access_token=21.03eb28c50a14f06024f2591d5da90860.2592000.1555688349.3963579279-1222350
+
+###

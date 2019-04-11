@@ -1,53 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase {
-        readonly IMongoCollection<FileInformation> data;
-
-        public ValuesController() {
-            var client = new MongoClient("mongodb://new.pimix.tk:27017");
-            var db = client.GetDatabase("pimix");
-            data = db.GetCollection<FileInformation>("files");
-        }
-
+    public class FilesController : ControllerBase {
+        PimixServiceClient client = new PimixServiceJsonClient();
+        
         // GET api/values
         [HttpGet]
-        public ActionResult<Dictionary<string, FileInformation>> Get() {
-            return data.Find(x => true).ToList().ToDictionary(x => x.Id, x => x);
+        public Microsoft.AspNetCore.Mvc.ActionResult<Dictionary<string, FileInformation>> Get() {
+            return new Dictionary<string, FileInformation> {
+                ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
+                    client.Get<FileInformation>(
+                        "/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
+            };
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<FileInformation> Get(string id) {
+        public Microsoft.AspNetCore.Mvc.ActionResult<FileInformation> Get(string id) {
             id = Uri.UnescapeDataString(id);
-            return data.Find(x => x.Id == id).Single();
+            return client.Get<FileInformation>(id);
         }
 
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody] FileInformation value) {
             id = Uri.UnescapeDataString(id);
-            if (value.Id == null) {
-                value.Id = id;
-            }
-
-            data.InsertOne(value);
+            client.Get<FileInformation>(id);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public void Delete(string id) {
             id = Uri.UnescapeDataString(id);
-            data.DeleteOne(x => x.Id == id);
+            client.Delete<FileInformation>(id);
         }
     }
 

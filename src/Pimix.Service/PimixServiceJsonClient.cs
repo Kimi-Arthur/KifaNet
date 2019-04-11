@@ -10,7 +10,7 @@ namespace Pimix.Service {
         public override TDataModel Get<TDataModel>(string id) {
             var modelId = GetModelInfo<TDataModel>().modelId;
             return JsonConvert.DeserializeObject<TDataModel>(
-                File.ReadAllText($"{DataFolder}/{modelId}/{id.Trim('/')}.json"));
+                File.ReadAllText($"{DataFolder}/{modelId}/{id.Trim('/')}.json"), Defaults.JsonSerializerSettings);
         }
 
         public override void Set<TDataModel>(TDataModel data, string id = null) {
