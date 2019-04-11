@@ -1,9 +1,9 @@
 ### Refresh
-GET {{server}}/api/tv_shows/$refresh?id=Silicon Valley
+GET {{server}}/api/animes/$refresh?id=Game of Thrones
 Accept: application/x-yaml
 
 ### Add
-POST {{server}}/api/tv_shows/Game of Thrones
+POST {{server}}/api/animes/Game of Thrones
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 # pattern_id: tv_multi
@@ -20,15 +20,15 @@ season_id_width: 2
 episode_id_width: 2
 
 ### All
-GET {{server}}/api/tv_shows/?query=$.*.id
+GET {{server}}/api/animes/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/Silicon Valley
+GET {{server}}/api/animes/咲-Saki-
 Accept: application/x-yaml
 
 ### List
-GET {{server}}/api/tv_shows/$format_path?path=Westworld
+GET {{server}}/api/animes/$format_path?path=咲-Saki-/1
 Accept: application/x-yaml
 
 ### TMDB episode

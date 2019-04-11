@@ -2,7 +2,7 @@ POST {{server}}/api/files/$list_folder
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-folder: "/Downloads/Bilibili/盖世豪侠段飞-108809784"
+folder: "/Downloads/bilibili/盖世豪侠段飞-108809784"
 recursive: true
 
 ###
