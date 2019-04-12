@@ -84,12 +84,15 @@ namespace Pimix.Apps {
                 Console.WriteLine($"[{i}] {choiceStrings[i]}");
             }
 
-            Console.Write($"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}]: ");
-            var chosen = (Console.ReadLine() ?? "").Split(',').SelectMany(i
-                => i.Contains('-')
-                    ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
-                        .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
-                    : new List<TChoice> {choices[int.Parse(i)]}).ToList();
+            Console.Write(
+                $"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
+            var reply = Console.ReadLine() ?? "";
+            var chosen = reply == "" ? choices :
+                reply == "." ? new List<TChoice>() : reply.Split(',').SelectMany(i
+                    => i.Contains('-')
+                        ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
+                            .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
+                        : new List<TChoice> {choices[int.Parse(i)]}).ToList();
             logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
             return chosen;
         }
