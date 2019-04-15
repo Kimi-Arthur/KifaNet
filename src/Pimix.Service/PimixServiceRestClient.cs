@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -36,7 +35,7 @@ namespace Pimix.Service {
                     new AuthenticationHeaderValue("Basic", PimixServerCredential);
 
                 using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
+                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({id})"));
         }
@@ -58,7 +57,7 @@ namespace Pimix.Service {
                     new AuthenticationHeaderValue("Basic", PimixServerCredential);
 
                 using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
+                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({id})"));
         }
@@ -93,7 +92,7 @@ namespace Pimix.Service {
                         new AuthenticationHeaderValue("Basic", PimixServerCredential);
 
                     using (var response = client.SendAsync(request).Result) {
-                        return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
+                        return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                     }
                 },
                 (ex, i) => HandleException(ex, i,
@@ -112,7 +111,7 @@ namespace Pimix.Service {
                     new AuthenticationHeaderValue("Basic", PimixServerCredential);
 
                 using (var response = client.SendAsync(request).Result) {
-                    return response.GetObject<ActionResult>().StatusCode == ActionStatusCode.OK;
+                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
         }
@@ -141,12 +140,12 @@ namespace Pimix.Service {
                     }
 
                     using (var response = client.SendAsync(request).Result) {
-                        var result = response.GetObject<ActionResult<TResponse>>();
-                        if (result.StatusCode == ActionStatusCode.OK) {
+                        var result = response.GetObject<RestActionResult<TResponse>>();
+                        if (result.Status == RestActionStatus.OK) {
                             return result.Response;
                         }
 
-                        throw new ActionFailedException {Result = result};
+                        throw new RestActionFailedException {Result = result};
                     }
                 },
                 (ex, i) => HandleException(ex, i,
@@ -155,7 +154,7 @@ namespace Pimix.Service {
 
 
         static void HandleException(Exception ex, int index, string message) {
-            if (index >= 5 || ex is ActionFailedException ||
+            if (index >= 5 || ex is RestActionFailedException ||
                 ex is HttpRequestException && ex.InnerException is SocketException socketException &&
                 socketException.Message == "Device not configured") {
                 throw ex;

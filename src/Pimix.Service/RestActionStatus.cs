@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 
 namespace Pimix.Service {
-    public enum ActionStatusCode {
+    public enum RestActionStatus {
         [EnumMember(Value = "ok")]
         OK,
 

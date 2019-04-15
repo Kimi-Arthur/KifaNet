@@ -10,20 +10,19 @@ namespace Pimix.Web.Api.Controllers {
     [ApiController]
     public class FilesController : ControllerBase {
         PimixServiceClient client = new PimixServiceJsonClient();
-        
+
         // GET api/values
         [HttpGet]
-        public Microsoft.AspNetCore.Mvc.ActionResult<Dictionary<string, FileInformation>> Get() {
+        public ActionResult<Dictionary<string, FileInformation>> Get() {
             return new Dictionary<string, FileInformation> {
                 ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
-                    client.Get<FileInformation>(
-                        "/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
+                    client.Get<FileInformation>("/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
             };
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public Microsoft.AspNetCore.Mvc.ActionResult<FileInformation> Get(string id) {
+        public ActionResult<FileInformation> Get(string id) {
             id = Uri.UnescapeDataString(id);
             return client.Get<FileInformation>(id);
         }
