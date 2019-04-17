@@ -61,6 +61,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.BiliUtil", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps", "src\Pimix.Apps\Pimix.Apps.csproj", "{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Infos", "src\Pimix.Infos\Pimix.Infos.csproj", "{572327E1-2C76-4253-BB97-44A7B43F0AD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Infos", "tests\PimixTest.Infos\PimixTest.Infos.csproj", "{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +187,14 @@ Global
 		{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{572327E1-2C76-4253-BB97-44A7B43F0AD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{572327E1-2C76-4253-BB97-44A7B43F0AD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{572327E1-2C76-4253-BB97-44A7B43F0AD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{572327E1-2C76-4253-BB97-44A7B43F0AD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

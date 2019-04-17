@@ -24,7 +24,7 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/Silicon Valley
+GET {{server}}/api/tv_shows/信長協奏曲
 Accept: application/x-yaml
 
 ### List
