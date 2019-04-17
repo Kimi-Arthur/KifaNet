@@ -7,9 +7,9 @@ using Pimix.Api.Files;
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("clean", HelpText = "Clean subtitle file.")]
     class CleanCommand : PimixFileCommand {
-        public override string Prefix => "/Subtitles";
+        protected override string Prefix => "/Subtitles";
 
-        public override Func<List<PimixFile>, string> InstanceConfirmText
+        protected override Func<List<PimixFile>, string> InstanceConfirmText
             => files => $"Confirm cleaning comments for the {files.Count} files above?";
 
         protected override int ExecuteOneInstance(PimixFile file) {

@@ -12,7 +12,7 @@ namespace Pimix.Apps.FileUtil.Commands {
     class CleanCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override Func<List<PimixFile>, string> InstanceConfirmText
+        protected override Func<List<PimixFile>, string> InstanceConfirmText
             => files => $"Confirm fixing the {files.Count} files above?";
 
         protected override int ExecuteOneInstance(PimixFile file) {

@@ -21,7 +21,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
         public bool Force { get; set; }
 
-        public override Func<List<PimixFile>, string> InstanceConfirmText
+        protected override Func<List<PimixFile>, string> InstanceConfirmText
             => files => $"Confirm generating comments for the {files.Count} files above?";
 
         List<int> selectedSubtitleIndexes;

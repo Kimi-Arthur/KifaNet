@@ -13,17 +13,26 @@ namespace Pimix.Apps {
         [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
         public IEnumerable<string> FileNames { get; set; }
 
-        [Option('i', "id", HelpText = "Treat files as logical ids.")]
+        [Option('i', "id", HelpText = "Treat input files as logical ids.")]
         public bool ById { get; set; } = false;
 
         [Option('r', "recursive", HelpText = "Take action on files in recursive folders.")]
         public bool Recursive { get; set; } = false;
 
-        public virtual Func<List<string>, string> ConfirmText => null;
+        protected virtual Func<List<string>, string> ConfirmText => null;
 
-        public virtual Func<List<PimixFile>, string> InstanceConfirmText => null;
+        protected virtual Func<List<PimixFile>, string> InstanceConfirmText => null;
 
-        public virtual string Prefix => null;
+        /// <summary>
+        /// Iterate over files with this prefix. If it's not, prefix the path with this member.
+        /// </summary>
+        protected virtual string Prefix => null;
+
+        /// <summary>
+        /// By default, this will emit based on ById, i.e. ById=true => ExecuteOne, ById=false => ExecuteOneInstance.
+        /// When set to true, always use ExecuteOne.
+        /// </summary>
+        protected virtual bool AlwaysOutputId => false;
 
         public override int Execute() {
             var multi = FileNames.Count() > 1;
@@ -94,7 +103,7 @@ namespace Pimix.Apps {
                 var errors = new Dictionary<string, Exception>();
                 var result = files.Select(s => {
                     try {
-                        return ExecuteOneInstance(s);
+                        return AlwaysOutputId ? ExecuteOne(s.Id) : ExecuteOneInstance(s);
                     } catch (Exception ex) {
                         errors[s.ToString()] = ex;
                         return 255;
