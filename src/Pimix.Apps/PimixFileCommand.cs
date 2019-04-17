@@ -29,38 +29,53 @@ namespace Pimix.Apps {
         protected virtual string Prefix => null;
 
         /// <summary>
-        /// By default, this will emit based on ById, i.e. ById=true => ExecuteOne, ById=false => ExecuteOneInstance.
-        /// When set to true, always use ExecuteOne.
+        /// By default, it will only iterate over existing files. When it's set to true, it will iterate over logical
+        /// ones and produce ExecuteOneInstance calls with the two combined.
         /// </summary>
-        protected virtual bool AlwaysOutputId => false;
+        protected virtual bool IterateOverLogicalFiles => false;
 
         public override int Execute() {
             var multi = FileNames.Count() > 1;
-            if (ById) {
-                var fileIds = new List<string>();
+            if (ById || IterateOverLogicalFiles) {
+                var fileInfos = new List<string>();
                 foreach (var fileName in FileNames) {
-                    var path = Prefix == null ? fileName : $"{Prefix}{fileName}";
+                    var host = "";
+                    var path = fileName;
+                    if (IterateOverLogicalFiles) {
+                        var f = new PimixFile(path);
+                        host = f.Host;
+                        path = f.Id;
+                    }
+
+                    path = Prefix == null ? path : $"{Prefix}{path}";
                     var thisFolder = FileInformation.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        fileIds.AddRange(thisFolder);
+                        fileInfos.AddRange(thisFolder.Select(f => host + f));
                     } else {
-                        fileIds.Add(path);
+                        fileInfos.Add(host + path);
                     }
                 }
 
-                fileIds.Sort();
+                fileInfos.Sort();
                 if (multi && ConfirmText != null) {
-                    fileIds.ForEach(Console.WriteLine);
+                    fileInfos.ForEach(Console.WriteLine);
 
-                    Console.Write(ConfirmText(fileIds));
+                    if (IterateOverLogicalFiles) {
+                        Console.Write(InstanceConfirmText(fileInfos.Select(f => new PimixFile(f)).ToList()));
+                    } else {
+                        Console.Write(ConfirmText(fileInfos));
+                    }
+
                     Console.ReadLine();
                 }
 
                 var errors = new Dictionary<string, Exception>();
-                var result = fileIds.Select(s => {
+                var result = fileInfos.Select(s => {
                     try {
-                        return ExecuteOne(s);
+                        return IterateOverLogicalFiles
+                            ? ExecuteOneInstance(new PimixFile(s))
+                            : ExecuteOne(s);
                     } catch (Exception ex) {
                         errors[s] = ex;
                         return 255;
@@ -103,7 +118,7 @@ namespace Pimix.Apps {
                 var errors = new Dictionary<string, Exception>();
                 var result = files.Select(s => {
                     try {
-                        return AlwaysOutputId ? ExecuteOne(s.Id) : ExecuteOneInstance(s);
+                        return ExecuteOneInstance(s);
                     } catch (Exception ex) {
                         errors[s.ToString()] = ex;
                         return 255;
