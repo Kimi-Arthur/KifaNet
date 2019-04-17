@@ -17,7 +17,7 @@ namespace Pimix.Apps {
         public bool ById { get; set; } = false;
 
         [Option('r', "recursive", HelpText = "Take action on files in recursive folders.")]
-        public bool Recursive { get; set; } = false;
+        public virtual bool Recursive { get; set; } = false;
 
         protected virtual Func<List<string>, string> ConfirmText => null;
 
@@ -58,14 +58,12 @@ namespace Pimix.Apps {
                 }
 
                 fileInfos.Sort();
-                if (multi && ConfirmText != null) {
+                if (multi && (ConfirmText != null || IterateOverLogicalFiles && InstanceConfirmText != null)) {
                     fileInfos.ForEach(Console.WriteLine);
 
-                    if (IterateOverLogicalFiles) {
-                        Console.Write(InstanceConfirmText(fileInfos.Select(f => new PimixFile(f)).ToList()));
-                    } else {
-                        Console.Write(ConfirmText(fileInfos));
-                    }
+                    Console.Write(IterateOverLogicalFiles
+                        ? InstanceConfirmText(fileInfos.Select(f => new PimixFile(f)).ToList())
+                        : ConfirmText(fileInfos));
 
                     Console.ReadLine();
                 }

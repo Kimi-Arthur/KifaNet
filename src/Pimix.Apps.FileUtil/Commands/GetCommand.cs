@@ -7,10 +7,9 @@ using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
-    [Verb("get", HelpText = "Get file.")]
-    class GetCommand : PimixCommand {
-        [Value(0, Required = true, MetaName = "File URL")]
-        public string FileUri { get; set; }
+    [Verb("get", HelpText = "Get files.")]
+    class GetCommand : PimixFileCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Option('b', "use-baidu-cloud", HelpText = "Prefer baidu cloud storage first.")]
         public bool? PreferBaiduCloud { get; set; }
@@ -18,37 +17,19 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
         public bool LightweightOnly { get; set; } = false;
 
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        public override bool Recursive { get; set; } = true;
 
-        public override int Execute() {
-            var target = new PimixFile(FileUri);
-            if (target.Client == null) {
-                Console.WriteLine($"Target {FileUri} not accessible. Wrong server?");
-                return 1;
-            }
+        protected override Func<List<PimixFile>, string> InstanceConfirmText =>
+            files => $"Confirm getting the {files.Count} files above?";
 
-            var files = FileInformation.ListFolder(target.Id, true);
-            if (files.Count > 0) {
-                foreach (var file in files) {
-                    Console.WriteLine(file);
-                }
+        protected override bool IterateOverLogicalFiles => true;
 
-                Console.Write($"Confirm getting the {files.Count} files above?");
-                Console.ReadLine();
-
-                return files.Select(f => GetFile(new PimixFile(target.Host + f))).Max();
-            }
-
-            return GetFile(target);
-        }
-
-        int GetFile(PimixFile target) {
-            if (target.Exists()) {
-                if (target.CalculateInfo(FileProperties.Size).Size != target.FileInfo.Size) {
-                    logger.Info(
-                        "Target exists but size is incorrect. Assuming incomplete Get result.");
+        protected override int ExecuteOneInstance(PimixFile file) {
+            if (file.Exists()) {
+                if (file.CalculateInfo(FileProperties.Size).Size != file.FileInfo.Size) {
+                    logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");
                 } else {
-                    var targetCheckResult = target.Add();
+                    var targetCheckResult = file.Add();
 
                     if (targetCheckResult == FileProperties.None) {
                         logger.Info("Already got!");
@@ -60,7 +41,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            var info = target.FileInfo;
+            var info = file.FileInfo;
 
             if (info.Locations == null) {
                 logger.Error($"No instance exists for {info.Id}!");
@@ -70,18 +51,18 @@ namespace Pimix.Apps.FileUtil.Commands {
             foreach (var location in info.Locations) {
                 if (location.Value != null) {
                     var linkSource = new PimixFile(location.Key);
-                    if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(target) &&
+                    if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(file) &&
                         linkSource.Exists()) {
-                        linkSource.Copy(target);
-                        target.Register(true);
-                        logger.Info("Got {0} through hard linking to {1}.", target, linkSource);
+                        linkSource.Copy(file);
+                        file.Register(true);
+                        logger.Info("Got {0} through hard linking to {1}.", file, linkSource);
                         return 0;
                     }
                 }
             }
 
             if (LightweightOnly) {
-                logger.Warn("Not getting {}, which requires downloading.", target);
+                logger.Warn("Not getting {}, which requires downloading.", file);
                 return 1;
             }
 
@@ -90,21 +71,19 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             var source = new PimixFile(fileInfo: info);
-            source.Copy(target);
+            source.Copy(file);
 
-            if (target.Exists()) {
-                logger.Info("Verifying {0}...", target);
-                var destinationCheckResult = target.Add();
+            if (file.Exists()) {
+                logger.Info("Verifying {0}...", file);
+                var destinationCheckResult = file.Add();
                 if (destinationCheckResult == FileProperties.None) {
-                    logger.Info("Successfully got {1} from {0}!", source, target);
+                    logger.Info("Successfully got {1} from {0}!", source, file);
                     source.Register(true);
                     return 0;
                 }
 
-                logger.Error(
-                    "Get failed! The following fields differ (not removed): {0}",
-                    destinationCheckResult
-                );
+                logger.Error("Get failed! The following fields differ (not removed): {0}",
+                    destinationCheckResult);
                 return 2;
             }
 
