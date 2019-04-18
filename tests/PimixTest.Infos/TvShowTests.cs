@@ -10,7 +10,7 @@ namespace PimixTest.Infos {
         public PimixServiceClient Client { get; set; }
 
         public TvShowTests() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://localhost:8000/api";
+            PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
             Client = new PimixServiceRestClient();
         }
 
