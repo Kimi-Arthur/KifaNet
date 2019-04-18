@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Pimix.Infos {
-    public class Season : Formattable {
+    public class Season : WithFormatInfo {
         public int Id { get; set; }
         public string Title { get; set; }
         public Date AirDate { get; set; }
@@ -15,7 +15,7 @@ namespace Pimix.Infos {
         public int? EpisodeIdWidth { get; set; }
     }
 
-    public class Episode : Formattable {
+    public class Episode : WithFormatInfo {
         public int Id { get; set; }
         public string Title { get; set; }
         public DateTime AirDate { get; set; }
@@ -47,7 +47,7 @@ namespace Pimix.Infos {
         UnitedKingdom
     }
 
-    public interface Formattable {
+    public interface WithFormatInfo {
         string PatternId { get; set; }
         int? SeasonIdWidth { get; set; }
         int? EpisodeIdWidth { get; set; }
