@@ -33,17 +33,18 @@ namespace Pimix.Infos {
             var sid = season.Id.ToString();
             sid = new string('0', seasonIdWidth - sid.Length) + sid;
 
-            var eid = season.Id.ToString();
+            var eid = episode.Id.ToString();
             eid = new string('0', episodeIdWidth - eid.Length) + eid;
-            
+
+            // season.Title and episode.Title can be empty.
             switch (patternId) {
                 case "multi_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/Season {season.Id} {season.Title} ({season.AirDate.Year})" +
-                           $"/{Title} S{sid}E{eid} {episode.Title}";
+                           $"/Season {season.Id} {season.Title}".TrimEnd() + $" ({season.AirDate.Year})" +
+                           $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd();
                 case "single_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/{Title} EP{eid} {episode.Title}";
+                           $"/{Title} EP{eid} {episode.Title}".TrimEnd();
                 default:
                     return "Unexpected!";
             }

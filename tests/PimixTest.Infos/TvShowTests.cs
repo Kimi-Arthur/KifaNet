@@ -43,7 +43,8 @@ namespace PimixTest.Infos {
                 }
             };
 
-            Assert.Equal("/TV Shows/Japan/信長協奏曲 (2014)/信長協奏曲 EP01 高校生", show.Format(show.Seasons[0], show.Seasons[0].Episodes[0]));
+            Assert.Equal("/TV Shows/Japan/信長協奏曲 (2014)/信長協奏曲 EP01 高校生",
+                show.Format(show.Seasons[0], show.Seasons[0].Episodes[0]));
         }
 
         [Fact]
@@ -54,6 +55,16 @@ namespace PimixTest.Infos {
                 Region = Region.UnitedStates,
                 PatternId = "multi_season",
                 Seasons = new List<Season> {
+                    new Season {
+                        Id = 1,
+                        AirDate = Date.Parse("2016-10-02"),
+                        SeasonIdWidth = 1,
+                        Episodes = new List<Episode> {
+                            new Episode {
+                                Id = 4,
+                            }
+                        }
+                    },
                     new Season {
                         Id = 2,
                         Title = "The Door",
@@ -71,7 +82,11 @@ namespace PimixTest.Infos {
                 }
             };
 
-            Assert.Equal("/TV Shows/United States/Westworld (2016)/Season 2 The Door (2018)/Westworld S002E1 Journey Into Night", show.Format(show.Seasons[0], show.Seasons[0].Episodes[0]));
+            Assert.Equal(
+                "/TV Shows/United States/Westworld (2016)/Season 2 The Door (2018)/Westworld S002E1 Journey Into Night",
+                show.Format(show.Seasons[1], show.Seasons[1].Episodes[0]));
+            Assert.Equal("/TV Shows/United States/Westworld (2016)/Season 1 (2016)/Westworld S1E04",
+                show.Format(show.Seasons[0], show.Seasons[0].Episodes[0]));
         }
     }
 }

@@ -1,12 +1,15 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Pimix.Infos {
-    public class Region : JsonSerializable {
+    public class Region : JsonSerializable, IComparable<Region> {
         public string Name { get; set; }
         public string Code { get; set; }
 
         public string ToJson() => Name;
+
+        public int CompareTo(Region other) => Code.CompareTo(Code);
 
         public override string ToString() => Name;
 

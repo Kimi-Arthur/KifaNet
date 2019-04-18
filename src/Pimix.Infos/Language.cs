@@ -1,12 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Pimix.Infos {
-    public class Language : JsonSerializable {
+    public class Language : JsonSerializable, IComparable<Language> {
         public string Name { get; set; }
         public string Code { get; set; }
 
         public string ToJson() => Code;
+
+        public int CompareTo(Language other) => Code.CompareTo(Code);
+
         public override string ToString() => Name;
 
         public void FromJson(string data) {
