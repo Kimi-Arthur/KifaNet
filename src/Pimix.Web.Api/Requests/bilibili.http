@@ -1,0 +1,9 @@
+GET https://www.biliplus.com/api/video_playurl?cid=78778799&type=mp4
+Cookie: {{biliplus_cookie}}
+
+###
+
+GET https://www.biliplus.com/api/saver_add?aid=44980632&page=1
+Cookie: {{biliplus_cookie}}
+
+####

@@ -28,7 +28,7 @@ GET {{server}}/api/tv_shows/信長協奏曲
 Accept: application/x-yaml
 
 ### List
-GET {{server}}/api/tv_shows/$format_path?path=Westworld
+GET {{server}}/api/tv_shows/$format_path?path=Westworld/2/1
 Accept: application/x-yaml
 
 ### TMDB episode
