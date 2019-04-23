@@ -25,6 +25,10 @@ namespace Pimix.Infos {
         public int? EpisodeIdWidth { get; set; }
     }
 
+    public interface Formattable : WithFormatInfo {
+        string Format(Season season, Episode episode);
+    }
+
     public interface WithFormatInfo {
         string PatternId { get; set; }
         int? SeasonIdWidth { get; set; }

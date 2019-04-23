@@ -6,7 +6,7 @@ using Pimix.Service;
 
 namespace Pimix.Infos {
     [DataModel("tv_shows")]
-    public class TvShow : WithFormatInfo {
+    public class TvShow : Formattable {
         public string Id { get; set; }
         public string Title { get; set; }
         public Date AirDate { get; set; }

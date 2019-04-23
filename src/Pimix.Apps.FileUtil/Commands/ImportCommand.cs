@@ -9,7 +9,7 @@ namespace Pimix.Apps.FileUtil.Commands {
     [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
     class ImportCommand : PimixFileCommand {
         List<(Season season, Episode episode)> episodes;
-        TvShow tvShow;
+        Formattable series;
 
         public override bool ById => true;
         public override bool Recursive => true;
@@ -21,7 +21,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             var segments = SourceId.Split('/');
             switch (segments[0]) {
                 case "tv_shows":
-                    tvShow = PimixService.Get<TvShow>(segments[1]);
+                    var tvShow = PimixService.Get<TvShow>(segments[1]);
+                    series = tvShow;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in tvShow.Seasons) {
                         foreach (var episode in season.Episodes) {
@@ -40,10 +41,10 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         protected override int ExecuteOne(string file) {
             var suffix = file.Substring(file.LastIndexOf('.'));
-            var ((season, episode), index) = SelectOne(episodes, e => $"{file} => {tvShow.Format(e.season, e.episode)}{suffix}",
+            var ((season, episode), index) = SelectOne(episodes, e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
                 "mapping", (null, null));
             if (index >= 0) {
-                PimixService.Link<FileInformation>(file, tvShow.Format(season, episode) + suffix);
+                PimixService.Link<FileInformation>(file, series.Format(season, episode) + suffix);
                 episodes.RemoveAt(index);
             }
 
