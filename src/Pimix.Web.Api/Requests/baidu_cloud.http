@@ -20,3 +20,7 @@ account_id: Kimi_Arthur
 HEAD https://pcs.baidu.com/rest/2.0/pcs/file?method=download&path=/apps/Pimix/Venus%2FDownloads%2Fhonghuatu.net%2F%E6%A3%AE%E8%90%9D%E8%B4%A2%E5%9B%A2%2FR15%2FR15-003.7z&access_token=21.03eb28c50a14f06024f2591d5da90860.2592000.1555688349.3963579279-1222350
 
 ###
+
+GET http://{{server}}/api/configs/baidu_cloud/$refresh_account?id=default
+
+###
