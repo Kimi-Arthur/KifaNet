@@ -19,31 +19,51 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             var segments = SourceId.Split('/');
-            switch (segments[0]) {
+            var type = segments[0];
+            var id = segments[1];
+            var seasonId = 0;
+            if (segments.Length > 2) {
+                seasonId = int.Parse(segments[2]);
+            }
+
+            var episodeId = 0;
+            if (segments.Length > 3) {
+                episodeId = int.Parse(segments[3]);
+            }
+
+            switch (type) {
                 case "tv_shows":
-                    var tvShow = PimixService.Get<TvShow>(segments[1]);
+                    var tvShow = PimixService.Get<TvShow>(id);
                     series = tvShow;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in tvShow.Seasons) {
-                        foreach (var episode in season.Episodes) {
-                            episodes.Add((season, episode));
+                        if (seasonId <= 0 || season.Id == seasonId) {
+                            foreach (var episode in season.Episodes) {
+                                if (episodeId <= 0 || episodeId == episode.Id) {
+                                    episodes.Add((season, episode));
+                                }
+                            }
                         }
                     }
 
                     break;
                 case "animes":
-                    var anime = PimixService.Get<Anime>(segments[1]);
+                    var anime = PimixService.Get<Anime>(id);
                     series = anime;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in anime.Seasons) {
-                        foreach (var episode in season.Episodes) {
-                            episodes.Add((season, episode));
+                        if (seasonId <= 0 || season.Id == seasonId) {
+                            foreach (var episode in season.Episodes) {
+                                if (episodeId <= 0 || episodeId == episode.Id) {
+                                    episodes.Add((season, episode));
+                                }
+                            }
                         }
                     }
 
                     break;
                 default:
-                    Console.WriteLine($"Cannot find resource type {segments[0]}");
+                    Console.WriteLine($"Cannot find resource type {type}");
                     return 1;
             }
 
