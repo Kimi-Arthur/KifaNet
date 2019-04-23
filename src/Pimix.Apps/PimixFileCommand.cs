@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -34,10 +35,12 @@ namespace Pimix.Apps {
         /// </summary>
         protected virtual bool IterateOverLogicalFiles => false;
 
+        protected bool NaturalSorting => true;
+
         public override int Execute() {
             var multi = FileNames.Count() > 1;
             if (ById || IterateOverLogicalFiles) {
-                var fileInfos = new List<string>();
+                var fileInfos = new List<(string sortKey, string value)>();
                 foreach (var fileName in FileNames) {
                     var host = "";
                     var path = fileName;
@@ -51,25 +54,26 @@ namespace Pimix.Apps {
                     var thisFolder = FileInformation.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        fileInfos.AddRange(thisFolder.Select(f => host + f));
+                        fileInfos.AddRange(thisFolder.Select(f => (getNaturalKey(f), host + f)));
                     } else {
-                        fileInfos.Add(host + path);
+                        fileInfos.Add((getNaturalKey(path), host + path));
                     }
                 }
 
                 fileInfos.Sort();
+                var files = fileInfos.Select(f => f.value).ToList();
                 if (multi && (ConfirmText != null || IterateOverLogicalFiles && InstanceConfirmText != null)) {
-                    fileInfos.ForEach(Console.WriteLine);
+                    files.ForEach(Console.WriteLine);
 
                     Console.Write(IterateOverLogicalFiles
-                        ? InstanceConfirmText(fileInfos.Select(f => new PimixFile(f)).ToList())
-                        : ConfirmText(fileInfos));
+                        ? InstanceConfirmText(files.Select(f => new PimixFile(f)).ToList())
+                        : ConfirmText(files));
 
                     Console.ReadLine();
                 }
 
                 var errors = new Dictionary<string, Exception>();
-                var result = fileInfos.Select(s => {
+                var result = files.Select(s => {
                     try {
                         return IterateOverLogicalFiles
                             ? ExecuteOneInstance(new PimixFile(s))
@@ -106,6 +110,7 @@ namespace Pimix.Apps {
                     }
                 }
 
+                // TODO: Support natural sorting here too.
                 files.Sort();
 
                 if (multi && InstanceConfirmText != null) {
@@ -143,6 +148,11 @@ namespace Pimix.Apps {
 
         protected virtual int ExecuteOneInstance(PimixFile file) {
             return -1;
+        }
+
+        static readonly Regex numberPattern = new Regex(@"\d+");
+        string getNaturalKey(string path) {
+            return numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}");
         }
     }
 }
