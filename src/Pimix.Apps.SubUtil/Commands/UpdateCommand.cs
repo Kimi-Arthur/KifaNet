@@ -24,8 +24,9 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             var sub = AssDocument.Parse(target.OpenRead());
 
-            var actions = new List<Action> {new TimeShiftAction()};
-            SelectOne(actions, choiceName: "actions").Update(sub);
+            SelectOne(new List<Action> {
+                new TimeShiftAction()
+            }, choiceName: "actions").choice.Update(sub);
 
             logger.Info(sub.ToString());
             target.Delete();

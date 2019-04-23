@@ -14,7 +14,7 @@ namespace Pimix.Apps {
         public IEnumerable<string> FileNames { get; set; }
 
         [Option('i', "id", HelpText = "Treat input files as logical ids.")]
-        public bool ById { get; set; } = false;
+        public virtual bool ById { get; set; } = false;
 
         [Option('r', "recursive", HelpText = "Take action on files in recursive folders.")]
         public virtual bool Recursive { get; set; } = false;
@@ -84,7 +84,9 @@ namespace Pimix.Apps {
                     logger.Error($"{key}: {value}");
                 }
 
-                logger.Error($"{errors.Count} files failed to be taken action on.");
+                if (errors.Count > 0) {
+                    logger.Error($"{errors.Count} files failed to be taken action on.");
+                }
 
                 return result;
             } else {
