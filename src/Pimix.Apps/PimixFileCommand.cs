@@ -35,7 +35,7 @@ namespace Pimix.Apps {
         /// </summary>
         protected virtual bool IterateOverLogicalFiles => false;
 
-        protected bool NaturalSorting => true;
+        protected virtual bool NaturalSorting => false;
 
         public override int Execute() {
             var multi = FileNames.Count() > 1;
@@ -54,9 +54,9 @@ namespace Pimix.Apps {
                     var thisFolder = FileInformation.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        fileInfos.AddRange(thisFolder.Select(f => (getNaturalKey(f), host + f)));
+                        fileInfos.AddRange(thisFolder.Select(f => (getSortKey(f), host + f)));
                     } else {
-                        fileInfos.Add((getNaturalKey(path), host + path));
+                        fileInfos.Add((getSortKey(path), host + path));
                     }
                 }
 
@@ -151,8 +151,9 @@ namespace Pimix.Apps {
         }
 
         static readonly Regex numberPattern = new Regex(@"\d+");
-        string getNaturalKey(string path) {
-            return numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}");
+
+        string getSortKey(string path) {
+            return NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;
         }
     }
 }

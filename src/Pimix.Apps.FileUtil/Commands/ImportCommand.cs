@@ -12,6 +12,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         Formattable series;
 
         public override bool ById => true;
+        protected override bool NaturalSorting => true;
 
         [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1")]
         public string SourceId { get; set; }
@@ -51,7 +52,8 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         protected override int ExecuteOne(string file) {
             var suffix = file.Substring(file.LastIndexOf('.'));
-            var ((season, episode), index) = SelectOne(episodes, e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
+            var ((season, episode), index) = SelectOne(episodes,
+                e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
                 "mapping", (null, null));
             if (index >= 0) {
                 PimixService.Link<FileInformation>(file, series.Format(season, episode) + suffix);
