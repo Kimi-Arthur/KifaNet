@@ -3,20 +3,13 @@ using System.Collections.Generic;
 using Pimix.Service;
 
 namespace Pimix.Infos {
-    [DataModel("tv_shows")]
-    public class TvShow : Formattable {
+    [DataModel("animes")]
+    public class Anime : Formattable {
         public string Id { get; set; }
         public string Title { get; set; }
         public Date AirDate { get; set; }
-        public string Overview { get; set; }
-        public string TvNetwork { get; set; }
-        public Region Region { get; set; }
-        public List<string> Genres { get; set; }
-        public string TmdbId { get; set; }
-        public string TvdbId { get; set; }
-        public Language Language { get; set; }
 
-        public List<Season> Seasons { get; set; }
+        public List<AnimeSeason> Seasons { get; set; }
         public List<Episode> Specials { get; set; }
 
         public string PatternId { get; set; }
@@ -37,15 +30,19 @@ namespace Pimix.Infos {
             // season.Title and episode.Title can be empty.
             switch (patternId) {
                 case "multi_season":
-                    return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
+                    return $"/Anime/{Title} ({AirDate.Year})" +
                            $"/Season {season.Id} {season.Title}".TrimEnd() + $" ({season.AirDate.Year})" +
                            $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd();
                 case "single_season":
-                    return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
+                    return $"/Anime/{Title} ({AirDate.Year})" +
                            $"/{Title} EP{eid} {episode.Title}".TrimEnd();
                 default:
                     return "Unexpected!";
             }
         }
+    }
+
+    public class AnimeSeason : Season {
+        public string AnidbId { get; set; }
     }
 }
