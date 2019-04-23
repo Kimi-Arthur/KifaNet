@@ -12,7 +12,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         Formattable series;
 
         public override bool ById => true;
-        public override bool Recursive => true;
 
         [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1")]
         public string SourceId { get; set; }
@@ -25,6 +24,17 @@ namespace Pimix.Apps.FileUtil.Commands {
                     series = tvShow;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in tvShow.Seasons) {
+                        foreach (var episode in season.Episodes) {
+                            episodes.Add((season, episode));
+                        }
+                    }
+
+                    break;
+                case "animes":
+                    var anime = PimixService.Get<Anime>(segments[1]);
+                    series = anime;
+                    episodes = new List<(Season season, Episode episode)>();
+                    foreach (var season in anime.Seasons) {
                         foreach (var episode in season.Episodes) {
                             episodes.Add((season, episode));
                         }
