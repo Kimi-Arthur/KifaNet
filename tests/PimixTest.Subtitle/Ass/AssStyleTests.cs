@@ -45,7 +45,9 @@ namespace PimixTest.Subtitle.Ass {
                 style.Outline = i;
             }
 
-            foreach (var o in new[] {-1, 5, 123}) {
+            foreach (var o in new[] {
+                -1, 5, 123
+            }) {
                 Assert.Equal("Outline", Assert
                     .Throws<ArgumentOutOfRangeException>(() => style.Outline = o)
                     .ParamName);
@@ -59,7 +61,9 @@ namespace PimixTest.Subtitle.Ass {
                 style.Shadow = i;
             }
 
-            foreach (var s in new[] {-1, 5, 123}) {
+            foreach (var s in new[] {
+                -1, 5, 123
+            }) {
                 Assert.Equal("Shadow", Assert
                     .Throws<ArgumentOutOfRangeException>(() => style.Shadow = s)
                     .ParamName);
@@ -70,9 +74,9 @@ namespace PimixTest.Subtitle.Ass {
         public void ValidNameTest() {
             var style = new AssStyle();
             style.Name = "staff";
-            Assert.Equal("staff", style.ValidName);
+            Assert.Equal("staff", style.Name);
             style.Name = "Default";
-            Assert.Equal("*Default", style.ValidName);
+            Assert.Equal("Default", style.Name);
         }
     }
 }

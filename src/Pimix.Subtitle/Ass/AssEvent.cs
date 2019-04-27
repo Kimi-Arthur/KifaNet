@@ -29,7 +29,7 @@ namespace Pimix.Subtitle.Ass {
                 Layer.ToString(),
                 $"{Start:h\\:mm\\:ss\\.ff}",
                 $"{End:h\\:mm\\:ss\\.ff}",
-                Style.ValidName,
+                Style.Name,
                 Name,
                 $"{MarginL:D4}",
                 $"{MarginR:D4}",
@@ -63,7 +63,7 @@ namespace Pimix.Subtitle.Ass {
                         assEvent.End = TimeSpan.Parse(p.Item1);
                         break;
                     case "Style":
-                        assEvent.Style = styles[p.Item1];
+                        assEvent.Style = styles.GetValueOrDefault(p.Item1, styles["Default"]);
                         break;
                     case "Actor":
                     case "Name":

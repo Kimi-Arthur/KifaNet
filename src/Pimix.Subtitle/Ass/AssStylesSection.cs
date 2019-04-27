@@ -65,7 +65,7 @@ namespace Pimix.Subtitle.Ass {
 
                             var style = AssStyle.Parse(content.Split(",").Select(s => s.Trim()),
                                 headers);
-                            section.NamedStyles[style.ValidName] = style;
+                            section.NamedStyles[style.Name] = style;
                             section.Styles.Add(style);
                             break;
                     }

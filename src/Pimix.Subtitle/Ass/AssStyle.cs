@@ -192,8 +192,6 @@ namespace Pimix.Subtitle.Ass {
                 Encoding.ToString()
             };
 
-        public string ValidName => Name == "Default" ? "*Default" : Name;
-
         public static AssStyle Parse(IEnumerable<string> content, IEnumerable<string> headers) {
             var style = new AssStyle();
             foreach (var p in content.Zip(headers, Tuple.Create)) {
