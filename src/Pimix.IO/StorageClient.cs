@@ -17,12 +17,12 @@ namespace Pimix.IO {
 
         public abstract void Touch(string path);
 
-        public virtual void Copy(string sourcePath, string destinationPath) {
+        public virtual void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
             Write(destinationPath, OpenRead(sourcePath));
         }
 
         public virtual void Move(string sourcePath, string destinationPath) {
-            Copy(sourcePath, destinationPath);
+            Copy(sourcePath, destinationPath, false);
             Delete(sourcePath);
         }
 

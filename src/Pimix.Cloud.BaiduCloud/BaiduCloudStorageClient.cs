@@ -509,7 +509,7 @@ namespace Pimix.Cloud.BaiduCloud {
             }
         }
 
-        public override void Copy(string sourcePath, string destinationPath) {
+        public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
             var request = ConstructRequest(Config.APIList.CopyFile,
                 new Dictionary<string, string> {
                     ["from_remote_path"] = sourcePath.TrimStart('/'),

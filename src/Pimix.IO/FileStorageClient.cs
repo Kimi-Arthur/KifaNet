@@ -19,8 +19,6 @@ namespace Pimix.IO {
     public class FileStorageClient : StorageClient {
         const int DefaultBlockSize = 32 << 20;
 
-        public static bool NeverLink { get; set; } = false;
-
         public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } =
             new Dictionary<string, ServerConfig>();
 
@@ -42,10 +40,10 @@ namespace Pimix.IO {
             => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
                RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-        public override void Copy(string sourcePath, string destinationPath) {
+        public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
             Directory.GetParent(GetPath(destinationPath)).Create();
 
-            if (NeverLink) {
+            if (neverLink) {
                 File.Copy(GetPath(sourcePath), GetPath(destinationPath));
             } else if (Server.RemotePrefix != null) {
                 RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));

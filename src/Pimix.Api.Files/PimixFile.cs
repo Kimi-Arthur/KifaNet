@@ -174,9 +174,9 @@ namespace Pimix.Api.Files {
                             !FullPathIgnoredFiles.IsMatch(f.Id))
                 .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
-        public void Copy(PimixFile destination) {
+        public void Copy(PimixFile destination, bool neverLink = false) {
             if (IsCompatible(destination)) {
-                Client.Copy(Path, destination.Path);
+                Client.Copy(Path, destination.Path, neverLink);
             } else {
                 destination.Write(OpenRead());
             }
