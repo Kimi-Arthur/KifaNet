@@ -45,3 +45,6 @@ Updates:
 ### 2.0
 - New way of versioning.
 - Added `subx clean` to convert files to UTF-8 with LF line ending.
+
+### 3.0
+- Added `subx import` to import subtitles from Sources folder to actual location.

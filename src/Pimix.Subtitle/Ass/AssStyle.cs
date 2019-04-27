@@ -247,10 +247,10 @@ namespace Pimix.Subtitle.Ass {
                         style.BorderStyle = (BorderStyleType) int.Parse(p.Item1);
                         break;
                     case "Outline":
-                        style.Outline = int.Parse(p.Item1);
+                        style.Outline = (int) double.Parse(p.Item1);
                         break;
                     case "Shadow":
-                        style.Shadow = int.Parse(p.Item1);
+                        style.Shadow = (int) double.Parse(p.Item1);
                         break;
                     case "Alignment":
                         style.Alignment = (AssAlignment) int.Parse(p.Item1);
