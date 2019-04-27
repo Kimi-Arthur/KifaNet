@@ -51,6 +51,7 @@ namespace Pimix.Subtitle.Ass {
                                     content.Split(",", headers.Count).Select(s => s.Trim()), headers));
                             } catch (Exception ex) {
                                 logger.Error(ex, $"Error parsing event: {content}");
+                                throw new Exception($"Error parsing event: {content}", ex);
                             }
 
                             break;

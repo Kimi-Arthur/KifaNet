@@ -69,6 +69,7 @@ namespace Pimix.Subtitle.Ass {
                                 section.Styles.Add(style);
                             } catch (Exception ex) {
                                 logger.Error(ex, $"Error parsing style: {content}");
+                                throw new Exception($"Error parsing style: {content}", ex);
                             }
 
                             break;
