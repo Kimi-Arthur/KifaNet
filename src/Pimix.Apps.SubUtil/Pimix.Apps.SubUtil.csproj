@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>subx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>2.1.4</Version>
+    <Version>3.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj" />
     <ProjectReference Include="..\Pimix.Bilibili\Pimix.Bilibili.csproj" />
     <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
+    <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
   <ItemGroup>
