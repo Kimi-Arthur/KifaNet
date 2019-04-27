@@ -58,15 +58,19 @@ namespace Pimix.Subtitle.Ass {
                             break;
                         case "Style":
                             if (headers == null) {
-                                logger.Warn(
-                                    "Should see header line before style line in style section.");
+                                logger.Warn("Should see header line before style line in style section.");
                                 break;
                             }
 
-                            var style = AssStyle.Parse(content.Split(",").Select(s => s.Trim()),
-                                headers);
-                            section.NamedStyles[style.Name] = style;
-                            section.Styles.Add(style);
+                            try {
+                                var style = AssStyle.Parse(content.Split(",").Select(s => s.Trim()),
+                                    headers);
+                                section.NamedStyles[style.Name] = style;
+                                section.Styles.Add(style);
+                            } catch (Exception ex) {
+                                logger.Error(ex, $"Error parsing event: {content}");
+                            }
+
                             break;
                     }
                 }
