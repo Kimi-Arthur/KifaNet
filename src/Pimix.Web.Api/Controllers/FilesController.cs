@@ -1,54 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson.Serialization.Attributes;
+using Microsoft.AspNetCore.StaticFiles;
+using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class FilesController : ControllerBase {
-        PimixServiceClient client = new PimixServiceJsonClient();
+    public class FilesController : PimixController<FileInformation> {
+        static readonly FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
 
-        // GET api/values
-        [HttpGet]
-        public ActionResult<Dictionary<string, FileInformation>> Get() {
-            return new Dictionary<string, FileInformation> {
-                ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
-                    client.Get<FileInformation>("/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
+        [HttpGet("$stream")]
+        public FileStreamResult Stream(string id) {
+            id = Uri.UnescapeDataString(id);
+            string contentType;
+            if (!provider.TryGetContentType(id, out contentType)) {
+                contentType = "application/octet-stream";
+            }
+
+            return new FileStreamResult(
+                new PimixFile(client.Get<FileInformation>(id).Locations.Keys.First(x => x.StartsWith("google")))
+                    .OpenRead(), contentType) {
+                FileDownloadName = id.Substring(id.LastIndexOf('/') + 1),
+                EnableRangeProcessing = true
             };
         }
-
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<FileInformation> Get(string id) {
-            id = Uri.UnescapeDataString(id);
-            return client.Get<FileInformation>(id);
-        }
-
-        // POST api/values
-        [HttpPost("{id}")]
-        public void Post(string id, [FromBody] FileInformation value) {
-            id = Uri.UnescapeDataString(id);
-            client.Get<FileInformation>(id);
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(string id) {
-            id = Uri.UnescapeDataString(id);
-            client.Delete<FileInformation>(id);
-        }
-    }
-
-    public class SoccerTeam {
-        public string Id { get; set; }
-
-        [BsonElement("short_name")]
-        public string ShortName { get; set; }
-
-        [BsonElement("full_name")]
-        public string FullName { get; set; }
     }
 }
