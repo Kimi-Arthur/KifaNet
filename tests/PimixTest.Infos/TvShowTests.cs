@@ -7,16 +7,16 @@ using Xunit;
 
 namespace PimixTest.Infos {
     public class TvShowTests {
-        public PimixServiceClient Client { get; set; }
+        public PimixServiceClient<TvShow> Client { get; set; }
 
         public TvShowTests() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
-            Client = new PimixServiceRestClient();
+            Client = new PimixServiceRestClient<TvShow>();
         }
 
         [Fact]
         public void Get() {
-            var show = Client.Get<TvShow>("信長協奏曲");
+            var show = Client.Get("信長協奏曲");
             var s = JsonConvert.SerializeObject(show, Defaults.JsonSerializerSettings);
             Assert.Equal("信長協奏曲", show.Id);
             Assert.Equal(Region.Japan, show.Region);

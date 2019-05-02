@@ -7,16 +7,16 @@ using Xunit;
 
 namespace PimixTest.Infos {
     public class AnimeTests {
-        public PimixServiceClient Client { get; set; }
+        public PimixServiceClient<Anime> Client { get; set; }
 
         public AnimeTests() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
-            Client = new PimixServiceRestClient();
+            Client = new PimixServiceRestClient<Anime>();
         }
 
         [Fact]
         public void Get() {
-            var show = Client.Get<Anime>("咲-Saki-");
+            var show = Client.Get("咲-Saki-");
             var s = JsonConvert.SerializeObject(show, Defaults.JsonSerializerSettings);
             Assert.Equal("咲-Saki-", show.Id);
             Assert.Equal("全国編", show.Seasons[2].Title);
@@ -79,8 +79,7 @@ namespace PimixTest.Infos {
                 }
             };
 
-            Assert.Equal(
-                "/Anime/咲-Saki- (2009)/Season 3 全国編 (2014)/咲-Saki- S003E12 真実",
+            Assert.Equal("/Anime/咲-Saki- (2009)/Season 3 全国編 (2014)/咲-Saki- S003E12 真実",
                 show.Format(show.Seasons[1], show.Seasons[1].Episodes[0]));
             Assert.Equal("/Anime/咲-Saki- (2009)/Season 1 (2009)/咲-Saki- S1E04",
                 show.Format(show.Seasons[0], show.Seasons[0].Episodes[0]));

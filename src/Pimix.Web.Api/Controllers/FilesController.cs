@@ -17,9 +17,8 @@ namespace Pimix.Web.Api.Controllers {
                 contentType = "application/octet-stream";
             }
 
-            return new FileStreamResult(
-                new PimixFile(client.Get<FileInformation>(id).Locations.Keys.First(x => x.StartsWith("google")))
-                    .OpenRead(), contentType) {
+            return new FileStreamResult(new PimixFile(client.Get(id).Locations.Keys.First(x => x.StartsWith("google")))
+                .OpenRead(), contentType) {
                 FileDownloadName = id.Substring(id.LastIndexOf('/') + 1),
                 EnableRangeProcessing = true
             };
