@@ -9,15 +9,13 @@ namespace Pimix.Service {
         static readonly Dictionary<Type, (PropertyInfo idProperty, string modelId)> modelCache
             = new Dictionary<Type, (PropertyInfo idProperty, string modelId)>();
 
-        protected static (PropertyInfo idProperty, string modelId) GetModelInfo<T>() {
-            var typeInfo = typeof(T);
-            if (!modelCache.ContainsKey(typeInfo)) {
-                var idProp = typeInfo.GetProperty("Id");
-                var dmAttr = typeInfo.GetCustomAttribute<DataModelAttribute>();
-                modelCache[typeInfo] = (idProperty: idProp, modelId: dmAttr.ModelId);
-            }
+        protected readonly PropertyInfo idProperty;
+        protected readonly string modelId;
 
-            return modelCache[typeInfo];
+        protected PimixServiceClient() {
+            var typeInfo = typeof(TDataModel);
+            idProperty = typeInfo.GetProperty("Id");
+            modelId = typeInfo.GetCustomAttribute<DataModelAttribute>().ModelId;
         }
 
         public abstract TDataModel Get(string id);

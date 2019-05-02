@@ -21,7 +21,6 @@ namespace Pimix.Service {
 
     public class PimixServiceRestClient<TDataModel> : PimixServiceClient<TDataModel> {
         public override void Update(TDataModel data, string id = null) {
-            var (idProperty, modelId) = GetModelInfo<TDataModel>();
             id = id ?? idProperty.GetValue(data) as string;
 
             Retry.Run(() => {
@@ -43,7 +42,6 @@ namespace Pimix.Service {
         }
 
         public override void Set(TDataModel data, string id = null) {
-            var (idProperty, modelId) = GetModelInfo<TDataModel>();
             id = id ?? idProperty.GetValue(data) as string;
 
             Retry.Run(() => {
@@ -65,8 +63,6 @@ namespace Pimix.Service {
         }
 
         public override TDataModel Get(string id) {
-            var modelId = GetModelInfo<TDataModel>().modelId;
-
             return Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Get,
@@ -82,8 +78,6 @@ namespace Pimix.Service {
         }
 
         public override void Link(string targetId, string linkId) {
-            var modelId = GetModelInfo<TDataModel>().modelId;
-
             Retry.Run(() => {
                     var request =
                         new HttpRequestMessage(HttpMethod.Get,
@@ -102,8 +96,6 @@ namespace Pimix.Service {
         }
 
         public override void Delete(string id) {
-            var modelId = GetModelInfo<TDataModel>().modelId;
-
             Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Delete,
@@ -120,8 +112,6 @@ namespace Pimix.Service {
 
         public override TResponse Call<TResponse>(string action,
             string id = null, Dictionary<string, object> parameters = null) {
-            var modelId = GetModelInfo<TDataModel>().modelId;
-
             return Retry.Run(() => {
                     var request =
                         new HttpRequestMessage(HttpMethod.Post,

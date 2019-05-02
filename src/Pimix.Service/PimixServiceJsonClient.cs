@@ -10,14 +10,12 @@ namespace Pimix.Service {
 
     public class PimixServiceJsonClient<TDataModel> : PimixServiceClient<TDataModel> {
         public override TDataModel Get(string id) {
-            var modelId = GetModelInfo<TDataModel>().modelId;
             return JsonConvert.DeserializeObject<TDataModel>(
                 File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json"),
                 Defaults.JsonSerializerSettings);
         }
 
         public override void Set(TDataModel data, string id = null) {
-            var (idProperty, modelId) = GetModelInfo<TDataModel>();
             id = id ?? idProperty.GetValue(data) as string;
 
             File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json",
@@ -25,7 +23,6 @@ namespace Pimix.Service {
         }
 
         public override void Update(TDataModel data, string id = null) {
-            var (idProperty, modelId) = GetModelInfo<TDataModel>();
             id = id ?? idProperty.GetValue(data) as string;
             var original = Get(id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
