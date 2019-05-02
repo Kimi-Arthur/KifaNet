@@ -132,7 +132,15 @@ namespace Pimix.Subtitle.Ass {
                         s = new FadeTimeFunction();
                         break;
                     case ClipFunction.Key:
-                        s = new ClipFunction();
+                        var commaCount = (valueContent ?? "").Count(c => c == ',');
+                        if (commaCount < 2) {
+                            s = new DrawingClipFunction();
+                        } else if (commaCount == 3) {
+                            s = new TwoPointsClipFunction();
+                        } else {
+                            throw new ArgumentException("\\clip() function should have 1, 2, or 4 arguments.");
+                        }
+
                         break;
                     default:
                         s = new UnknownElement(name);
@@ -397,30 +405,6 @@ namespace Pimix.Subtitle.Ass {
         public override string ToString() => $"\\{Name}({Position.X},{Position.Y})";
     }
 
-    public abstract class TwoPointsFunction : AssControlElement {
-        public PointF Position1 { get; set; }
-        public PointF Position2 { get; set; }
-
-        public override AssControlElement ParseValue(string content) {
-            var segments = content.Substring(1, content.Length - 2).Split(',').Select(s => s.Trim())
-                .ToList();
-            Position1 = new PointF(float.Parse(segments[0]), float.Parse(segments[1]));
-            Position2 = new PointF(float.Parse(segments[2]), float.Parse(segments[3]));
-            return this;
-        }
-
-        public override void Scale(double scaleX, double scaleY) {
-            Position1 = new PointF((Position1.X * scaleX).RoundUp(10),
-                (Position1.Y * scaleY).RoundUp(10));
-
-            Position2 = new PointF((Position2.X * scaleX).RoundUp(10),
-                (Position2.Y * scaleY).RoundUp(10));
-        }
-
-        public override string ToString()
-            => $"\\{Name}({Position1.X},{Position1.Y},{Position2.X},{Position2.Y})";
-    }
-
     public class AnimationFunction : AssControlElement {
         public const string Key = "t";
 
@@ -550,9 +534,93 @@ namespace Pimix.Subtitle.Ass {
             => $"\\{Name}({FadeInTime.TotalMilliseconds},{FadeOutTime.TotalMilliseconds})";
     }
 
-    public class ClipFunction : TwoPointsFunction {
+    public abstract class ClipFunction : AssControlElement {
         public const string Key = "clip";
 
         public override string Name => Key;
+    }
+
+    public class TwoPointsClipFunction : ClipFunction {
+        public PointF Position1 { get; set; }
+        public PointF Position2 { get; set; }
+
+        public override AssControlElement ParseValue(string content) {
+            var segments = content.Substring(1, content.Length - 2).Split(',').Select(s => s.Trim())
+                .ToList();
+            Position1 = new PointF(float.Parse(segments[0]), float.Parse(segments[1]));
+            Position2 = new PointF(float.Parse(segments[2]), float.Parse(segments[3]));
+            return this;
+        }
+
+        public override void Scale(double scaleX, double scaleY) {
+            Position1 = new PointF((Position1.X * scaleX).RoundUp(10),
+                (Position1.Y * scaleY).RoundUp(10));
+
+            Position2 = new PointF((Position2.X * scaleX).RoundUp(10),
+                (Position2.Y * scaleY).RoundUp(10));
+        }
+
+        public override string ToString()
+            => $"\\{Name}({Position1.X},{Position1.Y},{Position2.X},{Position2.Y})";
+    }
+
+    public class DrawingClipFunction : ClipFunction {
+        const int DefaultScaleDownLevel = 1;
+        public int ScaleDownLevel { get; set; } = DefaultScaleDownLevel;
+        public List<AssDrawingCommand> DrawingCommands { get; set; } = new List<AssDrawingCommand>();
+
+        public override AssControlElement ParseValue(string content) {
+            var segments = content.Substring(1, content.Length - 2).Split(',').Select(s => s.Trim())
+                .ToList();
+            if (segments.Count == 2) {
+                ScaleDownLevel = int.Parse(segments[0]);
+            }
+
+            AssDrawingCommand current = null;
+            float? currentX = null;
+            foreach (var s in segments.Last().Split(' ')) {
+                if (char.IsLetter(s, 0)) {
+                    if (current != null) {
+                        DrawingCommands.Add(current);
+                    }
+
+                    current = new AssDrawingCommand {
+                        Name = s
+                    };
+
+                    continue;
+                }
+
+                if (current == null) {
+                    throw new ArgumentException("Drawing commands should start with a command name.");
+                }
+
+                if (currentX != null) {
+                    current.Points.Add(new PointF(currentX.Value, float.Parse(s)));
+                    currentX = null;
+                } else {
+                    currentX = float.Parse(s);
+                }
+            }
+
+            if (current != null) {
+                DrawingCommands.Add(current);
+            }
+
+            return this;
+        }
+
+        public override void Scale(double scaleX, double scaleY) {
+            foreach (var command in DrawingCommands) {
+                command.Scale(scaleX, scaleY);
+            }
+        }
+
+        public override string ToString() {
+            var commands = string.Join(' ', DrawingCommands.Select(c => c.ToString()));
+            return ScaleDownLevel == DefaultScaleDownLevel
+                ? $"\\{Name}({commands})"
+                : $"\\{Name}({ScaleDownLevel}, {commands})";
+        }
     }
 }
