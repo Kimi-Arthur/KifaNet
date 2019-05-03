@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
+using Pimix.Api.Files;
 using Pimix.Configs;
 
 namespace Pimix.Apps {
@@ -55,6 +56,8 @@ namespace Pimix.Apps {
         }
 
         public abstract int Execute();
+
+        public static PimixFile CurrentFolder => new PimixFile(".");
 
         public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
             Func<TChoice, string> choiceToString = null, string choiceName = null,

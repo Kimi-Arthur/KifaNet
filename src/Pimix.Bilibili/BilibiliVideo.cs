@@ -13,37 +13,17 @@ namespace Pimix.Bilibili {
             ParallelPartMode
         }
 
-        [JsonProperty("id")]
         public string Id { get; set; }
-
-        [JsonProperty("title")]
         public string Title { get; set; }
-
-        [JsonProperty("author")]
         public string Author { get; set; }
-
-        [JsonProperty("description")]
+        public string AuthorId { get; set; }
         public string Description { get; set; }
-
-        [JsonProperty("width")]
         public int Width { get; set; }
-
-        [JsonProperty("height")]
         public int Height { get; set; }
-
-        [JsonProperty("tags")]
         public List<string> Tags { get; set; }
-
-        [JsonProperty("category")]
         public string Category { get; set; }
-
-        [JsonProperty("cover")]
         public string Cover { get; set; }
-
-        [JsonProperty("uploaded")]
         public DateTime? Uploaded { get; set; }
-
-        [JsonProperty("pages")]
         public List<BilibiliChat> Pages { get; set; }
 
         PartModeType partMode;

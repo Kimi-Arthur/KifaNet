@@ -18,18 +18,16 @@ namespace Pimix.Apps.BiliUtil {
                 match.Groups[3].Value);
         }
 
-        public static string GetDesiredFileName(string aid, int pid, string cid = null) {
-            PimixService.Update(new BilibiliVideo {Id = aid});
-            var v = PimixService.Get<BilibiliVideo>(aid);
-            var p = v.Pages.First(x => x.Id == pid);
+        public static string GetDesiredFileName(BilibiliVideo video, int pid, string cid = null) {
+            var p = video.Pages.First(x => x.Id == pid);
 
             if (cid != null && cid != p.Cid) {
                 return null;
             }
 
-            return v.Pages.Count > 1
-                ? $"{v.Title} P{pid} {p.Title}-{aid}p{pid}.c{cid}"
-                : $"{v.Title} {p.Title}-{aid}.c{cid}";
+            return video.Pages.Count > 1
+                ? $"{video.Author}-{video.AuthorId}/{video.Title} P{pid} {p.Title}-{video.Id}p{pid}.c{cid}"
+                : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
         }
     }
 }

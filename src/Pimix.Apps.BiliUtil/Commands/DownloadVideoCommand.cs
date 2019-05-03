@@ -23,9 +23,6 @@ namespace Pimix.Apps.BiliUtil.Commands {
             HelpText = "The video id from Bilibili. With possible p{n} as a suffix.")]
         public string Aid { get; set; }
 
-        [Value(1, Required = true, HelpText = "Download file to this folder.")]
-        public string DownloadFolder { get; set; }
-
         [Option('i', "interactive", HelpText = "Choose source interactively.")]
         public bool Interactive { get; set; }
 
@@ -43,6 +40,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
 
             var added = AddDownloadJob(aid, pid);
 
+            PimixService.Update(new BilibiliVideo {Id = aid});
             var video = PimixService.Get<BilibiliVideo>(aid);
 
             var cid = video.Pages[pid - 1].Cid;
@@ -77,11 +75,8 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 SourceChoice = int.Parse(Console.ReadLine());
             }
 
-            var fileName = Confirm("Confirming download file name: ",
-                Helper.GetDesiredFileName(aid, pid, cid));
-
             DownloadVideo(choices[SourceChoice].link,
-                new PimixFile(DownloadFolder).GetFile($"{fileName}.mp4"));
+                CurrentFolder.GetFile($"{Helper.GetDesiredFileName(video, pid, cid)}.mp4"));
 
             return 0;
         }
