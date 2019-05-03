@@ -13,7 +13,7 @@ namespace Pimix.Service {
         Dictionary<string, List<string>> Groups { get; set; } = new Dictionary<string, List<string>>();
 
         public override TDataModel Get(string id) {
-            LoadGroup();
+            LoadGroups();
 
             if (Groups.ContainsKey(id)) {
                 var obj = JsonConvert.DeserializeObject<TDataModel>(Read(Groups[id].First().Trim('/')),
@@ -55,7 +55,7 @@ namespace Pimix.Service {
         string Read(string id) =>
             File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json");
 
-        void LoadGroup() {
+        void LoadGroups() {
             var rawGroups = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(
                 File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json"));
             Groups.Clear();
