@@ -1,9 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using CommandLine;
 using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
@@ -39,14 +40,33 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var segments = Aid.Split('p');
             var aid = segments.First();
             var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 1;
+
+            var added = AddDownloadJob(aid, pid);
+
             var video = PimixService.Get<BilibiliVideo>(aid);
 
             var cid = video.Pages[pid - 1].Cid;
             var doc = new HtmlDocument();
             doc.LoadHtml(GetDownloadPage(cid));
 
-            var choices = doc.DocumentNode.SelectNodes("//a").Select(linkNode
+            var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
                 => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
+
+            while (added && choices == null) {
+                doc = new HtmlDocument();
+                doc.LoadHtml(GetDownloadPage(cid));
+
+                choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
+                        => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value))
+                    .ToList();
+
+                Thread.Sleep(TimeSpan.FromSeconds(30));
+            }
+
+            if (choices == null) {
+                Console.WriteLine("No sources found. Job not successful?");
+                return 1;
+            }
 
             if (Interactive) {
                 for (int i = 0; i < choices.Count; i++) {
@@ -74,6 +94,18 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 logger.Debug($"Downloaded page content: {content}");
 
                 return content;
+            }
+        }
+
+        static bool AddDownloadJob(string aid, int pid) {
+            using (var response = biliplusClient
+                .GetAsync(
+                    $"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
+                .Result) {
+                var content = response.GetString();
+                var code = (int) JToken.Parse(content)["code"];
+                logger.Debug($"Add download request result: {content}");
+                return code == 0;
             }
         }
 
