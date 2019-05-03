@@ -7,7 +7,7 @@ namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public abstract class PimixController<TDataModel> : ControllerBase {
-        protected PimixServiceClient<TDataModel> client = new PimixServiceJsonClient<TDataModel>();
+        protected static PimixServiceClient<TDataModel> client = new PimixServiceJsonClient<TDataModel>();
 
         // GET api/values
         [HttpGet]
