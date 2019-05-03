@@ -67,5 +67,18 @@ namespace Pimix.Service {
                 }
             }
         }
+
+        void SaveGroups() {
+            var data = new Dictionary<string, List<string>>();
+            foreach (var g in Groups) {
+                if (g.Key == g.Value.First()) {
+                    // TODO(C# 8): data[g.Key] = g.Value[1..^0];
+                    data[g.Key] = g.Value.Skip(1).ToList();
+                }
+            }
+
+            File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json",
+                JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings));
+        }
     }
 }
