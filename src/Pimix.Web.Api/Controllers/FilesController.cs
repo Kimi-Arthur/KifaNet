@@ -12,8 +12,7 @@ namespace Pimix.Web.Api.Controllers {
         [HttpGet("$stream")]
         public FileStreamResult Stream(string id) {
             id = Uri.UnescapeDataString(id);
-            string contentType;
-            if (!provider.TryGetContentType(id, out contentType)) {
+            if (!provider.TryGetContentType(id, out var contentType)) {
                 contentType = "application/octet-stream";
             }
 
