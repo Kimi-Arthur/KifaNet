@@ -1,0 +1,7 @@
+POST {{server}}/api/bilibili/uploaders/122879
+Content-Type: application/x-yaml
+Accept: application/x-yaml
+
+name: 敖厂长
+
+###
