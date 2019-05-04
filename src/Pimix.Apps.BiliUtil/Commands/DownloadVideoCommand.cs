@@ -38,10 +38,14 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var aid = segments.First();
             var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 1;
 
-            var added = AddDownloadJob(aid, pid);
-
             PimixService.Update(new BilibiliVideo {Id = aid});
             var video = PimixService.Get<BilibiliVideo>(aid);
+
+            return Download(video, pid);
+        }
+
+        int Download(BilibiliVideo video, int pid) {
+            var added = AddDownloadJob(video.Id, pid);
 
             var cid = video.Pages[pid - 1].Cid;
             var doc = new HtmlDocument();
