@@ -4,4 +4,10 @@ Accept: application/x-yaml
 
 name: 敖厂长
 
+### Refresh
+
+POST {{server}}/api/bilibili/uploaders/$refresh?id=122879
+Content-Type: application/x-yaml
+Accept: application/x-yaml
+
 ###
