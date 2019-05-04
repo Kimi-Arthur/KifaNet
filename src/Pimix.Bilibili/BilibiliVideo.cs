@@ -1,12 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NLog;
 using Pimix.Service;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
     [DataModel("bilibili/videos")]
     public class BilibiliVideo {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        static readonly HttpClient biliplusClient = new HttpClient();
+
+        public static string BiliplusCookies { get; set; }
+        public static int DefaultBiliplusSourceChoice { get; set; }
+
         public enum PartModeType {
             SinglePartMode,
             ContinuousPartMode,
@@ -62,6 +76,77 @@ namespace Pimix.Bilibili {
             }
 
             return result;
+        }
+
+        public string GetDesiredName(int pid, string cid = null) {
+            var p = Pages.First(x => x.Id == pid);
+
+            if (cid != null && cid != p.Cid) {
+                return null;
+            }
+
+            return Pages.Count > 1
+                ? $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
+                  $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
+                : $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
+                  $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}";
+        }
+
+        public Stream DownloadVideo(int pid, int biliplusSourceChoice = 0) {
+            biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+
+            var added = AddDownloadJob(Id, pid);
+
+            var cid = Pages[pid - 1].Cid;
+            var doc = new HtmlDocument();
+            doc.LoadHtml(GetDownloadPage(cid));
+
+            var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
+                => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
+
+            while (added && choices == null) {
+                doc = new HtmlDocument();
+                doc.LoadHtml(GetDownloadPage(cid));
+
+                choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
+                        => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value))
+                    .ToList();
+
+                Thread.Sleep(TimeSpan.FromSeconds(30));
+            }
+
+            if (choices == null) {
+                logger.Warn("No sources found. Job not successful?");
+                return null;
+            }
+
+            logger.Debug(
+                $"Choosen source: " +
+                $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
+            return biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result;
+        }
+
+        static bool AddDownloadJob(string aid, int pid) {
+            using (var response = biliplusClient
+                .GetAsync(
+                    $"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
+                .Result) {
+                var content = response.GetString();
+                var code = (int) JToken.Parse(content)["code"];
+                logger.Debug($"Add download request result: {content}");
+                return code == 0;
+            }
+        }
+
+        static string GetDownloadPage(string cid) {
+            using (var response = biliplusClient
+                .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4")
+                .Result) {
+                var content = response.GetString();
+                logger.Debug($"Downloaded page content: {content}");
+
+                return content;
+            }
         }
     }
 }

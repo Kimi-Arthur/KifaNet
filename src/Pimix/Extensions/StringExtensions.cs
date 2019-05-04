@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Pimix {
@@ -87,5 +88,9 @@ namespace Pimix {
 
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
         }
+
+        public static string NormalizeFileName(this string fileName)
+            => fileName.Normalize(NormalizationForm.FormC).Replace('/', '／').Replace('\\', '＼')
+                .TrimEnd();
     }
 }
