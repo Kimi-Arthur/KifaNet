@@ -126,7 +126,7 @@ namespace Pimix.Bilibili {
                     logger.Debug(
                         $"Choosen source: " +
                         $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
-                    return biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result;
+                    return new HttpClient().GetStreamAsync(choices[biliplusSourceChoice].link).Result;
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {
@@ -145,8 +145,8 @@ namespace Pimix.Bilibili {
                     $"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
                 .Result) {
                 var content = response.GetString();
-                var code = (int) JToken.Parse(content)["code"];
                 logger.Debug($"Add download request result: {content}");
+                var code = (int) JToken.Parse(content)["code"];
                 return code == 0;
             }
         }
