@@ -134,6 +134,7 @@ namespace Pimix.Bilibili {
                     }
 
                     logger.Warn(ex, "Download failed. Try next source.");
+                    Thread.Sleep(TimeSpan.FromSeconds(30));
                 }
             }
         }
