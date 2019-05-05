@@ -10,4 +10,16 @@ POST {{server}}/api/bilibili/uploaders/$refresh?id=122879
 Content-Type: application/x-yaml
 Accept: application/x-yaml
 
+### Batch Refresh
+POST {{server}}/api/bilibili/uploaders/$$refresh
+Content-Type: application/x-yaml
+Accept: application/x-yaml
+
+- id
+
+### All
+
+GET {{server}}/api/bilibili/uploaders/?query=$.*.id
+Accept: application/x-yaml
+
 ###

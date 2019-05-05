@@ -120,10 +120,22 @@ namespace Pimix.Bilibili {
                 return null;
             }
 
-            logger.Debug(
-                $"Choosen source: " +
-                $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
-            return biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result;
+            var initialSource = biliplusSourceChoice;
+            while (true) {
+                try {
+                    logger.Debug(
+                        $"Choosen source: " +
+                        $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
+                    return biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result;
+                } catch (Exception ex) {
+                    biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
+                    if (biliplusSourceChoice == initialSource) {
+                        throw;
+                    }
+
+                    logger.Warn(ex, "Download failed. Try next source.");
+                }
+            }
         }
 
         static bool AddDownloadJob(string aid, int pid) {
