@@ -58,11 +58,7 @@ namespace Pimix.Web.Api {
             app.UseMvc();
             app.UseStaticFiles(new StaticFileOptions() {
                 FileProvider = new PimixFileProvider(),
-                RequestPath = "/resources",
-                OnPrepareResponse = ctx => {
-                    ctx.Context.Response.Headers[HeaderNames.CacheControl] =
-                        "public,max-age=" + CacheDuration.TotalSeconds;
-                }
+                RequestPath = "/resources"
             });
         }
     }
