@@ -1,3 +1,4 @@
+using System;
 using System.Buffers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,8 @@ using WebApiContrib.Core.Formatter.Yaml;
 
 namespace Pimix.Web.Api {
     public class Startup {
+        static readonly TimeSpan CacheDuration = TimeSpan.FromDays(1);
+
         public Startup(IConfiguration configuration) {
             Configuration = configuration;
         }
@@ -55,7 +58,11 @@ namespace Pimix.Web.Api {
             app.UseMvc();
             app.UseStaticFiles(new StaticFileOptions() {
                 FileProvider = new PimixFileProvider(),
-                RequestPath = "/resources"
+                RequestPath = "/resources",
+                OnPrepareResponse = ctx => {
+                    ctx.Context.Response.Headers[HeaderNames.CacheControl] =
+                        "public,max-age=" + CacheDuration.TotalSeconds;
+                }
             });
         }
     }
