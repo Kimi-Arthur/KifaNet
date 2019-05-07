@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Pimix {
@@ -86,6 +87,25 @@ namespace Pimix {
             }
 
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
+        }
+
+        static readonly Dictionary<string, string> characterMapping = new Dictionary<string, string> {
+            ["/"] = "／",
+            ["\\"] = "＼",
+            [":"] = "：",
+            ["|"] = "｜",
+            ["?"] = "？",
+            ["*"] = "＊",
+            ["<"] = "＜",
+            [">"] = "＞"
+        };
+
+        public static string NormalizeFileName(this string fileName) {
+            var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).TrimEnd();
+            foreach (var mapping in characterMapping) {
+                normalizedFileName = normalizedFileName.Replace(mapping.Key, mapping.Value);
+            }
+            return normalizedFileName;
         }
     }
 }

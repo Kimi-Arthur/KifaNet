@@ -40,7 +40,8 @@ namespace Pimix.IO {
             => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
                RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-        public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
+        public override void Copy(string sourcePath, string destinationPath,
+            bool neverLink = false) {
             Directory.GetParent(GetPath(destinationPath)).Create();
 
             if (neverLink) {
@@ -102,7 +103,14 @@ namespace Pimix.IO {
             File.Move(GetPath(sourcePath), destinationPath);
         }
 
-        public override bool Exists(string path) => !Server.Removed && File.Exists(GetPath(path));
+        public override bool Exists(string path) {
+            if (Server.Removed) {
+                return false;
+            }
+
+            var info = new FileInfo(GetPath(path));
+            return info.Exists && info.Length > 0;
+        }
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false,
             string pattern = "*") {
