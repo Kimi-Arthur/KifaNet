@@ -63,10 +63,15 @@ namespace Pimix.Bilibili {
 
         public AssDocument GenerateAssDocument() {
             var result = new AssDocument();
-            result.Sections.Add(new AssScriptInfoSection
-                {Title = Title, OriginalScript = "Bilibili"});
-            result.Sections.Add(new AssStylesSection
-                {Styles = new List<AssStyle> {AssStyle.DefaultStyle}});
+            result.Sections.Add(new AssScriptInfoSection {
+                Title = Title,
+                OriginalScript = "Bilibili"
+            });
+            result.Sections.Add(new AssStylesSection {
+                Styles = new List<AssStyle> {
+                    AssStyle.DefaultStyle
+                }
+            });
             var events = new AssEventsSection();
             result.Sections.Add(events);
 
@@ -78,18 +83,17 @@ namespace Pimix.Bilibili {
             return result;
         }
 
-        public string GetDesiredName(int pid, string cid = null) {
+        public string GetDesiredName(int pid, string cid = null, string extraPath = null) {
             var p = Pages.First(x => x.Id == pid);
 
             if (cid != null && cid != p.Cid) {
                 return null;
             }
 
-            return Pages.Count > 1
-                ? $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
-                  $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
-                : $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
-                  $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}";
+            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" + (extraPath == null ? "" : $"/{extraPath}") +
+                   (Pages.Count > 1
+                       ? $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
+                       : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
 
         public Stream DownloadVideo(int pid, int biliplusSourceChoice = 0) {
@@ -123,9 +127,8 @@ namespace Pimix.Bilibili {
             var initialSource = biliplusSourceChoice;
             while (true) {
                 try {
-                    logger.Debug(
-                        $"Choosen source: " +
-                        $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
+                    logger.Debug($"Choosen source: " +
+                                 $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     return new HttpClient().GetStreamAsync(choices[biliplusSourceChoice].link).Result;
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
@@ -141,8 +144,7 @@ namespace Pimix.Bilibili {
 
         static bool AddDownloadJob(string aid, int pid) {
             using (var response = biliplusClient
-                .GetAsync(
-                    $"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
+                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
                 .Result) {
                 var content = response.GetString();
                 logger.Debug($"Add download request result: {content}");

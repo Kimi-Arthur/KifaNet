@@ -1,8 +1,5 @@
-POST {{server}}/api/bilibili/uploaders/122879
-Content-Type: application/x-yaml
+POST {{server}}/api/bilibili/uploaders/353240497
 Accept: application/x-yaml
-
-name: 敖厂长
 
 ### Refresh
 
