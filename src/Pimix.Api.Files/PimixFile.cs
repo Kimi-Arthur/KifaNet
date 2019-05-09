@@ -15,7 +15,7 @@ using Pimix.IO.FileFormats;
 using Pimix.Service;
 
 namespace Pimix.Api.Files {
-    public class PimixFile : IComparable<PimixFile> {
+    public class PimixFile : IComparable<PimixFile>, IEquatable<PimixFile> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static string SubPathIgnorePattern { get; set; } = "$^";
@@ -55,7 +55,7 @@ namespace Pimix.Api.Files {
 
         public string Path => $"{ParentPath}{Name}";
 
-        public string Host => Client.ToString();
+        public string Host => Client?.ToString();
 
         public StorageClient Client { get; set; }
 
@@ -194,8 +194,7 @@ namespace Pimix.Api.Files {
         }
 
         public Stream OpenRead()
-            => new VerifiableStream(
-                FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
+            => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
         public void Write(Stream stream)
@@ -241,12 +240,10 @@ namespace Pimix.Api.Files {
 
             if (quickCompareResult != FileProperties.None) {
                 logger.Warn("Quick data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 return quickCompareResult;
             }
@@ -269,12 +266,10 @@ namespace Pimix.Api.Files {
                 fileInfo = null;
             } else {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
             }
 
@@ -299,13 +294,21 @@ namespace Pimix.Api.Files {
             var specs = spec.Split(':');
             switch (specs[0]) {
                 case "baidu":
-                    return knownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new BaiduCloudStorageClient {
+                        AccountId = specs[1]
+                    };
                 case "google":
-                    return knownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new GoogleDriveStorageClient {
+                        AccountId = specs[1]
+                    };
                 case "mega":
-                    return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new MegaNzStorageClient {
+                        AccountId = specs[1]
+                    };
                 case "local":
-                    var c = new FileStorageClient {ServerId = specs[1]};
+                    var c = new FileStorageClient {
+                        ServerId = specs[1]
+                    };
                     if (c.Server == null) {
                         c = null;
                     }
@@ -327,5 +330,31 @@ namespace Pimix.Api.Files {
 
             return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
         }
+
+        public bool Equals(PimixFile other) {
+            if (ReferenceEquals(null, other)) {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other)) {
+                return true;
+            }
+
+            return string.Equals(ToString(), other.ToString());
+        }
+
+        public override bool Equals(object obj) {
+            if (ReferenceEquals(null, obj)) {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj)) {
+                return true;
+            }
+
+            return obj.GetType() == GetType() && Equals((PimixFile) obj);
+        }
+
+        public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;
     }
 }

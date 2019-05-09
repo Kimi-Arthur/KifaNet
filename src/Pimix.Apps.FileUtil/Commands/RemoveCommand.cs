@@ -50,16 +50,26 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             var localFiles = source.List(true).ToList();
-            if (localFiles.Count > 0) {
+            if (!source.Exists()) {
                 foreach (var file in localFiles) {
                     Console.WriteLine(file);
                 }
 
+                var potentialFiles = PimixService.Get<FileInformation>(FileInformation.ListFolder(source.Id, true));
+                var potentialFileInstances = potentialFiles.Select(f =>
+                        f.Locations.Keys.Select(l => new PimixFile(l)).FirstOrDefault(l => l.Host == source.Host))
+                    .Where(f => f != null && !localFiles.Contains(f)).ToList();
+
+                foreach (var file in potentialFileInstances) {
+                    Console.WriteLine($"{file} (link only)");
+                }
+
                 var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
-                Console.Write($"Confirm deleting the {localFiles.Count} files above{removalText}?");
+                Console.Write($"Confirm deleting the {localFiles.Count} files above {removalText}?");
                 Console.ReadLine();
 
-                return localFiles.Select(f => RemoveFileInstance(new PimixFile(f.ToString()))).Max();
+                return localFiles.Concat(potentialFileInstances)
+                    .Select(f => RemoveFileInstance(new PimixFile(f.ToString()))).Max();
             }
 
             return RemoveFileInstance(source);

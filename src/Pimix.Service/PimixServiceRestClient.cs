@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
@@ -20,6 +21,8 @@ namespace Pimix.Service {
     }
 
     public class PimixServiceRestClient<TDataModel> : PimixServiceClient<TDataModel> {
+        const string IdDeliminator = "|";
+
         public override void Update(TDataModel data, string id = null) {
             id = id ?? idProperty.GetValue(data) as string;
 
@@ -75,6 +78,21 @@ namespace Pimix.Service {
                     return response.GetObject<TDataModel>();
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
+        }
+
+        public override List<TDataModel> Get(IEnumerable<string> ids) {
+            return Retry.Run(() => {
+                var request =
+                    new HttpRequestMessage(HttpMethod.Get,
+                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
+
+                using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                    return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
+                }
+            }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({string.Join(", ", ids)})"));
         }
 
         public override void Link(string targetId, string linkId) {

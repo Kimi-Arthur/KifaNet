@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using NLog;
@@ -19,6 +20,7 @@ namespace Pimix.Service {
         }
 
         public abstract TDataModel Get(string id);
+        public virtual List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
         public abstract void Set(TDataModel data, string id = null);
         public abstract void Update(TDataModel data, string id = null);
         public abstract void Delete(string id);
@@ -43,6 +45,8 @@ namespace Pimix.Service {
         }
 
         public static TDataModel Get<TDataModel>(string id) => GetClient<TDataModel>().Get(id);
+
+        public static List<TDataModel> Get<TDataModel>(IEnumerable<string> ids) => GetClient<TDataModel>().Get(ids);
 
         public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
             try {
