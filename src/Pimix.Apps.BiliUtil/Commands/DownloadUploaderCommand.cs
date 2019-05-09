@@ -17,10 +17,14 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
         public override int Execute() {
-            PimixService.Create(new BilibiliUploader {Id = UploaderId});
+            PimixService.Create(new BilibiliUploader {
+                Id = UploaderId
+            });
             var uploader = PimixService.Get<BilibiliUploader>(UploaderId);
             foreach (var videoId in uploader.Aids) {
-                PimixService.Create(new BilibiliVideo {Id = videoId});
+                PimixService.Create(new BilibiliVideo {
+                    Id = videoId
+                });
                 var video = PimixService.Get<BilibiliVideo>(videoId);
                 foreach (var page in video.Pages) {
                     var (length, stream) = video.DownloadVideo(page.Id, SourceChoice);
@@ -29,9 +33,15 @@ namespace Pimix.Apps.BiliUtil.Commands {
                     }
 
                     var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(page.Id)}.mp4");
-                    if (targetFile.Length() == length) {
-                        logger.Info($"Target file {targetFile} already exists. Skipped.");
-                        continue;
+                    if (targetFile.Exists()) {
+                        if (targetFile.Length() == length) {
+                            logger.Info($"Target file {targetFile} already exists. Skipped.");
+                            continue;
+                        }
+
+                        logger.Info($"Target file {targetFile} exists, " +
+                                    $"but size ({targetFile.Length()}) is different from source ({length}). " +
+                                    "Will be removed.");
                     }
 
                     try {

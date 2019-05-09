@@ -16,7 +16,7 @@ namespace Pimix.Bilibili {
     public class BilibiliVideo {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        static readonly HttpClient biliplusClient = new HttpClient();
+        static HttpClient biliplusClient = new HttpClient();
 
         public static string BiliplusCookies { get; set; }
         public static int DefaultBiliplusSourceChoice { get; set; }
@@ -97,6 +97,7 @@ namespace Pimix.Bilibili {
         }
 
         public (long? length, Stream stream) DownloadVideo(int pid, int biliplusSourceChoice = 0) {
+            biliplusClient = new HttpClient();
             biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
             var added = AddDownloadJob(Id, pid);
@@ -129,8 +130,10 @@ namespace Pimix.Bilibili {
                 try {
                     logger.Debug($"Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
-                    var response = new HttpClient().GetAsync(choices[biliplusSourceChoice].link).Result.Content;
-                    return (response.Headers.ContentLength, response.ReadAsStreamAsync().Result);
+                    var length = biliplusClient
+                        .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link)).Result
+                        .Content.Headers.ContentLength;
+                    return (length, biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result);
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {

@@ -33,9 +33,15 @@ namespace Pimix.Apps.BiliUtil.Commands {
 
                     var targetFile =
                         CurrentFolder.GetFile($"{video.GetDesiredName(page.Id, extraPath: bangumi.Name)}.mp4");
-                    if (targetFile.Length() == length) {
-                        logger.Info($"Target file {targetFile} already exists. Skipped.");
-                        continue;
+                    if (targetFile.Exists()) {
+                        if (targetFile.Length() == length) {
+                            logger.Info($"Target file {targetFile} already exists. Skipped.");
+                            continue;
+                        }
+
+                        logger.Info($"Target file {targetFile} exists, " +
+                                    $"but size ({targetFile.Length()}) is different from source ({length}). " +
+                                    "Will be removed.");
                     }
 
                     try {

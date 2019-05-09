@@ -21,21 +21,29 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var aid = segments.First();
             var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 1;
 
-            PimixService.Update(new BilibiliVideo {Id = aid});
+            PimixService.Create(new BilibiliVideo {
+                Id = aid
+            });
             var video = PimixService.Get<BilibiliVideo>(aid);
 
             var (length, stream) = video.DownloadVideo(pid, SourceChoice);
-            logger.Error(length);
             if (length == null) {
                 return -1;
             }
 
             var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");
-            if (targetFile.Length() == length) {
-                logger.Info($"Target file {targetFile} already exists. Skipped.");
-                return 0;
+            if (targetFile.Exists()) {
+                if (targetFile.Length() == length) {
+                    logger.Info($"Target file {targetFile} already exists. Skipped.");
+                    return 0;
+                }
+
+                logger.Info($"Target file {targetFile} exists, " +
+                            $"but size ({targetFile.Length()}) is different from source ({length}). " +
+                            "Will be removed.");
             }
 
+            logger.Info($"Start downloading video to {targetFile}");
             targetFile.Delete();
             targetFile.Write(stream);
             logger.Info($"Successfullly downloaded video to {targetFile}");
