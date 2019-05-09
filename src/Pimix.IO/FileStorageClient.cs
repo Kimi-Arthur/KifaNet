@@ -103,13 +103,13 @@ namespace Pimix.IO {
             File.Move(GetPath(sourcePath), destinationPath);
         }
 
-        public override bool Exists(string path) {
+        public override long Length(string path) {
             if (Server.Removed) {
-                return false;
+                return -1;
             }
 
             var info = new FileInfo(GetPath(path));
-            return info.Exists && info.Length > 0;
+            return info.Exists ? info.Length : -1;
         }
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false,

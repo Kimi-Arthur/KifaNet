@@ -77,7 +77,7 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
-        public override bool Exists(string path) => GetFileId(path) != null;
+        public override long Length(string path) => GetFileSize(GetFileId(path));
 
         public override void Delete(string path) {
             var fileId = GetFileId(path);
@@ -194,6 +194,10 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         long GetFileSize(string fileId) {
+            if (fileId == null) {
+                return -1;
+            }
+
             var request = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string> {
                 ["file_id"] = fileId
             });

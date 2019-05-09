@@ -159,6 +159,8 @@ namespace Pimix.Api.Files {
 
         public bool Exists() => Client.Exists(Path);
 
+        public long Length() => Client.Length(Path);
+
         public FileInformation QuickInfo()
             => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 

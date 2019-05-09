@@ -9,7 +9,9 @@ namespace Pimix.IO {
             string pattern = "*")
             => Enumerable.Empty<FileInformation>();
 
-        public abstract bool Exists(string path);
+        public bool Exists(string path) => Length(path) > 0;
+
+        public abstract long Length(string path);
 
         public virtual FileInformation QuickInfo(string path) => new FileInformation();
 

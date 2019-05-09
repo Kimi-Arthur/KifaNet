@@ -23,13 +23,21 @@ namespace Pimix.Apps.BiliUtil.Commands {
 
             PimixService.Update(new BilibiliVideo {Id = aid});
             var video = PimixService.Get<BilibiliVideo>(aid);
+
+            var (length, stream) = video.DownloadVideo(pid, SourceChoice);
+            logger.Error(length);
+            if (length == null) {
+                return -1;
+            }
+
             var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");
-            if (targetFile.Exists()) {
+            if (targetFile.Length() == length) {
                 logger.Info($"Target file {targetFile} already exists. Skipped.");
                 return 0;
             }
 
-            targetFile.Write(video.DownloadVideo(pid, SourceChoice));
+            targetFile.Delete();
+            targetFile.Write(stream);
             logger.Info($"Successfullly downloaded video to {targetFile}");
 
             return 0;

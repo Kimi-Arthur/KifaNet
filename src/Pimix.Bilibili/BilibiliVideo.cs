@@ -96,7 +96,7 @@ namespace Pimix.Bilibili {
                        : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
 
-        public Stream DownloadVideo(int pid, int biliplusSourceChoice = 0) {
+        public (long? length, Stream stream) DownloadVideo(int pid, int biliplusSourceChoice = 0) {
             biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
             var added = AddDownloadJob(Id, pid);
@@ -121,7 +121,7 @@ namespace Pimix.Bilibili {
 
             if (choices == null) {
                 logger.Warn("No sources found. Job not successful?");
-                return null;
+                return (null, null);
             }
 
             var initialSource = biliplusSourceChoice;
@@ -129,7 +129,8 @@ namespace Pimix.Bilibili {
                 try {
                     logger.Debug($"Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
-                    return new HttpClient().GetStreamAsync(choices[biliplusSourceChoice].link).Result;
+                    var response = new HttpClient().GetAsync(choices[biliplusSourceChoice].link).Result.Content;
+                    return (response.Headers.ContentLength, response.ReadAsStreamAsync().Result);
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {

@@ -466,7 +466,7 @@ namespace Pimix.Cloud.BaiduCloud {
             }
         }
 
-        public override bool Exists(string path) {
+        public override long Length(string path) {
             while (true) {
                 var request = GetRequest(Config.APIList.GetFileInfo,
                     new Dictionary<string, string> {
@@ -478,10 +478,10 @@ namespace Pimix.Cloud.BaiduCloud {
                         var responseObject = response.GetJToken();
 
                         if (responseObject["list"] == null) {
-                            return false;
+                            return -1;
                         }
 
-                        return (long) responseObject["list"][0]["size"] > 0;
+                        return (long) responseObject["list"][0]["size"];
                     }
                 } catch (Exception ex) {
                     logger.Debug(ex, "Existence test failed");

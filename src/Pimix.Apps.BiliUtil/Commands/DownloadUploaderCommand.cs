@@ -23,15 +23,21 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 PimixService.Create(new BilibiliVideo {Id = videoId});
                 var video = PimixService.Get<BilibiliVideo>(videoId);
                 foreach (var page in video.Pages) {
+                    var (length, stream) = video.DownloadVideo(page.Id, SourceChoice);
+                    if (length == null) {
+                        continue;
+                    }
+
                     var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(page.Id)}.mp4");
-                    if (targetFile.Exists()) {
+                    if (targetFile.Length() == length) {
                         logger.Info($"Target file {targetFile} already exists. Skipped.");
                         continue;
                     }
 
                     try {
                         logger.Info($"Start downloading video to {targetFile}");
-                        targetFile.Write(video.DownloadVideo(page.Id, SourceChoice));
+                        targetFile.Delete();
+                        targetFile.Write(stream);
                         logger.Info($"Successfullly downloaded video to {targetFile}");
                     } catch (Exception ex) {
                         logger.Warn(ex, $"Failed to download {targetFile}");
