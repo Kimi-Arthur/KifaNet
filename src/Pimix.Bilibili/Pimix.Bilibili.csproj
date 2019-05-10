@@ -8,5 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
+    <PackageReference Include="Svg" Version="2.4.3" />
   </ItemGroup>
 </Project>
