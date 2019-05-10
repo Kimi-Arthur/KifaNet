@@ -16,6 +16,8 @@ namespace Pimix.Bilibili {
     public class BilibiliVideo {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        static bool firstDownload = true;
+
         static HttpClient biliplusClient = new HttpClient();
 
         public static string BiliplusCookies { get; set; }
@@ -97,6 +99,12 @@ namespace Pimix.Bilibili {
         }
 
         public (long? length, Stream stream) DownloadVideo(int pid, int biliplusSourceChoice = 0) {
+            if (!firstDownload) {
+                Thread.Sleep(TimeSpan.FromSeconds(30));
+            }
+
+            firstDownload = false;
+
             biliplusClient = new HttpClient();
             biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
