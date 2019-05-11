@@ -63,7 +63,7 @@ namespace Pimix.Subtitle.Ass {
                         assEvent.End = TimeSpan.Parse(p.Item1);
                         break;
                     case "Style":
-                        assEvent.Style = styles.GetValueOrDefault(p.Item1, styles["Default"]);
+                        assEvent.Style = styles[p.Item1];
                         break;
                     case "Actor":
                     case "Name":

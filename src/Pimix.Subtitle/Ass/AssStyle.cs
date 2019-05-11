@@ -118,18 +118,7 @@ namespace Pimix.Subtitle.Ass {
 
         public BorderStyleType BorderStyle { get; set; } = BorderStyleType.OutlineWithDropShadow;
 
-        int outline = 1;
-
-        public int Outline {
-            get => outline;
-            set {
-                if (value < 0 || value > 4) {
-                    throw new ArgumentOutOfRangeException(nameof(Outline));
-                }
-
-                outline = value;
-            }
-        }
+        public int Outline { get; set; } = 1;
 
         int shadow = 1;
 
