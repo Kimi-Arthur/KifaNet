@@ -197,7 +197,7 @@ namespace Pimix.Subtitle.Ass {
         public int Value { get; set; }
 
         public override AssControlElement ParseValue(string content) {
-            Value = int.Parse(content);
+            Value = (int) double.Parse(content);
             return this;
         }
 
