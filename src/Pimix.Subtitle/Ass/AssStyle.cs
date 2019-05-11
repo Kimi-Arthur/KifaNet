@@ -112,7 +112,7 @@ namespace Pimix.Subtitle.Ass {
 
         public int ScaleY { get; set; } = 100;
 
-        public int Spacing { get; set; }
+        public double Spacing { get; set; }
 
         public double Angle { get; set; }
 
@@ -169,7 +169,7 @@ namespace Pimix.Subtitle.Ass {
                 StrikeOut.ToAss(),
                 ScaleX.ToString(),
                 ScaleY.ToString(),
-                Spacing.ToString(),
+                $"{Spacing:f2}",
                 $"{Angle:f2}",
                 $"{BorderStyle:d}",
                 Outline.ToString(),
@@ -225,7 +225,7 @@ namespace Pimix.Subtitle.Ass {
                         style.ScaleY = int.Parse(p.Item1);
                         break;
                     case "Spacing":
-                        style.Spacing = int.Parse(p.Item1);
+                        style.Spacing = double.Parse(p.Item1);
                         break;
                     case "Angle":
                         style.Angle = double.Parse(p.Item1);
