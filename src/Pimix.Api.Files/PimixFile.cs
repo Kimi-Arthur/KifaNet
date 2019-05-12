@@ -85,7 +85,7 @@ namespace Pimix.Api.Files {
                 // Local path, convert to canonical one.
                 var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
                 foreach (var p in FileStorageClient.ServerConfigs) {
-                    if (fullPath.StartsWith(p.Value.Prefix)) {
+                    if (p.Value.Prefix != null && fullPath.StartsWith(p.Value.Prefix)) {
                         uri = $"local:{p.Key}{fullPath.Substring(p.Value.Prefix.Length)}";
                         break;
                     }
@@ -152,6 +152,8 @@ namespace Pimix.Api.Files {
 
         public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
 
+        public PimixFile GetFileSuffixed(string suffix) => new PimixFile($"{Host}{Path}{suffix}");
+
         public PimixFile GetFilePrefixed(string prefix)
             => prefix == null ? this : new PimixFile($"{Host}{prefix}{Path}");
 
@@ -196,6 +198,38 @@ namespace Pimix.Api.Files {
         public Stream OpenRead()
             => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
+
+        public void WriteIfNotFinished(Func<(long? length, Stream stream)> getStream) {
+            if (Exists()) {
+                logger.Info($"Target file {this} already exists. Skipped.");
+                return;
+            }
+
+            var downloadFile = GetFileSuffixed(".downloading");
+
+            var (length, stream) = getStream();
+            if (length == null) {
+                throw new Exception("Cannot get stream.");
+            }
+
+            if (downloadFile.Exists()) {
+                if (downloadFile.Length() == length) {
+                    downloadFile.Move(this);
+                    logger.Info($"Moved {downloadFile} to {this} already exists. Skipped.");
+                    return;
+                }
+
+                logger.Info($"Target file {downloadFile} exists, " +
+                            $"but size ({downloadFile.Length()}) is different from source ({length}). " +
+                            "Will be removed.");
+            }
+
+            logger.Info($"Start downloading video to {downloadFile}");
+            downloadFile.Delete();
+            downloadFile.Write(stream);
+            downloadFile.Move(this);
+            logger.Info($"Successfullly downloaded video to {this}");
+        }
 
         public void Write(Stream stream)
             => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
