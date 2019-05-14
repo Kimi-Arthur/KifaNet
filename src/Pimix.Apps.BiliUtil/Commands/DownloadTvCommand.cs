@@ -5,30 +5,29 @@ using Pimix.Bilibili;
 using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
-    [Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
-    public class DownloadBangumiCommand : PimixCommand {
+    [Verb("tv", HelpText = "Download all high quality Bilibili videos for one TV show.")]
+    public class DownloadTvCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true, HelpText = "Bangumi ID.")]
-        public string BangumiId { get; set; }
+        [Value(0, Required = true, HelpText = "TV Show ID.")]
+        public string TvShowId { get; set; }
 
         [Option('s', "source", HelpText = "Override default source choice.")]
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
         public override int Execute() {
-            PimixService.Create(new BilibiliBangumi {
-                Id = BangumiId
+            PimixService.Create(new BilibiliTv {
+                Id = TvShowId
             });
-            var bangumi = PimixService.Get<BilibiliBangumi>(BangumiId);
-            foreach (var videoId in bangumi.Aids) {
+            var tv = PimixService.Get<BilibiliTv>(TvShowId);
+            foreach (var videoId in tv.Aids) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });
                 var video = PimixService.Get<BilibiliVideo>(videoId);
                 foreach (var page in video.Pages) {
                     var targetFile =
-                        CurrentFolder.GetFile(
-                            $"{video.GetDesiredName(page.Id, extraPath: $"{bangumi.Name}-{bangumi.Id}")}.mp4");
+                        CurrentFolder.GetFile($"{video.GetDesiredName(page.Id, extraPath: $"{tv.Name}-{tv.Id}")}.mp4");
                     try {
                         targetFile.WriteIfNotFinished(() => video.DownloadVideo(page.Id, SourceChoice));
                     } catch (Exception e) {
