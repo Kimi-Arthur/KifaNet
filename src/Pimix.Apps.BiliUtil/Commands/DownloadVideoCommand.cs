@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -19,7 +20,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public override int Execute() {
             var segments = Aid.Split('p');
             var aid = segments.First();
-            var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 1;
+            var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 0;
 
             PimixService.Create(new BilibiliVideo {
                 Id = aid
@@ -27,8 +28,26 @@ namespace Pimix.Apps.BiliUtil.Commands {
 
             var video = PimixService.Get<BilibiliVideo>(aid);
 
-            var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");
-            targetFile.WriteIfNotFinished(() => video.DownloadVideo(pid, SourceChoice));
+            if (pid > 0) {
+                var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");
+                try {
+                    targetFile.WriteIfNotFinished(() => video.DownloadVideo(pid, SourceChoice));
+                } catch (Exception e) {
+                    logger.Warn(e, $"Failed to download {targetFile}.");
+                }
+
+                return 0;
+            }
+
+            foreach (var page in video.Pages) {
+                var targetFile =
+                    CurrentFolder.GetFile($"{video.GetDesiredName(page.Id)}.mp4");
+                try {
+                    targetFile.WriteIfNotFinished(() => video.DownloadVideo(page.Id, SourceChoice));
+                } catch (Exception e) {
+                    logger.Warn(e, $"Failed to download {targetFile}.");
+                }
+            }
 
             return 0;
         }
