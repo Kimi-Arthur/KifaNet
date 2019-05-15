@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Bilibili;
@@ -20,7 +21,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Id = TvShowId
             });
             var tv = PimixService.Get<BilibiliTv>(TvShowId);
-            foreach (var videoId in tv.Aids) {
+            foreach (var videoId in tv.Aids.Distinct()) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Bilibili;
@@ -20,7 +21,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Id = BangumiId
             });
             var bangumi = PimixService.Get<BilibiliBangumi>(BangumiId);
-            foreach (var videoId in bangumi.Aids) {
+            foreach (var videoId in bangumi.Aids.Distinct()) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });

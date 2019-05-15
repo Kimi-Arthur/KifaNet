@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Bilibili;
@@ -21,7 +22,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Id = UploaderId
             });
             var uploader = PimixService.Get<BilibiliUploader>(UploaderId);
-            foreach (var videoId in uploader.Aids) {
+            foreach (var videoId in uploader.Aids.Distinct()) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });
