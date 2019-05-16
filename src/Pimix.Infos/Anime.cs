@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using Pimix.Service;
 
 namespace Pimix.Infos {
-    [DataModel("animes")]
-    public class Anime : Formattable {
-        public string Id { get; set; }
+    public class Anime : DataModel, Formattable {
+        public const string ModelId = "animes";
+
         public string Title { get; set; }
         public Date AirDate { get; set; }
 

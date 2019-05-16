@@ -20,11 +20,11 @@ namespace Pimix.Service {
         internal static readonly HttpClient client = new HttpClient();
     }
 
-    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> {
+    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
         public override void Update(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
 
             Retry.Run(() => {
                 var request =
@@ -45,7 +45,7 @@ namespace Pimix.Service {
         }
 
         public override void Set(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
 
             Retry.Run(() => {
                 var request =

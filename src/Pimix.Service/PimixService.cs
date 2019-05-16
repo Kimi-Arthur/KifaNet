@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Newtonsoft.Json;
 using NLog;
 
 namespace Pimix.Service {
-    public interface PimixServiceClient<TDataModel> {
+    public interface PimixServiceClient<TDataModel> where TDataModel : DataModel {
         TDataModel Get(string id);
         List<TDataModel> Get(IEnumerable<string> ids);
         void Set(TDataModel data, string id = null);
@@ -14,17 +12,13 @@ namespace Pimix.Service {
         void Link(string targetId, string linkId);
     }
 
-    public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel> {
-        static readonly Dictionary<Type, (PropertyInfo idProperty, string modelId)> modelCache
-            = new Dictionary<Type, (PropertyInfo idProperty, string modelId)>();
-
-        protected readonly PropertyInfo idProperty;
+    public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel>
+        where TDataModel : DataModel {
         protected readonly string modelId;
 
         protected BasePimixServiceClient() {
             var typeInfo = typeof(TDataModel);
-            idProperty = typeInfo.GetProperty("Id");
-            modelId = typeInfo.GetCustomAttribute<DataModelAttribute>().ModelId;
+            modelId = (string) typeInfo.GetField("ModelId").GetValue(null);
         }
 
         public abstract TDataModel Get(string id);
@@ -40,7 +34,7 @@ namespace Pimix.Service {
 
         static Dictionary<Type, object> clients = new Dictionary<Type, object>();
 
-        static PimixServiceClient<TDataModel> GetClient<TDataModel>() {
+        static PimixServiceClient<TDataModel> GetClient<TDataModel>() where TDataModel : DataModel {
             var t = typeof(TDataModel);
             if (!clients.ContainsKey(t)) {
                 clients[t] = new PimixServiceRestClient<TDataModel>();
@@ -49,11 +43,14 @@ namespace Pimix.Service {
             return clients[t] as PimixServiceRestClient<TDataModel>;
         }
 
-        public static TDataModel Get<TDataModel>(string id) => GetClient<TDataModel>().Get(id);
+        public static TDataModel Get<TDataModel>(string id) where TDataModel : DataModel =>
+            GetClient<TDataModel>().Get(id);
 
-        public static List<TDataModel> Get<TDataModel>(IEnumerable<string> ids) => GetClient<TDataModel>().Get(ids);
+        public static List<TDataModel> Get<TDataModel>(IEnumerable<string> ids) where TDataModel : DataModel =>
+            GetClient<TDataModel>().Get(ids);
 
-        public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null) {
+        public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null)
+            where TDataModel : DataModel {
             try {
                 return Get<TDataModel>(id);
             } catch (Exception ex) {
@@ -63,18 +60,16 @@ namespace Pimix.Service {
             }
         }
 
-        public static void Create<TDataModel>(TDataModel data, string id = null) =>
+        public static void Create<TDataModel>(TDataModel data, string id = null) where TDataModel : DataModel =>
             GetClient<TDataModel>().Set(data, id);
 
-        public static void Update<TDataModel>(TDataModel data, string id = null) =>
+        public static void Update<TDataModel>(TDataModel data, string id = null) where TDataModel : DataModel =>
             GetClient<TDataModel>().Update(data, id);
 
-        public static void Delete<TDataModel>(string id) => GetClient<TDataModel>().Delete(id);
+        public static void Delete<TDataModel>(string id) where TDataModel : DataModel =>
+            GetClient<TDataModel>().Delete(id);
 
-        public static void Link<TDataModel>(string targetId, string linkId) =>
+        public static void Link<TDataModel>(string targetId, string linkId) where TDataModel : DataModel =>
             GetClient<TDataModel>().Link(targetId, linkId);
-
-        public static TDataModel Copy<TDataModel>(TDataModel data) =>
-            JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));
     }
 }

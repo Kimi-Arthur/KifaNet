@@ -38,7 +38,7 @@ namespace Pimix.IO.FileFormats {
                 encodedStream.Read(sha256Bytes, 0, 64);
                 var id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
 
-                encryptionKey = PimixService.Get<FileInformation>(id).EncryptionKey;
+                encryptionKey = FileInformation.Client.Get(id).EncryptionKey;
             }
 
             encodedStream.Seek(1854, SeekOrigin.Begin);

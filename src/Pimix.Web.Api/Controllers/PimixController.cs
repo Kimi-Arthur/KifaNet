@@ -6,7 +6,7 @@ using Pimix.Service;
 namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public abstract class PimixController<TDataModel> : ControllerBase {
+    public abstract class PimixController<TDataModel> : ControllerBase where TDataModel : DataModel {
         protected abstract PimixServiceClient<TDataModel> Client { get; }
 
         // GET api/values

@@ -6,20 +6,16 @@ using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Apps.JobUtil {
-    [DataModel("jobs")]
-    class Job {
+    class Job : DataModel {
+        public const string ModelId = "jobs";
+
         static JobServiceClient client;
 
         public static JobServiceClient Client => client =
             client ?? new JobRestServiceClient();
 
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
-        [JsonProperty("command")]
         public string Command { get; set; }
 
-        [JsonProperty("arguments")]
         public List<string> Arguments { get; set; }
 
         public int Execute(string runnerName = null, TimeSpan? heartbeatInterval = null) {

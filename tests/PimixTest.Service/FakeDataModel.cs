@@ -3,14 +3,13 @@ using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace PimixTest.Service {
-    [DataModel("api_test")]
-    class FakeDataModel {
+    class FakeDataModel : DataModel {
+        public const string ModelId = "api_test";
+
         static FakeDataModelServiceClient client;
 
         public static FakeDataModelServiceClient Client => client =
             client ?? new FakeDataModelRestServiceClient();
-
-        public string Id { get; set; }
 
         public int? IntPROP { get; set; }
 

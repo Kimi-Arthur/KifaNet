@@ -9,7 +9,7 @@ namespace Pimix.Service {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> {
+    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         Dictionary<string, List<string>> Groups { get; set; } = new Dictionary<string, List<string>>();
 
         public override TDataModel Get(string id) {
@@ -28,14 +28,14 @@ namespace Pimix.Service {
         public override List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
 
         public override void Set(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
 
             File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json",
                 JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings));
         }
 
         public override void Update(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id as string;
             var original = Get(id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
 

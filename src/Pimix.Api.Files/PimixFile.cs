@@ -125,7 +125,7 @@ namespace Pimix.Api.Files {
         static string GetUri(string id) {
             var bestRemoteLocation = "";
             var bestScore = 0;
-            var info = PimixService.Get<FileInformation>(id);
+            var info = FileInformation.Client.Get(id);
             foreach (var location in info.Locations) {
                 if (location.Value != null) {
                     var file = new PimixFile(location.Key, fileInfo: info);
@@ -244,7 +244,7 @@ namespace Pimix.Api.Files {
         public void Write(string text) => Write(new UTF8Encoding(false).GetBytes(text));
 
         public FileInformation CalculateInfo(FileProperties properties) {
-            var info = PimixService.Copy(FileInfo);
+            var info = FileInfo.Clone();
             info.RemoveProperties((FileProperties.AllVerifiable & properties) |
                                   FileProperties.Locations);
 
@@ -287,10 +287,12 @@ namespace Pimix.Api.Files {
                 return quickCompareResult;
             }
 
-            var sha256Info = PimixService.Get<FileInformation>($"/$/{info.Sha256}");
+            var client = FileInformation.Client;
+
+            var sha256Info = client.Get($"/$/{info.Sha256}");
 
             if (FileInfo.Sha256 == null && sha256Info.Sha256 == info.Sha256) {
-                PimixService.Link<FileInformation>(sha256Info.Id, info.Id);
+                client.Link(sha256Info.Id, info.Id);
             }
 
             var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
@@ -299,7 +301,7 @@ namespace Pimix.Api.Files {
                     sha256Info.EncryptionKey ??
                     info.EncryptionKey; // Only happens for unencrypted file.
 
-                PimixService.Update(info);
+                client.Update(info);
                 Register(true);
 
                 fileInfo = null;

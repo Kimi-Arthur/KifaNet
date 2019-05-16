@@ -1,12 +1,9 @@
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
-using Pimix.Bilibili;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("link", HelpText = "Link video file to proper location.")]
@@ -28,7 +25,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Console.WriteLine($"Confirm renaming\n{target}\nto\n{newName}?");
                 var line = Console.ReadLine();
                 if (line == "") {
-                    PimixService.Link<FileInformation>(target, newName);
+                    FileInformation.Client.Link(target, newName);
                     break;
                 }
 

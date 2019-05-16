@@ -76,7 +76,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
                 "mapping", (null, null));
             if (index >= 0) {
-                PimixService.Link<FileInformation>(file, series.Format(season, episode) + suffix);
+                FileInformation.Client.Link(file, series.Format(season, episode) + suffix);
                 episodes.RemoveAt(index);
             }
 

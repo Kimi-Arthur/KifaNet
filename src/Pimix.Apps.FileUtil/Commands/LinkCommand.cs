@@ -43,7 +43,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             } else {
                 foreach (var file in files) {
                     var linkFile = linkName + file.Substring(target.Length);
-                    PimixService.Link<FileInformation>(file, linkFile);
+                    FileInformation.Client.Link(file, linkFile);
                     Console.WriteLine($"{linkFile} => {file}");
                 }
 
@@ -52,7 +52,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 foreach (var file in files) {
                     var linkFile = linkName + file.Substring(target.Length);
-                    PimixService.Link<FileInformation>(file, linkFile);
+                    FileInformation.Client.Link(file, linkFile);
                     logger.Info($"Successfully linked {linkFile} => {file}!");
                 }
             }

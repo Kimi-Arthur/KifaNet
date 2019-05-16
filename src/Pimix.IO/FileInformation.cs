@@ -10,8 +10,8 @@ using HashLib;
 using Pimix.Service;
 
 namespace Pimix.IO {
-    [DataModel("files")]
-    public class FileInformation {
+    public class FileInformation : DataModel {
+        public const string ModelId = "files";
         static FileInformationServiceClient client;
 
         public static FileInformationServiceClient Client => client =
@@ -23,8 +23,6 @@ namespace Pimix.IO {
         public const int BlockSize = 32 << 20;
 
         static readonly Dictionary<FileProperties, PropertyInfo> properties;
-
-        public string Id { get; set; }
 
         public long? Size { get; set; }
 

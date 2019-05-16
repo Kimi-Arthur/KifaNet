@@ -12,8 +12,14 @@ using Pimix.Service;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
-    [DataModel("bilibili/videos")]
-    public class BilibiliVideo {
+    public class BilibiliVideo : DataModel {
+        public const string ModelId = "bilibili/videos";
+
+        static BilibiliVideoServiceClient client;
+
+        public static BilibiliVideoServiceClient Client => client =
+            client ?? new BilibiliVideoRestServiceClient();
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static bool firstDownload = true;
@@ -29,7 +35,6 @@ namespace Pimix.Bilibili {
             ParallelPartMode
         }
 
-        public string Id { get; set; }
         public string Title { get; set; }
         public string Author { get; set; }
         public string AuthorId { get; set; }
@@ -175,5 +180,11 @@ namespace Pimix.Bilibili {
                 return content;
             }
         }
+    }
+
+    public interface BilibiliVideoServiceClient : PimixServiceClient<BilibiliVideo> {
+    }
+
+    public class BilibiliVideoRestServiceClient : PimixServiceRestClient<BilibiliVideo>, BilibiliVideoServiceClient {
     }
 }
