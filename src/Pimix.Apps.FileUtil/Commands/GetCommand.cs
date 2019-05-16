@@ -41,6 +41,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
+            file.Unregister();
+
             var info = file.FileInfo;
 
             if (info.Locations == null) {

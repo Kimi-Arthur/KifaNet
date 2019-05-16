@@ -318,6 +318,9 @@ namespace Pimix.Api.Files {
         public void Register(bool verified = false)
             => FileInformation.AddLocation(Id, ToString(), verified);
 
+        public void Unregister()
+            => FileInformation.RemoveLocation(Id, ToString());
+
         public bool IsCloud
             => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
                 Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;

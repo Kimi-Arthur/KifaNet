@@ -78,7 +78,6 @@ namespace Pimix.Apps.FileUtil.Commands {
                 var destinationLocation =
                     FileInformation.CreateLocation(source.Id, UseBaiduCloud ? "baidu" : "google");
                 var destination = new PimixFile(destinationLocation);
-                destination.Register();
 
                 if (destination.Exists()) {
                     destination.Register();
@@ -108,6 +107,9 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 logger.Info("Copying {0} to {1}...", source, destination);
+
+                destination.Unregister();
+                destination.Register();
 
                 source.Copy(destination);
 
