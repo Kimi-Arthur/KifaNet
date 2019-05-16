@@ -108,7 +108,7 @@ namespace Pimix.Bilibili {
             biliplusClient = new HttpClient();
             biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
-            var added = AddDownloadJob(Id, pid);
+            var added = AddDownloadJob(Id);
 
             var cid = Pages[pid - 1].Cid;
             var doc = new HtmlDocument();
@@ -154,9 +154,9 @@ namespace Pimix.Bilibili {
             }
         }
 
-        static bool AddDownloadJob(string aid, int pid) {
+        static bool AddDownloadJob(string aid) {
             using (var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
+                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}")
                 .Result) {
                 var content = response.GetString();
                 logger.Debug($"Add download request result: {content}");
