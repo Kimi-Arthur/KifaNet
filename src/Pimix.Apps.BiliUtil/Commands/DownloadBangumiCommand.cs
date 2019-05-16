@@ -17,12 +17,12 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
         public override int Execute() {
-            PimixService.Create(new BilibiliBangumi {
+            BilibiliBangumi.Client.Set(new BilibiliBangumi {
                 Id = BangumiId
             });
             var bangumi = BilibiliBangumi.Client.Get(BangumiId);
             foreach (var videoId in bangumi.Aids.Distinct()) {
-                PimixService.Create(new BilibiliVideo {
+                BilibiliVideo.Client.Set(new BilibiliVideo {
                     Id = videoId
                 });
                 var video = BilibiliVideo.Client.Get(videoId);

@@ -40,31 +40,4 @@ namespace Pimix.Service {
         public abstract void Delete(string id);
         public abstract void Link(string targetId, string linkId);
     }
-
-    public static class PimixService {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        static readonly Dictionary<Type, object> clients = new Dictionary<Type, object>();
-
-        static PimixServiceClient<TDataModel> GetClient<TDataModel>() where TDataModel : DataModel {
-            var t = typeof(TDataModel);
-            if (!clients.ContainsKey(t)) {
-                clients[t] = new PimixServiceRestClient<TDataModel>();
-            }
-
-            return clients[t] as PimixServiceRestClient<TDataModel>;
-        }
-
-        public static void Create<TDataModel>(TDataModel data, string id = null) where TDataModel : DataModel =>
-            GetClient<TDataModel>().Set(data, id);
-
-        public static void Update<TDataModel>(TDataModel data, string id = null) where TDataModel : DataModel =>
-            GetClient<TDataModel>().Update(data, id);
-
-        public static void Delete<TDataModel>(string id) where TDataModel : DataModel =>
-            GetClient<TDataModel>().Delete(id);
-
-        public static void Link<TDataModel>(string targetId, string linkId) where TDataModel : DataModel =>
-            GetClient<TDataModel>().Link(targetId, linkId);
-    }
 }

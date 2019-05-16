@@ -18,12 +18,12 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
         public override int Execute() {
-            PimixService.Create(new BilibiliUploader {
+            BilibiliUploader.Client.Set(new BilibiliUploader {
                 Id = UploaderId
             });
             var uploader = BilibiliUploader.Client.Get(UploaderId);
             foreach (var videoId in uploader.Aids.Distinct()) {
-                PimixService.Create(new BilibiliVideo {
+                BilibiliVideo.Client.Set(new BilibiliVideo {
                     Id = videoId
                 });
                 var video = BilibiliVideo.Client.Get(videoId);

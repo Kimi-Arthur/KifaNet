@@ -105,7 +105,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             // Logical removal.
-            PimixService.Delete<FileInformation>(info.Id);
+            FileInformation.Client.Delete(info.Id);
             logger.Info($"FileInfo {info.Id} removed.");
             return 0;
         }

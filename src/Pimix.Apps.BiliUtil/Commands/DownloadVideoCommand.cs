@@ -22,7 +22,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var aid = segments.First();
             var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 0;
 
-            PimixService.Create(new BilibiliVideo {
+            BilibiliVideo.Client.Set(new BilibiliVideo {
                 Id = aid
             });
 
