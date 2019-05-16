@@ -10,7 +10,7 @@ namespace Pimix.Apps.JobUtil {
 
         public override int Execute() {
             var runnerName = $"{ClientName}${Process.GetCurrentProcess().Id}";
-            return Job.PullJob(JobId, ClientName + "-", runnerName).Execute(ClientName,
+            return Job.Client.PullJob(JobId, ClientName + "-", runnerName).Execute(ClientName,
                 FireHeartbeat ? HeartbeatInterval as TimeSpan? : null);
         }
     }

@@ -8,6 +8,11 @@ using Pimix.Service;
 namespace Pimix.Apps.JobUtil {
     [DataModel("jobs")]
     class Job {
+        static JobServiceClient client;
+
+        public static JobServiceClient Client => client =
+            client ?? new JobRestServiceClient();
+
         [JsonProperty("id")]
         public string Id { get; set; }
 
@@ -21,7 +26,7 @@ namespace Pimix.Apps.JobUtil {
             Timer timer = null;
             if (heartbeatInterval != null) {
                 timer = new Timer(heartbeatInterval.Value.TotalMilliseconds);
-                timer.Elapsed += (sender, e) => { Heartbeat(Id); };
+                timer.Elapsed += (sender, e) => { Client.Heartbeat(Id); };
             }
 
             using (var proc = new Process()) {
@@ -35,7 +40,7 @@ namespace Pimix.Apps.JobUtil {
                 proc.OutputDataReceived += (sender, e) => {
                     if (!string.IsNullOrEmpty(e.Data)) {
                         try {
-                            Log(Id, e.Data, "info");
+                            Client.Log(Id, e.Data, "info");
                         } catch (Exception ex) {
                             Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
                         }
@@ -47,7 +52,7 @@ namespace Pimix.Apps.JobUtil {
                 proc.ErrorDataReceived += (sender, e) => {
                     if (!string.IsNullOrEmpty(e.Data)) {
                         try {
-                            Log(Id, e.Data, "debug");
+                            Client.Log(Id, e.Data, "debug");
                         } catch (Exception ex) {
                             Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
                         }
@@ -61,7 +66,7 @@ namespace Pimix.Apps.JobUtil {
 
                 runnerName = $"{runnerName}${proc.Id}";
 
-                StartJob(Id, runner: runnerName);
+                Client.StartJob(Id, runner: runnerName);
                 Console.Error.WriteLine(
                     $"{runnerName}: Job start info ({Id}): {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
 
@@ -69,7 +74,7 @@ namespace Pimix.Apps.JobUtil {
                 proc.BeginErrorReadLine();
 
                 proc.WaitForExit();
-                FinishJob(Id, proc.ExitCode);
+                Client.FinishJob(Id, proc.ExitCode);
 
                 timer?.Dispose();
 
@@ -78,49 +83,50 @@ namespace Pimix.Apps.JobUtil {
                 return proc.ExitCode;
             }
         }
+    }
 
-        public static Job PullJob(string id = null, string idPrefix = null, string runner = null)
-            => PimixService.Call<Job, Job>
-            (
-                "pull_job",
+    interface JobServiceClient : PimixServiceClient<Job> {
+        Job PullJob(string id = null, string idPrefix = null, string runner = null);
+        Job StartJob(string id = null, string idPrefix = null, string runner = null);
+        void ResetJob(string id);
+        void Heartbeat(string id);
+        void FinishJob(string id, int exitCode = 0);
+        void Log(string id, string message, string level = "i");
+    }
+
+    class JobRestServiceClient : PimixServiceRestClient<Job>, JobServiceClient {
+        public Job PullJob(string id = null, string idPrefix = null, string runner = null)
+            => Call<Job>("pull_job",
                 id,
                 new Dictionary<string, object> {
                     ["id_prefix"] = idPrefix,
                     ["runner"] = runner
-                }
-            );
+                });
 
-        public static Job StartJob(string id = null, string idPrefix = null, string runner = null)
-            => PimixService.Call<Job, Job>
-            (
-                "start_job",
+        public Job StartJob(string id = null, string idPrefix = null, string runner = null)
+            => Call<Job>("start_job",
                 id,
                 new Dictionary<string, object> {
                     ["id_prefix"] = idPrefix,
                     ["runner"] = runner
-                }
-            );
+                });
 
-        public static void ResetJob(string id)
-            => PimixService.Call<Job>
-            (
-                "reset_job",
-                id
-            );
+        public void ResetJob(string id)
+            => Call("reset_job",
+                id);
 
-        public static void Heartbeat(string id)
-            => PimixService.Call<Job>
-            (
-                "heartbeat",
-                id
-            );
+        public void Heartbeat(string id)
+            => Call("heartbeat",
+                id);
 
-        public static void FinishJob(string id, int exitCode = 0)
-            => PimixService.Call<Job>("finish_job", id,
-                new Dictionary<string, object> {["exit_code"] = exitCode});
+        public void FinishJob(string id, int exitCode = 0)
+            => Call("finish_job", id,
+                new Dictionary<string, object> {
+                    ["exit_code"] = exitCode
+                });
 
-        public static void Log(string id, string message, string level = "i")
-            => PimixService.Call<Job>("log", id,
+        public void Log(string id, string message, string level = "i")
+            => Call("log", id,
                 new Dictionary<string, object> {
                     ["level"] = level,
                     ["message"] = message

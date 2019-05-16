@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using NLog;
@@ -13,9 +12,6 @@ namespace Pimix.Service {
         void Update(TDataModel data, string id = null);
         void Delete(string id);
         void Link(string targetId, string linkId);
-
-        TResponse Call<TResponse>(string action,
-            string id = null, Dictionary<string, object> parameters = null);
     }
 
     public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel> {
@@ -37,9 +33,6 @@ namespace Pimix.Service {
         public abstract void Update(TDataModel data, string id = null);
         public abstract void Delete(string id);
         public abstract void Link(string targetId, string linkId);
-
-        public abstract TResponse Call<TResponse>(string action, string id = null,
-            Dictionary<string, object> parameters = null);
     }
 
     public static class PimixService {
@@ -80,14 +73,6 @@ namespace Pimix.Service {
 
         public static void Link<TDataModel>(string targetId, string linkId) =>
             GetClient<TDataModel>().Link(targetId, linkId);
-
-        public static TResponse Call<TDataModel, TResponse>(string action,
-            string id = null, Dictionary<string, object> parameters = null) =>
-            GetClient<TDataModel>().Call<TResponse>(action, id, parameters);
-
-        public static void Call<TDataModel>(string action,
-            string id = null, Dictionary<string, object> parameters = null)
-            => Call<TDataModel, object>(action, id, parameters);
 
         public static TDataModel Copy<TDataModel>(TDataModel data) =>
             JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));

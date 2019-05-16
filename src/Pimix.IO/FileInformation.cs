@@ -50,31 +50,6 @@ namespace Pimix.IO {
 
         public Dictionary<string, DateTime?> Locations { get; set; }
 
-        public static void AddLocation(string id, string location, bool verified = false)
-            => PimixService.Call<FileInformation>("add_location", id,
-                new Dictionary<string, object> {
-                    ["location"] = location,
-                    ["verified"] = verified
-                });
-
-        public static void RemoveLocation(string id, string location)
-            => PimixService.Call<FileInformation>("remove_location", id,
-                new Dictionary<string, object> {
-                    ["location"] = location
-                });
-
-        public static string CreateLocation(string id, string type = null)
-            => PimixService.Call<FileInformation, string>("create_location", id,
-                new Dictionary<string, object> {
-                    ["type"] = type
-                });
-
-        public static string GetLocation(string id, List<string> types = null)
-            => PimixService.Call<FileInformation, string>("get_location", id,
-                new Dictionary<string, object> {
-                    ["types"] = types
-                });
-
         public static string GetId(string location) {
             var m = idPattern.Match(location);
             return m.Success ? m.Groups[3].Value : null;
@@ -265,6 +240,10 @@ namespace Pimix.IO {
 
     public interface FileInformationServiceClient : PimixServiceClient<FileInformation> {
         List<string> ListFolder(string folder, bool recursive = false);
+        void AddLocation(string id, string location, bool verified = false);
+        void RemoveLocation(string id, string location);
+        string CreateLocation(string id, string type = null);
+        string GetLocation(string id, List<string> types = null);
     }
 
     public class FileInformationRestServiceClient : PimixServiceRestClient<FileInformation>,
@@ -274,6 +253,31 @@ namespace Pimix.IO {
                 parameters: new Dictionary<string, object> {
                     ["folder"] = folder,
                     ["recursive"] = recursive ? "1" : ""
+                });
+
+        public void AddLocation(string id, string location, bool verified = false)
+            => Call("add_location", id,
+                new Dictionary<string, object> {
+                    ["location"] = location,
+                    ["verified"] = verified
+                });
+
+        public void RemoveLocation(string id, string location)
+            => Call("remove_location", id,
+                new Dictionary<string, object> {
+                    ["location"] = location
+                });
+
+        public string CreateLocation(string id, string type = null)
+            => Call<string>("create_location", id,
+                new Dictionary<string, object> {
+                    ["type"] = type
+                });
+
+        public string GetLocation(string id, List<string> types = null)
+            => Call<string>("get_location", id,
+                new Dictionary<string, object> {
+                    ["types"] = types
                 });
     }
 }

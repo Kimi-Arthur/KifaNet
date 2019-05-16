@@ -51,9 +51,6 @@ namespace Pimix.Service {
             throw new NotImplementedException();
         }
 
-        public override TResponse Call<TResponse>(string action, string id = null,
-            Dictionary<string, object> parameters = null) => throw new NotImplementedException();
-
         string Read(string id) =>
             File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json");
 

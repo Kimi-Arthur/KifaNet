@@ -98,7 +98,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                             logger.Warn($"File {file} not found.");
                         }
 
-                        FileInformation.RemoveLocation(info.Id, location);
+                        FileInformation.Client.RemoveLocation(info.Id, location);
                         logger.Info($"Entry {location} removed.");
                     }
                 }
@@ -133,7 +133,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            FileInformation.RemoveLocation(file.Id, file.ToString());
+            FileInformation.Client.RemoveLocation(file.Id, file.ToString());
             logger.Info($"Entry {file} removed.");
 
             return 0;

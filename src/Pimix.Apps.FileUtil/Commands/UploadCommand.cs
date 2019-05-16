@@ -29,9 +29,8 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             if (UseBaiduCloud && UseGoogleDrive) {
-                logger.Error(
-                    "Cannot set both --use-google-drive and --use-baidu-cloud. " +
-                    "Choose one.");
+                logger.Error("Cannot set both --use-google-drive and --use-baidu-cloud. " +
+                             "Choose one.");
                 return 1;
             }
 
@@ -76,14 +75,13 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 var destinationLocation =
-                    FileInformation.CreateLocation(source.Id, UseBaiduCloud ? "baidu" : "google");
+                    FileInformation.Client.CreateLocation(source.Id, UseBaiduCloud ? "baidu" : "google");
                 var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {
                     destination.Register();
                     if (QuickMode) {
-                        Console.WriteLine(
-                            $"Skipped verifying of {destination} as quick mode is enabled.");
+                        Console.WriteLine($"Skipped verifying of {destination} as quick mode is enabled.");
                         return 0;
                     }
 
@@ -94,7 +92,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                         if (RemoveSource) {
                             source.Delete();
-                            FileInformation.RemoveLocation(source.Id, source.ToString());
+                            FileInformation.Client.RemoveLocation(source.Id, source.ToString());
                             logger.Info("Source {0} removed since upload is successful.",
                                 source);
                         }
@@ -116,8 +114,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (destination.Exists()) {
                     destination.Register();
                     if (QuickMode) {
-                        Console.WriteLine(
-                            $"Skipped verifying of {destination} as quick mode is enabled.");
+                        Console.WriteLine($"Skipped verifying of {destination} as quick mode is enabled.");
                         return 0;
                     }
 
@@ -135,7 +132,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                             }
 
                             source.Delete();
-                            FileInformation.RemoveLocation(source.Id, source.ToString());
+                            FileInformation.Client.RemoveLocation(source.Id, source.ToString());
                             logger.Info("Source {0} removed since upload is successful.",
                                 source);
                         } else {
@@ -146,10 +143,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     }
 
                     destination.Delete();
-                    logger.Fatal(
-                        "Upload failed! The following fields differ (removed): {0}",
-                        destinationCheckResult
-                    );
+                    logger.Fatal("Upload failed! The following fields differ (removed): {0}",
+                        destinationCheckResult);
                     return 2;
                 }
 

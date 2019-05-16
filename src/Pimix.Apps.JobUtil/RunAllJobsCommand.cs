@@ -14,21 +14,20 @@ namespace Pimix.Apps.JobUtil {
         public override int Execute() {
             var runnerName = $"{ClientName}${Process.GetCurrentProcess().Id}";
             while (true) {
-                Parallel.ForEach(
-                    GetJobs(runnerName),
-                    new ParallelOptions {MaxDegreeOfParallelism = ThreadCount},
+                Parallel.ForEach(GetJobs(runnerName),
+                    new ParallelOptions {
+                        MaxDegreeOfParallelism = ThreadCount
+                    },
                     j => {
                         var c = Console.ForegroundColor;
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Error.WriteLine(
-                            $"{runnerName}: Started job ({j.Id}) at {DateTime.Now}.");
+                        Console.Error.WriteLine($"{runnerName}: Started job ({j.Id}) at {DateTime.Now}.");
                         Console.ForegroundColor = c;
                         j.Execute(ClientName,
                             FireHeartbeat ? HeartbeatInterval as TimeSpan? : null);
                         c = Console.ForegroundColor;
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Error.WriteLine(
-                            $"{runnerName}: Finished job ({j.Id}) at {DateTime.Now}.");
+                        Console.Error.WriteLine($"{runnerName}: Finished job ({j.Id}) at {DateTime.Now}.");
                         Console.ForegroundColor = c;
                     });
                 Console.Error.WriteLine("No jobs now. Sleep 2 minutes");
@@ -40,11 +39,10 @@ namespace Pimix.Apps.JobUtil {
             while (true) {
                 Job j;
                 try {
-                    j = Job.PullJob(idPrefix: ClientName + "-", runner: runnerName);
+                    j = Job.Client.PullJob(idPrefix: ClientName + "-", runner: runnerName);
                     var c = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.Error.WriteLine(
-                        $"{runnerName}: Pulled job ({j.Id}) at {DateTime.Now}.");
+                    Console.Error.WriteLine($"{runnerName}: Pulled job ({j.Id}) at {DateTime.Now}.");
                     Console.ForegroundColor = c;
                 } catch (Exception) {
                     yield break;

@@ -5,6 +5,11 @@ using Pimix.Service;
 namespace PimixTest.Service {
     [DataModel("api_test")]
     class FakeDataModel {
+        static FakeDataModelServiceClient client;
+
+        public static FakeDataModelServiceClient Client => client =
+            client ?? new FakeDataModelRestServiceClient();
+
         public string Id { get; set; }
 
         public int? IntPROP { get; set; }
@@ -16,17 +21,6 @@ namespace PimixTest.Service {
         public Dictionary<string, string> DictProp { get; set; }
 
         public FakeSubDataModel SubProp { get; set; }
-
-        #region PimixService Wrappers
-
-        public static void Patch(FakeDataModel data, string id = null)
-            => PimixService.Update(data, id);
-
-        public static FakeDataModel Get(string id) => PimixService.Get<FakeDataModel>(id);
-
-        #endregion
-
-        public static void Reset() => PimixService.Call<FakeDataModel>("reset");
     }
 
     class FakeSubDataModel {
@@ -34,5 +28,13 @@ namespace PimixTest.Service {
 
         [JsonProperty("sub_prop2")]
         public List<string> Sub2 { get; set; }
+    }
+
+    interface FakeDataModelServiceClient : PimixServiceClient<FakeDataModel> {
+        void Reset();
+    }
+
+    class FakeDataModelRestServiceClient : PimixServiceRestClient<FakeDataModel>, FakeDataModelServiceClient {
+        public void Reset() => Call<FakeDataModel>("reset");
     }
 }

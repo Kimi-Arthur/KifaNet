@@ -316,10 +316,10 @@ namespace Pimix.Api.Files {
         }
 
         public void Register(bool verified = false)
-            => FileInformation.AddLocation(Id, ToString(), verified);
+            => FileInformation.Client.AddLocation(Id, ToString(), verified);
 
         public void Unregister()
-            => FileInformation.RemoveLocation(Id, ToString());
+            => FileInformation.Client.RemoveLocation(Id, ToString());
 
         public bool IsCloud
             => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||

@@ -59,7 +59,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             if (Update) {
                 PimixService.Update(info);
-                FileInformation.AddLocation(f.Id, FileUri, true);
+                FileInformation.Client.AddLocation(f.Id, FileUri, true);
             }
 
             Console.WriteLine(JsonConvert.SerializeObject(info, Defaults.PrettyJsonSerializerSettings));

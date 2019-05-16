@@ -128,7 +128,11 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
         }
 
-        public override TResponse Call<TResponse>(string action,
+        public void Call(string action,
+            string id = null, Dictionary<string, object> parameters = null)
+            => Call<object>(action, id, parameters);
+
+        public TResponse Call<TResponse>(string action,
             string id = null, Dictionary<string, object> parameters = null) {
             return Retry.Run(() => {
                     var request =

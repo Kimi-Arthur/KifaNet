@@ -39,7 +39,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (Overwrite) {
                     logger.Debug("Overwriting existing file.");
                     destination.Delete();
-                    FileInformation.RemoveLocation(destination.Id, DestinationUri);
+                    FileInformation.Client.RemoveLocation(destination.Id, DestinationUri);
                 } else {
                     logger.Error("Destination already exists!");
                     logger.Error("Add -f to overwrite.");
@@ -62,7 +62,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            FileInformation.AddLocation(destination.Id, DestinationUri);
+            FileInformation.Client.AddLocation(destination.Id, DestinationUri);
             logger.Info($"Successfully copied {SourceUri} to {DestinationUri}.");
             return 0;
         }

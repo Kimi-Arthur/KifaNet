@@ -34,7 +34,7 @@ namespace Pimix.Web.Api.Controllers {
             };
         }
     }
-    
+
     public class FileInformationJsonServiceClient : PimixServiceJsonClient<FileInformation>,
         FileInformationServiceClient {
         public List<string> ListFolder(string folder, bool recursive = false) {
@@ -50,5 +50,17 @@ namespace Pimix.Web.Api.Controllers {
             return items.Select(i => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
                 .ToList();
         }
+
+        public void AddLocation(string id, string location, bool verified = false) {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveLocation(string id, string location) {
+            throw new NotImplementedException();
+        }
+
+        public string CreateLocation(string id, string type = null) => throw new NotImplementedException();
+
+        public string GetLocation(string id, List<string> types = null) => throw new NotImplementedException();
     }
 }
