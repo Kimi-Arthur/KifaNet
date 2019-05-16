@@ -33,7 +33,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
         static BaiduCloudConfig Config
             => LazyInitializer.EnsureInitialized(ref config,
-                () => PimixService.Get<BaiduCloudConfig>("default"));
+                () => BaiduCloudConfig.Client.Get("default"));
 
         public string AccountId {
             get => accountId;

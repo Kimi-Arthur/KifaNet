@@ -32,7 +32,7 @@ namespace Pimix.Cloud.GoogleDrive {
         DateTime lastRefreshed = DateTime.MinValue;
 
         static GoogleDriveConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<GoogleDriveConfig>("default"));
+            LazyInitializer.EnsureInitialized(ref config, () => GoogleDriveConfig.Client.Get("default"));
 
         public string AccountId {
             get => accountId;

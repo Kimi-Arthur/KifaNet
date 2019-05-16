@@ -6,6 +6,9 @@ namespace Pimix.Service {
     public interface PimixServiceClient<TDataModel> where TDataModel : DataModel {
         TDataModel Get(string id);
         List<TDataModel> Get(IEnumerable<string> ids);
+
+        TDataModel GetOr(string id, Func<string, TDataModel> defaultValue = null);
+
         void Set(TDataModel data, string id = null);
         void Update(TDataModel data, string id = null);
         void Delete(string id);
@@ -22,6 +25,15 @@ namespace Pimix.Service {
         }
 
         public abstract TDataModel Get(string id);
+
+        public TDataModel GetOr(string id, Func<string, TDataModel> defaultValue = null) {
+            try {
+                return Get(id);
+            } catch (Exception ex) {
+                return defaultValue?.Invoke(id);
+            }
+        }
+
         public abstract List<TDataModel> Get(IEnumerable<string> ids);
         public abstract void Set(TDataModel data, string id = null);
         public abstract void Update(TDataModel data, string id = null);
@@ -41,23 +53,6 @@ namespace Pimix.Service {
             }
 
             return clients[t] as PimixServiceRestClient<TDataModel>;
-        }
-
-        public static TDataModel Get<TDataModel>(string id) where TDataModel : DataModel =>
-            GetClient<TDataModel>().Get(id);
-
-        public static List<TDataModel> Get<TDataModel>(IEnumerable<string> ids) where TDataModel : DataModel =>
-            GetClient<TDataModel>().Get(ids);
-
-        public static TDataModel GetOr<TDataModel>(string id, Func<string, TDataModel> defaultValue = null)
-            where TDataModel : DataModel {
-            try {
-                return Get<TDataModel>(id);
-            } catch (Exception ex) {
-                var value = defaultValue != null ? defaultValue(id) : default(TDataModel);
-                logger.Warn(ex, "Cannot get a value for {0}, using default value: {1}.", id, value);
-                return value;
-            }
         }
 
         public static void Create<TDataModel>(TDataModel data, string id = null) where TDataModel : DataModel =>

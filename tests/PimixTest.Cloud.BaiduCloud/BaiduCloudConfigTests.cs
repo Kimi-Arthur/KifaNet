@@ -12,7 +12,7 @@ namespace PimixTest.Cloud.BaiduCloud {
         [TestMethod]
         public void GetConfigTest() {
             PimixServiceRestClient.PimixServerApiAddress = PimixServerApiAddress;
-            var config = PimixService.Get<BaiduCloudConfig>("default");
+            var config = BaiduCloudConfig.Client.Get("default");
             Assert.IsTrue(config.Accounts.Count > 0);
         }
 

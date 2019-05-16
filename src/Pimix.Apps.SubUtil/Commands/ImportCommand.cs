@@ -39,7 +39,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             switch (type) {
                 case "tv_shows":
-                    var tvShow = PimixService.Get<TvShow>(id);
+                    var tvShow = TvShow.Client.Get(id);
                     series = tvShow;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in tvShow.Seasons) {
@@ -54,7 +54,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
                     break;
                 case "animes":
-                    var anime = PimixService.Get<Anime>(id);
+                    var anime = Anime.Client.Get(id);
                     series = anime;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in anime.Seasons) {

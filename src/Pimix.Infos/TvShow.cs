@@ -6,6 +6,11 @@ namespace Pimix.Infos {
     public class TvShow : DataModel, Formattable {
         public const string ModelId = "tv_shows";
 
+        static TvShowServiceClient client;
+
+        public static TvShowServiceClient Client => client =
+            client ?? new TvShowRestServiceClient();
+
         public string Title { get; set; }
         public Date AirDate { get; set; }
         public string Overview { get; set; }
@@ -47,5 +52,11 @@ namespace Pimix.Infos {
                     return "Unexpected!";
             }
         }
+    }
+
+    public interface TvShowServiceClient : PimixServiceClient<TvShow> {
+    }
+
+    public class TvShowRestServiceClient : PimixServiceRestClient<TvShow>, TvShowServiceClient {
     }
 }

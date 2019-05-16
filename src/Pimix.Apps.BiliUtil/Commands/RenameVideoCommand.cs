@@ -22,7 +22,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 return 1;
             }
 
-            var newName = Helper.GetDesiredFileName(PimixService.Get<BilibiliVideo>(ids.aid),
+            var newName = Helper.GetDesiredFileName(BilibiliVideo.Client.Get(ids.aid),
                 ids.pid, ids.cid);
             if (newName == null) {
                 logger.Error("CID mismatch.");

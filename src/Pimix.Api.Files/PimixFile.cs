@@ -120,7 +120,7 @@ namespace Pimix.Api.Files {
         PimixFileFormat FileFormat { get; }
 
         public FileInformation FileInfo
-            => fileInfo = fileInfo ?? PimixService.GetOr<FileInformation>(Id);
+            => fileInfo = fileInfo ?? FileInformation.Client.GetOr(Id);
 
         public bool IsCloud
             => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||

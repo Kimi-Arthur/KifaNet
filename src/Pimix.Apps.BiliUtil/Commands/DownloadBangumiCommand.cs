@@ -20,12 +20,12 @@ namespace Pimix.Apps.BiliUtil.Commands {
             PimixService.Create(new BilibiliBangumi {
                 Id = BangumiId
             });
-            var bangumi = PimixService.Get<BilibiliBangumi>(BangumiId);
+            var bangumi = BilibiliBangumi.Client.Get(BangumiId);
             foreach (var videoId in bangumi.Aids.Distinct()) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });
-                var video = PimixService.Get<BilibiliVideo>(videoId);
+                var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
                     var targetFile =
                         CurrentFolder.GetFile(

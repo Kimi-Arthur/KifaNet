@@ -21,12 +21,12 @@ namespace Pimix.Apps.BiliUtil.Commands {
             PimixService.Create(new BilibiliUploader {
                 Id = UploaderId
             });
-            var uploader = PimixService.Get<BilibiliUploader>(UploaderId);
+            var uploader = BilibiliUploader.Client.Get(UploaderId);
             foreach (var videoId in uploader.Aids.Distinct()) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });
-                var video = PimixService.Get<BilibiliVideo>(videoId);
+                var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
                     var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(page.Id)}.mp4");
                     try {

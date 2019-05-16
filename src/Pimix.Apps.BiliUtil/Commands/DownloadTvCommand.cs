@@ -20,12 +20,12 @@ namespace Pimix.Apps.BiliUtil.Commands {
             PimixService.Create(new BilibiliTv {
                 Id = TvShowId
             });
-            var tv = PimixService.Get<BilibiliTv>(TvShowId);
+            var tv = BilibiliTv.Client.Get(TvShowId);
             foreach (var videoId in tv.Aids.Distinct()) {
                 PimixService.Create(new BilibiliVideo {
                     Id = videoId
                 });
-                var video = PimixService.Get<BilibiliVideo>(videoId);
+                var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
                     var targetFile =
                         CurrentFolder.GetFile($"{video.GetDesiredName(page.Id, extraPath: $"{tv.Name}-{tv.Id}")}.mp4");

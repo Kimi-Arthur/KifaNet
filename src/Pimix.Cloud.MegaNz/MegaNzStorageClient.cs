@@ -29,7 +29,7 @@ namespace Pimix.Cloud.MegaNz {
         public MegaApiClient Client { get; private set; }
 
         static MegaNzConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<MegaNzConfig>("default"));
+            LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
 
         public override string ToString() => $"mega:{AccountId}";
 

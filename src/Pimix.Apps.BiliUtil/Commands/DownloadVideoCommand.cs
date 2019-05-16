@@ -26,7 +26,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Id = aid
             });
 
-            var video = PimixService.Get<BilibiliVideo>(aid);
+            var video = BilibiliVideo.Client.Get(aid);
 
             if (pid > 0) {
                 var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");

@@ -11,7 +11,7 @@ namespace PimixTest.Bilibili {
         [TestMethod]
         public void SinglePartTest() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
-            var video = PimixService.Get<BilibiliVideo>("av26361000");
+            var video = BilibiliVideo.Client.Get("av26361000");
             Assert.AreEqual("av26361000", video.Id);
             Assert.AreEqual("【7月】工作细胞 01【独家正版】", video.Title);
             Assert.AreEqual("#01", video.Description);
@@ -36,7 +36,7 @@ namespace PimixTest.Bilibili {
         [TestMethod]
         public void MultiPartsTest() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
-            var video = PimixService.Get<BilibiliVideo>("av2044037");
+            var video = BilibiliVideo.Client.Get("av2044037");
             video.PartMode = BilibiliVideo.PartModeType.ContinuousPartMode;
             Assert.AreEqual("av2044037", video.Id);
             Assert.AreEqual("【日语学习】发音入门基础：50音图", video.Title);

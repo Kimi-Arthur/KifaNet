@@ -30,7 +30,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 var files = new PimixFile(FileUri).List(true).ToList();
 
                 var ids = Aid.Split('p');
-                var v = PimixService.Get<BilibiliVideo>(ids[0]);
+                var v = BilibiliVideo.Client.Get(ids[0]);
                 foreach (var item in v.Pages.Zip(files, Tuple.Create)) {
                     Console.WriteLine($"{v.Title} - {item.Item1.Title}\n" +
                                       $"{item.Item2}\n" +
