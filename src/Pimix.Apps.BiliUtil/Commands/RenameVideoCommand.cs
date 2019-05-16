@@ -2,7 +2,6 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("rename", HelpText = "Rename video file to comply.")]

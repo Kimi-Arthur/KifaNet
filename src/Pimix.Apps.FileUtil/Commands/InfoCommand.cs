@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("info", HelpText = "Generate information of the specified file.")]

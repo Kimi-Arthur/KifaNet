@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using NLog;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {

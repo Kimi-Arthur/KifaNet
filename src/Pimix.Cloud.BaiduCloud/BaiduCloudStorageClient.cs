@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {

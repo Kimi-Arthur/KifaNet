@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using CommandLine;
 using Pimix.Infos;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]

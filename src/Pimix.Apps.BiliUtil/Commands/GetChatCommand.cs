@@ -6,7 +6,6 @@ using System.Xml;
 using CommandLine;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("get", HelpText = "Get Bilibili chat as xml document.")]

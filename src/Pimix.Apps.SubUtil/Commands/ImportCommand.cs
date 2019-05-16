@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using CommandLine;
 using Pimix.Api.Files;
 using Pimix.Infos;
-using Pimix.Service;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("import", HelpText = "Import files from /Subtitles/Sources folder with resource id.")]

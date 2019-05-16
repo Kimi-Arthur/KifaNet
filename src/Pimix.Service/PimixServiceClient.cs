@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using NLog;
 
 namespace Pimix.Service {
     public interface PimixServiceClient<TDataModel> where TDataModel : DataModel {

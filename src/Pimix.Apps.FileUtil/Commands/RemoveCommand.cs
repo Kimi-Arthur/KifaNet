@@ -4,7 +4,6 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("rm", HelpText =

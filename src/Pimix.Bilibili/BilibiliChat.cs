@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Xml;
-using Newtonsoft.Json;
 
 namespace Pimix.Bilibili {
     public class BilibiliChat {

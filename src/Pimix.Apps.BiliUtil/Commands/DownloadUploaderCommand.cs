@@ -3,7 +3,6 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("up", HelpText = "Download all high quality Bilibili videos for one uploader.")]

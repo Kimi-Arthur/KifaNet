@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Cloud.MegaNz {
     public class MegaNzStorageClient : StorageClient {
