@@ -36,9 +36,9 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            var files = FileInformation.ListFolder(target, true);
+            var files = FileInformation.Client.ListFolder(target, true);
             if (files.Count == 0) {
-                PimixService.Link<FileInformation>(target, linkName);
+                FileInformation.Client.Link(target, linkName);
                 logger.Info($"Successfully linked {linkName} => {target}!");
             } else {
                 foreach (var file in files) {

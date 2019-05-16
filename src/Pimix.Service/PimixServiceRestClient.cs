@@ -20,7 +20,7 @@ namespace Pimix.Service {
         internal static readonly HttpClient client = new HttpClient();
     }
 
-    public class PimixServiceRestClient<TDataModel> : PimixServiceClient<TDataModel> {
+    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> {
         const string IdDeliminator = "|";
 
         public override void Update(TDataModel data, string id = null) {

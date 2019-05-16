@@ -27,7 +27,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             if (string.IsNullOrEmpty(FileUri)) {
-                var files = FileInformation.ListFolder(FileId, true);
+                var files = FileInformation.Client.ListFolder(FileId, true);
                 if (files.Count > 0) {
                     foreach (var file in files) {
                         Console.WriteLine(file);
@@ -37,10 +37,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.Write($"Confirm deleting the {files.Count} files above{removalText}?");
                     Console.ReadLine();
 
-                    return files.Select(f => RemoveLogicalFile(PimixService.Get<FileInformation>(f))).Max();
+                    return files.Select(f => RemoveLogicalFile(FileInformation.Client.Get(f))).Max();
                 }
 
-                return RemoveLogicalFile(PimixService.Get<FileInformation>(FileId));
+                return RemoveLogicalFile(FileInformation.Client.Get(FileId));
             }
 
             var source = new PimixFile(FileUri);
@@ -55,7 +55,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.WriteLine(file);
                 }
 
-                var potentialFiles = PimixService.Get<FileInformation>(FileInformation.ListFolder(source.Id, true));
+                var potentialFiles = FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
                 var potentialFileInstances = potentialFiles.Select(f =>
                         f.Locations.Keys.Select(l => new PimixFile(l)).FirstOrDefault(l => l.Host == source.Host))
                     .Where(f => f != null && !localFiles.Contains(f)).ToList();

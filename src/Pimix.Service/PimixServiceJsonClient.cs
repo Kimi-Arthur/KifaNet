@@ -9,7 +9,7 @@ namespace Pimix.Service {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : PimixServiceClient<TDataModel> {
+    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> {
         Dictionary<string, List<string>> Groups { get; set; } = new Dictionary<string, List<string>>();
 
         public override TDataModel Get(string id) {
@@ -24,6 +24,8 @@ namespace Pimix.Service {
 
             return JsonConvert.DeserializeObject<TDataModel>(Read(id), Defaults.JsonSerializerSettings);
         }
+
+        public override List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
 
         public override void Set(TDataModel data, string id = null) {
             id = id ?? idProperty.GetValue(data) as string;

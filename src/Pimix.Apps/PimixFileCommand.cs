@@ -51,7 +51,7 @@ namespace Pimix.Apps {
                     }
 
                     path = Prefix == null ? path : $"{Prefix}{path}";
-                    var thisFolder = FileInformation.ListFolder(path, Recursive);
+                    var thisFolder = FileInformation.Client.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
                         fileInfos.AddRange(thisFolder.Select(f => (getSortKey(f), host + f)));

@@ -20,7 +20,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            var files = FileInformation.ListFolder(target.Id, true);
+            var files = FileInformation.Client.ListFolder(target.Id, true);
             if (files.Count > 0) {
                 foreach (var file in files) {
                     Console.WriteLine(file);

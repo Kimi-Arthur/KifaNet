@@ -6,28 +6,40 @@ using Newtonsoft.Json;
 using NLog;
 
 namespace Pimix.Service {
-    public abstract class PimixServiceClient<TDataModel> {
+    public interface PimixServiceClient<TDataModel> {
+        TDataModel Get(string id);
+        List<TDataModel> Get(IEnumerable<string> ids);
+        void Set(TDataModel data, string id = null);
+        void Update(TDataModel data, string id = null);
+        void Delete(string id);
+        void Link(string targetId, string linkId);
+
+        TResponse Call<TResponse>(string action,
+            string id = null, Dictionary<string, object> parameters = null);
+    }
+
+    public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel> {
         static readonly Dictionary<Type, (PropertyInfo idProperty, string modelId)> modelCache
             = new Dictionary<Type, (PropertyInfo idProperty, string modelId)>();
 
         protected readonly PropertyInfo idProperty;
         protected readonly string modelId;
 
-        protected PimixServiceClient() {
+        protected BasePimixServiceClient() {
             var typeInfo = typeof(TDataModel);
             idProperty = typeInfo.GetProperty("Id");
             modelId = typeInfo.GetCustomAttribute<DataModelAttribute>().ModelId;
         }
 
         public abstract TDataModel Get(string id);
-        public virtual List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
+        public abstract List<TDataModel> Get(IEnumerable<string> ids);
         public abstract void Set(TDataModel data, string id = null);
         public abstract void Update(TDataModel data, string id = null);
         public abstract void Delete(string id);
         public abstract void Link(string targetId, string linkId);
 
-        public abstract TResponse Call<TResponse>(string action,
-            string id = null, Dictionary<string, object> parameters = null);
+        public abstract TResponse Call<TResponse>(string action, string id = null,
+            Dictionary<string, object> parameters = null);
     }
 
     public static class PimixService {
