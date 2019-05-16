@@ -161,9 +161,9 @@ namespace Pimix.Api.Files {
                         return location.Key;
                     }
 
-                    var score = PreferBaiduCloud
+                    var score = (PreferBaiduCloud
                         ? file.Client is BaiduCloudStorageClient
-                        : file.Client is GoogleDriveStorageClient
+                        : file.Client is GoogleDriveStorageClient)
                         ? 8
                         : 4;
                     score += file.FileFormat is PimixFileV1Format ? 2 :
