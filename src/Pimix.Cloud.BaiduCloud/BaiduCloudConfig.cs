@@ -11,10 +11,10 @@ namespace Pimix.Cloud.BaiduCloud {
         public static BaiduCloudConfigServiceClient Client => client =
             client ?? new BaiduCloudConfigRestServiceClient();
 
-        public Dictionary<string, AccountInfo> Accounts { get; private set; }
+        public Dictionary<string, AccountInfo> Accounts { get; set; }
 
         [JsonProperty("apis")]
-        public APIList APIList { get; private set; }
+        public APIList APIList { get; set; }
 
         public string RemotePathPrefix { get; set; }
     }

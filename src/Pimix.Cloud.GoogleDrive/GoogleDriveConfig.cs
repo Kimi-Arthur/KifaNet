@@ -11,7 +11,7 @@ namespace Pimix.Cloud.GoogleDrive {
         public static GoogleDriveConfigServiceClient Client => client =
             client ?? new GoogleDriveConfigRestServiceClient();
 
-        public Dictionary<string, AccountInfo> Accounts { get; private set; }
+        public Dictionary<string, AccountInfo> Accounts { get; set; }
 
         public string RootFolder { get; set; }
 
@@ -20,7 +20,7 @@ namespace Pimix.Cloud.GoogleDrive {
         public string ClientSecret { get; set; }
 
         [JsonProperty("apis")]
-        public APIList APIList { get; private set; }
+        public APIList APIList { get; set; }
     }
 
     public class AccountInfo {
