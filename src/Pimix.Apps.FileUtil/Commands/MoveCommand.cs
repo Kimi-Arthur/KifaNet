@@ -6,6 +6,8 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
     class MoveCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
 
@@ -17,8 +19,6 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         [Option('v', "verify", HelpText = "Verify destination.")]
         public bool Verify { get; set; } = false;
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var source = new PimixFile(SourceUri);

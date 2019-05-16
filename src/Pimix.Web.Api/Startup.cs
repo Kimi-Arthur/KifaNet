@@ -56,7 +56,7 @@ namespace Pimix.Web.Api {
 
             app.UseHttpsRedirection();
             app.UseMvc();
-            app.UseStaticFiles(new StaticFileOptions() {
+            app.UseStaticFiles(new StaticFileOptions {
                 FileProvider = new PimixFileProvider(),
                 RequestPath = "/resources"
             });

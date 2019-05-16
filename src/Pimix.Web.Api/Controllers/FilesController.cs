@@ -11,14 +11,13 @@ using Pimix.Service;
 namespace Pimix.Web.Api.Controllers {
     public class FilesController : PimixController<FileInformation> {
         static readonly FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
-        static FileInformationServiceClient client = new FileInformationJsonServiceClient();
+        static readonly FileInformationServiceClient client = new FileInformationJsonServiceClient();
 
         protected override PimixServiceClient<FileInformation> Client => client;
 
         [HttpGet("$list_folder")]
-        public ActionResult<List<string>> ListFolder(string folder, bool recursive) {
-            return client.ListFolder(folder, recursive);
-        }
+        public ActionResult<List<string>> ListFolder(string folder, bool recursive) =>
+            client.ListFolder(folder, recursive);
 
         [HttpGet("$stream")]
         public FileStreamResult Stream(string id) {

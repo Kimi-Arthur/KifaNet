@@ -8,10 +8,10 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("touch", HelpText = "Touch file.")]
     class TouchCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var target = new PimixFile(FileUri);

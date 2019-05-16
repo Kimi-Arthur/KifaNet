@@ -8,6 +8,8 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("upload", HelpText = "Upload file to a cloud location.")]
     class UploadCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
@@ -24,8 +26,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('g', "use-google-drive", HelpText =
             "Use Google Drive as backend storage. Default case.")]
         public bool UseGoogleDrive { get; set; } = false;
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             if (UseBaiduCloud && UseGoogleDrive) {

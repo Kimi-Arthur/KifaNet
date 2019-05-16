@@ -12,17 +12,26 @@ using Pimix.Service;
 namespace Pimix.IO {
     public class FileInformation : DataModel {
         public const string ModelId = "files";
+
+        const int SliceLength = 256 << 10;
+
+        public const int BlockSize = 32 << 20;
         static FileInformationServiceClient client;
+        static readonly Regex idPattern = new Regex(@"^(/(local|baidu|mega|google)/)?[^/]*(/.*?)(\.v1|\.v0)?$");
+
+        static readonly Dictionary<FileProperties, PropertyInfo> properties;
+
+        static FileInformation() {
+            properties = new Dictionary<FileProperties, PropertyInfo>();
+            foreach (var prop in
+                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            ) {
+                properties[(FileProperties) Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
+            }
+        }
 
         public static FileInformationServiceClient Client => client =
             client ?? new FileInformationRestServiceClient();
-
-        const int SliceLength = 256 << 10;
-        static readonly Regex idPattern = new Regex(@"^(/(local|baidu|mega|google)/)?[^/]*(/.*?)(\.v1|\.v0)?$");
-
-        public const int BlockSize = 32 << 20;
-
-        static readonly Dictionary<FileProperties, PropertyInfo> properties;
 
         public long? Size { get; set; }
 
@@ -51,15 +60,6 @@ namespace Pimix.IO {
         public static string GetId(string location) {
             var m = idPattern.Match(location);
             return m.Success ? m.Groups[3].Value : null;
-        }
-
-        static FileInformation() {
-            properties = new Dictionary<FileProperties, PropertyInfo>();
-            foreach (var prop in
-                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            ) {
-                properties[(FileProperties) Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
-            }
         }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {

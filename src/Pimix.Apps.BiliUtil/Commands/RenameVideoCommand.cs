@@ -29,8 +29,9 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 return 1;
             }
 
-            var newTarget = new PimixFile(FileUri)
-                {BaseName = Confirm($"Confirm renaming\n{target.BaseName}\nto\n", newName)};
+            var newTarget = new PimixFile(FileUri) {
+                BaseName = Confirm($"Confirm renaming\n{target.BaseName}\nto\n", newName)
+            };
             logger.Info($"Renaming {target} to {newTarget}");
             target.Move(newTarget);
 

@@ -13,11 +13,11 @@ namespace Pimix.Service {
     public class PimixServiceRestClient {
         internal static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        internal static readonly HttpClient client = new HttpClient();
+
         public static string PimixServerApiAddress { get; set; }
 
         public static string PimixServerCredential { get; set; }
-
-        internal static readonly HttpClient client = new HttpClient();
     }
 
     public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {

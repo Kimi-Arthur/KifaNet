@@ -168,11 +168,13 @@ namespace Pimix.Subtitle.Ass {
     }
 
     public class UnknownElement : AssControlElement {
+        public UnknownElement(string name) {
+            Name = name;
+        }
+
         public override string Name { get; }
 
         public string Value { get; set; }
-
-        public UnknownElement(string name) => Name = name;
 
         public override AssControlElement ParseValue(string content) {
             Value = content;

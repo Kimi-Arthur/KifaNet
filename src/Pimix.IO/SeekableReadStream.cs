@@ -4,12 +4,17 @@ using NLog;
 
 namespace Pimix.IO {
     public class SeekableReadStream : Stream {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0,
             int count = -1);
 
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         readonly Reader reader;
+
+        public SeekableReadStream(long length, Reader reader) {
+            Length = length;
+            this.reader = reader;
+        }
 
         public override bool CanRead => true;
 
@@ -20,11 +25,6 @@ namespace Pimix.IO {
         public override long Length { get; }
 
         public override long Position { get; set; }
-
-        public SeekableReadStream(long length, Reader reader) {
-            Length = length;
-            this.reader = reader;
-        }
 
         public override void Flush() {
             // Intentionally doing nothing.

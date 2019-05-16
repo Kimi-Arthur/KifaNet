@@ -10,7 +10,7 @@ namespace Pimix.Service {
     }
 
     public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
-        Dictionary<string, List<string>> Groups { get; set; } = new Dictionary<string, List<string>>();
+        Dictionary<string, List<string>> Groups { get; } = new Dictionary<string, List<string>>();
 
         public override TDataModel Get(string id) {
             LoadGroups();
@@ -35,7 +35,7 @@ namespace Pimix.Service {
         }
 
         public override void Update(TDataModel data, string id = null) {
-            id = id ?? data.Id as string;
+            id = id ?? data.Id;
             var original = Get(id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
 

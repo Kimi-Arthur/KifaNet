@@ -20,12 +20,15 @@ namespace Pimix.Subtitle.Srt {
             if (Bold) {
                 controlElement.Elements.Add(new BoldStyle());
             }
+
             if (Italic) {
                 controlElement.Elements.Add(new ItalicStyle());
             }
+
             if (Underline) {
                 controlElement.Elements.Add(new UnderlineStyle());
             }
+
             if (FontColor.HasValue) {
                 var c = new PrimaryColourStyle();
                 c.Value = FontColor.Value;
@@ -37,7 +40,9 @@ namespace Pimix.Subtitle.Srt {
                     controlElement,
                     new AssDialogueRawTextElement {
                         Content = string.Join("\\N",
-                            Content.Split(new[] {"\n", "\n"},
+                            Content.Split(new[] {
+                                    "\n", "\n"
+                                },
                                 StringSplitOptions.RemoveEmptyEntries))
                     }
                 }

@@ -3,9 +3,8 @@ using System.IO;
 
 namespace CG.Web.MegaApiClient {
     class StreamWithLength : Stream {
-        protected readonly long streamLength;
-
         readonly Stream stream;
+        protected readonly long streamLength;
 
         public StreamWithLength(Stream stream, long streamLength) {
             if (stream == null) {

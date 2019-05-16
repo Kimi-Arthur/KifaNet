@@ -12,8 +12,10 @@ namespace Pimix.Web.Api {
 
             PimixConfigs.LoadFromSystemConfigs();
 
-            ConventionRegistry.Register("Correct Conventions", new ConventionPack {new SnakeNameConvention()},
-                (_) => true);
+            ConventionRegistry.Register("Correct Conventions", new ConventionPack {
+                    new SnakeNameConvention()
+                },
+                _ => true);
 
 
             CreateWebHostBuilder(args).Build().Run();

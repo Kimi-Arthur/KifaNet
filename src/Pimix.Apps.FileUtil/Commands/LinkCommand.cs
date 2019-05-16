@@ -3,11 +3,12 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
     class LinkCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, MetaName = "TARGET", MetaValue = "STRING", Required = true,
             HelpText = "The target for this link.")]
         public string Target { get; set; }
@@ -19,8 +20,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('i', "id", HelpText =
             "Treat all file names as id. Note that linking is always about conceptual files.")]
         public bool ById { get; set; } = false;
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             if (ById) {

@@ -9,13 +9,13 @@ using Pimix.Service;
 namespace PimixTest.Cloud.BaiduCloud {
     [TestClass]
     public class BaiduCloudStorageClientTests {
-        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
-
         const string FileSHA256 =
             "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
         const string BigFileSHA256 =
             "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
+
+        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         [TestMethod]
         public void DownloadTest() {
@@ -64,8 +64,7 @@ namespace PimixTest.Cloud.BaiduCloud {
         public void UploadRapidAndRemoveTest() {
             var client = GetStorageClient();
 
-            client.UploadStreamRapid(
-                "/Test/rapid.bin",
+            client.UploadStreamRapid("/Test/rapid.bin",
                 new FileInformation {
                     Size = 1048576,
                     Md5 = "3DD3601B968AEBB08C6FD3E1A66D22C3",
@@ -110,8 +109,7 @@ namespace PimixTest.Cloud.BaiduCloud {
         public void UploadDirectTest() {
             var client = GetStorageClient();
 
-            client.Write(
-                "/Test/direct.bin",
+            client.Write("/Test/direct.bin",
                 File.OpenRead("data.bin"));
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
@@ -145,12 +143,8 @@ namespace PimixTest.Cloud.BaiduCloud {
             var client = GetStorageClient();
 
             var files = new[] {
-                "/Test/2010-11-25.bin_bak",
-                "/Test/2010-11-25.bin_1",
-                "/Test/2010-11-25.bin_2",
-                "/Test/rapid.bin",
-                "/Test/block.bin",
-                "/Test/direct.bin"
+                "/Test/2010-11-25.bin_bak", "/Test/2010-11-25.bin_1", "/Test/2010-11-25.bin_2", "/Test/rapid.bin",
+                "/Test/block.bin", "/Test/direct.bin"
             };
 
             foreach (var f in files) {
@@ -162,6 +156,8 @@ namespace PimixTest.Cloud.BaiduCloud {
         }
 
         static BaiduCloudStorageClient GetStorageClient()
-            => new BaiduCloudStorageClient {AccountId = "PimixT"};
+            => new BaiduCloudStorageClient {
+                AccountId = "PimixT"
+            };
     }
 }

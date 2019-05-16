@@ -136,8 +136,8 @@ namespace CG.Web.MegaApiClient {
             byte[] masterKey) {
             // We need to add padding to obtain multiple of 16
             encodedRsaPrivateKey =
-                encodedRsaPrivateKey.CopySubArray(
-                    encodedRsaPrivateKey.Length + (16 - encodedRsaPrivateKey.Length % 16));
+                encodedRsaPrivateKey.CopySubArray(encodedRsaPrivateKey.Length +
+                                                  (16 - encodedRsaPrivateKey.Length % 16));
             var rsaPrivateKey = DecryptKey(encodedRsaPrivateKey, masterKey);
 
             // rsaPrivateKeyComponents[0] => First factor p

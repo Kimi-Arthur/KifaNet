@@ -12,7 +12,13 @@ namespace Pimix.IO {
 
         public List<Stream> Streams { get; set; }
 
-        public override int Read(byte[] buffer, int offset, int count) => throw new System.NotImplementedException();
+        public override bool CanRead => true;
+        public override bool CanSeek => true;
+        public override bool CanWrite => false;
+        public override long Length { get; }
+        public override long Position { get; set; }
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
 
         public override void Flush() {
             // Intentionally doing nothing.
@@ -43,11 +49,5 @@ namespace Pimix.IO {
 
         public override void Write(byte[] buffer, int offset, int count) =>
             throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
-
-        public override bool CanRead => true;
-        public override bool CanSeek => true;
-        public override bool CanWrite => false;
-        public override long Length { get; }
-        public override long Position { get; set; }
     }
 }

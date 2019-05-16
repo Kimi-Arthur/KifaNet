@@ -20,11 +20,11 @@ namespace CG.Web.MegaApiClient {
         static readonly Uri BaseUri = new Uri("https://mega.nz");
 
         readonly WebClient webClient;
-
-        Node trashNode;
-        string sessionId;
         byte[] masterKey;
         uint sequenceIndex = (uint) (uint.MaxValue * new Random().NextDouble());
+        string sessionId;
+
+        Node trashNode;
 
         #region Constructors
 
@@ -33,6 +33,27 @@ namespace CG.Web.MegaApiClient {
         /// </summary>
         public MegaApiClient() {
             webClient = new WebClient();
+        }
+
+        #endregion
+
+        #region AuthInfos
+
+        public class AuthInfos {
+            public AuthInfos(string email, string hash, byte[] passwordAesKey) {
+                Email = email;
+                Hash = hash;
+                PasswordAesKey = passwordAesKey;
+            }
+
+            [JsonProperty]
+            public string Email { get; private set; }
+
+            [JsonProperty]
+            public string Hash { get; private set; }
+
+            [JsonProperty]
+            public byte[] PasswordAesKey { get; private set; }
         }
 
         #endregion
@@ -423,8 +444,7 @@ namespace CG.Web.MegaApiClient {
 
         static byte[] PrepareKey(byte[] data) {
             var pkey = new byte[] {
-                0x93, 0xC4, 0x67, 0xE3, 0x7D, 0xB0, 0xC7, 0xA4, 0xD1, 0xBE, 0x3F, 0x81, 0x01, 0x52,
-                0xCB, 0x56
+                0x93, 0xC4, 0x67, 0xE3, 0x7D, 0xB0, 0xC7, 0xA4, 0xD1, 0xBE, 0x3F, 0x81, 0x01, 0x52, 0xCB, 0x56
             };
 
             for (var it = 0; it < 65536; it++)
@@ -446,7 +466,9 @@ namespace CG.Web.MegaApiClient {
 
         TResponse Request<TResponse>(RequestBase request, object context = null)
             where TResponse : class {
-            var dataRequest = JsonConvert.SerializeObject(new object[] {request});
+            var dataRequest = JsonConvert.SerializeObject(new object[] {
+                request
+            });
             var uri = GenerateUrl();
             object jsonData = null;
             var currentAttempt = 0;
@@ -538,27 +560,6 @@ namespace CG.Web.MegaApiClient {
             }
 
             return chunks.ToArray();
-        }
-
-        #endregion
-
-        #region AuthInfos
-
-        public class AuthInfos {
-            public AuthInfos(string email, string hash, byte[] passwordAesKey) {
-                Email = email;
-                Hash = hash;
-                PasswordAesKey = passwordAesKey;
-            }
-
-            [JsonProperty]
-            public string Email { get; private set; }
-
-            [JsonProperty]
-            public string Hash { get; private set; }
-
-            [JsonProperty]
-            public byte[] PasswordAesKey { get; private set; }
         }
 
         #endregion

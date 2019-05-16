@@ -10,6 +10,8 @@ namespace Pimix.Apps.FileUtil.Commands {
     [Verb("rm", HelpText =
         "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
     class RemoveCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, MetaName = "FILE", MetaValue = "STRING", HelpText = "File to be removed.")]
         public string FileUri { get; set; }
 
@@ -22,8 +24,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Option('f', "force", HelpText =
             "Remove all instances of the file, including file with different name and in cloud.")]
         public bool ForceRemove { get; set; }
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             if (string.IsNullOrEmpty(FileUri)) {

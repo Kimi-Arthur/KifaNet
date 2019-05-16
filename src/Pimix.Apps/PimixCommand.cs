@@ -12,6 +12,8 @@ namespace Pimix.Apps {
 
         public static HashSet<string> LoggingTargets { get; set; }
 
+        public static PimixFile CurrentFolder => new PimixFile(".");
+
         public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
             Initialize();
             return parse(args).MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
@@ -57,8 +59,6 @@ namespace Pimix.Apps {
 
         public abstract int Execute();
 
-        public static PimixFile CurrentFolder => new PimixFile(".");
-
         public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
             Func<TChoice, string> choiceToString = null, string choiceName = null,
             TChoice negative = default(TChoice)) {
@@ -68,7 +68,7 @@ namespace Pimix.Apps {
 
             choiceName = choiceName ?? "items";
 
-            for (int i = 0; i < choices.Count; i++) {
+            for (var i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i + 1}] {choiceStrings[i]}");
             }
 
@@ -86,7 +86,7 @@ namespace Pimix.Apps {
 
             choiceName = choiceName ?? "items";
 
-            for (int i = 0; i < choices.Count; i++) {
+            for (var i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choiceStrings[i]}");
             }
 

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Subtitle.Srt {
@@ -12,13 +10,19 @@ namespace Pimix.Subtitle.Srt {
 
         public static SrtLine Parse(string s) {
             var lines = s.Trim()
-                .Split(new[] {"\n", "\n"}, 3, StringSplitOptions.RemoveEmptyEntries);
-            var times = lines[1].Replace(',', '.').Split(new[] {" --> "}, StringSplitOptions.None);
+                .Split(new[] {
+                    "\n", "\n"
+                }, 3, StringSplitOptions.RemoveEmptyEntries);
+            var times = lines[1].Replace(',', '.').Split(new[] {
+                " --> "
+            }, StringSplitOptions.None);
             return new SrtLine {
                 Index = int.Parse(lines[0]),
                 StartTime = TimeSpan.Parse(times[0]),
                 EndTime = TimeSpan.Parse(times[1]),
-                Text = new SrtTextElement {Content = lines[2]}
+                Text = new SrtTextElement {
+                    Content = lines[2]
+                }
             };
         }
 

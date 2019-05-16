@@ -6,7 +6,8 @@ using Svg;
 
 namespace Pimix.Bilibili {
     public class BilibiliMask {
-        List<(TimeSpan start, SvgImage mask)> Masks = new List<(TimeSpan start, SvgImage mask)>(); 
+        readonly List<(TimeSpan start, SvgImage mask)> Masks = new List<(TimeSpan start, SvgImage mask)>();
+
         public void ProcessDialogues(List<AssDialogue> dialogs) {
             var sortedDialogs = dialogs.OrderBy(d => d.Start).ToList();
             var currentMask = 0;
@@ -21,13 +22,12 @@ namespace Pimix.Bilibili {
             }
 
             var clipElements = new AssDialogueControlTextElement();
-            
+
             if (Masks[currentMask].start < dialog.Start) {
                 clipElements.Elements.Add(GetDrawing(Masks[currentMask].mask));
             }
-            
+
             foreach (var mask in Masks.Skip(currentMask)) {
-                
             }
 
             dialog.Text.TextElements.Insert(0, clipElements);
@@ -35,8 +35,6 @@ namespace Pimix.Bilibili {
             return currentMask;
         }
 
-        DrawingClipFunction GetDrawing(SvgImage image) {
-            return new DrawingClipFunction();
-        }
+        DrawingClipFunction GetDrawing(SvgImage image) => new DrawingClipFunction();
     }
 }

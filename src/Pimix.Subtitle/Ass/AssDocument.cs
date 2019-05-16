@@ -25,7 +25,7 @@ namespace Pimix.Subtitle.Ass {
             AssStylesSection stylesSection = null;
             var lines = separator.Split(content);
             var startLine = -1;
-            for (int i = 0; i < lines.Length; i++) {
+            for (var i = 0; i < lines.Length; i++) {
                 if (sectionHeaderPattern.Match(lines[i]).Success) {
                     if (startLine >= 0) {
                         var section = AssSection.Parse(stylesSection, lines[startLine],

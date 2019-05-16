@@ -11,10 +11,12 @@ namespace PimixTest.Subtitle.Ass {
 
         [Fact]
         public void WithValueTest() {
-            var section = new AssScriptInfoSection
-                {OriginalScript = "Kimi", Title = "Great!", ScriptType = "Special type"};
-            Assert.StartsWith(
-                "[Script Info]\nTitle: Great!\nOriginal Script: Kimi\nScript Type: Special type\n",
+            var section = new AssScriptInfoSection {
+                OriginalScript = "Kimi",
+                Title = "Great!",
+                ScriptType = "Special type"
+            };
+            Assert.StartsWith("[Script Info]\nTitle: Great!\nOriginal Script: Kimi\nScript Type: Special type\n",
                 section.ToString());
         }
     }

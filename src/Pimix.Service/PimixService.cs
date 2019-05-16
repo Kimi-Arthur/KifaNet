@@ -32,7 +32,7 @@ namespace Pimix.Service {
     public static class PimixService {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        static Dictionary<Type, object> clients = new Dictionary<Type, object>();
+        static readonly Dictionary<Type, object> clients = new Dictionary<Type, object>();
 
         static PimixServiceClient<TDataModel> GetClient<TDataModel>() where TDataModel : DataModel {
             var t = typeof(TDataModel);

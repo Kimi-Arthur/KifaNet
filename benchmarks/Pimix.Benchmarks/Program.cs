@@ -7,14 +7,14 @@ namespace Pimix.Benchmarks {
         static void Main(string[] args) {
             var random = new Random();
             var ints = new List<int>();
-            for (int i = 0; i < 500000000; i++) {
+            for (var i = 0; i < 500000000; i++) {
                 ints.Add(random.Next(2));
             }
 
             Console.WriteLine(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.fffffffzzz"));
 
             var sum1 = 0;
-            for (int i = 10000000; i < 500000000; i++) {
+            for (var i = 10000000; i < 500000000; i++) {
                 sum1 += ints[i];
             }
 
@@ -23,7 +23,7 @@ namespace Pimix.Benchmarks {
             Console.WriteLine(DateTime.Now.ToString("yyyy-MM-ddTHH\\:mm\\:ss.fffffffzzz"));
 
             var sum2 = 0;
-            for (int i = 10000000; i < ints.Count; i++) {
+            for (var i = 10000000; i < ints.Count; i++) {
                 sum2 += ints[i];
             }
 

@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace Pimix.IO {
     public abstract class StorageClient : IDisposable {
+        public virtual void Dispose() {
+        }
+
         public virtual IEnumerable<FileInformation> List(string path, bool recursive = false,
             string pattern = "*")
             => Enumerable.Empty<FileInformation>();
@@ -24,15 +27,12 @@ namespace Pimix.IO {
         }
 
         public virtual void Move(string sourcePath, string destinationPath) {
-            Copy(sourcePath, destinationPath, false);
+            Copy(sourcePath, destinationPath);
             Delete(sourcePath);
         }
 
         public abstract Stream OpenRead(string path);
 
         public abstract void Write(string path, Stream stream);
-
-        public virtual void Dispose() {
-        }
     }
 }

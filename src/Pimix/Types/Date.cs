@@ -8,7 +8,9 @@ namespace Pimix {
         public int Month => date.Month;
         public int Day => date.Day;
 
-        public static Date Parse(string data) => new Date {date = DateTime.Parse(data)};
+        public static Date Parse(string data) => new Date {
+            date = DateTime.Parse(data)
+        };
 
         public string ToJson() => date.ToString("yyyy-MM-dd");
 

@@ -13,12 +13,15 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
     public class BilibiliVideo : DataModel {
+        public enum PartModeType {
+            SinglePartMode,
+            ContinuousPartMode,
+            ParallelPartMode
+        }
+
         public const string ModelId = "bilibili/videos";
 
         static BilibiliVideoServiceClient client;
-
-        public static BilibiliVideoServiceClient Client => client =
-            client ?? new BilibiliVideoRestServiceClient();
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -26,14 +29,13 @@ namespace Pimix.Bilibili {
 
         static HttpClient biliplusClient = new HttpClient();
 
+        PartModeType partMode;
+
+        public static BilibiliVideoServiceClient Client => client =
+            client ?? new BilibiliVideoRestServiceClient();
+
         public static string BiliplusCookies { get; set; }
         public static int DefaultBiliplusSourceChoice { get; set; }
-
-        public enum PartModeType {
-            SinglePartMode,
-            ContinuousPartMode,
-            ParallelPartMode
-        }
 
         public string Title { get; set; }
         public string Author { get; set; }
@@ -46,8 +48,6 @@ namespace Pimix.Bilibili {
         public string Cover { get; set; }
         public DateTime? Uploaded { get; set; }
         public List<BilibiliChat> Pages { get; set; }
-
-        PartModeType partMode;
 
         [JsonIgnore]
         public PartModeType PartMode {
@@ -141,7 +141,7 @@ namespace Pimix.Bilibili {
             var initialSource = biliplusSourceChoice;
             while (true) {
                 try {
-                    logger.Debug($"Choosen source: " +
+                    logger.Debug("Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     var length = biliplusClient
                         .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link)).Result

@@ -5,6 +5,8 @@
         public override string ToString() => Content;
 
         public new static AssDialogueTextElement Parse(string content)
-            => new AssDialogueRawTextElement {Content = content};
+            => new AssDialogueRawTextElement {
+                Content = content
+            };
     }
 }

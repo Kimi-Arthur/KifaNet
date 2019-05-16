@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Pimix.Subtitle.Ass {
     public class AssEvent : AssLine {
-        public int Layer { get; set; } = 0;
+        public int Layer { get; set; }
 
         public TimeSpan Start { get; set; }
 

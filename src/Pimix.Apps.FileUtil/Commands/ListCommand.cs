@@ -1,15 +1,14 @@
 ﻿using System;
 using CommandLine;
 using Pimix.Api.Files;
-using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
     class ListCommand : PimixFileCommand {
+        int counter;
+
         [Option('l', "long", HelpText = "Long list mode")]
         public bool LongListMode { get; set; } = false;
-
-        int counter;
 
         public override int Execute() {
             var result = base.Execute();

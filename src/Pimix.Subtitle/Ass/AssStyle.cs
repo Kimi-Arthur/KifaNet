@@ -13,6 +13,8 @@ namespace Pimix.Subtitle.Ass {
         public const string DefaultFontName = "Arial";
         public const int DefaultSemiAlpha = 224;
 
+        int shadow = 1;
+
         public static AssStyle DefaultStyle { get; set; }
             = new AssStyle {
                 Name = "Default",
@@ -120,8 +122,6 @@ namespace Pimix.Subtitle.Ass {
 
         public int Outline { get; set; } = 1;
 
-        int shadow = 1;
-
         public int Shadow {
             get => shadow;
             set {
@@ -144,15 +144,6 @@ namespace Pimix.Subtitle.Ass {
         public int Encoding { get; set; }
 
         public override string Key => "Style";
-
-        public AssStyle Scale(double scale) {
-            FontSize = (FontSize * scale).RoundUp(10);
-            MarginL = (MarginL * scale).RoundUp(10);
-            MarginR = (MarginR * scale).RoundUp(10);
-            MarginV = (MarginV * scale).RoundUp(10);
-
-            return this;
-        }
 
         public override IEnumerable<string> Values
             => new List<string> {
@@ -180,6 +171,15 @@ namespace Pimix.Subtitle.Ass {
                 MarginV.ToString(),
                 Encoding.ToString()
             };
+
+        public AssStyle Scale(double scale) {
+            FontSize = (FontSize * scale).RoundUp(10);
+            MarginL = (MarginL * scale).RoundUp(10);
+            MarginR = (MarginR * scale).RoundUp(10);
+            MarginV = (MarginV * scale).RoundUp(10);
+
+            return this;
+        }
 
         public static AssStyle Parse(IEnumerable<string> content, IEnumerable<string> headers) {
             var style = new AssStyle();

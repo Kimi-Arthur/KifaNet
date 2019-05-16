@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
-using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Apps.JobUtil {

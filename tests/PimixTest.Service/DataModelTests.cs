@@ -10,6 +10,11 @@ namespace PimixTest.Service {
         }
 
         [Fact]
+        public void DataModelCallBasicTest() {
+            FakeDataModel.Client.Reset();
+        }
+
+        [Fact]
         public void DataModelGetBasicTest() {
             var data = FakeDataModel.Client.Get("item0");
             Assert.Equal("item0", data.Id);
@@ -31,11 +36,6 @@ namespace PimixTest.Service {
                 "sub prop 2 value 1",
                 "sub prop 2 value 2"
             }, data.SubProp.Sub2);
-        }
-
-        [Fact]
-        public void DataModelCallBasicTest() {
-            FakeDataModel.Client.Reset();
         }
 
         [Fact]

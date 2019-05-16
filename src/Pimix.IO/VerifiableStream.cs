@@ -16,13 +16,18 @@ namespace Pimix.IO {
 
         static readonly HashAlgorithm SHA256Hasher = new SHA256CryptoServiceProvider();
 
-        Stream stream;
-
         readonly FileInformation info;
 
         byte[] lastBlock;
 
         long lastBlockStart = -1;
+
+        Stream stream;
+
+        public VerifiableStream(Stream stream, FileInformation info) {
+            this.stream = stream;
+            this.info = info;
+        }
 
         public override bool CanRead => stream.CanRead;
 
@@ -34,11 +39,6 @@ namespace Pimix.IO {
         public override long Length => stream.Length;
 
         public override long Position { get; set; }
-
-        public VerifiableStream(Stream stream, FileInformation info) {
-            this.stream = stream;
-            this.info = info;
-        }
 
         public override void Flush() {
             stream.Flush();
@@ -108,12 +108,10 @@ namespace Pimix.IO {
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                         } else {
                             candidates[(result.md5, result.sha1, result.sha256)] =
-                                candidates.GetValueOrDefault(
-                                    (result.md5, result.sha1, result.sha256), 0) + 1;
+                                candidates.GetValueOrDefault((result.md5, result.sha1, result.sha256), 0) + 1;
                             if (HasMajority(candidates)) {
                                 if (candidates.Count > 1) {
-                                    logger.Debug(
-                                        "Block {0} is not consistently got, but it's fine:",
+                                    logger.Debug("Block {0} is not consistently got, but it's fine:",
                                         pos / FileInformation.BlockSize);
                                     foreach (var candidate in candidates) {
                                         logger.Debug("{0}: {1}", candidate.Key, candidate.Value);

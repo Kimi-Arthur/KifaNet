@@ -12,7 +12,9 @@ namespace Pimix {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static readonly Dictionary<string, string> EncodingNameFixes =
-            new Dictionary<string, string> {["utf8"] = "UTF-8"};
+            new Dictionary<string, string> {
+                ["utf8"] = "UTF-8"
+            };
 
         static string GetString(WebResponse response) {
             var resp = response as HttpWebResponse;

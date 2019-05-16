@@ -5,6 +5,19 @@ using System.Text.RegularExpressions;
 
 namespace Pimix {
     public static class StringExtensions {
+        static Dictionary<string, long> symbolMap;
+
+        static readonly Dictionary<string, string> characterMapping = new Dictionary<string, string> {
+            ["/"] = "／",
+            ["\\"] = "＼",
+            [":"] = "：",
+            ["|"] = "｜",
+            ["?"] = "？",
+            ["*"] = "＊",
+            ["<"] = "＜",
+            [">"] = "＞"
+        };
+
         public static string Format(this string format, Dictionary<string, string> parameters) {
             if (format == null) {
                 throw new ArgumentNullException(nameof(format));
@@ -30,8 +43,6 @@ namespace Pimix {
 
             return string.Format(format, args);
         }
-
-        static Dictionary<string, long> symbolMap;
 
         public static long ParseSizeString(this string data) {
             if (string.IsNullOrEmpty(data)) {
@@ -72,39 +83,26 @@ namespace Pimix {
             }
 
             if (timeSpanString.EndsWith("hr")) {
-                return TimeSpan.FromHours(
-                    double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 2)));
+                return TimeSpan.FromHours(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 2)));
             }
 
             if (timeSpanString.EndsWith("min")) {
-                return TimeSpan.FromMinutes(
-                    double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 3)));
+                return TimeSpan.FromMinutes(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 3)));
             }
 
             if (timeSpanString.EndsWith("s")) {
-                return TimeSpan.FromSeconds(
-                    double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 1)));
+                return TimeSpan.FromSeconds(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 1)));
             }
 
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
         }
-
-        static readonly Dictionary<string, string> characterMapping = new Dictionary<string, string> {
-            ["/"] = "／",
-            ["\\"] = "＼",
-            [":"] = "：",
-            ["|"] = "｜",
-            ["?"] = "？",
-            ["*"] = "＊",
-            ["<"] = "＜",
-            [">"] = "＞"
-        };
 
         public static string NormalizeFileName(this string fileName) {
             var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).TrimEnd();
             foreach (var mapping in characterMapping) {
                 normalizedFileName = normalizedFileName.Replace(mapping.Key, mapping.Value);
             }
+
             return normalizedFileName;
         }
     }

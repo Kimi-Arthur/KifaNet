@@ -11,6 +11,8 @@ namespace Pimix.Apps {
     public abstract class PimixFileCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        static readonly Regex numberPattern = new Regex(@"\d+");
+
         [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
         public IEnumerable<string> FileNames { get; set; }
 
@@ -25,13 +27,13 @@ namespace Pimix.Apps {
         protected virtual Func<List<PimixFile>, string> InstanceConfirmText => null;
 
         /// <summary>
-        /// Iterate over files with this prefix. If it's not, prefix the path with this member.
+        ///     Iterate over files with this prefix. If it's not, prefix the path with this member.
         /// </summary>
         protected virtual string Prefix => null;
 
         /// <summary>
-        /// By default, it will only iterate over existing files. When it's set to true, it will iterate over logical
-        /// ones and produce ExecuteOneInstance calls with the two combined.
+        ///     By default, it will only iterate over existing files. When it's set to true, it will iterate over logical
+        ///     ones and produce ExecuteOneInstance calls with the two combined.
         /// </summary>
         protected virtual bool IterateOverLogicalFiles => false;
 
@@ -142,15 +144,9 @@ namespace Pimix.Apps {
             }
         }
 
-        protected virtual int ExecuteOne(string file) {
-            return -1;
-        }
+        protected virtual int ExecuteOne(string file) => -1;
 
-        protected virtual int ExecuteOneInstance(PimixFile file) {
-            return -1;
-        }
-
-        static readonly Regex numberPattern = new Regex(@"\d+");
+        protected virtual int ExecuteOneInstance(PimixFile file) => -1;
 
         string getSortKey(string path) {
             return NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;

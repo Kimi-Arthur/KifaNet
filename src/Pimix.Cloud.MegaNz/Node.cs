@@ -11,6 +11,15 @@ namespace CG.Web.MegaApiClient {
         Node() {
         }
 
+        [JsonIgnore]
+        public string Name { get; protected set; }
+
+        [JsonProperty("s")]
+        public long Size { get; protected set; }
+
+        [JsonProperty("t")]
+        public NodeType Type { get; protected set; }
+
         #region Public properties
 
         [JsonProperty("h")]
@@ -94,14 +103,5 @@ namespace CG.Web.MegaApiClient {
         public override bool Equals(object obj) => Equals(obj as Node);
 
         #endregion
-
-        [JsonIgnore]
-        public string Name { get; protected set; }
-
-        [JsonProperty("s")]
-        public long Size { get; protected set; }
-
-        [JsonProperty("t")]
-        public NodeType Type { get; protected set; }
     }
 }

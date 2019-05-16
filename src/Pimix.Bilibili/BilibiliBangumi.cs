@@ -9,6 +9,7 @@ namespace Pimix.Bilibili {
 
         public static BilibiliBangumiServiceClient Client => client =
             client ?? new BilibiliBangumiRestServiceClient();
+
         public string Name { get; set; }
         public List<string> Aids { get; set; }
     }
@@ -16,6 +17,7 @@ namespace Pimix.Bilibili {
     public interface BilibiliBangumiServiceClient : PimixServiceClient<BilibiliBangumi> {
     }
 
-    public class BilibiliBangumiRestServiceClient : PimixServiceRestClient<BilibiliBangumi>, BilibiliBangumiServiceClient {
+    public class BilibiliBangumiRestServiceClient : PimixServiceRestClient<BilibiliBangumi>,
+        BilibiliBangumiServiceClient {
     }
 }

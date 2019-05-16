@@ -17,6 +17,7 @@ namespace Pimix.Bilibili {
     public interface BilibiliUploaderServiceClient : PimixServiceClient<BilibiliUploader> {
     }
 
-    public class BilibiliUploaderRestServiceClient : PimixServiceRestClient<BilibiliUploader>, BilibiliUploaderServiceClient {
+    public class BilibiliUploaderRestServiceClient : PimixServiceRestClient<BilibiliUploader>,
+        BilibiliUploaderServiceClient {
     }
 }

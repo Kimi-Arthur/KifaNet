@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -14,18 +13,17 @@ using Pimix.Subtitle.Srt;
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
     class GenerateCommand : PimixFileCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         const string SubtitlesPrefix = "/Subtitles";
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        List<int> selectedBilibiliChatIndexes;
+
+        List<int> selectedSubtitleIndexes;
 
         [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
         public bool Force { get; set; }
 
         protected override Func<List<PimixFile>, string> InstanceConfirmText
             => files => $"Confirm generating comments for the {files.Count} files above?";
-
-        List<int> selectedSubtitleIndexes;
-        List<int> selectedBilibiliChatIndexes;
 
         protected override int ExecuteOneInstance(PimixFile file) {
             var actualFile = file.Parent.GetFile($"{file.BaseName}.ass");
@@ -50,9 +48,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
                 var rawSubtitles = GetSrtSubtitles(file.Parent.GetFilePrefixed(SubtitlesPrefix),
                     file.BaseName);
-                rawSubtitles.AddRange(
-                    GetAssSubtitles(file.Parent.GetFilePrefixed(SubtitlesPrefix),
-                        file.BaseName));
+                rawSubtitles.AddRange(GetAssSubtitles(file.Parent.GetFilePrefixed(SubtitlesPrefix),
+                    file.BaseName));
                 var subtitles = SelectSubtitles(rawSubtitles);
                 events.Events.AddRange(subtitles.dialogs);
 
@@ -99,7 +96,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         (List<string> ids, List<AssDialogue> dialogs) SelectBilibiliChats(
             List<(string id, List<AssDialogue> content)> chats) {
-            for (int i = 0; i < chats.Count; i++) {
+            for (var i = 0; i < chats.Count; i++) {
                 Console.WriteLine($"[{i}] {chats[i].id}: {chats[i].content.Count} comments.");
             }
 
@@ -131,9 +128,8 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         (List<string> ids, List<AssDialogue> dialogs, List<AssStyle> styles) SelectSubtitles(
             List<(string id, List<AssDialogue> content, List<AssStyle> styles)> rawSubtitles) {
-            for (int i = 0; i < rawSubtitles.Count; i++) {
-                Console.WriteLine(
-                    $"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
+            for (var i = 0; i < rawSubtitles.Count; i++) {
+                Console.WriteLine($"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
             }
 
             List<int> chosenIndexes;
@@ -178,8 +174,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
             AddFunction(comments,
                 (a, b) =>
-                    Math.Max(
-                        sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                    Math.Max(sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
                         (comments[a].End - comments[b].Start).TotalSeconds -
                         screenWidth / speeds[b]),
                 (c, row) => new AssDialogueControlTextElement {
@@ -220,7 +215,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             Func<int, int, AssDialogueTextElement> getFunction) {
             var rows = new List<int>();
             var maxRows = 14;
-            for (int i = 0; i < maxRows; i++) {
+            for (var i = 0; i < maxRows; i++) {
                 rows.Add(-1);
             }
 
@@ -229,7 +224,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             var totalBigMove = 0;
             for (var i = 0; i < comments.Count; i++) {
                 var movement = 1000.0;
-                int minRow = -1;
+                var minRow = -1;
                 for (var r = 0; r < maxRows; ++r) {
                     if (rows[r] >= 0) {
                         var o = getOverlap(rows[r], i);
@@ -272,8 +267,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
         }
 
-        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(
-            PimixFile parent,
+        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(PimixFile parent,
             string baseName)
             => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
                 using (var sr = new StreamReader(file.OpenRead())) {
@@ -283,8 +277,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                 }
             }).ToList();
 
-        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(
-            PimixFile parent,
+        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(PimixFile parent,
             string baseName)
             => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
                 var document = AssDocument.Parse(file.OpenRead());

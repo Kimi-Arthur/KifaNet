@@ -1,8 +1,6 @@
-using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil {
     public class Helper {
@@ -14,7 +12,7 @@ namespace Pimix.Apps.BiliUtil {
                 return (null, 0, null);
             }
 
-            return ($"av{match.Groups[1].Value}", Int32.Parse(match.Groups[2].Value),
+            return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value),
                 match.Groups[3].Value);
         }
 

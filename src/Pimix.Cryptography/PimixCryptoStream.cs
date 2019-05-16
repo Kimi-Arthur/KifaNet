@@ -4,10 +4,20 @@ using System.Security.Cryptography;
 
 namespace Pimix.Cryptography {
     public class PimixCryptoStream : Stream {
-        Stream stream;
         readonly bool needBlockAhead;
-        ICryptoTransform transform;
         byte[] padBuffer;
+
+        long position;
+        Stream stream;
+        ICryptoTransform transform;
+
+        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
+            bool needBlockAhead) {
+            this.stream = stream;
+            Length = outputLength;
+            this.needBlockAhead = needBlockAhead;
+            this.transform = transform;
+        }
 
         int BlockSize => transform.InputBlockSize;
 
@@ -19,8 +29,6 @@ namespace Pimix.Cryptography {
 
         public override long Length { get; }
 
-        long position;
-
         public override long Position {
             get => position;
 
@@ -31,14 +39,6 @@ namespace Pimix.Cryptography {
 
                 position = value;
             }
-        }
-
-        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
-            bool needBlockAhead) {
-            this.stream = stream;
-            Length = outputLength;
-            this.needBlockAhead = needBlockAhead;
-            this.transform = transform;
         }
 
         public override void Flush() {

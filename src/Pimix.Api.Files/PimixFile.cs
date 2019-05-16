@@ -18,53 +18,14 @@ namespace Pimix.Api.Files {
     public class PimixFile : IComparable<PimixFile>, IEquatable<PimixFile> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static string SubPathIgnorePattern { get; set; } = "$^";
-
-        public static string FullPathIgnorePattern { get; set; } = "$^";
-
-        public static bool PreferBaiduCloud { get; set; }
-
         static Regex subPathIgnoredFiles;
 
         static Regex fullPathIgnoredFiles;
 
-        static Regex SubPathIgnoredFiles
-            => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
-                () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
-
-        static Regex FullPathIgnoredFiles
-            => LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
-                () => new Regex(FullPathIgnorePattern, RegexOptions.Compiled));
-
         static readonly Dictionary<string, StorageClient> knownClients =
             new Dictionary<string, StorageClient>();
 
-        public string Id { get; set; }
-
-        // Ends with a slash.
-        string ParentPath { get; set; }
-
-        public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
-
-        public string BaseName { get; set; }
-
-        public string Extension { get; set; }
-
-        public string Name
-            => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
-
-        public string Path => $"{ParentPath}{Name}";
-
-        public string Host => Client?.ToString();
-
-        public StorageClient Client { get; set; }
-
-        PimixFileFormat FileFormat { get; set; }
-
         FileInformation fileInfo;
-
-        public FileInformation FileInfo
-            => fileInfo = fileInfo ?? PimixService.GetOr<FileInformation>(Id);
 
         public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null) {
             if (uri == null) {
@@ -122,6 +83,73 @@ namespace Pimix.Api.Files {
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
         }
 
+        public static string SubPathIgnorePattern { get; set; } = "$^";
+
+        public static string FullPathIgnorePattern { get; set; } = "$^";
+
+        public static bool PreferBaiduCloud { get; set; }
+
+        static Regex SubPathIgnoredFiles
+            => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
+                () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
+
+        static Regex FullPathIgnoredFiles
+            => LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
+                () => new Regex(FullPathIgnorePattern, RegexOptions.Compiled));
+
+        public string Id { get; set; }
+
+        // Ends with a slash.
+        string ParentPath { get; }
+
+        public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
+
+        public string BaseName { get; set; }
+
+        public string Extension { get; set; }
+
+        public string Name
+            => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+
+        public string Path => $"{ParentPath}{Name}";
+
+        public string Host => Client?.ToString();
+
+        public StorageClient Client { get; set; }
+
+        PimixFileFormat FileFormat { get; }
+
+        public FileInformation FileInfo
+            => fileInfo = fileInfo ?? PimixService.GetOr<FileInformation>(Id);
+
+        public bool IsCloud
+            => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
+                Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
+
+        public int CompareTo(PimixFile other) {
+            if (ReferenceEquals(this, other)) {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, other)) {
+                return 1;
+            }
+
+            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
+        }
+
+        public bool Equals(PimixFile other) {
+            if (ReferenceEquals(null, other)) {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other)) {
+                return true;
+            }
+
+            return string.Equals(ToString(), other.ToString());
+        }
+
         static string GetUri(string id) {
             var bestRemoteLocation = "";
             var bestScore = 0;
@@ -133,9 +161,9 @@ namespace Pimix.Api.Files {
                         return location.Key;
                     }
 
-                    var score = (PreferBaiduCloud
+                    var score = PreferBaiduCloud
                         ? file.Client is BaiduCloudStorageClient
-                        : file.Client is GoogleDriveStorageClient)
+                        : file.Client is GoogleDriveStorageClient
                         ? 8
                         : 4;
                     score += file.FileFormat is PimixFileV1Format ? 2 :
@@ -323,10 +351,6 @@ namespace Pimix.Api.Files {
         public void Unregister()
             => FileInformation.Client.RemoveLocation(Id, ToString());
 
-        public bool IsCloud
-            => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
-                Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
-
         public bool IsCompatible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
 
@@ -361,30 +385,6 @@ namespace Pimix.Api.Files {
             }
 
             return knownClients[spec];
-        }
-
-        public int CompareTo(PimixFile other) {
-            if (ReferenceEquals(this, other)) {
-                return 0;
-            }
-
-            if (ReferenceEquals(null, other)) {
-                return 1;
-            }
-
-            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
-        }
-
-        public bool Equals(PimixFile other) {
-            if (ReferenceEquals(null, other)) {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other)) {
-                return true;
-            }
-
-            return string.Equals(ToString(), other.ToString());
         }
 
         public override bool Equals(object obj) {

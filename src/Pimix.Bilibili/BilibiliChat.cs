@@ -10,19 +10,21 @@ using Newtonsoft.Json;
 
 namespace Pimix.Bilibili {
     public class BilibiliChat {
-        [JsonProperty("id")]
-        public int Id { get; set; }
+        readonly HttpClient client = new HttpClient(new HttpClientHandler {
+            AutomaticDecompression = DecompressionMethods.Deflate
+        });
 
-        [JsonProperty("cid")]
-        public string Cid { get; set; }
-
-        [JsonProperty("title")]
-        public string Title { get; set; } = "";
-
-        [JsonProperty("duration")]
-        public TimeSpan Duration { get; set; }
+        readonly List<BilibiliComment> comments = new List<BilibiliComment>();
 
         XmlDocument rawDocument;
+
+        public int Id { get; set; }
+
+        public string Cid { get; set; }
+
+        public string Title { get; set; } = "";
+
+        public TimeSpan Duration { get; set; }
 
         public XmlDocument RawDocument {
             get {
@@ -38,15 +40,7 @@ namespace Pimix.Bilibili {
             }
         }
 
-        public void Load(Stream stream) {
-            rawDocument = new XmlDocument();
-            rawDocument.Load(stream);
-            stream.Dispose();
-        }
-
         public TimeSpan ChatOffset { get; set; } = TimeSpan.Zero;
-
-        readonly List<BilibiliComment> comments = new List<BilibiliComment>();
 
         public IEnumerable<BilibiliComment> Comments {
             get {
@@ -61,8 +55,10 @@ namespace Pimix.Bilibili {
             }
         }
 
-        readonly HttpClient client = new HttpClient(new HttpClientHandler {
-            AutomaticDecompression = DecompressionMethods.Deflate
-        });
+        public void Load(Stream stream) {
+            rawDocument = new XmlDocument();
+            rawDocument.Load(stream);
+            stream.Dispose();
+        }
     }
 }
