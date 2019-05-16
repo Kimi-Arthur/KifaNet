@@ -200,7 +200,7 @@ namespace Pimix.Api.Files {
                 FileInfo);
 
         public void WriteIfNotFinished(Func<(long? length, Stream stream)> getStream) {
-            if (FileInfo.Locations.Count > 0) {
+            if (FileInfo.Locations != null) {
                 logger.Info($"{FileInfo.Id} already exists in the system. Skipped.");
                 return;
             }
