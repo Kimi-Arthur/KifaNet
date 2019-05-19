@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Pimix.Service;
 
-namespace Pimix.Service {
+namespace Pimix.Web.Api {
     public class PimixServiceJsonClient {
         public static string DataFolder { get; set; }
     }
