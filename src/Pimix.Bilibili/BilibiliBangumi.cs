@@ -5,19 +5,12 @@ namespace Pimix.Bilibili {
     public class BilibiliBangumi : DataModel {
         public const string ModelId = "bilibili/bangumis";
 
-        static BilibiliBangumiServiceClient client;
+        static PimixServiceClient<BilibiliBangumi> client;
 
-        public static BilibiliBangumiServiceClient Client => client =
-            client ?? new BilibiliBangumiRestServiceClient();
+        public static PimixServiceClient<BilibiliBangumi> Client => client =
+            client ?? new PimixServiceRestClient<BilibiliBangumi>();
 
         public string Name { get; set; }
         public List<string> Aids { get; set; }
-    }
-
-    public interface BilibiliBangumiServiceClient : PimixServiceClient<BilibiliBangumi> {
-    }
-
-    public class BilibiliBangumiRestServiceClient : PimixServiceRestClient<BilibiliBangumi>,
-        BilibiliBangumiServiceClient {
     }
 }

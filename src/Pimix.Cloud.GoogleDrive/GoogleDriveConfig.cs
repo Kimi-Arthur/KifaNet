@@ -6,10 +6,10 @@ namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveConfig : DataModel {
         public const string ModelId = "configs/google";
 
-        static GoogleDriveConfigServiceClient client;
+        static PimixServiceClient<GoogleDriveConfig> client;
 
-        public static GoogleDriveConfigServiceClient Client => client =
-            client ?? new GoogleDriveConfigRestServiceClient();
+        public static PimixServiceClient<GoogleDriveConfig> Client => client =
+            client ?? new PimixServiceRestClient<GoogleDriveConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
 
@@ -55,13 +55,5 @@ namespace Pimix.Cloud.GoogleDrive {
         public string Data { get; set; }
 
         public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
-    }
-
-
-    public interface GoogleDriveConfigServiceClient : PimixServiceClient<GoogleDriveConfig> {
-    }
-
-    public class GoogleDriveConfigRestServiceClient : PimixServiceRestClient<GoogleDriveConfig>,
-        GoogleDriveConfigServiceClient {
     }
 }

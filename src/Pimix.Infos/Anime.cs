@@ -6,10 +6,10 @@ namespace Pimix.Infos {
     public class Anime : DataModel, Formattable {
         public const string ModelId = "animes";
 
-        static AnimeServiceClient client;
+        static PimixServiceClient<Anime> client;
 
-        public static AnimeServiceClient Client => client =
-            client ?? new AnimeRestServiceClient();
+        public static PimixServiceClient<Anime> Client => client =
+            client ?? new PimixServiceRestClient<Anime>();
 
         public string Title { get; set; }
         public Date AirDate { get; set; }
@@ -49,11 +49,5 @@ namespace Pimix.Infos {
 
     public class AnimeSeason : Season {
         public string AnidbId { get; set; }
-    }
-
-    public interface AnimeServiceClient : PimixServiceClient<Anime> {
-    }
-
-    public class AnimeRestServiceClient : PimixServiceRestClient<Anime>, AnimeServiceClient {
     }
 }

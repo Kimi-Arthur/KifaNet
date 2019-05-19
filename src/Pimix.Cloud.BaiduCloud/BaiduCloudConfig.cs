@@ -6,10 +6,10 @@ namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudConfig : DataModel {
         public const string ModelId = "configs/baidu_cloud";
 
-        static BaiduCloudConfigServiceClient client;
+        static PimixServiceClient<BaiduCloudConfig> client;
 
-        public static BaiduCloudConfigServiceClient Client => client =
-            client ?? new BaiduCloudConfigRestServiceClient();
+        public static PimixServiceClient<BaiduCloudConfig> Client => client =
+            client ?? new PimixServiceRestClient<BaiduCloudConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
 
@@ -51,12 +51,5 @@ namespace Pimix.Cloud.BaiduCloud {
         public string Method { get; set; }
 
         public string Url { get; set; }
-    }
-
-    public interface BaiduCloudConfigServiceClient : PimixServiceClient<BaiduCloudConfig> {
-    }
-
-    public class BaiduCloudConfigRestServiceClient : PimixServiceRestClient<BaiduCloudConfig>,
-        BaiduCloudConfigServiceClient {
     }
 }

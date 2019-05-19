@@ -21,7 +21,7 @@ namespace Pimix.Bilibili {
 
         public const string ModelId = "bilibili/videos";
 
-        static BilibiliVideoServiceClient client;
+        static PimixServiceClient<BilibiliVideo> client;
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -31,8 +31,8 @@ namespace Pimix.Bilibili {
 
         PartModeType partMode;
 
-        public static BilibiliVideoServiceClient Client => client =
-            client ?? new BilibiliVideoRestServiceClient();
+        public static PimixServiceClient<BilibiliVideo> Client => client =
+            client ?? new PimixServiceRestClient<BilibiliVideo>();
 
         public static string BiliplusCookies { get; set; }
         public static int DefaultBiliplusSourceChoice { get; set; }
@@ -180,11 +180,5 @@ namespace Pimix.Bilibili {
                 return content;
             }
         }
-    }
-
-    public interface BilibiliVideoServiceClient : PimixServiceClient<BilibiliVideo> {
-    }
-
-    public class BilibiliVideoRestServiceClient : PimixServiceRestClient<BilibiliVideo>, BilibiliVideoServiceClient {
     }
 }

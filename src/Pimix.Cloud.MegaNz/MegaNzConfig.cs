@@ -5,10 +5,10 @@ namespace Pimix.Cloud.MegaNz {
     public class MegaNzConfig : DataModel {
         public const string ModelId = "configs/mega_nz";
 
-        static MegaNzConfigServiceClient client;
+        static PimixServiceClient<MegaNzConfig> client;
 
-        public static MegaNzConfigServiceClient Client => client =
-            client ?? new MegaNzConfigRestServiceClient();
+        public static PimixServiceClient<MegaNzConfig> Client => client =
+            client ?? new PimixServiceRestClient<MegaNzConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; private set; }
     }
@@ -17,11 +17,5 @@ namespace Pimix.Cloud.MegaNz {
         public string Username { get; set; }
 
         public string Password { get; set; }
-    }
-
-    public interface MegaNzConfigServiceClient : PimixServiceClient<MegaNzConfig> {
-    }
-
-    public class MegaNzConfigRestServiceClient : PimixServiceRestClient<MegaNzConfig>, MegaNzConfigServiceClient {
     }
 }
