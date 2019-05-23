@@ -13,7 +13,6 @@ Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 id: default
-account_id: Kimi_Arthur
 
 ###
 

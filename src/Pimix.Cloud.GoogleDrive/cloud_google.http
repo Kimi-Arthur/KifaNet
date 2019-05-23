@@ -1,0 +1,11 @@
+### PimixServer section
+
+POST http://{{server}}/api/configs/google/$refresh_account?id=default
+Accept: application/x-yaml
+
+###
+
+GET http://{{server}}/api/configs/google/
+Accept: application/x-yaml
+
+###
