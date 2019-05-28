@@ -10,7 +10,7 @@ namespace Pimix.Cloud.MegaNz {
         public static PimixServiceClient<MegaNzConfig> Client => client =
             client ?? new PimixServiceRestClient<MegaNzConfig>();
 
-        public Dictionary<string, AccountInfo> Accounts { get; private set; }
+        public Dictionary<string, AccountInfo> Accounts { get; set; }
     }
 
     public class AccountInfo {
