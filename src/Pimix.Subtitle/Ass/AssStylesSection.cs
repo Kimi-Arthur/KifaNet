@@ -5,9 +5,8 @@ using NLog;
 
 namespace Pimix.Subtitle.Ass {
     public class AssStylesSection : AssSection {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         public const string SectionHeader = "[V4+ Styles]";
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public override string SectionTitle => SectionHeader;
 
         public List<string> Format
@@ -42,6 +41,15 @@ namespace Pimix.Subtitle.Ass {
 
         public Dictionary<string, AssStyle> NamedStyles { get; set; } =
             new Dictionary<string, AssStyle>();
+
+        public override IEnumerable<AssLine> AssLines {
+            get {
+                yield return new AssLine("Format", Format);
+                foreach (var style in Styles) {
+                    yield return style;
+                }
+            }
+        }
 
         public static AssStylesSection Parse(IEnumerable<string> lines) {
             var section = new AssStylesSection();
@@ -78,15 +86,6 @@ namespace Pimix.Subtitle.Ass {
             }
 
             return section;
-        }
-
-        public override IEnumerable<AssLine> AssLines {
-            get {
-                yield return new AssLine("Format", Format);
-                foreach (var style in Styles) {
-                    yield return style;
-                }
-            }
         }
     }
 }

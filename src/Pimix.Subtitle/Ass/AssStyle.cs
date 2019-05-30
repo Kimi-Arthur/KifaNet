@@ -13,6 +13,8 @@ namespace Pimix.Subtitle.Ass {
         public const string DefaultFontName = "Arial";
         public const int DefaultSemiAlpha = 224;
 
+        int shadow = 1;
+
         public static AssStyle DefaultStyle { get; set; }
             = new AssStyle {
                 Name = "Default",
@@ -112,26 +114,13 @@ namespace Pimix.Subtitle.Ass {
 
         public int ScaleY { get; set; } = 100;
 
-        public int Spacing { get; set; }
+        public double Spacing { get; set; }
 
         public double Angle { get; set; }
 
         public BorderStyleType BorderStyle { get; set; } = BorderStyleType.OutlineWithDropShadow;
 
-        int outline = 1;
-
-        public int Outline {
-            get => outline;
-            set {
-                if (value < 0 || value > 4) {
-                    throw new ArgumentOutOfRangeException(nameof(Outline));
-                }
-
-                outline = value;
-            }
-        }
-
-        int shadow = 1;
+        public int Outline { get; set; } = 1;
 
         public int Shadow {
             get => shadow;
@@ -156,15 +145,6 @@ namespace Pimix.Subtitle.Ass {
 
         public override string Key => "Style";
 
-        public AssStyle Scale(double scale) {
-            FontSize = (FontSize * scale).RoundUp(10);
-            MarginL = (MarginL * scale).RoundUp(10);
-            MarginR = (MarginR * scale).RoundUp(10);
-            MarginV = (MarginV * scale).RoundUp(10);
-
-            return this;
-        }
-
         public override IEnumerable<string> Values
             => new List<string> {
                 Name,
@@ -180,7 +160,7 @@ namespace Pimix.Subtitle.Ass {
                 StrikeOut.ToAss(),
                 ScaleX.ToString(),
                 ScaleY.ToString(),
-                Spacing.ToString(),
+                $"{Spacing:f2}",
                 $"{Angle:f2}",
                 $"{BorderStyle:d}",
                 Outline.ToString(),
@@ -191,6 +171,15 @@ namespace Pimix.Subtitle.Ass {
                 MarginV.ToString(),
                 Encoding.ToString()
             };
+
+        public AssStyle Scale(double scale) {
+            FontSize = (FontSize * scale).RoundUp(10);
+            MarginL = (MarginL * scale).RoundUp(10);
+            MarginR = (MarginR * scale).RoundUp(10);
+            MarginV = (MarginV * scale).RoundUp(10);
+
+            return this;
+        }
 
         public static AssStyle Parse(IEnumerable<string> content, IEnumerable<string> headers) {
             var style = new AssStyle();
@@ -236,7 +225,7 @@ namespace Pimix.Subtitle.Ass {
                         style.ScaleY = int.Parse(p.Item1);
                         break;
                     case "Spacing":
-                        style.Spacing = int.Parse(p.Item1);
+                        style.Spacing = double.Parse(p.Item1);
                         break;
                     case "Angle":
                         style.Angle = double.Parse(p.Item1);

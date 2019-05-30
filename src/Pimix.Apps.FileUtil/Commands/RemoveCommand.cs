@@ -4,12 +4,13 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("rm", HelpText =
         "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
     class RemoveCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, MetaName = "FILE", MetaValue = "STRING", HelpText = "File to be removed.")]
         public string FileUri { get; set; }
 
@@ -23,11 +24,9 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Remove all instances of the file, including file with different name and in cloud.")]
         public bool ForceRemove { get; set; }
 
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         public override int Execute() {
             if (string.IsNullOrEmpty(FileUri)) {
-                var files = FileInformation.ListFolder(FileId, true);
+                var files = FileInformation.Client.ListFolder(FileId, true);
                 if (files.Count > 0) {
                     foreach (var file in files) {
                         Console.WriteLine(file);
@@ -37,10 +36,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.Write($"Confirm deleting the {files.Count} files above{removalText}?");
                     Console.ReadLine();
 
-                    return files.Select(f => RemoveLogicalFile(PimixService.Get<FileInformation>(f))).Max();
+                    return files.Select(f => RemoveLogicalFile(FileInformation.Client.Get(f))).Max();
                 }
 
-                return RemoveLogicalFile(PimixService.Get<FileInformation>(FileId));
+                return RemoveLogicalFile(FileInformation.Client.Get(FileId));
             }
 
             var source = new PimixFile(FileUri);
@@ -55,7 +54,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.WriteLine(file);
                 }
 
-                var potentialFiles = PimixService.Get<FileInformation>(FileInformation.ListFolder(source.Id, true));
+                var potentialFiles = FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
                 var potentialFileInstances = potentialFiles.Select(f =>
                         f.Locations.Keys.Select(l => new PimixFile(l)).FirstOrDefault(l => l.Host == source.Host))
                     .Where(f => f != null && !localFiles.Contains(f)).ToList();
@@ -98,14 +97,14 @@ namespace Pimix.Apps.FileUtil.Commands {
                             logger.Warn($"File {file} not found.");
                         }
 
-                        FileInformation.RemoveLocation(info.Id, location);
+                        FileInformation.Client.RemoveLocation(info.Id, location);
                         logger.Info($"Entry {location} removed.");
                     }
                 }
             }
 
             // Logical removal.
-            PimixService.Delete<FileInformation>(info.Id);
+            FileInformation.Client.Delete(info.Id);
             logger.Info($"FileInfo {info.Id} removed.");
             return 0;
         }
@@ -133,7 +132,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            FileInformation.RemoveLocation(file.Id, file.ToString());
+            FileInformation.Client.RemoveLocation(file.Id, file.ToString());
             logger.Info($"Entry {file} removed.");
 
             return 0;

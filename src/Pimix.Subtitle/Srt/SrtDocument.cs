@@ -8,7 +8,9 @@ namespace Pimix.Subtitle.Srt {
 
         public static SrtDocument Parse(string s)
             => new SrtDocument {
-                Lines = s.Trim().Split(new[] {"\n\n", "\n\n"}, StringSplitOptions.RemoveEmptyEntries)
+                Lines = s.Trim().Split(new[] {
+                        "\n\n", "\n\n"
+                    }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(SrtLine.Parse).ToList()
             };
 
@@ -17,7 +19,7 @@ namespace Pimix.Subtitle.Srt {
         }
 
         public void Renumber() {
-            for (int i = 0; i < Lines.Count; i++) {
+            for (var i = 0; i < Lines.Count; i++) {
                 Lines[i].Index = i + 1;
             }
         }

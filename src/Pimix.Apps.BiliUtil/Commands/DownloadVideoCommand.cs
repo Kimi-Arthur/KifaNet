@@ -1,8 +1,8 @@
+using System;
 using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("video", HelpText = "Download high quality Bilibili videos from biliplus.")]
@@ -19,34 +19,34 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public override int Execute() {
             var segments = Aid.Split('p');
             var aid = segments.First();
-            var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 1;
+            var pid = segments.Length == 2 ? int.Parse(segments.Last()) : 0;
 
-            PimixService.Create(new BilibiliVideo {
+            BilibiliVideo.Client.Set(new BilibiliVideo {
                 Id = aid
             });
-            var video = PimixService.Get<BilibiliVideo>(aid);
 
-            var (length, stream) = video.DownloadVideo(pid, SourceChoice);
-            if (length == null) {
-                return -1;
-            }
+            var video = BilibiliVideo.Client.Get(aid);
 
-            var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");
-            if (targetFile.Exists()) {
-                if (targetFile.Length() == length) {
-                    logger.Info($"Target file {targetFile} already exists. Skipped.");
-                    return 0;
+            if (pid > 0) {
+                var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(pid)}.mp4");
+                try {
+                    targetFile.WriteIfNotFinished(() => video.DownloadVideo(pid, SourceChoice));
+                } catch (Exception e) {
+                    logger.Warn(e, $"Failed to download {targetFile}.");
                 }
 
-                logger.Info($"Target file {targetFile} exists, " +
-                            $"but size ({targetFile.Length()}) is different from source ({length}). " +
-                            "Will be removed.");
+                return 0;
             }
 
-            logger.Info($"Start downloading video to {targetFile}");
-            targetFile.Delete();
-            targetFile.Write(stream);
-            logger.Info($"Successfullly downloaded video to {targetFile}");
+            foreach (var page in video.Pages) {
+                var targetFile =
+                    CurrentFolder.GetFile($"{video.GetDesiredName(page.Id)}.mp4");
+                try {
+                    targetFile.WriteIfNotFinished(() => video.DownloadVideo(page.Id, SourceChoice));
+                } catch (Exception e) {
+                    logger.Warn(e, $"Failed to download {targetFile}.");
+                }
+            }
 
             return 0;
         }

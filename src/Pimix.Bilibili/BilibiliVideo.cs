@@ -12,24 +12,31 @@ using Pimix.Service;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
-    [DataModel("bilibili/videos")]
-    public class BilibiliVideo {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        static bool firstDownload = true;
-
-        static HttpClient biliplusClient = new HttpClient();
-
-        public static string BiliplusCookies { get; set; }
-        public static int DefaultBiliplusSourceChoice { get; set; }
-
+    public class BilibiliVideo : DataModel {
         public enum PartModeType {
             SinglePartMode,
             ContinuousPartMode,
             ParallelPartMode
         }
 
-        public string Id { get; set; }
+        public const string ModelId = "bilibili/videos";
+
+        static PimixServiceClient<BilibiliVideo> client;
+
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        static bool firstDownload = true;
+
+        static HttpClient biliplusClient = new HttpClient();
+
+        PartModeType partMode;
+
+        public static PimixServiceClient<BilibiliVideo> Client => client =
+            client ?? new PimixServiceRestClient<BilibiliVideo>();
+
+        public static string BiliplusCookies { get; set; }
+        public static int DefaultBiliplusSourceChoice { get; set; }
+
         public string Title { get; set; }
         public string Author { get; set; }
         public string AuthorId { get; set; }
@@ -41,8 +48,6 @@ namespace Pimix.Bilibili {
         public string Cover { get; set; }
         public DateTime? Uploaded { get; set; }
         public List<BilibiliChat> Pages { get; set; }
-
-        PartModeType partMode;
 
         [JsonIgnore]
         public PartModeType PartMode {
@@ -92,8 +97,7 @@ namespace Pimix.Bilibili {
                 return null;
             }
 
-            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
-                   (extraPath == null ? "" : $"/{extraPath}") +
+            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" + (extraPath == null ? "" : $"/{extraPath}") +
                    (Pages.Count > 1
                        ? $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
                        : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
@@ -109,7 +113,7 @@ namespace Pimix.Bilibili {
             biliplusClient = new HttpClient();
             biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
-            var added = AddDownloadJob(Id, pid);
+            var added = AddDownloadJob(Id);
 
             var cid = Pages[pid - 1].Cid;
             var doc = new HtmlDocument();
@@ -137,14 +141,12 @@ namespace Pimix.Bilibili {
             var initialSource = biliplusSourceChoice;
             while (true) {
                 try {
-                    logger.Debug($"Choosen source: " +
+                    logger.Debug("Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     var length = biliplusClient
-                        .SendAsync(new HttpRequestMessage(HttpMethod.Head,
-                            choices[biliplusSourceChoice].link)).Result
+                        .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link)).Result
                         .Content.Headers.ContentLength;
-                    return (length,
-                        biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result);
+                    return (length, biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result);
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {
@@ -157,7 +159,7 @@ namespace Pimix.Bilibili {
             }
         }
 
-        static bool AddDownloadJob(string aid, int pid) {
+        static bool AddDownloadJob(string aid) {
             using (var response = biliplusClient
                 .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
                 .Result) {

@@ -13,18 +13,18 @@ namespace Pimix.Service {
     public class PimixServiceRestClient {
         internal static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        internal static readonly HttpClient client = new HttpClient();
+
         public static string PimixServerApiAddress { get; set; }
 
         public static string PimixServerCredential { get; set; }
-
-        internal static readonly HttpClient client = new HttpClient();
     }
 
-    public class PimixServiceRestClient<TDataModel> : PimixServiceClient<TDataModel> {
+    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
         public override void Update(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
 
             Retry.Run(() => {
                 var request =
@@ -45,7 +45,7 @@ namespace Pimix.Service {
         }
 
         public override void Set(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
 
             Retry.Run(() => {
                 var request =
@@ -128,7 +128,11 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
         }
 
-        public override TResponse Call<TResponse>(string action,
+        public void Call(string action,
+            string id = null, Dictionary<string, object> parameters = null)
+            => Call<object>(action, id, parameters);
+
+        public TResponse Call<TResponse>(string action,
             string id = null, Dictionary<string, object> parameters = null) {
             return Retry.Run(() => {
                     var request =

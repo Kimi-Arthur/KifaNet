@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using Pimix.Service;
 
 namespace Pimix.Infos {
-    [DataModel("tv_shows")]
-    public class TvShow : Formattable {
-        public string Id { get; set; }
+    public class TvShow : DataModel, Formattable {
+        public const string ModelId = "tv_shows";
+
+        static PimixServiceClient<TvShow> client;
+
+        public static PimixServiceClient<TvShow> Client => client =
+            client ?? new PimixServiceRestClient<TvShow>();
+
         public string Title { get; set; }
         public Date AirDate { get; set; }
         public string Overview { get; set; }

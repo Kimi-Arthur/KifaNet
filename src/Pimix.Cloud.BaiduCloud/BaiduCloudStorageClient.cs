@@ -12,25 +12,27 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {
+        const long MaxBlockCount = 1L << 10;
+        const long MaxBlockSize = 2L << 30;
+        const long MinBlockSize = 32L << 20;
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        public static int DownloadThreadCount { get; set; } = 4;
 
         static BaiduCloudConfig config;
 
-        static BaiduCloudConfig Config
-            => LazyInitializer.EnsureInitialized(ref config,
-                () => PimixService.Get<BaiduCloudConfig>("default"));
-
-        public override string ToString() => $"baidu:{AccountId}";
-
-        readonly HttpClient client = new HttpClient {Timeout = TimeSpan.FromMinutes(5)};
+        readonly HttpClient client = new HttpClient {
+            Timeout = TimeSpan.FromMinutes(5)
+        };
 
         string accountId;
+
+        public static int DownloadThreadCount { get; set; } = 4;
+
+        static BaiduCloudConfig Config
+            => LazyInitializer.EnsureInitialized(ref config,
+                () => BaiduCloudConfig.Client.Get("default"));
 
         public string AccountId {
             get => accountId;
@@ -41,6 +43,8 @@ namespace Pimix.Cloud.BaiduCloud {
         }
 
         public AccountInfo Account { get; private set; }
+
+        public override string ToString() => $"baidu:{AccountId}";
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
             int count = -1) {
@@ -53,7 +57,9 @@ namespace Pimix.Cloud.BaiduCloud {
             // The thread limit will help prevent errors with code 31326 and message like
             // "user is not authorized, hitcode:120".
             Parallel.For(0, (count - 1) / maxChunkSize + 1,
-                new ParallelOptions {MaxDegreeOfParallelism = DownloadThreadCount},
+                new ParallelOptions {
+                    MaxDegreeOfParallelism = DownloadThreadCount
+                },
                 i => {
                     Thread.Sleep(TimeSpan.FromSeconds(i * 4));
                     var chunkOffset = i * maxChunkSize;
@@ -554,10 +560,6 @@ namespace Pimix.Cloud.BaiduCloud {
                 throw;
             }
         }
-
-        const long MaxBlockCount = 1L << 10;
-        const long MaxBlockSize = 2L << 30;
-        const long MinBlockSize = 32L << 20;
 
         static int GetBlockSize(long size) {
             var blockSize = MinBlockSize;

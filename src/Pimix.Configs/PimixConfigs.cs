@@ -7,13 +7,18 @@ using YamlDotNet.Serialization;
 
 namespace Pimix.Configs {
     public static class PimixConfigs {
+        static string configFilePath;
+
+        static readonly Deserializer deserializer = new Deserializer();
         static string name => AppDomain.CurrentDomain.FriendlyName;
 
         static List<string> ConfigFilePaths
-            => new List<string>
-                {$"~/.{name}.yaml", "~/.pimix.yaml", $"/etc/{name}.yaml", "/etc/pimix.yaml"};
-
-        static string configFilePath;
+            => new List<string> {
+                $"~/.{name}.yaml",
+                "~/.pimix.yaml",
+                $"/etc/{name}.yaml",
+                "/etc/pimix.yaml"
+            };
 
         static string ConfigFilePath {
             get {
@@ -32,8 +37,6 @@ namespace Pimix.Configs {
                 return configFilePath;
             }
         }
-
-        static readonly Deserializer deserializer = new Deserializer();
 
         public static void LoadFromSystemConfigs(Assembly assembly = null) {
             var properties =
@@ -89,8 +92,7 @@ namespace Pimix.Configs {
                 var id = $"{prefix}{((YamlScalarNode) p.Key).Value}";
                 if (properties.TryGetValue(id, out var prop)) {
                     var value = deserializer.Deserialize(
-                        new YamlNodeParser(
-                            YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
+                        new YamlNodeParser(YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
                         prop.PropertyType);
                     if (value == null) {
                         Console.WriteLine($"Cannot parse for {id}");

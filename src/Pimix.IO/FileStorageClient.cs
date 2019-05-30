@@ -19,12 +19,10 @@ namespace Pimix.IO {
     public class FileStorageClient : StorageClient {
         const int DefaultBlockSize = 32 << 20;
 
+        string serverId;
+
         public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } =
             new Dictionary<string, ServerConfig>();
-
-        public override string ToString() => $"local:{ServerId}";
-
-        string serverId;
 
         public string ServerId {
             get => serverId;
@@ -39,6 +37,8 @@ namespace Pimix.IO {
         static bool IsUnixLike
             => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
                RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+        public override string ToString() => $"local:{ServerId}";
 
         public override void Copy(string sourcePath, string destinationPath,
             bool neverLink = false) {

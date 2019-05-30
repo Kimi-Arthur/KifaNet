@@ -4,11 +4,12 @@ using Newtonsoft.Json;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("info", HelpText = "Generate information of the specified file.")]
     class InfoCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
@@ -31,8 +32,6 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         [Option('u', "update", HelpText = "Whether to update result to server.")]
         public bool Update { get; set; } = false;
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var f = new PimixFile(FileUri, FileId);
@@ -58,8 +57,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             if (Update) {
-                PimixService.Update(info);
-                FileInformation.AddLocation(f.Id, FileUri, true);
+                FileInformation.Client.Update(info);
+                FileInformation.Client.AddLocation(f.Id, FileUri, true);
             }
 
             Console.WriteLine(JsonConvert.SerializeObject(info, Defaults.PrettyJsonSerializerSettings));

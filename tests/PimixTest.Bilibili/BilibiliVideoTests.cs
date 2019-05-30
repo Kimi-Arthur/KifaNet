@@ -11,63 +11,53 @@ namespace PimixTest.Bilibili {
         [TestMethod]
         public void SinglePartTest() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
-            var video = PimixService.Get<BilibiliVideo>("av26361000");
+            var video = BilibiliVideo.Client.Get("av26361000");
             Assert.AreEqual("av26361000", video.Id);
             Assert.AreEqual("【7月】工作细胞 01【独家正版】", video.Title);
             Assert.AreEqual("#01", video.Description);
-            Assert.IsTrue(video.Tags.SequenceEqual(new[] {"BILIBILI正版", "TV动画"}),
+            Assert.IsTrue(video.Tags.SequenceEqual(new[] {
+                    "BILIBILI正版", "TV动画"
+                }),
                 "Keywords differ");
             Assert.AreEqual(1, video.Pages.Count());
             Assert.AreEqual("49053680", video.Pages.ElementAt(0).Cid);
             Assert.AreEqual("hatarakusaibou_ep01.mp4", video.Pages.ElementAt(0).Title);
             Assert.AreEqual(BilibiliVideo.PartModeType.SinglePartMode, video.PartMode);
             var doc = video.GenerateAssDocument();
-            Assert.IsTrue(
-                doc.ToString().StartsWith(
-                    "[Script Info]\n" +
-                    "Title: 【7月】工作细胞 01【独家正版】\n" +
-                    "Original Script: Bilibili\n" +
-                    "Script Type: V4.00+\n" +
-                    "Collisions: Normal\n" +
-                    "PlayResX: 1920\n" +
-                    "PlayResY: 1080\n\n"));
+            Assert.IsTrue(doc.ToString().StartsWith("[Script Info]\n" +
+                                                    "Title: 【7月】工作细胞 01【独家正版】\n" +
+                                                    "Original Script: Bilibili\n" +
+                                                    "Script Type: V4.00+\n" +
+                                                    "Collisions: Normal\n" +
+                                                    "PlayResX: 1920\n" +
+                                                    "PlayResY: 1080\n\n"));
         }
 
         [TestMethod]
         public void MultiPartsTest() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
-            var video = PimixService.Get<BilibiliVideo>("av2044037");
+            var video = BilibiliVideo.Client.Get("av2044037");
             video.PartMode = BilibiliVideo.PartModeType.ContinuousPartMode;
             Assert.AreEqual("av2044037", video.Id);
             Assert.AreEqual("【日语学习】发音入门基础：50音图", video.Title);
             Assert.AreEqual("【封面爸爸去哪儿】\n日语发音基础详解，查漏补缺。", video.Description);
-            Assert.IsTrue(video.Tags.SequenceEqual(
-                    new[] {
-                        "日语教程",
-                        "日语学习",
-                        "日语五十音图",
-                        "学习日语的过程"
-                    }),
+            Assert.IsTrue(video.Tags.SequenceEqual(new[] {
+                    "日语教程", "日语学习", "日语五十音图", "学习日语的过程"
+                }),
                 "Keywords differ");
             Assert.AreEqual(6, video.Pages.Count());
             var data = new List<Tuple<string, string>> {
-                Tuple.Create(
-                    "3164090",
+                Tuple.Create("3164090",
                     "基础发音1：50音图あかさ"),
-                Tuple.Create(
-                    "3164091",
+                Tuple.Create("3164091",
                     "基础发音2：50音图あかさ"),
-                Tuple.Create(
-                    "3164092",
+                Tuple.Create("3164092",
                     "基础发音3：50音图た～ま"),
-                Tuple.Create(
-                    "3164093",
+                Tuple.Create("3164093",
                     "基础发音4：50音图や～わ"),
-                Tuple.Create(
-                    "3164094",
+                Tuple.Create("3164094",
                     "基础发音5：拗音，促音，拨音"),
-                Tuple.Create(
-                    "3164095",
+                Tuple.Create("3164095",
                     "基础发音6：长音，アクセント")
             };
 

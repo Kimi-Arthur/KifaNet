@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
 using CommandLine;
 using MongoDB.Driver;
 using Newtonsoft.Json;
@@ -24,7 +23,7 @@ namespace Pimix.Apps.MongoUtil.Commands {
                     files.Add(JsonConvert.DeserializeObject<FileInformation>(sr.ReadToEnd()));
                 }
             }
-            
+
             collection.InsertMany(files);
 
             return 0;

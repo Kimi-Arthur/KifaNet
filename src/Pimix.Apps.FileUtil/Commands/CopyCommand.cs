@@ -6,6 +6,8 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
     class CopyCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true)]
         public string SourceUri { get; set; }
 
@@ -17,8 +19,6 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         [Option('v', "verify", HelpText = "Verify destination.")]
         public bool Verify { get; set; } = false;
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var source = new PimixFile(SourceUri);
@@ -39,7 +39,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (Overwrite) {
                     logger.Debug("Overwriting existing file.");
                     destination.Delete();
-                    FileInformation.RemoveLocation(destination.Id, DestinationUri);
+                    FileInformation.Client.RemoveLocation(destination.Id, DestinationUri);
                 } else {
                     logger.Error("Destination already exists!");
                     logger.Error("Add -f to overwrite.");
@@ -62,7 +62,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            FileInformation.AddLocation(destination.Id, DestinationUri);
+            FileInformation.Client.AddLocation(destination.Id, DestinationUri);
             logger.Info($"Successfully copied {SourceUri} to {DestinationUri}.");
             return 0;
         }

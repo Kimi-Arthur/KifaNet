@@ -117,12 +117,16 @@ namespace CG.Web.MegaApiClient {
             var settings = new JsonSerializerSettings();
 
             // First Nodes deserialization to retrieve all shared keys
-            settings.Context = new StreamingContext(StreamingContextStates.All, new[] {this});
+            settings.Context = new StreamingContext(StreamingContextStates.All, new[] {
+                this
+            });
             JsonConvert.DeserializeObject<Node[]>(NodesSerialized.ToString(), settings);
 
             // Deserialize nodes
             settings.Context =
-                new StreamingContext(StreamingContextStates.All, new[] {this, ctx.Context});
+                new StreamingContext(StreamingContextStates.All, new[] {
+                    this, ctx.Context
+                });
             Nodes = JsonConvert.DeserializeObject<Node[]>(NodesSerialized.ToString(), settings);
         }
 

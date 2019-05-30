@@ -13,11 +13,11 @@ namespace Pimix.Subtitle.Ass {
                 alpha = 255 - content.Substring(2, 2).ParseHexString()[0];
                 content = content.Substring(2);
             }
+
             return Color.FromArgb(alpha,
                 content.Substring(6, 2).ParseHexString()[0],
                 content.Substring(4, 2).ParseHexString()[0],
-                content.Substring(2, 2).ParseHexString()[0]
-            );
+                content.Substring(2, 2).ParseHexString()[0]);
         }
 
         public static string ToAss(this bool b) => b ? "-1" : "0";

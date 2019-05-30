@@ -6,9 +6,6 @@ namespace Pimix.Subtitle.Ass {
     public class AssLine {
         public const string Separator = ":";
 
-        public virtual string Key { get; protected set; }
-        public virtual IEnumerable<string> Values { get; protected set; }
-
         public AssLine() {
         }
 
@@ -16,6 +13,9 @@ namespace Pimix.Subtitle.Ass {
             Key = key;
             Values = values;
         }
+
+        public virtual string Key { get; protected set; }
+        public virtual IEnumerable<string> Values { get; protected set; }
 
         public override string ToString()
             => $"{Key}: {string.Join(",", Values.Select(FormatValue))}";

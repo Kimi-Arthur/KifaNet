@@ -2,9 +2,14 @@
 using Pimix.Service;
 
 namespace Pimix.Bilibili {
-    [DataModel("bilibili/bangumis")]
-    public class BilibiliBangumi {
-        public string Id { get; set; }
+    public class BilibiliBangumi : DataModel {
+        public const string ModelId = "bilibili/bangumis";
+
+        static PimixServiceClient<BilibiliBangumi> client;
+
+        public static PimixServiceClient<BilibiliBangumi> Client => client =
+            client ?? new PimixServiceRestClient<BilibiliBangumi>();
+
         public string Name { get; set; }
         public List<string> Aids { get; set; }
     }

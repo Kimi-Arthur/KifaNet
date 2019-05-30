@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using MongoDB.Bson.Serialization.Conventions;
 using Pimix.Configs;
 
 namespace Pimix.Web.Api {
@@ -11,10 +10,6 @@ namespace Pimix.Web.Api {
                 (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
             PimixConfigs.LoadFromSystemConfigs();
-
-            ConventionRegistry.Register("Correct Conventions", new ConventionPack {new SnakeNameConvention()},
-                (_) => true);
-
 
             CreateWebHostBuilder(args).Build().Run();
         }

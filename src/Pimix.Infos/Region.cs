@@ -4,21 +4,6 @@ using System.Linq;
 
 namespace Pimix.Infos {
     public class Region : JsonSerializable, IComparable<Region> {
-        public string Name { get; set; }
-        public string Code { get; set; }
-
-        public string ToJson() => Name;
-
-        public int CompareTo(Region other) => Code.CompareTo(Code);
-
-        public override string ToString() => Name;
-
-        public void FromJson(string data) {
-            var region = All[data];
-            Name = region.Name;
-            Code = region.Code;
-        }
-
         public static readonly Region UnitedStates = new Region {
             Name = "United States",
             Code = "US"
@@ -48,5 +33,20 @@ namespace Pimix.Infos {
             (r.Code, r),
             (r.Name, r)
         }).ToDictionary(tuple => tuple.key, tuple => tuple.value);
+
+        public string Name { get; set; }
+        public string Code { get; set; }
+
+        public int CompareTo(Region other) => Code.CompareTo(Code);
+
+        public string ToJson() => Name;
+
+        public void FromJson(string data) {
+            var region = All[data];
+            Name = region.Name;
+            Code = region.Code;
+        }
+
+        public override string ToString() => Name;
     }
 }

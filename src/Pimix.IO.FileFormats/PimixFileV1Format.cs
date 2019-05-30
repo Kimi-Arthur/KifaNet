@@ -2,7 +2,6 @@
 using System.IO;
 using System.Security.Cryptography;
 using Pimix.Cryptography;
-using Pimix.Service;
 
 namespace Pimix.IO.FileFormats {
     /// <summary>
@@ -19,6 +18,8 @@ namespace Pimix.IO.FileFormats {
     ///     B16~47: SHA256 (256bit)
     /// </summary>
     public class PimixFileV1Format : PimixFileFormat {
+        static readonly PimixFileV1Format Instance = new PimixFileV1Format();
+
         public static PimixFileFormat Get(string fileUri) {
             if (fileUri.EndsWith(".v1")) {
                 return Instance;
@@ -26,8 +27,6 @@ namespace Pimix.IO.FileFormats {
 
             return null;
         }
-
-        static readonly PimixFileV1Format Instance = new PimixFileV1Format();
 
         public override string ToString() => "v1";
 
@@ -39,7 +38,7 @@ namespace Pimix.IO.FileFormats {
                 encodedStream.Read(sha256Bytes, 0, 32);
                 var id = ":" + sha256Bytes.ToHexString();
 
-                encryptionKey = PimixService.Get<FileInformation>(id).EncryptionKey;
+                encryptionKey = FileInformation.Client.Get(id).EncryptionKey;
             }
 
             var sizeBytes = new byte[8];
@@ -55,7 +54,9 @@ namespace Pimix.IO.FileFormats {
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PatchedStream(encodedStream) {IgnoreBefore = 0x30},
+            return new PimixCryptoStream(new PatchedStream(encodedStream) {
+                    IgnoreBefore = 0x30
+                },
                 decoder, size, true);
         }
 
@@ -67,7 +68,9 @@ namespace Pimix.IO.FileFormats {
             }
 
             var header = new byte[48];
-            new byte[] {0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30}.CopyTo(header, 0);
+            new byte[] {
+                0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30
+            }.CopyTo(header, 0);
             info.Size.Value.ToByteArray().CopyTo(header, 8);
             info.Sha256.ParseHexString().CopyTo(header, 16);
 
@@ -80,7 +83,9 @@ namespace Pimix.IO.FileFormats {
             }
 
             return new PatchedStream(new PimixCryptoStream(rawStream, encoder,
-                info.Size.Value.RoundDown(16) + 16, false)) {BufferBefore = header};
+                info.Size.Value.RoundDown(16) + 16, false)) {
+                BufferBefore = header
+            };
         }
     }
 }

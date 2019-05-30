@@ -1,22 +1,21 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Cloud.MegaNz {
-    [DataModel("configs/mega_nz")]
-    public class MegaNzConfig {
-        [JsonProperty("id")]
-        public string Id { get; set; }
+    public class MegaNzConfig : DataModel {
+        public const string ModelId = "configs/mega_nz";
 
-        [JsonProperty("accounts")]
-        public Dictionary<string, AccountInfo> Accounts { get; private set; }
+        static PimixServiceClient<MegaNzConfig> client;
+
+        public static PimixServiceClient<MegaNzConfig> Client => client =
+            client ?? new PimixServiceRestClient<MegaNzConfig>();
+
+        public Dictionary<string, AccountInfo> Accounts { get; set; }
     }
 
     public class AccountInfo {
-        [JsonProperty("username")]
         public string Username { get; set; }
 
-        [JsonProperty("password")]
         public string Password { get; set; }
     }
 }

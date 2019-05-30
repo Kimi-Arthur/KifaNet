@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Pimix.Subtitle.Ass {
     public class AssEvent : AssLine {
-        public int Layer { get; set; } = 0;
+        public int Layer { get; set; }
 
         public TimeSpan Start { get; set; }
 
@@ -63,7 +63,7 @@ namespace Pimix.Subtitle.Ass {
                         assEvent.End = TimeSpan.Parse(p.Item1);
                         break;
                     case "Style":
-                        assEvent.Style = styles.GetValueOrDefault(p.Item1, styles["Default"]);
+                        assEvent.Style = styles[p.Item1];
                         break;
                     case "Actor":
                     case "Name":

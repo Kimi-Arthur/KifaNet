@@ -2,7 +2,6 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("rename", HelpText = "Rename video file to comply.")]
@@ -22,15 +21,16 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 return 1;
             }
 
-            var newName = Helper.GetDesiredFileName(PimixService.Get<BilibiliVideo>(ids.aid),
+            var newName = Helper.GetDesiredFileName(BilibiliVideo.Client.Get(ids.aid),
                 ids.pid, ids.cid);
             if (newName == null) {
                 logger.Error("CID mismatch.");
                 return 1;
             }
 
-            var newTarget = new PimixFile(FileUri)
-                {BaseName = Confirm($"Confirm renaming\n{target.BaseName}\nto\n", newName)};
+            var newTarget = new PimixFile(FileUri) {
+                BaseName = Confirm($"Confirm renaming\n{target.BaseName}\nto\n", newName)
+            };
             logger.Info($"Renaming {target} to {newTarget}");
             target.Move(newTarget);
 

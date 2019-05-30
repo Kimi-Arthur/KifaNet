@@ -16,8 +16,12 @@ namespace PimixTest.IO {
             var ps = new PatchedStream(ms) {
                 IgnoreBefore = 12,
                 IgnoreAfter = 24,
-                BufferBefore = new byte[] {0x12, 0x25},
-                BufferAfter = new byte[] {0x01, 0x23}
+                BufferBefore = new byte[] {
+                    0x12, 0x25
+                },
+                BufferAfter = new byte[] {
+                    0x01, 0x23
+                }
             };
             ps.Seek(25, SeekOrigin.Begin);
             Assert.AreEqual(35, ps.ReadByte());

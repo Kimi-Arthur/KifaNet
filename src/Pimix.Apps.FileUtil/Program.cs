@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using CommandLine;
-using NLog;
+﻿using CommandLine;
 using Pimix.Apps.FileUtil.Commands;
-using Pimix.Configs;
 
 namespace Pimix.Apps.FileUtil {
     class Program {

@@ -6,7 +6,6 @@ using System.Xml;
 using CommandLine;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
-using Pimix.Service;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
@@ -30,15 +29,14 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 var files = new PimixFile(FileUri).List(true).ToList();
 
                 var ids = Aid.Split('p');
-                var v = PimixService.Get<BilibiliVideo>(ids[0]);
+                var v = BilibiliVideo.Client.Get(ids[0]);
                 foreach (var item in v.Pages.Zip(files, Tuple.Create)) {
                     Console.WriteLine($"{v.Title} - {item.Item1.Title}\n" +
                                       $"{item.Item2}\n" +
                                       $"{v.Id}p{item.Item1.Id} (cid={item.Item1.Cid})\n");
                 }
 
-                Console.Write(
-                    $"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
+                Console.Write($"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
                 Console.ReadLine();
 
                 return v.Pages.Zip(files, GetChat).Max();
@@ -55,7 +53,9 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Cid = segments[segments.Length - 2].Substring(1);
             }
 
-            return GetChat(new BilibiliChat {Cid = Cid}, new PimixFile(FileUri));
+            return GetChat(new BilibiliChat {
+                Cid = Cid
+            }, new PimixFile(FileUri));
         }
 
         int GetChat(BilibiliChat chat, PimixFile rawFile) {
@@ -64,9 +64,11 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 Formatting = Formatting.Indented
             };
             chat.RawDocument.Save(writer);
-            
+
             // Append a line break to be consist with other files.
-            memoryStream.Write(new[] {Convert.ToByte('\n')});
+            memoryStream.Write(new[] {
+                Convert.ToByte('\n')
+            });
 
             memoryStream.Seek(0, SeekOrigin.Begin);
 

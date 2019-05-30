@@ -9,9 +9,8 @@ using Pimix.Subtitle.Ass;
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("update", HelpText = "Update subtitle with given modification.")]
     class UpdateCommand : PimixCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         const string SubtitlesPrefix = "/Subtitles";
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to update.")]
         public string FileUri { get; set; }
@@ -36,7 +35,7 @@ namespace Pimix.Apps.SubUtil.Commands {
     }
 
     abstract class Action {
-        abstract public void Update(AssDocument sub);
+        public abstract void Update(AssDocument sub);
     }
 
     class TimeShiftAction : Action {

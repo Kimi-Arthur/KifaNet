@@ -10,16 +10,28 @@ using HashLib;
 using Pimix.Service;
 
 namespace Pimix.IO {
-    [DataModel("files")]
-    public class FileInformation {
+    public class FileInformation : DataModel {
+        public const string ModelId = "files";
+
         const int SliceLength = 256 << 10;
-        static readonly Regex idPattern = new Regex(@"^(/(local|baidu|mega|google)/)?[^/]*(/.*?)(\.v1|\.v0)?$");
 
         public const int BlockSize = 32 << 20;
+        static FileInformationServiceClient client;
+        static readonly Regex idPattern = new Regex(@"^(/(local|baidu|mega|google)/)?[^/]*(/.*?)(\.v1|\.v0)?$");
 
         static readonly Dictionary<FileProperties, PropertyInfo> properties;
 
-        public string Id { get; set; }
+        static FileInformation() {
+            properties = new Dictionary<FileProperties, PropertyInfo>();
+            foreach (var prop in
+                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            ) {
+                properties[(FileProperties) Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
+            }
+        }
+
+        public static FileInformationServiceClient Client => client =
+            client ?? new FileInformationRestServiceClient();
 
         public long? Size { get; set; }
 
@@ -45,44 +57,9 @@ namespace Pimix.IO {
 
         public Dictionary<string, DateTime?> Locations { get; set; }
 
-        public static void AddLocation(string id, string location, bool verified = false)
-            => PimixService.Call<FileInformation>("add_location", id,
-                new Dictionary<string, object> {
-                    ["location"] = location,
-                    ["verified"] = verified
-                });
-
-        public static void RemoveLocation(string id, string location)
-            => PimixService.Call<FileInformation>("remove_location", id,
-                new Dictionary<string, object> {["location"] = location});
-
-        public static string CreateLocation(string id, string type = null)
-            => PimixService.Call<FileInformation, string>("create_location", id,
-                new Dictionary<string, object> {["type"] = type});
-
-        public static string GetLocation(string id, List<string> types = null)
-            => PimixService.Call<FileInformation, string>("get_location", id,
-                new Dictionary<string, object> {["types"] = types});
-
         public static string GetId(string location) {
             var m = idPattern.Match(location);
             return m.Success ? m.Groups[3].Value : null;
-        }
-
-        public static List<string> ListFolder(string folder, bool recursive = false)
-            => PimixService.Call<FileInformation, List<string>>("list_folder",
-                parameters: new Dictionary<string, object> {
-                    ["folder"] = folder,
-                    ["recursive"] = recursive ? "1" : ""
-                });
-
-        static FileInformation() {
-            properties = new Dictionary<FileProperties, PropertyInfo>();
-            foreach (var prop in
-                typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            ) {
-                properties[(FileProperties) Enum.Parse(typeof(FileProperties), prop.Name)] = prop;
-            }
         }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
@@ -257,5 +234,48 @@ namespace Pimix.IO {
                 return aes.Key.ToHexString();
             }
         }
+    }
+
+    public interface FileInformationServiceClient : PimixServiceClient<FileInformation> {
+        List<string> ListFolder(string folder, bool recursive = false);
+        void AddLocation(string id, string location, bool verified = false);
+        void RemoveLocation(string id, string location);
+        string CreateLocation(string id, string type = null);
+        string GetLocation(string id, List<string> types = null);
+    }
+
+    public class FileInformationRestServiceClient : PimixServiceRestClient<FileInformation>,
+        FileInformationServiceClient {
+        public List<string> ListFolder(string folder, bool recursive = false) =>
+            Call<List<string>>("list_folder",
+                parameters: new Dictionary<string, object> {
+                    ["folder"] = folder,
+                    ["recursive"] = recursive ? "1" : ""
+                });
+
+        public void AddLocation(string id, string location, bool verified = false)
+            => Call("add_location", id,
+                new Dictionary<string, object> {
+                    ["location"] = location,
+                    ["verified"] = verified
+                });
+
+        public void RemoveLocation(string id, string location)
+            => Call("remove_location", id,
+                new Dictionary<string, object> {
+                    ["location"] = location
+                });
+
+        public string CreateLocation(string id, string type = null)
+            => Call<string>("create_location", id,
+                new Dictionary<string, object> {
+                    ["type"] = type
+                });
+
+        public string GetLocation(string id, List<string> types = null)
+            => Call<string>("get_location", id,
+                new Dictionary<string, object> {
+                    ["types"] = types
+                });
     }
 }

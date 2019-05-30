@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Pimix.Service;
 
-namespace Pimix.Service {
+namespace Pimix.Web.Api {
     public class PimixServiceJsonClient {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : PimixServiceClient<TDataModel> {
-        Dictionary<string, List<string>> Groups { get; set; } = new Dictionary<string, List<string>>();
+    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
+        Dictionary<string, List<string>> Groups { get; } = new Dictionary<string, List<string>>();
 
         public override TDataModel Get(string id) {
             LoadGroups();
@@ -25,15 +26,17 @@ namespace Pimix.Service {
             return JsonConvert.DeserializeObject<TDataModel>(Read(id), Defaults.JsonSerializerSettings);
         }
 
+        public override List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
+
         public override void Set(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
 
             File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json",
                 JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings));
         }
 
         public override void Update(TDataModel data, string id = null) {
-            id = id ?? idProperty.GetValue(data) as string;
+            id = id ?? data.Id;
             var original = Get(id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
 
@@ -48,9 +51,6 @@ namespace Pimix.Service {
         public override void Link(string targetId, string linkId) {
             throw new NotImplementedException();
         }
-
-        public override TResponse Call<TResponse>(string action, string id = null,
-            Dictionary<string, object> parameters = null) => throw new NotImplementedException();
 
         string Read(string id) =>
             File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json");

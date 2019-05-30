@@ -8,21 +8,15 @@ using System.Text;
 using System.Threading;
 using NLog;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {
+        const int BlockSize = 32 << 20;
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static readonly TimeSpan RefreshAccountInterval = TimeSpan.FromMinutes(50);
-        const int BlockSize = 32 << 20;
 
         static GoogleDriveConfig config;
-
-        static GoogleDriveConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<GoogleDriveConfig>("default"));
-
-        public override string ToString() => $"google:{AccountId}";
 
         readonly HttpClient client = new HttpClient(new HttpClientHandler {
             AllowAutoRedirect = false
@@ -30,7 +24,14 @@ namespace Pimix.Cloud.GoogleDrive {
             Timeout = TimeSpan.FromMinutes(30)
         };
 
+        AccountInfo account;
+
         string accountId;
+
+        DateTime lastRefreshed = DateTime.MinValue;
+
+        static GoogleDriveConfig Config =>
+            LazyInitializer.EnsureInitialized(ref config, () => GoogleDriveConfig.Client.Get("default"));
 
         public string AccountId {
             get => accountId;
@@ -40,8 +41,9 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
-        AccountInfo account;
         public AccountInfo Account => account = account ?? Config.Accounts[accountId];
+
+        public override string ToString() => $"google:{AccountId}";
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false,
             string pattern = "*") {
@@ -249,8 +251,6 @@ namespace Pimix.Cloud.GoogleDrive {
                 return (string) token["id"];
             }
         }
-
-        DateTime lastRefreshed = DateTime.MinValue;
 
         void RefreshAccount() {
             if (DateTime.Now - lastRefreshed < RefreshAccountInterval) {

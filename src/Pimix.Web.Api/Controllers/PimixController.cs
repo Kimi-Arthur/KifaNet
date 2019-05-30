@@ -6,37 +6,36 @@ using Pimix.Service;
 namespace Pimix.Web.Api.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public abstract class PimixController<TDataModel> : ControllerBase {
-        protected static PimixServiceClient<TDataModel> client = new PimixServiceJsonClient<TDataModel>();
+    public abstract class PimixController<TDataModel> : ControllerBase where TDataModel : DataModel {
+        protected abstract PimixServiceClient<TDataModel> Client { get; }
 
         // GET api/values
         [HttpGet]
-        public ActionResult<Dictionary<string, TDataModel>> Get() {
-            return new Dictionary<string, TDataModel> {
+        public ActionResult<Dictionary<string, TDataModel>> Get() =>
+            new Dictionary<string, TDataModel> {
                 ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
-                    client.Get("/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
+                    Client.Get("/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
             };
-        }
 
         // GET api/values/5
         [HttpGet("{id}")]
         public ActionResult<TDataModel> Get(string id) {
             id = Uri.UnescapeDataString(id);
-            return client.Get(id);
+            return Client.Get(id);
         }
 
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody] TDataModel value) {
             id = Uri.UnescapeDataString(id);
-            client.Get(id);
+            Client.Get(id);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public void Delete(string id) {
             id = Uri.UnescapeDataString(id);
-            client.Delete(id);
+            Client.Delete(id);
         }
     }
 }

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Cloud.MegaNz {
     public class MegaNzStorageClient : StorageClient {
+        static MegaNzConfig config;
         string accountId;
 
         public string AccountId {
@@ -25,13 +25,12 @@ namespace Pimix.Cloud.MegaNz {
             }
         }
 
-        public override string ToString() => $"mega:{AccountId}";
-
         public MegaApiClient Client { get; private set; }
 
-        static MegaNzConfig config;
+        static MegaNzConfig Config =>
+            LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
 
-        static MegaNzConfig Config => LazyInitializer.EnsureInitialized(ref config, () => PimixService.Get<MegaNzConfig>("default"));
+        public override string ToString() => $"mega:{AccountId}";
 
         // Comment out as this doesn't work now.
         //public override void Move(string sourcePath, string destinationPath)

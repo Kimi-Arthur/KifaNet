@@ -5,6 +5,10 @@ namespace Pimix.IO {
     public class PatchedStream : Stream {
         Stream stream;
 
+        public PatchedStream(Stream stream) {
+            this.stream = stream;
+        }
+
         public long IgnoreBefore { get; set; } = 0;
 
         public long IgnoreAfter { get; set; } = 0;
@@ -25,10 +29,6 @@ namespace Pimix.IO {
                BufferAfter.LongLength;
 
         public override long Position { get; set; }
-
-        public PatchedStream(Stream stream) {
-            this.stream = stream;
-        }
 
         public override void Flush() {
             stream.Flush();

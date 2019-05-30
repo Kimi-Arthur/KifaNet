@@ -3,7 +3,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Pimix.Cryptography;
-using Pimix.Service;
 
 namespace Pimix.IO.FileFormats {
     /// <summary>
@@ -15,6 +14,8 @@ namespace Pimix.IO.FileFormats {
     ///     We only provide decoder for this format.
     /// </summary>
     public class PimixFileV0Format : PimixFileFormat {
+        static readonly PimixFileV0Format Instance = new PimixFileV0Format();
+
         public static PimixFileFormat Get(string fileSpec) {
             var specs = fileSpec.Split('/').First().Split(';');
             foreach (var spec in specs) {
@@ -26,8 +27,6 @@ namespace Pimix.IO.FileFormats {
             return null;
         }
 
-        static readonly PimixFileV0Format Instance = new PimixFileV0Format();
-
         public override string ToString() => "v0";
 
         public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null) {
@@ -38,7 +37,7 @@ namespace Pimix.IO.FileFormats {
                 encodedStream.Read(sha256Bytes, 0, 64);
                 var id = ":" + Encoding.UTF8.GetString(sha256Bytes, 0, 64);
 
-                encryptionKey = PimixService.Get<FileInformation>(id).EncryptionKey;
+                encryptionKey = FileInformation.Client.Get(id).EncryptionKey;
             }
 
             encodedStream.Seek(1854, SeekOrigin.Begin);
@@ -54,7 +53,9 @@ namespace Pimix.IO.FileFormats {
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PatchedStream(encodedStream) {IgnoreBefore = 0x1225},
+            return new PimixCryptoStream(new PatchedStream(encodedStream) {
+                    IgnoreBefore = 0x1225
+                },
                 decoder, size, true);
         }
     }

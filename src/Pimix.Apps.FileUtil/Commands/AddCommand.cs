@@ -8,14 +8,14 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("add", HelpText = "Add file entry.")]
     class AddCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         [Value(0, Required = true, MetaName = "File URL")]
         public string FileUri { get; set; }
 
         [Option('f', "force-check", HelpText =
             "Check file integrity even if it is already recorded.")]
         public bool ForceRecheck { get; set; } = false;
-
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override int Execute() {
             var source = new PimixFile(FileUri);

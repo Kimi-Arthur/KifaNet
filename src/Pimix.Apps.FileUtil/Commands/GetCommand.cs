@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -40,6 +39,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 2;
                 }
             }
+
+            file.Unregister();
 
             var info = file.FileInfo;
 

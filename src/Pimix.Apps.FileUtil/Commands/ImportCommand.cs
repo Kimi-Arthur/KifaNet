@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using CommandLine;
 using Pimix.Infos;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
@@ -33,7 +32,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             switch (type) {
                 case "tv_shows":
-                    var tvShow = PimixService.Get<TvShow>(id);
+                    var tvShow = TvShow.Client.Get(id);
                     series = tvShow;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in tvShow.Seasons) {
@@ -48,7 +47,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                     break;
                 case "animes":
-                    var anime = PimixService.Get<Anime>(id);
+                    var anime = Anime.Client.Get(id);
                     series = anime;
                     episodes = new List<(Season season, Episode episode)>();
                     foreach (var season in anime.Seasons) {
@@ -76,7 +75,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
                 "mapping", (null, null));
             if (index >= 0) {
-                PimixService.Link<FileInformation>(file, series.Format(season, episode) + suffix);
+                FileInformation.Client.Link(file, series.Format(season, episode) + suffix);
                 episodes.RemoveAt(index);
             }
 

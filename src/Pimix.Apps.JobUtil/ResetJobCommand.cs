@@ -9,7 +9,7 @@ namespace Pimix.Apps.JobUtil {
 
         public override int Execute() {
             foreach (var job in Jobs) {
-                Job.ResetJob(job);
+                Job.Client.ResetJob(job);
             }
 
             return 0;

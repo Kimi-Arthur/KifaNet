@@ -9,10 +9,10 @@ using Pimix.Service;
 namespace PimixTest.Cloud.MegaNz {
     [TestClass]
     public class MegaNzStorageClientTests {
-        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
-
         readonly string FileSHA256 =
             "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+
+        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         [TestMethod]
         public void ExistsTest() {
@@ -96,10 +96,7 @@ namespace PimixTest.Cloud.MegaNz {
             var client = GetStorageClient();
 
             var files = new[] {
-                "/Test/2010-11-25.bin_bak",
-                "/Test/2010-11-25.bin_1",
-                "/Test/2010-11-25.bin_2",
-                "/Test/new/upload.bin",
+                "/Test/2010-11-25.bin_bak", "/Test/2010-11-25.bin_1", "/Test/2010-11-25.bin_2", "/Test/new/upload.bin",
                 "/Test/new/"
             };
 
@@ -112,6 +109,8 @@ namespace PimixTest.Cloud.MegaNz {
         }
 
         static MegaNzStorageClient GetStorageClient()
-            => new MegaNzStorageClient {AccountId = "test"};
+            => new MegaNzStorageClient {
+                AccountId = "test"
+            };
     }
 }
