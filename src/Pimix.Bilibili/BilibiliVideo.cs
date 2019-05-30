@@ -92,7 +92,8 @@ namespace Pimix.Bilibili {
                 return null;
             }
 
-            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" + (extraPath == null ? "" : $"/{extraPath}") +
+            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
+                   (extraPath == null ? "" : $"/{extraPath}") +
                    (Pages.Count > 1
                        ? $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
                        : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
@@ -139,9 +140,11 @@ namespace Pimix.Bilibili {
                     logger.Debug($"Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     var length = biliplusClient
-                        .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link)).Result
+                        .SendAsync(new HttpRequestMessage(HttpMethod.Head,
+                            choices[biliplusSourceChoice].link)).Result
                         .Content.Headers.ContentLength;
-                    return (length, biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result);
+                    return (length,
+                        biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result);
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {
@@ -156,7 +159,7 @@ namespace Pimix.Bilibili {
 
         static bool AddDownloadJob(string aid, int pid) {
             using (var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&page={pid}")
+                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
                 .Result) {
                 var content = response.GetString();
                 logger.Debug($"Add download request result: {content}");
