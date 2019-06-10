@@ -79,7 +79,8 @@ namespace Pimix.Cryptography {
 
             var originalPosition = Position;
             var transformedOffset = Position % blockSize;
-            while (Position < stream.Position) {
+            var streamPosition = stream.Position;
+            while (Position < streamPosition) {
                 buffer[bufferOffset++] ^= transformed[Position++ - originalPosition + transformedOffset];
             }
 
