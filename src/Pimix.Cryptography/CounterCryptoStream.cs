@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Pimix.Cryptography {
     public class CounterCryptoStream : Stream {
@@ -63,8 +64,6 @@ namespace Pimix.Cryptography {
             var counter = initialCounter.ToArray();
             counter.Add(Position / blockSize);
 
-            var bufferOffset = offset;
-
             var counterCount = (stream.Position.RoundDown(blockSize) - Position.RoundUp(blockSize)) / blockSize;
             counterCount += (stream.Position % blockSize > 0) ? 1 : 0;
             counterCount += (Position % blockSize > 0) ? 1 : 0;
@@ -80,9 +79,9 @@ namespace Pimix.Cryptography {
             var originalPosition = Position;
             var transformedOffset = Position % blockSize;
             var streamPosition = stream.Position;
-            while (Position < streamPosition) {
-                buffer[bufferOffset++] ^= transformed[Position++ - originalPosition + transformedOffset];
-            }
+            Parallel.For(0, streamPosition - Position, new ParallelOptions {MaxDegreeOfParallelism = 8},
+                i => { buffer[offset + i] ^= transformed[i + transformedOffset]; });
+            Position = streamPosition;
 
             return readCount;
         }
