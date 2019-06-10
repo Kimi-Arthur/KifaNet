@@ -6,11 +6,24 @@ using System.Linq;
 namespace Pimix.IO {
     public class MultiReadStream : Stream {
         public MultiReadStream(List<Stream> streams) {
-            Streams = streams;
-            Length = Streams.Sum(s => s.Length);
+            this.streams = streams;
+            streamCount = streams.Count;
+            lengths = this.streams.Select(s => s.Length).ToList();
+            offsets = new List<long> {0};
+            for (int i = 0; i < lengths.Count; i++) {
+                offsets.Add(offsets.Last() + lengths[i]);
+            }
+
+            Length = offsets.Last();
         }
 
-        public List<Stream> Streams { get; set; }
+        readonly List<Stream> streams;
+        readonly List<long> lengths;
+        readonly List<long> offsets;
+        int streamCount;
+
+        int currentStream = -1;
+        long positionInCurrentStream = -1;
 
         public override bool CanRead => true;
         public override bool CanSeek => true;
@@ -18,7 +31,55 @@ namespace Pimix.IO {
         public override long Length { get; }
         public override long Position { get; set; }
 
-        public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+        public override int Read(byte[] buffer, int offset, int count) {
+            count = (int) Math.Min(count, Length - Position);
+            if (count == 0) {
+                return 0;
+            }
+
+            UpdateCurrentPosition();
+
+            var toRead = count;
+            for (int s = currentStream; s < streams.Count; s++) {
+                streams[s].Seek(positionInCurrentStream, SeekOrigin.Begin);
+                var read = streams[s].Read(buffer, offset, toRead);
+                toRead -= read;
+                offset += read;
+                if (streams[s].Position == streams[s].Length) {
+                    currentStream++;
+                    positionInCurrentStream = 0;
+                } else {
+                    positionInCurrentStream = streams[s].Position;
+                }
+
+                if (toRead == 0) {
+                    break;
+                }
+            }
+
+            Position += count;
+
+            return count;
+        }
+
+        void UpdateCurrentPosition() {
+            if (currentStream != -1) {
+                return;
+            }
+
+            int l = 0, r = offsets.Count;
+            while (r - l > 1) {
+                var x = (l + r) / 2;
+                if (Position < offsets[x]) {
+                    r = x;
+                } else {
+                    l = x;
+                }
+            }
+
+            currentStream = l;
+            positionInCurrentStream = Position - offsets[l];
+        }
 
         public override void Flush() {
             // Intentionally doing nothing.
@@ -27,12 +88,24 @@ namespace Pimix.IO {
         public override long Seek(long offset, SeekOrigin origin) {
             switch (origin) {
                 case SeekOrigin.Begin:
+                    if (Position != offset) {
+                        positionInCurrentStream = currentStream = -1;
+                    }
+
                     Position = offset;
                     break;
                 case SeekOrigin.Current:
+                    if (offset != 0) {
+                        positionInCurrentStream = currentStream = -1;
+                    }
+
                     Position += offset;
                     break;
                 case SeekOrigin.End:
+                    if (Position != Length + offset) {
+                        positionInCurrentStream = currentStream = -1;
+                    }
+
                     Position = Length + offset;
                     break;
             }

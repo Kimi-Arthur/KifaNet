@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
 using Xunit;
 
 namespace PimixTest.IO.FileFormats {
-    public class PimixFileV1Tests {
+    public class PimixFileV2Tests {
         const string EncryptionKey = "C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795";
 
         [Theory]
@@ -24,14 +25,14 @@ namespace PimixTest.IO.FileFormats {
 
             using (var ms = new MemoryStream(data))
             using (var encrypted = new MemoryStream())
-            using (var encryptionStream = new PimixFileV1Format().GetEncodeStream(ms,
+            using (var encryptionStream = new PimixFileV2Format().GetEncodeStreams(ms,
                 new FileInformation {
                     EncryptionKey = EncryptionKey,
                     Size = length
-                })) {
+                }).First()) {
                 encryptionStream.CopyTo(encrypted);
                 using (var output =
-                    new PimixFileV1Format().GetDecodeStream(encrypted, EncryptionKey)) {
+                    new PimixFileV2Format().GetDecodeStream(new List<Stream> {encrypted}, EncryptionKey)) {
                     var fs1 = FileInformation.GetInformation(ms,
                         FileProperties.Size | FileProperties.Sha256);
                     var fs2 = FileInformation.GetInformation(output,
