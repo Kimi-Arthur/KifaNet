@@ -40,7 +40,7 @@ namespace Pimix.IO.FileFormats {
 
         public override Stream GetDecodeStream(List<Stream> encodedStreams, string encryptionKey = null) {
             var firstStream = encodedStreams.First();
-            
+
             firstStream.Seek(16, SeekOrigin.Begin);
             var sha256Bytes = new byte[32];
             firstStream.Read(sha256Bytes, 0, 32);
@@ -69,16 +69,10 @@ namespace Pimix.IO.FileFormats {
             var counter = GetCounter(sha256Bytes);
             var streams = new List<Stream>();
             foreach (var encodedStream in encodedStreams) {
-                var shardSizeBytes = new byte[8];
-                encodedStream.Seek(56, SeekOrigin.Begin);
-                encodedStream.Read(shardSizeBytes, 0, 8);
-                var shardSize = shardSizeBytes.ToInt64();
-                
-                streams.Add((new CounterCryptoStream(new PatchedStream(encodedStream) {IgnoreBefore = 64}, encoder, shardSize, counter)));
-                counter = counter.Add(shardSize / encoder.InputBlockSize);
+                streams.Add(new PatchedStream(encodedStream) {IgnoreBefore = 64});
             }
-            
-            return new MultiReadStream(streams);
+
+            return new CounterCryptoStream(new MultiReadStream(streams), encoder, length, counter);
         }
 
         public override List<Stream> GetEncodeStreams(Stream rawStream, FileInformation info) {

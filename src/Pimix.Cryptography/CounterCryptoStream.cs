@@ -63,14 +63,22 @@ namespace Pimix.Cryptography {
 
             var bufferOffset = offset;
 
-            while (Position < stream.Position) {
-                var transformed = transform.TransformFinalBlock(counter, 0, counter.Length);
+            var counterCount = (stream.Position.RoundDown(blockSize) - Position.RoundUp(blockSize)) / blockSize;
+            counterCount += (stream.Position % blockSize > 0) ? 1 : 0;
+            counterCount += (Position % blockSize > 0) ? 1 : 0;
 
-                do {
-                    buffer[bufferOffset++] ^= transformed[Position++ % blockSize];
-                } while (Position < stream.Position && Position % blockSize > 0);
-
+            var counters = new byte[counterCount * blockSize];
+            for (int i = 0; i < counterCount; i++) {
+                counter.CopyTo(counters, i * blockSize);
                 counter = counter.Add(1);
+            }
+
+            var transformed = transform.TransformFinalBlock(counters, 0, counters.Length);
+
+            var originalPosition = Position;
+            var transformedOffset = Position % blockSize;
+            while (Position < stream.Position) {
+                buffer[bufferOffset++] ^= transformed[Position++ - originalPosition + transformedOffset];
             }
 
             return readCount;
