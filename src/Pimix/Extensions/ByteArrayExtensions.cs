@@ -25,18 +25,15 @@
             return result;
         }
 
-        public static byte[] Add(this byte[] data, long addition) {
-            var result = data.ToArray();
+        public static void Add(this byte[] data, long addition) {
             for (int i = data.Length - 1; i >= 0; i--) {
-                addition += result[i];
-                result[i] = (byte) addition;
+                addition += data[i];
+                data[i] = (byte) addition;
                 addition >>= 8;
                 if (addition == 0) {
-                    return result;
+                    return;
                 }
             }
-
-            return result;
         }
     }
 }

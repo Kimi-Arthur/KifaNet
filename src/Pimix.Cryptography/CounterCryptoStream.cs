@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace Pimix.Cryptography {
@@ -59,7 +60,8 @@ namespace Pimix.Cryptography {
 
             var readCount = stream.Read(buffer, offset, count);
 
-            var counter = initialCounter.Add(Position / blockSize);
+            var counter = initialCounter.ToArray();
+            counter.Add(Position / blockSize);
 
             var bufferOffset = offset;
 
@@ -70,7 +72,7 @@ namespace Pimix.Cryptography {
             var counters = new byte[counterCount * blockSize];
             for (int i = 0; i < counterCount; i++) {
                 counter.CopyTo(counters, i * blockSize);
-                counter = counter.Add(1);
+                counter.Add(1);
             }
 
             var transformed = transform.TransformFinalBlock(counters, 0, counters.Length);
