@@ -71,7 +71,7 @@ namespace Pimix.Cryptography {
 
             var counters = new byte[counterCount * blockSize];
             for (int i = 0; i < counterCount; i++) {
-                counter.CopyTo(counters, i * blockSize);
+                Buffer.BlockCopy(counter, 0, counters, i * blockSize, counter.Length);
                 counter.Add(1);
             }
 
