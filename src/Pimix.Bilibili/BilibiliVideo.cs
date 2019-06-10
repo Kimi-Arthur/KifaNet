@@ -161,7 +161,7 @@ namespace Pimix.Bilibili {
 
         static bool AddDownloadJob(string aid) {
             using (var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}")
+                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
                 .Result) {
                 var content = response.GetString();
                 logger.Debug($"Add download request result: {content}");
