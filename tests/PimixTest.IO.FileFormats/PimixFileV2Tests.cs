@@ -20,19 +20,23 @@ namespace PimixTest.IO.FileFormats {
         [InlineData((64 << 20) - 1)]
         [InlineData((64 << 20) + 1)]
         public void RoundTripTest(int length) {
+            PimixFileV2Format.ShardSize = 64L << 20;
             var data = new byte[length];
             new Random().NextBytes(data);
 
-            using (var ms = new MemoryStream(data))
-            using (var encrypted = new MemoryStream())
-            using (var encryptionStream = new PimixFileV2Format().GetEncodeStreams(ms,
-                new FileInformation {
-                    EncryptionKey = EncryptionKey,
-                    Size = length
-                }).First()) {
-                encryptionStream.CopyTo(encrypted);
+            using (var ms = new MemoryStream(data)) {
+                var encryptionStreams = new PimixFileV2Format().GetEncodeStreams(ms,
+                    new FileInformation {
+                        EncryptionKey = EncryptionKey,
+                        Size = length
+                    });
+                var copiedEncryptionStreams = new List<Stream>();
+                encryptionStreams.ForEach(s => {
+                    copiedEncryptionStreams.Add(new MemoryStream());
+                    s.CopyTo(copiedEncryptionStreams.Last());
+                });
                 using (var output =
-                    new PimixFileV2Format().GetDecodeStream(new List<Stream> {encrypted}, EncryptionKey)) {
+                    new PimixFileV2Format().GetDecodeStream(copiedEncryptionStreams, EncryptionKey)) {
                     var fs1 = FileInformation.GetInformation(ms,
                         FileProperties.Size | FileProperties.Sha256);
                     var fs2 = FileInformation.GetInformation(output,

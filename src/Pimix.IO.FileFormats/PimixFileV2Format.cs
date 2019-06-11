@@ -109,7 +109,9 @@ namespace Pimix.IO.FileFormats {
                 var shardLength = Math.Min(ShardSize, length - position);
                 position.ToByteArray().CopyTo(header, 48);
                 shardLength.ToByteArray().CopyTo(header, 56);
-                streams.Add(new PatchedStream(new CounterCryptoStream(rawStream, encoder,
+                streams.Add(new PatchedStream(new CounterCryptoStream(new PatchedStream(rawStream) {
+                        IgnoreBefore = position
+                    }, encoder,
                     shardLength, counter.ToArray())) {
                     BufferBefore = header.ToArray()
                 });
