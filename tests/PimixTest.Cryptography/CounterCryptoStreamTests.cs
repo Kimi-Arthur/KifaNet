@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix;
 using Pimix.Cryptography;
 using Pimix.IO;
+using Xunit;
 
 namespace PimixTest.Cryptography {
-    [TestClass]
     public class CounterCryptoStreamTests {
         readonly Aes aesAlgorithm = new AesCryptoServiceProvider {
             Padding = PaddingMode.None,
@@ -32,7 +30,7 @@ namespace PimixTest.Cryptography {
                         "787EE39879AB57FBEA5A9999C67FBF7FC1FB0AD0E2E3100AF8C3AD115014BF0C")
                 };
 
-        [TestMethod]
+        [Fact]
         public void CounterCryptoStreamRoundTripTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateEncryptor();
@@ -47,14 +45,14 @@ namespace PimixTest.Cryptography {
                         var roundTripInfo = FileInformation.GetInformation(roundTripStream,
                             FileProperties.Sha256 | FileProperties.Size);
 
-                        Assert.AreEqual(baseInfo.Size, roundTripInfo.Size);
-                        Assert.AreEqual(baseInfo.Sha256, roundTripInfo.Sha256);
+                        Assert.Equal(baseInfo.Size, roundTripInfo.Size);
+                        Assert.Equal(baseInfo.Sha256, roundTripInfo.Sha256);
                     }
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void CounterCryptoStreamDecryptionReadBasicTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateEncryptor();
@@ -63,8 +61,8 @@ namespace PimixTest.Cryptography {
                     rawSize, initialCounter)) {
                     var info = FileInformation.GetInformation(stream,
                         FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
-                    Assert.AreEqual(rawSize, info.Size);
-                    Assert.AreEqual(rawHash, info.Sha256);
+                    Assert.Equal(rawSize, info.Size);
+                    Assert.Equal(rawHash, info.Sha256);
 
                     foreach (var b in new List<int> {
                         8,
@@ -80,14 +78,14 @@ namespace PimixTest.Cryptography {
 
                         info = FileInformation.GetInformation(output,
                             FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
-                        Assert.AreEqual(rawSize, info.Size);
-                        Assert.AreEqual(rawHash, info.Sha256);
+                        Assert.Equal(rawSize, info.Size);
+                        Assert.Equal(rawHash, info.Sha256);
                     }
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void CounterCryptoStreamDecryptionReadIncompleteEndTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateEncryptor();
@@ -109,14 +107,14 @@ namespace PimixTest.Cryptography {
                         stream.Seek(-b, SeekOrigin.End);
                         baseStream.Seek(-b, SeekOrigin.End);
                         for (var i = 0; i < b; i++) {
-                            Assert.AreEqual(baseStream.ReadByte(), stream.ReadByte());
+                            Assert.Equal(baseStream.ReadByte(), stream.ReadByte());
                         }
                     }
                 }
             }
         }
 
-        [TestMethod]
+        [Fact]
         public void CounterCryptoStreamEncryptionReadBasicTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateEncryptor();
@@ -125,8 +123,8 @@ namespace PimixTest.Cryptography {
                     encryptedSize, initialCounter)) {
                     var info = FileInformation.GetInformation(stream,
                         FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
-                    Assert.AreEqual(encryptedSize, info.Size);
-                    Assert.AreEqual(encryptedHash, info.Sha256);
+                    Assert.Equal(encryptedSize, info.Size);
+                    Assert.Equal(encryptedHash, info.Sha256);
 
                     foreach (var b in new List<int> {
                         8,
@@ -142,8 +140,8 @@ namespace PimixTest.Cryptography {
 
                         info = FileInformation.GetInformation(output,
                             FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
-                        Assert.AreEqual(encryptedSize, info.Size);
-                        Assert.AreEqual(encryptedHash, info.Sha256);
+                        Assert.Equal(encryptedSize, info.Size);
+                        Assert.Equal(encryptedHash, info.Sha256);
                     }
                 }
             }
