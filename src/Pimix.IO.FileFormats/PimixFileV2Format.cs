@@ -24,26 +24,27 @@ namespace Pimix.IO.FileFormats {
     public class PimixFileV2Format : PimixFileFormat {
         const byte HeaderLength = 0x40;
 
-        public static long ShardSize { get; set; } = 1L << 30;
-
-        static readonly PimixFileV2Format Instance = new PimixFileV2Format();
-
         public static PimixFileFormat Get(string fileUri) {
             if (fileUri.EndsWith(".v2")) {
-                return Instance;
+                var shardString = fileUri.Substring(0, fileUri.Length - 3).Split('.').Last();
+                var shardSegments = shardString.Split('-');
+                return new PimixFileV2Format
+                    {ShardStart = long.Parse(shardSegments[0]), ShardEnd = long.Parse(shardSegments[1])};
             }
 
             return null;
         }
 
+        public long ShardStart { get; set; }
+
+        public long ShardEnd { get; set; }
+
         public override string ToString() => "v2";
 
-        public override Stream GetDecodeStream(List<Stream> encodedStreams, string encryptionKey = null) {
-            var firstStream = encodedStreams.First();
-
-            firstStream.Seek(16, SeekOrigin.Begin);
+        public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null) {
+            encodedStream.Seek(16, SeekOrigin.Begin);
             var sha256Bytes = new byte[32];
-            firstStream.Read(sha256Bytes, 0, 32);
+            encodedStream.Read(sha256Bytes, 0, 32);
 
             if (encryptionKey == null) {
                 // We need to get the secondary id from the stream as ":SHA256".
@@ -52,11 +53,14 @@ namespace Pimix.IO.FileFormats {
                 encryptionKey = FileInformation.Client.Get(id).EncryptionKey;
             }
 
-            var sizeBytes = new byte[8];
-            firstStream.Seek(8, SeekOrigin.Begin);
-            firstStream.Read(sizeBytes, 0, 8);
-            var length = sizeBytes.ToInt64();
-
+            var shardStartBytes = new byte[8];
+            encodedStream.Seek(48, SeekOrigin.Begin);
+            encodedStream.Read(shardStartBytes, 0, 8);
+            var shardStart = shardStartBytes.ToInt64();
+            var shardEndBytes = new byte[8];
+            encodedStream.Seek(56, SeekOrigin.Begin);
+            encodedStream.Read(shardEndBytes, 0, 8);
+            var shardLength = shardEndBytes.ToInt64() - shardStartBytes.ToInt64();
 
             ICryptoTransform encoder;
             using (Aes aesAlgorithm = new AesCryptoServiceProvider()) {
@@ -67,15 +71,13 @@ namespace Pimix.IO.FileFormats {
             }
 
             var counter = GetCounter(sha256Bytes);
-            var streams = new List<Stream>();
-            foreach (var encodedStream in encodedStreams) {
-                streams.Add(new PatchedStream(encodedStream) {IgnoreBefore = 64});
-            }
+            counter.Add(shardStart / encoder.InputBlockSize);
 
-            return new CounterCryptoStream(new MultiReadStream(streams), encoder, length, counter);
+            return new CounterCryptoStream(new PatchedStream(encodedStream) {IgnoreBefore = 64}, encoder, shardLength,
+                counter);
         }
 
-        public override List<Stream> GetEncodeStreams(Stream rawStream, FileInformation info) {
+        public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
             info.AddProperties(rawStream, FileProperties.Size | FileProperties.Sha256);
 
             if (info.EncryptionKey == null) {
@@ -104,22 +106,15 @@ namespace Pimix.IO.FileFormats {
             }
 
             var counter = GetCounter(sha256);
-            var streams = new List<Stream>();
-            for (long position = 0; position < length; position += ShardSize) {
-                var shardLength = Math.Min(ShardSize, length - position);
-                position.ToByteArray().CopyTo(header, 48);
-                (position + shardLength).ToByteArray().CopyTo(header, 56);
-                streams.Add(new PatchedStream(new CounterCryptoStream(new PatchedStream(rawStream) {
-                        IgnoreBefore = position
-                    }, encoder,
-                    shardLength, counter.ToArray())) {
-                    BufferBefore = header.ToArray()
-                });
-
-                counter.Add(ShardSize / encoder.InputBlockSize);
-            }
-
-            return streams;
+            counter.Add(ShardStart / encoder.InputBlockSize);
+            ShardStart.ToByteArray().CopyTo(header, 48);
+            ShardEnd.ToByteArray().CopyTo(header, 56);
+            return new PatchedStream(new CounterCryptoStream(new PatchedStream(rawStream) {
+                    IgnoreBefore = ShardStart
+                }, encoder,
+                ShardEnd - ShardStart, counter)) {
+                BufferBefore = header.ToArray()
+            };
         }
 
         static byte[] GetCounter(byte[] infoSha256) {

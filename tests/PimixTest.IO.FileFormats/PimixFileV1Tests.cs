@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
@@ -21,17 +20,18 @@ namespace PimixTest.IO.FileFormats {
         public void RoundTripTest(int length) {
             var data = new byte[length];
             new Random().NextBytes(data);
+            var format = new PimixFileV1Format();
 
             using (var ms = new MemoryStream(data))
             using (var encrypted = new MemoryStream())
-            using (var encryptionStream = new PimixFileV1Format().GetEncodeStream(ms,
+            using (var encryptionStream = format.GetEncodeStream(ms,
                 new FileInformation {
                     EncryptionKey = EncryptionKey,
                     Size = length
                 })) {
                 encryptionStream.CopyTo(encrypted);
                 using (var output =
-                    new PimixFileV1Format().GetDecodeStream(encrypted, EncryptionKey)) {
+                    format.GetDecodeStream(encrypted, EncryptionKey)) {
                     var fs1 = FileInformation.GetInformation(ms,
                         FileProperties.Size | FileProperties.Sha256);
                     var fs2 = FileInformation.GetInformation(output,
