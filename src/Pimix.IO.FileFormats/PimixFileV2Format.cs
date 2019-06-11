@@ -18,8 +18,8 @@ namespace Pimix.IO.FileFormats {
     ///     B4~7: 0x0002 0x0040
     ///     B8~15: File Length (int64)
     ///     B16~47: SHA256 (256bit)
-    ///     B48~55: Shard start offset (int64)
-    ///     B56~63: Shard length (int64)
+    ///     B48~55: Shard start offset (int64) (including this byte)
+    ///     B56~63: Shard end offset (int64) (excluding this byte)
     /// </summary>
     public class PimixFileV2Format : PimixFileFormat {
         const byte HeaderLength = 0x40;
@@ -108,7 +108,7 @@ namespace Pimix.IO.FileFormats {
             for (long position = 0; position < length; position += ShardSize) {
                 var shardLength = Math.Min(ShardSize, length - position);
                 position.ToByteArray().CopyTo(header, 48);
-                shardLength.ToByteArray().CopyTo(header, 56);
+                (position + shardLength).ToByteArray().CopyTo(header, 56);
                 streams.Add(new PatchedStream(new CounterCryptoStream(new PatchedStream(rawStream) {
                         IgnoreBefore = position
                     }, encoder,
