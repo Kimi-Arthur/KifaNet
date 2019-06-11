@@ -240,7 +240,10 @@ namespace Pimix.IO {
         List<string> ListFolder(string folder, bool recursive = false);
         void AddLocation(string id, string location, bool verified = false);
         void RemoveLocation(string id, string location);
-        string CreateLocation(string id, string type = null);
+
+        string CreateLocation(string id, string type = null, string version = null, long? startByte = null,
+            long? endByte = null);
+
         string GetLocation(string id, List<string> types = null);
     }
 
@@ -266,10 +269,14 @@ namespace Pimix.IO {
                     ["location"] = location
                 });
 
-        public string CreateLocation(string id, string type = null)
+        public string CreateLocation(string id, string type = null, string version = null, long? startByte = null,
+            long? endByte = null)
             => Call<string>("create_location", id,
                 new Dictionary<string, object> {
-                    ["type"] = type
+                    ["type"] = type,
+                    ["version"] = version,
+                    ["start_byte"] = startByte,
+                    ["end_byte"] = endByte
                 });
 
         public string GetLocation(string id, List<string> types = null)

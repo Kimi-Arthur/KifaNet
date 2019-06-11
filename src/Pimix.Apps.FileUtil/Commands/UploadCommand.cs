@@ -20,20 +20,15 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Finish quickly by not verifying validity of destination.")]
         public bool QuickMode { get; set; } = false;
 
-        [Option('b', "use-baidu-cloud", HelpText = "Use Baidu Cloud as backend storage.")]
-        public bool UseBaiduCloud { get; set; } = false;
+        [Option('s', "service", HelpText =
+            "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega]")]
+        public CloudServiceType ServiceType { get; set; } = CloudServiceType.google;
 
-        [Option('g', "use-google-drive", HelpText =
-            "Use Google Drive as backend storage. Default case.")]
-        public bool UseGoogleDrive { get; set; } = false;
+        [Option('f', "format", HelpText =
+            "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
+        public CloudFormatType FormatType { get; set; } = CloudFormatType.v1;
 
         public override int Execute() {
-            if (UseBaiduCloud && UseGoogleDrive) {
-                logger.Error("Cannot set both --use-google-drive and --use-baidu-cloud. " +
-                             "Choose one.");
-                return 1;
-            }
-
             var source = new PimixFile(FileUri);
             if (source.Client == null) {
                 Console.WriteLine($"Source {FileUri} not accessible. Wrong server?");
@@ -75,7 +70,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 var destinationLocation =
-                    FileInformation.Client.CreateLocation(source.Id, UseBaiduCloud ? "baidu" : "google");
+                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString());
                 var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {
