@@ -70,7 +70,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 var destinationLocation =
-                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString());
+                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString(), FormatType.ToString());
                 var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {
