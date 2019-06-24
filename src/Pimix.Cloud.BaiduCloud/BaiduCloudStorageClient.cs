@@ -26,23 +26,15 @@ namespace Pimix.Cloud.BaiduCloud {
             Timeout = TimeSpan.FromMinutes(5)
         };
 
-        string accountId;
-
         public static int DownloadThreadCount { get; set; } = 4;
 
         static BaiduCloudConfig Config
             => LazyInitializer.EnsureInitialized(ref config,
                 () => BaiduCloudConfig.Client.Get("default"));
 
-        public string AccountId {
-            get => accountId;
-            set {
-                accountId = value;
-                Account = Config.Accounts[accountId];
-            }
-        }
+        public string AccountId { get; set; }
 
-        public AccountInfo Account { get; private set; }
+        public AccountInfo Account => Config.Accounts[AccountId];
 
         public override string ToString() => $"baidu:{AccountId}";
 
@@ -120,6 +112,10 @@ namespace Pimix.Cloud.BaiduCloud {
                 } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
                     logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
                     config = null;
+                    request = GetRequest(Config.APIList.DownloadFile,
+                        new Dictionary<string, string> {
+                            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                        });
                 } else {
                     logger.Fatal(response.Content.ReadAsStringAsync().Result);
                     throw new Exception($"Unexpected download response: {response}");
