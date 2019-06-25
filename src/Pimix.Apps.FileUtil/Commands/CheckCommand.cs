@@ -15,6 +15,11 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         protected override int ExecuteOneInstance(PimixFile file) {
             file = new PimixFile(file.ToString());
+            if (!file.Exists()) {
+                logger.Info($"{file} doesn't exist.");
+                throw new Exception("Doesn't exist.");
+            }
+
             logger.Info($"Checking {file} in {(QuickCheck ? "quick" : "full")} mode...");
             var info = new FileInformation();
             if (QuickCheck) {
