@@ -32,6 +32,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     throw new Exception($"Full check failed ({compareResults}).");
                 }
 
+                file.Register(true);
+
                 logger.Info($"Full check passed for {file}");
             }
 
