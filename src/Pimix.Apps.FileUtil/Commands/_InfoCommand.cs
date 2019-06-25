@@ -7,7 +7,7 @@ using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("info", HelpText = "Generate information of the specified file.")]
-    class InfoCommand : PimixCommand {
+    class _InfoCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true)]

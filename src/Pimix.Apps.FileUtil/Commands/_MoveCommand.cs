@@ -4,8 +4,8 @@ using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
-    [Verb("cp", HelpText = "Copy file from SOURCE to DEST.")]
-    class CopyCommand : PimixCommand {
+    [Verb("mv", HelpText = "Move file from SOURCE to DEST.")]
+    class _MoveCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true)]
@@ -23,7 +23,6 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             var source = new PimixFile(SourceUri);
             var destination = new PimixFile(DestinationUri);
-
             if (!source.Exists()) {
                 logger.Error("Source does not exist!");
                 return 1;
@@ -47,7 +46,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
             }
 
-            source.Copy(destination);
+            source.Move(destination);
 
             if (!destination.Exists()) {
                 logger.Fatal("Destination doesn't exist unexpectedly!");
@@ -57,13 +56,14 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (Verify) {
                 var result = destination.Add(Verify);
                 if (result != FileProperties.None) {
-                    logger.Fatal("Unexpected copy failure.");
+                    logger.Fatal("Unexpected move failure.");
                     return 2;
                 }
             }
 
+            FileInformation.Client.RemoveLocation(source.Id, SourceUri);
             FileInformation.Client.AddLocation(destination.Id, DestinationUri);
-            logger.Info($"Successfully copied {SourceUri} to {DestinationUri}.");
+            logger.Info($"Successfully moved {SourceUri} to {DestinationUri}.");
             return 0;
         }
     }
