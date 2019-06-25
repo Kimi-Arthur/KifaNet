@@ -59,3 +59,9 @@ Updates:
 
 ### 3.0
 - Added `filex clean`.
+
+### 4.0
+- Added `filex import`.
+
+### 5.0
+- Added `filex check`.

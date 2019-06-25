@@ -6,6 +6,7 @@ namespace Pimix.Apps.FileUtil {
         static int Main(string[] args)
             => PimixCommand.Run(Parser.Default
                 .ParseArguments<
+                    CheckCommand,
                     _InfoCommand,
                     _CopyCommand,
                     _VerifyCommand,

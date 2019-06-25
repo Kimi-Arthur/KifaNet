@@ -189,6 +189,9 @@ namespace Pimix.IO {
             return this;
         }
 
+        IEnumerable<KeyValuePair<FileProperties, PropertyInfo>> ValidProperties =>
+            properties.Where(x => x.Value.GetValue(this) != null);
+
         public FileProperties GetProperties()
             => properties
                 .Where(x => x.Value.GetValue(this) != null)
@@ -198,7 +201,7 @@ namespace Pimix.IO {
         public FileProperties CompareProperties(FileInformation other,
             FileProperties propertiesToCompare) {
             var result = FileProperties.None;
-            foreach (var p in properties) {
+            foreach (var p in ValidProperties) {
                 if (propertiesToCompare.HasFlag(p.Key)) {
                     if (p.Value.GetValue(other) != null) {
                         if (p.Value.PropertyType.IsAssignableFrom(typeof(List<string>))) {
