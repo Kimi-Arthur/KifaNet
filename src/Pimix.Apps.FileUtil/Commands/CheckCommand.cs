@@ -14,6 +14,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool QuickCheck { get; set; } = false;
 
         protected override int ExecuteOneInstance(PimixFile file) {
+            file = new PimixFile(file.ToString());
+            logger.Info($"Checking {file} in {(QuickCheck ? "quick" : "full")} mode...");
             var info = new FileInformation();
             if (QuickCheck) {
                 info.AddProperties(file.OpenRead(), FileProperties.SliceMd5);
