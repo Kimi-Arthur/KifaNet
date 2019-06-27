@@ -70,6 +70,7 @@ namespace Pimix.IO {
                     var candidates =
                         new Dictionary<(string md5, string sha1, string sha256), int>();
                     for (var i = 0; i < 5; ++i) {
+                        var ok = true;
                         while (true) {
                             try {
                                 stream.Seek(pos, SeekOrigin.Begin);
@@ -85,7 +86,8 @@ namespace Pimix.IO {
                                 logger.Warn(ex, "Decrypt error when reading from {0} to {1}:",
                                     Position,
                                     Position + count);
-                                throw;
+                                ok = false;
+                                break;
                             } catch (Exception ex) {
                                 logger.Warn(ex, "Failed once when reading from {0} to {1}:",
                                     Position,
@@ -95,20 +97,27 @@ namespace Pimix.IO {
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                         }
 
-                        var result = IsBlockValid(lastBlock, 0, bytesRead,
+                        if (!ok) {
+                            logger.Warn("Block {0} is problematic, retrying ({1})...",
+                                pos / FileInformation.BlockSize, i);
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                            continue;
+                        }
+
+                        var (result, md5, sha1, sha256) = IsBlockValid(lastBlock, 0, bytesRead,
                             (int) (pos / FileInformation.BlockSize));
-                        if (result.result == true) {
+                        if (result == true) {
                             successful = true;
                             break;
                         }
 
-                        if (result.result == false) {
+                        if (result == false) {
                             logger.Warn("Block {0} is problematic, retrying ({1})...",
                                 pos / FileInformation.BlockSize, i);
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                         } else {
-                            candidates[(result.md5, result.sha1, result.sha256)] =
-                                candidates.GetValueOrDefault((result.md5, result.sha1, result.sha256), 0) + 1;
+                            candidates[(md5, sha1, sha256)] =
+                                candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
                             if (HasMajority(candidates)) {
                                 if (candidates.Count > 1) {
                                     logger.Debug("Block {0} is not consistently got, but it's fine:",
