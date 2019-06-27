@@ -315,11 +315,22 @@ namespace Pimix.Api.Files {
                 return quickCompareResult;
             }
 
+            var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            if (compareResultWithOld != FileProperties.None) {
+                logger.Warn("Expected data:\n{0}",
+                    JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
+                        Formatting.Indented));
+                logger.Warn("Actual data:\n{0}",
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResultWithOld),
+                        Formatting.Indented));
+                return compareResultWithOld;
+            }
+
             var client = FileInformation.Client;
 
             var sha256Info = client.Get($"/$/{info.Sha256}");
 
-            if (FileInfo.Sha256 == null && sha256Info.Sha256 == info.Sha256) {
+            if (oldInfo.Sha256 == null && sha256Info.Sha256 == info.Sha256) {
                 client.Link(sha256Info.Id, info.Id);
             }
 
