@@ -17,6 +17,10 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Check file integrity even if it is already recorded.")]
         public bool ForceRecheck { get; set; } = false;
 
+        [Option('o', "overwrite", HelpText =
+            "Overwrite existing data if asked (with confirmation).")]
+        public bool Overwrite { get; set; } = false;
+
         public override int Execute() {
             var source = new PimixFile(FileUri);
 
@@ -46,6 +50,16 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             if (result == FileProperties.None) {
                 logger.Info("Successfully added {0}", f);
+                return 0;
+            }
+
+            if (Overwrite) {
+                var info = f.CalculateInfo(FileProperties.AllVerifiable);
+                Console.WriteLine($"{info}\nConfirm overwriting with new data?");
+                Console.ReadLine();
+                FileInformation.Client.Update(info);
+                f.Register(true);
+                logger.Info("Successfully updated data and added file.");
                 return 0;
             }
 

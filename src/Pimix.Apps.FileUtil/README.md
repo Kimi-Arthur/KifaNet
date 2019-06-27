@@ -65,3 +65,5 @@ Updates:
 
 ### 5.0
 - Added `filex check`.
+- 5.1
+  - Added `-o` in `filex add` to allow overwriting original data.
