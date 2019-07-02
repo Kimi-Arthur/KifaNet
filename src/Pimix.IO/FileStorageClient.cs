@@ -62,7 +62,7 @@ namespace Pimix.IO {
                 client.Connect();
                 var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
                 if (result.ExitStatus != 0) {
-                    throw new Exception("Remote link command failed");
+                    throw new Exception("Remote link command failed: " + result.Result);
                 }
             }
         }
