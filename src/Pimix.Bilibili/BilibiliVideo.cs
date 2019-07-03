@@ -19,6 +19,13 @@ namespace Pimix.Bilibili {
             ParallelPartMode
         }
 
+        enum DownloadStatus {
+            NoAccess,
+            CanAdd,
+            InProgress,
+            Done
+        }
+
         public const string ModelId = "bilibili/videos";
 
         static PimixServiceClient<BilibiliVideo> client;
@@ -113,7 +120,12 @@ namespace Pimix.Bilibili {
             biliplusClient = new HttpClient();
             biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
-            var added = AddDownloadJob(Id);
+            AddDownloadJob(Id);
+
+            while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
+                logger.Debug("Download not ready. Sleep 30 seconds...");
+                Thread.Sleep(TimeSpan.FromSeconds(30));
+            }
 
             var cid = Pages[pid - 1].Cid;
             var doc = new HtmlDocument();
@@ -121,17 +133,6 @@ namespace Pimix.Bilibili {
 
             var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
                 => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
-
-            while (added && choices == null) {
-                doc = new HtmlDocument();
-                doc.LoadHtml(GetDownloadPage(cid));
-
-                choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
-                        => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value))
-                    .ToList();
-
-                Thread.Sleep(TimeSpan.FromSeconds(30));
-            }
 
             if (choices == null) {
                 logger.Warn("No sources found. Job not successful?");
@@ -167,6 +168,29 @@ namespace Pimix.Bilibili {
                 logger.Debug($"Add download request result: {content}");
                 var code = (int) JToken.Parse(content)["code"];
                 return code == 0;
+            }
+        }
+
+        static DownloadStatus GetDownloadStatus(string aid, int pid) {
+            using (var response = biliplusClient
+                .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
+                .Result) {
+                var content = response.GetString();
+                logger.Debug($"Get download link result: {content}");
+                var storage = JToken.Parse(content)["storage"];
+                var access = (int) storage["access"];
+                switch (access) {
+                    case 0:
+                        return DownloadStatus.NoAccess;
+                    case 1 when (bool) storage["inProgress"]:
+                        return DownloadStatus.InProgress;
+                    case 1 when (bool) storage["canAdd"]:
+                        return DownloadStatus.CanAdd;
+                    case 2:
+                        return DownloadStatus.Done;
+                    default:
+                        throw new Exception("Unexpected download status");
+                }
             }
         }
 
