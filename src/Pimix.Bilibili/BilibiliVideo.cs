@@ -122,12 +122,13 @@ namespace Pimix.Bilibili {
 
             AddDownloadJob(Id);
 
+            var cid = Pages[pid - 1].Cid;
+
             while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
                 logger.Debug("Download not ready. Sleep 30 seconds...");
+                UpdateDownloadStatus(cid);
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             }
-
-            var cid = Pages[pid - 1].Cid;
             var doc = new HtmlDocument();
             doc.LoadHtml(GetDownloadPage(cid));
 
@@ -160,14 +161,21 @@ namespace Pimix.Bilibili {
             }
         }
 
-        static bool AddDownloadJob(string aid) {
+        static void AddDownloadJob(string aid) {
             using (var response = biliplusClient
                 .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
                 .Result) {
                 var content = response.GetString();
                 logger.Debug($"Add download request result: {content}");
-                var code = (int) JToken.Parse(content)["code"];
-                return code == 0;
+            }
+        }
+
+        static void UpdateDownloadStatus(string cid) {
+            using (var response = biliplusClient
+                .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}")
+                .Result) {
+                var content = response.GetString();
+                logger.Debug($"Check saver status: {content}");
             }
         }
 
@@ -176,7 +184,7 @@ namespace Pimix.Bilibili {
                 .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
                 .Result) {
                 var content = response.GetString();
-                logger.Debug($"Get download link result: {content}");
+                logger.Debug($"Get download result: {content}");
                 var storage = JToken.Parse(content)["storage"];
                 var access = (int) storage["access"];
                 switch (access) {
