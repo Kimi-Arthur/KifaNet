@@ -13,6 +13,14 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Quick check by only verifying the first block.")]
         public bool QuickCheck { get; set; } = false;
 
+        [Option('s', "skip-known", HelpText =
+            "Skip check of file if it's already known.")]
+        public bool SkipKnown { get; set; } = false;
+
+        [Option('o', "overwrite", HelpText =
+            "Overwrite existing data if asked (with confirmation).")]
+        public bool Overwrite { get; set; } = false;
+
         protected override int ExecuteOnePimixFile(PimixFile file) {
             file = new PimixFile(file.ToString());
             if (!file.Exists()) {
@@ -21,9 +29,13 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             logger.Info($"Checking {file} in {(QuickCheck ? "quick" : "full")} mode...");
-            var info = new FileInformation();
             if (QuickCheck) {
-                info.AddProperties(file.OpenRead(), FileProperties.SliceMd5);
+                if (SkipKnown && file.Registered) {
+                    logger.Info($"Quick check skipped for {file} as it's already registered.");
+                    return 0;
+                }
+
+                var info = file.CalculateInfo(FileProperties.SliceMd5);
                 var compareResults = info.CompareProperties(file.FileInfo, FileProperties.AllVerifiable);
                 if (compareResults != FileProperties.None) {
                     logger.Error($"Quick check failed for {file} ({compareResults}).");
@@ -32,16 +44,30 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 logger.Info($"Quick check passed for {file}");
             } else {
-                info.AddProperties(file.OpenRead(), FileProperties.AllVerifiable);
-                var compareResults = info.CompareProperties(file.FileInfo, FileProperties.AllVerifiable);
+                var alreadyRegistered = file.Registered;
+                var compareResults = file.Add(!SkipKnown);
                 if (compareResults != FileProperties.None) {
                     logger.Error($"Full check failed for {file} ({compareResults}).");
+
+                    if (Overwrite) {
+                        var info = file.CalculateInfo(FileProperties.AllVerifiable);
+                        Console.WriteLine($"{info}\nConfirm overwriting with new data?");
+                        Console.ReadLine();
+                        FileInformation.Client.Update(info);
+                        // TODO: Need to invalidate all other locations.
+                        file.Register(true);
+                        logger.Info("Successfully updated data and added file.");
+                        return 0;
+                    }
+
                     throw new Exception($"Full check failed ({compareResults}).");
                 }
 
-                file.Register(true);
-
-                logger.Info($"Full check passed for {file}");
+                if (SkipKnown && alreadyRegistered) {
+                    logger.Info($"Full check skipped for {file}.");
+                } else {
+                    logger.Info($"Full check passed for {file}.");
+                }
             }
 
             return 0;

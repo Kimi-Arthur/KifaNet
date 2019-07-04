@@ -191,6 +191,8 @@ namespace Pimix.Api.Files {
 
         public long Length() => Client.Length(Path);
 
+        public bool Registered => FileInfo.Locations?.GetValueOrDefault(ToString(), null) != null;
+
         public FileInformation QuickInfo()
             => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
@@ -288,13 +290,12 @@ namespace Pimix.Api.Files {
                 throw new FileNotFoundException(ToString());
             }
 
-            var oldInfo = FileInfo;
-            if (!alwaysCheck &&
-                (oldInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
-                oldInfo.Locations?.GetValueOrDefault(ToString(), null) != null) {
+            if (!alwaysCheck && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All && Registered) {
                 logger.Debug("Skipped checking for {0}.", ToString());
                 return FileProperties.None;
             }
+
+            var oldInfo = FileInfo;
 
             // Compare with quick info.
             var quickInfo = QuickInfo();
