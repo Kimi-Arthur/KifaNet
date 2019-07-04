@@ -8,7 +8,7 @@ using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps {
-    public abstract class PimixFileCommand : PimixCommand {
+    public abstract partial class PimixFileCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static readonly Regex numberPattern = new Regex(@"\d+");
@@ -22,18 +22,14 @@ namespace Pimix.Apps {
         [Option('r', "recursive", HelpText = "Take action on files in recursive folders.")]
         public virtual bool Recursive { get; set; } = false;
 
-        protected virtual Func<List<string>, string> ConfirmText => null;
-
-        protected virtual Func<List<PimixFile>, string> InstanceConfirmText => null;
-
         /// <summary>
         ///     Iterate over files with this prefix. If it's not, prefix the path with this member.
         /// </summary>
         protected virtual string Prefix => null;
 
         /// <summary>
-        ///     By default, it will only iterate over existing files. When it's set to true, it will iterate over logical
-        ///     ones and produce ExecuteOneInstance calls with the two combined.
+        ///     By default, it will only iterate over existing files. When it's set to true, it will iterate over
+        ///     logical ones and produce ExecuteOneInstance calls with the two combined.
         /// </summary>
         protected virtual bool IterateOverLogicalFiles => false;
 
@@ -56,47 +52,20 @@ namespace Pimix.Apps {
                     var thisFolder = FileInformation.Client.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        fileInfos.AddRange(thisFolder.Select(f => (getSortKey(f), host + f)));
+                        fileInfos.AddRange(thisFolder.Select(f => (GetSortKey(f), host + f)));
                     } else {
-                        fileInfos.Add((getSortKey(path), host + path));
+                        fileInfos.Add((GetSortKey(path), host + path));
                     }
                 }
 
                 fileInfos.Sort();
+
                 var files = fileInfos.Select(f => f.value).ToList();
-                if (multi && (ConfirmText != null || IterateOverLogicalFiles && InstanceConfirmText != null)) {
-                    files.ForEach(Console.WriteLine);
-
-                    Console.Write(IterateOverLogicalFiles
-                        ? InstanceConfirmText(files.Select(f => new PimixFile(f)).ToList())
-                        : ConfirmText(files));
-
-                    Console.ReadLine();
-                }
-
-                var errors = new Dictionary<string, Exception>();
-                var result = files.Select(s => {
-                    try {
-                        return IterateOverLogicalFiles
-                            ? ExecuteOneInstance(new PimixFile(s))
-                            : ExecuteOne(s);
-                    } catch (Exception ex) {
-                        errors[s] = ex;
-                        return 255;
-                    }
-                }).Max();
-
-                foreach (var (key, value) in errors) {
-                    logger.Error($"{key}: {value}");
-                }
-
-                if (errors.Count > 0) {
-                    logger.Error($"{errors.Count} files failed to be taken action on.");
-                }
-
-                return result;
+                return ById
+                    ? ExecuteAllFileInformation(files, multi)
+                    : ExecuteAllPimixFiles(files.Select(f => new PimixFile(f)).ToList(), multi);
             } else {
-                var files = new List<PimixFile>();
+                var files = new List<(string sortKey, PimixFile value)>();
                 foreach (var fileName in FileNames) {
                     var fileInfo = new PimixFile(fileName);
                     if (Prefix != null && !fileInfo.Path.StartsWith(Prefix)) {
@@ -106,50 +75,85 @@ namespace Pimix.Apps {
                     var thisFolder = fileInfo.List(Recursive).ToList();
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        files.AddRange(thisFolder);
+                        files.AddRange(thisFolder.Select(f => (GetSortKey(f.ToString()), f)));
                     } else {
-                        files.Add(fileInfo);
+                        files.Add((GetSortKey(fileInfo.ToString()), fileInfo));
                     }
                 }
 
-                // TODO: Support natural sorting here too.
                 files.Sort();
 
-                if (multi && InstanceConfirmText != null) {
-                    files.ForEach(Console.WriteLine);
-
-                    Console.Write(InstanceConfirmText(files));
-                    Console.ReadLine();
-                }
-
-                var errors = new Dictionary<string, Exception>();
-                var result = files.Select(s => {
-                    try {
-                        return ExecuteOneInstance(s);
-                    } catch (Exception ex) {
-                        errors[s.ToString()] = ex;
-                        return 255;
-                    }
-                }).Max();
-
-                foreach (var (key, value) in errors) {
-                    logger.Error($"{key}: {value}");
-                }
-
-                if (errors.Count > 0) {
-                    logger.Error($"{errors.Count} files failed to be taken action on.");
-                }
-
-                return result;
+                return ExecuteAllPimixFiles(files.Select(f => f.value).ToList(), multi);
             }
         }
 
-        protected virtual int ExecuteOne(string file) => -1;
+        string GetSortKey(string path) =>
+            NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;
+    }
 
-        protected virtual int ExecuteOneInstance(PimixFile file) => -1;
+    public abstract partial class PimixFileCommand {
+        protected virtual Func<List<string>, string> FileInformationConfirmText => null;
+        protected virtual int ExecuteOneFileInformation(string file) => -1;
 
-        string getSortKey(string path) {
-            return NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;
+        int ExecuteAllFileInformation(List<string> files, bool multi) {
+            if (multi && FileInformationConfirmText != null) {
+                files.ForEach(Console.WriteLine);
+                Console.Write(FileInformationConfirmText(files));
+                Console.ReadLine();
+            }
+
+            var errors = new Dictionary<string, Exception>();
+            var result = files.Select(s => {
+                try {
+                    return ExecuteOneFileInformation(s);
+                } catch (Exception ex) {
+                    errors[s] = ex;
+                    return 255;
+                }
+            }).Max();
+
+            foreach (var (key, value) in errors) {
+                logger.Error($"{key}: {value}");
+            }
+
+            if (errors.Count > 0) {
+                logger.Error($"{errors.Count} files failed to be taken action on.");
+            }
+
+            return result;
+        }
+    }
+
+    public abstract partial class PimixFileCommand {
+        protected virtual Func<List<PimixFile>, string> PimixFileConfirmText => null;
+        protected virtual int ExecuteOnePimixFile(PimixFile file) => -1;
+
+        int ExecuteAllPimixFiles(List<PimixFile> files, bool multi) {
+            if (multi && PimixFileConfirmText != null) {
+                files.ForEach(Console.WriteLine);
+                Console.Write(PimixFileConfirmText(files));
+                Console.ReadLine();
+            }
+
+            var errors = new Dictionary<string, Exception>();
+            var result = files.Select(s => {
+                try {
+                    return ExecuteOnePimixFile(s);
+                } catch (Exception ex) {
+                    errors[s.ToString()] = ex;
+                    return 255;
+                }
+            }).Max();
+
+            foreach (var (key, value) in errors) {
+                logger.Error($"{key}: {value}");
+            }
+
+            if (errors.Count > 0) {
+                logger.Error($"{errors.Count} files failed to be taken action on.");
+            }
+
+            return result;
         }
     }
 }

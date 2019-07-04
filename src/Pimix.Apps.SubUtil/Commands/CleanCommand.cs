@@ -9,10 +9,10 @@ namespace Pimix.Apps.SubUtil.Commands {
     class CleanCommand : PimixFileCommand {
         protected override string Prefix => "/Subtitles";
 
-        protected override Func<List<PimixFile>, string> InstanceConfirmText
+        protected override Func<List<PimixFile>, string> PimixFileConfirmText
             => files => $"Confirm cleaning comments for the {files.Count} files above?";
 
-        protected override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOnePimixFile(PimixFile file) {
             var lines = new List<string>();
             using (var sr = new StreamReader(file.OpenRead())) {
                 string line;

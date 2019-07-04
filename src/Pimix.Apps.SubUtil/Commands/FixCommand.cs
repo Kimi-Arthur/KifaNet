@@ -12,7 +12,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         protected override string Prefix => "/Subtitles";
 
-        protected override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOnePimixFile(PimixFile file) {
             var sub = AssDocument.Parse(file.OpenRead());
             sub = FixSubtitleResolution(sub);
             Console.WriteLine(sub.ToString());

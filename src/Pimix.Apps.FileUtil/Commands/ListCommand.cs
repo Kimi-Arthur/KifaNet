@@ -16,13 +16,13 @@ namespace Pimix.Apps.FileUtil.Commands {
             return result;
         }
 
-        protected override int ExecuteOne(string file) {
+        protected override int ExecuteOneFileInformation(string file) {
             counter++;
             Console.WriteLine(file);
             return 0;
         }
 
-        protected override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOnePimixFile(PimixFile file) {
             counter++;
             Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.ToString());
             return 0;

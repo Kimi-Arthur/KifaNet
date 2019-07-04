@@ -13,7 +13,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Quick check by only verifying the first block.")]
         public bool QuickCheck { get; set; } = false;
 
-        protected override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOnePimixFile(PimixFile file) {
             file = new PimixFile(file.ToString());
             if (!file.Exists()) {
                 logger.Info($"{file} doesn't exist.");

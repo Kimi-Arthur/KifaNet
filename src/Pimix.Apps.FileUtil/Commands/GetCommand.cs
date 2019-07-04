@@ -18,12 +18,12 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override bool Recursive { get; set; } = true;
 
-        protected override Func<List<PimixFile>, string> InstanceConfirmText =>
+        protected override Func<List<PimixFile>, string> PimixFileConfirmText =>
             files => $"Confirm getting the {files.Count} files above?";
 
         protected override bool IterateOverLogicalFiles => true;
 
-        protected override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOnePimixFile(PimixFile file) {
             if (file.Exists()) {
                 if (file.CalculateInfo(FileProperties.Size).Size != file.FileInfo.Size) {
                     logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");

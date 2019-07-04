@@ -10,10 +10,10 @@ namespace Pimix.Apps.FileUtil.Commands {
     class CleanCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        protected override Func<List<PimixFile>, string> InstanceConfirmText
+        protected override Func<List<PimixFile>, string> PimixFileConfirmText
             => files => $"Confirm fixing the {files.Count} files above?";
 
-        protected override int ExecuteOneInstance(PimixFile file) {
+        protected override int ExecuteOnePimixFile(PimixFile file) {
             var path = file.ToString();
             if (path.IsNormalized(NormalizationForm.FormC)) {
                 logger.Info($"{path} is already normalized.");

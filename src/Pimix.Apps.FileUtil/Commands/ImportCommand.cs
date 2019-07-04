@@ -69,7 +69,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             return base.Execute();
         }
 
-        protected override int ExecuteOne(string file) {
+        protected override int ExecuteOneFileInformation(string file) {
             var suffix = file.Substring(file.LastIndexOf('.'));
             var ((season, episode), index) = SelectOne(episodes,
                 e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
