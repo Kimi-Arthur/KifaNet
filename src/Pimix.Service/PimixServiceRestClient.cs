@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -13,14 +13,25 @@ namespace Pimix.Service {
     public class PimixServiceRestClient {
         internal static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        internal static readonly HttpClient client = new HttpClient();
+        static HttpClient client;
+
+        internal static HttpClient Client
+            => LazyInitializer.EnsureInitialized(ref client, ()
+                => CertPath != null
+                    ? new HttpClient(new HttpClientHandler {
+                        ClientCertificates =
+                            {new X509Certificate2(CertPath, CertPassword)}
+                    })
+                    : new HttpClient());
 
         public static string PimixServerApiAddress { get; set; }
 
-        public static string PimixServerCredential { get; set; }
+        public static string CertPath { get; set; }
+        public static string CertPassword { get; set; }
     }
 
-    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
+    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel>
+        where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
         public override void Update(TDataModel data, string id = null) {
@@ -30,15 +41,13 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                        Content = new StringContent(
+                            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
 
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
-                using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
                     return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({id})"));
@@ -51,15 +60,13 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                        Content = new StringContent(
+                            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
 
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
-                using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
                     return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({id})"));
@@ -71,10 +78,7 @@ namespace Pimix.Service {
                     new HttpRequestMessage(HttpMethod.Get,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
-                using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
                     return response.GetObject<TDataModel>();
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
@@ -82,17 +86,16 @@ namespace Pimix.Service {
 
         public override List<TDataModel> Get(IEnumerable<string> ids) {
             return Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Get,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+                    var request =
+                        new HttpRequestMessage(HttpMethod.Get,
+                            $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
 
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
-                using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
-                    return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
-                }
-            }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({string.Join(", ", ids)})"));
+                    using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
+                        return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
+                    }
+                },
+                (ex, i) => HandleException(ex, i,
+                    $"Failure in GET {modelId}({string.Join(", ", ids)})"));
         }
 
         public override void Link(string targetId, string linkId) {
@@ -102,10 +105,7 @@ namespace Pimix.Service {
                             $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/" +
                             $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
 
-                    request.Headers.Authorization =
-                        new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
-                    using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                    using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
                         return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                     }
                 },
@@ -119,10 +119,7 @@ namespace Pimix.Service {
                     new HttpRequestMessage(HttpMethod.Delete,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
-                using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
                     return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 }
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
@@ -139,21 +136,19 @@ namespace Pimix.Service {
                         new HttpRequestMessage(HttpMethod.Post,
                             $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/${action}");
 
-                    request.Headers.Authorization =
-                        new AuthenticationHeaderValue("Basic", PimixServiceRestClient.PimixServerCredential);
-
                     if (parameters != null) {
                         if (id != null) {
                             parameters["id"] = id;
                         }
 
                         request.Content = new StringContent(
-                            JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
+                            JsonConvert.SerializeObject(parameters,
+                                Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json");
                     }
 
-                    using (var response = PimixServiceRestClient.client.SendAsync(request).Result) {
+                    using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
                         var result = response.GetObject<RestActionResult<TResponse>>();
                         if (result.Status == RestActionStatus.OK) {
                             return result.Response;
@@ -171,7 +166,8 @@ namespace Pimix.Service {
 
         static void HandleException(Exception ex, int index, string message) {
             if (index >= 5 || ex is RestActionFailedException ||
-                ex is HttpRequestException && ex.InnerException is SocketException socketException &&
+                ex is HttpRequestException &&
+                ex.InnerException is SocketException socketException &&
                 socketException.Message == "Device not configured") {
                 throw ex;
             }
