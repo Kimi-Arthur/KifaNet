@@ -119,8 +119,7 @@ namespace Pimix.Api.Files {
 
         PimixFileFormat FileFormat { get; }
 
-        public FileInformation FileInfo
-            => fileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+        public FileInformation FileInfo => fileInfo = fileInfo ?? FileInformation.Client.Get(Id);
 
         public bool IsCloud
             => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
@@ -151,31 +150,46 @@ namespace Pimix.Api.Files {
         }
 
         static string GetUri(string id) {
-            var bestRemoteLocation = "";
-            var bestScore = 0;
+            string candidate = null;
+            var bestScore = 0L;
             var info = FileInformation.Client.Get(id);
-            foreach (var location in info.Locations) {
-                if (location.Value != null) {
-                    var file = new PimixFile(location.Key, fileInfo: info);
-                    if (file.Client is FileStorageClient && file.Exists()) {
-                        return location.Key;
-                    }
+            if (info.Locations != null) {
+                foreach (var location in info.Locations) {
+                    if (location.Value != null) {
+                        var file = new PimixFile(location.Key, fileInfo: info);
+                        if (file.Client is FileStorageClient && file.Exists()) {
+                            return location.Key;
+                        }
 
-                    var score = (PreferBaiduCloud
-                        ? file.Client is BaiduCloudStorageClient
-                        : file.Client is GoogleDriveStorageClient)
-                        ? 8
-                        : 4;
-                    score += file.FileFormat is PimixFileV1Format ? 2 :
-                        file.FileFormat is PimixFileV0Format ? 1 : 0;
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestRemoteLocation = location.Key;
+                        var score = (PreferBaiduCloud
+                            ? file.Client is BaiduCloudStorageClient
+                            : file.Client is GoogleDriveStorageClient)
+                            ? 8
+                            : 4;
+                        score += file.FileFormat is PimixFileV1Format ? 2 :
+                            file.FileFormat is PimixFileV0Format ? 1 : 0;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            candidate = location.Key;
+                        }
                     }
                 }
             }
 
-            return bestRemoteLocation;
+            if (bestScore > 0) {
+                return candidate;
+            }
+
+            foreach (var p in FileStorageClient.ServerConfigs.Keys) {
+                var location = $"local:{p}{id}";
+                var score = new PimixFile(location).Length();
+                if (score > bestScore) {
+                    bestScore = score;
+                    candidate = location;
+                }
+            }
+
+            return candidate;
         }
 
         public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
@@ -226,7 +240,8 @@ namespace Pimix.Api.Files {
         }
 
         public Stream OpenRead()
-            => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
+            => new VerifiableStream(
+                FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
         public void WriteIfNotFinished(Func<(long? length, Stream stream)> getStream) {
@@ -290,7 +305,9 @@ namespace Pimix.Api.Files {
                 throw new FileNotFoundException(ToString());
             }
 
-            if (!alwaysCheck && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All && Registered) {
+            if (!alwaysCheck &&
+                (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
+                Registered) {
                 logger.Debug("Skipped checking for {0}.", ToString());
                 return FileProperties.None;
             }
@@ -308,21 +325,26 @@ namespace Pimix.Api.Files {
 
             if (quickCompareResult != FileProperties.None) {
                 logger.Warn("Quick data:\n{0}",
-                    JsonConvert.SerializeObject(quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(
+                        quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 return quickCompareResult;
             }
 
-            var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            var compareResultWithOld =
+                info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResultWithOld != FileProperties.None) {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
+                    JsonConvert.SerializeObject(
+                        oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResultWithOld),
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ compareResultWithOld),
                         Formatting.Indented));
                 return compareResultWithOld;
             }
@@ -347,10 +369,12 @@ namespace Pimix.Api.Files {
                 fileInfo = null;
             } else {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(
+                        sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(
+                        info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
             }
 
@@ -360,8 +384,7 @@ namespace Pimix.Api.Files {
         public void Register(bool verified = false)
             => FileInformation.Client.AddLocation(Id, ToString(), verified);
 
-        public void Unregister()
-            => FileInformation.Client.RemoveLocation(Id, ToString());
+        public void Unregister() => FileInformation.Client.RemoveLocation(Id, ToString());
 
         public bool IsCompatible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;

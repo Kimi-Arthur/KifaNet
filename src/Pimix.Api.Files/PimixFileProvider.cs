@@ -24,7 +24,7 @@ namespace Pimix.Api.Files {
         public Stream CreateReadStream() => file.OpenRead();
 
         public bool Exists => file.Exists();
-        public long Length => file.FileInfo.Size.GetValueOrDefault();
+        public long Length => file.Length();
         public string PhysicalPath => null;
         public string Name => file.BaseName;
 
