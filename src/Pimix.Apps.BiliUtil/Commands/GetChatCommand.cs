@@ -1,17 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
 using CommandLine;
+using NLog;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
-    class GetChatCommand : PimixCommand {
-        [Value(0, Required = true, HelpText = "Target file to get comments for.")]
-        public string FileUri { get; set; }
+    class GetChatCommand : PimixFileCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
         public string Cid { get; set; }
@@ -24,38 +25,43 @@ namespace Pimix.Apps.BiliUtil.Commands {
         [Option('g', "group", HelpText = "Group name.")]
         public string Group { get; set; }
 
-        public override int Execute() {
-            if (Aid != null) {
-                var files = new PimixFile(FileUri).List(true).ToList();
+        List<(BilibiliVideo video, BilibiliChat chat)> chats = new List<(BilibiliVideo video, BilibiliChat chat)>();
 
+        public override int Execute() {
+            if (Cid != null) {
+                Aid = BilibiliVideo.GetAid(Cid);
+            }
+
+            if (Aid != null) {
                 var ids = Aid.Split('p');
                 var v = BilibiliVideo.Client.Get(ids[0]);
-                foreach (var item in v.Pages.Zip(files, Tuple.Create)) {
-                    Console.WriteLine($"{v.Title} - {item.Item1.Title}\n" +
-                                      $"{item.Item2}\n" +
-                                      $"{v.Id}p{item.Item1.Id} (cid={item.Item1.Cid})\n");
+
+                if (ids.Length == 1) {
+                    chats.AddRange(v.Pages.Select(p => (v, p)));
+                } else {
+                    foreach (var index in ids.Skip(1)) {
+                        chats.Add((v, v.Pages[int.Parse(index) - 1]));
+                    }
                 }
-
-                Console.Write($"Confirm getting the {Math.Min(v.Pages.Count, files.Count)} Bilibili chats above?");
-                Console.ReadLine();
-
-                return v.Pages.Zip(files, GetChat).Max();
             }
 
-            if (Cid == null) {
-                // Needs to infer cid.
-                var segments = FileUri.Split('.');
-                if (!segments[segments.Length - 2].StartsWith("c")) {
-                    Console.WriteLine("Cannot infer CID from Bilibili.");
-                    return 1;
-                }
+            return base.Execute();
+        }
 
-                Cid = segments[segments.Length - 2].Substring(1);
+        protected override int ExecuteOnePimixFile(PimixFile file) {
+            var inferredAid = InferAid(file.ToString());
+            if (inferredAid != null) {
+                var ids = inferredAid.Split('p');
+                var v = BilibiliVideo.Client.Get(ids[0]);
+                var pid = ids.Length > 1 ? int.Parse(ids[1]) : 1;
+                return GetChat(v.Pages[pid - 1], file);
             }
 
-            return GetChat(new BilibiliChat {
-                Cid = Cid
-            }, new PimixFile(FileUri));
+            var ((video, chat), index) = SelectOne(chats,
+                c => $"{file} => {c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
+                "danmaku", (null, null));
+
+            return index >= 0 ? GetChat(chat, file) : 0;
         }
 
         int GetChat(BilibiliChat chat, PimixFile rawFile) {
@@ -83,6 +89,16 @@ namespace Pimix.Apps.BiliUtil.Commands {
             memoryStream.Dispose();
 
             return 0;
+        }
+
+        string InferAid(string file) {
+            var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
+            if (segments.Length < 3 || !segments[segments.Length - 3].StartsWith("av")) {
+                logger.Debug("Cannot infer CID from file name.");
+                return null;
+            }
+
+            return segments[segments.Length - 3];
         }
     }
 

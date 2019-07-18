@@ -129,6 +129,7 @@ namespace Pimix.Bilibili {
                 UpdateDownloadStatus(cid);
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             }
+
             var doc = new HtmlDocument();
             doc.LoadHtml(GetDownloadPage(cid));
 
@@ -210,6 +211,19 @@ namespace Pimix.Bilibili {
                 logger.Debug($"Downloaded page content: {content}");
 
                 return content;
+            }
+        }
+
+        public static string GetAid(string cid) {
+            using (var response = biliplusClient
+                .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}")
+                .Result) {
+                var content = response.GetString();
+                logger.Debug($"Cid info: {content}");
+
+                var data = JToken.Parse(content)["data"];
+
+                return $"av{data["aid"]}p{data["page"]}";
             }
         }
     }
