@@ -149,7 +149,8 @@ namespace Pimix.Bilibili {
                     logger.Debug("Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     var length = biliplusClient
-                        .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link)).Result
+                        .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link),
+                            HttpCompletionOption.ResponseHeadersRead).Result
                         .Content.Headers.ContentLength;
                     var link = choices[biliplusSourceChoice].link;
                     if (length == null) {
@@ -169,7 +170,6 @@ namespace Pimix.Bilibili {
                             response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
                             return (int) memoryStream.Position;
                         }
-
                     });
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
