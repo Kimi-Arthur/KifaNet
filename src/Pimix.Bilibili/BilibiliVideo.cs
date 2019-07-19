@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using Pimix.IO;
 using Pimix.Service;
 using Pimix.Subtitle.Ass;
 
@@ -110,7 +112,7 @@ namespace Pimix.Bilibili {
                        : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
 
-        public (long? length, Stream stream) DownloadVideo(int pid, int biliplusSourceChoice = 0) {
+        public Stream DownloadVideo(int pid, int biliplusSourceChoice = 0) {
             if (!firstDownload) {
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             }
@@ -138,7 +140,7 @@ namespace Pimix.Bilibili {
 
             if (choices == null) {
                 logger.Warn("No sources found. Job not successful?");
-                return (null, null);
+                return null;
             }
 
             var initialSource = biliplusSourceChoice;
@@ -149,7 +151,26 @@ namespace Pimix.Bilibili {
                     var length = biliplusClient
                         .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link)).Result
                         .Content.Headers.ContentLength;
-                    return (length, biliplusClient.GetStreamAsync(choices[biliplusSourceChoice].link).Result);
+                    var link = choices[biliplusSourceChoice].link;
+                    if (length == null) {
+                        throw new Exception("Content length is not found.");
+                    }
+
+                    return new SeekableReadStream(length.Value, (buffer, bufferOffset, offset, count) => {
+                        if (count < 0) {
+                            count = buffer.Length - bufferOffset;
+                        }
+
+                        var request = new HttpRequestMessage(HttpMethod.Get, link);
+
+                        request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+                        using (var response = biliplusClient.SendAsync(request).Result) {
+                            var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+                            response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+                            return (int) memoryStream.Position;
+                        }
+
+                    });
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {

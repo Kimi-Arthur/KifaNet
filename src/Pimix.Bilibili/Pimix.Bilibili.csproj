@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
     <ProjectReference Include="..\Pimix.Subtitle\Pimix.Subtitle.csproj" />
   </ItemGroup>

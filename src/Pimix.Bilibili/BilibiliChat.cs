@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Xml;
+using Newtonsoft.Json;
 
 namespace Pimix.Bilibili {
     public class BilibiliChat {
@@ -25,6 +26,7 @@ namespace Pimix.Bilibili {
 
         public TimeSpan Duration { get; set; }
 
+        [JsonIgnore]
         public XmlDocument RawDocument {
             get {
                 if (rawDocument == null) {
@@ -41,6 +43,7 @@ namespace Pimix.Bilibili {
 
         public TimeSpan ChatOffset { get; set; } = TimeSpan.Zero;
 
+        [JsonIgnore]
         public IEnumerable<BilibiliComment> Comments {
             get {
                 if (comments.Count == 0) {

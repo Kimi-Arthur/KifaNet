@@ -240,11 +240,10 @@ namespace Pimix.Api.Files {
         }
 
         public Stream OpenRead()
-            => new VerifiableStream(
-                FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
+            => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
-        public void WriteIfNotFinished(Func<(long? length, Stream stream)> getStream) {
+        public void WriteIfNotFinished(Func<Stream> getStream) {
             if (FileInfo.Locations != null) {
                 logger.Info($"{FileInfo.Id} already exists in the system. Skipped.");
                 return;
@@ -257,20 +256,20 @@ namespace Pimix.Api.Files {
 
             var downloadFile = GetFileSuffixed(".downloading");
 
-            var (length, stream) = getStream();
-            if (length == null) {
+            var stream = getStream();
+            if (stream == null || stream.Length <= 0) {
                 throw new Exception("Cannot get stream.");
             }
 
             if (downloadFile.Exists()) {
-                if (downloadFile.Length() == length) {
+                if (downloadFile.Length() == stream.Length) {
                     downloadFile.Move(this);
                     logger.Info($"Moved {downloadFile} to {this} already exists. Skipped.");
                     return;
                 }
 
                 logger.Info($"Target file {downloadFile} exists, " +
-                            $"but size ({downloadFile.Length()}) is different from source ({length}). " +
+                            $"but size ({downloadFile.Length()}) is different from source ({stream.Length}). " +
                             "Will be removed.");
             }
 
@@ -325,12 +324,10 @@ namespace Pimix.Api.Files {
 
             if (quickCompareResult != FileProperties.None) {
                 logger.Warn("Quick data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ quickCompareResult),
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ quickCompareResult),
                         Formatting.Indented));
                 return quickCompareResult;
             }
@@ -339,12 +336,10 @@ namespace Pimix.Api.Files {
                 info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResultWithOld != FileProperties.None) {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
+                    JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ compareResultWithOld),
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResultWithOld),
                         Formatting.Indented));
                 return compareResultWithOld;
             }
@@ -369,12 +364,10 @@ namespace Pimix.Api.Files {
                 fileInfo = null;
             } else {
                 logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
                 logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(
-                        info.RemoveProperties(FileProperties.All ^ compareResult),
+                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
                         Formatting.Indented));
             }
 
