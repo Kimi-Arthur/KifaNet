@@ -45,8 +45,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public override string ToString() => $"google:{AccountId}";
 
-        public override IEnumerable<FileInformation> List(string path, bool recursive = false,
-            string pattern = "*") {
+        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
             var fileId = GetFileId(path);
             if (fileId == null) {
                 yield break;

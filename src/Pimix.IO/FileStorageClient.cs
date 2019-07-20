@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Renci.SshNet;
 
 namespace Pimix.IO {
@@ -112,25 +113,24 @@ namespace Pimix.IO {
             return info.Exists ? info.Length : -1;
         }
 
-        public override IEnumerable<FileInformation> List(string path, bool recursive = false,
-            string pattern = "*") {
+        public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
             var normalizedPath = GetPath(path);
             if (!Directory.Exists(normalizedPath)) {
                 return Enumerable.Empty<FileInformation>();
             }
 
             var directory = new DirectoryInfo(normalizedPath);
-            var items = directory.GetFiles(pattern,
+            var items = directory.GetFiles("*",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            return items.OrderBy(i => i.Name).Select(i => {
+            return items.OrderBy(i => i.Name.Normalize(NormalizationForm.FormC)).Select(i => {
                 try {
                     return new FileInformation {
-                        Id = GetId(i.FullName),
+                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
                         Size = i.Length
                     };
                 } catch (Exception) {
                     return new FileInformation {
-                        Id = GetId(i.FullName),
+                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
                         Size = 0
                     };
                 }

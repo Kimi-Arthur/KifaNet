@@ -290,7 +290,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         static List<(string id, List<AssDialogue> content)>
             GetBilibiliChats(PimixFile parent, string baseName) {
             var result = new List<(string id, List<AssDialogue> content)>();
-            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}*.xml")) {
+            foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}.*.xml")) {
                 var chat = new BilibiliChat();
                 chat.Load(file.OpenRead());
                 result.Add((file.BaseName.Split('.').Last(),

@@ -8,8 +8,7 @@ namespace Pimix.IO {
         public virtual void Dispose() {
         }
 
-        public virtual IEnumerable<FileInformation> List(string path, bool recursive = false,
-            string pattern = "*")
+        public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
             => Enumerable.Empty<FileInformation>();
 
         public bool Exists(string path) => Length(path) > 0;
