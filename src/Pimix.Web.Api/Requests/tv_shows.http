@@ -2,6 +2,16 @@
 GET {{server}}/api/tv_shows/$refresh?id=Silicon Valley
 Accept: application/x-yaml
 
+### Add Single
+POST {{server}}/api/tv_shows/Miss PILOT
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+tmdb_id: '62045'
+language: ja
+pattern_id: single_season
+episode_id_width: 2
+
 ### Add
 POST {{server}}/api/tv_shows/Game of Thrones
 Accept: application/x-yaml
@@ -24,11 +34,11 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/信長協奏曲
+GET {{server}}/api/tv_shows/Miss PILOT
 Accept: application/x-yaml
 
 ### List
-GET {{server}}/api/tv_shows/$format_path?path=Westworld/2/1
+GET {{server}}/api/tv_shows/$format_path?path=Miss PILOT
 Accept: application/x-yaml
 
 ### TMDB episode
