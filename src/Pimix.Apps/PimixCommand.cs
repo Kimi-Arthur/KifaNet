@@ -14,12 +14,19 @@ namespace Pimix.Apps {
 
         public static PimixFile CurrentFolder => new PimixFile(".");
 
+        [Option('v', "verbose", HelpText = "Show most detailed log.")]
+        public virtual bool Verbose { get; set; } = false;
+
         public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
             Initialize();
             return parse(args).MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
         }
 
         static int ExecuteCommand(PimixCommand command) {
+            if (command.Verbose) {
+                ConfigureLogger(true);
+            }
+
             try {
                 return command.Execute();
             } catch (Exception ex) {
@@ -46,12 +53,16 @@ namespace Pimix.Apps {
             }
         }
 
-        static void ConfigureLogger() {
+        static void ConfigureLogger(bool fullConsole = false) {
             LogManager.Configuration.LoggingRules.Clear();
 
-            foreach (var target in LoggingTargets) {
-                var minLevel = target.EndsWith("_full") ? LogLevel.Trace : LogLevel.Debug;
-                LogManager.Configuration.AddRule(minLevel, LogLevel.Fatal, target);
+            if (fullConsole) {
+                LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
+            } else {
+                foreach (var target in LoggingTargets) {
+                    var minLevel = target.EndsWith("_full") ? LogLevel.Trace : LogLevel.Debug;
+                    LogManager.Configuration.AddRule(minLevel, LogLevel.Fatal, target);
+                }
             }
 
             LogManager.ReconfigExistingLoggers();
