@@ -1,14 +1,18 @@
 using System;
+using NLog;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Subtitle.Srt {
     public class SrtLine {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public int Index { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public SrtTextElement Text { get; set; }
 
         public static SrtLine Parse(string s) {
+            logger.Trace($"Parsing srt line: {s}");
             var lines = s.Trim()
                 .Split(new[] {
                     "\n", "\n"

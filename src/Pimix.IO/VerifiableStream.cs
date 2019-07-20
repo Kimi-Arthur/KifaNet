@@ -54,7 +54,7 @@ namespace Pimix.IO {
             var endPosition =
                 Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
-            logger.Debug($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
+            logger.Trace($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
             lastBlock = lastBlock ?? new byte[FileInformation.BlockSize];
 
