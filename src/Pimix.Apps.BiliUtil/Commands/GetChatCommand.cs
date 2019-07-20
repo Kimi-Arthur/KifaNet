@@ -60,6 +60,8 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var ((video, chat), index) = SelectOne(chats,
                 c => $"{file} => {c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
                 "danmaku", (null, null));
+            
+            chats.RemoveAt(index);
 
             return index >= 0 ? GetChat(chat, file) : 0;
         }
