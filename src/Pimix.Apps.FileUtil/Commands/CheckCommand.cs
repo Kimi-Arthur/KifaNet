@@ -35,7 +35,14 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 0;
                 }
 
-                var info = file.CalculateInfo(FileProperties.SliceMd5);
+                FileInformation info;
+                try {
+                    info = file.CalculateInfo(FileProperties.SliceMd5);
+                } catch (Exception e) {
+                    logger.Error(e, $"Quick check failed for {file}.");
+                    throw new Exception($"Quick check failed for {file}.", e);
+                }
+ 
                 var compareResults = info.CompareProperties(file.FileInfo, FileProperties.AllVerifiable);
                 if (compareResults != FileProperties.None) {
                     logger.Error($"Quick check failed for {file} ({compareResults}).");
@@ -45,12 +52,25 @@ namespace Pimix.Apps.FileUtil.Commands {
                 logger.Info($"Quick check passed for {file}");
             } else {
                 var alreadyRegistered = file.Registered;
-                var compareResults = file.Add(!SkipKnown);
+                FileProperties compareResults;
+                try {
+                    compareResults = file.Add(!SkipKnown);
+                } catch (Exception e) {
+                    logger.Error(e, $"Full check failed for {file}.");
+                    throw new Exception($"Full check failed for {file}.", e);
+                }
+
                 if (compareResults != FileProperties.None) {
                     logger.Error($"Full check failed for {file} ({compareResults}).");
 
                     if (Overwrite) {
-                        var info = file.CalculateInfo(FileProperties.AllVerifiable);
+                        FileInformation info;
+                        try {
+                            info = file.CalculateInfo(FileProperties.AllVerifiable);
+                        } catch (Exception e) {
+                            logger.Error(e, $"Full check failed for {file}.");
+                            throw new Exception($"Full check failed for {file}.", e);
+                        }
                         Console.WriteLine($"{info}\nConfirm overwriting with new data?");
                         Console.ReadLine();
                         FileInformation.Client.Update(info);
