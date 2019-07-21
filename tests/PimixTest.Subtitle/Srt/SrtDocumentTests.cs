@@ -49,7 +49,7 @@ namespace PimixTest.Subtitle.Srt {
         [InlineData(Content + "\n")]
         [InlineData(Content + "\n\n")]
         public void SerializeTest(string content) {
-            Assert.Equal(Content, SrtDocument.Parse(content).ToString());
+            Assert.Equal(Content + "\n\n", SrtDocument.Parse(content).ToString());
         }
     }
 }

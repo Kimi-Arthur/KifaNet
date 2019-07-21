@@ -13,10 +13,8 @@ namespace Pimix.Subtitle.Srt {
 
         public static SrtLine Parse(string s) {
             logger.Trace($"Parsing srt line: {s}");
-            var lines = s.Trim()
-                .Split(new[] {
-                    "\n", "\n"
-                }, 3, StringSplitOptions.RemoveEmptyEntries);
+            var lines = s.Trim('\n')
+                .Split('\n', 3, StringSplitOptions.RemoveEmptyEntries);
             var times = lines[1].Replace(',', '.').Split(new[] {
                 " --> "
             }, StringSplitOptions.None);
@@ -25,7 +23,7 @@ namespace Pimix.Subtitle.Srt {
                 StartTime = TimeSpan.Parse(times[0]),
                 EndTime = TimeSpan.Parse(times[1]),
                 Text = new SrtTextElement {
-                    Content = lines[2]
+                    Content = lines.Length == 3 ? lines[2] : ""
                 }
             };
         }

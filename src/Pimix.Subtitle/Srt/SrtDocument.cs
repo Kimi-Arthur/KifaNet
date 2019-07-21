@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Pimix.Subtitle.Srt {
     public class SrtDocument {
+        static readonly Regex linePattern = new Regex(@"\d+([^\n]*\n){2}([^\n]+\n)*(\n|$)");
+
         public List<SrtLine> Lines { get; set; }
 
         public static SrtDocument Parse(string s)
             => new SrtDocument {
-                Lines = s.Trim().Split(new[] {
-                        "\n\n", "\n\n"
-                    }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(SrtLine.Parse).ToList()
+                Lines = linePattern.Matches(s)
+                    .Select(m => SrtLine.Parse(m.Value)).ToList()
             };
 
         public void Sort() {
@@ -24,6 +25,6 @@ namespace Pimix.Subtitle.Srt {
             }
         }
 
-        public override string ToString() => string.Join("\n\n", Lines);
+        public override string ToString() => string.Join("\n\n", Lines) + "\n\n";
     }
 }

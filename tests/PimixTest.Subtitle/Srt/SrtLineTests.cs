@@ -9,9 +9,12 @@ namespace PimixTest.Subtitle.Srt {
                                    "- How did he do that?\n" +
                                    "- Made him an offer he couldn't refuse.";
 
-        [Fact]
-        public void ParseTest() {
-            var line = SrtLine.Parse(SrtLineText);
+        [Theory]
+        [InlineData(SrtLineText)]
+        [InlineData(SrtLineText + "\n")]
+        [InlineData(SrtLineText + "\n\n")]
+        public void ParseTest(string content) {
+            var line = SrtLine.Parse(content);
             Assert.Equal(168, line.Index);
             Assert.Equal(new TimeSpan(0, 0, 20, 41, 150), line.StartTime);
             Assert.Equal(new TimeSpan(0, 0, 20, 45, 109), line.EndTime);
@@ -19,9 +22,12 @@ namespace PimixTest.Subtitle.Srt {
                 line.Text.ToString());
         }
 
-        [Fact]
-        public void SerializeTest() {
-            Assert.Equal(SrtLineText, SrtLine.Parse(SrtLineText).ToString());
+        [Theory]
+        [InlineData(SrtLineText)]
+        [InlineData(SrtLineText + "\n")]
+        [InlineData(SrtLineText + "\n\n")]
+        public void SerializeTest(string content) {
+            Assert.Equal(SrtLineText, SrtLine.Parse(content).ToString());
         }
     }
 }
