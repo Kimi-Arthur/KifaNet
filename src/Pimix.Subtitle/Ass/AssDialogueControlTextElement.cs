@@ -148,7 +148,7 @@ namespace Pimix.Subtitle.Ass {
                         break;
                 }
 
-                logger.Debug("{0}({1})", s.GetType().Name, valueContent);
+                logger.Trace($"{s.GetType().Name}({valueContent})");
                 result.Elements.Add(s.ParseValue(valueContent));
             }
 
