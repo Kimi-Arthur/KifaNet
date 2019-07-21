@@ -63,7 +63,7 @@ namespace Pimix.IO {
                 var bytesToRead = (int) Math.Min(endPosition - pos, FileInformation.BlockSize);
                 var bytesRead = 0;
                 if (pos == lastBlockStart) {
-                    logger.Debug($"[{pos}, {pos + bytesToRead}) skipped");
+                    logger.Trace($"[{pos}, {pos + bytesToRead}) skipped");
                     bytesRead = bytesToRead;
                 } else {
                     var successful = false;
@@ -147,7 +147,7 @@ namespace Pimix.IO {
                         throw new Exception($"Unable to get valid block starting from {pos}");
                     }
 
-                    logger.Debug($"[{pos}, {pos + bytesToRead}) got");
+                    logger.Trace($"[{pos}, {pos + bytesToRead}) got");
 
                     lastBlockStart = pos;
                 }
