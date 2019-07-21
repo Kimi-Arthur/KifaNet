@@ -13,6 +13,10 @@ namespace Pimix.Apps.SubUtil.Commands {
         protected override string Prefix => "/Subtitles";
 
         protected override int ExecuteOnePimixFile(PimixFile file) {
+            if (!file.Path.EndsWith(".ass")) {
+                return 0;
+            }
+
             var sub = AssDocument.Parse(file.OpenRead());
             sub = FixSubtitleResolution(sub);
             Console.WriteLine(sub.ToString());
