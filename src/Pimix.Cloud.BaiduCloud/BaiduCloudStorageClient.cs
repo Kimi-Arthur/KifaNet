@@ -82,7 +82,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
         int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset,
             int count) {
-            logger.Debug("Download chunk: [{0}, {1})", offset, offset + count);
+            logger.Trace($"Download chunk: [{offset}, {offset + count})");
 
             var request = GetRequest(Config.APIList.DownloadFile,
                 new Dictionary<string, string> {

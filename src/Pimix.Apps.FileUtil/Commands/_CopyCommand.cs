@@ -37,7 +37,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             if (destination.Exists()) {
                 if (Overwrite) {
-                    logger.Debug("Overwriting existing file.");
+                    logger.Info("Overwriting existing file.");
                     destination.Delete();
                     FileInformation.Client.RemoveLocation(destination.Id, DestinationUri);
                 } else {

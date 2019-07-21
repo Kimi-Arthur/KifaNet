@@ -324,7 +324,7 @@ namespace Pimix.Api.Files {
             if (!alwaysCheck &&
                 (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
                 Registered) {
-                logger.Debug("Skipped checking for {0}.", ToString());
+                logger.Info("Skipped checking for {0}.", ToString());
                 return FileProperties.None;
             }
 
