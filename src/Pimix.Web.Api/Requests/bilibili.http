@@ -15,3 +15,7 @@ GET https://www.biliplus.com/api/cidinfo?cid=84360986
 GET {{server}}/api/bilibili/videos/av48160454
 
 ###
+
+GET https://www.biliplus.com/api/cidinfo?cid=9760858
+
+###
