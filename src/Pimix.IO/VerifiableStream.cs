@@ -66,7 +66,7 @@ namespace Pimix.IO {
                     logger.Trace($"[{pos}, {pos + bytesToRead}) skipped");
                     bytesRead = bytesToRead;
                 } else {
-                    var successful = false;
+                    bool? successful = null;
                     var candidates =
                         new Dictionary<(string md5, string sha1, string sha256), int>();
                     for (var i = 0; i < 5; ++i) {
@@ -111,36 +111,44 @@ namespace Pimix.IO {
                             break;
                         }
 
-                        if (result == false) {
-                            logger.Warn("Block {0} is problematic, retrying ({1})...",
-                                pos / FileInformation.BlockSize, i);
-                            Thread.Sleep(TimeSpan.FromSeconds(10));
-                        } else {
-                            candidates[(md5, sha1, sha256)] =
-                                candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
-                            if (HasMajority(candidates)) {
-                                if (candidates.Count > 1) {
-                                    logger.Debug("Block {0} is not consistently got, but it's fine:",
-                                        pos / FileInformation.BlockSize);
-                                    foreach (var candidate in candidates) {
-                                        logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
-                                    }
-                                }
+                        candidates[(md5, sha1, sha256)] =
+                            candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
 
-                                successful = true;
+                        if (HasMajority(candidates)) {
+                            if (result == false) {
+                                logger.Warn("Block {0} is consistently wrong.",
+                                    pos / FileInformation.BlockSize);
+                                successful = false;
                                 break;
                             }
 
-                            Thread.Sleep(TimeSpan.FromSeconds(10 * i));
+                            if (candidates.Count > 1) {
+                                logger.Debug("Block {0} is not consistently got, but it's fine:",
+                                    pos / FileInformation.BlockSize);
+                                foreach (var candidate in candidates) {
+                                    logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
+                                }
+                            }
+
+                            successful = true;
+                            break;
                         }
+
+                        logger.Warn("Block {0} may be problematic, retrying ({1})...",
+                            pos / FileInformation.BlockSize, i);
+                        Thread.Sleep(TimeSpan.FromSeconds(10 * i));
                     }
 
-                    if (!successful) {
-                        if (candidates.Count > 1) {
-                            logger.Warn("Block {0} is too inconsistent:",
-                                pos / FileInformation.BlockSize);
-                            foreach (var candidate in candidates) {
-                                logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                    if (successful != true) {
+                        if (successful == false) {
+                            logger.Error($"Block {pos / FileInformation.BlockSize} is invalid.");
+                        } else {
+                            if (candidates.Count > 1) {
+                                logger.Warn("Block {0} is too inconsistent:",
+                                    pos / FileInformation.BlockSize);
+                                foreach (var candidate in candidates) {
+                                    logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                                }
                             }
                         }
 
