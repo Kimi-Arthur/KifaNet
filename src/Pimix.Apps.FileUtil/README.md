@@ -67,3 +67,6 @@ Updates:
 - Added `filex check`.
 - 5.1
   - Added `-o` in `filex add` to allow overwriting original data.
+
+### 6.0
+- Added `filex trash` to move files to some .Trash folder for cleanness.
