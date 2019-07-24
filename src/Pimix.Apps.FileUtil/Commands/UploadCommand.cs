@@ -13,8 +13,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        [Option('r', "remove-source", HelpText = "Remove source if upload is successful.")]
-        public bool RemoveSource { get; set; } = false;
+        [Option('d', "delete-source", HelpText = "Remove source if upload is successful.")]
+        public bool DeleteSource { get; set; } = false;
 
         [Option('q', "quick", HelpText =
             "Finish quickly by not verifying validity of destination.")]
@@ -41,7 +41,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.WriteLine(file);
                 }
 
-                var removalText = RemoveSource ? " and remove them afterwards" : "";
+                var removalText = DeleteSource ? " and remove them afterwards" : "";
                 Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
                 Console.ReadLine();
 
@@ -85,7 +85,14 @@ namespace Pimix.Apps.FileUtil.Commands {
                     if (destinationCheckResult == FileProperties.None) {
                         logger.Info("Already uploaded!");
 
-                        if (RemoveSource) {
+                        if (DeleteSource) {
+                            if (source.IsCloud) {
+                                logger.Info("Source {0} is not removed as it's in cloud.",
+                                    source);
+                                source.Register(true);
+                                return 0;
+                            }
+
                             source.Delete();
                             FileInformation.Client.RemoveLocation(source.Id, source.ToString());
                             logger.Info("Source {0} removed since upload is successful.",
@@ -118,7 +125,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     if (destinationCheckResult == FileProperties.None) {
                         logger.Info("Successfully uploaded {0} to {1}!", source, destination);
 
-                        if (RemoveSource) {
+                        if (DeleteSource) {
                             if (source.IsCloud) {
                                 logger.Info("Source {0} is not removed as it's in cloud.",
                                     source);
