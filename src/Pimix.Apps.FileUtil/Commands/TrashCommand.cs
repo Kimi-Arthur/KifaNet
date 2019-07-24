@@ -14,6 +14,8 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override bool ById => true;
 
+        protected override bool IterateOverLogicalFiles => true;
+
         protected override Func<List<string>, string> FileInformationConfirmText
             => files => $"Confirm trashing the {files.Count} files above?";
 
