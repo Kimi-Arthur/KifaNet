@@ -116,6 +116,7 @@ namespace Pimix.Cloud.BaiduCloud {
                         new Dictionary<string, string> {
                             ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                         });
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
                 } else {
                     logger.Fatal(response.Content.ReadAsStringAsync().Result);
                     throw new Exception($"Unexpected download response: {response}");

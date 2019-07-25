@@ -26,4 +26,8 @@ GET http://{{server}}/api/configs/baidu_cloud/$refresh_account?id=default
 
 GET http://{{server}}/api/configs/baidu_cloud/$test_account?id=default
 
+### Update quota
+
+GET http://{{server}}/api/configs/baidu_cloud/$update_quota?id=default
+
 ###
