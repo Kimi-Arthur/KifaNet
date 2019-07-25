@@ -44,7 +44,10 @@ namespace Pimix.Apps {
                     var path = fileName;
                     if (IterateOverLogicalFiles) {
                         var f = new PimixFile(path);
-                        host = f.Host;
+                        if (!ById) {
+                            host = f.Host;
+                        }
+
                         path = f.Id;
                     }
 
@@ -87,8 +90,8 @@ namespace Pimix.Apps {
             }
         }
 
-        string GetSortKey(string path) =>
-            NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;
+        string GetSortKey(string path)
+            => NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;
     }
 
     public abstract partial class PimixFileCommand {
