@@ -137,9 +137,12 @@ namespace Pimix.IO {
                         if (result == false) {
                             logger.Warn("Block {0} may be problematic, retrying ({1})...",
                                 pos / FileInformation.BlockSize, i);
+                            Thread.Sleep(TimeSpan.FromSeconds(10));
+                        } else if (candidates.Count > 1) {
+                            logger.Warn("Block {0} has conflicting hashes, retrying ({1})...",
+                                pos / FileInformation.BlockSize, i);
+                            Thread.Sleep(TimeSpan.FromSeconds(10 * i));
                         }
-
-                        Thread.Sleep(TimeSpan.FromSeconds(10 * i));
                     }
 
                     if (successful != true) {
