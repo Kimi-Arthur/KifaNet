@@ -11,6 +11,9 @@ namespace Pimix.Apps.FileUtil.Commands {
         Formattable series;
 
         public override bool ById => true;
+
+        protected override bool IterateOverLogicalFiles => true;
+
         protected override bool NaturalSorting => true;
 
         [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1")]
