@@ -134,8 +134,11 @@ namespace Pimix.IO {
                             break;
                         }
 
-                        logger.Warn("Block {0} may be problematic, retrying ({1})...",
-                            pos / FileInformation.BlockSize, i);
+                        if (result == false) {
+                            logger.Warn("Block {0} may be problematic, retrying ({1})...",
+                                pos / FileInformation.BlockSize, i);
+                        }
+
                         Thread.Sleep(TimeSpan.FromSeconds(10 * i));
                     }
 
