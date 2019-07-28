@@ -10,7 +10,7 @@ namespace Pimix.Web.Api.Controllers {
         protected override PimixServiceClient<TvShow> Client => client;
 
         [HttpGet("$format")]
-        public ActionResult<string> Format(string id, int seasonId, int episodeId)
+        public PimixActionResult<string> Format(string id, int seasonId, int episodeId)
             => client.Format(id, seasonId, episodeId);
     }
 

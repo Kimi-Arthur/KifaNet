@@ -10,14 +10,17 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     public class FilesController : PimixController<FileInformation> {
-        static readonly FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
-        static readonly FileInformationServiceClient client = new FileInformationJsonServiceClient();
+        static readonly FileExtensionContentTypeProvider provider =
+            new FileExtensionContentTypeProvider();
+
+        static readonly FileInformationServiceClient
+            client = new FileInformationJsonServiceClient();
 
         protected override PimixServiceClient<FileInformation> Client => client;
 
         [HttpGet("$list_folder")]
-        public ActionResult<List<string>> ListFolder(string folder, bool recursive) =>
-            client.ListFolder(folder, recursive);
+        public PimixActionResult<List<string>> ListFolder(string folder, bool recursive)
+            => client.ListFolder(folder, recursive);
 
         [HttpGet("$stream")]
         public FileStreamResult Stream(string id) {
@@ -26,8 +29,9 @@ namespace Pimix.Web.Api.Controllers {
                 contentType = "application/octet-stream";
             }
 
-            return new FileStreamResult(new PimixFile(client.Get(id).Locations.Keys.First(x => x.StartsWith("google")))
-                .OpenRead(), contentType) {
+            return new FileStreamResult(
+                new PimixFile(client.Get(id).Locations.Keys.First(x => x.StartsWith("google")))
+                    .OpenRead(), contentType) {
                 FileDownloadName = id.Substring(id.LastIndexOf('/') + 1),
                 EnableRangeProcessing = true
             };
@@ -46,7 +50,8 @@ namespace Pimix.Web.Api.Controllers {
             var directory = new DirectoryInfo(folder);
             var items = directory.GetFiles("*.json",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            return items.Select(i => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
+            return items.Select(i
+                    => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
                 .ToList();
         }
 
@@ -58,10 +63,12 @@ namespace Pimix.Web.Api.Controllers {
             throw new NotImplementedException();
         }
 
-        public string CreateLocation(string id, string type = null, string format = null, long? startByte = null,
-            long? endByte = null) =>
-            throw new NotImplementedException();
+        public string CreateLocation(string id, string type = null, string format = null,
+            long? startByte = null,
+            long? endByte = null)
+            => throw new NotImplementedException();
 
-        public string GetLocation(string id, List<string> types = null) => throw new NotImplementedException();
+        public string GetLocation(string id, List<string> types = null)
+            => throw new NotImplementedException();
     }
 }

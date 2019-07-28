@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Converters;
 
 namespace Pimix.Service {
-    class RestActionResult {
+    public class RestActionResult {
         [JsonConverter(typeof(StringEnumConverter))]
         public RestActionStatus Status { get; set; }
 
@@ -11,7 +11,17 @@ namespace Pimix.Service {
         public override string ToString() => $"status: {Status}, message: {Message}";
     }
 
-    class RestActionResult<TResponse> : RestActionResult {
-        public TResponse Response { get; set; }
+    public class RestActionResult<TValue> : RestActionResult {
+        public RestActionResult(TValue response) {
+            Response = response;
+            Status = RestActionStatus.OK;
+        }
+
+        public RestActionResult(RestActionStatus status, string message) {
+            Status = status;
+            Message = message;
+        }
+
+        public TValue Response { get; set; }
     }
 }
