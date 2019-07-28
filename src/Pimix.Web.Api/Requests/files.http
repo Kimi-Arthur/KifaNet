@@ -13,3 +13,9 @@ Accept: application/json
 ###
 
 GET https://pcs.baidu.com/rest/2.0/pcs/file?method=download&path=/apps/Pimix/%24%2F03D294C9ADD4A501C002349C42789946E28F0F9F291C3A1DEA897806CE4902B3.v1&access_token=21.a8e58f17f5408895afd36e80b5737171.2592000.1561213717.2187715413-1222350
+
+###
+GET http://localhost:5000/api/files/$list_folder?folder=/Fonts
+Accept: application/json
+
+###

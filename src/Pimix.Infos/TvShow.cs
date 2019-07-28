@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Pimix.Service;
 
 namespace Pimix.Infos {
     public class TvShow : DataModel, Formattable {
         public const string ModelId = "tv_shows";
 
-        static PimixServiceClient<TvShow> client;
+        static TvShowServiceClient client;
 
-        public static PimixServiceClient<TvShow> Client => client =
-            client ?? new PimixServiceRestClient<TvShow>();
+        public static TvShowServiceClient Client
+            => client = client ?? new TvShowRestServiceClient();
 
         public string Title { get; set; }
         public Date AirDate { get; set; }
@@ -31,7 +32,8 @@ namespace Pimix.Infos {
         public string Format(Season season, Episode episode) {
             var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
             var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
-            var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
+            var episodeIdWidth =
+                episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
             var sid = season.Id.ToString();
             sid = new string('0', Math.Max(seasonIdWidth - sid.Length, 0)) + sid;
@@ -43,7 +45,8 @@ namespace Pimix.Infos {
             switch (patternId) {
                 case "multi_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/Season {season.Id} {season.Title}".TrimEnd() + $" ({season.AirDate.Year})" +
+                           $"/Season {season.Id} {season.Title}".TrimEnd() +
+                           $" ({season.AirDate.Year})" +
                            $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd();
                 case "single_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
@@ -51,6 +54,19 @@ namespace Pimix.Infos {
                 default:
                     return "Unexpected!";
             }
+        }
+    }
+
+    public interface TvShowServiceClient : PimixServiceClient<TvShow> {
+        string Format(string id, int seasonId, int episodeId);
+    }
+
+    public class TvShowRestServiceClient : PimixServiceRestClient<TvShow>, TvShowServiceClient {
+        public string Format(string id, int seasonId, int episodeId) {
+            var show = Get(id);
+            var season = show.Seasons.First(s => s.Id == seasonId);
+            var episode = season.Episodes.First(e => e.Id == episodeId);
+            return show.Format(season, episode);
         }
     }
 }

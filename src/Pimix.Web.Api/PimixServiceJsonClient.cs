@@ -10,20 +10,23 @@ namespace Pimix.Web.Api {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
+    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel>
+        where TDataModel : DataModel {
         Dictionary<string, List<string>> Groups { get; } = new Dictionary<string, List<string>>();
 
         public override TDataModel Get(string id) {
             LoadGroups();
 
             if (Groups.ContainsKey(id)) {
-                var obj = JsonConvert.DeserializeObject<TDataModel>(Read(Groups[id].First().Trim('/')),
+                var obj = JsonConvert.DeserializeObject<TDataModel>(
+                    Read(Groups[id].First().Trim('/')),
                     Defaults.JsonSerializerSettings);
                 JsonConvert.PopulateObject(Read(id), obj);
                 return obj;
             }
 
-            return JsonConvert.DeserializeObject<TDataModel>(Read(id), Defaults.JsonSerializerSettings);
+            return JsonConvert.DeserializeObject<TDataModel>(Read(id),
+                Defaults.JsonSerializerSettings);
         }
 
         public override List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
@@ -38,7 +41,8 @@ namespace Pimix.Web.Api {
         public override void Update(TDataModel data, string id = null) {
             id = id ?? data.Id;
             var original = Get(id);
-            JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
+            JsonConvert.PopulateObject(
+                JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
 
             File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json",
                 JsonConvert.SerializeObject(original, Defaults.PrettyJsonSerializerSettings));
@@ -52,13 +56,20 @@ namespace Pimix.Web.Api {
             throw new NotImplementedException();
         }
 
-        string Read(string id) =>
-            File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json");
+        string Read(string id)
+            => File.ReadAllText(
+                $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json");
 
         void LoadGroups() {
-            var rawGroups = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(
-                File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json"));
             Groups.Clear();
+
+            var groupsPath = $"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json";
+            if (!File.Exists(groupsPath)) {
+                return;
+            }
+
+            var rawGroups = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(
+                File.ReadAllText(groupsPath));
             foreach (var rawGroup in rawGroups) {
                 var group = rawGroup.Value;
                 group.Insert(0, rawGroup.Key);
