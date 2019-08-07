@@ -12,6 +12,9 @@ namespace Pimix.Service {
     }
 
     public class RestActionResult<TValue> : RestActionResult {
+        public RestActionResult() {
+        }
+
         public RestActionResult(TValue response) {
             Response = response;
             Status = RestActionStatus.OK;
