@@ -119,11 +119,13 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 if (UseTemp) {
                     if (TempLocation == null) {
+                        logger.Error("TempLocation is not specified in config.");
                         return 1;
                     }
 
                     temp = new PimixFile(TempLocation + destination.Id);
                     if (!CopyToTemp(source, temp)) {
+                        logger.Error("Copy temp failed from source {0} to temp {1}...", source, temp);
                         return 2;
                     }
 
