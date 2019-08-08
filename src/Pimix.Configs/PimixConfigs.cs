@@ -12,12 +12,12 @@ namespace Pimix.Configs {
         static readonly Deserializer deserializer = new Deserializer();
         static string name => AppDomain.CurrentDomain.FriendlyName;
 
-        static List<string> ConfigFilePaths
-            => new List<string> {
-                $"~/.{name}.yaml",
-                "~/.pimix.yaml",
-                $"/etc/{name}.yaml",
-                "/etc/pimix.yaml"
+        static List<(string, string)> ConfigFilePaths
+            => new List<(string, string)> {
+                ($"~/.{name}.yaml", $"~/.{name}.remote.yaml"),
+                ("~/.pimix.yaml", "~/.pimix.remote.yaml"),
+                ($"/etc/{name}.yaml", $"/etc/{name}.remote.yaml"),
+                ("/etc/pimix.yaml", "/etc/pimix.remote.yaml")
             };
 
         static string ConfigFilePath {
@@ -26,8 +26,8 @@ namespace Pimix.Configs {
                     configFilePath = Environment.GetEnvironmentVariable("CONFIG");
                     if (configFilePath == null) {
                         foreach (var path in ConfigFilePaths) {
-                            if (File.Exists(path)) {
-                                configFilePath = path;
+                            if (File.Exists(path.Item1)) {
+                                configFilePath = path.Item1;
                                 break;
                             }
                         }
