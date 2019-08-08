@@ -42,7 +42,10 @@ namespace Pimix.Configs {
             var properties =
                 assembly == null ? GetAllProperties() : GetProperties(assembly);
             if (ConfigFilePath != null) {
-                LoadFromStream(File.OpenRead(ConfigFilePath), properties);
+                var localConfig = ConfigFilePath;
+                var remoteConfig = localConfig.Replace(".yaml", ".remote.yaml");
+                LoadFromStream(File.OpenRead(remoteConfig), properties);
+                LoadFromStream(File.OpenRead(localConfig), properties);
             }
         }
 
