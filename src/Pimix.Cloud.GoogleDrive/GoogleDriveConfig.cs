@@ -30,30 +30,20 @@ namespace Pimix.Cloud.GoogleDrive {
     }
 
     public class APIList {
-        public APIInfo CreateFile { get; set; }
+        public API CreateFile { get; set; }
 
-        public APIInfo CreateFolder { get; set; }
+        public API CreateFolder { get; set; }
 
-        public APIInfo DeleteFile { get; set; }
+        public API DeleteFile { get; set; }
 
-        public APIInfo DownloadFile { get; set; }
+        public API DownloadFile { get; set; }
 
-        public APIInfo FindFile { get; set; }
+        public API FindFile { get; set; }
 
-        public APIInfo ListFiles { get; set; }
+        public API ListFiles { get; set; }
 
-        public APIInfo GetFileInfo { get; set; }
+        public API GetFileInfo { get; set; }
 
-        public APIInfo OauthRefresh { get; set; }
-    }
-
-    public class APIInfo {
-        public string Method { get; set; }
-
-        public string Url { get; set; }
-
-        public string Data { get; set; }
-
-        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public API OauthRefresh { get; set; }
     }
 }

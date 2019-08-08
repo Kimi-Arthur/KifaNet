@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using NLog;
 using Pimix.IO;
+using Pimix.Service;
 
 namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {
@@ -270,7 +271,7 @@ namespace Pimix.Cloud.GoogleDrive {
             lastRefreshed = DateTime.Now;
         }
 
-        HttpRequestMessage GetRequest(APIInfo api, Dictionary<string, string> parameters = null,
+        HttpRequestMessage GetRequest(API api, Dictionary<string, string> parameters = null,
             bool needAccessToken = true) {
             parameters = parameters ?? new Dictionary<string, string>();
             if (needAccessToken) {
@@ -278,25 +279,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 parameters["access_token"] = Account.AccessToken;
             }
 
-            var address = api.Url.Format(parameters);
-
-            logger.Trace($"{api.Method} {address}");
-            var request = new HttpRequestMessage(new HttpMethod(api.Method), address);
-
-            foreach (var header in api.Headers.Where(h => !h.Key.StartsWith("Content-"))) {
-                request.Headers.Add(header.Key, header.Value.Format(parameters));
-            }
-
-            if (api.Data != null) {
-                request.Content =
-                    new ByteArrayContent(Encoding.UTF8.GetBytes(api.Data.Format(parameters)));
-
-                foreach (var header in api.Headers.Where(h => h.Key.StartsWith("Content-"))) {
-                    request.Content.Headers.Add(header.Key, header.Value.Format(parameters));
-                }
-            }
-
-            return request;
+            return api.GetRequest(parameters);
         }
 
         public override void Dispose() {
