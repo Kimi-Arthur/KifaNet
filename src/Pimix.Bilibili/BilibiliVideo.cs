@@ -40,8 +40,9 @@ namespace Pimix.Bilibili {
 
         PartModeType partMode;
 
-        public static PimixServiceClient<BilibiliVideo> Client => client =
-            client ?? new PimixServiceRestClient<BilibiliVideo>();
+        public static PimixServiceClient<BilibiliVideo> Client
+            => client =
+                client ?? new PimixServiceRestClient<BilibiliVideo>();
 
         public static string BiliplusCookies { get; set; }
         public static int DefaultBiliplusSourceChoice { get; set; }
@@ -106,7 +107,8 @@ namespace Pimix.Bilibili {
                 return null;
             }
 
-            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" + (extraPath == null ? "" : $"/{extraPath}") +
+            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
+                   (extraPath == null ? "" : $"/{extraPath}") +
                    (Pages.Count > 1
                        ? $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
                        : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
@@ -149,7 +151,9 @@ namespace Pimix.Bilibili {
                     logger.Debug("Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     var length = biliplusClient
-                        .SendAsync(new HttpRequestMessage(HttpMethod.Head, choices[biliplusSourceChoice].link),
+                        .SendAsync(
+                            new HttpRequestMessage(HttpMethod.Head,
+                                choices[biliplusSourceChoice].link),
                             HttpCompletionOption.ResponseHeadersRead).Result
                         .Content.Headers.ContentLength;
                     var link = choices[biliplusSourceChoice].link;
@@ -157,20 +161,37 @@ namespace Pimix.Bilibili {
                         throw new Exception("Content length is not found.");
                     }
 
-                    return new SeekableReadStream(length.Value, (buffer, bufferOffset, offset, count) => {
-                        if (count < 0) {
-                            count = buffer.Length - bufferOffset;
-                        }
+                    return new SeekableReadStream(length.Value,
+                        (buffer, bufferOffset, offset, count) => {
+                            if (count < 0) {
+                                count = buffer.Length - bufferOffset;
+                            }
 
-                        var request = new HttpRequestMessage(HttpMethod.Get, link);
+                            logger.Trace(
+                                $"Downloading from {offset} to {offset + count}...");
 
-                        request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                        using (var response = biliplusClient.SendAsync(request).Result) {
-                            var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                            response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                            return (int) memoryStream.Position;
-                        }
-                    });
+                            return Retry.Run(() => {
+                                var request = new HttpRequestMessage(HttpMethod.Get, link);
+
+                                request.Headers.Range =
+                                    new RangeHeaderValue(offset, offset + count - 1);
+                                using (var response = biliplusClient.SendAsync(request).Result) {
+                                    var memoryStream =
+                                        new MemoryStream(buffer, bufferOffset, count, true);
+                                    response.Content.ReadAsStreamAsync().Result
+                                        .CopyTo(memoryStream, count);
+                                    return (int) memoryStream.Position;
+                                }
+                            }, (ex, i) => {
+                                if (i >= 5) {
+                                    throw ex;
+                                }
+
+                                logger.Warn(ex,
+                                    $"Download from {offset} to {offset + count} failed ({i})...");
+                                Thread.Sleep(TimeSpan.FromSeconds(30));
+                            });
+                        });
                 } catch (Exception ex) {
                     biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                     if (biliplusSourceChoice == initialSource) {
@@ -203,7 +224,8 @@ namespace Pimix.Bilibili {
 
         static DownloadStatus GetDownloadStatus(string aid, int pid) {
             using (var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
+                .GetAsync(
+                    $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
                 .Result) {
                 var content = response.GetString();
                 logger.Debug($"Get download result: {content}");

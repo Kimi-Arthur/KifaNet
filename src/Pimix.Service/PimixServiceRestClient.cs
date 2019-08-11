@@ -163,7 +163,6 @@ namespace Pimix.Service {
                     $"Failure in CALL {modelId}({id}).{action}({id})"));
         }
 
-
         static void HandleException(Exception ex, int index, string message) {
             if (index >= 5 || ex is RestActionFailedException ||
                 ex is HttpRequestException &&
