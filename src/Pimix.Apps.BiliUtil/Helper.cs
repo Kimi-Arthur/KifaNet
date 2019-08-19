@@ -1,9 +1,15 @@
+using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using NLog;
+using Pimix.Api.Files;
 using Pimix.Bilibili;
 
 namespace Pimix.Apps.BiliUtil {
-    public class Helper {
+    public static class Helper {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         static readonly Regex fileNamePattern = new Regex(@"^AV(\d+) P(\d+) .* cid (\d+)$");
 
         public static (string aid, int pid, string cid) GetIds(string name) {
@@ -26,6 +32,43 @@ namespace Pimix.Apps.BiliUtil {
             return video.Pages.Count > 1
                 ? $"{video.Author}-{video.AuthorId}/{video.Title} P{pid} {p.Title}-{video.Id}p{pid}.c{cid}"
                 : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
+        }
+        
+        public static void WriteIfNotFinished(this PimixFile file, Func<Stream> getStream) {
+            if (file.FileInfo.Locations != null) {
+                logger.Info($"{file.FileInfo.Id} already exists in the system. Skipped.");
+                return;
+            }
+
+            if (file.Exists()) {
+                logger.Info($"Target file {file} already exists. Skipped.");
+                return;
+            }
+
+            var downloadFile = file.GetFileSuffixed(".downloading");
+
+            var stream = getStream();
+            if (stream == null || stream.Length <= 0) {
+                throw new Exception("Cannot get stream.");
+            }
+
+            if (downloadFile.Exists()) {
+                if (downloadFile.Length() == stream.Length) {
+                    downloadFile.Move(file);
+                    logger.Info($"Moved {downloadFile} to {file} already exists. Skipped.");
+                    return;
+                }
+
+                logger.Info($"Target file {downloadFile} exists, " +
+                            $"but size ({downloadFile.Length()}) is different from source ({stream.Length}). " +
+                            "Will be removed.");
+            }
+
+            logger.Info($"Start downloading video to {downloadFile}");
+            downloadFile.Delete();
+            downloadFile.Write(stream);
+            downloadFile.Move(file);
+            logger.Info($"Successfullly downloaded video to {file}");
         }
     }
 }

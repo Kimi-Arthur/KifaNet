@@ -260,43 +260,6 @@ namespace Pimix.Api.Files {
             => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
                 FileInfo);
 
-        public void WriteIfNotFinished(Func<Stream> getStream) {
-            if (FileInfo.Locations != null) {
-                logger.Info($"{FileInfo.Id} already exists in the system. Skipped.");
-                return;
-            }
-
-            if (Exists()) {
-                logger.Info($"Target file {this} already exists. Skipped.");
-                return;
-            }
-
-            var downloadFile = GetFileSuffixed(".downloading");
-
-            var stream = getStream();
-            if (stream == null || stream.Length <= 0) {
-                throw new Exception("Cannot get stream.");
-            }
-
-            if (downloadFile.Exists()) {
-                if (downloadFile.Length() == stream.Length) {
-                    downloadFile.Move(this);
-                    logger.Info($"Moved {downloadFile} to {this} already exists. Skipped.");
-                    return;
-                }
-
-                logger.Info($"Target file {downloadFile} exists, " +
-                            $"but size ({downloadFile.Length()}) is different from source ({stream.Length}). " +
-                            "Will be removed.");
-            }
-
-            logger.Info($"Start downloading video to {downloadFile}");
-            downloadFile.Delete();
-            downloadFile.Write(stream);
-            downloadFile.Move(this);
-            logger.Info($"Successfullly downloaded video to {this}");
-        }
-
         public void Write(Stream stream)
             => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
