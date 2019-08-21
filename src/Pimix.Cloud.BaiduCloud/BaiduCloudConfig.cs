@@ -24,32 +24,26 @@ namespace Pimix.Cloud.BaiduCloud {
     }
 
     public class APIList {
-        public APIInfo CopyFile { get; set; }
+        public API CopyFile { get; set; }
 
-        public APIInfo MoveFile { get; set; }
+        public API MoveFile { get; set; }
 
-        public APIInfo DownloadFile { get; set; }
+        public API DownloadFile { get; set; }
 
-        public APIInfo UploadFileRapid { get; set; }
+        public API UploadFileRapid { get; set; }
 
-        public APIInfo UploadFileDirect { get; set; }
+        public API UploadFileDirect { get; set; }
 
-        public APIInfo RemovePath { get; set; }
+        public API RemovePath { get; set; }
 
-        public APIInfo UploadBlock { get; set; }
+        public API UploadBlock { get; set; }
 
-        public APIInfo MergeBlocks { get; set; }
+        public API MergeBlocks { get; set; }
 
-        public APIInfo GetFileInfo { get; set; }
+        public API GetFileInfo { get; set; }
 
-        public APIInfo DiffFileList { get; set; }
+        public API DiffFileList { get; set; }
 
-        public APIInfo ListFiles { get; set; }
-    }
-
-    public class APIInfo {
-        public string Method { get; set; }
-
-        public string Url { get; set; }
+        public API ListFiles { get; set; }
     }
 }

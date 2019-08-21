@@ -9,10 +9,10 @@ using Pimix.Service;
 namespace PimixTest.Cloud.BaiduCloud {
     [TestClass]
     public class BaiduCloudStorageClientTests {
-        const string FileSHA256 =
+        const string FileSha256 =
             "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
-        const string BigFileSHA256 =
+        const string BigFileSha256 =
             "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
         public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
@@ -22,7 +22,7 @@ namespace PimixTest.Cloud.BaiduCloud {
             var client = GetStorageClient();
 
             using (var s = client.OpenRead("/Test/2010-11-25.bin")) {
-                Assert.AreEqual(FileSHA256,
+                Assert.AreEqual(FileSha256,
                     FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
         }
@@ -33,7 +33,7 @@ namespace PimixTest.Cloud.BaiduCloud {
 
             client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
             using (var s = client.OpenRead("/Test/2010-11-25.bin_bak")) {
-                Assert.AreEqual(FileSHA256,
+                Assert.AreEqual(FileSha256,
                     FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
@@ -53,7 +53,7 @@ namespace PimixTest.Cloud.BaiduCloud {
             Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_2"));
 
             using (var s = client.OpenRead("/Test/2010-11-25.bin_2")) {
-                Assert.AreEqual(FileSHA256,
+                Assert.AreEqual(FileSha256,
                     FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
@@ -75,7 +75,7 @@ namespace PimixTest.Cloud.BaiduCloud {
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
             using (var s = client.OpenRead("/Test/rapid.bin")) {
-                Assert.AreEqual(FileSHA256,
+                Assert.AreEqual(FileSha256,
                     FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
@@ -98,7 +98,7 @@ namespace PimixTest.Cloud.BaiduCloud {
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
             using (var s = client.OpenRead("/Test/block.bin")) {
-                Assert.AreEqual(BigFileSHA256,
+                Assert.AreEqual(BigFileSha256,
                     FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
@@ -115,7 +115,7 @@ namespace PimixTest.Cloud.BaiduCloud {
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
             using (var s = client.OpenRead("/Test/direct.bin")) {
-                Assert.AreEqual(FileSHA256,
+                Assert.AreEqual(FileSha256,
                     FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
