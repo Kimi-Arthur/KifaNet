@@ -24,7 +24,7 @@ namespace Pimix.Cloud.BaiduCloud {
         static BaiduCloudConfig config;
 
         readonly HttpClient client = new HttpClient {
-            Timeout = TimeSpan.FromMinutes(5)
+            Timeout = TimeSpan.FromMinutes(30)
         };
 
         public static int DownloadThreadCount { get; set; } = 4;
@@ -274,10 +274,10 @@ namespace Pimix.Cloud.BaiduCloud {
                 });
 
             request.Content = new FormUrlEncodedContent(new[] {
-                new KeyValuePair<string, string>("param", Uri.EscapeDataString(JsonConvert.SerializeObject(
+                new KeyValuePair<string, string>("param", JsonConvert.SerializeObject(
                     new Dictionary<string, List<string>> {
                         ["block_list"] = blockList
-                    })))
+                    }))
             });
 
             using (var response = client.SendAsync(request).Result) {
