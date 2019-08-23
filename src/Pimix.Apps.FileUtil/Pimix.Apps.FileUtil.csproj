@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>filex</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>6.1.5</Version>
+    <Version>6.1.6</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>

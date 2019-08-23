@@ -20,6 +20,7 @@ namespace Pimix {
             for (var i = 1;; i++) {
                 try {
                     action();
+                    return;
                 } catch (Exception ex) {
                     while (ex is AggregateException) {
                         ex = ex.InnerException;
