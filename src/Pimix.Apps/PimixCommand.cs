@@ -58,6 +58,7 @@ namespace Pimix.Apps {
 
             if (fullConsole) {
                 LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
+                LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
             } else {
                 foreach (var target in LoggingTargets) {
                     var minLevel = target.EndsWith("_full") ? LogLevel.Trace : LogLevel.Debug;
