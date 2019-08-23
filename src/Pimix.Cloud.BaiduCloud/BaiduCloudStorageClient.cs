@@ -92,35 +92,36 @@ namespace Pimix.Cloud.BaiduCloud {
 
             while (true) {
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                var response = client.SendAsync(request).Result;
-                if (response.IsSuccessStatusCode) {
-                    var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                    response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                    response.Dispose();
-                    if (memoryStream.Position != count) {
-                        throw new Exception(
-                            $"Unexpected download length ({memoryStream.Position}, should be {count}): {response}");
+                using (var response = client.SendAsync(request).Result) {
+                    if (response.IsSuccessStatusCode) {
+                        var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+                        response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+                        response.Dispose();
+                        if (memoryStream.Position != count) {
+                            throw new Exception(
+                                $"Unexpected download length ({memoryStream.Position}, should be {count}): {response}");
+                        }
+
+                        return count;
                     }
 
-                    return count;
-                }
-
-                if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
-                    response.StatusCode < HttpStatusCode.BadRequest) {
-                    logger.Trace($"Redirecting to {response.Headers.Location}");
-                    request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
-                    response.Dispose();
-                } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
-                    logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
-                    config = null;
-                    request = GetRequest(Config.APIList.DownloadFile,
-                        new Dictionary<string, string> {
-                            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                        });
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
-                } else {
-                    logger.Fatal(response.Content.ReadAsStringAsync().Result);
-                    throw new Exception($"Unexpected download response: {response}");
+                    if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
+                        response.StatusCode < HttpStatusCode.BadRequest) {
+                        logger.Trace($"Redirecting to {response.Headers.Location}");
+                        request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
+                        response.Dispose();
+                    } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                        logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
+                        config = null;
+                        request = GetRequest(Config.APIList.DownloadFile,
+                            new Dictionary<string, string> {
+                                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                            });
+                        Thread.Sleep(TimeSpan.FromSeconds(10));
+                    } else {
+                        logger.Fatal(response.Content.ReadAsStringAsync().Result);
+                        throw new Exception($"Unexpected download response: {response}");
+                    }
                 }
             }
         }
