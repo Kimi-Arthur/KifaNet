@@ -30,8 +30,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
         public CloudFormatType FormatType { get; set; } = CloudFormatType.v1;
 
-        [Option('t', "use-temp", HelpText = "Use local temp file to help upload.")]
-        public bool UseTemp { get; set; }
+        [Option('c', "use-cache", HelpText = "Use cache to help upload.")]
+        public bool UseCache { get; set; }
 
         public override int Execute() {
             var source = new PimixFile(FileUri);
@@ -62,6 +62,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         int UploadFile(PimixFile source) {
+            source.UseCache = UseCache;
             // TODO: Better catching.
             try {
                 source.Register();
@@ -115,26 +116,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                 destination.Unregister();
                 destination.Register();
 
-                PimixFile temp = null;
-
-                if (UseTemp) {
-                    if (TempLocation == null) {
-                        logger.Error("TempLocation is not specified in config.");
-                        return 1;
-                    }
-
-                    temp = new PimixFile(TempLocation + destination.Id);
-                    if (!CopyToTemp(source, temp)) {
-                        logger.Error("Copy temp failed from source {0} to temp {1}...", source, temp);
-                        return 2;
-                    }
-
-                    logger.Info("Copying from temp {0} to {1}...", temp, destination);
-                    temp.Copy(destination);
-                } else {
-                    logger.Info("Copying from source {0} to {1}...", source, destination);
-                    source.Copy(destination);
-                }
+                logger.Info("Copying {0} to {1}...", source, destination);
+                source.Copy(destination);
 
                 if (destination.Exists()) {
                     destination.Register();
@@ -148,11 +131,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     if (destinationCheckResult == FileProperties.None) {
                         logger.Info("Successfully uploaded {0} to {1}!", source, destination);
 
-                        if (UseTemp && temp != null) {
-                            temp.Delete();
-                            FileInformation.Client.RemoveLocation(temp.Id, temp.ToString());
-                            logger.Info("Temp {0} removed as upload is successful.", temp);
-                        }
+                        destination.RemoveLocalCacheFile();
 
                         if (DeleteSource) {
                             if (source.IsCloud) {
@@ -185,44 +164,6 @@ namespace Pimix.Apps.FileUtil.Commands {
                 logger.Fatal(ex, "Unexpected error");
                 return 127;
             }
-        }
-
-        static bool CopyToTemp(PimixFile source, PimixFile temp) {
-            if (temp.Exists()) {
-                if (temp.CalculateInfo(FileProperties.Size).Size != temp.FileInfo.Size) {
-                    logger.Info("Temp file exists but size is incorrect. Assuming incomplete Get result.");
-                } else {
-                    var tempCheckResult = temp.Add();
-
-                    if (tempCheckResult == FileProperties.None) {
-                        logger.Info("Temp file already got!");
-                        return true;
-                    }
-
-                    logger.Warn("Temp exists, but doesn't match.");
-                    return false;
-                }
-            }
-
-            logger.Info("Copying from source {0} to temp {1}...", source, temp);
-            source.Copy(temp);
-
-            if (temp.Exists()) {
-                logger.Info("Verifying temp {0}...", temp);
-                var destinationCheckResult = temp.Add();
-                if (destinationCheckResult == FileProperties.None) {
-                    logger.Info("Successfully got temp {1} from {0}!", source, temp);
-                    source.Register(true);
-                    return true;
-                }
-
-                logger.Error("Get temp failed! The following fields differ (not removed): {0}",
-                    destinationCheckResult);
-                return false;
-            }
-
-            logger.Fatal("Temp doesn't exist unexpectedly!");
-            return false;
         }
     }
 }

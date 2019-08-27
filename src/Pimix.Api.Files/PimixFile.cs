@@ -27,7 +27,7 @@ namespace Pimix.Api.Files {
 
         FileInformation fileInfo;
 
-        public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null) {
+        public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null, bool useCache = false) {
             if (uri == null) {
                 // Infer uri from id.
                 uri = GetUri(id ?? fileInfo?.Id);
@@ -81,7 +81,10 @@ namespace Pimix.Api.Files {
 
             FileFormat = PimixFileV1Format.Get(uri) ??
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
+            UseCache = useCache;
         }
+
+        public static string CacheLocation { get; set; }
 
         public static string SubPathIgnorePattern { get; set; } = "$^";
 
@@ -104,6 +107,8 @@ namespace Pimix.Api.Files {
 
         public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
 
+        public PimixFile LocalCacheFile => new PimixFile($"{CacheLocation}{Id}");
+
         public string BaseName { get; set; }
 
         public string Extension { get; set; }
@@ -120,6 +125,8 @@ namespace Pimix.Api.Files {
         PimixFileFormat FileFormat { get; }
 
         public FileInformation FileInfo => fileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+
+        public bool UseCache { get; set; }
 
         public bool IsCloud
             => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
@@ -240,6 +247,12 @@ namespace Pimix.Api.Files {
 
 
         public void Copy(PimixFile destination, bool neverLink = false) {
+            if (UseCache) {
+                CacheFileToLocal();
+                LocalCacheFile.Copy(destination, neverLink);
+                return;
+            }
+
             if (IsCompatible(destination)) {
                 Client.Copy(Path, destination.Path, neverLink);
             } else {
@@ -248,6 +261,12 @@ namespace Pimix.Api.Files {
         }
 
         public void Move(PimixFile destination) {
+            if (UseCache) {
+                CacheFileToLocal();
+                LocalCacheFile.Move(destination);
+                return;
+            }
+
             if (IsCompatible(destination)) {
                 Client.Move(Path, destination.Path);
             } else {
@@ -255,6 +274,21 @@ namespace Pimix.Api.Files {
                 Delete();
             }
         }
+
+        public void CacheFileToLocal() {
+            if (!LocalCacheFile.Registered) {
+                logger.Info($"Caching {this} to {LocalCacheFile}...");
+                LocalCacheFile.Write(OpenRead());
+                LocalCacheFile.Add();
+            }
+        }
+
+        public void RemoveLocalCacheFile() {
+            LocalCacheFile.Delete();
+            LocalCacheFile.Unregister();
+        }
+
+        PimixFile GetCached(bool cache = false) => cache ? LocalCacheFile : this;
 
         public Stream OpenRead()
             => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
@@ -272,7 +306,7 @@ namespace Pimix.Api.Files {
             info.RemoveProperties((FileProperties.AllVerifiable & properties) |
                                   FileProperties.Locations);
 
-            using (var stream = OpenRead()) {
+            using (var stream = GetCached(UseCache).OpenRead()) {
                 info.AddProperties(stream, properties);
             }
 
@@ -289,6 +323,10 @@ namespace Pimix.Api.Files {
                 Registered) {
                 logger.Info("Skipped checking for {0}.", ToString());
                 return FileProperties.None;
+            }
+
+            if (UseCache) {
+                CacheFileToLocal();
             }
 
             var oldInfo = FileInfo;
@@ -357,7 +395,8 @@ namespace Pimix.Api.Files {
         public void Register(bool verified = false)
             => FileInformation.Client.AddLocation(Id, ToString(), verified);
 
-        public void Unregister() => FileInformation.Client.RemoveLocation(Id, ToString());
+        public void Unregister() =>
+            FileInformation.Client.RemoveLocation(Id, ToString());
 
         public bool IsCompatible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
