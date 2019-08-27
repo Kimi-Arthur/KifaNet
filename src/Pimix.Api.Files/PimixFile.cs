@@ -306,7 +306,7 @@ namespace Pimix.Api.Files {
             info.RemoveProperties((FileProperties.AllVerifiable & properties) |
                                   FileProperties.Locations);
 
-            using (var stream = GetCached(UseCache).OpenRead()) {
+            using (var stream = OpenRead()) {
                 info.AddProperties(stream, properties);
             }
 
@@ -325,17 +325,19 @@ namespace Pimix.Api.Files {
                 return FileProperties.None;
             }
 
+            var file = this;
             if (UseCache) {
                 CacheFileToLocal();
+                file = LocalCacheFile;
             }
 
             var oldInfo = FileInfo;
 
             // Compare with quick info.
-            var quickInfo = QuickInfo();
+            var quickInfo = file.QuickInfo();
             logger.Debug("Quick info:\n{0}", JsonConvert.SerializeObject(quickInfo));
 
-            var info = CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
+            var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 
             var quickCompareResult =
                 info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
