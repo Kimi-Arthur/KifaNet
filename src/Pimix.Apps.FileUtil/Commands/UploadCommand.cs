@@ -112,7 +112,6 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 2;
                 }
 
-
                 destination.Unregister();
                 destination.Register();
 
@@ -131,7 +130,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     if (destinationCheckResult == FileProperties.None) {
                         logger.Info("Successfully uploaded {0} to {1}!", source, destination);
 
-                        destination.RemoveLocalCacheFile();
+                        source.RemoveLocalCacheFile();
 
                         if (DeleteSource) {
                             if (source.IsCloud) {
