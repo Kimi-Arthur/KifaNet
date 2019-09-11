@@ -4,6 +4,7 @@ using Pimix.Infos;
 using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
+    [Route("api/" + TvShow.ModelId)]
     public class TvShowsController : PimixController<TvShow> {
         static readonly TvShowServiceClient client = new TvShowJsonServiceClient();
 

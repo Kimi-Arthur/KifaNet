@@ -9,6 +9,7 @@ using Pimix.IO;
 using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
+    [Route("api/" + FileInformation.ModelId)]
     public class FilesController : PimixController<FileInformation> {
         static readonly FileExtensionContentTypeProvider provider =
             new FileExtensionContentTypeProvider();

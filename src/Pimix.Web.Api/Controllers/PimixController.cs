@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
-    [Route("api/[controller]")]
     [ApiController]
     public abstract class PimixController<TDataModel> : ControllerBase
         where TDataModel : DataModel {
