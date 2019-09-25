@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Pimix.Infos {
-    public class Region : JsonSerializable, IComparable<Region> {
+    public class Region : JsonSerializable {
         public static readonly Region UnitedStates = new Region {
             Name = "United States",
             Code = "US"
@@ -37,8 +36,6 @@ namespace Pimix.Infos {
         public string Name { get; set; }
         public string Code { get; set; }
 
-        public int CompareTo(Region other) => Code.CompareTo(Code);
-
         public string ToJson() => Name;
 
         public void FromJson(string data) {
@@ -46,6 +43,13 @@ namespace Pimix.Infos {
             Name = region.Name;
             Code = region.Code;
         }
+
+        public static implicit operator Region(string data) => All[data];
+
+        public override int GetHashCode() => Code.GetHashCode();
+
+        public override bool Equals(object obj) =>
+            obj != null && GetType() == obj.GetType() && Code == ((Language) obj).Code;
 
         public override string ToString() => Name;
     }

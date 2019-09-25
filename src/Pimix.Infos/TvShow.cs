@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Pimix.Infos.Tmdb;
 using Pimix.Service;
 
 namespace Pimix.Infos {
@@ -28,6 +29,44 @@ namespace Pimix.Infos {
         public string PatternId { get; set; }
         public int? SeasonIdWidth { get; set; }
         public int? EpisodeIdWidth { get; set; }
+
+        public override void Fill() {
+            var tmdb = new TmdbClient();
+            var series = tmdb.GetSeries(TmdbId, Language.Code);
+            AirDate = series.FirstAirDate;
+            TvNetwork = series.Networks[0].Name;
+            Region = series.Networks[0].OriginCountry;
+
+            Genres = series.Genres.Select(g => g.Name).ToList();
+            Overview = series.Overview;
+
+            Specials = null;
+            Seasons = new List<Season>();
+
+            foreach (var seasonInfo in series.Seasons) {
+                var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, Language.Code);
+
+                var episodes = data.Episodes.Select(episode => new Episode {
+                        Id = episode.EpisodeNumber,
+                        Title = Helper.NormalizeTitle(episode.Name, Language),
+                        AirDate = episode.AirDate,
+                        Overview = episode.Overview
+                    })
+                    .ToList();
+
+                if (seasonInfo.SeasonNumber > 0) {
+                    Seasons.Add(new Season {
+                        AirDate = seasonInfo.AirDate,
+                        Id = seasonInfo.SeasonNumber,
+                        Title = Helper.NormalizeTitle(seasonInfo.Name),
+                        Overview = seasonInfo.Overview,
+                        Episodes = episodes
+                    });
+                } else {
+                    Specials = episodes;
+                }
+            }
+        }
 
         public string Format(Season season, Episode episode) {
             var patternId = episode.PatternId ?? season.PatternId ?? PatternId;

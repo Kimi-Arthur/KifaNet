@@ -9,6 +9,9 @@ namespace Pimix.Service {
     public abstract class DataModel {
         public string Id { get; set; }
 
+        public virtual void Fill() {
+        }
+
         public override string ToString() => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
     }
 
@@ -25,7 +28,7 @@ namespace Pimix.Service {
         public string Data { get; set; }
 
         public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
-        
+
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public HttpRequestMessage GetRequest(Dictionary<string, string> parameters = null) {

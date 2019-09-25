@@ -7,10 +7,10 @@ POST {{server}}/api/tv_shows/%E3%81%82%E3%81%AA%E3%81%9F%E3%81%AE%E7%95%AA%E3%81
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-tmdb_id: '88570'
-language: ja
-pattern_id: single_season
-episode_id_width: 2
+TmdbId: '88570'
+Language: ja
+PatternId: single_season
+EpisodeIdWidth: 2
 
 ### Add multi
 POST {{server}}/api/tv_shows/深夜食堂
@@ -28,14 +28,13 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/%E3%81%82%E3%81%AA%E3%81%9F%E3%81%AE%E7%95%AA%E3%81%A7%E3%81%99
-Accept: application/x-yaml
+GET {{server}}/api/tv_shows/Miss PILOT
 
 ### List
 GET {{server}}/api/tv_shows/$format_path?path=Miss PILOT
 Accept: application/x-yaml
 
-### TMDB episode
+### TMDB series
 GET https://api.themoviedb.org/3/tv/1399?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
 
 ### TMDB Season

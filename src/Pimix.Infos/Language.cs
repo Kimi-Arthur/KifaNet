@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Pimix.Infos {
-    public class Language : JsonSerializable, IComparable<Language> {
+    public class Language : JsonSerializable {
         public static readonly Language Chinese = new Language {
             Name = "Chinese",
             Code = "zh"
@@ -31,8 +31,6 @@ namespace Pimix.Infos {
         public string Name { get; set; }
         public string Code { get; set; }
 
-        public int CompareTo(Language other) => Code.CompareTo(Code);
-
         public string ToJson() => Code;
 
         public void FromJson(string data) {
@@ -40,6 +38,13 @@ namespace Pimix.Infos {
             Name = lang.Name;
             Code = lang.Code;
         }
+
+        public static implicit operator Language(string data) => All[data];
+
+        public override int GetHashCode() => Code.GetHashCode();
+
+        public override bool Equals(object obj) =>
+            obj != null && GetType() == obj.GetType() && Code == ((Language) obj).Code;
 
         public override string ToString() => Name;
     }

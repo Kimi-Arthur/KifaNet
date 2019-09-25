@@ -7,7 +7,7 @@ recursive: true
 
 ###
 
-GET {{server}}/api/files/%2F%24%2F002D035504FAAF4BA59160CC7B11DE7F00A8C175EF4641F0B39639B827EDCAB1
+GET {{server}}/api/files/%2FAnime%2FSword%20Art%20Online%20%282012%29%2FSeason%202%20%282014%29%2FSword%20Art%20Online%20S02E01%20%E9%8A%83%E3%81%AE%E4%B8%96%E7%95%8C.mkv
 Accept: application/json
 
 ###

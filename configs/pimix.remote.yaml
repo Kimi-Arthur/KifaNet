@@ -12,3 +12,17 @@ Pimix.Apps.JobUtil.JobUtilCommand:
 Pimix.Bilibili.BilibiliVideo:
   BiliplusCookies: pushed_L3N0eWxlL2JpbGlwbHVzLm1pbi5jc3M=180127; pushed_L2pzL3RpbWVyLm1pbi5qcw=161222; pushed_L2pzL3RpbWVhZ28ubWluLmpz=225898f; _ga=GA1.2.1184337325.1544780484; level=5; vipDueDate=0; pushed_L2pzL3dpbi1kb3RzLm1pbi5qcw=161229; pushed_L2pzL2xhbmcuZW4uanM=181225031928; pushed_L2pzL3NwLm1pbi5qcw=1812250319; pushed_L3N0eWxlL0FCUGxheWVyLm1pbi5jc3M=180930; pushed_L2pzL2pxdWVyeS0yLjEuNC5taW4uanM=2.1.4; pushed_L2pzL0FCUGxheWVyX3N0cmluZ3MuZW4uanM=181120; pushed_L2pzL2dvb2dsZS1zdHlsZS1sb2FkaW5nLm1pbi5qcw=1; PHPSESSID=9m1m9n5gmu5d62u3u1v8feg1a0; pushed_L2pzL2JvdHRvbXNjcmlwdC5taW4uanM=190306; UsingLang=zh; pushed_L2pzL2xhbmcuemguanM=181225031928; pushed_L2pzL2Zhdi5taW4uanM=190402; pushed_L2pzL2JpbGlwbHVzX3NoaWVsZC5taW4uanM=190210; pushed_L2pzL0NvbW1lbnRDb3JlTGlicmFyeS5taW4uanM=190210; pushed_L2pzL0FCUGxheWVyLm1pbi5qcw=190427-1; pushed_L2pzL0FCUGxheWVyX3N0cmluZ3MuemguanM=181120; pushed_L2pzL2dldGFpZC5taW4uanM=1906241248; bp_user_id=yS8R3p5U8ruv0JFMNO6BQw; freetoview=3; _gid=GA1.2.2045622369.1565356361; login=2; passlogin=1; mid=3888766; uname=%E6%96%97%E5%8B%87%E7%8C%AB%E6%99%B6%E6%99%B6; access_key=229f069464c5a4fe11591b5342803281; face=http%3A%2F%2Fi1.hdslb.com%2Fbfs%2Fface%2F0010f77cf72e7c54d4adbcdee73e2ef6611d83e2.jpg; refresh_token=cc2a4a16fd993e0b198fc9664b9df681; secure_header=access_key%2Cmid%2Clevel%2Csecurev2_time; adfly_video_vaild=1565961169%2C62d0318c; expires=1567948367; securev2_time=1565356370; securev2=fe5789aa; visiturl=%2Fme%2Fdynamic%2F
   DefaultBiliplusSourceChoice: 1
+
+Pimix.Infos.Tmdb.TmdbClient:
+  ApiKey: 781b829a0214d68e3250f10aedbbc2d8
+  Apis:
+    Languages:
+      Method: GET
+      Url: https://api.themoviedb.org/3/configuration/languages?api_key={api_key}
+    Season:
+      Method: GET
+      Url: https://api.themoviedb.org/3/tv/{sid}/season/{season}?api_key={api_key}&language={lang}
+    Series:
+      Method: GET
+      Url: https://api.themoviedb.org/3/tv/{sid}?api_key={api_key}&language={lang}
+ 
