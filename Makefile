@@ -38,8 +38,8 @@ setup:
 
 publish:
 	rm -rf publish
-	dotnet pack -o ../../publish -c Release --include-symbols ${target}
-	dotnet nuget push publish/*.symbols.nupkg -s https://api.nuget.org/v3/index.json -k oy2bkvsw65bqe4clccfawdv2s25hqmbe7ccuiph6yowrmq
+	dotnet pack -o publish -c Release --include-symbols ${target}
+	dotnet nuget push publish/*.symbols.nupkg -s https://api.nuget.org/v3/index.json -k oy2jqpkcvxsj2eudjriaxwmimioty73u7atgnf3wpukr3u
 
 build:
 	dotnet publish -c Release src/Pimix.Apps.FileUtil

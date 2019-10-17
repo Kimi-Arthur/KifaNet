@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ToolCommandName>subx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>3.0.16</Version>
+    <Version>4.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/Kimi-Arthur/Pimix/master/Pimix.png</PackageIconUrl>
+    <PackageIcon>Pimix.png</PackageIcon>
     <Description>Utility to update subtitles.</Description>
     <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
     <PackageTags>Pimix Apps SubUtil app</PackageTags>
@@ -29,5 +29,6 @@
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\..\Pimix.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 </Project>
