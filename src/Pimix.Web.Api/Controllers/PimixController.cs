@@ -29,10 +29,9 @@ namespace Pimix.Web.Api.Controllers {
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody] TDataModel value) {
-            id = Uri.UnescapeDataString(id);
-            var o = Client.Get(id);
-            o.Fill();
-            Client.Set(o);
+            value.Id = Uri.UnescapeDataString(id);
+            value.Fill();
+            Client.Set(value);
         }
 
         // DELETE api/values/5

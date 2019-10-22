@@ -10,7 +10,7 @@ namespace Pimix.Infos {
 
         public static readonly Region UnitedKingdom = new Region {
             Name = "United Kingdom",
-            Code = "UK"
+            Code = "GB"
         };
 
         public static readonly Region Japan = new Region {

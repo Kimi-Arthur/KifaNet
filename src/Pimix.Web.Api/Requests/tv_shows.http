@@ -13,29 +13,29 @@ PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/深夜食堂
+POST {{server}}/api/tv_shows/Sherlock Holmes
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-pattern_id: multi_season
-season_id_width: 2
-episode_id_width: 2
-tmdb_id: '47008'
-language: ja
+PatternId: multi_season
+SeasonIdWidth: 2
+EpisodeIdWidth: 2
+TmdbId: '799'
+Language: en
 
 ### All
 GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/Miss PILOT
+GET {{server}}/api/tv_shows/Sherlock Holmes
 
 ### List
 GET {{server}}/api/tv_shows/$format_path?path=Miss PILOT
 Accept: application/x-yaml
 
 ### TMDB series
-GET https://api.themoviedb.org/3/tv/1399?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
+GET https://api.themoviedb.org/3/tv/47008?api_key=781b829a0214d68e3250f10aedbbc2d8&language=ja
 
 ### TMDB Season
 GET https://api.themoviedb.org/3/tv/60573/season/1?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
