@@ -22,24 +22,22 @@ namespace PimixTest.IO.FileFormats {
             new Random().NextBytes(data);
             var format = new PimixFileV1Format();
 
-            using (var ms = new MemoryStream(data))
-            using (var encrypted = new MemoryStream())
-            using (var encryptionStream = format.GetEncodeStream(ms,
+            using var ms = new MemoryStream(data);
+            using var encrypted = new MemoryStream();
+            using var encryptionStream = format.GetEncodeStream(ms,
                 new FileInformation {
                     EncryptionKey = EncryptionKey,
                     Size = length
-                })) {
-                encryptionStream.CopyTo(encrypted);
-                using (var output =
-                    format.GetDecodeStream(encrypted, EncryptionKey)) {
-                    var fs1 = FileInformation.GetInformation(ms,
-                        FileProperties.Size | FileProperties.Sha256);
-                    var fs2 = FileInformation.GetInformation(output,
-                        FileProperties.Size | FileProperties.Sha256);
-                    Assert.Equal(fs1.Size, fs2.Size);
-                    Assert.Equal(fs1.Sha256, fs2.Sha256);
-                }
-            }
+                });
+            encryptionStream.CopyTo(encrypted);
+            using var output =
+                format.GetDecodeStream(encrypted, EncryptionKey);
+            var fs1 = FileInformation.GetInformation(ms,
+                FileProperties.Size | FileProperties.Sha256);
+            var fs2 = FileInformation.GetInformation(output,
+                FileProperties.Size | FileProperties.Sha256);
+            Assert.Equal(fs1.Size, fs2.Size);
+            Assert.Equal(fs1.Sha256, fs2.Sha256);
         }
     }
 }

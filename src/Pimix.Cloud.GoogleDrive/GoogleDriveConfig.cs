@@ -8,8 +8,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
         static PimixServiceClient<GoogleDriveConfig> client;
 
-        public static PimixServiceClient<GoogleDriveConfig> Client => client =
-            client ?? new PimixServiceRestClient<GoogleDriveConfig>();
+        public static PimixServiceClient<GoogleDriveConfig> Client => client ??= new PimixServiceRestClient<GoogleDriveConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
 

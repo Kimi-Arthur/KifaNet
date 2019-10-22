@@ -270,11 +270,10 @@ namespace Pimix.Apps.SubUtil.Commands {
         static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(PimixFile parent,
             string baseName)
             => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
-                using (var sr = new StreamReader(file.OpenRead())) {
-                    return (file.BaseName.Substring(baseName.Length + 1),
-                        SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(),
-                        new List<AssStyle>());
-                }
+                using var sr = new StreamReader(file.OpenRead());
+                return (file.BaseName.Substring(baseName.Length + 1),
+                    SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(),
+                    new List<AssStyle>());
             }).ToList();
 
         static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(PimixFile parent,

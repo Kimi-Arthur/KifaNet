@@ -826,7 +826,7 @@ public class BigInteger {
         }
 
         shiftLeft(remainder, shift);
-        bi2 = bi2 << shift;
+        bi2 <<= shift;
 
         /*
         Console.WriteLine("bi1 Len = {0}, bi2 Len = {1}", bi1.dataLength, bi2.dataLength);
@@ -1324,7 +1324,7 @@ public class BigInteger {
         constant.data[i] = 0x00000001;
         constant.dataLength = i + 1;
 
-        constant = constant / n;
+        constant /= n;
         var totalBits = exp.bitCount();
         var count = 0;
 
@@ -1925,7 +1925,7 @@ public class BigInteger {
         {
             numBits = (numBits >> 1) + 1;
         } else {
-            numBits = numBits >> 1;
+            numBits >>= 1;
         }
 
         var bytePos = numBits >> 5;

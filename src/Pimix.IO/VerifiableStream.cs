@@ -56,7 +56,7 @@ namespace Pimix.IO {
 
             logger.Trace($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
-            lastBlock = lastBlock ?? new byte[FileInformation.BlockSize];
+            lastBlock ??= new byte[FileInformation.BlockSize];
 
             var left = count;
             for (var pos = startPosition; pos < endPosition; pos += FileInformation.BlockSize) {
@@ -203,7 +203,7 @@ namespace Pimix.IO {
 
             var sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
             if (info.BlockSha1 != null) {
-                result = result ?? true;
+                result ??= true;
                 var expectedSha1 = info.BlockSha1[blockId];
 
                 if (sha1 != expectedSha1) {
@@ -215,7 +215,7 @@ namespace Pimix.IO {
             var sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
             if (info.BlockSha256 != null) {
-                result = result ?? true;
+                result ??= true;
                 var expectedSha256 = info.BlockSha256[blockId];
 
                 if (sha256 != expectedSha256) {

@@ -8,8 +8,7 @@ namespace Pimix.Cloud.BaiduCloud {
 
         static PimixServiceClient<BaiduCloudConfig> client;
 
-        public static PimixServiceClient<BaiduCloudConfig> Client => client =
-            client ?? new PimixServiceRestClient<BaiduCloudConfig>();
+        public static PimixServiceClient<BaiduCloudConfig> Client => client ??= new PimixServiceRestClient<BaiduCloudConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
 

@@ -43,9 +43,8 @@ namespace CG.Web.MegaApiClient {
         }
 
         public string PostRequestJson(Uri url, string jsonData) {
-            using (var jsonStream = new MemoryStream(jsonData.ToBytes())) {
-                return PostRequest(url, jsonStream, "application/json");
-            }
+            using var jsonStream = new MemoryStream(jsonData.ToBytes());
+            return PostRequest(url, jsonStream, "application/json");
         }
 
         public string PostRequestRaw(Uri url, Stream dataStream)
@@ -80,13 +79,10 @@ namespace CG.Web.MegaApiClient {
                 }
             }
 
-            using (var response = (HttpWebResponse) request.GetResponse()) {
-                using (var responseStream = response.GetResponseStream()) {
-                    using (var streamReader = new StreamReader(responseStream, Encoding.UTF8)) {
-                        return streamReader.ReadToEnd();
-                    }
-                }
-            }
+            using var response = (HttpWebResponse) request.GetResponse();
+            using var responseStream = response.GetResponseStream();
+            using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+            return streamReader.ReadToEnd();
         }
     }
 }

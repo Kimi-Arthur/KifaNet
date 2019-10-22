@@ -10,8 +10,7 @@ namespace Pimix.Apps.JobUtil {
 
         static JobServiceClient client;
 
-        public static JobServiceClient Client => client =
-            client ?? new JobRestServiceClient();
+        public static JobServiceClient Client => client ??= new JobRestServiceClient();
 
         public string Command { get; set; }
 
@@ -24,59 +23,58 @@ namespace Pimix.Apps.JobUtil {
                 timer.Elapsed += (sender, e) => { Client.Heartbeat(Id); };
             }
 
-            using (var proc = new Process()) {
-                proc.StartInfo.FileName = Command;
-                proc.StartInfo.Arguments = string.Join(" ", Arguments);
+            using var proc = new Process();
+            proc.StartInfo.FileName = Command;
+            proc.StartInfo.Arguments = string.Join(" ", Arguments);
 
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.UseShellExecute = false;
 
-                proc.OutputDataReceived += (sender, e) => {
-                    if (!string.IsNullOrEmpty(e.Data)) {
-                        try {
-                            Client.Log(Id, e.Data, "info");
-                        } catch (Exception ex) {
-                            Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
-                        }
-
-                        timer.Interval = timer.Interval;
+            proc.OutputDataReceived += (sender, e) => {
+                if (!string.IsNullOrEmpty(e.Data)) {
+                    try {
+                        Client.Log(Id, e.Data, "info");
+                    } catch (Exception ex) {
+                        Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
                     }
-                };
 
-                proc.ErrorDataReceived += (sender, e) => {
-                    if (!string.IsNullOrEmpty(e.Data)) {
-                        try {
-                            Client.Log(Id, e.Data, "debug");
-                        } catch (Exception ex) {
-                            Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
-                        }
+                    timer.Interval = timer.Interval;
+                }
+            };
 
-                        timer.Interval = timer.Interval;
+            proc.ErrorDataReceived += (sender, e) => {
+                if (!string.IsNullOrEmpty(e.Data)) {
+                    try {
+                        Client.Log(Id, e.Data, "debug");
+                    } catch (Exception ex) {
+                        Console.Error.WriteLine($"Exception during uploading log:\n{ex}.");
                     }
-                };
 
-                timer?.Start();
-                proc.Start();
+                    timer.Interval = timer.Interval;
+                }
+            };
 
-                runnerName = $"{runnerName}${proc.Id}";
+            timer?.Start();
+            proc.Start();
 
-                Client.StartJob(Id, runner: runnerName);
-                Console.Error.WriteLine(
-                    $"{runnerName}: Job start info ({Id}): {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
+            runnerName = $"{runnerName}${proc.Id}";
 
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
+            Client.StartJob(Id, runner: runnerName);
+            Console.Error.WriteLine(
+                $"{runnerName}: Job start info ({Id}): {proc.StartInfo.FileName} {proc.StartInfo.Arguments}");
 
-                proc.WaitForExit();
-                Client.FinishJob(Id, proc.ExitCode);
+            proc.BeginOutputReadLine();
+            proc.BeginErrorReadLine();
 
-                timer?.Dispose();
+            proc.WaitForExit();
+            Client.FinishJob(Id, proc.ExitCode);
 
-                Console.Error.WriteLine($"{runnerName}: Job finish info ({Id}): {proc.ExitCode}");
+            timer?.Dispose();
 
-                return proc.ExitCode;
-            }
+            Console.Error.WriteLine($"{runnerName}: Job finish info ({Id}): {proc.ExitCode}");
+
+            return proc.ExitCode;
         }
     }
 

@@ -54,7 +54,7 @@ namespace Pimix {
 
                 var lastValue = symbolMap[""] = 1;
                 foreach (var item in "KMGTPEZY") {
-                    symbolMap[item.ToString()] = lastValue = lastValue << 10;
+                    symbolMap[item.ToString()] = lastValue <<= 10;
                 }
             }
 

@@ -30,8 +30,9 @@ namespace Pimix.Subtitle.Srt {
             }
 
             if (FontColor.HasValue) {
-                var c = new PrimaryColourStyle();
-                c.Value = FontColor.Value;
+                var c = new PrimaryColourStyle {
+                    Value = FontColor.Value
+                };
                 controlElement.Elements.Add(c);
             }
 

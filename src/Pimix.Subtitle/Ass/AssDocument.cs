@@ -14,9 +14,8 @@ namespace Pimix.Subtitle.Ass {
             => string.Join("\n", Sections.Select(s => s.ToString()));
 
         public static AssDocument Parse(Stream stream) {
-            using (var sr = new StreamReader(stream)) {
-                return Parse(sr.ReadToEnd());
-            }
+            using var sr = new StreamReader(stream);
+            return Parse(sr.ReadToEnd());
         }
 
         static AssDocument Parse(string content) {

@@ -33,30 +33,29 @@ namespace PimixTest.Cryptography {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateDecryptor();
 
-                using (var stream = new PimixCryptoStream(File.OpenRead(encryptedFile), transform,
-                    rawSize, true)) {
-                    var info = FileInformation.GetInformation(stream,
+                using var stream = new PimixCryptoStream(File.OpenRead(encryptedFile), transform,
+                    rawSize, true);
+                var info = FileInformation.GetInformation(stream,
+                    FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
+                Assert.Equal(rawSize, info.Size);
+                Assert.Equal(rawHash, info.Sha256);
+
+                foreach (var b in new List<int> {
+                    8,
+                    11,
+                    12,
+                    16,
+                    33,
+                    100
+                }) {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    var output = new MemoryStream();
+                    stream.CopyTo(output, b);
+
+                    info = FileInformation.GetInformation(output,
                         FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
                     Assert.Equal(rawSize, info.Size);
                     Assert.Equal(rawHash, info.Sha256);
-
-                    foreach (var b in new List<int> {
-                        8,
-                        11,
-                        12,
-                        16,
-                        33,
-                        100
-                    }) {
-                        stream.Seek(0, SeekOrigin.Begin);
-                        var output = new MemoryStream();
-                        stream.CopyTo(output, b);
-
-                        info = FileInformation.GetInformation(output,
-                            FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
-                        Assert.Equal(rawSize, info.Size);
-                        Assert.Equal(rawHash, info.Sha256);
-                    }
                 }
             }
         }
@@ -66,25 +65,24 @@ namespace PimixTest.Cryptography {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateDecryptor();
 
-                using (var stream = new PimixCryptoStream(File.OpenRead(encryptedFile), transform,
-                    rawSize, true)) {
-                    var baseStream = new MemoryStream();
-                    stream.CopyTo(baseStream);
+                using var stream = new PimixCryptoStream(File.OpenRead(encryptedFile), transform,
+                    rawSize, true);
+                var baseStream = new MemoryStream();
+                stream.CopyTo(baseStream);
 
-                    foreach (var b in new List<int> {
-                        8,
-                        11,
-                        12,
-                        16,
-                        33,
-                        100
-                    }) {
-                        stream.Seek(0, SeekOrigin.Begin);
-                        stream.Seek(-b, SeekOrigin.End);
-                        baseStream.Seek(-b, SeekOrigin.End);
-                        for (var i = 0; i < b; i++) {
-                            Assert.Equal(baseStream.ReadByte(), stream.ReadByte());
-                        }
+                foreach (var b in new List<int> {
+                    8,
+                    11,
+                    12,
+                    16,
+                    33,
+                    100
+                }) {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    stream.Seek(-b, SeekOrigin.End);
+                    baseStream.Seek(-b, SeekOrigin.End);
+                    for (var i = 0; i < b; i++) {
+                        Assert.Equal(baseStream.ReadByte(), stream.ReadByte());
                     }
                 }
             }
@@ -95,30 +93,29 @@ namespace PimixTest.Cryptography {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateEncryptor();
 
-                using (var stream = new PimixCryptoStream(File.OpenRead(rawFile), transform,
-                    encryptedSize, false)) {
-                    var info = FileInformation.GetInformation(stream,
+                using var stream = new PimixCryptoStream(File.OpenRead(rawFile), transform,
+                    encryptedSize, false);
+                var info = FileInformation.GetInformation(stream,
+                    FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
+                Assert.Equal(encryptedSize, info.Size);
+                Assert.Equal(encryptedHash, info.Sha256);
+
+                foreach (var b in new List<int> {
+                    8,
+                    11,
+                    12,
+                    16,
+                    33,
+                    100
+                }) {
+                    stream.Seek(0, SeekOrigin.Begin);
+                    var output = new MemoryStream();
+                    stream.CopyTo(output, b);
+
+                    info = FileInformation.GetInformation(output,
                         FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
                     Assert.Equal(encryptedSize, info.Size);
                     Assert.Equal(encryptedHash, info.Sha256);
-
-                    foreach (var b in new List<int> {
-                        8,
-                        11,
-                        12,
-                        16,
-                        33,
-                        100
-                    }) {
-                        stream.Seek(0, SeekOrigin.Begin);
-                        var output = new MemoryStream();
-                        stream.CopyTo(output, b);
-
-                        info = FileInformation.GetInformation(output,
-                            FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
-                        Assert.Equal(encryptedSize, info.Size);
-                        Assert.Equal(encryptedHash, info.Sha256);
-                    }
                 }
             }
         }

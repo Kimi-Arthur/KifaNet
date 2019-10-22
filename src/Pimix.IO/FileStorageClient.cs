@@ -59,27 +59,28 @@ namespace Pimix.IO {
                 Server.Username,
                 new PasswordAuthenticationMethod(Server.Username, Server.Password));
 
-            using (var client = new SshClient(connectionInfo)) {
-                client.Connect();
-                var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
-                if (result.ExitStatus != 0) {
-                    throw new Exception("Remote link command failed: " + result.Result);
-                }
+            using var client = new SshClient(connectionInfo);
+            client.Connect();
+            var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
+            if (result.ExitStatus != 0) {
+                throw new Exception("Remote link command failed: " + result.Result);
             }
         }
 
         void Link(string sourcePath, string destinationPath) {
-            using (var proc = new Process()) {
-                proc.StartInfo.FileName = IsUnixLike ? "ln" : "cmd.exe";
-                proc.StartInfo.Arguments = IsUnixLike
-                    ? $"\"{sourcePath}\" \"{destinationPath}\""
-                    : $"/c mklink /h \"{destinationPath}\" \"{sourcePath}\"";
-                proc.StartInfo.UseShellExecute = false;
-                proc.Start();
-                proc.WaitForExit();
-                if (proc.ExitCode != 0) {
-                    throw new Exception("Local link command failed");
+            using var proc = new Process {
+                StartInfo = {
+                    FileName = IsUnixLike ? "ln" : "cmd.exe",
+                    Arguments = IsUnixLike
+                        ? $"\"{sourcePath}\" \"{destinationPath}\""
+                        : $"/c mklink /h \"{destinationPath}\" \"{sourcePath}\"",
+                    UseShellExecute = false
                 }
+            };
+            proc.Start();
+            proc.WaitForExit();
+            if (proc.ExitCode != 0) {
+                throw new Exception("Local link command failed");
             }
         }
 
@@ -151,24 +152,22 @@ namespace Pimix.IO {
                 count = buffer.Length - bufferOffset;
             }
 
-            using (var st = File.OpenRead(localPath)) {
-                st.Seek(offset, SeekOrigin.Begin);
-                return st.Read(buffer, 0, count);
-            }
+            using var st = File.OpenRead(localPath);
+            st.Seek(offset, SeekOrigin.Begin);
+            return st.Read(buffer, 0, count);
         }
 
         public override void Write(string path, Stream stream) {
             var blockSize = DefaultBlockSize;
             path = GetPath(path);
             EnsureParent(path);
-            using (var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
-                fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
-                if (fs.Position != 0) {
-                    stream.Seek(fs.Position, SeekOrigin.Begin);
-                }
-
-                stream.CopyTo(fs, blockSize);
+            using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
+            if (fs.Position != 0) {
+                stream.Seek(fs.Position, SeekOrigin.Begin);
             }
+
+            stream.CopyTo(fs, blockSize);
         }
 
         string GetId(string path) => path.Substring(Server.Prefix.Length).Replace("\\", "/");

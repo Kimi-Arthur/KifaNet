@@ -28,7 +28,7 @@ namespace Pimix.Service {
         public TDataModel GetOr(string id, Func<string, TDataModel> defaultValue = null) {
             try {
                 return Get(id);
-            } catch (Exception ex) {
+            } catch (Exception) {
                 return defaultValue?.Invoke(id);
             }
         }

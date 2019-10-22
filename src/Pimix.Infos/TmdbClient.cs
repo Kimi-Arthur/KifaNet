@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
 using Pimix.Service;
 
 namespace Pimix.Infos.Tmdb {
@@ -18,9 +17,8 @@ namespace Pimix.Infos.Tmdb {
                 ["api_key"] = ApiKey
             });
 
-            using (var response = client.SendAsync(request).Result) {
-                return response.GetObject<TmdbSeries>();
-            }
+            using var response = client.SendAsync(request).Result;
+            return response.GetObject<TmdbSeries>();
         }
 
         public TmdbSeason GetSeason(string tmdbId, long seasonNumber, string language) {
@@ -31,9 +29,8 @@ namespace Pimix.Infos.Tmdb {
                 ["api_key"] = ApiKey
             });
 
-            using (var response = client.SendAsync(request).Result) {
-                return response.GetObject<TmdbSeason>();
-            }
+            using var response = client.SendAsync(request).Result;
+            return response.GetObject<TmdbSeason>();
         }
     }
 

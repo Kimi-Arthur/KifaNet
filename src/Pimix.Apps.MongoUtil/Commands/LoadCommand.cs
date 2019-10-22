@@ -19,9 +19,8 @@ namespace Pimix.Apps.MongoUtil.Commands {
             var files = new List<FileInformation>();
 
             foreach (var file in new DirectoryInfo(Folder).GetFiles("*", SearchOption.AllDirectories)) {
-                using (var sr = new StreamReader(file.Open(FileMode.Open))) {
-                    files.Add(JsonConvert.DeserializeObject<FileInformation>(sr.ReadToEnd()));
-                }
+                using var sr = new StreamReader(file.Open(FileMode.Open));
+                files.Add(JsonConvert.DeserializeObject<FileInformation>(sr.ReadToEnd()));
             }
 
             collection.InsertMany(files);

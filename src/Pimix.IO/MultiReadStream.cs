@@ -10,8 +10,9 @@ namespace Pimix.IO {
             streamCount = streams.Count;
             lengths = this.streams.Select(s => s.Length).ToList();
             offsets = new List<long> {0};
-            for (int i = 0; i < lengths.Count; i++) {
-                offsets.Add(offsets.Last() + lengths[i]);
+            
+            foreach (var t in lengths) {
+                offsets.Add(offsets.Last() + t);
             }
 
             Length = offsets.Last();

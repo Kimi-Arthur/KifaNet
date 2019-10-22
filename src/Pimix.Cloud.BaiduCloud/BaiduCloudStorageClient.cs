@@ -92,36 +92,35 @@ namespace Pimix.Cloud.BaiduCloud {
 
             while (true) {
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                using (var response = client.SendAsync(request).Result) {
-                    if (response.IsSuccessStatusCode) {
-                        var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                        response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                        response.Dispose();
-                        if (memoryStream.Position != count) {
-                            throw new Exception(
-                                $"Unexpected download length ({memoryStream.Position}, should be {count}): {response}");
-                        }
-
-                        return count;
+                using var response = client.SendAsync(request).Result;
+                if (response.IsSuccessStatusCode) {
+                    var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+                    response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+                    response.Dispose();
+                    if (memoryStream.Position != count) {
+                        throw new Exception(
+                            $"Unexpected download length ({memoryStream.Position}, should be {count}): {response}");
                     }
 
-                    if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
-                        response.StatusCode < HttpStatusCode.BadRequest) {
-                        logger.Trace($"Redirecting to {response.Headers.Location}");
-                        request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
-                        response.Dispose();
-                    } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
-                        logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
-                        config = null;
-                        request = GetRequest(Config.APIList.DownloadFile,
-                            new Dictionary<string, string> {
-                                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                            });
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                    } else {
-                        logger.Fatal(response.Content.ReadAsStringAsync().Result);
-                        throw new Exception($"Unexpected download response: {response}");
-                    }
+                    return count;
+                }
+
+                if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
+                    response.StatusCode < HttpStatusCode.BadRequest) {
+                    logger.Trace($"Redirecting to {response.Headers.Location}");
+                    request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
+                    response.Dispose();
+                } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
+                    logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
+                    config = null;
+                    request = GetRequest(Config.APIList.DownloadFile,
+                        new Dictionary<string, string> {
+                            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                        });
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
+                } else {
+                    logger.Fatal(response.Content.ReadAsStringAsync().Result);
+                    throw new Exception($"Unexpected download response: {response}");
                 }
             }
         }
@@ -141,10 +140,9 @@ namespace Pimix.Cloud.BaiduCloud {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
 
-            using (var response = client.SendAsync(request).Result) {
-                if (response.GetJToken() == null) {
-                    throw new InvalidOperationException();
-                }
+            using var response = client.SendAsync(request).Result;
+            if (response.GetJToken() == null) {
+                throw new InvalidOperationException();
             }
         }
 
@@ -172,9 +170,8 @@ namespace Pimix.Cloud.BaiduCloud {
                         logger.Warn($"WebException:\n{0}", ex);
                         if (ex.Response != null) {
                             logger.Warn("Response:");
-                            using (var s = new StreamReader(ex.Response.GetResponseStream())) {
-                                logger.Warn(s.ReadToEnd());
-                            }
+                            using var s = new StreamReader(ex.Response.GetResponseStream());
+                            logger.Warn(s.ReadToEnd());
                         }
 
                         Thread.Sleep(TimeSpan.FromSeconds(10));
@@ -239,12 +236,11 @@ namespace Pimix.Cloud.BaiduCloud {
 
             request.Content = new ByteArrayContent(buffer, offset, count);
 
-            using (var response = client.SendAsync(request).Result) {
-                var realPath = (string) response.GetJToken()["path"];
-                if (realPath != Config.RemotePathPrefix + path) {
-                    throw new Exception(
-                        $"Direct upload may fail: {Config.RemotePathPrefix + path}, real path: {realPath}");
-                }
+            using var response = client.SendAsync(request).Result;
+            var realPath = (string) response.GetJToken()["path"];
+            if (realPath != Config.RemotePathPrefix + path) {
+                throw new Exception(
+                    $"Direct upload may fail: {Config.RemotePathPrefix + path}, real path: {realPath}");
             }
         }
 
@@ -255,17 +251,16 @@ namespace Pimix.Cloud.BaiduCloud {
 
             request.Content = new ByteArrayContent(buffer, offset, count);
 
-            using (var response = client.SendAsync(request).Result) {
-                var actualMd5 = (string) response.GetJToken()["md5"];
-                if (expectedMd5 != actualMd5) {
-                    throw new UploadBlockException {
-                        ExpectedMd5 = expectedMd5,
-                        ActualMd5 = actualMd5
-                    };
-                }
-
-                return actualMd5;
+            using var response = client.SendAsync(request).Result;
+            var actualMd5 = (string) response.GetJToken()["md5"];
+            if (expectedMd5 != actualMd5) {
+                throw new UploadBlockException {
+                    ExpectedMd5 = expectedMd5,
+                    ActualMd5 = actualMd5
+                };
             }
+
+            return actualMd5;
         }
 
         void MergeBlocks(string path, List<string> blockList) {
@@ -281,12 +276,11 @@ namespace Pimix.Cloud.BaiduCloud {
                     }))
             });
 
-            using (var response = client.SendAsync(request).Result) {
-                var realPath = (string) response.GetJToken()["path"];
-                if (realPath != Config.RemotePathPrefix + path) {
-                    throw new Exception(
-                        $"Merge may fail! Original path: {Config.RemotePathPrefix + path}, real path: {realPath}");
-                }
+            using var response = client.SendAsync(request).Result;
+            var realPath = (string) response.GetJToken()["path"];
+            if (realPath != Config.RemotePathPrefix + path) {
+                throw new Exception(
+                    $"Merge may fail! Original path: {Config.RemotePathPrefix + path}, real path: {realPath}");
             }
         }
 
@@ -303,10 +297,9 @@ namespace Pimix.Cloud.BaiduCloud {
                     ["content_crc32"] = fileInformation.Adler32
                 });
 
-            using (var response = client.SendAsync(request).Result) {
-                if ((string) response.GetJToken()["md5"] != fileInformation.Md5) {
-                    throw new Exception("Response md5 is unexpected!");
-                }
+            using var response = client.SendAsync(request).Result;
+            if ((string) response.GetJToken()["md5"] != fileInformation.Md5) {
+                throw new Exception("Response md5 is unexpected!");
             }
         }
 
@@ -318,9 +311,8 @@ namespace Pimix.Cloud.BaiduCloud {
                     });
 
                 try {
-                    using (var response = client.SendAsync(request).Result) {
-                        return (long) response.GetJToken()["list"][0]["size"];
-                    }
+                    using var response = client.SendAsync(request).Result;
+                    return (long) response.GetJToken()["list"][0]["size"];
                 } catch (AggregateException ae) {
                     ae.Handle(x => {
                         if (x is HttpRequestException) {
@@ -398,10 +390,9 @@ namespace Pimix.Cloud.BaiduCloud {
                     new Dictionary<string, string> {
                         ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                     });
-                using (var response = client.SendAsync(request).Result) {
-                    var result = response.GetJToken();
-                    fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
-                }
+                using var response = client.SendAsync(request).Result;
+                var result = response.GetJToken();
+                fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
             }
 
             foreach (var file in fileList.OrderBy(f => f["path"])) {
@@ -450,15 +441,14 @@ namespace Pimix.Cloud.BaiduCloud {
                     });
 
                 try {
-                    using (var response = client.SendAsync(request).Result) {
-                        var responseObject = response.GetJToken();
+                    using var response = client.SendAsync(request).Result;
+                    var responseObject = response.GetJToken();
 
-                        if (responseObject["list"] == null) {
-                            return -1;
-                        }
-
-                        return (long) responseObject["list"][0]["size"];
+                    if (responseObject["list"] == null) {
+                        return -1;
                     }
+
+                    return (long) responseObject["list"][0]["size"];
                 } catch (Exception ex) {
                     logger.Debug(ex, "Existence test failed");
                     Thread.Sleep(TimeSpan.FromSeconds(5));
@@ -473,12 +463,11 @@ namespace Pimix.Cloud.BaiduCloud {
                 });
 
             try {
-                using (var response = client.SendAsync(request).Result) {
-                    var data = response.GetJToken()["list"][0];
-                    return new FileInformation {
-                        Size = (long) data["size"]
-                    };
-                }
+                using var response = client.SendAsync(request).Result;
+                var data = response.GetJToken()["list"][0];
+                return new FileInformation {
+                    Size = (long) data["size"]
+                };
             } catch (Exception) {
                 logger.Warn("Failed to get basic info for {0}", path);
                 return new FileInformation();
@@ -492,15 +481,14 @@ namespace Pimix.Cloud.BaiduCloud {
                     ["to_remote_path"] = destinationPath.TrimStart('/')
                 });
             try {
-                using (var response = client.SendAsync(request).Result) {
-                    var value = response.GetJToken();
-                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
-                        throw new Exception("from field is incorrect");
-                    }
+                using var response = client.SendAsync(request).Result;
+                var value = response.GetJToken();
+                if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
+                    throw new Exception("from field is incorrect");
+                }
 
-                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
-                        throw new Exception("to field is incorrect");
-                    }
+                if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
+                    throw new Exception("to field is incorrect");
                 }
             } catch (Exception ex) {
                 logger.Warn(ex, "Copy failed!");
@@ -515,15 +503,14 @@ namespace Pimix.Cloud.BaiduCloud {
                     ["to_remote_path"] = destinationPath.TrimStart('/')
                 });
             try {
-                using (var response = client.SendAsync(request).Result) {
-                    var value = response.GetJToken();
-                    if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
-                        throw new Exception("from field is incorrect");
-                    }
+                using var response = client.SendAsync(request).Result;
+                var value = response.GetJToken();
+                if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
+                    throw new Exception("from field is incorrect");
+                }
 
-                    if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
-                        throw new Exception("to field is incorrect");
-                    }
+                if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
+                    throw new Exception("to field is incorrect");
                 }
             } catch (Exception ex) {
                 logger.Warn(ex, "Move failed!");

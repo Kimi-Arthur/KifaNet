@@ -124,7 +124,7 @@ namespace Pimix.Api.Files {
 
         PimixFileFormat FileFormat { get; }
 
-        public FileInformation FileInfo => fileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+        public FileInformation FileInfo => fileInfo ??= FileInformation.Client.Get(Id);
 
         public bool UseCache { get; set; }
 

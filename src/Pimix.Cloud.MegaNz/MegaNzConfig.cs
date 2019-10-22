@@ -7,8 +7,7 @@ namespace Pimix.Cloud.MegaNz {
 
         static PimixServiceClient<MegaNzConfig> client;
 
-        public static PimixServiceClient<MegaNzConfig> Client => client =
-            client ?? new PimixServiceRestClient<MegaNzConfig>();
+        public static PimixServiceClient<MegaNzConfig> Client => client ??= new PimixServiceRestClient<MegaNzConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
     }

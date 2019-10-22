@@ -73,34 +73,29 @@ namespace CG.Web.MegaApiClient {
         #region Aes
 
         public static byte[] DecryptAes(byte[] data, byte[] key) {
-            using (Aes aesAlgorithm = new AesCryptoServiceProvider()) {
-                aesAlgorithm.Padding = PaddingMode.None;
-                aesAlgorithm.Key = key;
-                aesAlgorithm.Mode = CipherMode.CBC;
-                aesAlgorithm.IV = DefaultIv;
-                using (var decryptor = aesAlgorithm.CreateDecryptor()) {
-                    return decryptor.TransformFinalBlock(data, 0, data.Length);
-                }
-            }
+            using Aes aesAlgorithm = new AesCryptoServiceProvider();
+            aesAlgorithm.Padding = PaddingMode.None;
+            aesAlgorithm.Key = key;
+            aesAlgorithm.Mode = CipherMode.CBC;
+            aesAlgorithm.IV = DefaultIv;
+            using var decryptor = aesAlgorithm.CreateDecryptor();
+            return decryptor.TransformFinalBlock(data, 0, data.Length);
         }
 
         public static byte[] EncryptAes(byte[] data, byte[] key) {
-            using (Aes aesAlgorithm = new AesCryptoServiceProvider()) {
-                aesAlgorithm.Padding = PaddingMode.None;
-                aesAlgorithm.Key = key;
-                aesAlgorithm.IV = DefaultIv;
-                aesAlgorithm.Mode = CipherMode.CBC;
-                using (var encryptor = aesAlgorithm.CreateEncryptor()) {
-                    return encryptor.TransformFinalBlock(data, 0, data.Length);
-                }
-            }
+            using Aes aesAlgorithm = new AesCryptoServiceProvider();
+            aesAlgorithm.Padding = PaddingMode.None;
+            aesAlgorithm.Key = key;
+            aesAlgorithm.IV = DefaultIv;
+            aesAlgorithm.Mode = CipherMode.CBC;
+            using var encryptor = aesAlgorithm.CreateEncryptor();
+            return encryptor.TransformFinalBlock(data, 0, data.Length);
         }
 
         public static byte[] CreateAesKey() {
-            using (Aes aes = new AesCryptoServiceProvider()) {
-                aes.KeySize = 128;
-                return aes.Key;
-            }
+            using Aes aes = new AesCryptoServiceProvider();
+            aes.KeySize = 128;
+            return aes.Key;
         }
 
         #endregion

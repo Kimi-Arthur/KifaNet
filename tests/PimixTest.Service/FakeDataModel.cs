@@ -8,8 +8,7 @@ namespace PimixTest.Service {
 
         static FakeDataModelServiceClient client;
 
-        public static FakeDataModelServiceClient Client => client =
-            client ?? new FakeDataModelRestServiceClient();
+        public static FakeDataModelServiceClient Client => client ??= new FakeDataModelRestServiceClient();
 
         public int? IntPROP { get; set; }
 

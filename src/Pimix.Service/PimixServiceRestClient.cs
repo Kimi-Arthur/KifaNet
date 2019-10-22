@@ -35,7 +35,7 @@ namespace Pimix.Service {
         const string IdDeliminator = "|";
 
         public override void Update(TDataModel data, string id = null) {
-            id = id ?? data.Id;
+            id ??= data.Id;
 
             Retry.Run(() => {
                 var request =
@@ -47,14 +47,13 @@ namespace Pimix.Service {
                             "application/json")
                     };
 
-                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-                }
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({id})"));
         }
 
         public override void Set(TDataModel data, string id = null) {
-            id = id ?? data.Id;
+            id ??= data.Id;
 
             Retry.Run(() => {
                 var request =
@@ -66,9 +65,8 @@ namespace Pimix.Service {
                             "application/json")
                     };
 
-                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-                }
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({id})"));
         }
 
@@ -78,9 +76,8 @@ namespace Pimix.Service {
                     new HttpRequestMessage(HttpMethod.Get,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
-                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                    return response.GetObject<TDataModel>();
-                }
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<TDataModel>();
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
         }
 
@@ -90,9 +87,8 @@ namespace Pimix.Service {
                         new HttpRequestMessage(HttpMethod.Get,
                             $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
 
-                    using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                        return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
-                    }
+                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                    return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
                 },
                 (ex, i) => HandleException(ex, i,
                     $"Failure in GET {modelId}({string.Join(", ", ids)})"));
@@ -105,9 +101,8 @@ namespace Pimix.Service {
                             $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/" +
                             $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
 
-                    using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                        return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-                    }
+                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
                 },
                 (ex, i) => HandleException(ex, i,
                     $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})"));
@@ -119,9 +114,8 @@ namespace Pimix.Service {
                     new HttpRequestMessage(HttpMethod.Delete,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
-                using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-                }
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
         }
 
@@ -148,16 +142,15 @@ namespace Pimix.Service {
                             "application/json");
                     }
 
-                    using (var response = PimixServiceRestClient.Client.SendAsync(request).Result) {
-                        var result = response.GetObject<RestActionResult<TResponse>>();
-                        if (result.Status == RestActionStatus.OK) {
-                            return result.Response;
-                        }
-
-                        throw new RestActionFailedException {
-                            Result = result
-                        };
+                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                    var result = response.GetObject<RestActionResult<TResponse>>();
+                    if (result.Status == RestActionStatus.OK) {
+                        return result.Response;
                     }
+
+                    throw new RestActionFailedException {
+                        Result = result
+                    };
                 },
                 (ex, i) => HandleException(ex, i,
                     $"Failure in CALL {modelId}({id}).{action}({id})"));

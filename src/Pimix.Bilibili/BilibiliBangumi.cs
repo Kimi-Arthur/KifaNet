@@ -7,8 +7,7 @@ namespace Pimix.Bilibili {
 
         static PimixServiceClient<BilibiliBangumi> client;
 
-        public static PimixServiceClient<BilibiliBangumi> Client => client =
-            client ?? new PimixServiceRestClient<BilibiliBangumi>();
+        public static PimixServiceClient<BilibiliBangumi> Client => client ??= new PimixServiceRestClient<BilibiliBangumi>();
 
         public string Name { get; set; }
         public List<string> Aids { get; set; }

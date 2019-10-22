@@ -30,12 +30,11 @@ namespace Pimix {
             // Wrongly encoding name handling.
             encodingName = EncodingNameFixes.GetValueOrDefault(encodingName, encodingName);
 
-            using (var sr = new StreamReader(resp.GetResponseStream(),
-                Encoding.GetEncoding(encodingName))) {
-                var data = sr.ReadToEnd();
-                logger.Trace("Response ({0:D}): {1}", resp.StatusCode, data);
-                return data;
-            }
+            using var sr = new StreamReader(resp.GetResponseStream(),
+                Encoding.GetEncoding(encodingName));
+            var data = sr.ReadToEnd();
+            logger.Trace("Response ({0:D}): {1}", resp.StatusCode, data);
+            return data;
         }
 
         public static JToken GetJToken(this WebResponse response)
@@ -48,12 +47,11 @@ namespace Pimix {
             => response.GetObject<Dictionary<string, object>>();
 
         public static string GetString(this HttpResponseMessage response) {
-            using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
-                Encoding.GetEncoding("UTF-8"))) {
-                var data = sr.ReadToEnd();
-                logger.Trace("Response ({0:D}): {1}", response.StatusCode, data);
-                return data;
-            }
+            using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
+                Encoding.GetEncoding("UTF-8"));
+            var data = sr.ReadToEnd();
+            logger.Trace("Response ({0:D}): {1}", response.StatusCode, data);
+            return data;
         }
 
         public static JToken GetJToken(this HttpResponseMessage response)

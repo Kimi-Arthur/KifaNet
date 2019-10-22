@@ -32,7 +32,7 @@ namespace Pimix.Service {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public HttpRequestMessage GetRequest(Dictionary<string, string> parameters = null) {
-            parameters = parameters ?? new Dictionary<string, string>();
+            parameters ??= new Dictionary<string, string>();
             var address = Url.Format(parameters);
 
             logger.Trace($"{Method} {address}");

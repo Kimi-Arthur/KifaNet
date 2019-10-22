@@ -78,7 +78,7 @@ namespace Pimix.Apps {
                 ? choices.Select(c => c.ToString()).ToList()
                 : choices.Select(choiceToString).ToList();
 
-            choiceName = choiceName ?? "items";
+            choiceName ??= "items";
 
             for (var i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i + 1}] {choiceStrings[i]}");
@@ -96,7 +96,7 @@ namespace Pimix.Apps {
                 ? choices.Select(c => c.ToString()).ToList()
                 : choices.Select(choiceToString).ToList();
 
-            choiceName = choiceName ?? "items";
+            choiceName ??= "items";
 
             for (var i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choiceStrings[i]}");

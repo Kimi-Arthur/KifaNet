@@ -340,29 +340,28 @@ namespace CG.Web.MegaApiClient {
                 var chunkSize = (int) (nextChunkPosition - currentChunkPosition);
                 var chunkBuffer = new byte[chunkSize];
                 stream.Read(chunkBuffer, 0, chunkSize);
-                using (var chunkStream = new MemoryStream(chunkBuffer)) {
-                    var remainingRetry = ApiRequestAttempts;
-                    string result = null;
-                    UploadException lastException = null;
-                    while (remainingRetry-- > 0) {
-                        var uri = new Uri(uploadResponse.Url + "/" + chunksPositions[i]);
-                        result = webClient.PostRequestRaw(uri, chunkStream);
-                        if (result.StartsWith("-")) {
-                            lastException = new UploadException(result);
-                            Thread.Sleep(ApiRequestDelay);
-                            continue;
-                        }
-
-                        lastException = null;
-                        break;
+                using var chunkStream = new MemoryStream(chunkBuffer);
+                var remainingRetry = ApiRequestAttempts;
+                string result = null;
+                UploadException lastException = null;
+                while (remainingRetry-- > 0) {
+                    var uri = new Uri(uploadResponse.Url + "/" + chunksPositions[i]);
+                    result = webClient.PostRequestRaw(uri, chunkStream);
+                    if (result.StartsWith("-")) {
+                        lastException = new UploadException(result);
+                        Thread.Sleep(ApiRequestDelay);
+                        continue;
                     }
 
-                    if (lastException != null) {
-                        throw lastException;
-                    }
-
-                    completionHandle = result;
+                    lastException = null;
+                    break;
                 }
+
+                if (lastException != null) {
+                    throw lastException;
+                }
+
+                completionHandle = result;
             }
 
             // Encrypt attributes
@@ -500,8 +499,9 @@ namespace CG.Web.MegaApiClient {
                 break;
             }
 
-            var settings = new JsonSerializerSettings();
-            settings.Context = new StreamingContext(StreamingContextStates.All, context);
+            var settings = new JsonSerializerSettings {
+                Context = new StreamingContext(StreamingContextStates.All, context)
+            };
 
             var data = ((JArray) jsonData)[0].ToString();
             return typeof(TResponse) == typeof(string)
@@ -523,9 +523,8 @@ namespace CG.Web.MegaApiClient {
         }
 
         void SaveStream(Stream stream, string outputFile) {
-            using (var fs = new FileStream(outputFile, FileMode.CreateNew, FileAccess.Write)) {
-                stream.CopyTo(fs, BufferSize);
-            }
+            using var fs = new FileStream(outputFile, FileMode.CreateNew, FileAccess.Write);
+            stream.CopyTo(fs, BufferSize);
         }
 
         #endregion
@@ -545,8 +544,9 @@ namespace CG.Web.MegaApiClient {
         }
 
         long[] GetChunksPositions(long size) {
-            var chunks = new List<long>();
-            chunks.Add(0);
+            var chunks = new List<long> {
+                0
+            };
 
             long chunkStartPosition = 0;
             for (var idx = 1; idx <= 8 && chunkStartPosition < size - idx * 131072; idx++) {

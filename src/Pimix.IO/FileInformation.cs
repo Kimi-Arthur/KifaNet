@@ -30,8 +30,7 @@ namespace Pimix.IO {
             }
         }
 
-        public static FileInformationServiceClient Client => client =
-            client ?? new FileInformationRestServiceClient();
+        public static FileInformationServiceClient Client => client ??= new FileInformationRestServiceClient();
 
         public long? Size { get; set; }
 
@@ -163,13 +162,13 @@ namespace Pimix.IO {
                     hasher?.TransformFinalBlock(buffer, 0, 0);
                 }
 
-                Md5 = Md5 ?? hashers[0]?.Hash.ToHexString();
-                Sha1 = Sha1 ?? hashers[1]?.Hash.ToHexString();
-                Sha256 = Sha256 ?? hashers[2]?.Hash.ToHexString();
-                Crc32 = Crc32 ?? additionalHashers[0]?.TransformFinal().GetBytes().Reverse()
-                            .ToArray().ToHexString();
-                Adler32 = Adler32 ?? additionalHashers[1]?.TransformFinal().GetBytes().Reverse()
-                              .ToArray().ToHexString();
+                Md5 ??= hashers[0]?.Hash.ToHexString();
+                Sha1 ??= hashers[1]?.Hash.ToHexString();
+                Sha256 ??= hashers[2]?.Hash.ToHexString();
+                Crc32 ??= additionalHashers[0]?.TransformFinal().GetBytes().Reverse()
+                    .ToArray().ToHexString();
+                Adler32 ??= additionalHashers[1]?.TransformFinal().GetBytes().Reverse()
+                    .ToArray().ToHexString();
             }
 
             if (requiredProperties.HasFlag(FileProperties.EncryptionKey)) {
@@ -232,10 +231,10 @@ namespace Pimix.IO {
             => GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
 
         static string GenerateEncryptionKey() {
-            using (var aes = new AesCryptoServiceProvider()) {
-                aes.KeySize = 256;
-                return aes.Key.ToHexString();
-            }
+            using var aes = new AesCryptoServiceProvider {
+                KeySize = 256
+            };
+            return aes.Key.ToHexString();
         }
     }
 

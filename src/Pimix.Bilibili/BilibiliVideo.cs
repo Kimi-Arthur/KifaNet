@@ -41,8 +41,7 @@ namespace Pimix.Bilibili {
         PartModeType partMode;
 
         public static PimixServiceClient<BilibiliVideo> Client
-            => client =
-                client ?? new PimixServiceRestClient<BilibiliVideo>();
+            => client ??= new PimixServiceRestClient<BilibiliVideo>();
 
         public static string BiliplusCookies { get; set; }
         public static int DefaultBiliplusSourceChoice { get; set; }
@@ -175,13 +174,12 @@ namespace Pimix.Bilibili {
 
                                 request.Headers.Range =
                                     new RangeHeaderValue(offset, offset + count - 1);
-                                using (var response = biliplusClient.SendAsync(request).Result) {
-                                    var memoryStream =
-                                        new MemoryStream(buffer, bufferOffset, count, true);
-                                    response.Content.ReadAsStreamAsync().Result
-                                        .CopyTo(memoryStream, count);
-                                    return (int) memoryStream.Position;
-                                }
+                                using var response = biliplusClient.SendAsync(request).Result;
+                                var memoryStream =
+                                    new MemoryStream(buffer, bufferOffset, count, true);
+                                response.Content.ReadAsStreamAsync().Result
+                                    .CopyTo(memoryStream, count);
+                                return (int) memoryStream.Position;
                             }, (ex, i) => {
                                 if (i >= 5) {
                                     throw ex;
@@ -205,69 +203,64 @@ namespace Pimix.Bilibili {
         }
 
         static void AddDownloadJob(string aid) {
-            using (var response = biliplusClient
+            using var response = biliplusClient
                 .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
-                .Result) {
-                var content = response.GetString();
-                logger.Debug($"Add download request result: {content}");
-            }
+                .Result;
+            var content = response.GetString();
+            logger.Debug($"Add download request result: {content}");
         }
 
         static void UpdateDownloadStatus(string cid) {
-            using (var response = biliplusClient
+            using var response = biliplusClient
                 .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}")
-                .Result) {
-                var content = response.GetString();
-                logger.Debug($"Check saver status: {content}");
-            }
+                .Result;
+            var content = response.GetString();
+            logger.Debug($"Check saver status: {content}");
         }
 
         static DownloadStatus GetDownloadStatus(string aid, int pid) {
-            using (var response = biliplusClient
+            using var response = biliplusClient
                 .GetAsync(
                     $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
-                .Result) {
-                var content = response.GetString();
-                logger.Debug($"Get download result: {content}");
-                var storage = JToken.Parse(content)["storage"];
-                var access = (int) storage["access"];
-                switch (access) {
-                    case 0:
-                        return DownloadStatus.NoAccess;
-                    case 1 when (bool) storage["inProgress"]:
-                        return DownloadStatus.InProgress;
-                    case 1 when (bool) storage["canAdd"]:
-                        return DownloadStatus.CanAdd;
-                    case 2:
-                        return DownloadStatus.Done;
-                    default:
-                        throw new Exception("Unexpected download status");
-                }
+                .Result;
+            var content = response.GetString();
+            logger.Debug($"Get download result: {content}");
+            var storage = JToken.Parse(content)["storage"];
+            var access = (int) storage["access"];
+            switch (access) {
+                case 0:
+                    return DownloadStatus.NoAccess;
+                case 1 when (bool) storage["inProgress"]:
+                    return DownloadStatus.InProgress;
+                case 1 when (bool) storage["canAdd"]:
+                    return DownloadStatus.CanAdd;
+                case 2:
+                    return DownloadStatus.Done;
+                default:
+                    throw new Exception("Unexpected download status");
             }
         }
 
         static string GetDownloadPage(string cid) {
-            using (var response = biliplusClient
+            using var response = biliplusClient
                 .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4")
-                .Result) {
-                var content = response.GetString();
-                logger.Debug($"Downloaded page content: {content}");
+                .Result;
+            var content = response.GetString();
+            logger.Debug($"Downloaded page content: {content}");
 
-                return content;
-            }
+            return content;
         }
 
         public static string GetAid(string cid) {
-            using (var response = biliplusClient
+            using var response = biliplusClient
                 .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}")
-                .Result) {
-                var content = response.GetString();
-                logger.Debug($"Cid info: {content}");
+                .Result;
+            var content = response.GetString();
+            logger.Debug($"Cid info: {content}");
 
-                var data = JToken.Parse(content)["data"];
+            var data = JToken.Parse(content)["data"];
 
-                return $"av{data["aid"]}p{data["page"]}";
-            }
+            return $"av{data["aid"]}p{data["page"]}";
         }
     }
 }

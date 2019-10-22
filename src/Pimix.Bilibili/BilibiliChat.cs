@@ -30,11 +30,10 @@ namespace Pimix.Bilibili {
         public XmlDocument RawDocument {
             get {
                 if (rawDocument == null) {
-                    using (var s = client.GetAsync($"http://comment.bilibili.com/{Cid}.xml")
-                        .Result) {
-                        var content = string.Concat(s.Content.ReadAsStringAsync().Result.Where(XmlConvert.IsXmlChar));
-                        Load(new MemoryStream(Encoding.UTF8.GetBytes(content)));
-                    }
+                    using var s = client.GetAsync($"http://comment.bilibili.com/{Cid}.xml")
+                        .Result;
+                    var content = string.Concat(s.Content.ReadAsStringAsync().Result.Where(XmlConvert.IsXmlChar));
+                    Load(new MemoryStream(Encoding.UTF8.GetBytes(content)));
                 }
 
                 return rawDocument;

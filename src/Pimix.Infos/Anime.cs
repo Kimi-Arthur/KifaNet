@@ -8,8 +8,7 @@ namespace Pimix.Infos {
 
         static PimixServiceClient<Anime> client;
 
-        public static PimixServiceClient<Anime> Client => client =
-            client ?? new PimixServiceRestClient<Anime>();
+        public static PimixServiceClient<Anime> Client => client ??= new PimixServiceRestClient<Anime>();
 
         public string Title { get; set; }
         public Date AirDate { get; set; }

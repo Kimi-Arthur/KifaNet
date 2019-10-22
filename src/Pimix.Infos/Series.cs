@@ -59,7 +59,7 @@ namespace Pimix.Infos {
                 return title;
             }
 
-            language = language ?? Language.English;
+            language ??= Language.English;
 
             title = BasePatterns.Aggregate(title,
                 (current, pattern) => pattern.pattern.Replace(current, pattern.replacer));

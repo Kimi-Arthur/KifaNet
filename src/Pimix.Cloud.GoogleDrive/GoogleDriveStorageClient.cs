@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using NLog;
 using Pimix.IO;
@@ -42,7 +41,7 @@ namespace Pimix.Cloud.GoogleDrive {
             }
         }
 
-        public AccountInfo Account => account = account ?? Config.Accounts[accountId];
+        public AccountInfo Account => account ??= Config.Accounts[accountId];
 
         public override string ToString() => $"google:{AccountId}";
 
@@ -60,21 +59,20 @@ namespace Pimix.Cloud.GoogleDrive {
                     ["page_token"] = pageToken
                 });
 
-                using (var response = client.SendAsync(request).Result) {
-                    if (!response.IsSuccessStatusCode) {
-                        throw new Exception(
-                            $"List Files is not successful ({response.ReasonPhrase}):\n{response.GetString()}");
-                    }
+                using var response = client.SendAsync(request).Result;
+                if (!response.IsSuccessStatusCode) {
+                    throw new Exception(
+                        $"List Files is not successful ({response.ReasonPhrase}):\n{response.GetString()}");
+                }
 
-                    var token = response.GetJToken();
-                    pageToken = token.Value<string>("nextPageToken");
+                var token = response.GetJToken();
+                pageToken = token.Value<string>("nextPageToken");
 
-                    foreach (var fileToken in token["files"]) {
-                        yield return new FileInformation {
-                            Id = $"{path}/{(string) fileToken["name"]}",
-                            Size = long.Parse((string) fileToken["size"])
-                        };
-                    }
+                foreach (var fileToken in token["files"]) {
+                    yield return new FileInformation {
+                        Id = $"{path}/{(string) fileToken["name"]}",
+                        Size = long.Parse((string) fileToken["size"])
+                    };
                 }
             }
         }
@@ -89,10 +87,9 @@ namespace Pimix.Cloud.GoogleDrive {
                         ["file_id"] = fileId
                     });
 
-                using (var response = client.SendAsync(request).Result) {
-                    if (!response.IsSuccessStatusCode) {
-                        throw new Exception("Delete is not successful.");
-                    }
+                using var response = client.SendAsync(request).Result;
+                if (!response.IsSuccessStatusCode) {
+                    throw new Exception("Delete is not successful.");
                 }
             }
         }
@@ -188,11 +185,10 @@ namespace Pimix.Cloud.GoogleDrive {
             });
 
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            using (var response = client.SendAsync(request).Result) {
-                var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                return (int) memoryStream.Position;
-            }
+            using var response = client.SendAsync(request).Result;
+            var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+            response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+            return (int) memoryStream.Position;
         }
 
         long GetFileSize(string fileId) {
@@ -204,10 +200,9 @@ namespace Pimix.Cloud.GoogleDrive {
                 ["file_id"] = fileId
             });
 
-            using (var response = client.SendAsync(request).Result) {
-                var token = response.GetJToken();
-                return long.Parse((string) token["size"]);
-            }
+            using var response = client.SendAsync(request).Result;
+            var token = response.GetJToken();
+            return long.Parse((string) token["size"]);
         }
 
         string GetFileId(string path, bool createParents = false) {
@@ -218,22 +213,21 @@ namespace Pimix.Cloud.GoogleDrive {
                     ["parent_id"] = fileId
                 });
 
-                using (var response = client.SendAsync(request).Result) {
-                    var files = response.GetJToken()["files"];
-                    if (files == null) {
-                        return null;
-                    }
+                using var response = client.SendAsync(request).Result;
+                var files = response.GetJToken()["files"];
+                if (files == null) {
+                    return null;
+                }
 
-                    if (files.Any()) {
-                        fileId = (string) files[0]["id"];
-                        continue;
-                    }
+                if (files.Any()) {
+                    fileId = (string) files[0]["id"];
+                    continue;
+                }
 
-                    if (createParents) {
-                        fileId = CreateFolder(fileId, segment);
-                    } else {
-                        return null;
-                    }
+                if (createParents) {
+                    fileId = CreateFolder(fileId, segment);
+                } else {
+                    return null;
                 }
             }
 
@@ -246,10 +240,9 @@ namespace Pimix.Cloud.GoogleDrive {
                 ["name"] = name
             });
 
-            using (var response = client.SendAsync(request).Result) {
-                var token = response.GetJToken();
-                return (string) token["id"];
-            }
+            using var response = client.SendAsync(request).Result;
+            var token = response.GetJToken();
+            return (string) token["id"];
         }
 
         void RefreshAccount() {
@@ -273,7 +266,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
         HttpRequestMessage GetRequest(API api, Dictionary<string, string> parameters = null,
             bool needAccessToken = true) {
-            parameters = parameters ?? new Dictionary<string, string>();
+            parameters ??= new Dictionary<string, string>();
             if (needAccessToken) {
                 RefreshAccount();
                 parameters["access_token"] = Account.AccessToken;

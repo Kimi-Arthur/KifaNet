@@ -18,10 +18,9 @@ namespace PimixTest.Cloud.BaiduCloud {
 
         [TestMethod]
         public void GetConfigFromLocalTest() {
-            using (var sr = new StreamReader("LocalConfig.json")) {
-                var config = JsonConvert.DeserializeObject<BaiduCloudConfig>(sr.ReadToEnd());
-                Assert.IsTrue(config.Accounts.Count > 0);
-            }
+            using var sr = new StreamReader("LocalConfig.json");
+            var config = JsonConvert.DeserializeObject<BaiduCloudConfig>(sr.ReadToEnd());
+            Assert.IsTrue(config.Accounts.Count > 0);
         }
     }
 }

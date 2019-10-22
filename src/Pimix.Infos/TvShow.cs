@@ -11,7 +11,7 @@ namespace Pimix.Infos {
         static TvShowServiceClient client;
 
         public static TvShowServiceClient Client
-            => client = client ?? new TvShowRestServiceClient();
+            => client ??= new TvShowRestServiceClient();
 
         public string Title { get; set; }
         public Date AirDate { get; set; }

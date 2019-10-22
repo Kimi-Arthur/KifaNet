@@ -30,14 +30,13 @@ namespace PimixTest.Cloud.GoogleDrive {
         public void DownloadTest() {
             var client = GetStorageClient();
 
-            using (var s = client.OpenRead("/Test/2010-11-25.bin")) {
-                Assert.Equal(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            using var s = client.OpenRead("/Test/2010-11-25.bin");
+            Assert.Equal(FileSHA256,
+                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
 
-                // Test again for seekness.
-                Assert.Equal(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
-            }
+            // Test again for seekness.
+            Assert.Equal(FileSHA256,
+                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
         [Fact]

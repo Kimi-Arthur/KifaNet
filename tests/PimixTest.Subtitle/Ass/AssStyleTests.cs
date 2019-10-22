@@ -70,8 +70,9 @@ namespace PimixTest.Subtitle.Ass {
 
         [Fact]
         public void ValidNameTest() {
-            var style = new AssStyle();
-            style.Name = "staff";
+            var style = new AssStyle {
+                Name = "staff"
+            };
             Assert.Equal("staff", style.Name);
             style.Name = "Default";
             Assert.Equal("Default", style.Name);
