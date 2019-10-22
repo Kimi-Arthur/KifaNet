@@ -33,6 +33,7 @@ namespace Pimix.Infos {
         public override void Fill() {
             var tmdb = new TmdbClient();
             var series = tmdb.GetSeries(TmdbId, Language.Code);
+            Title ??= Id;
             AirDate = series.FirstAirDate;
             TvNetwork = series.Networks[0].Name;
             Region = series.Networks[0].OriginCountry;
