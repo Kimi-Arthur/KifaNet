@@ -14,8 +14,8 @@
     <Authors>KimiArthur</Authors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.4.3" />
-    <PackageReference Include="NLog.Schema" Version="4.5.10" />
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+    <PackageReference Include="NLog.Schema" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
@@ -28,6 +28,6 @@
     <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\Pimix.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\Pimix.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

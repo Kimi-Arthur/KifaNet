@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.4.3"/>
-    <PackageReference Include="MongoDB.Driver" Version="2.7.0"/>
+    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.9.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj"/>
+    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
   </ItemGroup>
 </Project>
