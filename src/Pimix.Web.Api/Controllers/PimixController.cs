@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
@@ -15,8 +16,7 @@ namespace Pimix.Web.Api.Controllers {
         public ActionResult<Dictionary<string, TDataModel>> Get()
             => new Dictionary<string, TDataModel> {
                 ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
-                    Client.Get(
-                        "/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
+                    Client.Get("/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
             };
 
         // GET api/values/5
@@ -24,6 +24,17 @@ namespace Pimix.Web.Api.Controllers {
         public ActionResult<TDataModel> Get(string id) {
             id = Uri.UnescapeDataString(id);
             return Client.Get(id);
+        }
+
+        // PATCH api/values
+        [HttpPatch("{id}")]
+        public void Patch(string id, [FromBody] TDataModel value) {
+            id = Uri.UnescapeDataString(id);
+            var data = Client.Get(id);
+            JsonConvert.PopulateObject(JsonConvert.SerializeObject(value, Defaults.JsonSerializerSettings), data,
+                Defaults.JsonSerializerSettings);
+            value.Fill();
+            Client.Set(value);
         }
 
         // POST api/values
