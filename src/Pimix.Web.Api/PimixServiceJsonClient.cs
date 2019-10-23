@@ -18,7 +18,7 @@ namespace Pimix.Web.Api {
             LoadGroups();
 
             if (Groups.ContainsKey(id)) {
-                var obj = JsonConvert.DeserializeObject<TDataModel>(Read(Groups[id].First().Trim('/')),
+                var obj = JsonConvert.DeserializeObject<TDataModel>(Read(Groups[id].First()),
                     Defaults.JsonSerializerSettings);
                 JsonConvert.PopulateObject(Read(id), obj);
                 return obj;
