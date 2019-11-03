@@ -284,9 +284,11 @@ namespace Pimix.Api.Files {
         }
 
         public void RemoveLocalCacheFile() {
-            logger.Info($"Remove cache file {LocalCacheFile}...");
-            LocalCacheFile.Delete();
-            LocalCacheFile.Unregister();
+            if (UseCache) {
+                logger.Info($"Remove cache file {LocalCacheFile}...");
+                LocalCacheFile.Delete();
+                LocalCacheFile.Unregister();
+            }
         }
 
         public Stream OpenRead()
