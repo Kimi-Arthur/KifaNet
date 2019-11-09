@@ -70,3 +70,9 @@ Updates:
 
 ### 6.0
 - Added `filex trash` to move files to some .Trash folder for cleanness.
+
+### 7.0
+- Upgrade to dotnet core 3.0.
+
+### 8.0
+- Added `filex rm-empty` to recursively remove empty folders in file system.

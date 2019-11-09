@@ -1,3 +1,8 @@
+###
+OPTIONS  http://www.jingbian.tk/api/botw/seeds/
+
+###
+
 GET {{server}}/api/configs/baidu_cloud/default
 Accept: application/x-yaml
 
