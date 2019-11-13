@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Pimix {
     public static class StringExtensions {
-        static Dictionary<string, long> symbolMap;
+        static readonly Regex NumberPattern = new Regex(@"\d+");
 
-        static readonly Dictionary<string, string> characterMapping = new Dictionary<string, string> {
+        static readonly Dictionary<string, long> SymbolMap = "KMGTPEZY".Select(x => x.ToString()).Prepend("")
+            .Select((value, index) => (value, factor: 1L << 10 * index))
+            .ToDictionary(item => item.value, item => item.factor);
+
+        static readonly Dictionary<string, string> CharacterMapping = new Dictionary<string, string> {
             ["/"] = "／",
             ["\\"] = "＼",
             [":"] = "：",
@@ -49,19 +54,10 @@ namespace Pimix {
                 throw new ArgumentNullException(nameof(data));
             }
 
-            if (symbolMap == null) {
-                symbolMap = new Dictionary<string, long>();
-
-                var lastValue = symbolMap[""] = 1;
-                foreach (var item in "KMGTPEZY") {
-                    symbolMap[item.ToString()] = lastValue <<= 10;
-                }
-            }
-
             var match = new Regex(@"^(\d+)([^B])B?$").Match(data.ToUpper());
 
             return long.Parse(match.Groups[1].Value) *
-                   symbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
+                   SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
         }
 
         public static byte[] ParseHexString(this string hexString) {
@@ -97,9 +93,12 @@ namespace Pimix {
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
         }
 
+        public static string GetNaturalSortKey(this string path)
+            => NumberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}");
+
         public static string NormalizeFileName(this string fileName) {
             var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).TrimEnd();
-            foreach (var mapping in characterMapping) {
+            foreach (var mapping in CharacterMapping) {
                 normalizedFileName = normalizedFileName.Replace(mapping.Key, mapping.Value);
             }
 

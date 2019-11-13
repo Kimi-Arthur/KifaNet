@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -10,8 +9,6 @@ using Pimix.IO;
 namespace Pimix.Apps {
     public abstract partial class PimixFileCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        static readonly Regex numberPattern = new Regex(@"\d+");
 
         [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
         public IEnumerable<string> FileNames { get; set; }
@@ -55,9 +52,9 @@ namespace Pimix.Apps {
                     var thisFolder = FileInformation.Client.ListFolder(path, Recursive);
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        fileInfos.AddRange(thisFolder.Select(f => (GetSortKey(f), host + f)));
+                        fileInfos.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), host + f)));
                     } else {
-                        fileInfos.Add((GetSortKey(path), host + path));
+                        fileInfos.Add((path.GetNaturalSortKey(), host + path));
                     }
                 }
 
@@ -78,9 +75,9 @@ namespace Pimix.Apps {
                     var thisFolder = fileInfo.List(Recursive).ToList();
                     if (thisFolder.Count > 0) {
                         multi = true;
-                        files.AddRange(thisFolder.Select(f => (GetSortKey(f.ToString()), f)));
+                        files.AddRange(thisFolder.Select(f => (f.ToString().GetNaturalSortKey(), f)));
                     } else {
-                        files.Add((GetSortKey(fileInfo.ToString()), fileInfo));
+                        files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
                     }
                 }
 
@@ -89,9 +86,6 @@ namespace Pimix.Apps {
                 return ExecuteAllPimixFiles(files.Select(f => f.value).ToList(), multi);
             }
         }
-
-        string GetSortKey(string path)
-            => NaturalSorting ? numberPattern.Replace(path, m => $"{int.Parse(m.Value):D5}") : path;
     }
 
     public abstract partial class PimixFileCommand {
