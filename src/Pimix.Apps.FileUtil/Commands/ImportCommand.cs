@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
+using Pimix.Api.Files;
 using Pimix.Infos;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
-    class ImportCommand : PimixFileCommand {
-        List<(Season season, Episode episode)> episodes;
-        Formattable series;
+    class ImportCommand : PimixCommand {
+        [Value(0, Required = true, HelpText = "Target file(s) to import.")]
+        public IEnumerable<string> FileNames { get; set; }
 
-        public override bool ById => true;
-
-        protected override bool IterateOverLogicalFiles => true;
-
-        protected override bool NaturalSorting => true;
+        [Option('i', "id", HelpText = "Treat input files as logical ids.")]
+        public virtual bool ById { get; set; } = false;
 
         [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1")]
         public string SourceId { get; set; }
@@ -33,35 +32,26 @@ namespace Pimix.Apps.FileUtil.Commands {
                 episodeId = int.Parse(segments[3]);
             }
 
+            List<(Season season, Episode episode)> episodes;
+            Formattable series;
+
             switch (type) {
                 case "tv_shows":
                     var tvShow = TvShow.Client.Get(id);
                     series = tvShow;
-                    episodes = new List<(Season season, Episode episode)>();
-                    foreach (var season in tvShow.Seasons) {
-                        if (seasonId <= 0 || season.Id == seasonId) {
-                            foreach (var episode in season.Episodes) {
-                                if (episodeId <= 0 || episodeId == episode.Id) {
-                                    episodes.Add((season, episode));
-                                }
-                            }
-                        }
-                    }
+                    episodes = tvShow.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
+                        .SelectMany(season => season.Episodes, (season, episode) => (season, episode))
+                        .Where(item => episodeId <= 0 || episodeId == item.episode.Id)
+                        .ToList();
 
                     break;
                 case "animes":
                     var anime = Anime.Client.Get(id);
                     series = anime;
-                    episodes = new List<(Season season, Episode episode)>();
-                    foreach (var season in anime.Seasons) {
-                        if (seasonId <= 0 || season.Id == seasonId) {
-                            foreach (var episode in season.Episodes) {
-                                if (episodeId <= 0 || episodeId == episode.Id) {
-                                    episodes.Add((season, episode));
-                                }
-                            }
-                        }
-                    }
+                    episodes = anime.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
+                        .SelectMany(season => season.Episodes, (season, episode) => ((Season) season, episode))
+                        .Where(item => episodeId <= 0 || episodeId == item.episode.Id)
+                        .ToList();
 
                     break;
                 default:
@@ -69,17 +59,16 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 1;
             }
 
-            return base.Execute();
-        }
-
-        protected override int ExecuteOneFileInformation(string file) {
-            var suffix = file.Substring(file.LastIndexOf('.'));
-            var ((season, episode), index) = SelectOne(episodes,
-                e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
-                "mapping", (null, null));
-            if (index >= 0) {
-                FileInformation.Client.Link(file, series.Format(season, episode) + suffix);
-                episodes.RemoveAt(index);
+            foreach (var file in FileNames.SelectMany(path =>
+                FileInformation.Client.ListFolder(ById ? path : new PimixFile(path).Id, true))) {
+                var suffix = file.Substring(file.LastIndexOf('.'));
+                var ((season, episode), index) = SelectOne(episodes,
+                    e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
+                    "mapping", (null, null));
+                if (index >= 0) {
+                    FileInformation.Client.Link(file, series.Format(season, episode) + suffix);
+                    episodes.RemoveAt(index);
+                }
             }
 
             return 0;
