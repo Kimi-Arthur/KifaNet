@@ -12,8 +12,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true)]
-        public string FileUri { get; set; }
+        [Value(0, Required = true)] public string FileUri { get; set; }
 
         [Option('d', "delete-source", HelpText = "Remove source if upload is successful.")]
         public bool DeleteSource { get; set; } = false;
@@ -50,7 +49,10 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
                 Console.ReadLine();
 
-                return files.Select(f => UploadFile(new PimixFile(f.ToString()))).Max();
+                var results = files.Select(f => (f.ToString(), UploadFile(new PimixFile(f.ToString()), true))).ToList();
+                return results.Select(r => r.Item2)
+                    .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new PimixFile(r.Item1))))
+                    .Max();
             }
 
             if (source.Exists()) {
@@ -61,10 +63,19 @@ namespace Pimix.Apps.FileUtil.Commands {
             return 1;
         }
 
-        int UploadFile(PimixFile source) {
+        int UploadFile(PimixFile source, bool skipRegistered = false) {
             source.UseCache = UseCache;
             // TODO: Better catching.
             try {
+                var destinationLocation =
+                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString(), FormatType.ToString());
+                var destination = new PimixFile(destinationLocation);
+
+                if (skipRegistered && destination.Registered) {
+                    logger.Info("Skipped checking existence of {0} for now...", destination);
+                    return -1;
+                }
+
                 source.Register();
                 logger.Info("Checking source {0}...", source);
                 var sourceCheckResult = source.Add();
@@ -74,10 +85,6 @@ namespace Pimix.Apps.FileUtil.Commands {
                         sourceCheckResult);
                     return 1;
                 }
-
-                var destinationLocation =
-                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString(), FormatType.ToString());
-                var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {
                     destination.Register();
