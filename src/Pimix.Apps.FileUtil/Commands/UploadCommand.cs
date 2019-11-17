@@ -67,15 +67,6 @@ namespace Pimix.Apps.FileUtil.Commands {
             source.UseCache = UseCache;
             // TODO: Better catching.
             try {
-                var destinationLocation =
-                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString(), FormatType.ToString());
-                var destination = new PimixFile(destinationLocation);
-
-                if (skipRegistered && destination.Registered) {
-                    logger.Info("Skipped checking existence of {0} for now...", destination);
-                    return -1;
-                }
-
                 source.Register();
                 logger.Info("Checking source {0}...", source);
                 var sourceCheckResult = source.Add();
@@ -84,6 +75,15 @@ namespace Pimix.Apps.FileUtil.Commands {
                     logger.Error("Source is wrong! The following fields differ: {0}",
                         sourceCheckResult);
                     return 1;
+                }
+
+                var destinationLocation =
+                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString(), FormatType.ToString());
+                var destination = new PimixFile(destinationLocation);
+
+                if (skipRegistered && destination.Registered) {
+                    logger.Info("Skipped checking existence of {0} for now...", destination);
+                    return -1;
                 }
 
                 if (destination.Exists()) {
