@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pimix.Cloud.Swisscom\Pimix.Cloud.Swisscom.csproj" />
+    <ProjectReference Include="..\..\src\Pimix.Configs\Pimix.Configs.csproj" />
   </ItemGroup>
 
 </Project>

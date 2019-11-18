@@ -11,19 +11,13 @@ using Pimix.Service;
 
 namespace Pimix.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {
-        public static API Metadata { get; set; } = new API {
-            Url = "https://storage.prod.mdl.swisscom.ch/metadata?p={file_id}",
-            Method = "GET",
-            Headers = new Dictionary<string, string> {
-                ["Authorization"] = "Bearer {access_token}"
-            }
-        };
+        public static APIList APIList { get; set; }
 
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
         public SwisscomAccount Account { get; set; }
 
         public override long Length(string path) {
-            var request = Metadata.GetRequest(new Dictionary<string, string>
+            var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
                 {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
             using var response = new HttpClient().SendAsync(request).Result;
             return response.GetJToken().Value<long>("Length");
@@ -44,6 +38,11 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         string GetFileId(string path) => $"/Drive{path}".ToBase64();
+    }
+
+    public class APIList {
+        public API GetFileInfo { get; set; }
+        public API DownloadFile { get; set; }
     }
 
     public class SwisscomAccount {
