@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Web;
 using Newtonsoft.Json.Linq;
@@ -16,28 +17,51 @@ namespace Pimix.Cloud.Swisscom {
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
         public SwisscomAccount Account { get; set; }
 
+
+        readonly HttpClient client = new HttpClient();
+
         public override long Length(string path) {
             var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
                 {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
-            using var response = new HttpClient().SendAsync(request).Result;
+            using var response = client.SendAsync(request).Result;
             return response.GetJToken().Value<long>("Length");
         }
 
         public override void Delete(string path) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override void Touch(string path) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        public override Stream OpenRead(string path) => throw new System.NotImplementedException();
+        public override Stream OpenRead(string path) =>
+            new SeekableReadStream(Length(path),
+                (buffer, bufferOffset, offset, count)
+                    => Download(buffer, GetFileId(path), bufferOffset, offset, count));
 
         public override void Write(string path, Stream stream) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
-        string GetFileId(string path) => $"/Drive{path}".ToBase64();
+
+        int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
+            int count = -1) {
+            if (count < 0) {
+                count = buffer.Length - bufferOffset;
+            }
+
+            var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string>
+                {["file_id"] = fileId, ["access_token"] = Account.Token});
+
+            request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+            using var response = client.SendAsync(request).Result;
+            var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+            response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+            return (int) memoryStream.Position;
+        }
+
+        static string GetFileId(string path) => $"/Drive{path}".ToBase64();
     }
 
     public class APIList {
