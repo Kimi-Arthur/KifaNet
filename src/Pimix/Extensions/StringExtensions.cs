@@ -104,5 +104,9 @@ namespace Pimix {
 
             return normalizedFileName;
         }
+
+        public static string FromBase64(this string text) => Encoding.UTF8.GetString(Convert.FromBase64String(text));
+
+        public static string ToBase64(this string text) => Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
     }
 }
