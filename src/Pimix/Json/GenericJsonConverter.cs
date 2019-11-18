@@ -2,23 +2,22 @@ using System;
 using Newtonsoft.Json;
 
 namespace Pimix {
-    public class GenericJsonConverter : JsonConverter {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-            writer.WriteValue((value as JsonSerializable).ToJson());
+    public class GenericJsonConverter : JsonConverter<JsonSerializable> {
+        public override void WriteJson(JsonWriter writer, JsonSerializable value, JsonSerializer serializer) {
+            writer.WriteValue(value.ToJson());
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+        public override JsonSerializable ReadJson(JsonReader reader, Type objectType, JsonSerializable existingValue,
+            bool hasExistingValue,
             JsonSerializer serializer) {
+            existingValue ??= Activator.CreateInstance(objectType) as JsonSerializable;
             if (existingValue == null) {
-                existingValue = Activator.CreateInstance(objectType);
+                return null;
             }
 
-            (existingValue as JsonSerializable).FromJson((string) reader.Value);
+            existingValue.FromJson((string) reader.Value);
             return existingValue;
         }
-
-        public override bool CanConvert(Type objectType)
-            => typeof(JsonSerializable).IsAssignableFrom(objectType);
     }
 
     public interface JsonSerializable {

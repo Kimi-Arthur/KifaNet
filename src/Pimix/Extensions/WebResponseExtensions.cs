@@ -17,7 +17,10 @@ namespace Pimix {
             };
 
         static string GetString(WebResponse response) {
-            var resp = response as HttpWebResponse;
+            if (!(response is HttpWebResponse resp)) {
+                return null;
+            }
+
             var encodingName = resp.ContentEncoding;
             if (string.IsNullOrEmpty(encodingName)) {
                 encodingName = resp.CharacterSet;

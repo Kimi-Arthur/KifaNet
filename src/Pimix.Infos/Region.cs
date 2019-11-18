@@ -49,7 +49,7 @@ namespace Pimix.Infos {
         public override int GetHashCode() => Code.GetHashCode();
 
         public override bool Equals(object obj) =>
-            obj != null && GetType() == obj.GetType() && Code == ((Language) obj).Code;
+            obj != null && GetType() == obj.GetType() && Code == ((Region) obj).Code;
 
         public override string ToString() => Name;
     }

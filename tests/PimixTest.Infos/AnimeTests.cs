@@ -8,7 +8,7 @@ using Xunit;
 namespace PimixTest.Infos {
     public class AnimeTests {
         public AnimeTests() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
+            PimixServiceRestClient.PimixServerApiAddress = "http://www.jingbian.tk/api";
             Client = new PimixServiceRestClient<Anime>();
         }
 

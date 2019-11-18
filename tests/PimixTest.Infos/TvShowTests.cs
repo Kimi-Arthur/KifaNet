@@ -8,7 +8,7 @@ using Xunit;
 namespace PimixTest.Infos {
     public class TvShowTests {
         public TvShowTests() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
+            PimixServiceRestClient.PimixServerApiAddress = "http://www.jingbian.tk/api";
             Client = new PimixServiceRestClient<TvShow>();
         }
 
