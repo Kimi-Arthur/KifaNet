@@ -2,7 +2,8 @@ namespace Pimix.Apps.FileUtil {
     public enum CloudServiceType {
         google,
         baidu,
-        mega
+        mega,
+        swiss
     }
 
     public enum CloudFormatType {
