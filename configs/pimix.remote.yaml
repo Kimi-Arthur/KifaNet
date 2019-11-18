@@ -26,3 +26,7 @@ Pimix.Infos.Tmdb.TmdbClient:
       Method: GET
       Url: https://api.themoviedb.org/3/tv/{sid}?api_key={api_key}&language={lang}
  
+Pimix.Cloud.Swisscom.SwisscomStorageClient.Accounts:
+  ffff:
+    Username: s.0.1.2.3.4.5.6.7.8.9.a.b.c.d.e.f@gmail.com
+    Password: P2019myc

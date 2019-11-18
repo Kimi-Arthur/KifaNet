@@ -5,13 +5,13 @@
 # * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
 # * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
 
-GET https://storage.prod.mdl.swisscom.ch/metadata?p=L0RyaXZlL-eBteesvC0yMjA4OC9pY29uLnBuZw
-Authorization: Bearer eyfL694sQruQqjOJ8L3G8g==
+GET https://storage.prod.mdl.swisscom.ch/metadata?p=L0RyaXZlL-eBteesvC0yMjA4OC_jgIrngbXnrLzvvJpJTkNBUk5BVElPTuOAi-Wumuaho1BWIFtQVjRd5a6a5qGjUFYtYXY0NzQxOTE5MC5jODMyNzkyMzMubXA0
+Authorization: Bearer nfOZ3r7ZSgm7zxZaXScB8g==
 
 ###
 
-GET https://storage.prod.mdl.swisscom.ch/object?p=L0RyaXZlL-eBteesvC0yMjA4OC9pY29uLnBuZw
-Authorization: Bearer eyfL694sQruQqjOJ8L3G8g==
+GET https://storage.prod.mdl.swisscom.ch/object?p=L0RyaXZlL-eBteesvC0yMjA4OC_jgIrngbXnrLzvvJpJTkNBUk5BVElPTuOAi-Wumuaho1BWIFtQVjRd5a6a5qGjUFYtYXY0NzQxOTE5MC5jODMyNzkyMzMubXA0
+Authorization: Bearer 3/aKpWAfRWi+vRc5QpFXjg==
 Range: bytes=1-10
 
 ###
