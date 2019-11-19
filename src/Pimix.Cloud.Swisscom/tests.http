@@ -1,22 +1,22 @@
-# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
-#
-# Following HTTP Request Live Templates are available:
-# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
-# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
-# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+### File info
 
 GET https://storage.prod.mdl.swisscom.ch/metadata?p=L0RyaXZlL1Rlc3QvMjAxMC0xMS0yNS5iaW4=
 Authorization: Bearer 5ssY4QNsTB2Hu8vG5YoR3Q==
 
-###
+### Quota
 
-GET https://storage.prod.mdl.swisscom.ch/object?p=L0RyaXZlL-eBteesvC0yMjA4OC_jgIrngbXnrLzvvJpJTkNBUk5BVElPTuOAi-Wumuaho1BWIFtQVjRd5a6a5qGjUFYtYXY0NzQxOTE5MC5jODMyNzkyMzMubXA0
-Authorization: Bearer 3/aKpWAfRWi+vRc5QpFXjg==
+GET https://storage.prod.mdl.swisscom.ch/usage
+Authorization: Bearer 5ssY4QNsTB2Hu8vG5YoR3Q==
+
+### File content
+
+GET https://storage.prod.mdl.swisscom.ch/object?p=L0RyaXZlL1Rlc3QvMjAxMC0xMS0yNS5iaW4=
+Authorization: Bearer 5ssY4QNsTB2Hu8vG5YoR3Q==
 Range: bytes=1-10
 
 ###
 
-GET https://storage.prod.mdl.swisscom.ch/metadata?p=L0RyaXZlL-eBteesvC0yMjA4OC8
-Authorization: Bearer eyfL694sQruQqjOJ8L3G8g==
+GET https://storage.prod.mdl.swisscom.ch/metadata?p=L0RyaXZlL1Rlc3Qv
+Authorization: Bearer 5ssY4QNsTB2Hu8vG5YoR3Q==
 
 ###

@@ -25,7 +25,7 @@ namespace Pimix.IO.FileFormats {
 
         public static PimixFileFormat Get(string fileUri) {
             if (fileUri.EndsWith(".v2")) {
-                var shardString = fileUri.Substring(0, fileUri.Length - 3).Split('.').Last();
+                var shardString = fileUri[..^3].Split('.').Last();
                 var shardSegments = shardString.Split('-');
                 return new PimixFileV2Format
                     {ShardStart = long.Parse(shardSegments[0]), ShardEnd = long.Parse(shardSegments[1])};
