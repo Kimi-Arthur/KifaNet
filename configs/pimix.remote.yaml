@@ -43,6 +43,12 @@ Pimix.Cloud.Swisscom.SwisscomStorageClient:
       Method: DELETE
       Headers:
         Authorization: Bearer {access_token}
+    MoveFile:
+      Url: https://storage.prod.mdl.swisscom.ch/commands/move
+      Method: PUT
+      Headers:
+        Authorization: Bearer {access_token}
+      Body: '{"Source":"/Drive{from_file_path}","Destination":"/Drive{from_file_path}"}'
   Accounts:
     pt:
       Username: pimixserver@gmail.com

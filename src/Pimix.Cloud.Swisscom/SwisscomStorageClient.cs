@@ -37,11 +37,21 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override void Delete(string path) {
-            var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
+            var request = APIList.DeleteFile.GetRequest(new Dictionary<string, string>
                 {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
             using var response = client.SendAsync(request).Result;
             if (!response.IsSuccessStatusCode) {
                 logger.Debug($"Delete of {path} is not successful, but is ignored.");
+            }
+        }
+
+        public override void Move(string sourcePath, string destinationPath) {
+            var request = APIList.DeleteFile.GetRequest(new Dictionary<string, string> {
+                ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.Token
+            });
+            using var response = client.SendAsync(request).Result;
+            if (!response.IsSuccessStatusCode) {
+                logger.Error($"Copy from {sourcePath} to {destinationPath} failed: {response}");
             }
         }
 
@@ -82,6 +92,7 @@ namespace Pimix.Cloud.Swisscom {
         public API GetFileInfo { get; set; }
         public API DownloadFile { get; set; }
         public API DeleteFile { get; set; }
+        public API MoveFile { get; set; }
     }
 
     public class SwisscomAccount {
