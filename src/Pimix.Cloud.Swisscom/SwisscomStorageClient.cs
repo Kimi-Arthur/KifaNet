@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Web;
 using Newtonsoft.Json.Linq;
+using NLog.Targets;
 using OpenQA.Selenium.Chrome;
 using Pimix.IO;
 using Pimix.Service;
@@ -24,7 +26,11 @@ namespace Pimix.Cloud.Swisscom {
             var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
                 {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
             using var response = client.SendAsync(request).Result;
-            return response.GetJToken().Value<long>("Length");
+            if (response.IsSuccessStatusCode) {
+                return response.GetJToken().Value<long>("Length");
+            }
+
+            return response.StatusCode == HttpStatusCode.NotFound ? 0 : -1;
         }
 
         public override void Delete(string path) {
@@ -73,8 +79,14 @@ namespace Pimix.Cloud.Swisscom {
         public string Username { get; set; }
         public string Password { get; set; }
 
+        string token;
+
         public string Token {
             get {
+                if (token != null) {
+                    return token;
+                }
+
                 var options = new ChromeOptions();
                 options.AddArgument("--headless");
                 using var driver = new ChromeDriver(options) {
@@ -85,7 +97,7 @@ namespace Pimix.Cloud.Swisscom {
                 driver.FindElementById("password").SendKeys(Password);
                 driver.FindElementById("anmelden").Click();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
-                return JToken.Parse(
+                return token = JToken.Parse(
                         HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token").Value))
                     .Value<string>("access_token");
             }

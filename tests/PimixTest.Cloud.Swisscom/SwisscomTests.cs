@@ -27,6 +27,15 @@ namespace PimixTest.Cloud.Swisscom {
         }
 
         [Fact]
+        public void ExistsTest() {
+            var client = GetStorageClient();
+
+            Assert.True(client.Exists("/Test/2010-11-25.bin"));
+            Assert.False(client.Exists("/Test/2015-11-25.bin"));
+            Assert.False(client.Exists("/Test/NoFolder/2015-11-25.bin"));
+        }
+
+        [Fact]
         public void DownloadTest() {
             var client = GetStorageClient();
 
