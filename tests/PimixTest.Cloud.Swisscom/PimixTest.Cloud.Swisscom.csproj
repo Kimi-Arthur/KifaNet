@@ -18,4 +18,10 @@
     <ProjectReference Include="..\..\src\Pimix.Configs\Pimix.Configs.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="data.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

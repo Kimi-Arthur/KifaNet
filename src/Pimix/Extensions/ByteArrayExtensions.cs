@@ -1,6 +1,6 @@
-﻿﻿using System;
+﻿using System;
 
- namespace Pimix {
+namespace Pimix {
     public static class ByteArrayExtensions {
         public static string ToHexString(this byte[] input)
             => BitConverter.ToString(input).Replace("-", "");
@@ -34,5 +34,7 @@
                 }
             }
         }
+
+        public static string ToBase64(this byte[] data) => Convert.ToBase64String(data);
     }
 }

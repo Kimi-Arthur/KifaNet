@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,6 +16,7 @@ using Pimix.Service;
 namespace Pimix.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        const int BlockSize = 8 << 20;
 
         public static APIList APIList { get; set; }
 
@@ -46,12 +48,12 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override void Move(string sourcePath, string destinationPath) {
-            var request = APIList.DeleteFile.GetRequest(new Dictionary<string, string> {
+            var request = APIList.MoveFile.GetRequest(new Dictionary<string, string> {
                 ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.Token
             });
             using var response = client.SendAsync(request).Result;
             if (!response.IsSuccessStatusCode) {
-                logger.Error($"Copy from {sourcePath} to {destinationPath} failed: {response}");
+                logger.Error($"Move from {sourcePath} to {destinationPath} failed: {response}");
             }
         }
 
@@ -65,9 +67,62 @@ namespace Pimix.Cloud.Swisscom {
                     => Download(buffer, GetFileId(path), bufferOffset, offset, count));
 
         public override void Write(string path, Stream stream) {
-            throw new NotImplementedException();
+            var size = stream.Length;
+            var buffer = new byte[BlockSize];
+
+            var uploadId = InitUpload(path, size);
+
+            var blockIds = new List<(string etag, int length)>();
+            for (long position = 0, blockIndex = 0; position < size; position += BlockSize, blockIndex++) {
+                var blockLength = stream.Read(buffer, 0, BlockSize);
+                var targetEndByte = position + blockLength - 1;
+                var content = new ByteArrayContent(buffer, 0, blockLength);
+                content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+                var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
+                    ["access_token"] = Account.Token,
+                    ["upload_id"] = uploadId,
+                    ["block_index"] = blockIndex.ToString(),
+                });
+                uploadRequest.Content = new MultipartFormDataContent {
+                    {
+                        content, "files[]", path.Split("/").Last()
+                    }
+                };
+                uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
+                using var response = client.SendAsync(uploadRequest).Result;
+                blockIds.Add((response.GetJToken().Value<string>("ETag")[1..^1], blockLength));
+            }
+
+            FinishUpload(uploadId, path, blockIds);
         }
 
+        string InitUpload(string path, long length) {
+            var request = APIList.InitUpload.GetRequest(new Dictionary<string, string> {
+                ["file_path"] = path, ["file_length"] = length.ToString(),
+                ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
+                ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), ["access_token"] = Account.Token
+            });
+            using var response = client.SendAsync(request).Result;
+            return response.GetJToken().Value<string>("Identifier");
+        }
+
+        bool FinishUpload(string uploadId, string path, List<(string etag, int length)> blockIds) {
+            var partTemplate = "{\"Index\":{index},\"Length\":{length},\"ETag\":\"\\\"{etag}\\\"\"}";
+            var request = APIList.FinishUpload.GetRequest(new Dictionary<string, string> {
+                ["upload_id"] = uploadId,
+                ["access_token"] = Account.Token,
+                ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
+                ["file_path"] = path,
+                ["parts"] = "[" + string.Join(",", blockIds.Select((item, index) => partTemplate.Format(
+                                new Dictionary<string, string> {
+                                    ["index"] = index.ToString(),
+                                    ["length"] = item.length.ToString(),
+                                    ["etag"] = item.etag
+                                }))) + "]"
+            });
+            using var response = client.SendAsync(request).Result;
+            return response.GetJToken().Value<string>("Path").EndsWith(path);
+        }
 
         int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
             int count = -1) {
@@ -93,6 +148,9 @@ namespace Pimix.Cloud.Swisscom {
         public API DownloadFile { get; set; }
         public API DeleteFile { get; set; }
         public API MoveFile { get; set; }
+        public API InitUpload { get; set; }
+        public API UploadBlock { get; set; }
+        public API FinishUpload { get; set; }
     }
 
     public class SwisscomAccount {

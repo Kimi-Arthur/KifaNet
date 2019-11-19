@@ -48,7 +48,27 @@ Pimix.Cloud.Swisscom.SwisscomStorageClient:
       Method: PUT
       Headers:
         Authorization: Bearer {access_token}
-      Body: '{"Source":"/Drive{from_file_path}","Destination":"/Drive{from_file_path}"}'
+        Content-Type: application/json; charset=UTF-8
+      Data: '{"Source":"/Drive{from_file_path}","Destination":"/Drive{to_file_path}"}'
+    InitUpload:
+      Url: https://storage.prod.mdl.swisscom.ch/lfs
+      Method: POST
+      Headers:
+        Authorization: Bearer {access_token}
+        Content-Type: application/json; charset=UTF-8
+      Data: '{"Id":"{file_guid}","Path":"/Drive{file_path}","Length":{file_length},"CreationTime":"{utc_now}","ModificationTime":"{utc_now}"}'
+    UploadBlock:
+      Url: https://storage.prod.mdl.swisscom.ch/lfs/{upload_id}/{block_index}
+      Method: POST
+      Headers:
+        Authorization: Bearer {access_token}
+    FinishUpload:
+      Url: https://storage.prod.mdl.swisscom.ch/lfs/{upload_id}
+      Method: POST
+      Headers:
+        Authorization: Bearer {access_token}
+        Content-Type: application/json; charset=UTF-8
+      Data: '{"Path":"/Drive{file_path}","ETag":"{etag}","Parts":{parts}}'
   Accounts:
     pt:
       Username: pimixserver@gmail.com
