@@ -38,6 +38,11 @@ Pimix.Cloud.Swisscom.SwisscomStorageClient:
       Method: GET
       Headers:
         Authorization: Bearer {access_token}
+    DeleteFile:
+      Url: https://storage.prod.mdl.swisscom.ch/object?p={file_id}
+      Method: DELETE
+      Headers:
+        Authorization: Bearer {access_token}
   Accounts:
     pt:
       Username: pimixserver@gmail.com

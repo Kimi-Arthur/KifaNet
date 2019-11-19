@@ -7,13 +7,15 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Web;
 using Newtonsoft.Json.Linq;
-using NLog.Targets;
+using NLog;
 using OpenQA.Selenium.Chrome;
 using Pimix.IO;
 using Pimix.Service;
 
 namespace Pimix.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public static APIList APIList { get; set; }
 
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
@@ -30,11 +32,17 @@ namespace Pimix.Cloud.Swisscom {
                 return response.GetJToken().Value<long>("Length");
             }
 
+            logger.Debug($"Get length failed for {path}, status: {response.StatusCode}");
             return response.StatusCode == HttpStatusCode.NotFound ? 0 : -1;
         }
 
         public override void Delete(string path) {
-            throw new NotImplementedException();
+            var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
+                {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
+            using var response = client.SendAsync(request).Result;
+            if (!response.IsSuccessStatusCode) {
+                logger.Debug($"Delete of {path} is not successful, but is ignored.");
+            }
         }
 
         public override void Touch(string path) {
@@ -73,6 +81,7 @@ namespace Pimix.Cloud.Swisscom {
     public class APIList {
         public API GetFileInfo { get; set; }
         public API DownloadFile { get; set; }
+        public API DeleteFile { get; set; }
     }
 
     public class SwisscomAccount {
