@@ -12,7 +12,8 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true)] public string FileUri { get; set; }
+        [Value(0, Required = true)]
+        public string FileUri { get; set; }
 
         [Option('d', "delete-source", HelpText = "Remove source if upload is successful.")]
         public bool DeleteSource { get; set; } = false;
@@ -22,7 +23,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool QuickMode { get; set; } = false;
 
         [Option('s', "service", HelpText =
-            "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega]")]
+            "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega, swiss]")]
         public CloudServiceType ServiceType { get; set; } = CloudServiceType.google;
 
         [Option('f', "format", HelpText =
@@ -77,8 +78,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 1;
                 }
 
-                var destinationLocation =
-                    FileInformation.Client.CreateLocation(source.Id, ServiceType.ToString(), FormatType.ToString());
+                var destinationLocation = source.CreateLocation(ServiceType, FormatType);
                 var destination = new PimixFile(destinationLocation);
 
                 if (skipRegistered && destination.Registered) {

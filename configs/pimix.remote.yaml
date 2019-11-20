@@ -75,6 +75,18 @@ Pimix.Cloud.Swisscom.SwisscomStorageClient:
       Headers:
         Authorization: Bearer {access_token}
   Accounts:
+    p0000:
+      Username: p0123456789abcdef@gmail.com
+      Password: P2019myc
+    p0001:
+      Username: p.0123456789abcdef@gmail.com
+      Password: P2019myc
+    p0002:
+      Username: p0.123456789abcdef@gmail.com
+      Password: P2019myc
+    p0003:
+      Username: p.0.123456789abcdef@gmail.com
+      Password: P2019myc
     pt:
       Username: pimixserver@gmail.com
       Password: Pny3YQzV
@@ -84,3 +96,35 @@ Pimix.Cloud.Swisscom.SwisscomStorageClient:
     sffff:
       Username: s.0.1.2.3.4.5.6.7.8.9.a.b.c.d.e.f@gmail.com
       Password: P2019myc
+    v0000:
+      Username: v0123456789abcdef@gmail.com
+      Password: P2019myc
+    v0001:
+      Username: v.0123456789abcdef@gmail.com
+      Password: P2019myc
+    v0002:
+      Username: v0.123456789abcdef@gmail.com
+      Password: P2019myc
+    v0003:
+      Username: v.0.123456789abcdef@gmail.com
+      Password: P2019myc
+  StorageMappings:
+    - Pattern: /Test
+      Accounts:
+        - pt
+    - Pattern: /Venus
+      Accounts:
+        - v0000
+        - v0001
+        - v0002
+        - v0003
+    - Pattern: /Satan
+      Accounts:
+        - s0000
+        - sffff
+    - Pattern: /
+      Accounts:
+        - p0000
+        - p0001
+        - p0002
+        - p0003

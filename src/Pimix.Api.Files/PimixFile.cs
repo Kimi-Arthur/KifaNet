@@ -10,6 +10,7 @@ using NLog;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Cloud.GoogleDrive;
 using Pimix.Cloud.MegaNz;
+using Pimix.Cloud.Swisscom;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
 using Pimix.Service;
@@ -423,6 +424,8 @@ namespace Pimix.Api.Files {
                     return knownClients[spec] = new MegaNzStorageClient {
                         AccountId = specs[1]
                     };
+                case "swiss":
+                    return knownClients[spec] = new SwisscomStorageClient(specs[1]);
                 case "local":
                     var c = new FileStorageClient {
                         ServerId = specs[1]
@@ -450,5 +453,25 @@ namespace Pimix.Api.Files {
         }
 
         public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;
+
+        public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
+            serviceType switch {
+                CloudServiceType.google => $"google:good/{FileInfo.Sha256}.{formatType}",
+                CloudServiceType.swiss =>
+                $"google:{SwisscomStorageClient.FindAccount(Id, FileInfo.Size.Value)}/{FileInfo.Sha256}.{formatType}",
+                _ => ""
+            };
+    }
+
+    public enum CloudServiceType {
+        google,
+        baidu,
+        mega,
+        swiss
+    }
+
+    public enum CloudFormatType {
+        v1,
+        v2
     }
 }

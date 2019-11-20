@@ -159,7 +159,7 @@ namespace Pimix.Cloud.Swisscom {
             return (total, used, total - used);
         }
 
-        static string FindAccount(string path, long length) {
+        public static string FindAccount(string path, long length) {
             var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
             var accountIndex = accounts
                 .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + 10 << 20);
