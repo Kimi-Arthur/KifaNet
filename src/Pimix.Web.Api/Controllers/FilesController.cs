@@ -64,9 +64,7 @@ namespace Pimix.Web.Api.Controllers {
             throw new NotImplementedException();
         }
 
-        public string CreateLocation(string id, string type = null, string format = null,
-            long? startByte = null,
-            long? endByte = null)
+        public string CreateLocation(string id, string type = null, string format = null)
             => throw new NotImplementedException();
 
         public string GetLocation(string id, List<string> types = null)
