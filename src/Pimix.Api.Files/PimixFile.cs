@@ -455,10 +455,12 @@ namespace Pimix.Api.Files {
         public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;
 
         public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
+            FileInfo.Locations.Keys.FirstOrDefault(l =>
+                new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType}$").Match(l).Success) ??
             serviceType switch {
-                CloudServiceType.google => $"google:good/{FileInfo.Sha256}.{formatType}",
+                CloudServiceType.google => $"google:good/$/{FileInfo.Sha256}.{formatType}",
                 CloudServiceType.swiss =>
-                $"google:{SwisscomStorageClient.FindAccount(Id, FileInfo.Size.Value)}/{FileInfo.Sha256}.{formatType}",
+                $"swiss:{SwisscomStorageClient.FindAccount(FileInfo.Id, FileInfo.Size.Value)}/$/{FileInfo.Sha256}.{formatType}",
                 _ => ""
             };
     }

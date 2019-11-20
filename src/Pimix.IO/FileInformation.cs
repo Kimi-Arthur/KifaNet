@@ -17,7 +17,7 @@ namespace Pimix.IO {
 
         public const int BlockSize = 32 << 20;
         static FileInformationServiceClient client;
-        static readonly Regex idPattern = new Regex(@"^(/(local|baidu|mega|google)/)?[^/]*(/.*?)(\.v1|\.v0)?$");
+        static readonly Regex idPattern = new Regex(@"^[^/]*(/.*?)(\.v\d)?$");
 
         static readonly Dictionary<FileProperties, PropertyInfo> properties;
 
@@ -58,7 +58,7 @@ namespace Pimix.IO {
 
         public static string GetId(string location) {
             var m = idPattern.Match(location);
-            return m.Success ? m.Groups[3].Value : null;
+            return m.Success ? m.Groups[1].Value : null;
         }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {

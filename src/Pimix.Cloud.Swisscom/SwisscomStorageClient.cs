@@ -17,6 +17,7 @@ namespace Pimix.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         const int BlockSize = 8 << 20;
+        const long GraceSize = 10 << 20;
 
         public static APIList APIList { get; set; }
 
@@ -25,13 +26,18 @@ namespace Pimix.Cloud.Swisscom {
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
         public SwisscomAccount Account { get; set; }
 
+        public override string ToString() => $"swiss:{AccountId}";
+
         readonly HttpClient client = new HttpClient();
 
         public SwisscomStorageClient(string accountId = null) {
+            AccountId = accountId;
             if (accountId != null) {
                 Account = Accounts[accountId];
             }
         }
+
+        public string AccountId { get; set; }
 
         public override long Length(string path) {
             var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
@@ -162,7 +168,7 @@ namespace Pimix.Cloud.Swisscom {
         public static string FindAccount(string path, long length) {
             var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
             var accountIndex = accounts
-                .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + 10 << 20);
+                .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + GraceSize);
             accounts.AddRange(accounts.Take(accountIndex + 1));
             accounts.RemoveRange(0, accountIndex + 1);
             return accounts.Last();
@@ -196,7 +202,12 @@ namespace Pimix.Cloud.Swisscom {
 
                 var options = new ChromeOptions();
                 options.AddArgument("--headless");
-                using var driver = new ChromeDriver(options) {
+                options.AddArgument("--log-level=3");
+
+                var service = ChromeDriverService.CreateDefaultService();
+                service.SuppressInitialDiagnosticInformation = true;
+
+                using var driver = new ChromeDriver(service, options) {
                     Url = "https://www.swisscom.ch/en/residential/mycloud/login.html",
                 };
                 driver.FindElementById("username").SendKeys(Username);
