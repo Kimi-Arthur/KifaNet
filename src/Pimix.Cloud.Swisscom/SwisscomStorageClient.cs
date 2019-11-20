@@ -23,7 +23,6 @@ namespace Pimix.Cloud.Swisscom {
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
         public SwisscomAccount Account { get; set; }
 
-
         readonly HttpClient client = new HttpClient();
 
         public override long Length(string path) {
