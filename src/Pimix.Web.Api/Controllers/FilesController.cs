@@ -30,9 +30,8 @@ namespace Pimix.Web.Api.Controllers {
                 contentType = "application/octet-stream";
             }
 
-            return new FileStreamResult(
-                new PimixFile(client.Get(id).Locations.Keys.First(x => x.StartsWith("google")))
-                    .OpenRead(), contentType) {
+            return new FileStreamResult(new PimixFile(client.Get(id).Locations.Keys.First(x => x.StartsWith("google")))
+                .OpenRead(), contentType) {
                 FileDownloadName = id.Substring(id.LastIndexOf('/') + 1),
                 EnableRangeProcessing = true
             };
@@ -41,6 +40,10 @@ namespace Pimix.Web.Api.Controllers {
 
     public class FileInformationJsonServiceClient : PimixServiceJsonClient<FileInformation>,
         FileInformationServiceClient {
+        static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {
+            ["swiss"] = 1 << 30
+        };
+
         public List<string> ListFolder(string folder, bool recursive = false) {
             var prefix = $"{PimixServiceJsonClient.DataFolder}/{modelId}";
             folder = $"{prefix}/{folder.TrimEnd('/')}";
@@ -64,8 +67,23 @@ namespace Pimix.Web.Api.Controllers {
             throw new NotImplementedException();
         }
 
-        public string CreateLocation(string id, string type = null, string format = null)
-            => throw new NotImplementedException();
+        public string CreateLocation(string id, string type = "google", string format = "v1") {
+            var file = Get(id);
+
+            if (file.Size == null || file.Sha256 == null) {
+                // TODO: throw
+                return null;
+            }
+
+            var path = $"/$/{file.Sha256}.{format}";
+
+            return file.Locations.Keys.FirstOrDefault(location =>
+                       location.StartsWith($"{type}:") && location.EndsWith(path)) ?? type switch {
+                       "google" => $"google:good{path}",
+                       "swiss" => $"swiss:s0000{path}",
+                       _ => null
+                   };
+        }
 
         public string GetLocation(string id, List<string> types = null)
             => throw new NotImplementedException();
