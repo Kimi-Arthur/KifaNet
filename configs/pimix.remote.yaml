@@ -69,6 +69,11 @@ Pimix.Cloud.Swisscom.SwisscomStorageClient:
         Authorization: Bearer {access_token}
         Content-Type: application/json; charset=UTF-8
       Data: '{"Path":"/Drive{file_path}","ETag":"{etag}","Parts":{parts}}'
+    Quota:
+      Url: https://storage.prod.mdl.swisscom.ch/usage
+      Method: GET
+      Headers:
+        Authorization: Bearer {access_token}
   Accounts:
     pt:
       Username: pimixserver@gmail.com

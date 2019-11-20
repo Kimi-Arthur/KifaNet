@@ -109,6 +109,15 @@ namespace PimixTest.Cloud.Swisscom {
 
             client.Delete("/Test/2010-11-25.bin_2");
         }
+
+        [Fact]
+        public void QuotaTest() {
+            var client = GetStorageClient();
+
+            var (total, used) = client.GetQuota();
+            Assert.Equal(10737418240, total);
+            Assert.NotEqual(0, used);
+        }
         
         static SwisscomStorageClient GetStorageClient()
             => new SwisscomStorageClient {

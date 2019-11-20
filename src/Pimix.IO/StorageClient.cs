@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Schema;
 
 namespace Pimix.IO {
     public abstract class StorageClient : IDisposable {
@@ -33,5 +34,7 @@ namespace Pimix.IO {
         public abstract Stream OpenRead(string path);
 
         public abstract void Write(string path, Stream stream);
+
+        public virtual (long total, long used) GetQuota() => (0, 0);
     }
 }

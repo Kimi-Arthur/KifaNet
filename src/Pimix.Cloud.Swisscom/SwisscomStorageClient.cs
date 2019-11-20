@@ -139,6 +139,16 @@ namespace Pimix.Cloud.Swisscom {
             return (int) memoryStream.Position;
         }
 
+        public override (long total, long used) GetQuota() {
+            var request = APIList.Quota.GetRequest(new Dictionary<string, string> {
+                ["access_token"] = Account.Token
+            });
+
+            using var response = client.SendAsync(request).Result;
+            var data = response.GetJToken();
+            return (data.Value<long>("StorageLimit"), data.Value<long>("TotalBytes"));
+        }
+
         static string GetFileId(string path) => $"/Drive{path}".ToBase64();
     }
 
@@ -150,6 +160,7 @@ namespace Pimix.Cloud.Swisscom {
         public API InitUpload { get; set; }
         public API UploadBlock { get; set; }
         public API FinishUpload { get; set; }
+        public API Quota { get; set; }
     }
 
     public class SwisscomAccount {
