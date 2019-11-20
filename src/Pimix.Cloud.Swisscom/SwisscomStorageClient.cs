@@ -81,6 +81,10 @@ namespace Pimix.Cloud.Swisscom {
                     => Download(buffer, GetFileId(path), bufferOffset, offset, count));
 
         public override void Write(string path, Stream stream) {
+            if (Exists(path)) {
+                return;
+            }
+
             var size = stream.Length;
             var buffer = new byte[BlockSize];
 
