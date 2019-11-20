@@ -18,7 +18,7 @@ namespace Pimix.Cloud.Swisscom {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         const int BlockSize = 8 << 20;
         const long GraceSize = 10 << 20;
-        const long ShardSize = 1 << 30;
+        public const long ShardSize = 1 << 30;
 
         public static APIList APIList { get; set; }
 
@@ -27,7 +27,9 @@ namespace Pimix.Cloud.Swisscom {
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
         public SwisscomAccount Account { get; set; }
 
-        public override string ToString() => $"swiss:{AccountId}";
+        public override string Type => "swiss";
+
+        public override string Id => AccountId;
 
         readonly HttpClient client = new HttpClient();
 

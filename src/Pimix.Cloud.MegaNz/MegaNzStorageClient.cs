@@ -30,7 +30,10 @@ namespace Pimix.Cloud.MegaNz {
         static MegaNzConfig Config =>
             LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
 
-        public override string ToString() => $"mega:{AccountId}";
+
+        public override string Type => "mega";
+
+        public override string Id => AccountId;
 
         // Comment out as this doesn't work now.
         //public override void Move(string sourcePath, string destinationPath)

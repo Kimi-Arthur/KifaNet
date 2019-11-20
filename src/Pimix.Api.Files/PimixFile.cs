@@ -411,6 +411,15 @@ namespace Pimix.Api.Files {
             }
 
             var specs = spec.Split(':');
+
+            if (specs[1].Contains("+")) {
+                // Sharded client.
+                return knownClients[spec] = new ShardedStorageClient() {
+                    Clients = specs[1].Split("+").Select(s => GetClient($"{specs[0]}:{s}")).ToList(),
+                    ShardSize = SwisscomStorageClient.ShardSize
+                };
+            }
+
             switch (specs[0]) {
                 case "baidu":
                     return knownClients[spec] = new BaiduCloudStorageClient {

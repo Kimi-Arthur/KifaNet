@@ -39,8 +39,6 @@ namespace Pimix.IO {
             => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
                RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-        public override string ToString() => $"local:{ServerId}";
-
         public override void Copy(string sourcePath, string destinationPath,
             bool neverLink = false) {
             Directory.GetParent(GetPath(destinationPath)).Create();
@@ -169,6 +167,10 @@ namespace Pimix.IO {
 
             stream.CopyTo(fs, blockSize);
         }
+
+        public override string Type => "local";
+
+        public override string Id => ServerId;
 
         string GetId(string path) => path.Substring(Server.Prefix.Length).Replace("\\", "/");
 

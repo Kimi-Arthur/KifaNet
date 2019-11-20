@@ -43,7 +43,10 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public AccountInfo Account => account ??= Config.Accounts[accountId];
 
-        public override string ToString() => $"google:{AccountId}";
+
+        public override string Type => "google";
+
+        public override string Id => AccountId;
 
         public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
             var fileId = GetFileId(path);

@@ -8,8 +8,14 @@ namespace Pimix.IO {
         public long ShardSize { get; set; }
         public List<StorageClient> Clients { get; set; }
 
-        public override long Length(string path) =>
-            GetShards(path).Select(shard => shard.client.Length(shard.path)).Sum();
+        public override string Type => "sharded";
+        public override string Id => "";
+        public override string ToString() => $"{Clients.First().Type}:{string.Join("+", Clients.Select(c => c.Id))}";
+
+        public override long Length(string path) {
+            var lengths = GetShards(path).Select(shard => shard.client.Length(shard.path)).ToList();
+            return lengths.Any(l => l == 0) ? 0 : lengths.Sum();
+        }
 
         public override void Delete(string path) {
             foreach (var (client, p, _) in GetShards(path)) {

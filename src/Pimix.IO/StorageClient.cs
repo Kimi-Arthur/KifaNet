@@ -36,5 +36,11 @@ namespace Pimix.IO {
         public abstract void Write(string path, Stream stream);
 
         public virtual (long total, long used, long left) GetQuota() => (0, 0, 0);
+
+        public abstract string Type { get; }
+
+        public abstract string Id { get; }
+
+        public override string ToString() => $"{Type}:{Id}";
     }
 }

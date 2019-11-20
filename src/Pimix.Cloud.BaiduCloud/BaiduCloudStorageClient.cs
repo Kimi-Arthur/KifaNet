@@ -37,7 +37,10 @@ namespace Pimix.Cloud.BaiduCloud {
 
         public AccountInfo Account => Config.Accounts[AccountId];
 
-        public override string ToString() => $"baidu:{AccountId}";
+
+        public override string Type => "baidu";
+
+        public override string Id => AccountId;
 
         int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
             int count = -1) {
@@ -239,8 +242,7 @@ namespace Pimix.Cloud.BaiduCloud {
             using var response = client.SendAsync(request).Result;
             var realPath = (string) response.GetJToken()["path"];
             if (realPath != Config.RemotePathPrefix + path) {
-                throw new Exception(
-                    $"Direct upload may fail: {Config.RemotePathPrefix + path}, real path: {realPath}");
+                throw new Exception($"Direct upload may fail: {Config.RemotePathPrefix + path}, real path: {realPath}");
             }
         }
 
