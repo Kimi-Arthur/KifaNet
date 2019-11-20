@@ -460,7 +460,8 @@ namespace Pimix.Api.Files {
             serviceType switch {
                 CloudServiceType.google => $"google:good/$/{FileInfo.Sha256}.{formatType}",
                 CloudServiceType.swiss =>
-                $"swiss:{SwisscomStorageClient.FindAccount(FileInfo.Id, FileInfo.Size.Value)}/$/{FileInfo.Sha256}.{formatType}",
+                // TODO: Use format specific header size.
+                $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType}",
                 _ => ""
             };
     }

@@ -18,6 +18,7 @@ namespace Pimix.Cloud.Swisscom {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         const int BlockSize = 8 << 20;
         const long GraceSize = 10 << 20;
+        const long ShardSize = 1 << 30;
 
         public static APIList APIList { get; set; }
 
@@ -165,8 +166,17 @@ namespace Pimix.Cloud.Swisscom {
             return (total, used, total - used);
         }
 
-        public static string FindAccount(string path, long length) {
+        public static string FindAccounts(string path, long length) {
             var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
+            var selectedAccounts = new List<string>();
+            for (var i = 0L; i < length; i += ShardSize) {
+                selectedAccounts.Add(FindAccount(accounts, Math.Min(ShardSize, length - i)));
+            }
+
+            return string.Join("+", selectedAccounts);
+        }
+
+        public static string FindAccount(List<string> accounts, long length) {
             var accountIndex = accounts
                 .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + GraceSize);
             accounts.AddRange(accounts.Take(accountIndex + 1));
