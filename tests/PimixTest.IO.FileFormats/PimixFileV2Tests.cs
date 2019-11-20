@@ -37,6 +37,12 @@ namespace PimixTest.IO.FileFormats {
                 FileProperties.Size | FileProperties.Sha256);
             Assert.Equal(fs1.Size, fs2.Size);
             Assert.Equal(fs1.Sha256, fs2.Sha256);
+
+            // Calculate again to test seeking.
+            fs2 = FileInformation.GetInformation(output,
+                FileProperties.Size | FileProperties.Sha256);
+            Assert.Equal(fs1.Size, fs2.Size);
+            Assert.Equal(fs1.Sha256, fs2.Sha256);
         }
     }
 }
