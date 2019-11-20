@@ -80,7 +80,7 @@ namespace Pimix.Api.Files {
 
             Client = GetClient(segments[0]);
 
-            FileFormat = PimixFileV1Format.Get(uri) ??
+            FileFormat = PimixFileV2Format.Get(uri) ?? PimixFileV1Format.Get(uri) ??
                          PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
             UseCache = useCache;
         }
