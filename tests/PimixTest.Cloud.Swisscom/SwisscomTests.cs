@@ -118,7 +118,7 @@ namespace PimixTest.Cloud.Swisscom {
             Assert.Equal(10737418240, total);
             Assert.NotEqual(0, used);
         }
-        
+
         static SwisscomStorageClient GetStorageClient()
             => new SwisscomStorageClient {
                 Account = new SwisscomAccount {
