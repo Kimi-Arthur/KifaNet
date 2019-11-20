@@ -20,10 +20,18 @@ namespace Pimix.Cloud.Swisscom {
 
         public static APIList APIList { get; set; }
 
+        public static List<StorageMapping> StorageMappings { get; set; }
+
         public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
         public SwisscomAccount Account { get; set; }
 
         readonly HttpClient client = new HttpClient();
+
+        public SwisscomStorageClient(string accountId = null) {
+            if (accountId != null) {
+                Account = Accounts[accountId];
+            }
+        }
 
         public override long Length(string path) {
             var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
@@ -139,14 +147,25 @@ namespace Pimix.Cloud.Swisscom {
             return (int) memoryStream.Position;
         }
 
-        public override (long total, long used) GetQuota() {
+        public override (long total, long used, long left) GetQuota() {
             var request = APIList.Quota.GetRequest(new Dictionary<string, string> {
                 ["access_token"] = Account.Token
             });
 
             using var response = client.SendAsync(request).Result;
             var data = response.GetJToken();
-            return (data.Value<long>("StorageLimit"), data.Value<long>("TotalBytes"));
+            var used = data.Value<long>("TotalBytes");
+            var total = data.Value<long>("StorageLimit");
+            return (total, used, total - used);
+        }
+
+        static string FindAccount(string path, long length) {
+            var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
+            var accountIndex = accounts
+                .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + 10 << 20);
+            accounts.AddRange(accounts.Take(accountIndex + 1));
+            accounts.RemoveRange(0, accountIndex + 1);
+            return accounts.Last();
         }
 
         static string GetFileId(string path) => $"/Drive{path}".ToBase64();
@@ -190,5 +209,10 @@ namespace Pimix.Cloud.Swisscom {
                     .Value<string>("access_token");
             }
         }
+    }
+
+    public class StorageMapping {
+        public string Pattern { get; set; }
+        public List<string> Accounts { get; set; }
     }
 }

@@ -35,6 +35,6 @@ namespace Pimix.IO {
 
         public abstract void Write(string path, Stream stream);
 
-        public virtual (long total, long used) GetQuota() => (0, 0);
+        public virtual (long total, long used, long left) GetQuota() => (0, 0, 0);
     }
 }
