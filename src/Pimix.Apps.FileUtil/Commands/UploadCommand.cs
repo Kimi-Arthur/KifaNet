@@ -8,8 +8,6 @@ using Pimix.IO;
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("upload", HelpText = "Upload file to a cloud location.")]
     class UploadCommand : PimixCommand {
-        public static string TempLocation { get; set; }
-
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true)]
