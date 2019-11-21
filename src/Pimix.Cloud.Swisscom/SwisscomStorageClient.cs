@@ -240,24 +240,9 @@ namespace Pimix.Cloud.Swisscom {
             using var driver = new ChromeDriver(service, options);
             return Retry.Run(() => {
                 driver.Navigate().GoToUrl("https://www.swisscom.ch/en/residential/mycloud/login.html");
-
-                Retry.Run(() => { driver.FindElementById("username").SendKeys(Username); }, (ex, i) => {
-                    if (!(ex is NoSuchElementException) || i >= 5) {
-                        throw ex;
-                    }
-
-                    logger.Warn(ex, $"Cannot find element to act on...");
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-                });
+                driver.FindElementById("username").SendKeys(Username);
                 driver.FindElementById("anmelden").Click();
-                Retry.Run(() => { driver.FindElementById("password").SendKeys(Password); }, (ex, i) => {
-                    if (!(ex is NoSuchElementException) || i >= 5) {
-                        throw ex;
-                    }
-
-                    logger.Warn(ex, $"Cannot find element to act on...");
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-                });
+                driver.FindElementById("password").SendKeys(Password);
                 driver.FindElementById("anmelden").Click();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
                 return JToken.Parse(
