@@ -50,7 +50,10 @@ namespace Pimix.Cloud.Swisscom {
                 return response.GetJToken().Value<long>("Length");
             }
 
-            logger.Debug($"Get length failed for {path}, status: {response.StatusCode}");
+            if (response.StatusCode != HttpStatusCode.NotFound) {
+                logger.Debug($"Get length failed for {path}, status: {response.StatusCode}");
+            }
+
             return response.StatusCode == HttpStatusCode.NotFound ? 0 : -1;
         }
 
