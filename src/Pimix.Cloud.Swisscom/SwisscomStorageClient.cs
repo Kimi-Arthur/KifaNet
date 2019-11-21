@@ -9,6 +9,7 @@ using System.Threading;
 using System.Web;
 using Newtonsoft.Json.Linq;
 using NLog;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Pimix.IO;
 using Pimix.Service;
@@ -243,9 +244,23 @@ namespace Pimix.Cloud.Swisscom {
                 using var driver = new ChromeDriver(service, options) {
                     Url = "https://www.swisscom.ch/en/residential/mycloud/login.html",
                 };
-                driver.FindElementById("username").SendKeys(Username);
+                Retry.Run(() => { driver.FindElementById("username").SendKeys(Username); }, (ex, i) => {
+                    if (!(ex is NoSuchElementException) || i >= 5) {
+                        throw ex;
+                    }
+
+                    logger.Warn(ex, $"Cannot find element to act on...");
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                });
                 driver.FindElementById("anmelden").Click();
-                driver.FindElementById("password").SendKeys(Password);
+                Retry.Run(() => { driver.FindElementById("password").SendKeys(Password); }, (ex, i) => {
+                    if (!(ex is NoSuchElementException) || i >= 5) {
+                        throw ex;
+                    }
+
+                    logger.Warn(ex, $"Cannot find element to act on...");
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
+                });
                 driver.FindElementById("anmelden").Click();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
                 return JToken.Parse(
