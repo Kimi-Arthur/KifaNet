@@ -208,17 +208,17 @@ namespace Pimix.Cloud.Swisscom {
     }
 
     public class SwisscomAccount {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public string Username { get; set; }
         public string Password { get; set; }
 
         string token;
 
-        public string Token {
-            get {
-                if (token != null) {
-                    return token;
-                }
+        public string Token => token ??= GetToken();
 
+        string GetToken() {
+            return Retry.Run(() => {
                 var options = new ChromeOptions();
                 options.AddArgument("--headless");
                 options.AddArgument("--log-level=3");
@@ -234,10 +234,17 @@ namespace Pimix.Cloud.Swisscom {
                 driver.FindElementById("password").SendKeys(Password);
                 driver.FindElementById("anmelden").Click();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
-                return token = JToken.Parse(
+                return JToken.Parse(
                         HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token").Value))
                     .Value<string>("access_token");
-            }
+            }, (ex, i) => {
+                if (i >= 5) {
+                    throw ex;
+                }
+
+                logger.Warn(ex, $"Failed to get token for {Username}...");
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+            });
         }
     }
 
