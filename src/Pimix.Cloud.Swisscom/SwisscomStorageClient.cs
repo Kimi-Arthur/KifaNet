@@ -44,9 +44,9 @@ namespace Pimix.Cloud.Swisscom {
         public string AccountId { get; set; }
 
         public override long Length(string path) {
-            var request = APIList.GetFileInfo.GetRequest(new Dictionary<string, string>
-                {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
-            using var response = client.SendAsync(request).Result;
+            using var response = client.SendWithRetry(() => APIList.GetFileInfo.GetRequest(
+                new Dictionary<string, string>
+                    {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
             if (response.IsSuccessStatusCode) {
                 return response.GetJToken().Value<long>("Length");
             }
@@ -59,19 +59,18 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override void Delete(string path) {
-            var request = APIList.DeleteFile.GetRequest(new Dictionary<string, string>
-                {["file_id"] = GetFileId(path), ["access_token"] = Account.Token});
-            using var response = client.SendAsync(request).Result;
+            using var response = client.SendWithRetry(() => APIList.DeleteFile.GetRequest(new Dictionary<string, string>
+                {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
             if (!response.IsSuccessStatusCode) {
                 logger.Debug($"Delete of {path} is not successful, but is ignored.");
             }
         }
 
         public override void Move(string sourcePath, string destinationPath) {
-            var request = APIList.MoveFile.GetRequest(new Dictionary<string, string> {
+            using var response = client.SendWithRetry(() => APIList.MoveFile.GetRequest(new Dictionary<string, string> {
                 ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.Token
-            });
-            using var response = client.SendAsync(request).Result;
+            }));
+
             if (!response.IsSuccessStatusCode) {
                 logger.Error($"Move from {sourcePath} to {destinationPath} failed: {response}");
             }
@@ -121,30 +120,29 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         string InitUpload(string path, long length) {
-            var request = APIList.InitUpload.GetRequest(new Dictionary<string, string> {
+            using var response = client.SendWithRetry(() => APIList.InitUpload.GetRequest(new Dictionary<string, string> {
                 ["file_path"] = path, ["file_length"] = length.ToString(),
                 ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
                 ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), ["access_token"] = Account.Token
-            });
-            using var response = client.SendAsync(request).Result;
+            }));
             return response.GetJToken().Value<string>("Identifier");
         }
 
         bool FinishUpload(string uploadId, string path, List<(string etag, int length)> blockIds) {
             var partTemplate = "{\"Index\":{index},\"Length\":{length},\"ETag\":\"\\\"{etag}\\\"\"}";
-            var request = APIList.FinishUpload.GetRequest(new Dictionary<string, string> {
-                ["upload_id"] = uploadId,
-                ["access_token"] = Account.Token,
-                ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
-                ["file_path"] = path,
-                ["parts"] = "[" + string.Join(",", blockIds.Select((item, index) => partTemplate.Format(
-                                new Dictionary<string, string> {
-                                    ["index"] = index.ToString(),
-                                    ["length"] = item.length.ToString(),
-                                    ["etag"] = item.etag
-                                }))) + "]"
-            });
-            using var response = client.SendAsync(request).Result;
+            using var response = client.SendWithRetry(() => APIList.FinishUpload.GetRequest(
+                new Dictionary<string, string> {
+                    ["upload_id"] = uploadId,
+                    ["access_token"] = Account.Token,
+                    ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
+                    ["file_path"] = path,
+                    ["parts"] = "[" + string.Join(",", blockIds.Select((item, index) => partTemplate.Format(
+                                    new Dictionary<string, string> {
+                                        ["index"] = index.ToString(),
+                                        ["length"] = item.length.ToString(),
+                                        ["etag"] = item.etag
+                                    }))) + "]"
+                }));
             return response.GetJToken().Value<string>("Path").EndsWith(path);
         }
 
@@ -154,22 +152,22 @@ namespace Pimix.Cloud.Swisscom {
                 count = buffer.Length - bufferOffset;
             }
 
-            var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string>
-                {["file_id"] = fileId, ["access_token"] = Account.Token});
+            using var response = client.SendWithRetry(() => {
+                var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string>
+                    {["file_id"] = fileId, ["access_token"] = Account.Token});
 
-            request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            using var response = client.SendAsync(request).Result;
+                request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+                return request;
+            });
             var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
             response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
             return (int) memoryStream.Position;
         }
 
         public override (long total, long used, long left) GetQuota() {
-            var request = APIList.Quota.GetRequest(new Dictionary<string, string> {
+            using var response = client.SendWithRetry(() => APIList.Quota.GetRequest(new Dictionary<string, string> {
                 ["access_token"] = Account.Token
-            });
-
-            using var response = client.SendAsync(request).Result;
+            }));
             var data = response.GetJToken();
             var used = data.Value<long>("TotalBytes");
             var total = data.Value<long>("StorageLimit");
