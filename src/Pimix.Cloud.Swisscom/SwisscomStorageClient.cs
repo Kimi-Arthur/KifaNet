@@ -215,7 +215,21 @@ namespace Pimix.Cloud.Swisscom {
 
         string token;
 
-        public string Token => token ??= GetToken();
+        DateTime lastRefreshed = DateTime.MinValue;
+
+        static readonly TimeSpan RefreshInterval = TimeSpan.FromHours(4);
+
+        public string Token {
+            get {
+                if (DateTime.Now - lastRefreshed > RefreshInterval) {
+                    token = GetToken();
+                    lastRefreshed = DateTime.Now;
+                    logger.Debug($"Account {Username} refreshed.");
+                }
+
+                return token;
+            }
+        }
 
         string GetToken() {
             return Retry.Run(() => {
