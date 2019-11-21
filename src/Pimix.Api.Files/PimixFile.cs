@@ -91,8 +91,6 @@ namespace Pimix.Api.Files {
 
         public static string FullPathIgnorePattern { get; set; } = "$^";
 
-        public static bool PreferBaiduCloud { get; set; }
-
         static Regex SubPathIgnoredFiles
             => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
                 () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
@@ -169,13 +167,31 @@ namespace Pimix.Api.Files {
                             return location.Key;
                         }
 
-                        var score = (PreferBaiduCloud
-                            ? file.Client is BaiduCloudStorageClient
-                            : file.Client is GoogleDriveStorageClient)
-                            ? 8
-                            : 4;
-                        score += file.FileFormat is PimixFileV1Format ? 2 :
-                            file.FileFormat is PimixFileV0Format ? 1 : 0;
+                        var score = 0;
+                        if (file.Client is GoogleDriveStorageClient) {
+                            score = 32;
+                        }
+
+                        if (file.Client is SwisscomStorageClient) {
+                            score = 16;
+                        }
+
+                        if (file.Client is BaiduCloudStorageClient) {
+                            score = 8;
+                        }
+
+                        if (file.FileFormat is PimixFileV2Format) {
+                            score += 4;
+                        }
+
+                        if (file.FileFormat is PimixFileV1Format) {
+                            score += 2;
+                        }
+
+                        if (file.FileFormat is PimixFileV0Format) {
+                            score += 1;
+                        }
+
                         if (score > bestScore) {
                             bestScore = score;
                             candidate = location.Key;

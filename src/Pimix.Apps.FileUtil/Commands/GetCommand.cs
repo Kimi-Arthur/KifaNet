@@ -10,9 +10,6 @@ namespace Pimix.Apps.FileUtil.Commands {
     class GetCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Option('b', "use-baidu-cloud", HelpText = "Prefer baidu cloud storage first.")]
-        public bool? PreferBaiduCloud { get; set; }
-
         [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
         public bool LightweightOnly { get; set; } = false;
 
@@ -65,10 +62,6 @@ namespace Pimix.Apps.FileUtil.Commands {
             if (LightweightOnly) {
                 logger.Warn("Not getting {}, which requires downloading.", file);
                 return 1;
-            }
-
-            if (PreferBaiduCloud.HasValue) {
-                PimixFile.PreferBaiduCloud = PreferBaiduCloud.Value;
             }
 
             var source = new PimixFile(fileInfo: info);
