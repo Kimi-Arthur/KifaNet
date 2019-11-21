@@ -231,17 +231,16 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         string GetToken() {
+            var options = new ChromeOptions();
+            options.AddArgument("--headless");
+            options.AddArgument("--log-level=3");
+
+            var service = ChromeDriverService.CreateDefaultService();
+            service.SuppressInitialDiagnosticInformation = true;
+            using var driver = new ChromeDriver(service, options);
             return Retry.Run(() => {
-                var options = new ChromeOptions();
-                options.AddArgument("--headless");
-                options.AddArgument("--log-level=3");
+                driver.Navigate().GoToUrl("https://www.swisscom.ch/en/residential/mycloud/login.html");
 
-                var service = ChromeDriverService.CreateDefaultService();
-                service.SuppressInitialDiagnosticInformation = true;
-
-                using var driver = new ChromeDriver(service, options) {
-                    Url = "https://www.swisscom.ch/en/residential/mycloud/login.html",
-                };
                 Retry.Run(() => { driver.FindElementById("username").SendKeys(Username); }, (ex, i) => {
                     if (!(ex is NoSuchElementException) || i >= 5) {
                         throw ex;
