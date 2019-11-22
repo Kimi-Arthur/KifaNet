@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Pimix.Service {
     public interface PimixServiceClient<TDataModel> where TDataModel : DataModel {
         TDataModel Get(string id);
-        List<TDataModel> Get(IEnumerable<string> ids);
+        List<TDataModel> Get(List<string> ids);
 
         TDataModel GetOr(string id, Func<string, TDataModel> defaultValue = null);
 
@@ -33,7 +33,7 @@ namespace Pimix.Service {
             }
         }
 
-        public abstract List<TDataModel> Get(IEnumerable<string> ids);
+        public abstract List<TDataModel> Get(List<string> ids);
         public abstract void Set(TDataModel data, string id = null);
         public abstract void Update(TDataModel data, string id = null);
         public abstract void Delete(string id);

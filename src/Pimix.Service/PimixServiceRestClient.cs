@@ -41,8 +41,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(
-                            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -59,8 +58,7 @@ namespace Pimix.Service {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
-                        Content = new StringContent(
-                            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                        Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json")
                     };
@@ -81,18 +79,19 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
         }
 
-        public override List<TDataModel> Get(IEnumerable<string> ids) {
-            return Retry.Run(() => {
-                    var request =
-                        new HttpRequestMessage(HttpMethod.Get,
-                            $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+        public override List<TDataModel> Get(List<string> ids) =>
+            ids.Any()
+                ? Retry.Run(() => {
+                        var request =
+                            new HttpRequestMessage(HttpMethod.Get,
+                                $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
 
-                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                    return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
-                },
-                (ex, i) => HandleException(ex, i,
-                    $"Failure in GET {modelId}({string.Join(", ", ids)})"));
-        }
+                        using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                        return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
+                    },
+                    (ex, i) => HandleException(ex, i,
+                        $"Failure in GET {modelId}({string.Join(", ", ids)})"))
+                : new List<TDataModel>();
 
         public override void Link(string targetId, string linkId) {
             Retry.Run(() => {
@@ -135,8 +134,7 @@ namespace Pimix.Service {
                             parameters["id"] = id;
                         }
 
-                        request.Content = new StringContent(
-                            JsonConvert.SerializeObject(parameters,
+                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters,
                                 Defaults.JsonSerializerSettings),
                             Encoding.UTF8,
                             "application/json");

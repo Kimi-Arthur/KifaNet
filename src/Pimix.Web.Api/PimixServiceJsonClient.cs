@@ -28,7 +28,7 @@ namespace Pimix.Web.Api {
                 Defaults.JsonSerializerSettings);
         }
 
-        public override List<TDataModel> Get(IEnumerable<string> ids) => ids.Select(Get).ToList();
+        public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
 
         public override void Set(TDataModel data, string id = null) {
             id ??= data.Id;
