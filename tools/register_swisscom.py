@@ -37,7 +37,7 @@ def register(email):
             break
         time.sleep(1)
     driver.find_element_by_tag_name('button').click()
-    input('finish?')
+    input(f'{email} done.')
     driver.quit()
 
 
