@@ -130,6 +130,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     file.Delete();
                     logger.Info($"File {file} deleted.");
                 } else {
+                    file.Delete();
                     logger.Warn($"File {file} not found.");
                 }
             }
