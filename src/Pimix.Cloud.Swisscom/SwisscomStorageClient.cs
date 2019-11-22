@@ -187,6 +187,10 @@ namespace Pimix.Cloud.Swisscom {
         public static string FindAccount(List<string> accounts, long length) {
             var accountIndex = accounts
                 .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + GraceSize);
+            if (accountIndex < 0) {
+                throw new InsufficientStorageException();
+            }
+
             accounts.AddRange(accounts.Take(accountIndex + 1));
             accounts.RemoveRange(0, accountIndex + 1);
             return accounts.Last();
