@@ -28,6 +28,7 @@ def register(email):
     driver.find_element_by_id('submitButton').click()
     retry(lambda: driver.find_element_by_id('password').send_keys('P2019myc'))
     driver.find_element_by_id('repeat-password').send_keys('P2019myc')
+    driver.find_element_by_id('captcha-input-field').click()
     retry(lambda: driver.find_element_by_id('confirmation-btn').click())
     while True:
         boxes = driver.find_elements_by_css_selector('label[for]')
