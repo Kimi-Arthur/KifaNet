@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Pimix.Cloud.Swisscom;
 using Pimix.Configs;
@@ -118,6 +120,22 @@ namespace PimixTest.Cloud.Swisscom {
             Assert.Equal(10737418240, total);
             Assert.NotEqual(0, used);
             Assert.Equal(total - used, left);
+        }
+
+        [Fact]
+        public void FindAccountTest() {
+            var validAccounts = new List<(string, long)>();
+            var invalidAccounts = new List<(string, long)>();
+            foreach (var account in SwisscomStorageClient.Accounts.Keys) {
+                var quota = new SwisscomStorageClient(account).GetQuota();
+                if (quota.left < 20 << 20) {
+                    invalidAccounts.Add((account, quota.left));
+                } else {
+                    validAccounts.Add((account, quota.left));
+                }
+            }
+            
+            Assert.Empty(invalidAccounts);
         }
 
         static SwisscomStorageClient GetStorageClient()
