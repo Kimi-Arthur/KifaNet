@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from selenium import webdriver
+import multiprocessing
 import time
 import sys
 
@@ -8,8 +9,8 @@ import sys
 def retry(x):
     while True:
         try:
-            x()
-            break
+            if x() != False:
+                break
         except:
             time.sleep(1)
 
@@ -38,10 +39,10 @@ def register(email):
             break
         time.sleep(1)
     driver.find_element_by_tag_name('button').click()
-    input(f'{email} done.')
+    retry(lambda: driver.find_element_by_css_selector('div.mono-home2-usage-legend-amount').text == '0 B / 10 GB used')
+    print(f'{email} done.')
     driver.quit()
 
 
 if __name__ == "__main__":
-    for arg in sys.argv[1:]:
-        register(arg)
+    multiprocessing.Pool(16).map(register, sys.argv[1:])
