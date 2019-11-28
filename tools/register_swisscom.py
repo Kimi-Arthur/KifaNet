@@ -68,7 +68,7 @@ if __name__ == "__main__":
         print(f'        Password: {password}')
     print()
     for account in accounts:
-        print(f'        - {account[0]}:')
+        print(f'        - {account[0]}')
     print()
 
     multiprocessing.Pool(16).map(register, accounts)
