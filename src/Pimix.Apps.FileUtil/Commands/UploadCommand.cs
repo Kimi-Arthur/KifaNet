@@ -66,10 +66,10 @@ namespace Pimix.Apps.FileUtil.Commands {
             source.UseCache = UseCache;
             // TODO: Better catching.
             try {
+                var destinationLocation = source.CreateLocation(ServiceType, FormatType);
                 if (skipRegistered) {
-                    var target = source.CreateLocation(ServiceType, FormatType);
-                    if (target != null && new PimixFile(target).Registered) {
-                        logger.Info($"Skipped uploading of {source} to {target} for now " +
+                    if (destinationLocation != null && new PimixFile(destinationLocation).Registered) {
+                        logger.Info($"Skipped uploading of {source} to {destinationLocation} for now " +
                                     "as it's supposed to be already uploaded...");
                         return -1;
                     }
@@ -85,7 +85,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     return 1;
                 }
 
-                var destinationLocation = source.CreateLocation(ServiceType, FormatType);
+                destinationLocation ??= source.CreateLocation(ServiceType, FormatType);
                 var destination = new PimixFile(destinationLocation);
 
                 if (destination.Exists()) {
