@@ -69,7 +69,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                 if (skipRegistered) {
                     var target = source.CreateLocation(ServiceType, FormatType);
                     if (target != null && new PimixFile(target).Registered) {
-                        logger.Info("Skipped uploading to {0} for now...", target);
+                        logger.Info($"Skipped uploading of {source} to {target} for now " +
+                                    "as it's supposed to be already uploaded...");
                         return -1;
                     }
                 }
