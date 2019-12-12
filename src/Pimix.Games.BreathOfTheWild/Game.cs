@@ -1,0 +1,30 @@
+using System;
+using System.Collections.Generic;
+using Pimix.Service;
+
+namespace Pimix.Games.BreathOfTheWild {
+    public class Game : DataModel {
+        public const string ModelId = "games/botw";
+
+        public string Name { get; set; }
+        public string Notes { get; set; }
+        public GameMode Mode { get; set; }
+
+        public Dictionary<string, KorokSeedState> KorokSeeds { get; set; }
+        public Dictionary<string, ShrineState> Shrines { get; set; }
+    }
+
+    public enum GameMode {
+        Normal,
+        Master
+    }
+
+    public class ShrineState {
+        public DateTime? Found { get; set; }
+        public DateTime? Solved { get; set; }
+    }
+
+    public class KorokSeedState {
+        public DateTime? Found { get; set; }
+    }
+}
