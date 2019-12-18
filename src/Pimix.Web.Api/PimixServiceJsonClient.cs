@@ -59,7 +59,9 @@ namespace Pimix.Web.Api {
         }
 
         void Save(string id, TDataModel data) {
-            File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json",
+            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
+            MakeParent(path);
+            File.WriteAllText(path,
                 JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
         }
 
@@ -104,6 +106,10 @@ namespace Pimix.Web.Api {
 
             File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json",
                 JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings));
+        }
+
+        void MakeParent(string path) {
+            Directory.CreateDirectory(path[..path.LastIndexOf('/')]);
         }
     }
 }
