@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Pimix.Service {
     public interface PimixServiceClient<TDataModel> where TDataModel : DataModel {
+        SortedDictionary<string, TDataModel> List();
         TDataModel Get(string id);
         List<TDataModel> Get(List<string> ids);
 
@@ -22,6 +23,8 @@ namespace Pimix.Service {
             var typeInfo = typeof(TDataModel);
             modelId = (string) typeInfo.GetField("ModelId").GetValue(null);
         }
+
+        public abstract SortedDictionary<string, TDataModel> List();
 
         public abstract TDataModel Get(string id);
 

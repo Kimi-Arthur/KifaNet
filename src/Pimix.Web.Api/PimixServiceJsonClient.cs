@@ -14,6 +14,21 @@ namespace Pimix.Web.Api {
         where TDataModel : DataModel {
         Dictionary<string, List<string>> Groups { get; } = new Dictionary<string, List<string>>();
 
+        public override SortedDictionary<string, TDataModel> List() {
+            var prefix = $"{PimixServiceJsonClient.DataFolder}/{modelId}";
+            if (!Directory.Exists(prefix)) {
+                return new SortedDictionary<string, TDataModel>();
+            }
+
+            var directory = new DirectoryInfo(prefix);
+            var items = directory.GetFiles("*.json",
+                SearchOption.AllDirectories);
+            return new SortedDictionary<string, TDataModel>(items.Select(i =>
+                    JsonConvert.DeserializeObject<TDataModel>(i.OpenText().ReadToEnd(),
+                        Defaults.JsonSerializerSettings))
+                .ToDictionary(i => i.Id, i => i));
+        }
+
         public override TDataModel Get(string id) {
             LoadGroups();
 

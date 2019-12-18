@@ -13,11 +13,7 @@ namespace Pimix.Web.Api.Controllers {
 
         // GET api/values
         [HttpGet]
-        public ActionResult<Dictionary<string, TDataModel>> Get()
-            => new Dictionary<string, TDataModel> {
-                ["/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb"] =
-                    Client.Get("/Downloads/Anime/DA01/[数码兽大冒险].[加七][Digimon_Adventure][01][GB].rmvb")
-            };
+        public ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
 
         // GET api/values/5
         [HttpGet("{id}")]
