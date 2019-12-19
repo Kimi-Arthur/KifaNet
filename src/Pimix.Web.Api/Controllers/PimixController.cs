@@ -22,11 +22,11 @@ namespace Pimix.Web.Api.Controllers {
             return Client.Get(id);
         }
 
-        // PATCH api/values
+        // PATCH api/values/5
         [HttpPatch("{id}")]
         public void Patch(string id, [FromBody] TDataModel value) {
-            id = Uri.UnescapeDataString(id);
-            var data = Client.Get(id);
+            value.Id ??= Uri.UnescapeDataString(id);
+            var data = Client.Get(value.Id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(value, Defaults.JsonSerializerSettings), data,
                 Defaults.JsonSerializerSettings);
             value.Fill();
@@ -36,7 +36,7 @@ namespace Pimix.Web.Api.Controllers {
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody] TDataModel value) {
-            value.Id = Uri.UnescapeDataString(id);
+            value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
             Client.Set(value);
         }

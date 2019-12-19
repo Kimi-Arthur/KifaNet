@@ -10,8 +10,8 @@ namespace Pimix.Games.BreathOfTheWild {
         public string Notes { get; set; }
         public GameMode Mode { get; set; }
 
-        public Dictionary<string, KorokSeedState> KorokSeeds { get; set; }
-        public Dictionary<string, ShrineState> Shrines { get; set; }
+        public SortedDictionary<string, KorokSeedState> KorokSeeds { get; set; }
+        public SortedDictionary<string, ShrineState> Shrines { get; set; }
     }
 
     public enum GameMode {
