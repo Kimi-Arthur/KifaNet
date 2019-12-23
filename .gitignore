@@ -151,6 +151,7 @@ DocProject/Help/html
 
 # Click-Once directory
 publish/
+ServerCore/
 
 # Publish Web Output
 *.[Pp]ublish.xml
