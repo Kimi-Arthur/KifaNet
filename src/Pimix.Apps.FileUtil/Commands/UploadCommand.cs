@@ -67,7 +67,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             // TODO: Better catching.
             try {
                 var destinationLocation = source.CreateLocation(ServiceType, FormatType);
-                if (skipRegistered) {
+                if (!DeleteSource && skipRegistered) {
                     if (destinationLocation != null && new PimixFile(destinationLocation).Registered) {
                         logger.Info($"Skipped uploading of {source} to {destinationLocation} for now " +
                                     "as it's supposed to be already uploaded...");
