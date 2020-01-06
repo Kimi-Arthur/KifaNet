@@ -70,5 +70,28 @@ namespace Pimix.Apps.BiliUtil {
             downloadFile.Move(file);
             logger.Info($"Successfullly downloaded video to {file}");
         }
+        
+        
+        public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder) {
+            var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
+            if (streamGetters.Count > 1) {
+                var prefix = $"{video.GetDesiredName(pid)}";
+                for (int i = 0; i < streamGetters.Count; i++) {
+                    var targetFile = currentFolder.GetFile($"{prefix}-{i + 1}.{extension}");
+                    try {
+                        targetFile.WriteIfNotFinished(streamGetters[i]);
+                    } catch (Exception e) {
+                        logger.Warn(e, $"Failed to download {targetFile}.");
+                    }
+                }
+            } else {
+                var targetFile = currentFolder.GetFile($"{video.GetDesiredName(pid)}.{extension}");
+                try {
+                    targetFile.WriteIfNotFinished(streamGetters.First());
+                } catch (Exception e) {
+                    logger.Warn(e, $"Failed to download {targetFile}.");
+                }
+            }
+        }
     }
 }
