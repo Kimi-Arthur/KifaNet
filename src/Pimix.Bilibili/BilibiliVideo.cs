@@ -260,16 +260,26 @@ namespace Pimix.Bilibili {
         }
 
         static (string extension, List<string> links) GetDownloadLinks(string aid, int pid) {
-            using var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}&update=1")
-                .Result;
-            var content = response.GetString();
-            logger.Debug($"Get download result: {content}");
-            var data = JToken.Parse(content)["data"][0]["parts"];
-            var extension = (string) data[0]["url"];
-            extension = extension[..extension.IndexOf('?')];
-            extension = extension[(extension.LastIndexOf('.') + 1)..];
-            return (extension, data.Select(x => (string) x["url"]).ToList());
+            for (var i = 0; i < 3; i++) {
+                using var response = biliplusClient
+                    .GetAsync(
+                        $"https://www.biliplus.com/api/geturl?bangumi={i}&av={aid.Substring(2)}&page={pid}&update=1")
+                    .Result;
+                var content = response.GetString();
+                logger.Debug($"Get download result: {content}");
+                var data = JToken.Parse(content);
+                if ((string) data["mode"] == "error") {
+                    continue;
+                }
+
+                var parts = data["data"][0]["parts"];
+                var extension = (string) parts[0]["url"];
+                extension = extension[..extension.IndexOf('?')];
+                extension = extension[(extension.LastIndexOf('.') + 1)..];
+                return (extension, parts.Select(x => (string) x["url"]).ToList());
+            }
+
+            return (null, null);
         }
 
         static string GetDownloadPage(string cid) {

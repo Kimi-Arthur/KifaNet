@@ -33,7 +33,7 @@ namespace Pimix.Apps.BiliUtil {
                 ? $"{video.Author}-{video.AuthorId}/{video.Title} P{pid} {p.Title}-{video.Id}p{pid}.c{cid}"
                 : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
         }
-        
+
         public static void WriteIfNotFinished(this PimixFile file, Func<Stream> getStream) {
             if (file.FileInfo.Locations != null) {
                 logger.Info($"{file.FileInfo.Id} already exists in the system. Skipped.");
@@ -70,12 +70,13 @@ namespace Pimix.Apps.BiliUtil {
             downloadFile.Move(file);
             logger.Info($"Successfullly downloaded video to {file}");
         }
-        
-        
-        public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder) {
+
+
+        public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder,
+            string extraPath = null) {
             var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
             if (streamGetters.Count > 1) {
-                var prefix = $"{video.GetDesiredName(pid)}";
+                var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath)}";
                 for (int i = 0; i < streamGetters.Count; i++) {
                     var targetFile = currentFolder.GetFile($"{prefix}-{i + 1}.{extension}");
                     try {
@@ -85,7 +86,8 @@ namespace Pimix.Apps.BiliUtil {
                     }
                 }
             } else {
-                var targetFile = currentFolder.GetFile($"{video.GetDesiredName(pid)}.{extension}");
+                var targetFile =
+                    currentFolder.GetFile($"{video.GetDesiredName(pid, extraPath: extraPath)}.{extension}");
                 try {
                     targetFile.WriteIfNotFinished(streamGetters.First());
                 } catch (Exception e) {

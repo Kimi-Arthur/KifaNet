@@ -25,7 +25,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 });
                 var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
-                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder);
+                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder, $"{bangumi.Name}-{bangumi.Id}");
                 }
             }
 

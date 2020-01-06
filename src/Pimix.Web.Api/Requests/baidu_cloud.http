@@ -25,7 +25,7 @@ HEAD https://pcs.baidu.com/rest/2.0/pcs/file?method=download&path=/apps/Pimix/Ve
 
 ### Refresh Account
 
-GET http://{{server}}/api/configs/baidu_cloud/$refresh_account?id=default
+GET http://{{server}}/api/configs/baidu_cloud/$refresh_account?id=default&account_id=SexIX
 
 ### Test Account
 
