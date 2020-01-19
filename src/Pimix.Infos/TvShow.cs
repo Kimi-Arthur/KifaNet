@@ -36,7 +36,7 @@ namespace Pimix.Infos {
             Title ??= Id;
             AirDate = series.FirstAirDate;
             TvNetwork = series.Networks[0].Name;
-            Region = series.Networks[0].OriginCountry;
+            Region = series.OriginCountry.First();
 
             Genres = series.Genres.Select(g => g.Name).ToList();
             Overview = series.Overview;
