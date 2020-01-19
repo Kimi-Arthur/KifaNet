@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -27,12 +26,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 });
                 var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
-                    var targetFile = CurrentFolder.GetFile($"{video.GetDesiredName(page.Id)}.mp4");
-                    try {
-                        targetFile.WriteIfNotFinished(() => video.DownloadVideo(page.Id, SourceChoice));
-                    } catch (Exception e) {
-                        logger.Warn(e, $"Failed to download {targetFile}.");
-                    }
+                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder);
                 }
             }
 

@@ -15,6 +15,8 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
     public class BilibiliVideo : DataModel {
+        public static bool UseMergedSource { get; set; }
+
         public enum PartModeType {
             SinglePartMode,
             ContinuousPartMode,
@@ -36,7 +38,10 @@ namespace Pimix.Bilibili {
 
         static bool firstDownload = true;
 
-        static HttpClient biliplusClient = new HttpClient();
+        static HttpClient biliplusClient = new HttpClient(new HttpClientHandler() {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+        });
+
 
         PartModeType partMode;
 
@@ -113,93 +118,107 @@ namespace Pimix.Bilibili {
                        : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
 
-        public Stream DownloadVideo(int pid, int biliplusSourceChoice = 0) {
+        public (string extension, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
+            int biliplusSourceChoice = 0) {
             if (!firstDownload) {
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             }
 
             firstDownload = false;
 
-            biliplusClient = new HttpClient();
-            biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+            biliplusClient = new HttpClient(new HttpClientHandler() {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+            });
 
-            AddDownloadJob(Id);
+            if (UseMergedSource) {
+                biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
-            var cid = Pages[pid - 1].Cid;
+                AddDownloadJob(Id);
 
-            while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
-                logger.Debug("Download not ready. Sleep 30 seconds...");
-                UpdateDownloadStatus(cid);
-                Thread.Sleep(TimeSpan.FromSeconds(30));
-            }
+                var cid = Pages[pid - 1].Cid;
 
-            var doc = new HtmlDocument();
-            doc.LoadHtml(GetDownloadPage(cid));
-
-            var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
-                => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
-
-            if (choices == null) {
-                logger.Warn("No sources found. Job not successful?");
-                return null;
-            }
-
-            var initialSource = biliplusSourceChoice;
-            while (true) {
-                try {
-                    logger.Debug("Choosen source: " +
-                                 $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
-                    var length = biliplusClient
-                        .SendAsync(
-                            new HttpRequestMessage(HttpMethod.Head,
-                                choices[biliplusSourceChoice].link),
-                            HttpCompletionOption.ResponseHeadersRead).Result
-                        .Content.Headers.ContentLength;
-                    var link = choices[biliplusSourceChoice].link;
-                    if (length == null) {
-                        throw new Exception("Content length is not found.");
-                    }
-
-                    return new SeekableReadStream(length.Value,
-                        (buffer, bufferOffset, offset, count) => {
-                            if (count < 0) {
-                                count = buffer.Length - bufferOffset;
-                            }
-
-                            logger.Trace(
-                                $"Downloading from {offset} to {offset + count}...");
-
-                            return Retry.Run(() => {
-                                var request = new HttpRequestMessage(HttpMethod.Get, link);
-
-                                request.Headers.Range =
-                                    new RangeHeaderValue(offset, offset + count - 1);
-                                using var response = biliplusClient.SendAsync(request).Result;
-                                var memoryStream =
-                                    new MemoryStream(buffer, bufferOffset, count, true);
-                                response.Content.ReadAsStreamAsync().Result
-                                    .CopyTo(memoryStream, count);
-                                return (int) memoryStream.Position;
-                            }, (ex, i) => {
-                                if (i >= 5) {
-                                    throw ex;
-                                }
-
-                                logger.Warn(ex,
-                                    $"Download from {offset} to {offset + count} failed ({i})...");
-                                Thread.Sleep(TimeSpan.FromSeconds(30));
-                            });
-                        });
-                } catch (Exception ex) {
-                    biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
-                    if (biliplusSourceChoice == initialSource) {
-                        throw;
-                    }
-
-                    logger.Warn(ex, "Download failed. Try next source.");
+                while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
+                    logger.Debug("Download not ready. Sleep 30 seconds...");
+                    UpdateDownloadStatus(cid);
                     Thread.Sleep(TimeSpan.FromSeconds(30));
                 }
+
+                var doc = new HtmlDocument();
+                doc.LoadHtml(GetDownloadPage(cid));
+
+                var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
+                    => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
+
+                if (choices == null) {
+                    logger.Warn("No sources found. Job not successful?");
+                    return (null, null);
+                }
+
+                var initialSource = biliplusSourceChoice;
+                while (true) {
+                    try {
+                        logger.Debug("Choosen source: " +
+                                     $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
+                        var link = choices[biliplusSourceChoice].link;
+                        return ("mp4", new List<Func<Stream>> {() => BuildDownloadStream(link)});
+                    } catch (Exception ex) {
+                        biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
+                        if (biliplusSourceChoice == initialSource) {
+                            throw;
+                        }
+
+                        logger.Warn(ex, "Download failed. Try next source.");
+                        Thread.Sleep(TimeSpan.FromSeconds(30));
+                    }
+                }
+            } else {
+                biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+                var (extension, links) = GetDownloadLinks(Id, pid);
+                return (extension, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
             }
+        }
+
+        static Stream BuildDownloadStream(string link) {
+            biliplusClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
+
+            var length = biliplusClient
+                .SendAsync(new HttpRequestMessage(HttpMethod.Head, link),
+                    HttpCompletionOption.ResponseHeadersRead).Result
+                .Content.Headers.ContentLength;
+            if (length == null) {
+                throw new Exception("Content length is not found.");
+            }
+
+            return new SeekableReadStream(length.Value,
+                (buffer, bufferOffset, offset, count) => {
+                    if (count < 0) {
+                        count = buffer.Length - bufferOffset;
+                    }
+
+                    logger.Trace($"Downloading from {offset} to {offset + count}...");
+
+                    return Retry.Run(() => {
+                        var request = new HttpRequestMessage(HttpMethod.Get, link);
+
+                        request.Headers.Range =
+                            new RangeHeaderValue(offset, offset + count - 1);
+                        using var response = biliplusClient.SendAsync(request).Result;
+                        var memoryStream =
+                            new MemoryStream(buffer, bufferOffset, count, true);
+                        response.Content.ReadAsStreamAsync().Result
+                            .CopyTo(memoryStream, count);
+                        return (int) memoryStream.Position;
+                    }, (ex, i) => {
+                        if (i >= 5) {
+                            throw ex;
+                        }
+
+                        logger.Warn(ex,
+                            $"Download from {offset} to {offset + count} failed ({i})...");
+                        Thread.Sleep(TimeSpan.FromSeconds(30));
+                    });
+                });
         }
 
         static void AddDownloadJob(string aid) {
@@ -220,8 +239,7 @@ namespace Pimix.Bilibili {
 
         static DownloadStatus GetDownloadStatus(string aid, int pid) {
             using var response = biliplusClient
-                .GetAsync(
-                    $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
+                .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
                 .Result;
             var content = response.GetString();
             logger.Debug($"Get download result: {content}");
@@ -239,6 +257,29 @@ namespace Pimix.Bilibili {
                 default:
                     throw new Exception("Unexpected download status");
             }
+        }
+
+        static (string extension, List<string> links) GetDownloadLinks(string aid, int pid) {
+            for (var i = 0; i < 3; i++) {
+                using var response = biliplusClient
+                    .GetAsync(
+                        $"https://www.biliplus.com/api/geturl?bangumi={i}&av={aid.Substring(2)}&page={pid}&update=1")
+                    .Result;
+                var content = response.GetString();
+                logger.Debug($"Get download result: {content}");
+                var data = JToken.Parse(content);
+                if ((string) data["mode"] == "error") {
+                    continue;
+                }
+
+                var parts = data["data"][0]["parts"];
+                var extension = (string) parts[0]["url"];
+                extension = extension[..extension.IndexOf('?')];
+                extension = extension[(extension.LastIndexOf('.') + 1)..];
+                return (extension, parts.Select(x => (string) x["url"]).ToList());
+            }
+
+            return (null, null);
         }
 
         static string GetDownloadPage(string cid) {

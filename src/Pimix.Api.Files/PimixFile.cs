@@ -480,15 +480,17 @@ namespace Pimix.Api.Files {
         public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;
 
         public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
-            FileInfo.Locations.Keys.FirstOrDefault(l =>
-                new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType}$").Match(l).Success) ??
-            serviceType switch {
-                CloudServiceType.google => $"google:good/$/{FileInfo.Sha256}.{formatType}",
-                CloudServiceType.swiss =>
-                // TODO: Use format specific header size.
-                $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType}",
-                _ => ""
-            };
+            FileInfo.Sha256 == null
+                ? null
+                : FileInfo.Locations.Keys.FirstOrDefault(l =>
+                      new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType}$").Match(l).Success) ??
+                  serviceType switch {
+                      CloudServiceType.google => $"google:good/$/{FileInfo.Sha256}.{formatType}",
+                      CloudServiceType.swiss =>
+                      // TODO: Use format specific header size.
+                      $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType}",
+                      _ => ""
+                  };
     }
 
     public enum CloudServiceType {

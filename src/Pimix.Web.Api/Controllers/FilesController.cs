@@ -40,7 +40,6 @@ namespace Pimix.Web.Api.Controllers {
 
     public class FileInformationJsonServiceClient : PimixServiceJsonClient<FileInformation>,
         FileInformationServiceClient {
-
         static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {
             ["swiss"] = 1 << 30
         };

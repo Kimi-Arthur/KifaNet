@@ -68,8 +68,18 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({id})"));
         }
 
-        public override TDataModel Get(string id) {
-            return Retry.Run(() => {
+        public override SortedDictionary<string, TDataModel> List() =>
+            Retry.Run(() => {
+                var request =
+                    new HttpRequestMessage(HttpMethod.Get,
+                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/");
+
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<SortedDictionary<string, TDataModel>>();
+            }, (ex, i) => HandleException(ex, i, $"Failure in LIST {modelId}"));
+
+        public override TDataModel Get(string id) =>
+            Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Get,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
@@ -77,7 +87,6 @@ namespace Pimix.Service {
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<TDataModel>();
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
-        }
 
         public override List<TDataModel> Get(List<string> ids) =>
             ids.Any()

@@ -1,0 +1,8 @@
+### Create a new game.
+POST {{server}}/api/games/botw/Kimi%2F0
+Accept: application/x-yaml
+Content-Type: application/json
+
+{}
+
+###

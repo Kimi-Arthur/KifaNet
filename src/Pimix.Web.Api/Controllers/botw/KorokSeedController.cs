@@ -9,4 +9,11 @@ namespace Pimix.Web.Api.Controllers.botw {
 
         protected override PimixServiceClient<KorokSeed> Client => client;
     }
+
+    [Route("api/" + Game.ModelId)]
+    public class BotwGameController : PimixController<Game> {
+        static readonly PimixServiceClient<Game> client = new PimixServiceJsonClient<Game>();
+
+        protected override PimixServiceClient<Game> Client => client;
+    }
 }

@@ -126,15 +126,17 @@ namespace PimixTest.Cloud.Swisscom {
         public void FindAccountTest() {
             var validAccounts = new List<(string, long)>();
             var invalidAccounts = new List<(string, long)>();
-            foreach (var account in SwisscomStorageClient.Accounts.Keys) {
-                var quota = new SwisscomStorageClient(account).GetQuota();
-                if (quota.left < 20 << 20) {
-                    invalidAccounts.Add((account, quota.left));
+            foreach (var account in SwisscomStorageClient.Accounts.Keys.Where(a =>
+                SwisscomStorageClient.StorageMappings.FirstOrDefault(s => s.Accounts.Contains(a))?.Pattern
+                    ?.StartsWith("/") ?? false)) {
+                var (_, _, left) = new SwisscomStorageClient(account).GetQuota();
+                if (left < 20 << 20) {
+                    invalidAccounts.Add((account, left));
                 } else {
-                    validAccounts.Add((account, quota.left));
+                    validAccounts.Add((account, left));
                 }
             }
-            
+
             Assert.Empty(invalidAccounts);
         }
 
