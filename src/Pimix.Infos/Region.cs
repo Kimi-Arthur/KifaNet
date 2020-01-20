@@ -23,11 +23,17 @@ namespace Pimix.Infos {
             Code = "CN"
         };
 
+        public static readonly Region Unknown = new Region {
+            Name = "Unknown",
+            Code = ""
+        };
+
         public static readonly Dictionary<string, Region> All = new List<Region> {
             UnitedStates,
             UnitedKingdom,
             Japan,
-            China
+            China,
+            Unknown
         }.SelectMany(r => new List<(string key, Region value)> {
             (r.Code, r),
             (r.Name, r)

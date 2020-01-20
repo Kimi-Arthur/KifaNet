@@ -75,6 +75,12 @@ namespace Pimix.Infos {
             Code = "zh"
         };
 
+        public static readonly Language Unknown = new Language {
+            Name = "Unknown",
+            NativeName = "Unknown",
+            Code = ""
+        };
+
         public static readonly Dictionary<string, Language> All = new List<Language> {
             German,
             English,
@@ -87,7 +93,8 @@ namespace Pimix.Infos {
             Portuguese,
             Russian,
             Turkish,
-            Chinese
+            Chinese,
+            Unknown
         }.SelectMany(r => new List<(string key, Language value)> {
             (r.Code, r),
             (r.Name, r),
