@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Pimix.Infos {
     public class Region : JsonSerializable {
-        public static readonly Region UnitedStates = new Region {
-            Name = "United States",
-            Code = "US"
+        public static readonly Region China = new Region {
+            Name = "China",
+            Code = "CN"
         };
 
         public static readonly Region UnitedKingdom = new Region {
@@ -18,9 +18,14 @@ namespace Pimix.Infos {
             Code = "JP"
         };
 
-        public static readonly Region China = new Region {
-            Name = "China",
-            Code = "CN"
+        public static readonly Region Poland = new Region {
+            Name = "Poland",
+            Code = "PL"
+        };
+
+        public static readonly Region UnitedStates = new Region {
+            Name = "United States",
+            Code = "US"
         };
 
         public static readonly Region Unknown = new Region {
@@ -29,10 +34,11 @@ namespace Pimix.Infos {
         };
 
         public static readonly Dictionary<string, Region> All = new List<Region> {
-            UnitedStates,
+            China,
             UnitedKingdom,
             Japan,
-            China,
+            Poland,
+            UnitedStates,
             Unknown
         }.SelectMany(r => new List<(string key, Region value)> {
             (r.Code, r),
