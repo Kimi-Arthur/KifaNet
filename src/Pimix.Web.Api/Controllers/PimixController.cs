@@ -29,7 +29,6 @@ namespace Pimix.Web.Api.Controllers {
             var data = Client.Get(value.Id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(value, Defaults.JsonSerializerSettings), data,
                 Defaults.JsonSerializerSettings);
-            value.Fill();
             Client.Set(value);
         }
 
