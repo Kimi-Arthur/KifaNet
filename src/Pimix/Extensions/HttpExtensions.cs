@@ -13,7 +13,7 @@ namespace Pimix {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
-            Retry.Run(() => { return client.SendAsync(request()).Result; }, (ex, index) => {
+            Retry.Run(() => client.SendAsync(request()).Result, (ex, index) => {
                 if (index >= 5 ||
                     ex is HttpRequestException &&
                     ex.InnerException is SocketException socketException &&
