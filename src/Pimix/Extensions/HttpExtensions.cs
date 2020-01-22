@@ -12,8 +12,16 @@ namespace Pimix {
     public static class HttpExtensions {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
-            Retry.Run(() => client.SendAsync(request()).Result, (ex, index) => {
+        public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request,
+            Func<HttpResponseMessage, bool> isSuccessful = null) =>
+            Retry.Run(() => {
+                var result = client.SendAsync(request()).Result;
+                if (isSuccessful != null && !isSuccessful(result)) {
+                    throw new ResponseValidationException("Response body does not indicate successful status.");
+                }
+
+                return result;
+            }, (ex, index) => {
                 if (index >= 5 ||
                     ex is HttpRequestException &&
                     ex.InnerException is SocketException socketException &&
@@ -38,5 +46,10 @@ namespace Pimix {
 
         public static T GetObject<T>(this HttpResponseMessage response)
             => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
+    }
+
+    public class ResponseValidationException : Exception {
+        public ResponseValidationException(string message) : base(message) {
+        }
     }
 }

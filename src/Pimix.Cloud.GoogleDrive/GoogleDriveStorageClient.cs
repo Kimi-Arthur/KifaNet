@@ -212,7 +212,7 @@ namespace Pimix.Cloud.GoogleDrive {
                     new Dictionary<string, string> {
                         ["name"] = segment,
                         ["parent_id"] = fileId
-                    }));
+                    }), message => !message.GetJToken().Contains("error"));
                 var files = response.GetJToken()["files"];
                 if (files == null) {
                     return null;
