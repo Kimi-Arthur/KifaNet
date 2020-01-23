@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.Bilibili;
+using Pimix.IO;
 
 namespace Pimix.Apps.BiliUtil {
     public static class Helper {
@@ -75,8 +78,14 @@ namespace Pimix.Apps.BiliUtil {
         public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder,
             string extraPath = null) {
             var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
-            if (streamGetters.Count > 1) {
+            if (extension != "mp4") {
                 var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath)}";
+                var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
+                if (finalTargetFile.Exists()) {
+                    return;
+                }
+
+                List<PimixFile> partFiles = new List<PimixFile>();
                 for (int i = 0; i < streamGetters.Count; i++) {
                     var targetFile = currentFolder.GetFile($"{prefix}-{i + 1}.{extension}");
                     try {
@@ -84,7 +93,11 @@ namespace Pimix.Apps.BiliUtil {
                     } catch (Exception e) {
                         logger.Warn(e, $"Failed to download {targetFile}.");
                     }
+
+                    partFiles.Add(targetFile);
                 }
+
+                MergePartFiles(partFiles, finalTargetFile);
             } else {
                 var targetFile =
                     currentFolder.GetFile($"{video.GetDesiredName(pid, extraPath: extraPath)}.{extension}");
@@ -93,6 +106,24 @@ namespace Pimix.Apps.BiliUtil {
                 } catch (Exception e) {
                     logger.Warn(e, $"Failed to download {targetFile}.");
                 }
+            }
+        }
+
+        static void MergePartFiles(List<PimixFile> parts, PimixFile target) {
+            var partPaths = parts.Select(p => ((FileStorageClient) p.Client).GetPath(p.Path)).ToList();
+            var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
+            using var proc = new Process {
+                StartInfo = {
+                    FileName = "ffmpeg",
+                    Arguments =
+                        $"-safe 0 -f concat -i <({string.Join(";", partPaths.Select(p => $"echo \"file '{p}'\""))}) -c copy \"{targetPath}\"",
+                    UseShellExecute = false
+                }
+            };
+            proc.Start();
+            proc.WaitForExit();
+            if (proc.ExitCode != 0) {
+                throw new Exception($"Merging files failed:\n {proc.StandardOutput}");
             }
         }
     }

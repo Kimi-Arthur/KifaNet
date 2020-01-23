@@ -174,7 +174,7 @@ namespace Pimix.IO {
 
         string GetId(string path) => path.Substring(Server.Prefix.Length).Replace("\\", "/");
 
-        string GetPath(string path) => $"{Server.Prefix}{path}";
+        public string GetPath(string path) => $"{Server.Prefix}{path}";
 
         void EnsureParent(string path) {
             Directory.GetParent(path).Create();

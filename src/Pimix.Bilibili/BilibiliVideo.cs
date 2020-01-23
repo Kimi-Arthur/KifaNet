@@ -40,7 +40,9 @@ namespace Pimix.Bilibili {
 
         static HttpClient biliplusClient = new HttpClient(new HttpClientHandler() {
             ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-        });
+        }) {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
 
 
         PartModeType partMode;
