@@ -208,12 +208,12 @@ namespace Pimix.Cloud.GoogleDrive {
         string GetFileId(string path, bool createParents = false) {
             var fileId = "root";
             foreach (var segment in $"{Config.RootFolder}{path}".Split('/', StringSplitOptions.RemoveEmptyEntries)) {
-                using var response = client.SendWithRetry(() => GetRequest(Config.APIList.FindFile,
+                var token = client.FetchJTokenWithRetry(() => GetRequest(Config.APIList.FindFile,
                     new Dictionary<string, string> {
                         ["name"] = segment,
                         ["parent_id"] = fileId
-                    }), message => !message.GetJToken().Contains("error"));
-                var files = response.GetJToken()["files"];
+                    }), t => t["error"] == null);
+                var files = token["files"];
                 if (files == null) {
                     return null;
                 }

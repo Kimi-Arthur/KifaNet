@@ -12,16 +12,8 @@ namespace Pimix {
     public static class HttpExtensions {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request,
-            Func<HttpResponseMessage, bool> isSuccessful = null) =>
-            Retry.Run(() => {
-                var result = client.SendAsync(request()).Result;
-                if (isSuccessful != null && !isSuccessful(result)) {
-                    throw new ResponseValidationException("Response body does not indicate successful status.");
-                }
-
-                return result;
-            }, (ex, index) => {
+        public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
+            Retry.Run(() => client.SendAsync(request()).Result, (ex, index) => {
                 if (index >= 5 ||
                     ex is HttpRequestException &&
                     ex.InnerException is SocketException socketException &&
@@ -43,6 +35,28 @@ namespace Pimix {
 
         public static JToken GetJToken(this HttpResponseMessage response)
             => JToken.Parse(GetString(response));
+
+        public static JToken FetchJTokenWithRetry(this HttpClient client, Func<HttpRequestMessage> request,
+            Func<JToken, bool> validate = null) =>
+            Retry.Run(() => {
+                var result = client.SendAsync(request()).Result.GetJToken();
+                
+                if (validate != null && !validate(result)) {
+                    throw new ResponseValidationException("Response body does not indicate successful status.");
+                }
+
+                return result;
+            }, (ex, index) => {
+                if (index >= 5 ||
+                    ex is HttpRequestException &&
+                    ex.InnerException is SocketException socketException &&
+                    socketException.Message == "Device not configured") {
+                    throw ex;
+                }
+
+                logger.Warn(ex, $"HTTP request failed ({index})");
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+            });
 
         public static T GetObject<T>(this HttpResponseMessage response)
             => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
