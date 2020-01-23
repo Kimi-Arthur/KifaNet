@@ -98,6 +98,7 @@ namespace Pimix.Apps.BiliUtil {
                 }
 
                 MergePartFiles(partFiles, finalTargetFile);
+                RemovePartFiles(partFiles);
             } else {
                 var targetFile =
                     currentFolder.GetFile($"{video.GetDesiredName(pid, extraPath: extraPath)}.{extension}");
@@ -111,20 +112,29 @@ namespace Pimix.Apps.BiliUtil {
 
         static void MergePartFiles(List<PimixFile> parts, PimixFile target) {
             var partPaths = parts.Select(p => ((FileStorageClient) p.Client).GetPath(p.Path)).ToList();
+            var fileListPath = Path.GetTempFileName();
+            File.WriteAllLines(fileListPath, partPaths.Select(p => $"file '{p}'"));
+
             var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
+            var arguments = $"-safe 0 -f concat -i {fileListPath} -c copy \"{targetPath}\"";
+            logger.Debug($"Executing: ffmpeg {arguments}");
             using var proc = new Process {
                 StartInfo = {
                     FileName = "ffmpeg",
-                    Arguments =
-                        $"-safe 0 -f concat -i <({string.Join(";", partPaths.Select(p => $"echo \"file '{p}'\""))}) -c copy \"{targetPath}\"",
-                    UseShellExecute = false
+                    Arguments = arguments
                 }
             };
             proc.Start();
             proc.WaitForExit();
             if (proc.ExitCode != 0) {
-                throw new Exception($"Merging files failed:\n {proc.StandardOutput}");
+                throw new Exception("Merging files failed.");
             }
+            
+            File.Delete(fileListPath);
+        }
+
+        static void RemovePartFiles(List<PimixFile> partFiles) {
+            partFiles.ForEach(p => p.Delete());
         }
     }
 }
