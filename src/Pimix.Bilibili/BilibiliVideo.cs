@@ -38,9 +38,7 @@ namespace Pimix.Bilibili {
 
         static bool firstDownload = true;
 
-        static HttpClient biliplusClient = new HttpClient(new HttpClientHandler() {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-        }) {
+        static HttpClient biliplusClient = new HttpClient {
             Timeout = TimeSpan.FromMinutes(10)
         };
 
@@ -128,9 +126,9 @@ namespace Pimix.Bilibili {
 
             firstDownload = false;
 
-            biliplusClient = new HttpClient(new HttpClientHandler() {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
-            });
+            biliplusClient = new HttpClient {
+                Timeout = TimeSpan.FromMinutes(10)
+            };
 
             if (UseMergedSource) {
                 biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
