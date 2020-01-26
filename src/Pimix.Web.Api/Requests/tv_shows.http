@@ -23,6 +23,13 @@ EpisodeIdWidth: 2
 TmdbId: '71912'
 Language: en
 
+### Manual Fix of data
+PATCH {{server}}/api/tv_shows/Westworld
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+Region: United States
+
 ### All
 GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml

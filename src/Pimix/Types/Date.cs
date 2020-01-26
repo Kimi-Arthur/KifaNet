@@ -1,7 +1,7 @@
 using System;
 
 namespace Pimix {
-    public struct Date : JsonSerializable, IComparable<Date> {
+    public class Date : JsonSerializable, IComparable<Date> {
         DateTime date;
 
         public int Year => date.Year;
