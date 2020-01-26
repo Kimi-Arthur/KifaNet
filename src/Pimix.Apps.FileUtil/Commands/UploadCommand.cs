@@ -13,7 +13,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true)]
         public string FileUri { get; set; }
 
-        [Option('d', "delete-source", HelpText = "Remove source if upload is successful.")]
+        [Option('d', "delete-source",
+            HelpText = "Remove source if upload is successful. Won't remove valid cloud version.")]
         public bool DeleteSource { get; set; } = false;
 
         [Option('q', "quick", HelpText =
