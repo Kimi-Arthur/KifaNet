@@ -26,7 +26,7 @@ namespace Pimix {
         public static T GetObject<T>(this HttpResponseMessage response)
             => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
-        public static HttpResponseMessage Fetch(this HttpClient client, Func<HttpRequestMessage> request) =>
+        public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
             Retry.Run(() => client.SendAsync(request()).Result, (ex, index) => {
                 if (index >= 5 ||
                     ex is HttpRequestException &&

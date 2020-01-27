@@ -57,7 +57,7 @@ namespace Pimix.Cloud.GoogleDrive {
             var pageToken = "";
 
             while (pageToken != null) {
-                using var response = client.Fetch(() => GetRequest(Config.APIList.ListFiles,
+                using var response = client.SendWithRetry(() => GetRequest(Config.APIList.ListFiles,
                     new Dictionary<string, string> {
                         ["parent_id"] = fileId,
                         ["page_token"] = pageToken
@@ -84,7 +84,7 @@ namespace Pimix.Cloud.GoogleDrive {
         public override void Delete(string path) {
             var fileId = GetFileId(path);
             if (fileId != null) {
-                using var response = client.Fetch(() => GetRequest(Config.APIList.DeleteFile,
+                using var response = client.SendWithRetry(() => GetRequest(Config.APIList.DeleteFile,
                     new Dictionary<string, string> {
                         ["file_id"] = fileId
                     }));
@@ -110,7 +110,7 @@ namespace Pimix.Cloud.GoogleDrive {
             var folderId = GetFileId(path.Substring(0, path.LastIndexOf('/')), true);
 
             Uri uploadUri;
-            using var uriResponse = client.Fetch(() => GetRequest(Config.APIList.CreateFile,
+            using var uriResponse = client.SendWithRetry(() => GetRequest(Config.APIList.CreateFile,
                 new Dictionary<string, string> {
                     ["parent_id"] = folderId,
                     ["name"] = path.Substring(path.LastIndexOf('/') + 1)
@@ -133,7 +133,7 @@ namespace Pimix.Cloud.GoogleDrive {
 
                 while (!done) {
                     try {
-                        using var response = client.Fetch(() =>
+                        using var response = client.SendWithRetry(() =>
                             new HttpRequestMessage(HttpMethod.Put, uploadUri) {
                                 Content = content
                             });
@@ -179,7 +179,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 count = buffer.Length - bufferOffset;
             }
 
-            using var response = client.Fetch(() => {
+            using var response = client.SendWithRetry(() => {
                 var request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string> {
                     ["file_id"] = fileId
                 });
@@ -197,7 +197,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 return -1;
             }
 
-            using var response = client.Fetch(() => GetRequest(Config.APIList.GetFileInfo,
+            using var response = client.SendWithRetry(() => GetRequest(Config.APIList.GetFileInfo,
                 new Dictionary<string, string> {
                     ["file_id"] = fileId
                 }));
@@ -234,7 +234,7 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         string CreateFolder(string parentId, string name) {
-            using var response = client.Fetch(() => GetRequest(Config.APIList.CreateFolder,
+            using var response = client.SendWithRetry(() => GetRequest(Config.APIList.CreateFolder,
                 new Dictionary<string, string> {
                     ["parent_id"] = parentId,
                     ["name"] = name
@@ -248,7 +248,7 @@ namespace Pimix.Cloud.GoogleDrive {
                 return;
             }
 
-            using var response = client.Fetch(() => GetRequest(Config.APIList.OauthRefresh,
+            using var response = client.SendWithRetry(() => GetRequest(Config.APIList.OauthRefresh,
                 new Dictionary<string, string> {
                     ["refresh_token"] = Account.RefreshToken,
                     ["client_id"] = Config.ClientId,

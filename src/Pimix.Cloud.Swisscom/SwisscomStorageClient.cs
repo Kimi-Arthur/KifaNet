@@ -44,7 +44,7 @@ namespace Pimix.Cloud.Swisscom {
         public string AccountId { get; set; }
 
         public override long Length(string path) {
-            using var response = client.Fetch(() => APIList.GetFileInfo.GetRequest(
+            using var response = client.SendWithRetry(() => APIList.GetFileInfo.GetRequest(
                 new Dictionary<string, string>
                     {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
             if (response.IsSuccessStatusCode) {
@@ -59,7 +59,7 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override void Delete(string path) {
-            using var response = client.Fetch(() => APIList.DeleteFile.GetRequest(new Dictionary<string, string>
+            using var response = client.SendWithRetry(() => APIList.DeleteFile.GetRequest(new Dictionary<string, string>
                 {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
             if (!response.IsSuccessStatusCode) {
                 logger.Debug($"Delete of {path} is not successful, but is ignored.");
@@ -67,7 +67,7 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override void Move(string sourcePath, string destinationPath) {
-            using var response = client.Fetch(() => APIList.MoveFile.GetRequest(new Dictionary<string, string> {
+            using var response = client.SendWithRetry(() => APIList.MoveFile.GetRequest(new Dictionary<string, string> {
                 ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.Token
             }));
 
@@ -120,7 +120,7 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         string InitUpload(string path, long length) {
-            using var response = client.Fetch(() => APIList.InitUpload.GetRequest(new Dictionary<string, string> {
+            using var response = client.SendWithRetry(() => APIList.InitUpload.GetRequest(new Dictionary<string, string> {
                 ["file_path"] = path, ["file_length"] = length.ToString(),
                 ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
                 ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), ["access_token"] = Account.Token
@@ -130,7 +130,7 @@ namespace Pimix.Cloud.Swisscom {
 
         bool FinishUpload(string uploadId, string path, List<(string etag, int length)> blockIds) {
             var partTemplate = "{\"Index\":{index},\"Length\":{length},\"ETag\":\"\\\"{etag}\\\"\"}";
-            using var response = client.Fetch(() => APIList.FinishUpload.GetRequest(
+            using var response = client.SendWithRetry(() => APIList.FinishUpload.GetRequest(
                 new Dictionary<string, string> {
                     ["upload_id"] = uploadId,
                     ["access_token"] = Account.Token,
@@ -152,7 +152,7 @@ namespace Pimix.Cloud.Swisscom {
                 count = buffer.Length - bufferOffset;
             }
 
-            using var response = client.Fetch(() => {
+            using var response = client.SendWithRetry(() => {
                 var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string>
                     {["file_id"] = fileId, ["access_token"] = Account.Token});
 
@@ -165,7 +165,7 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override (long total, long used, long left) GetQuota() {
-            using var response = client.Fetch(() => APIList.Quota.GetRequest(new Dictionary<string, string> {
+            using var response = client.SendWithRetry(() => APIList.Quota.GetRequest(new Dictionary<string, string> {
                 ["access_token"] = Account.Token
             }));
             var data = response.GetJToken();
