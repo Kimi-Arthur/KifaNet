@@ -45,7 +45,7 @@ namespace Pimix {
                 var result = client.SendAsync(request()).Result.GetJToken();
 
                 if (validate != null && !validate(result)) {
-                    throw new ResponseValidationException("Response body does not indicate successful status.");
+                    throw new InvalidResponseException("Response body does not indicate successful status.");
                 }
 
                 return result;
@@ -62,8 +62,8 @@ namespace Pimix {
             });
     }
 
-    public class ResponseValidationException : Exception {
-        public ResponseValidationException(string message) : base(message) {
+    public class InvalidResponseException : Exception {
+        public InvalidResponseException(string message) : base(message) {
         }
     }
 }
