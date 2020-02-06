@@ -13,9 +13,12 @@ namespace Pimix.Apps.FileUtil.Commands {
         public override int Execute() {
             foreach (var file in FileNames.SelectMany(path =>
                 new PimixFile(path).List())) {
-                var target = file.Parent.GetFile(file.Name + ".decoded");
+                var folder = file.Parent.GetFile(file.BaseName);
                 if (file.Extension == "lzs") {
-                    target.Write(LzssFile.Decode(file.OpenRead()));
+                    foreach (var decodedFile in LzssFile.GetFiles(file.OpenRead())) {
+                        var target = folder.GetFile(decodedFile.name);
+                        target.Write(decodedFile.data);
+                    }
                 }
             }
 
