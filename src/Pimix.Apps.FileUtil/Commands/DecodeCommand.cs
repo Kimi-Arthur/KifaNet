@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
+using Newtonsoft.Json;
 using Pimix.Api.Files;
 using Pimix.Games.Files;
 
@@ -15,10 +16,16 @@ namespace Pimix.Apps.FileUtil.Commands {
                 new PimixFile(path).List())) {
                 var folder = file.Parent.GetFile(file.BaseName);
                 if (file.Extension == "lzs") {
-                    foreach (var decodedFile in LzssFile.GetFiles(file.OpenRead())) {
-                        var target = folder.GetFile(decodedFile.name);
-                        target.Write(decodedFile.data);
+                    foreach (var (name, data) in LzssFile.GetFiles(file.OpenRead())) {
+                        var target = folder.GetFile(name);
+                        target.Delete();
+                        target.Write(data);
                     }
+                } else if (file.Name.StartsWith("msg_") && file.Extension == "bin") {
+                    var messages = MsgBinFile.GetMessages(file.OpenRead());
+                    var target = file.Parent.GetFile(file.BaseName + ".json");
+                    target.Delete();
+                    target.Write(JsonConvert.SerializeObject(messages, Defaults.PrettyJsonSerializerSettings));
                 }
             }
 
