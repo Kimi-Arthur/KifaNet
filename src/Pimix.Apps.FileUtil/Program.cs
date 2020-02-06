@@ -11,7 +11,6 @@ namespace Pimix.Apps.FileUtil {
                     _CopyCommand,
                     _VerifyCommand,
                     RemoveCommand,
-                    _MoveCommand,
                     LinkCommand,
                     ListCommand,
                     UploadCommand,
@@ -21,7 +20,8 @@ namespace Pimix.Apps.FileUtil {
                     CleanCommand,
                     ImportCommand,
                     TrashCommand,
-                    RemoveEmptyCommand
+                    RemoveEmptyCommand,
+                    DecodeCommand
                 >, args);
     }
 }

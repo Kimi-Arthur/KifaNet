@@ -73,6 +73,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Games.BreathOfTheWild
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.Swisscom", "tests\PimixTest.Cloud.Swisscom\PimixTest.Cloud.Swisscom.csproj", "{56A44251-9FF7-4144-A145-F660DFDADCA7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Games.Files", "src\Pimix.Games.Files\Pimix.Games.Files.csproj", "{78D59B79-0B43-4281-A121-8C1915A9BC9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -219,6 +221,10 @@ Global
 		{56A44251-9FF7-4144-A145-F660DFDADCA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56A44251-9FF7-4144-A145-F660DFDADCA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56A44251-9FF7-4144-A145-F660DFDADCA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
