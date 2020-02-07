@@ -6,8 +6,9 @@ namespace Pimix.Games.Files {
     public class MsgBinFile {
         public static IEnumerable<string> GetMessages(Stream data) {
             var reader = new BinaryReader(data);
-            var indexes = new List<int>();
-            indexes.Add(reader.ReadInt32());
+            var indexes = new List<int> {
+                reader.ReadInt32()
+            };
             while (data.Position < indexes[0]) {
                 indexes.Add(reader.ReadInt32());
             }
