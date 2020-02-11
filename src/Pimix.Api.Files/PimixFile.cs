@@ -240,11 +240,13 @@ namespace Pimix.Api.Files {
 
         public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true,
             string pattern = "*")
-            => Client.List(Path, recursive)
-                .Where(f => IsMatch(f.Id, pattern) && (!ignoreFiles ||
-                                                       !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
-                                                       !FullPathIgnoredFiles.IsMatch(f.Id)))
-                .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
+            => Exists()
+                ? Enumerable.Repeat(this, 1)
+                : Client.List(Path, recursive)
+                    .Where(f => IsMatch(f.Id, pattern) && (!ignoreFiles ||
+                                                           !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
+                                                           !FullPathIgnoredFiles.IsMatch(f.Id)))
+                    .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         static bool IsMatch(string path, string pattern) {
             path = path.Substring(path.LastIndexOf("/", StringComparison.Ordinal) + 1);

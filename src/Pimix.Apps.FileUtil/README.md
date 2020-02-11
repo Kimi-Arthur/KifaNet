@@ -76,3 +76,6 @@ Updates:
 
 ### 8.0
 - Added `filex rm-empty` to recursively remove empty folders in file system.
+
+### 9.0
+- Added `filex decode` to extract/process games files.

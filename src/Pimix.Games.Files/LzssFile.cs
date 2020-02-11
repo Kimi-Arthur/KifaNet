@@ -22,7 +22,7 @@ namespace Pimix.Games.Files {
                 }
 
                 var nameChars = reader.ReadChars(0x30);
-                var nameString = new string(nameChars).Trim('\0');
+                var nameString = new string(nameChars);
                 fileInfos[i] = (nameString.Substring(0, nameString.IndexOf('\0')), offset, length);
             }
 
