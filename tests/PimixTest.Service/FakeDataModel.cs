@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace PimixTest.Service {
-    class FakeDataModel : DataModel {
+    class FakeDataModel : TranslatableDataModel<FakeDataModel> {
         public const string ModelId = "api_test";
 
         static FakeDataModelServiceClient client;

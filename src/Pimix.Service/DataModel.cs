@@ -15,9 +15,31 @@ namespace Pimix.Service {
         public override string ToString() => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
     }
 
+    public abstract class TranslatableDataModel<T> : DataModel where T : DataModel {
+        public Dictionary<string, T> Translations { get; set; }
+
+        public string DefaultLanguage { get; set; }
+    }
+
     public static class ClonableExtension {
         public static TDataModel Clone<TDataModel>(this TDataModel data) =>
-            JsonConvert.DeserializeObject<TDataModel>(JsonConvert.SerializeObject(data));
+            JsonConvert.DeserializeObject<TDataModel>(
+                JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), Defaults.JsonSerializerSettings);
+    }
+
+    public static class MergableExtension {
+        public static TDataModel Merge<TDataModel>(this TDataModel data, TDataModel update) {
+            var obj = data.Clone();
+            JsonConvert.PopulateObject(JsonConvert.SerializeObject(update, Defaults.JsonSerializerSettings), obj,
+                Defaults.JsonSerializerSettings);
+            return obj;
+        }
+    }
+
+    public static class TranslatableExtension {
+        public static TDataModel GetTranslated<TDataModel>(this TDataModel data, string language)
+            where TDataModel : TranslatableDataModel<TDataModel> =>
+            language == data.DefaultLanguage ? data : data.Merge(data.Translations[language]);
     }
 
     public class API {

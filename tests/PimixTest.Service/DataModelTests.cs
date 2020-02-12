@@ -5,13 +5,32 @@ using Xunit;
 namespace PimixTest.Service {
     public class DataModelTests {
         public DataModelTests() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.pimix.tk/api";
+            PimixServiceRestClient.PimixServerApiAddress = "http://www.jingbian.tk/api";
             FakeDataModel.Client.Reset();
         }
 
         [Fact]
         public void DataModelCallBasicTest() {
             FakeDataModel.Client.Reset();
+        }
+
+        [Fact]
+        public void TranslateTest() {
+            var x = new FakeDataModel {
+                StrProp = "A",
+                IntPROP = 123,
+                DefaultLanguage = "en",
+                Translations = new Dictionary<string, FakeDataModel> {
+                    ["zh"] = new FakeDataModel {
+                        StrProp = "中"
+                    }
+                }
+            };
+
+            Assert.Equal("中", x.GetTranslated("zh").StrProp);
+            Assert.Equal("A", x.GetTranslated("en").StrProp);
+            Assert.Equal(123, x.GetTranslated("zh").IntPROP);
+            Assert.Equal(123, x.GetTranslated("en").IntPROP);
         }
 
         [Fact]
