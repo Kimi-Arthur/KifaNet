@@ -75,6 +75,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.Swisscom", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Games.Files", "src\Pimix.Games.Files\Pimix.Games.Files.csproj", "{78D59B79-0B43-4281-A121-8C1915A9BC9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages.German", "src\Pimix.Languages.German\Pimix.Languages.German.csproj", "{15292670-AC73-4E6F-8F72-1B6CF2C48767}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Languages.German", "tests\PimixTest.Languages.German\PimixTest.Languages.German.csproj", "{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -225,6 +229,14 @@ Global
 		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
