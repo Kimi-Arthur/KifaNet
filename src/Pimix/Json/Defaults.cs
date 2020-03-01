@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
@@ -12,7 +13,7 @@ namespace Pimix {
                     NamingStrategy = new SnakeCaseNamingStrategy()
                 },
                 Converters = new List<JsonConverter> {
-                    new StringEnumConverter(),
+                    new StringEnumConverter(new SnakeCaseNamingStrategy()),
                     new GenericJsonConverter()
                 },
                 NullValueHandling = NullValueHandling.Ignore,
@@ -26,7 +27,7 @@ namespace Pimix {
                     NamingStrategy = new SnakeCaseNamingStrategy()
                 },
                 Converters = new List<JsonConverter> {
-                    new StringEnumConverter(),
+                    new StringEnumConverter(new SnakeCaseNamingStrategy()),
                     new GenericJsonConverter()
                 },
                 NullValueHandling = NullValueHandling.Ignore,
@@ -35,7 +36,7 @@ namespace Pimix {
     }
 
     public class OrderedContractResolver : DefaultContractResolver {
-        protected override IList<JsonProperty> CreateProperties(System.Type type,
+        protected override IList<JsonProperty> CreateProperties(Type type,
             MemberSerialization memberSerialization) {
             return base.CreateProperties(type, memberSerialization).OrderBy(p => p.PropertyName).ToList();
         }
