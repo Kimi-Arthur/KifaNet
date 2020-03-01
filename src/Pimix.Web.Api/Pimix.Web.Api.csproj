@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
     <ProjectReference Include="..\Pimix.Games.BreathOfTheWild\Pimix.Games.BreathOfTheWild.csproj" />
     <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
+    <ProjectReference Include="..\Pimix.Languages.German\Pimix.Languages.German.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="NLog.config">

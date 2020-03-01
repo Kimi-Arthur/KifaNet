@@ -16,7 +16,7 @@ namespace PimixTest.Languages.German {
             var verb = client.GetWord("malen");
             Assert.IsType<Verb>(verb);
             Assert.Equal("to paint", verb.Translation);
-            Assert.Equal("[ˈma:lən]", verb.PronunciationIpa);
+            Assert.Equal("ˈma:lən", verb.Pronunciation);
         }
     }
 }

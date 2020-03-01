@@ -23,11 +23,11 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         [Option('s', "service", HelpText =
             "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega, swiss]")]
-        public CloudServiceType ServiceType { get; set; } = CloudServiceType.google;
+        public CloudServiceType ServiceType { get; set; } = CloudServiceType.Google;
 
         [Option('f', "format", HelpText =
             "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
-        public CloudFormatType FormatType { get; set; } = CloudFormatType.v1;
+        public CloudFormatType FormatType { get; set; } = CloudFormatType.V1;
 
         [Option('c', "use-cache", HelpText = "Use cache to help upload.")]
         public bool UseCache { get; set; }

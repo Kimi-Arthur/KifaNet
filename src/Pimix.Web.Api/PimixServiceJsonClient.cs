@@ -73,8 +73,10 @@ namespace Pimix.Web.Api {
             throw new NotImplementedException();
         }
 
-        string Read(string id)
-            => File.ReadAllText($"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json");
+        string Read(string id) {
+            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
+            return !File.Exists(path) ? "{}" : File.ReadAllText(path);
+        }
 
         void LoadGroups() {
             Groups.Clear();

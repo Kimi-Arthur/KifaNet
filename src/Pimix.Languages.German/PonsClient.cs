@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
-using VerbForms =
-    System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType,
-        System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
+using VerbForms = System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType, System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
 
 
 namespace Pimix.Languages.German {
@@ -33,31 +31,32 @@ namespace Pimix.Languages.German {
             ["pronoun"] = WordType.Pronoun
         };
 
-        public Word GetWord(string word) {
+        public Word GetWord(string wordId) {
             var doc = new HtmlDocument();
-            doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{word}").Result);
+            doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
             var wordNode = doc.DocumentNode.SelectSingleNode("//div[@class='entry first']");
             var type = wordTypes[wordNode.SelectSingleNode("//acronym[1]").Attributes["title"].Value];
 
-            Word myWord = new Word();
+            var word = new Word();
             switch (type) {
                 case WordType.Verb:
                     var verb = new Verb();
-                    verb.VerbForms = GetVerbForms(word);
-                    myWord = verb;
+                    verb.VerbForms = GetVerbForms(wordId);
+                    word = verb;
                     break;
             }
 
-            myWord.Type = type;
-            myWord.PronunciationIpa = wordNode.SelectSingleNode("(//span[@class='phonetics'])[1]").InnerText;
-            myWord.Translation = wordNode.SelectSingleNode("(//div[@class='target'])[1]").InnerText.Trim();
-            return myWord;
+            word.Type = type;
+            word.Pronunciation = wordNode.SelectSingleNode("(//span[@class='phonetics'])[1]").InnerText
+                .Split(new char[] {'[', ']', ','})[1];
+            word.Translation = wordNode.SelectSingleNode("(//div[@class='target'])[1]").InnerText.Trim();
+            return word;
         }
 
-        public VerbForms GetVerbForms(string word) {
+        public VerbForms GetVerbForms(string wordId) {
             var forms = new VerbForms();
             var doc = new HtmlDocument();
-            doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/verb-tables/german/{word}").Result);
+            doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/verb-tables/german/{wordId}").Result);
             foreach (VerbFormType form in Enum.GetValues(typeof(VerbFormType))) {
                 var x = Enum.GetValues(typeof(Person)).Cast<Person>().ToDictionary(p => p, p => doc
                     .DocumentNode

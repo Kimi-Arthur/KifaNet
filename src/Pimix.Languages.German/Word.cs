@@ -13,7 +13,7 @@ namespace Pimix.Languages.German {
 
         public string Translation { get; set; }
 
-        public string PronunciationIpa { get; set; }
+        public string Pronunciation { get; set; }
 
         [JsonIgnore]
         public string PronunciationAudioLink => PronunciationAudioLinkDuden ??
