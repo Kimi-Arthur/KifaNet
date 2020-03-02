@@ -4,7 +4,7 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + Verb.ModelId)]
-    public class GermanVerbsController : PimixController<Verb> {
+    public class VerbsController : PimixController<Verb> {
         static readonly VerbServiceClient client = new VerbJsonServiceClient();
 
         protected override PimixServiceClient<Verb> Client => client;

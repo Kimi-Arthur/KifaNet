@@ -5,6 +5,13 @@ Content-Type: application/x-yaml
 
 {}
 
+### Set
+POST {{server}}/api/languages/german/words/ich
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
 ### Get
 GET {{server}}/api/languages/german/verbs/malen
 Accept: application/x-yaml

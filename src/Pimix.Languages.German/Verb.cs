@@ -19,7 +19,7 @@ namespace Pimix.Languages.German {
     }
 
     public enum VerbFormType {
-        PresentIndicative
+        IndicativePresent
     }
 
     public enum Person {
@@ -30,7 +30,6 @@ namespace Pimix.Languages.German {
         Ihr,
         Sie
     }
-
 
     public interface VerbServiceClient : PimixServiceClient<Verb> {
     }

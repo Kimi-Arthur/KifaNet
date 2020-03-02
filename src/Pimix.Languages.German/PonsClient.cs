@@ -10,10 +10,10 @@ namespace Pimix.Languages.German {
     public class PonsClient {
         static HttpClient ponsClient = new HttpClient();
 
-        const string selectField = "data-pons-flection-id";
+        const string SelectField = "data-pons-flection-id";
 
         static readonly Dictionary<VerbFormType, string> verbFormIds = new Dictionary<VerbFormType, string> {
-            [VerbFormType.PresentIndicative] = "INDIKATIV_PRAESENS"
+            [VerbFormType.IndicativePresent] = "INDIKATIV_PRAESENS"
         };
 
         static readonly Dictionary<Person, string> personIds = new Dictionary<Person, string> {
@@ -35,7 +35,8 @@ namespace Pimix.Languages.German {
             var doc = new HtmlDocument();
             doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
             var wordNode = doc.DocumentNode.SelectSingleNode("//div[@class='entry first']");
-            var type = wordTypes[wordNode.SelectSingleNode("//acronym[1]").Attributes["title"].Value];
+            var type = wordTypes[
+                wordNode.SelectSingleNode("//span[@class='wordclass']/acronym[1]").Attributes["title"].Value];
 
             var word = new Word();
             switch (type) {
@@ -60,7 +61,7 @@ namespace Pimix.Languages.German {
             foreach (VerbFormType form in Enum.GetValues(typeof(VerbFormType))) {
                 var x = Enum.GetValues(typeof(Person)).Cast<Person>().ToDictionary(p => p, p => doc
                     .DocumentNode
-                    .SelectSingleNode($"(//span[@{selectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
+                    .SelectSingleNode($"(//span[@{SelectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
                     .InnerText);
                 forms[form] = x;
             }

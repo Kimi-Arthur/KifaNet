@@ -7,7 +7,7 @@ namespace PimixTest.Languages.German {
         public void VerbFormsTest() {
             var client = new PonsClient();
             var forms = client.GetVerbForms("malen");
-            Assert.Equal("male", forms[VerbFormType.PresentIndicative][Person.Ich]);
+            Assert.Equal("male", forms[VerbFormType.IndicativePresent][Person.Ich]);
         }
 
         [Fact]
