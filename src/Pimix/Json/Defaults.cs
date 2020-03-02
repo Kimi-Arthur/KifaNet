@@ -10,7 +10,7 @@ namespace Pimix {
         public static readonly JsonSerializerSettings JsonSerializerSettings =
             new JsonSerializerSettings {
                 ContractResolver = new OrderedContractResolver {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
+                    NamingStrategy = new SnakeCaseNamingStrategy(true, false)
                 },
                 Converters = new List<JsonConverter> {
                     new StringEnumConverter(new SnakeCaseNamingStrategy()),
@@ -24,7 +24,7 @@ namespace Pimix {
             new JsonSerializerSettings {
                 Formatting = Formatting.Indented,
                 ContractResolver = new OrderedContractResolver {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
+                    NamingStrategy = new SnakeCaseNamingStrategy(true, false)
                 },
                 Converters = new List<JsonConverter> {
                     new StringEnumConverter(new SnakeCaseNamingStrategy()),
