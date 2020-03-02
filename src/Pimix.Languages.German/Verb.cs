@@ -14,7 +14,7 @@ namespace Pimix.Languages.German {
             var word = new PonsClient().GetWord(Id) as Verb;
             VerbForms = word.VerbForms;
             Pronunciation = word.Pronunciation;
-            Translation = word.Translation;
+            Meaning = word.Meaning;
         }
     }
 

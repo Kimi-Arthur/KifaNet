@@ -11,7 +11,7 @@ namespace Pimix.Languages.German {
     public class Word : DataModel {
         public virtual WordType Type { get; set; }
 
-        public string Translation { get; set; }
+        public string Meaning { get; set; }
 
         public string Pronunciation { get; set; }
 

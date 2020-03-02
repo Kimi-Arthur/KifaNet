@@ -49,7 +49,7 @@ namespace Pimix.Languages.German {
             word.Type = type;
             word.Pronunciation = wordNode.SelectSingleNode("(//span[@class='phonetics'])[1]").InnerText
                 .Split(new char[] {'[', ']', ','})[1];
-            word.Translation = wordNode.SelectSingleNode("(//div[@class='target'])[1]").InnerText.Trim();
+            word.Meaning = wordNode.SelectSingleNode("(//div[@class='target'])[1]").InnerText.Trim();
             return word;
         }
 
