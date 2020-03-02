@@ -1,12 +1,12 @@
 ### Set
-POST {{server}}/api/languages/german/verbs/malen
+POST {{server}}/api/languages/german/verbs/wandern
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 {}
 
 ### Set
-POST {{server}}/api/languages/german/words/ich
+POST {{server}}/api/languages/german/words/wandern
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
