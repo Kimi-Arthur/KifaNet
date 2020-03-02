@@ -13,7 +13,7 @@ Content-Type: application/x-yaml
 {}
 
 ### Get
-GET {{server}}/api/languages/german/verbs/malen
+GET {{server}}/api/languages/german/verbs/wandern
 Accept: application/x-yaml
 
 {}

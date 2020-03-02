@@ -1,0 +1,405 @@
+GET http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T025104.200.txt
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T024942.500.txt
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T024924.200.txt
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T022442.500.txt
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T022244.500.txt
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T022201.500.txt
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+{}
+
+<> 2020-03-02T022038.500.txt
+
+###
+
+POST http://www.jingbian.tk/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://www.jingbian.tk/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+<> 2020-03-02T021656.404.html
+
+###
+
+POST http://localhost:5000/api/languages/german/words/wandern
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/wandern
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/snowboarden
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+<> 2020-03-02T123233.500.txt
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/snowboarden
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+<> 2020-03-02T123216.500.txt
+
+###
+
+POST http://localhost:5000/api/languages/german/words/ich
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/words/ich
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+<> 2020-03-02T115615.500.txt
+
+###
+
+POST http://localhost:5000/api/languages/german/words/ich
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+<> 2020-03-02T115119.500.txt
+
+###
+
+GET http://localhost:5000/api/files/%2FAnime%2FSword%20Art%20Online%20%282012%29%2FSeason%202%20%282014%29%2FSword%20Art%20Online%20S02E01%20%E9%8A%83%E3%81%AE%E4%B8%96%E7%95%8C.mkv
+Accept: application/json
+
+<> 2020-03-02T095724.200.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+GET http://localhost:5000/api/files/%2FAnime%2FSword%20Art%20Online%20%282012%29%2FSeason%202%20%282014%29%2FSword%20Art%20Online%20S02E01%20%E9%8A%83%E3%81%AE%E4%B8%96%E7%95%8C.mkv
+Accept: application/json
+
+<> 2020-03-02T095559.200.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+{}
+
+<> 2020-02-28T025058.200.txt
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+{}
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+<> 2020-02-28T024936.400.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+###
+
+POST http://localhost:5000/api/animes/Game%20of%20Thrones
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+tmdb_id: '1399'
+language: en
+pattern_id: tv_multi
+season_id_width: 2
+episode_id_width: 2
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+
+<> 2020-02-28T024828.415.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+
+<> 2020-02-28T024729.415.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024655.415.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024627.415.json
+
+###
+
+POST http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024535.415.json
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024431.200.txt
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024349.200.txt
+
+###
+
+GET http://localhost:5000/api/languages/german/verbs/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024046.500.txt
+
+###
+
+GET http://localhost:5000/api/tv_shows/malen
+Accept: application/x-yaml
+
+<> 2020-02-28T024026.500.txt
+
+###
+
+GET http://www.jingbian.tk/api/configs/baidu_cloud/$update_quota?id=default
+
+<> 2020-01-27T013511.200.json
+
+###
+
