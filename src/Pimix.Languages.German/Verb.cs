@@ -1,6 +1,7 @@
-using System.Runtime.Serialization;
 using Pimix.Service;
-using VerbForms = System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType, System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
+using VerbForms =
+    System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType,
+        System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
 
 namespace Pimix.Languages.German {
     public class Verb : Word {

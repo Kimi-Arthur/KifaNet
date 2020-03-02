@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages.German", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Languages.German", "tests\PimixTest.Languages.German\PimixTest.Languages.German.csproj", "{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.NoteUtil", "src\Pimix.Apps.NoteUtil\Pimix.Apps.NoteUtil.csproj", "{52F95839-91F3-4BB6-948A-4BD4904609DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -237,6 +239,10 @@ Global
 		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52F95839-91F3-4BB6-948A-4BD4904609DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52F95839-91F3-4BB6-948A-4BD4904609DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52F95839-91F3-4BB6-948A-4BD4904609DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52F95839-91F3-4BB6-948A-4BD4904609DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
