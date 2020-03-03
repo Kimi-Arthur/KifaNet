@@ -36,9 +36,9 @@ namespace Pimix.Languages.German {
         public Word GetWord(string wordId) {
             var doc = new HtmlDocument();
             doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
-            var wordNode = doc.DocumentNode.SelectSingleNode("(//div[@class='entry' or @class='entry first'])[1]");
+            var wordNode = doc.DocumentNode.SelectSingleNode("(.//div[@class='entry' or @class='entry first'])[1]");
             var type = wordTypes[
-                wordNode.SelectSingleNode("//span[@class='wordclass']/acronym[1]").Attributes["title"].Value];
+                wordNode.SelectSingleNode(".//span[@class='wordclass']/acronym[1]").Attributes["title"].Value];
 
             var word = new Word();
             switch (type) {
@@ -51,7 +51,7 @@ namespace Pimix.Languages.German {
 
             word.Type = type;
 
-            var pronunciationNode = wordNode.SelectSingleNode("(//span[@class='phonetics'])[1]");
+            var pronunciationNode = wordNode.SelectSingleNode("(.//span[@class='phonetics'])[1]");
             if (pronunciationNode != null) {
                 word.Pronunciation = pronunciationNode.InnerText
                     .Split('[', ']', ',')[1];
@@ -62,7 +62,7 @@ namespace Pimix.Languages.German {
                 word.PronunciationAudioLinkPons = $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}";
             }
 
-            word.Meaning = wordNode.SelectSingleNode("(//div[@class='target'])[1]").InnerText.Trim();
+            word.Meaning = wordNode.SelectSingleNode("(.//div[@class='target'])[1]").InnerText.Trim();
             return word;
         }
 
