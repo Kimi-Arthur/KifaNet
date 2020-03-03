@@ -5,7 +5,7 @@ using VerbForms =
 
 namespace Pimix.Languages.German {
     public class Verb : Word {
-        public const string ModelId = "languages/german/verbs";
+        public new const string ModelId = "languages/german/verbs";
 
         public override WordType Type => WordType.Verb;
 
@@ -15,6 +15,7 @@ namespace Pimix.Languages.German {
             var word = new PonsClient().GetWord(Id) as Verb;
             VerbForms = word.VerbForms;
             Pronunciation = word.Pronunciation;
+            PronunciationAudioLinkPons = word.PronunciationAudioLinkPons;
             Meaning = word.Meaning;
         }
     }
