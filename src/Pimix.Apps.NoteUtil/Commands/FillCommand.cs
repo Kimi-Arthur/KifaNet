@@ -5,7 +5,9 @@ using System.Linq;
 using CommandLine;
 using Pimix.Api.Files;
 using Pimix.Languages.German;
-using VerbForms = System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType, System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
+using VerbForms =
+    System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType,
+        System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
 
 namespace Pimix.Apps.NoteUtil.Commands {
     [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]
@@ -60,7 +62,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
                                 } else {
                                     var parts = line.Split("|").ToList();
                                     parts.AddRange(Enumerable.Repeat<string>("", columnNames.Count - parts.Count));
-                                    var verb = ParseVerbRow(parts, columnNames);
+                                    var verb = new Verb {Id = GetWordId(parts, columnNames)};
                                     verb.Fill();
                                     FillVerbRow(verb, parts, columnNames);
                                     lines.Add(string.Join("|", parts));
@@ -80,6 +82,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
 
         static string[] GetColumnsDefinition(string line) => line.Contains("|") ? line.Split("|") : null;
 
+        static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) => parts[columnNames["Word"]];
 
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
@@ -118,12 +121,12 @@ namespace Pimix.Apps.NoteUtil.Commands {
         static void FillVerbRow(Verb verb, List<string> parts, Dictionary<string, int> columnNames) {
             foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
                 parts[index] = columnName switch {
-                    "ich" => verb.VerbForms[VerbFormType.IndicativePresent][Person.Ich],
-                    "du" => verb.VerbForms[VerbFormType.IndicativePresent][Person.Du],
-                    "er/sie/es" => verb.VerbForms[VerbFormType.IndicativePresent][Person.Er],
-                    "wir" => verb.VerbForms[VerbFormType.IndicativePresent][Person.Wir],
-                    "ihr" => verb.VerbForms[VerbFormType.IndicativePresent][Person.Ihr],
-                    "sie/Sie" => verb.VerbForms[VerbFormType.IndicativePresent][Person.Sie],
+                    "Indicative Present" => $"ich {verb.VerbForms[VerbFormType.IndicativePresent][Person.Ich]}<br>"
+                                            + $"du {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
+                                            + $"er/sie/es {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
+                                            + $"wir {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
+                                            + $"ihr {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
+                                            + $"sie/Sie {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}",
                     "Pronunciation" => $"[\\[{verb.Pronunciation}\\]]({verb.PronunciationAudioLink})",
                     "Meaning" => verb.Meaning,
                     _ => parts[index]
