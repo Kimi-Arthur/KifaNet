@@ -12,11 +12,14 @@ namespace Pimix.Languages.German {
         public VerbForms VerbForms { get; set; } = new VerbForms();
 
         public override void Fill() {
-            var word = new PonsClient().GetWord(Id) as Verb;
-            VerbForms = word.VerbForms;
-            Pronunciation = word.Pronunciation;
-            PronunciationAudioLinkPons = word.PronunciationAudioLinkPons;
-            Meaning = word.Meaning;
+            var wiki = new DeWiktionaryClient().GetWord(Id);
+            var pons = new PonsClient().GetWord(Id) as Verb;
+
+            VerbForms = pons.VerbForms;
+            Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
+            PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
+            PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
+            Meaning = pons.Meaning;
         }
     }
 

@@ -21,8 +21,8 @@ namespace Pimix.Languages.German {
         public string Pronunciation { get; set; }
 
         [JsonIgnore]
-        public string PronunciationAudioLink => PronunciationAudioLinkDuden ??
-                                                PronunciationAudioLinkPons ?? PronunciationAudioLinkWiktionary;
+        public string PronunciationAudioLink => PronunciationAudioLinkDuden ?? PronunciationAudioLinkWiktionary
+                                                ?? PronunciationAudioLinkPons;
 
         public string PronunciationAudioLinkDuden { get; set; }
 
@@ -31,10 +31,14 @@ namespace Pimix.Languages.German {
         public string PronunciationAudioLinkWiktionary { get; set; }
 
         public override void Fill() {
-            var word = new PonsClient().GetWord(Id);
-            Pronunciation = word.Pronunciation;
-            Meaning = word.Meaning;
-            Type = word.Type;
+            var wiki = new DeWiktionaryClient().GetWord(Id);
+            var pons = new PonsClient().GetWord(Id);
+            Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
+            PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
+            PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
+
+            Meaning = pons.Meaning;
+            Type = pons.Type;
         }
     }
 
