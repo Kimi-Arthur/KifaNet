@@ -12,4 +12,11 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="duden_audio.json" />
+    <EmbeddedResource Include="duden_audio.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

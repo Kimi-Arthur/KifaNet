@@ -33,7 +33,9 @@ namespace Pimix.Languages.German {
         public override void Fill() {
             var wiki = new DeWiktionaryClient().GetWord(Id);
             var pons = new PonsClient().GetWord(Id);
+            var duden = new DudenClient().GetWord(Id);
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
+            PronunciationAudioLinkDuden = duden.PronunciationAudioLinkDuden;
             PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
             PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
 

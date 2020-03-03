@@ -1,7 +1,5 @@
 using Pimix.Service;
-using VerbForms =
-    System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType,
-        System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
+using VerbForms = System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType, System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
 
 namespace Pimix.Languages.German {
     public class Verb : Word {
@@ -14,9 +12,11 @@ namespace Pimix.Languages.German {
         public override void Fill() {
             var wiki = new DeWiktionaryClient().GetWord(Id);
             var pons = new PonsClient().GetWord(Id) as Verb;
+            var duden = new DudenClient().GetWord(Id);
 
             VerbForms = pons.VerbForms;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
+            PronunciationAudioLinkDuden = duden.PronunciationAudioLinkDuden;
             PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
             PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
             Meaning = pons.Meaning;
