@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
+using NLog;
 using Pimix.Api.Files;
 using Pimix.Languages.German;
 using VerbForms =
@@ -12,8 +13,11 @@ using VerbForms =
 namespace Pimix.Apps.NoteUtil.Commands {
     [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]
     public class FillCommand : PimixCommand {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         const string VocabularyLine = "## Vocabulary";
         const string VerbsLine = "### Verbs";
+        const string NounsLine = "### Nouns";
         const string SectionLine = "### ";
 
         [Value(0, Required = true, HelpText = "Target file to rename.")]
@@ -43,31 +47,44 @@ namespace Pimix.Apps.NoteUtil.Commands {
                         lines.Add(line);
                         break;
                     case ParsingState.Verbs:
+                    case ParsingState.Nouns:
                         if (line.StartsWith(SectionLine)) {
-                            state = ParsingState.Vocabulary;
-                            lines.Add(line);
-                        } else {
-                            if (columnNames.Count == 0) {
-                                var definition = GetColumnsDefinition(line);
-                                if (definition != null) {
-                                    for (int i = 0; i < definition.Length; i++) {
-                                        columnNames[definition[i]] = i;
-                                    }
-                                }
+                            state = line switch {
+                                VerbsLine => ParsingState.Verbs,
+                                NounsLine => ParsingState.Nouns,
+                                _ => ParsingState.Vocabulary
+                            };
 
-                                lines.Add(line);
-                            } else {
-                                if (!line.Contains("|") || line.StartsWith("-")) {
-                                    lines.Add(line);
-                                } else {
-                                    var parts = line.Split("|").ToList();
-                                    parts.AddRange(Enumerable.Repeat<string>("", columnNames.Count - parts.Count));
-                                    var verb = new Verb {Id = GetWordId(parts, columnNames)};
-                                    verb.Fill();
-                                    FillVerbRow(verb, parts, columnNames);
-                                    lines.Add(string.Join("|", parts));
+                            columnNames.Clear();
+                            lines.Add(line);
+                        } else if (!line.Contains("|")) {
+                            // Not in a table.
+                            columnNames.Clear();
+                            lines.Add(line);
+                        } else if (columnNames.Count == 0) {
+                            var definition = GetColumnsDefinition(line);
+                            if (definition != null) {
+                                for (int i = 0; i < definition.Length; i++) {
+                                    columnNames[definition[i]] = i;
                                 }
                             }
+
+                            lines.Add(line);
+                        } else if (line.StartsWith("-")) {
+                            lines.Add(line);
+                        } else {
+                            var parts = line.Split("|").ToList();
+                            parts.AddRange(Enumerable.Repeat<string>("", columnNames.Count - parts.Count));
+                            switch (state) {
+                                case ParsingState.Verbs:
+                                    FillVerbRow(parts, columnNames);
+                                    break;
+                                case ParsingState.Nouns:
+                                    FillNounRow(parts, columnNames);
+                                    break;
+                            }
+
+                            lines.Add(string.Join("|", parts));
                         }
 
                         break;
@@ -80,9 +97,10 @@ namespace Pimix.Apps.NoteUtil.Commands {
             return 0;
         }
 
-        static string[] GetColumnsDefinition(string line) => line.Contains("|") ? line.Split("|") : null;
+        static string[] GetColumnsDefinition(string line) => line.Split("|");
 
-        static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) => parts[columnNames["Word"]];
+        static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) =>
+            parts[columnNames["Word"]].Replace("*", "");
 
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
@@ -118,7 +136,12 @@ namespace Pimix.Apps.NoteUtil.Commands {
             return verb;
         }
 
-        static void FillVerbRow(Verb verb, List<string> parts, Dictionary<string, int> columnNames) {
+        static void FillVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
+            var verb = new Verb {Id = GetWordId(parts, columnNames)};
+            logger.Info($"Processing verb: {verb.Id}");
+
+            verb.Fill();
+
             foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
                 parts[index] = columnName switch {
                     "Indicative Present" =>
@@ -134,11 +157,28 @@ namespace Pimix.Apps.NoteUtil.Commands {
                 };
             }
         }
+
+        static void FillNounRow(List<string> parts, Dictionary<string, int> columnNames) {
+            var noun = new Noun {Id = GetWordId(parts, columnNames).Split(" ").Last()};
+            logger.Info($"Processing noun: {noun.Id}");
+
+            noun.Fill();
+
+            foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
+                parts[index] = columnName switch {
+                    "Plural" => noun.GetNounFormWithArticle(Case.Nominative, Number.Plural),
+                    "Pronunciation" => $"[[{noun.Pronunciation}]]({noun.PronunciationAudioLink})",
+                    "Meaning" => noun.Meaning,
+                    _ => parts[index]
+                };
+            }
+        }
     }
 
     enum ParsingState {
         New,
         Vocabulary,
-        Verbs
+        Verbs,
+        Nouns
     }
 }

@@ -3,6 +3,7 @@ using Pimix.Service;
 
 namespace Pimix.Languages.German {
     public enum WordType {
+        Unknown,
         Verb,
         Noun,
         Pronoun,
@@ -34,6 +35,11 @@ namespace Pimix.Languages.German {
             var wiki = new DeWiktionaryClient().GetWord(Id);
             var pons = new PonsClient().GetWord(Id);
             var duden = new DudenClient().GetWord(Id);
+
+            FillWithData(wiki, pons, duden);
+        }
+
+        protected void FillWithData(Word wiki, Word pons, Word duden) {
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
             PronunciationAudioLinkDuden = duden.PronunciationAudioLinkDuden;
             PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;

@@ -37,6 +37,10 @@ namespace Pimix.Languages.German {
             var doc = new HtmlDocument();
             doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
             var wordNode = doc.DocumentNode.SelectSingleNode("(.//div[@class='entry' or @class='entry first'])[1]");
+            if (wordNode == null) {
+                return new Word();
+            }
+
             var type = wordTypes[
                 wordNode.SelectSingleNode(".//span[@class='wordclass']/acronym[1]").Attributes["title"].Value];
 
@@ -62,7 +66,7 @@ namespace Pimix.Languages.German {
                 word.PronunciationAudioLinkPons = $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}";
             }
 
-            word.Meaning = wordNode.SelectSingleNode("(.//div[@class='target'])[1]").InnerText.Trim();
+            word.Meaning = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim();
             return word;
         }
 
