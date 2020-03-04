@@ -70,11 +70,12 @@ namespace Pimix.Apps.NoteUtil.Commands {
                             }
 
                             lines.Add(line);
-                        } else if (line.StartsWith("-")) {
+                        } else if (line.Contains("--")) {
+                            // Table definition line.
                             lines.Add(line);
                         } else {
-                            var parts = line.Split("|").ToList();
-                            parts.AddRange(Enumerable.Repeat<string>("", columnNames.Count - parts.Count));
+                            var parts = line.Trim('|').Split("|").Select(s => s.Trim()).ToList();
+                            parts.AddRange(Enumerable.Repeat("", columnNames.Count - parts.Count));
                             switch (state) {
                                 case ParsingState.Verbs:
                                     FillVerbRow(parts, columnNames);
@@ -84,7 +85,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
                                     break;
                             }
 
-                            lines.Add(string.Join("|", parts));
+                            lines.Add($"|{string.Join("|", parts)}|");
                         }
 
                         break;
@@ -97,7 +98,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
             return 0;
         }
 
-        static string[] GetColumnsDefinition(string line) => line.Split("|");
+        static string[] GetColumnsDefinition(string line) => line.Trim('|').Split("|").Select(x => x.Trim()).ToArray();
 
         static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) =>
             parts[columnNames["Word"]].Replace("*", "");
