@@ -124,10 +124,10 @@ namespace Pimix.Apps.NoteUtil.Commands {
                     "Indicative Present" =>
                     $"<pre>ich       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Ich]}<br>"
                     + $"du        {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
-                    + $"er/sie/es {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
-                    + $"wir       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
-                    + $"ihr       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
-                    + $"sie/Sie   {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}</pre>",
+                    + $"er/sie/es {verb.VerbForms[VerbFormType.IndicativePresent][Person.Er]}<br>"
+                    + $"wir       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Wir]}<br>"
+                    + $"ihr       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Ihr]}<br>"
+                    + $"sie/Sie   {verb.VerbForms[VerbFormType.IndicativePresent][Person.Sie]}</pre>",
                     "Pronunciation" => $"[\\[{verb.Pronunciation}\\]]({verb.PronunciationAudioLink})",
                     "Meaning" => verb.Meaning,
                     _ => parts[index]
