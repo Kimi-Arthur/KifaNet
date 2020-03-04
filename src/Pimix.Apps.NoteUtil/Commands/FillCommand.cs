@@ -128,7 +128,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
                     + $"wir       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Wir]}<br>"
                     + $"ihr       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Ihr]}<br>"
                     + $"sie/Sie   {verb.VerbForms[VerbFormType.IndicativePresent][Person.Sie]}</pre>",
-                    "Pronunciation" => $"[\\[{verb.Pronunciation}\\]]({verb.PronunciationAudioLink})",
+                    "Pronunciation" => $"[[{verb.Pronunciation}]]({verb.PronunciationAudioLink})",
                     "Meaning" => verb.Meaning,
                     _ => parts[index]
                 };
