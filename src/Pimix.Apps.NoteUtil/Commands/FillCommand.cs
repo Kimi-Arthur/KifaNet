@@ -24,7 +24,8 @@ namespace Pimix.Apps.NoteUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            using var sr = new StreamReader(new PimixFile(FileUri).OpenRead());
+            var noteFile = new PimixFile(FileUri);
+            using var sr = new StreamReader(noteFile.OpenRead());
             var state = ParsingState.New;
             var lines = new List<string>();
             var line = sr.ReadLine();
@@ -39,13 +40,6 @@ namespace Pimix.Apps.NoteUtil.Commands {
                         lines.Add(line);
                         break;
                     case ParsingState.Vocabulary:
-                        if (line == VerbsLine) {
-                            state = ParsingState.Verbs;
-                            columnNames.Clear();
-                        }
-
-                        lines.Add(line);
-                        break;
                     case ParsingState.Verbs:
                     case ParsingState.Nouns:
                         if (line.StartsWith(SectionLine)) {
@@ -73,6 +67,8 @@ namespace Pimix.Apps.NoteUtil.Commands {
                         } else if (line.Contains("--")) {
                             // Table definition line.
                             lines.Add(line);
+                        } else if (!columnNames.ContainsKey("Word")) {
+                            lines.Add(line);
                         } else {
                             var parts = line.Trim('|').Split("|").Select(s => s.Trim()).ToList();
                             parts.AddRange(Enumerable.Repeat("", columnNames.Count - parts.Count));
@@ -82,6 +78,9 @@ namespace Pimix.Apps.NoteUtil.Commands {
                                     break;
                                 case ParsingState.Nouns:
                                     FillNounRow(parts, columnNames);
+                                    break;
+                                case ParsingState.Vocabulary:
+                                    FillWordRow(parts, columnNames);
                                     break;
                             }
 
@@ -94,14 +93,15 @@ namespace Pimix.Apps.NoteUtil.Commands {
                 line = sr.ReadLine();
             }
 
-            new PimixFile(FileUri).Write(string.Join("\n", lines));
+            noteFile.Delete();
+            noteFile.Write(string.Join("\n", lines));
             return 0;
         }
 
         static string[] GetColumnsDefinition(string line) => line.Trim('|').Split("|").Select(x => x.Trim()).ToArray();
 
         static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) =>
-            parts[columnNames["Word"]].Replace("*", "");
+            parts[columnNames["Word"]].Replace("*", "").Split(" ").Last();
 
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
@@ -160,7 +160,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         }
 
         static void FillNounRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var noun = new Noun {Id = GetWordId(parts, columnNames).Split(" ").Last()};
+            var noun = new Noun {Id = GetWordId(parts, columnNames)};
             logger.Info($"Processing noun: {noun.Id}");
 
             noun.Fill();
@@ -170,6 +170,21 @@ namespace Pimix.Apps.NoteUtil.Commands {
                     "Plural" => noun.GetNounFormWithArticle(Case.Nominative, Number.Plural),
                     "Pronunciation" => $"[[{noun.Pronunciation}]]({noun.PronunciationAudioLink})",
                     "Meaning" => noun.Meaning,
+                    _ => parts[index]
+                };
+            }
+        }
+
+        static void FillWordRow(List<string> parts, Dictionary<string, int> columnNames) {
+            var word = new Word {Id = GetWordId(parts, columnNames)};
+            logger.Info($"Processing word: {word.Id}");
+
+            word.Fill();
+
+            foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
+                parts[index] = columnName switch {
+                    "Pronunciation" => $"[[{word.Pronunciation}]]({word.PronunciationAudioLink})",
+                    "Meaning" => word.Meaning,
                     _ => parts[index]
                 };
             }

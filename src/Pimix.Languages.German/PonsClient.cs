@@ -27,12 +27,6 @@ namespace Pimix.Languages.German {
             [Person.Sie] = "3P"
         };
 
-        static readonly Dictionary<string, WordType> wordTypes = new Dictionary<string, WordType> {
-            ["verb"] = WordType.Verb,
-            ["noun"] = WordType.Noun,
-            ["pronoun"] = WordType.Pronoun
-        };
-
         public Word GetWord(string wordId) {
             var doc = new HtmlDocument();
             doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
@@ -41,8 +35,8 @@ namespace Pimix.Languages.German {
                 return new Word();
             }
 
-            var type = wordTypes[
-                wordNode.SelectSingleNode(".//span[@class='wordclass']/acronym[1]").Attributes["title"].Value];
+            var type = GetWordType(wordNode.SelectSingleNode(".//span[@class='wordclass']/acronym[1]")
+                .Attributes["title"].Value);
 
             var word = new Word();
             switch (type) {
@@ -69,6 +63,16 @@ namespace Pimix.Languages.German {
             word.Meaning = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim();
             return word;
         }
+
+        static WordType GetWordType(string value) => value switch {
+            "verb" => WordType.Verb,
+            "noun" => WordType.Noun,
+            "pronoun" => WordType.Pronoun,
+            "adjective" => WordType.Adjective,
+            "adverb" => WordType.Adverb,
+            "preposition" => WordType.Preposition,
+            _ => WordType.Unknown
+        };
 
         public VerbForms GetVerbForms(string wordId) {
             var forms = new VerbForms();
