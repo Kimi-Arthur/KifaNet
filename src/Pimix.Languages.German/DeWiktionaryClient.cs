@@ -24,7 +24,7 @@ namespace Pimix.Languages.German {
 
                     var audioNode = node.SelectSingleNode($".//a[@title='De-{wordId}.ogg']");
                     if (audioNode != null) {
-                        word.PronunciationAudioLinkWiktionary = audioNode.Attributes["href"].Value;
+                        word.PronunciationAudioLinkWiktionary = $"https:{audioNode.Attributes["href"].Value}";
                     }
                 } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {
                     inDeutsch = true;
