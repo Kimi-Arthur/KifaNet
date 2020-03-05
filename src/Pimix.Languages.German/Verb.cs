@@ -25,7 +25,7 @@ namespace Pimix.Languages.German {
             try {
                 pons = new PonsClient().GetWord(Id) as Verb;
             } catch (Exception ex) {
-                logger.Warn($"Failed to get pons word for {Id}");
+                logger.Warn(ex, $"Failed to get pons word for {Id}");
             }
 
             var duden = new DudenClient().GetWord(Id);

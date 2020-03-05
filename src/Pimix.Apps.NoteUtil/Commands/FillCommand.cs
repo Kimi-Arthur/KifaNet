@@ -72,16 +72,20 @@ namespace Pimix.Apps.NoteUtil.Commands {
                         } else {
                             var parts = line.Trim('|').Split("|").Select(s => s.Trim()).ToList();
                             parts.AddRange(Enumerable.Repeat("", columnNames.Count - parts.Count));
-                            switch (state) {
-                                case ParsingState.Verbs:
-                                    FillVerbRow(parts, columnNames);
-                                    break;
-                                case ParsingState.Nouns:
-                                    FillNounRow(parts, columnNames);
-                                    break;
-                                case ParsingState.Vocabulary:
-                                    FillWordRow(parts, columnNames);
-                                    break;
+                            try {
+                                switch (state) {
+                                    case ParsingState.Verbs:
+                                        FillVerbRow(parts, columnNames);
+                                        break;
+                                    case ParsingState.Nouns:
+                                        FillNounRow(parts, columnNames);
+                                        break;
+                                    case ParsingState.Vocabulary:
+                                        FillWordRow(parts, columnNames);
+                                        break;
+                                }
+                            } catch (Exception ex) {
+                                logger.Warn(ex, $"Fail to fill line: |{string.Join("|", parts)}|.");
                             }
 
                             lines.Add($"|{string.Join("|", parts)}|");
