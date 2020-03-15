@@ -3,7 +3,7 @@ GET {{server}}/api/animes/$refresh?id=Game of Thrones
 Accept: application/x-yaml
 
 ### Add
-POST {{server}}/api/animes/Game of Thrones
+POST {{server}}/api/animes/DRAGON BALL
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 # pattern_id: tv_multi
@@ -13,18 +13,36 @@ Content-Type: application/x-yaml
 # pattern_id: tv_single
 # episode_id_width: 2
 
-tmdb_id: '1399'
-language: en
-pattern_id: tv_multi
-season_id_width: 2
-episode_id_width: 2
+title: "DRAGON BALL"
+seasons:
+  - anidb_id: "231"
+pattern_id: single_season
+episode_id_width: 3
+
+### Fix
+POST {{server}}/api/animes/DRAGON BALL
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+# pattern_id: tv_multi
+# season_id_width: 2
+# episode_id_width: 2
+
+# pattern_id: tv_single
+# episode_id_width: 2
+
+title: "DRAGON BALL"
+air_date: "1986-02-26"
+seasons:
+  - anidb_id: "231"
+pattern_id: single_season
+episode_id_width: 3
 
 ### All
 GET {{server}}/api/animes/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/animes/咲-Saki-
+GET {{server}}/api/animes/DRAGON BALL
 Accept: application/x-yaml
 
 ### List
