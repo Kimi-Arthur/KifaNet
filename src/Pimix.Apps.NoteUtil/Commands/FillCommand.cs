@@ -105,7 +105,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         static string[] GetColumnsDefinition(string line) => line.Trim('|').Split("|").Select(x => x.Trim()).ToArray();
 
         static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) =>
-            parts[columnNames["Word"]].Replace("*", "").Split(" ").Last();
+            parts[columnNames["Word"]].Replace("*", "").Split(" ").Last().Split("(").First();
 
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
