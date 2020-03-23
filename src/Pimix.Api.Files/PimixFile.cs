@@ -28,7 +28,11 @@ namespace Pimix.Api.Files {
 
         FileInformation fileInfo;
 
-        public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null, bool useCache = false) {
+        public bool SimpleMode { get; set; }
+
+        public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null, bool simpleMode = false,
+            bool useCache = false) {
+            SimpleMode = simpleMode;
             if (uri == null) {
                 // Infer uri from id.
                 uri = GetUri(id ?? fileInfo?.Id);
@@ -123,7 +127,8 @@ namespace Pimix.Api.Files {
 
         PimixFileFormat FileFormat { get; }
 
-        public FileInformation FileInfo => fileInfo ??= FileInformation.Client.Get(Id);
+        public FileInformation FileInfo =>
+            fileInfo ??= SimpleMode ? new FileInformation() : FileInformation.Client.Get(Id);
 
         public bool UseCache { get; set; }
 

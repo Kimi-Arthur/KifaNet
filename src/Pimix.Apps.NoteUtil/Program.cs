@@ -5,6 +5,6 @@ namespace Pimix.Apps.NoteUtil {
     class Program {
         static int Main(string[] args)
             => PimixCommand.Run(Parser.Default
-                .ParseArguments<FillCommand, CleanCommand>, args);
+                .ParseArguments<FillCommand, CollectCommand>, args);
     }
 }

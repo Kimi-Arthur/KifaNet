@@ -15,25 +15,22 @@ namespace Pimix.Apps.NoteUtil.Commands {
     public class FillCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        const string VocabularyLine = "## Vocabulary";
-        const string VerbsLine = "### Verbs";
-        const string NounsLine = "### Nouns";
-        const string SectionLine = "### ";
-
         [Value(0, Required = true, HelpText = "Target file to rename.")]
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var noteFile = new PimixFile(FileUri);
+            var noteFile = new PimixFile(FileUri, simpleMode: true);
             using var sr = new StreamReader(noteFile.OpenRead());
             var state = ParsingState.New;
             var lines = new List<string>();
             var line = sr.ReadLine();
             var columnNames = new Dictionary<string, int>();
+            var startHeadingLevel = 2;
             while (line != null) {
+                var heading = Heading.Get(line);
                 switch (state) {
                     case ParsingState.New:
-                        if (line == VocabularyLine) {
+                        if (heading?.Level == startHeadingLevel && heading.Title == MarkdownHelpers.VocabularyTitle) {
                             state = ParsingState.Vocabulary;
                         }
 
@@ -42,10 +39,14 @@ namespace Pimix.Apps.NoteUtil.Commands {
                     case ParsingState.Vocabulary:
                     case ParsingState.Verbs:
                     case ParsingState.Nouns:
-                        if (line.StartsWith(SectionLine)) {
-                            state = line switch {
-                                VerbsLine => ParsingState.Verbs,
-                                NounsLine => ParsingState.Nouns,
+                        if (heading?.Level <= startHeadingLevel) {
+                            break;
+                        }
+
+                        if (heading?.Level == startHeadingLevel + 1) {
+                            state = heading.Title switch {
+                                MarkdownHelpers.VerbsTitle => ParsingState.Verbs,
+                                MarkdownHelpers.NounsTitle => ParsingState.Nouns,
                                 _ => ParsingState.Vocabulary
                             };
 
@@ -56,7 +57,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
                             columnNames.Clear();
                             lines.Add(line);
                         } else if (columnNames.Count == 0) {
-                            var definition = GetColumnsDefinition(line);
+                            var definition = MarkdownHelpers.GetColumnsDefinition(line);
                             if (definition != null) {
                                 for (int i = 0; i < definition.Length; i++) {
                                     columnNames[definition[i]] = i;
@@ -64,10 +65,11 @@ namespace Pimix.Apps.NoteUtil.Commands {
                             }
 
                             lines.Add(line);
-                        } else if (line.Contains("--")) {
+                        } else if (line.Contains("-|-")) {
                             // Table definition line.
                             lines.Add(line);
                         } else if (!columnNames.ContainsKey("Word")) {
+                            // This table has no definition of Word.
                             lines.Add(line);
                         } else {
                             var parts = line.Trim('|').Split("|").Select(s => s.Trim()).ToList();
@@ -101,11 +103,6 @@ namespace Pimix.Apps.NoteUtil.Commands {
             noteFile.Write(string.Join("\n", lines));
             return 0;
         }
-
-        static string[] GetColumnsDefinition(string line) => line.Trim('|').Split("|").Select(x => x.Trim()).ToArray();
-
-        static string GetWordId(List<string> parts, Dictionary<string, int> columnNames) =>
-            parts[columnNames["Word"]].Replace("*", "").Split(" ").Last().Split("(").First();
 
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
@@ -142,7 +139,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         }
 
         static void FillVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var verb = new Verb {Id = GetWordId(parts, columnNames)};
+            var verb = new Verb {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing verb: {verb.Id}");
 
             verb.Fill();
@@ -164,7 +161,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         }
 
         static void FillNounRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var noun = new Noun {Id = GetWordId(parts, columnNames)};
+            var noun = new Noun {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing noun: {noun.Id}");
 
             noun.Fill();
@@ -180,7 +177,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         }
 
         static void FillWordRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var word = new Word {Id = GetWordId(parts, columnNames)};
+            var word = new Word {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing word: {word.Id}");
 
             word.Fill();
@@ -193,12 +190,12 @@ namespace Pimix.Apps.NoteUtil.Commands {
                 };
             }
         }
-    }
 
-    enum ParsingState {
-        New,
-        Vocabulary,
-        Verbs,
-        Nouns
+        enum ParsingState {
+            New,
+            Vocabulary,
+            Verbs,
+            Nouns
+        }
     }
 }
