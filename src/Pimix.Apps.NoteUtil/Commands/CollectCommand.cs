@@ -15,12 +15,12 @@ namespace Pimix.Apps.NoteUtil.Commands {
         [Value(0, Required = true, HelpText = "Target file to collect vocabulary from.")]
         public string FileUri { get; set; }
 
-        [Option('b', "book", Required = true, HelpText = "Which book's vocabulary will this file's go to.")]
-        public string Book { get; set; }
+        [Value(1, Required = true, HelpText = "Target file to collect vocabulary to.")]
+        public string BookUri { get; set; }
 
         public override int Execute() {
             var source = new PimixFile(FileUri, simpleMode: true);
-            var destination = source.Parent.Parent.GetFile($"Vocabulary/{Book}.md");
+            var destination = new PimixFile(BookUri, simpleMode: true);;
             var wordsSections = new Dictionary<string, WordsSection>();
 
             using var sr = new StreamReader(source.OpenRead());
