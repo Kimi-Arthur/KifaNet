@@ -10,9 +10,9 @@ namespace Pimix.Languages {
         Contraction,
         Noun,
         Numeral,
+        Postposition,
         Preposition,
         Pronoun,
-        Postposition,
         Verb,
         Special, // Like country, city etc.
     }

@@ -5,12 +5,12 @@ using System.Net.Http;
 using HtmlAgilityPack;
 
 namespace Pimix.Languages.German {
-    public class DeWiktionaryClient {
+    public class EnWiktionaryClient {
         static HttpClient wiktionaryClient = new HttpClient();
 
         public Word GetWord(string wordId) {
             var doc = new HtmlDocument();
-            doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/{wordId}").Result);
+            doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://en.wiktionary.org/wiki/{wordId}").Result);
             var pageContentNodes = doc.DocumentNode.SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
             var inDeutsch = false;
             var inSection = false;
@@ -91,7 +91,7 @@ namespace Pimix.Languages.German {
                     if (audioNode != null) {
                         word.PronunciationAudioLinkWiktionary = $"https:{audioNode.Attributes["href"].Value}";
                     }
-                } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {
+                } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='German']") != null) {
                     inDeutsch = true;
                 }
             }
@@ -101,19 +101,18 @@ namespace Pimix.Languages.German {
 
         static WordType ParseWordType(string id) =>
             id.Split(",").First() switch {
-                "Adjektiv" => WordType.Adjective,
+                "Adjective" => WordType.Adjective,
                 "Postposition" => WordType.Postposition,
-                "Präposition" => WordType.Preposition,
+                "Preposition" => WordType.Preposition,
                 "Adverb" => WordType.Adverb,
-                "Modalpartikel" => WordType.Adverb,
-                "Artikel" => WordType.Article,
-                "Konjunktion" => WordType.Conjunction,
-                "Kontraktion" => WordType.Contraction,
-                "Numerale" => WordType.Numeral,
-                "Pronomen" => WordType.Pronoun,
-                "Personalpronomen" => WordType.Pronoun,
-                "Substantiv" => WordType.Noun,
+                "Article" => WordType.Article,
+                "Conjunction" => WordType.Conjunction,
+                "Contraction" => WordType.Contraction,
+                "Numeral" => WordType.Numeral,
+                "Pronoun" => WordType.Pronoun,
+                "Noun" => WordType.Noun,
                 "Verb" => WordType.Verb,
+                "Proper noun" => WordType.Special,
                 _ => WordType.Unknown
             };
     }
