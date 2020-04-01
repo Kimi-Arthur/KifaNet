@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Languages.German {
@@ -17,7 +19,11 @@ namespace Pimix.Languages.German {
 
         public virtual WordType Type { get; set; }
 
-        public string Meaning { get; set; }
+        public List<Meaning> Meanings { get; set; } = new List<Meaning>();
+
+        public string Meaning => Meanings.First().Translation;
+
+        public Breakdown Breakdown { get; set; }
 
         public string Pronunciation { get; set; }
 
@@ -45,9 +51,23 @@ namespace Pimix.Languages.German {
             PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
             PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
 
-            Meaning = pons.Meaning;
+            Meanings = pons.Meanings;
             Type = pons.Type;
         }
+    }
+
+    public class Meaning {
+        public string Translation { get; set; }
+        public List<Example> Examples { get; set; }
+    }
+
+    public class Breakdown {
+        public List<Example> Segments { get; set; }
+    }
+
+    public class Example {
+        public string Text { get; set; }
+        public string Translation { get; set; }
     }
 
     public interface WordServiceClient : PimixServiceClient<Word> {

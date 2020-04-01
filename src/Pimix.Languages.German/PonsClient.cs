@@ -60,7 +60,9 @@ namespace Pimix.Languages.German {
                 word.PronunciationAudioLinkPons = $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}";
             }
 
-            word.Meaning = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim();
+            word.Meanings.Add(new Meaning {
+                Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim()
+            });
             return word;
         }
 

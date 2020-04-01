@@ -107,7 +107,11 @@ namespace Pimix.Apps.NoteUtil.Commands {
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
                 Id = parts[columnNames["Word"]],
-                Meaning = parts[columnNames["Meaning"]],
+                Meanings = new List<Meaning> {
+                    new Meaning {
+                        Translation = parts[columnNames["Meaning"]]
+                    }
+                },
                 VerbForms = new VerbForms {
                     [VerbFormType.IndicativePresent] = new Dictionary<Person, string> {
                         [Person.Ich] = parts[columnNames["ich"]],
