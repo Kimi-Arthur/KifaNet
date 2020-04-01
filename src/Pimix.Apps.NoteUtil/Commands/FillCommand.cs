@@ -65,7 +65,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
                             }
 
                             lines.Add(line);
-                        } else if (line.Contains("-|-")) {
+                        } else if (line.Contains("--")) {
                             // Table definition line.
                             lines.Add(line);
                         } else if (!columnNames.ContainsKey("Word")) {

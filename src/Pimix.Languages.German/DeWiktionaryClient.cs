@@ -26,6 +26,7 @@ namespace Pimix.Languages.German {
                         if (inSection) {
                             break;
                         }
+
                         inSection = true;
                         // Word type info here.
                         var wordTypeNode = node.SelectSingleNode(".//span[@class='mw-headline']");
@@ -86,7 +87,7 @@ namespace Pimix.Languages.German {
                         }
                     }
 
-                    var audioNode = node.SelectSingleNode($".//a[@title='De-{wordId}.ogg']");
+                    var audioNode = node.SelectSingleNode($"(.//a[@class='internal'])[1]");
                     if (audioNode != null) {
                         word.PronunciationAudioLinkWiktionary = $"https:{audioNode.Attributes["href"].Value}";
                     }
