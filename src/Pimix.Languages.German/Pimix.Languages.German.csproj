@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Pimix.Languages\Pimix.Languages.csproj" />
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
 

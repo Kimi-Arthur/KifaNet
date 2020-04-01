@@ -4,16 +4,6 @@ using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Languages.German {
-    public enum WordType {
-        Unknown,
-        Verb,
-        Noun,
-        Pronoun,
-        Adjective,
-        Adverb,
-        Preposition
-    }
-
     public class Word : DataModel {
         public const string ModelId = "languages/german/words";
 
