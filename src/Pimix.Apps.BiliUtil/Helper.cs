@@ -96,6 +96,7 @@ namespace Pimix.Apps.BiliUtil {
                         targetFile.WriteIfNotFinished(streamGetters[i]);
                     } catch (Exception e) {
                         logger.Warn(e, $"Failed to download {targetFile}.");
+                        return;
                     }
 
                     partFiles.Add(targetFile);
