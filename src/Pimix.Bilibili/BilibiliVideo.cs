@@ -111,11 +111,12 @@ namespace Pimix.Bilibili {
                 return null;
             }
 
-            var partName = p.Title;
-            if (Title.StartsWith(partName)) {
+            var partName = p.Title.NormalizeFileName();
+            var title = Title.NormalizeFileName();
+            if (title.StartsWith(partName)) {
                 partName = "";
-            } else if (partName.StartsWith(Title)) {
-                partName = partName.Substring(Title.Length);
+            } else if (partName.StartsWith(title)) {
+                partName = partName.Substring(title.Length);
             }
 
             var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
@@ -124,8 +125,8 @@ namespace Pimix.Bilibili {
             return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
                    (extraPath == null ? "" : $"/{extraPath}") +
                    (Pages.Count > 1
-                       ? $"/{$"{prefix} {Title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
-                       : $"/{$"{prefix} {Title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}");
+                       ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
+                       : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
 
         public (string extension, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
