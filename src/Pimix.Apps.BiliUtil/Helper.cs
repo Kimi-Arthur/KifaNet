@@ -102,8 +102,12 @@ namespace Pimix.Apps.BiliUtil {
                     partFiles.Add(targetFile);
                 }
 
-                MergePartFiles(partFiles, finalTargetFile);
-                RemovePartFiles(partFiles);
+                try {
+                    MergePartFiles(partFiles, finalTargetFile);
+                    RemovePartFiles(partFiles);
+                } catch (Exception e) {
+                    logger.Warn(e, $"Failed to merge files.");
+                }
             } else {
                 var targetFile =
                     currentFolder.GetFile(
