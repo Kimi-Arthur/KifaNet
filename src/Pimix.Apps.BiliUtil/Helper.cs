@@ -76,10 +76,10 @@ namespace Pimix.Apps.BiliUtil {
 
 
         public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder,
-            string extraPath = null) {
+            string extraPath = null, bool prefixDate = false) {
             var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
             if (extension != "mp4") {
-                var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath)}";
+                var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate)}";
                 var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
                 if (finalTargetFile.Exists()) {
                     return;
@@ -101,7 +101,8 @@ namespace Pimix.Apps.BiliUtil {
                 RemovePartFiles(partFiles);
             } else {
                 var targetFile =
-                    currentFolder.GetFile($"{video.GetDesiredName(pid, extraPath: extraPath)}.{extension}");
+                    currentFolder.GetFile(
+                        $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate)}.{extension}");
                 try {
                     targetFile.WriteIfNotFinished(streamGetters.First());
                 } catch (Exception e) {
@@ -129,7 +130,7 @@ namespace Pimix.Apps.BiliUtil {
             if (proc.ExitCode != 0) {
                 throw new Exception("Merging files failed.");
             }
-            
+
             File.Delete(fileListPath);
         }
 

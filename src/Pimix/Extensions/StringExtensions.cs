@@ -97,7 +97,7 @@ namespace Pimix {
             => path.Contains("/$/") ? path : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D5}");
 
         public static string NormalizeFileName(this string fileName) {
-            var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).TrimEnd();
+            var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).Trim();
             foreach (var mapping in CharacterMapping) {
                 normalizedFileName = normalizedFileName.Replace(mapping.Key, mapping.Value);
             }

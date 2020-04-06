@@ -104,18 +104,28 @@ namespace Pimix.Bilibili {
             return result;
         }
 
-        public string GetDesiredName(int pid, string cid = null, string extraPath = null) {
+        public string GetDesiredName(int pid, string cid = null, string extraPath = null, bool prefixDate = false) {
             var p = Pages.First(x => x.Id == pid);
 
             if (cid != null && cid != p.Cid) {
                 return null;
             }
 
+            var partName = p.Title;
+            if (Title.StartsWith(partName)) {
+                partName = "";
+            } else if (partName.StartsWith(Title)) {
+                partName = partName.Substring(Title.Length);
+            }
+
+            var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
+            var pidText = $"P{pid.ToString("D" + Pages.Count.ToString().Length)}";
+
             return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
                    (extraPath == null ? "" : $"/{extraPath}") +
                    (Pages.Count > 1
-                       ? $"/{$"{Title} P{pid} {p.Title}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
-                       : $"/{$"{Title} {p.Title}".NormalizeFileName()}-{Id}.c{p.Cid}");
+                       ? $"/{$"{prefix} {Title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
+                       : $"/{$"{prefix} {Title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
 
         public (string extension, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,

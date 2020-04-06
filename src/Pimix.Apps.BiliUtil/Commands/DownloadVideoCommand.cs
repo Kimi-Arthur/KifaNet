@@ -9,6 +9,9 @@ namespace Pimix.Apps.BiliUtil.Commands {
             HelpText = "The video id from Bilibili. With possible p{n} as a suffix.")]
         public string Aid { get; set; }
 
+        [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
+        public bool PrefixDate { get; set; } = false;
+
         [Option('s', "source", HelpText = "Override default source choice.")]
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
@@ -29,7 +32,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             }
 
             foreach (var page in video.Pages) {
-                video.DownloadPart(page.Id, SourceChoice, CurrentFolder);
+                video.DownloadPart(page.Id, SourceChoice, CurrentFolder, prefixDate: PrefixDate);
             }
 
             return 0;
