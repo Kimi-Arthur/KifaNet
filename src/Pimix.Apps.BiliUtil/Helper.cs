@@ -118,7 +118,7 @@ namespace Pimix.Apps.BiliUtil {
         static void MergePartFiles(List<PimixFile> parts, PimixFile target) {
             var partPaths = parts.Select(p => ((FileStorageClient) p.Client).GetPath(p.Path)).ToList();
             var fileListPath = Path.GetTempFileName();
-            File.WriteAllLines(fileListPath, partPaths.Select(p => $"file '{p}'"));
+            File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GeFfmpegTargetPath(p)}"));
 
             var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
             var arguments = $"-safe 0 -f concat -i {fileListPath} -c copy \"{targetPath}\"";
@@ -136,6 +136,10 @@ namespace Pimix.Apps.BiliUtil {
             }
 
             File.Delete(fileListPath);
+        }
+
+        static string GeFfmpegTargetPath(string targetPath) {
+            return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
         }
 
         static void RemovePartFiles(List<PimixFile> partFiles) {
