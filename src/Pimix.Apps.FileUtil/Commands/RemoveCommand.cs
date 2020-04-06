@@ -82,7 +82,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     var file = new PimixFile(location);
                     if (file.Client == null) {
                         Console.WriteLine($"{file} not accessible.");
-                        return 1;
+                        continue;
                     }
 
                     var toRemove = file.Id == info.Id;
