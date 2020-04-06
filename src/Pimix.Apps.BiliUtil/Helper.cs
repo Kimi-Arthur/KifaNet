@@ -78,6 +78,10 @@ namespace Pimix.Apps.BiliUtil {
         public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder,
             string extraPath = null, bool prefixDate = false) {
             var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
+            if (extension == null) {
+                return;
+            }
+
             if (extension != "mp4") {
                 var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate)}";
                 var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");

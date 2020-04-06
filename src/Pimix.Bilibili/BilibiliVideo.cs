@@ -184,7 +184,9 @@ namespace Pimix.Bilibili {
             } else {
                 biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
                 var (extension, links) = GetDownloadLinks(Id, pid);
-                return (extension, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
+                return extension == null
+                    ? (null, null)
+                    : (extension, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
             }
         }
 
