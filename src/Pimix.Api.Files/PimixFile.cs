@@ -232,6 +232,8 @@ namespace Pimix.Api.Files {
 
         public bool Exists() => Client.Exists(Path);
 
+        public bool ExistsSomewhere() => FileInfo.Locations.Values.Any(v => v != null);
+
         public long Length() => Client.Length(Path);
 
         public bool Registered => FileInfo.Locations?.GetValueOrDefault(ToString(), null) != null;

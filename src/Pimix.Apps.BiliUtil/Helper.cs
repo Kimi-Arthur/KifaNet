@@ -38,7 +38,7 @@ namespace Pimix.Apps.BiliUtil {
         }
 
         public static void WriteIfNotFinished(this PimixFile file, Func<Stream> getStream) {
-            if (file.FileInfo.Locations != null) {
+            if (file.ExistsSomewhere()) {
                 logger.Info($"{file.FileInfo.Id} already exists in the system. Skipped.");
                 return;
             }
@@ -85,7 +85,13 @@ namespace Pimix.Apps.BiliUtil {
             if (extension != "mp4") {
                 var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate)}";
                 var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
+                if (finalTargetFile.ExistsSomewhere()) {
+                    logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                    return;
+                }
+
                 if (finalTargetFile.Exists()) {
+                    logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
                     return;
                 }
 
