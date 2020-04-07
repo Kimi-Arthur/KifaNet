@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Pimix.Service;
 
 namespace Pimix.Infos {
@@ -48,5 +49,18 @@ namespace Pimix.Infos {
 
     public class AnimeSeason : Season {
         public string AnidbId { get; set; }
+    }
+
+    public interface AnimeServiceClient : PimixServiceClient<Anime> {
+        string Format(string id, int seasonId, int episodeId);
+    }
+
+    public class AnimeRestServiceClient : PimixServiceRestClient<Anime>, AnimeServiceClient {
+        public string Format(string id, int seasonId, int episodeId) {
+            var show = Get(id);
+            var season = show.Seasons.First(s => s.Id == seasonId);
+            var episode = season.Episodes.First(e => e.Id == episodeId);
+            return show.Format(season, episode);
+        }
     }
 }
