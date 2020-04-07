@@ -217,6 +217,7 @@ namespace Pimix.Bilibili {
                         request.Headers.Range =
                             new RangeHeaderValue(offset, offset + count - 1);
                         using var response = biliplusClient.SendAsync(request).Result;
+                        response.EnsureSuccessStatusCode();
                         var memoryStream =
                             new MemoryStream(buffer, bufferOffset, count, true);
                         response.Content.ReadAsStreamAsync().Result
