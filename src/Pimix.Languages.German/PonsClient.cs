@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
-using VerbForms =
-    System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType,
-        System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
-
 
 namespace Pimix.Languages.German {
     public class PonsClient {

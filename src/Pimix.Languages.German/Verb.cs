@@ -1,7 +1,6 @@
 using System;
 using NLog;
 using Pimix.Service;
-using VerbForms = System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType, System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
 
 namespace Pimix.Languages.German {
     public class Verb : Word {
@@ -34,19 +33,6 @@ namespace Pimix.Languages.German {
 
             VerbForms = pons.VerbForms;
         }
-    }
-
-    public enum VerbFormType {
-        IndicativePresent
-    }
-
-    public enum Person {
-        Ich,
-        Du,
-        Er,
-        Wir,
-        Ihr,
-        Sie
     }
 
     public interface VerbServiceClient : PimixServiceClient<Verb> {

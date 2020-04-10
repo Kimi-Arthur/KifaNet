@@ -6,9 +6,6 @@ using CommandLine;
 using NLog;
 using Pimix.Api.Files;
 using Pimix.Languages.German;
-using VerbForms =
-    System.Collections.Generic.Dictionary<Pimix.Languages.German.VerbFormType,
-        System.Collections.Generic.Dictionary<Pimix.Languages.German.Person, string>>;
 
 namespace Pimix.Apps.NoteUtil.Commands {
     [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]
