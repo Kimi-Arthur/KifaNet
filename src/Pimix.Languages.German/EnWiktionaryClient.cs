@@ -13,8 +13,8 @@ namespace Pimix.Languages.German {
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://en.wiktionary.org/wiki/{wordId}").Result);
             var pageContentNodes = doc.DocumentNode.SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
             var inDeutsch = false;
-            var inSection = false;
-            var hasPronunciation = false;
+            var wordType = "";
+            var inMeaning = false;
             var word = new Word();
             foreach (var node in pageContentNodes) {
                 if (inDeutsch) {
@@ -22,74 +22,31 @@ namespace Pimix.Languages.German {
                         break;
                     }
 
-                    if (node.Name == "h3") {
-                        if (inSection) {
-                            break;
-                        }
-
-                        inSection = true;
-                        // Word type info here.
-                        var wordTypeNode = node.SelectSingleNode(".//span[@class='mw-headline']");
+                    if (new List<string>{"h3", "h4", "h5"}.Contains(node.Name)) {
+                        var wordTypeNode = node.SelectSingleNode("./span[@class='mw-headline]");
                         if (wordTypeNode != null) {
-                            var wordType = ParseWordType(wordTypeNode.Id);
-                            word = wordType switch {
-                                WordType.Verb => new Verb(),
-                                WordType.Noun => new Noun {
-                                    Gender = wordTypeNode.Id.Split(",").Last() switch {
-                                        "_m" => Gender.Masculine,
-                                        "_f" => Gender.Feminine,
-                                        "_n" => Gender.Neuter,
-                                        _ => Gender.Error // Should not happen.
-                                    }
-                                },
-                                _ => word
-                            };
-
-                            word.Type = wordType;
+                            wordType = wordTypeNode.InnerText;
                         }
                     }
 
-                    if (node.Name == "table" && node.HasClass("wikitable") && word.Type == WordType.Noun) {
-                        var noun = word as Noun;
-                        var selector = new Func<int, int, string>((row, column) => {
-                            var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]").InnerText.Split("\n")
-                                .First()
-                                .Split(" ").Last();
-                            return form == "—" ? null : form;
-                        });
-
-                        noun.NounForms[Case.Nominative] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(1, 1),
-                            [Number.Plural] = selector(1, 2)
-                        };
-
-                        noun.NounForms[Case.Genitive] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(2, 1),
-                            [Number.Plural] = selector(2, 2)
-                        };
-
-                        noun.NounForms[Case.Dative] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(3, 1),
-                            [Number.Plural] = selector(3, 2)
-                        };
-
-                        noun.NounForms[Case.Accusative] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(4, 1),
-                            [Number.Plural] = selector(4, 2)
-                        };
-                    }
-
-                    if (!hasPronunciation) {
-                        var ipaNode = node.SelectSingleNode("(.//span[@class='ipa'])[1]");
-                        if (ipaNode != null) {
-                            hasPronunciation = true;
-                            word.Pronunciation = ipaNode.InnerText;
+                    if (node.Name == "p") {
+                        var headwordNode = node.SelectSingleNode("./strong[@class='Latn headword']");
+                        if (headwordNode != null) {
+                            inMeaning = true;
                         }
                     }
 
-                    var audioNode = node.SelectSingleNode($"(.//a[@class='internal'])[1]");
-                    if (audioNode != null) {
-                        word.PronunciationAudioLinkWiktionary = $"https:{audioNode.Attributes["href"].Value}";
+                    if (inMeaning && node.Name == "ol") {
+                        foreach (var meaningNode in node.SelectNodes("./li")) {
+                            var innerText = "";
+                            foreach (var childNode in meaningNode.ChildNodes) {
+                                if (childNode.NodeType == HtmlNodeType.Element && childNode.Name == "dl") {
+                                    
+                                } else {
+                                    
+                                }
+                            }
+                        }
                     }
                 } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='German']") != null) {
                     inDeutsch = true;
