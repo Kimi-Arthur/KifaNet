@@ -12,6 +12,7 @@
         Preposition,
         Pronoun,
         Verb,
+        Particle,
         Special, // Like country, city etc.
     }
 }

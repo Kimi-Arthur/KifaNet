@@ -19,7 +19,7 @@ namespace Pimix.Languages.German {
 
         [JsonIgnore]
         public string PronunciationAudioLink => PronunciationAudioLinkDuden ?? PronunciationAudioLinkWiktionary
-                                                ?? PronunciationAudioLinkPons;
+            ?? PronunciationAudioLinkPons;
 
         public string PronunciationAudioLinkDuden { get; set; }
 
@@ -56,7 +56,7 @@ namespace Pimix.Languages.German {
         public WordType Type { get; set; }
         public string Translation { get; set; }
         public string TranslationWithNotes { get; set; }
-        public List<Example> Examples { get; set; }
+        public List<Example> Examples { get; set; } = new List<Example>();
     }
 
     public class Breakdown {

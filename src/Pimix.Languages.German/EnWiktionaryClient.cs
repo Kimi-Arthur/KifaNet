@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MwParserFromScratch;
 using MwParserFromScratch.Nodes;
@@ -10,6 +11,8 @@ namespace Pimix.Languages.German {
     public class EnWiktionaryClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        const string TranslationDivider = "–";
+
         public Word GetWord(string wordId) {
             var word = new Word {Id = wordId};
             var client = new WikiClient();
@@ -18,6 +21,7 @@ namespace Pimix.Languages.German {
             var page = new WikiPage(site, wordId);
             page.RefreshAsync(PageQueryOptions.FetchContent).Wait();
             Meaning meaning = null;
+            Example example = null;
             var parser = new WikitextParser();
             var content = parser.Parse(page.Content);
             var wordType = WordType.Unknown;
@@ -46,15 +50,55 @@ namespace Pimix.Languages.German {
                         }
                 } else if (inGerman && wordType != WordType.Unknown) {
                     if (child is ListItem listItem) {
-                        if (meaning != null) {
-                            word.Meanings.Add(meaning);
-                        }
+                        var prefix = listItem.Prefix;
+                        var listContent = listItem.ToPlainText();
+                        switch (prefix) {
+                            case "#":
+                                if (meaning != null) {
+                                    word.Meanings.Add(meaning);
+                                }
 
-                        meaning = new Meaning {
-                            Type = wordType,
-                            Translation = listItem.ToPlainText(),
-                            TranslationWithNotes = string.Join("", listItem.EnumChildren().Select(GetText)).Trim()
-                        };
+                                meaning = new Meaning {
+                                    Type = wordType,
+                                    Translation = string.Join(" ",
+                                        listItem.ToPlainText().Split(" ", StringSplitOptions.RemoveEmptyEntries)),
+                                    TranslationWithNotes =
+                                        string.Join("", listItem.EnumChildren().Select(GetText)).Trim()
+                                };
+                                break;
+                            case "#:":
+                                if (meaning == null) {
+                                    logger.Warn("Meaning is null unexpectedly,");
+                                    meaning = new Meaning();
+                                }
+
+                                if (example != null) {
+                                    logger.Warn(
+                                        $"Example value is unexpectedly not null: {example.Text}, {example.Translation}.");
+                                }
+
+                                if (listContent.Contains(TranslationDivider)) {
+                                    var segments = listContent.Split(TranslationDivider);
+                                    meaning.Examples.Add(new Example {
+                                        Text = segments[0].Trim(),
+                                        Translation = segments[1].Trim()
+                                    });
+                                } else {
+                                    example = new Example {
+                                        Text = listContent.Trim()
+                                    };
+                                }
+
+                                break;
+                            case "#::" when example == null:
+                                logger.Warn($"Encountered translation line without example line: {listItem}");
+                                break;
+                            case "#::":
+                                example.Translation = listContent.Trim();
+                                meaning.Examples.Add(example);
+                                example = null;
+                                break;
+                        }
                     }
                 }
             }
@@ -71,9 +115,10 @@ namespace Pimix.Languages.German {
                 var templateName = template.Name.ToPlainText();
                 switch (templateName) {
                     case "lb":
-                        return $"({string.Join(", ", template.Arguments.Skip(1))})";
+                        return $"({string.Join(", ", template.Arguments.Skip(1).Select(a => a.Value.ToPlainText()))})";
                     case "gloss":
-                        return $"({string.Join(", ", template.Arguments)})";
+                    case "q":
+                        return $"({string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))})";
                     default:
                         logger.Warn($"Unknown template: {template}");
                         break;
@@ -96,6 +141,7 @@ namespace Pimix.Languages.German {
                 "Pronoun" => WordType.Pronoun,
                 "Noun" => WordType.Noun,
                 "Verb" => WordType.Verb,
+                "Particle" => WordType.Particle,
                 "Proper noun" => WordType.Special,
                 _ => WordType.Unknown
             };
