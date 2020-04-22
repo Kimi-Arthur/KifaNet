@@ -10,6 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CXuesong.MW.MwParserFromScratch" Version="0.2.1" />
+    <PackageReference Include="CXuesong.MW.WikiClientLibrary" Version="0.6.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
   </ItemGroup>
 

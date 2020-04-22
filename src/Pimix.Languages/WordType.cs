@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pimix.Languages {
+﻿namespace Pimix.Languages {
     public enum WordType {
         Unknown,
         Adjective,

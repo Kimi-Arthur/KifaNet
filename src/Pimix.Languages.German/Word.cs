@@ -47,6 +47,8 @@ namespace Pimix.Languages.German {
     }
 
     public class Meaning {
+        public string Title { get; set; }
+        public WordType Type { get; set; }
         public string Translation { get; set; }
         public List<Example> Examples { get; set; }
     }

@@ -1,59 +1,45 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using HtmlAgilityPack;
+using MwParserFromScratch;
+using MwParserFromScratch.Nodes;
+using WikiClientLibrary.Client;
+using WikiClientLibrary.Pages;
+using WikiClientLibrary.Sites;
 
 namespace Pimix.Languages.German {
     public class EnWiktionaryClient {
         static HttpClient wiktionaryClient = new HttpClient();
 
         public Word GetWord(string wordId) {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://en.wiktionary.org/wiki/{wordId}").Result);
-            var pageContentNodes = doc.DocumentNode.SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
-            var inDeutsch = false;
-            var wordType = "";
-            var inMeaning = false;
-            var word = new Word();
-            foreach (var node in pageContentNodes) {
-                if (inDeutsch) {
-                    if (node.Name == "h2") {
-                        break;
-                    }
-
-                    if (new List<string>{"h3", "h4", "h5"}.Contains(node.Name)) {
-                        var wordTypeNode = node.SelectSingleNode("./span[@class='mw-headline]");
-                        if (wordTypeNode != null) {
-                            wordType = wordTypeNode.InnerText;
+            var client = new WikiClient();
+            var site = new WikiSite(client, "https://en.wiktionary.org/w/api.php");
+            site.Initialization.Wait();
+            var page = new WikiPage(site, "zu");
+            page.RefreshAsync(PageQueryOptions.FetchContent).Wait();
+            var parser = new WikitextParser();
+            var content = parser.Parse(page.Content);
+            var inGerman = false;
+            foreach (var child in content.Lines) {
+                if (child is Heading heading) {
+                    if (heading.Level == 2) {
+                        if (heading.GetTitle() == "German") {
+                            inGerman = true;
+                        } else {
+                            break;
+                        }
+                    } else if (heading.Level == 3) {
+                        var title = heading.GetTitle();
+                        if (title == "Alternative forms" || title == "Etymology" || title == "Pronunciation") {
+                            // Do nothing for now.
+                        } else {
+                            var wordType = ParseWordType(heading.GetTitle());
+                            
                         }
                     }
-
-                    if (node.Name == "p") {
-                        var headwordNode = node.SelectSingleNode("./strong[@class='Latn headword']");
-                        if (headwordNode != null) {
-                            inMeaning = true;
-                        }
-                    }
-
-                    if (inMeaning && node.Name == "ol") {
-                        foreach (var meaningNode in node.SelectNodes("./li")) {
-                            var innerText = "";
-                            foreach (var childNode in meaningNode.ChildNodes) {
-                                if (childNode.NodeType == HtmlNodeType.Element && childNode.Name == "dl") {
-                                    
-                                } else {
-                                    
-                                }
-                            }
-                        }
-                    }
-                } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='German']") != null) {
-                    inDeutsch = true;
                 }
             }
 
-            return word;
+            return new Word();
         }
 
         static WordType ParseWordType(string id) =>
