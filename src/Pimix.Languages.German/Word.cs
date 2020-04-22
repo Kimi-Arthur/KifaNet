@@ -27,6 +27,11 @@ namespace Pimix.Languages.German {
 
         public string PronunciationAudioLinkWiktionary { get; set; }
 
+        // Shared for any meaning.
+        public VerbForms VerbForms { get; set; } = new VerbForms();
+
+        public NounForms NounForms { get; set; } = new NounForms();
+
         public override void Fill() {
             var wiki = new DeWiktionaryClient().GetWord(Id);
             var pons = new PonsClient().GetWord(Id);
@@ -50,6 +55,7 @@ namespace Pimix.Languages.German {
         public string Title { get; set; }
         public WordType Type { get; set; }
         public string Translation { get; set; }
+        public string TranslationWithNotes { get; set; }
         public List<Example> Examples { get; set; }
     }
 

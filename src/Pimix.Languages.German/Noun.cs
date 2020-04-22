@@ -12,8 +12,7 @@ namespace Pimix.Languages.German {
 
         public Gender Gender { get; set; }
 
-        public Dictionary<Case, Dictionary<Number, string>> NounForms { get; set; } =
-            new Dictionary<Case, Dictionary<Number, string>>();
+        public NounForms NounForms { get; set; } = new NounForms();
 
         public override void Fill() {
             var wiki = new Noun();
@@ -87,24 +86,5 @@ namespace Pimix.Languages.German {
                 },
                 _ => null
             };
-    }
-
-    public enum Gender {
-        Masculine,
-        Feminine,
-        Neuter,
-        Error
-    }
-
-    public enum Case {
-        Nominative,
-        Genitive,
-        Dative,
-        Accusative
-    }
-
-    public enum Number {
-        Singular,
-        Plural
     }
 }
