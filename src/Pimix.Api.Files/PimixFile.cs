@@ -85,7 +85,7 @@ namespace Pimix.Api.Files {
             Client = GetClient(segments[0]);
 
             FileFormat = PimixFileV2Format.Get(uri) ?? PimixFileV1Format.Get(uri) ??
-                         PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
+                PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
             UseCache = useCache;
         }
 
@@ -492,9 +492,10 @@ namespace Pimix.Api.Files {
             FileInfo.Sha256 == null
                 ? null
                 : FileInfo.Locations.Keys.FirstOrDefault(l =>
-                      new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType}$").Match(l).Success) ??
+                      new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
+                          .Match(l).Success) ??
                   serviceType switch {
-                      CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType}",
+                      CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
                       CloudServiceType.Swiss =>
                       // TODO: Use format specific header size.
                       $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType}",
