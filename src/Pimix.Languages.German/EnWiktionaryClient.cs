@@ -15,7 +15,7 @@ namespace Pimix.Languages.German {
         const string TranslationDivider = "–";
 
         static readonly HashSet<string> SkippedSections = new HashSet<string>
-            {"Further reading", "Alternative forms", "Etymology", "Pronunciation"};
+            {"Further reading", "Alternative forms", "Etymology", "Pronunciation", "See also"};
 
         public Word GetWord(string wordId) {
             var word = new Word {Id = wordId};
@@ -60,6 +60,11 @@ namespace Pimix.Languages.German {
                                     word.Meanings.Add(meaning);
                                 }
 
+                                if (listContent == "") {
+                                    meaning = null;
+                                    continue;
+                                }
+
                                 meaning = new Meaning {
                                     Type = wordType,
                                     Translation = string.Join(" ",
@@ -89,6 +94,21 @@ namespace Pimix.Languages.German {
                                     example = new Example {
                                         Text = listContent.Trim()
                                     };
+
+                                    var nodes = listItem.Inlines;
+                                    foreach (var node in nodes) {
+                                        if (node is Template template && template.Name.ToPlainText() == "ux") {
+                                            meaning.Examples.Add(new Example {
+                                                Text = template.Arguments[2].Value.ToPlainText(),
+                                                Translation =
+                                                    (template.Arguments[3] ?? template.Arguments["t"] ??
+                                                        template.Arguments["translation"]).Value
+                                                    .ToPlainText()
+                                            });
+
+                                            example = null;
+                                        }
+                                    }
                                 }
 
                                 break;
@@ -144,6 +164,7 @@ namespace Pimix.Languages.German {
                 "Noun" => WordType.Noun,
                 "Verb" => WordType.Verb,
                 "Particle" => WordType.Particle,
+                "Interjection" => WordType.Interjection,
                 "Proper noun" => WordType.Special,
                 _ => WordType.Unknown
             };

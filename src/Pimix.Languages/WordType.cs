@@ -13,6 +13,7 @@
         Pronoun,
         Verb,
         Particle,
+        Interjection,
         Special, // Like country, city etc.
     }
 }
