@@ -232,7 +232,7 @@ namespace Pimix.Api.Files {
 
         public bool Exists() => Client.Exists(Path);
 
-        public bool ExistsSomewhere() => FileInfo.Locations.Values.Any(v => v != null);
+        public bool ExistsSomewhere() => FileInfo.Locations?.Values.Any(v => v != null) == true;
 
         public long Length() => Client.Length(Path);
 
@@ -498,7 +498,7 @@ namespace Pimix.Api.Files {
                       CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
                       CloudServiceType.Swiss =>
                       // TODO: Use format specific header size.
-                      $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType}",
+                      $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
                       _ => ""
                   };
     }
