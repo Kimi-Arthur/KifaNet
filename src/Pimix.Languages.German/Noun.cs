@@ -1,4 +1,3 @@
-using System;
 using NLog;
 
 namespace Pimix.Languages.German {
@@ -9,9 +8,7 @@ namespace Pimix.Languages.German {
 
         public override void Fill() {
             var words = GetWords();
-
             FillWithData(words);
-
             Gender = words.wiki.Gender;
             NounForms = words.wiki.NounForms;
         }
