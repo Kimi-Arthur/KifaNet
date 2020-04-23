@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MwParserFromScratch;
 using MwParserFromScratch.Nodes;
@@ -12,6 +13,9 @@ namespace Pimix.Languages.German {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         const string TranslationDivider = "–";
+
+        static readonly HashSet<string> SkippedSections = new HashSet<string>
+            {"Further reading", "Alternative forms", "Etymology", "Pronunciation"};
 
         public Word GetWord(string wordId) {
             var word = new Word {Id = wordId};
@@ -37,9 +41,7 @@ namespace Pimix.Languages.German {
                     } else if (inGerman)
                         if (heading.Level == 3) {
                             var title = heading.GetTitle();
-                            if (title == "Alternative forms" || title == "Etymology" || title == "Pronunciation") {
-                                // Do nothing for now.
-                            } else {
+                            if (!SkippedSections.Contains(title)) {
                                 wordType = ParseWordType(title);
                                 if (wordType == WordType.Unknown) {
                                     logger.Warn($"Unknown header when expecting word type: {title}.");

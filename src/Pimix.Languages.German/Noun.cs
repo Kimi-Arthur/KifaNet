@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using NLog;
 
 namespace Pimix.Languages.German {
@@ -8,33 +7,13 @@ namespace Pimix.Languages.German {
 
         public new const string ModelId = "languages/german/nouns";
 
-        public override WordType Type => WordType.Noun;
-
-        public Gender Gender { get; set; }
-
-        public NounForms NounForms { get; set; } = new NounForms();
-
         public override void Fill() {
-            var wiki = new Noun();
-            try {
-                wiki = new DeWiktionaryClient().GetWord(Id) as Noun;
-            } catch (Exception ex) {
-                logger.Warn($"Failed to get wiki word for {Id}");
-            }
+            var words = GetWords();
 
-            var pons = new Word();
-            try {
-                pons = new PonsClient().GetWord(Id);
-            } catch (Exception ex) {
-                logger.Warn($"Failed to get pons word for {Id}");
-            }
+            FillWithData(words);
 
-            var duden = new DudenClient().GetWord(Id);
-
-            FillWithData(wiki, pons, duden);
-
-            Gender = wiki.Gender;
-            NounForms = wiki.NounForms;
+            Gender = words.wiki.Gender;
+            NounForms = words.wiki.NounForms;
         }
 
         public string GetNounFormWithArticle(Case formCase, Number formNumber) =>

@@ -1,16 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using NLog;
 using Pimix.Service;
 
 namespace Pimix.Languages.German {
     public class Word : DataModel {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public const string ModelId = "languages/german/words";
 
-        public virtual WordType Type { get; set; }
+        [JsonIgnore]
+        public WordType Type => Meanings.First().Type;
 
         public List<Meaning> Meanings { get; set; } = new List<Meaning>();
 
+        [JsonIgnore]
         public string Meaning => Meanings.First().Translation;
 
         public Breakdown Breakdown { get; set; }
@@ -30,24 +36,49 @@ namespace Pimix.Languages.German {
         // Shared for any meaning.
         public VerbForms VerbForms { get; set; } = new VerbForms();
 
+        public Gender Gender { get; set; }
+
         public NounForms NounForms { get; set; } = new NounForms();
 
-        public override void Fill() {
-            var wiki = new DeWiktionaryClient().GetWord(Id);
-            var pons = new PonsClient().GetWord(Id);
+        protected (Word wiki, Word enWiki, Word pons, Word duden) GetWords() {
+            var wiki = new Word();
+            try {
+                wiki = new DeWiktionaryClient().GetWord(Id);
+            } catch (Exception ex) {
+                logger.Warn(ex, $"Failed to get word from de.wiktionary.org for {Id}");
+            }
+
+            var enWiki = new Word();
+            try {
+                enWiki = new EnWiktionaryClient().GetWord(Id);
+            } catch (Exception ex) {
+                logger.Warn(ex, $"Failed to get word from en.wiktionary.org for {Id}");
+            }
+
+            var pons = new Word();
+            try {
+                pons = new PonsClient().GetWord(Id);
+            } catch (Exception ex) {
+                logger.Warn(ex, $"Failed to get pons word for {Id}");
+            }
+
             var duden = new DudenClient().GetWord(Id);
 
-            FillWithData(wiki, pons, duden);
+            return (wiki, enWiki, pons, duden);
         }
 
-        protected void FillWithData(Word wiki, Word pons, Word duden) {
+        public override void Fill() {
+            FillWithData(GetWords());
+        }
+
+        protected void FillWithData((Word wiki, Word enWiki, Word pons, Word duden) words) {
+            var (wiki, enWiki, pons, duden) = words;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
             PronunciationAudioLinkDuden = duden.PronunciationAudioLinkDuden;
             PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
             PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
 
-            Meanings = pons.Meanings;
-            Type = pons.Type;
+            Meanings = enWiki.Meanings;
         }
     }
 

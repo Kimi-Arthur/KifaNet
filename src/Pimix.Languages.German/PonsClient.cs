@@ -43,8 +43,6 @@ namespace Pimix.Languages.German {
                     break;
             }
 
-            word.Type = type;
-
             var pronunciationNode = wordNode.SelectSingleNode("(.//span[@class='phonetics'])[1]");
             if (pronunciationNode != null) {
                 word.Pronunciation = pronunciationNode.InnerText
@@ -57,7 +55,8 @@ namespace Pimix.Languages.German {
             }
 
             word.Meanings.Add(new Meaning {
-                Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim()
+                Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim(),
+                Type = type
             });
             return word;
         }
