@@ -255,6 +255,31 @@ namespace Pimix.Api.Files {
                                                            !FullPathIgnoredFiles.IsMatch(f.Id)))
                     .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
+        public static (bool isMultiple, List<PimixFile> files) ExpandFiles(IEnumerable<string> sources,
+            string prefix = null, bool includeLogicalFiles = false, bool recursive = true) {
+            var multi = 0;
+            var files = new List<(string sortKey, PimixFile value)>();
+            foreach (var fileName in sources) {
+                var fileInfo = new PimixFile(fileName);
+                if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
+                    fileInfo = fileInfo.GetFilePrefixed(prefix);
+                }
+
+                var thisFolder = fileInfo.List(recursive).ToList();
+                if (thisFolder.Count > 0) {
+                    multi = 2;
+                    files.AddRange(thisFolder.Select(f => (f.ToString().GetNaturalSortKey(), f)));
+                } else {
+                    multi++;
+                    files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
+                }
+            }
+
+            files.Sort();
+
+            return (multi > 1, files.Select(f => f.value).ToList());
+        }
+
         static bool IsMatch(string path, string pattern) {
             path = path.Substring(path.LastIndexOf("/", StringComparison.Ordinal) + 1);
             var segments = pattern.Split("*", StringSplitOptions.RemoveEmptyEntries);

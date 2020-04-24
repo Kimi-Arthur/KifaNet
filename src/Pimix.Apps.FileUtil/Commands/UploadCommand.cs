@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -10,8 +11,8 @@ namespace Pimix.Apps.FileUtil.Commands {
     class UploadCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true)]
-        public string FileUri { get; set; }
+        [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
+        public IEnumerable<string> FileNames { get; set; }
 
         [Option('d', "delete-source",
             HelpText = "Remove source if upload is successful. Won't remove valid cloud version.")]
@@ -33,14 +34,8 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool UseCache { get; set; }
 
         public override int Execute() {
-            var source = new PimixFile(FileUri);
-            if (source.Client == null) {
-                Console.WriteLine($"Source {FileUri} not accessible. Wrong server?");
-                return 1;
-            }
-
-            var files = source.List(true).ToList();
-            if (files.Count > 0) {
+            var (multi, files) = PimixFile.ExpandFiles(FileNames);
+            if (multi) {
                 foreach (var file in files) {
                     Console.WriteLine(file);
                 }
@@ -48,19 +43,12 @@ namespace Pimix.Apps.FileUtil.Commands {
                 var removalText = DeleteSource ? " and remove them afterwards" : "";
                 Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
                 Console.ReadLine();
-
-                var results = files.Select(f => (f.ToString(), UploadFile(new PimixFile(f.ToString()), true))).ToList();
-                return results.Select(r => r.Item2)
-                    .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new PimixFile(r.Item1))))
-                    .Max();
             }
 
-            if (source.Exists()) {
-                return UploadFile(source);
-            }
-
-            logger.Error("Source {0} doesn't exist or folder contains no files.", source);
-            return 1;
+            var results = files.Select(f => (f.ToString(), UploadFile(new PimixFile(f.ToString()), true))).ToList();
+            return results.Select(r => r.Item2)
+                .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new PimixFile(r.Item1))))
+                .Max();
         }
 
         int UploadFile(PimixFile source, bool skipRegistered = false) {
