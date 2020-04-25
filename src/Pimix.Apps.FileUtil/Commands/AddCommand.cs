@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -10,8 +11,8 @@ namespace Pimix.Apps.FileUtil.Commands {
     class AddCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true, MetaName = "File URL")]
-        public string FileUri { get; set; }
+        [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
+        public IEnumerable<string> FileNames { get; set; }
 
         [Option('f', "force-check", HelpText =
             "Check file integrity even if it is already recorded.")]
@@ -22,26 +23,17 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool Overwrite { get; set; } = false;
 
         public override int Execute() {
-            var source = new PimixFile(FileUri);
-
-            var files = source.List(true).ToList();
-            if (files.Count > 0) {
+            var (multi, files) = PimixFile.ExpandFiles(FileNames);
+            if (multi) {
                 foreach (var file in files) {
                     Console.WriteLine(file);
                 }
 
                 Console.Write($"Confirm adding the {files.Count} files above?");
                 Console.ReadLine();
-
-                return files.Select(f => AddFile(new PimixFile(f.ToString()))).Max();
             }
 
-            if (source.Exists()) {
-                return AddFile(source);
-            }
-
-            logger.Error("File {0} doesn't exist or folder contains no files.", source);
-            return 1;
+            return files.Select(f => AddFile(new PimixFile(f.ToString()))).Max();
         }
 
         int AddFile(PimixFile f) {
