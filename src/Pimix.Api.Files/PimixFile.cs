@@ -265,13 +265,13 @@ namespace Pimix.Api.Files {
                     fileInfo = fileInfo.GetFilePrefixed(prefix);
                 }
 
-                var thisFolder = fileInfo.List(recursive).ToList();
-                if (thisFolder.Count > 0) {
-                    multi = 2;
-                    files.AddRange(thisFolder.Select(f => (f.ToString().GetNaturalSortKey(), f)));
-                } else {
+                if (fileInfo.Exists()) {
                     multi++;
                     files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
+                } else {
+                    multi = 2;
+                    files.AddRange(fileInfo.List(recursive).ToList()
+                        .Select(f => (f.ToString().GetNaturalSortKey(), f)));
                 }
             }
 
