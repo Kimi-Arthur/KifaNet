@@ -17,7 +17,7 @@ namespace Pimix.Languages.German {
         public List<Meaning> Meanings { get; set; } = new List<Meaning>();
 
         [JsonIgnore]
-        public string Meaning => Meanings.First().Translation;
+        public string Meaning => Meanings.FirstOrDefault()?.Translation;
 
         public Breakdown Breakdown { get; set; }
 
@@ -78,7 +78,7 @@ namespace Pimix.Languages.German {
             PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
             PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
 
-            Meanings = enWiki.Meanings;
+            Meanings = enWiki.Meanings.Any() ? enWiki.Meanings : pons.Meanings;
         }
     }
 

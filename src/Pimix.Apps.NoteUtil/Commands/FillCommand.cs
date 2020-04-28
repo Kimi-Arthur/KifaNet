@@ -71,20 +71,22 @@ namespace Pimix.Apps.NoteUtil.Commands {
                         } else {
                             var parts = line.Trim('|').Split("|").Select(s => s.Trim()).ToList();
                             parts.AddRange(Enumerable.Repeat("", columnNames.Count - parts.Count));
-                            try {
-                                switch (state) {
-                                    case ParsingState.Verbs:
-                                        FillVerbRow(parts, columnNames);
-                                        break;
-                                    case ParsingState.Nouns:
-                                        FillNounRow(parts, columnNames);
-                                        break;
-                                    case ParsingState.Vocabulary:
-                                        FillWordRow(parts, columnNames);
-                                        break;
+                            if (parts.Any(p => p.Length == 0)) {
+                                try {
+                                    switch (state) {
+                                        case ParsingState.Verbs:
+                                            FillVerbRow(parts, columnNames);
+                                            break;
+                                        case ParsingState.Nouns:
+                                            FillNounRow(parts, columnNames);
+                                            break;
+                                        case ParsingState.Vocabulary:
+                                            FillWordRow(parts, columnNames);
+                                            break;
+                                    }
+                                } catch (Exception ex) {
+                                    logger.Warn(ex, $"Fail to fill line: |{string.Join("|", parts)}|.");
                                 }
-                            } catch (Exception ex) {
-                                logger.Warn(ex, $"Fail to fill line: |{string.Join("|", parts)}|.");
                             }
 
                             lines.Add($"|{string.Join("|", parts)}|");

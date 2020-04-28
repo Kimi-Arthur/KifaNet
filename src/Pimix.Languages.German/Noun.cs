@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NLog;
 
 namespace Pimix.Languages.German {
@@ -14,7 +15,7 @@ namespace Pimix.Languages.German {
         }
 
         public string GetNounFormWithArticle(Case formCase, Number formNumber) =>
-            NounForms[formCase][formNumber] != null
+            NounForms.GetValueOrDefault(formCase, new Dictionary<Number, string>()).ContainsKey(formNumber)
                 ? $"{GetArticle(Gender, formCase, formNumber)} {NounForms[formCase][formNumber]}"
                 : "-";
 

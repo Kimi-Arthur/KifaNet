@@ -13,9 +13,12 @@ namespace Pimix.Languages.German {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         const string TranslationDivider = "–";
+        const string EtymologyPrefix = "Etymology ";
 
-        static readonly HashSet<string> SkippedSections = new HashSet<string>
-            {"Further reading", "Alternative forms", "Etymology", "Pronunciation", "See also"};
+        static readonly HashSet<string> SkippedSections = new HashSet<string> {
+            "Further reading", "Alternative forms", "Etymology", "Pronunciation", "Declension",
+            "See also"
+        };
 
         public Word GetWord(string wordId) {
             var word = new Word {Id = wordId};
@@ -30,6 +33,7 @@ namespace Pimix.Languages.German {
             var content = parser.Parse(page.Content);
             var wordType = WordType.Unknown;
             var inGerman = false;
+            var targetLevel = 3;
             foreach (var child in content.Lines) {
                 if (child is Heading heading) {
                     if (heading.Level == 2) {
@@ -38,8 +42,12 @@ namespace Pimix.Languages.German {
                         } else if (inGerman) {
                             break;
                         }
-                    } else if (inGerman)
-                        if (heading.Level == 3) {
+                    } else if (inGerman) {
+                        if (heading.Level == 3 && heading.GetTitle().StartsWith(EtymologyPrefix)) {
+                            targetLevel = 4;
+                        }
+
+                        if (heading.Level == targetLevel) {
                             var title = heading.GetTitle();
                             if (!SkippedSections.Contains(title)) {
                                 wordType = ParseWordType(title);
@@ -47,9 +55,10 @@ namespace Pimix.Languages.German {
                                     logger.Warn($"Unknown header when expecting word type: {title}.");
                                 }
                             }
-                        } else {
-                            wordType = WordType.Unknown;
                         }
+                    } else {
+                        wordType = WordType.Unknown;
+                    }
                 } else if (inGerman && wordType != WordType.Unknown) {
                     if (child is ListItem listItem) {
                         var prefix = listItem.Prefix;
