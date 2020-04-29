@@ -24,6 +24,8 @@ namespace Pimix.Cloud.GoogleDrive {
             Timeout = TimeSpan.FromMinutes(30)
         };
 
+        Dictionary<string, string> fileIds = new Dictionary<string, string>();
+
         AccountInfo account;
 
         string accountId;
@@ -42,7 +44,6 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         public AccountInfo Account => account ??= Config.Accounts[accountId];
-
 
         public override string Type => "google";
 
@@ -206,6 +207,10 @@ namespace Pimix.Cloud.GoogleDrive {
         }
 
         string GetFileId(string path, bool createParents = false) {
+            if (fileIds.ContainsKey(path)) {
+                return fileIds[path];
+            }
+
             var fileId = "root";
             foreach (var segment in $"{Config.RootFolder}{path}".Split('/', StringSplitOptions.RemoveEmptyEntries)) {
                 var token = client.FetchJToken(() => GetRequest(Config.APIList.FindFile,
@@ -218,19 +223,25 @@ namespace Pimix.Cloud.GoogleDrive {
                     return null;
                 }
 
-                if (files.Any()) {
-                    fileId = (string) files[0]["id"];
-                    continue;
+                var found = false;
+                foreach (var file in files) {
+                    if ((string) file["name"] == segment) {
+                        fileId = (string) file["id"];
+                        found = true;
+                        break;
+                    }
                 }
 
-                if (createParents) {
+                if (!found) {
+                    if (!createParents) {
+                        return null;
+                    }
+
                     fileId = CreateFolder(fileId, segment);
-                } else {
-                    return null;
                 }
             }
 
-            return fileId;
+            return fileIds[path] = fileId;
         }
 
         string CreateFolder(string parentId, string name) {
