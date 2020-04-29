@@ -195,10 +195,7 @@ namespace Pimix.Bilibili {
             biliplusClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                 "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
 
-            var length = biliplusClient
-                .SendAsync(new HttpRequestMessage(HttpMethod.Head, link),
-                    HttpCompletionOption.ResponseHeadersRead).Result
-                .Content.Headers.ContentLength;
+            var length = biliplusClient.GetContentLength(link);
             if (length == null) {
                 throw new Exception("Content length is not found.");
             }

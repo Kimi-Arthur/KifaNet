@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ToolCommandName>bilix</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>5.0.15</Version>
+    <Version>5.0.16</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIcon>Pimix.png</PackageIcon>

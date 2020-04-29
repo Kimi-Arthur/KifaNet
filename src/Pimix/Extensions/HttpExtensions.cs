@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -25,6 +26,14 @@ namespace Pimix {
 
         public static T GetObject<T>(this HttpResponseMessage response)
             => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
+
+        public static long? GetContentLength(this HttpClient client, string url) {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Range = new RangeHeaderValue(0, 0);
+            return client.SendAsync(request,
+                    HttpCompletionOption.ResponseHeadersRead).Result
+                .Content.Headers.ContentRange.Length;
+        }
 
         public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
             Retry.Run(() => client.SendAsync(request()).Result, (ex, index) => {
