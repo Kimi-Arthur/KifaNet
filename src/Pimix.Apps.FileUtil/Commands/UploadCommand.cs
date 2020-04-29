@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -66,11 +67,17 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 source.Register();
                 logger.Info("Checking source {0}...", source);
-                var sourceCheckResult = source.Add();
+                try {
+                    var sourceCheckResult = source.Add();
 
-                if (sourceCheckResult != FileProperties.None) {
-                    logger.Error("Source is wrong! The following fields differ: {0}",
-                        sourceCheckResult);
+                    if (sourceCheckResult != FileProperties.None) {
+                        logger.Error("Source is wrong! The following fields differ: {0}",
+                            sourceCheckResult);
+                        return 1;
+                    }
+                } catch (FileNotFoundException ex) {
+                    source.Unregister();
+                    logger.Error(ex, "Source file not found.");
                     return 1;
                 }
 
