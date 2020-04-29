@@ -269,9 +269,14 @@ namespace Pimix.Api.Files {
                     multi++;
                     files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
                 } else {
-                    multi = 2;
-                    files.AddRange(fileInfo.List(recursive).ToList()
-                        .Select(f => (f.ToString().GetNaturalSortKey(), f)));
+                    var pimixFiles = fileInfo.List(recursive).ToList();
+                    if (pimixFiles.Count > 0) {
+                        multi = 2;
+                        files.AddRange(pimixFiles
+                            .Select(f => (f.ToString().GetNaturalSortKey(), f)));
+                    } else {
+                        files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
+                    }
                 }
             }
 
