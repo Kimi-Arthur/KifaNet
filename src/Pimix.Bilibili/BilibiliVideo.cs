@@ -42,7 +42,6 @@ namespace Pimix.Bilibili {
             Timeout = TimeSpan.FromMinutes(10)
         };
 
-
         PartModeType partMode;
 
         public static PimixServiceClient<BilibiliVideo> Client

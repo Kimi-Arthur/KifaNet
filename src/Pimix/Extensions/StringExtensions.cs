@@ -94,7 +94,9 @@ namespace Pimix {
         }
 
         public static string GetNaturalSortKey(this string path)
-            => path.Contains("/$/") ? path : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D5}");
+            => path.Contains("/$/") || path.Length >= 5
+                ? path
+                : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D5}");
 
         public static string NormalizeFileName(this string fileName) {
             var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).Trim();
