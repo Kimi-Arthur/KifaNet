@@ -8,8 +8,8 @@ namespace Pimix.Apps.FileUtil {
                 .ParseArguments<
                     CheckCommand,
                     _InfoCommand,
-                    _CopyCommand,
                     _VerifyCommand,
+                    CleanCommand,
                     RemoveCommand,
                     LinkCommand,
                     ListCommand,
