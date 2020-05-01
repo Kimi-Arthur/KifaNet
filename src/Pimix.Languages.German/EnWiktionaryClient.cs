@@ -17,7 +17,7 @@ namespace Pimix.Languages.German {
 
         static readonly HashSet<string> SkippedSections = new HashSet<string> {
             "Further reading", "Alternative forms", "Etymology", "Pronunciation", "Declension",
-            "See also"
+            "See also", "References"
         };
 
         public Word GetWord(string wordId) {
