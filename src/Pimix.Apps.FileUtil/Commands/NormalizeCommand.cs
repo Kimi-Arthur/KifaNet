@@ -6,12 +6,12 @@ using NLog;
 using Pimix.Api.Files;
 
 namespace Pimix.Apps.FileUtil.Commands {
-    [Verb("clean", HelpText = "Rename the file with proper normalization.")]
-    class CleanCommand : PimixFileCommand {
+    [Verb("normalize", HelpText = "Rename the file with proper normalization.")]
+    class NormalizeCommand : PimixFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         protected override Func<List<PimixFile>, string> PimixFileConfirmText
-            => files => $"Confirm fixing the {files.Count} files above?";
+            => files => $"Confirm normalizing the {files.Count} files above?";
 
         protected override int ExecuteOnePimixFile(PimixFile file) {
             var path = file.ToString();

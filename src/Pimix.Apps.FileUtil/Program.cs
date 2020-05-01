@@ -17,7 +17,7 @@ namespace Pimix.Apps.FileUtil {
                     AddCommand,
                     GetCommand,
                     TouchCommand,
-                    CleanCommand,
+                    NormalizeCommand,
                     ImportCommand,
                     TrashCommand,
                     RemoveEmptyCommand,
