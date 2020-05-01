@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -35,7 +36,20 @@ namespace Pimix.Apps.FileUtil.Commands {
             var executionHandler = new PimixExecutionHandler<PimixFile>(logger);
 
             foreach (var file in files) {
-                executionHandler.Execute(file, AddFile, "Failed to add {0}.");
+                executionHandler.Execute(new PimixFile(file.ToString()), AddFile, "Failed to add {0}.");
+            }
+
+            (_, files) = PimixFile.ExpandLogicalFiles(FileNames);
+            var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists()).ToList();
+
+            if (filesToRemove.Count > 0) {
+                Console.Write(
+                    $"The following {filesToRemove.Count} files do not actually exist. Confirm removing them from system?");
+                Console.ReadLine();
+
+                foreach (var file in filesToRemove) {
+                    file.Unregister();
+                }
             }
 
             return executionHandler.PrintSummary("Failed to add the following {0} files:");

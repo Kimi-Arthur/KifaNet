@@ -238,6 +238,8 @@ namespace Pimix.Api.Files {
 
         public bool Registered => FileInfo.Locations?.GetValueOrDefault(ToString(), null) != null;
 
+        public bool HasEntry => FileInfo.Locations?.ContainsKey(ToString()) == true;
+
         public FileInformation QuickInfo()
             => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
@@ -256,7 +258,7 @@ namespace Pimix.Api.Files {
                     .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public static (bool isMultiple, List<PimixFile> files) ExpandFiles(IEnumerable<string> sources,
-            string prefix = null, bool includeLogicalFiles = false, bool recursive = true) {
+            string prefix = null, bool recursive = true) {
             var multi = 0;
             var files = new List<(string sortKey, PimixFile value)>();
             foreach (var fileName in sources) {
@@ -275,8 +277,37 @@ namespace Pimix.Api.Files {
                         files.AddRange(pimixFiles
                             .Select(f => (f.ToString().GetNaturalSortKey(), f)));
                     } else {
+                        multi++;
                         files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
                     }
+                }
+            }
+
+            files.Sort();
+
+            return (multi > 1, files.Select(f => f.value).ToList());
+        }
+
+        public static (bool isMultiple, List<PimixFile> files) ExpandLogicalFiles(IEnumerable<string> sources,
+            string prefix = null, bool recursive = true) {
+            var multi = 0;
+            var files = new List<(string sortKey, PimixFile value)>();
+            foreach (var fileName in sources) {
+                var fileInfo = new PimixFile(fileName);
+                if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
+                    fileInfo = fileInfo.GetFilePrefixed(prefix);
+                }
+
+                var path = fileInfo.Path;
+                var host = fileInfo.Host;
+
+                var thisFolder = FileInformation.Client.ListFolder(path, recursive);
+                if (thisFolder.Count > 0) {
+                    multi = 2;
+                    files.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), new PimixFile(host + f))));
+                } else {
+                    multi++;
+                    files.Add((fileInfo.ToString().GetNaturalSortKey(), new PimixFile(host + path)));
                 }
             }
 
