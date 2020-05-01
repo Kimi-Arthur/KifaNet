@@ -32,31 +32,13 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.ReadLine();
             }
 
-            var exceptions = new List<(PimixFile file, PimixExecutionException exception)>();
+            var executionHandler = new PimixExecutionHandler<PimixFile>(logger);
 
             foreach (var file in files) {
-                try {
-                    AddFile(new PimixFile(file.ToString()));
-                } catch (PimixExecutionException ex) {
-                    exceptions.Add((file, ex));
-                    logger.Error(ex, $"Failed to add {file}.");
-                } catch (Exception ex) {
-                    var exception = new PimixExecutionException("Unhandled execution exception", ex);
-                    exceptions.Add((file, exception));
-                    logger.Error(exception, $"Failed to add {file}.");
-                }
+                executionHandler.Execute(file, AddFile, "Failed to add {0}.");
             }
 
-            if (exceptions.Count > 0) {
-                logger.Error($"Failed to add the following {exceptions.Count} files:");
-                foreach (var (file, exception) in exceptions) {
-                    logger.Error(exception, $"Failed to add {file}.");
-                }
-
-                return 1;
-            }
-
-            return 0;
+            return executionHandler.PrintSummary("Failed to add the following {0} files:");
         }
 
         void AddFile(PimixFile file) {
