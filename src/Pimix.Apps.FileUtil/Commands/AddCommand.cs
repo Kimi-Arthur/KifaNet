@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
@@ -33,30 +32,52 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.ReadLine();
             }
 
-            return files.Select(f => AddFile(new PimixFile(f.ToString()))).Max();
+            var exceptions = new List<(PimixFile file, PimixExecutionException exception)>();
+
+            foreach (var file in files) {
+                try {
+                    AddFile(new PimixFile(file.ToString()));
+                } catch (PimixExecutionException ex) {
+                    exceptions.Add((file, ex));
+                    logger.Error(ex, $"Failed to add {file}.");
+                } catch (Exception ex) {
+                    var exception = new PimixExecutionException("Unhandled execution exception", ex);
+                    exceptions.Add((file, exception));
+                    logger.Error(exception, $"Failed to add {file}.");
+                }
+            }
+
+            if (exceptions.Count > 0) {
+                logger.Error($"Failed to add the following {exceptions.Count} files:");
+                foreach (var (file, exception) in exceptions) {
+                    logger.Error(exception, $"Failed to add {file}.");
+                }
+
+                return 1;
+            }
+
+            return 0;
         }
 
-        int AddFile(PimixFile f) {
-            logger.Info("Adding {0}...", f);
-            var result = f.Add(ForceRecheck);
+        void AddFile(PimixFile file) {
+            logger.Info($"Adding {file}...");
+            var result = file.Add(ForceRecheck);
 
             if (result == FileProperties.None) {
-                logger.Info("Successfully added {0}", f);
-                return 0;
+                logger.Info($"Successfully added {file}");
+                return;
             }
 
-            if (Overwrite) {
-                var info = f.CalculateInfo(FileProperties.AllVerifiable);
-                Console.WriteLine($"{info}\nConfirm overwriting with new data?");
-                Console.ReadLine();
-                FileInformation.Client.Update(info);
-                f.Register(true);
-                logger.Info("Successfully updated data and added file.");
-                return 0;
+            if (!Overwrite) {
+                throw new PimixExecutionException($"Conflict with recorded file info! Please check: {result}");
             }
 
-            logger.Warn("Conflict with recorded file info! Please check: {0}", result);
-            return 1;
+            var info = file.CalculateInfo(FileProperties.AllVerifiable);
+            Console.WriteLine($"{info}\nConfirm overwriting with new data?");
+            Console.ReadLine();
+            FileInformation.Client.Update(info);
+            file.Register(true);
+            logger.Info($"Successfully updated data and added {file}.");
         }
     }
 }
