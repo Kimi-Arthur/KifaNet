@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using NLog;
 
 namespace Pimix.IO {
@@ -10,10 +12,14 @@ namespace Pimix.IO {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         readonly Reader reader;
+        readonly int maxChunkSize;
+        readonly int threadCount;
 
-        public SeekableReadStream(long length, Reader reader) {
+        public SeekableReadStream(long length, Reader reader, int maxChunkSize = int.MaxValue, int threadCount = 1) {
             Length = length;
             this.reader = reader;
+            this.maxChunkSize = maxChunkSize;
+            this.threadCount = threadCount;
         }
 
         public override bool CanRead => true;
@@ -72,9 +78,35 @@ namespace Pimix.IO {
                 return 0;
             }
 
-            var readCount = reader(buffer, offset, Position, count);
-            Position += readCount;
-            return readCount;
+            Parallel.For(0, (count - 1) / maxChunkSize + 1,
+                new ParallelOptions {
+                    MaxDegreeOfParallelism = threadCount
+                }, i => {
+                    Thread.Sleep(TimeSpan.FromSeconds(i * 4));
+
+                    var chunkOffset = i * maxChunkSize;
+                    var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
+                    var readCount = 0;
+
+                    while (readCount != chunkSize) {
+                        try {
+                            readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset, chunkSize);
+                            if (readCount != chunkSize) {
+                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                                    chunkSize, Position + chunkOffset, readCount);
+                                Thread.Sleep(TimeSpan.FromSeconds(5));
+                            }
+                        } catch (Exception ex) {
+                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:",
+                                chunkSize,
+                                Position + chunkOffset);
+                            Thread.Sleep(TimeSpan.FromSeconds(5));
+                        }
+                    }
+                });
+
+            Position += count;
+            return count;
         }
 
         public override void Write(byte[] buffer, int offset, int count) =>

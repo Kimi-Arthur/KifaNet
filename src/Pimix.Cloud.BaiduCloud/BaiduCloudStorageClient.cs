@@ -37,7 +37,6 @@ namespace Pimix.Cloud.BaiduCloud {
 
         public AccountInfo Account => Config.Accounts[AccountId];
 
-
         public override string Type => "baidu";
 
         public override string Id => AccountId;
