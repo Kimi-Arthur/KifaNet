@@ -14,13 +14,19 @@ namespace Pimix.Apps.FileUtil.Commands {
         public IEnumerable<string> FileNames { get; set; }
 
         public override int Execute() {
-            var (_, files) = PimixFile.ExpandLogicalFiles(FileNames);
-            var filesToRemove = files.Select(file => new PimixFile(file.ToString()))
-                .Where(file => file.HasEntry && !file.Exists()).ToList();
+            RemoveMissingFiles();
+            DeduplicateFiles();
+
+            return 0;
+        }
+
+        void RemoveMissingFiles() {
+            var (_, files) = PimixFile.ExpandLogicalFiles(FileNames, fullFile: true);
+            var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
             if (filesToRemove.Count == 0) {
                 logger.Info("No missing files found.");
-                return 0;
+                return;
             }
 
             foreach (var file in filesToRemove) {
@@ -34,8 +40,21 @@ namespace Pimix.Apps.FileUtil.Commands {
             foreach (var file in filesToRemove) {
                 file.Unregister();
             }
+        }
 
-            return 0;
+        void DeduplicateFiles() {
+            var (_, files) = PimixFile.ExpandFiles(FileNames, fullFile: true);
+            foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Sha256}")) {
+                var target = sameFiles.First();
+                foreach (var file in sameFiles.Skip(1)) {
+                    logger.Info($"Removing {file} and linking it to {target}...");
+                    file.Delete();
+                    file.Unregister();
+                    target.Copy(file);
+                    file.Add();
+                    logger.Info($"Linked {file} to {target}.");
+                }
+            }
         }
     }
 }

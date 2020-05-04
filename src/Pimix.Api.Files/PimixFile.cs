@@ -258,7 +258,7 @@ namespace Pimix.Api.Files {
                     .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
 
         public static (bool isMultiple, List<PimixFile> files) ExpandFiles(IEnumerable<string> sources,
-            string prefix = null, bool recursive = true) {
+            string prefix = null, bool recursive = true, bool fullFile = false) {
             var multi = 0;
             var files = new List<(string sortKey, PimixFile value)>();
             foreach (var fileName in sources) {
@@ -285,11 +285,11 @@ namespace Pimix.Api.Files {
 
             files.Sort();
 
-            return (multi > 1, files.Select(f => f.value).ToList());
+            return (multi > 1, files.Select(f => fullFile ? new PimixFile(f.value.ToString()) : f.value).ToList());
         }
 
         public static (bool isMultiple, List<PimixFile> files) ExpandLogicalFiles(IEnumerable<string> sources,
-            string prefix = null, bool recursive = true) {
+            string prefix = null, bool recursive = true, bool fullFile = false) {
             var multi = 0;
             var files = new List<(string sortKey, PimixFile value)>();
             foreach (var fileName in sources) {
@@ -313,7 +313,7 @@ namespace Pimix.Api.Files {
 
             files.Sort();
 
-            return (multi > 1, files.Select(f => f.value).ToList());
+            return (multi > 1, files.Select(f => fullFile ? new PimixFile(f.value.ToString()) : f.value).ToList());
         }
 
         static bool IsMatch(string path, string pattern) {
@@ -468,8 +468,6 @@ namespace Pimix.Api.Files {
 
                 client.Update(info);
                 Register(true);
-
-                fileInfo = null;
             } else {
                 logger.Warn("Expected data:\n{0}",
                     JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
@@ -482,11 +480,15 @@ namespace Pimix.Api.Files {
             return compareResult;
         }
 
-        public void Register(bool verified = false)
-            => FileInformation.Client.AddLocation(Id, ToString(), verified);
+        public void Register(bool verified = false) {
+            FileInformation.Client.AddLocation(Id, ToString(), verified);
+            fileInfo = null;
+        }
 
-        public void Unregister() =>
+        public void Unregister() {
             FileInformation.Client.RemoveLocation(Id, ToString());
+            fileInfo = null;
+        }
 
         public bool IsCompatible(PimixFile other)
             => Host == other.Host && FileFormat == other.FileFormat;
@@ -508,23 +510,15 @@ namespace Pimix.Api.Files {
 
             switch (specs[0]) {
                 case "baidu":
-                    return knownClients[spec] = new BaiduCloudStorageClient {
-                        AccountId = specs[1]
-                    };
+                    return knownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
                 case "google":
-                    return knownClients[spec] = new GoogleDriveStorageClient {
-                        AccountId = specs[1]
-                    };
+                    return knownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
                 case "mega":
-                    return knownClients[spec] = new MegaNzStorageClient {
-                        AccountId = specs[1]
-                    };
+                    return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
                 case "swiss":
                     return knownClients[spec] = new SwisscomStorageClient(specs[1]);
                 case "local":
-                    var c = new FileStorageClient {
-                        ServerId = specs[1]
-                    };
+                    var c = new FileStorageClient {ServerId = specs[1]};
                     if (c.Server == null) {
                         c = null;
                     }

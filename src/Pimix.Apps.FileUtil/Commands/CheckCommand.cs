@@ -37,7 +37,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 FileInformation info;
                 try {
-                    info = file.CalculateInfo(FileProperties.SliceMd5);
+                    info = file.CalculateInfo(FileProperties.SliceMd5 | FileProperties.Size);
                 } catch (Exception e) {
                     logger.Error(e, $"Quick check failed for {file}.");
                     throw new Exception($"Quick check failed for {file}.", e);
