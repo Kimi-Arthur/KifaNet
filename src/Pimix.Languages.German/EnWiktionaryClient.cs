@@ -16,8 +16,14 @@ namespace Pimix.Languages.German {
         const string EtymologyPrefix = "Etymology ";
 
         static readonly HashSet<string> SkippedSections = new HashSet<string> {
-            "Further reading", "Alternative forms", "Etymology", "Pronunciation", "Declension",
-            "See also", "References"
+            "Further reading",
+            "Alternative forms",
+            "Etymology",
+            "Pronunciation",
+            "Declension",
+            "See also",
+            "References",
+            "Hyponyms"
         };
 
         public Word GetWord(string wordId) {
@@ -62,7 +68,7 @@ namespace Pimix.Languages.German {
                 } else if (inGerman && wordType != WordType.Unknown) {
                     if (child is ListItem listItem) {
                         var prefix = listItem.Prefix;
-                        var listContent = listItem.ToPlainText();
+                        var listContent = GetLineWithoutNotes(listItem);
                         switch (prefix) {
                             case "#":
                                 if (meaning != null) {
@@ -76,10 +82,8 @@ namespace Pimix.Languages.German {
 
                                 meaning = new Meaning {
                                     Type = wordType,
-                                    Translation = string.Join(" ",
-                                        listItem.ToPlainText().Split(" ", StringSplitOptions.RemoveEmptyEntries)),
-                                    TranslationWithNotes =
-                                        string.Join("", listItem.EnumChildren().Select(GetText)).Trim()
+                                    Translation = listContent,
+                                    TranslationWithNotes = GetLineWithNotes(listItem)
                                 };
                                 break;
                             case "#:":
@@ -96,13 +100,10 @@ namespace Pimix.Languages.German {
                                 if (listContent.Contains(TranslationDivider)) {
                                     var segments = listContent.Split(TranslationDivider);
                                     meaning.Examples.Add(new Example {
-                                        Text = segments[0].Trim(),
-                                        Translation = segments[1].Trim()
+                                        Text = segments[0].Trim(), Translation = segments[1].Trim()
                                     });
                                 } else {
-                                    example = new Example {
-                                        Text = listContent.Trim()
-                                    };
+                                    example = new Example {Text = listContent.Trim()};
 
                                     var nodes = listItem.Inlines;
                                     foreach (var node in nodes) {
@@ -111,8 +112,7 @@ namespace Pimix.Languages.German {
                                                 Text = template.Arguments[2].Value.ToPlainText(),
                                                 Translation =
                                                     (template.Arguments[3] ?? template.Arguments["t"] ??
-                                                        template.Arguments["translation"]).Value
-                                                    .ToPlainText()
+                                                        template.Arguments["translation"]).Value.ToPlainText()
                                             });
 
                                             example = null;
@@ -141,10 +141,23 @@ namespace Pimix.Languages.German {
             return word;
         }
 
+        static string GetLineWithoutNotes(Node line) {
+            return string.Join("",
+                    line.EnumChildren().Select(c =>
+                        c is Template template && template.Name.ToPlainText() == "l" ? GetText(c) : c.ToPlainText()))
+                .Trim();
+        }
+
+        static string GetLineWithNotes(Node line) {
+            return string.Join("", line.EnumChildren().Select(GetText)).Trim();
+        }
+
         static string GetText(Node node) {
             if (node is Template template) {
                 var templateName = template.Name.ToPlainText();
                 switch (templateName) {
+                    case "l":
+                        return template.Arguments.Last().Value.ToPlainText();
                     case "lb":
                         return $"({string.Join(", ", template.Arguments.Skip(1).Select(a => a.Value.ToPlainText()))})";
                     case "gloss":
