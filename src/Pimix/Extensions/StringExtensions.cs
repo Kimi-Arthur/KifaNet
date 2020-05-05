@@ -56,8 +56,7 @@ namespace Pimix {
 
             var match = new Regex(@"^(\d+)([^B])B?$").Match(data.ToUpper());
 
-            return long.Parse(match.Groups[1].Value) *
-                   SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
+            return long.Parse(match.Groups[1].Value) * SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
         }
 
         public static byte[] ParseHexString(this string hexString) {
@@ -93,8 +92,8 @@ namespace Pimix {
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
         }
 
-        public static string GetNaturalSortKey(this string path)
-            => path.Contains("/$/") || path.Length >= 5
+        public static string GetNaturalSortKey(this string path) =>
+            path.Contains("/$/") || path.Length >= 5
                 ? path
                 : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D5}");
 
@@ -110,5 +109,17 @@ namespace Pimix {
         public static string FromBase64(this string text) => Encoding.UTF8.GetString(Convert.FromBase64String(text));
 
         public static string ToBase64(this string text) => Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
+
+        public static bool ContainsSequence(this string text, string search) {
+            var index = 0;
+            foreach (var _ in text.Where(ch => ch == search[index])) {
+                index++;
+                if (index == search.Length) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

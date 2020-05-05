@@ -65,7 +65,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     }
 
                     var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
-                    Console.Write($"Confirm deleting the {localFiles.Count} files above {removalText}?");
+                    Console.Write($"Confirm deleting the {localFiles.Count} files above{removalText}?");
                     Console.ReadLine();
 
                     return localFiles.Concat(potentialFileInstances)
