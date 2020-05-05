@@ -13,16 +13,25 @@ namespace Pimix.Apps.FileUtil.Commands {
         [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
         public IEnumerable<string> FileNames { get; set; }
 
+        [Option('u', "Unsafe",
+            HelpText = "Files to be deleted don't need to have a name sequence containing the base file.")]
+        public bool Unsafe { get; set; } = false;
+
         public override int Execute() {
             var files = PimixFile.ExpandLogicalFiles(FileNames, fullFile: true).files.Select(f => f.FileInfo);
             var filesToDelete = new List<(string truth, FileInformation toDelete)>();
             foreach (var sameFiles in files.GroupBy(f => f.Sha256)) {
                 var target = sameFiles.Select(f => (f.Id.Length, f.Id, f)).Min().f;
                 foreach (var file in sameFiles) {
-                    if (file.Id != target.Id && file.Id.ContainsSequence(target.Id)) {
+                    if (file.Id != target.Id && (Unsafe || file.Id.ContainsSequence(target.Id))) {
                         filesToDelete.Add((target.Id, file));
                     }
                 }
+            }
+
+            if (filesToDelete.Count == 0) {
+                logger.Info("No duplicated files found!");
+                return 0;
             }
 
             var confirmedDeletion = SelectMany(filesToDelete, tuple => $"{tuple.toDelete.Id} ({tuple.truth})",
