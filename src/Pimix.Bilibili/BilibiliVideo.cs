@@ -38,14 +38,16 @@ namespace Pimix.Bilibili {
 
         static bool firstDownload = true;
 
-        static HttpClient biliplusClient = new HttpClient {
-            Timeout = TimeSpan.FromMinutes(10)
-        };
+        static HttpClient bilibiliClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+
+        static HttpClient biliplusClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
 
         PartModeType partMode;
 
-        public static PimixServiceClient<BilibiliVideo> Client
-            => client ??= new PimixServiceRestClient<BilibiliVideo>();
+        public static PimixServiceClient<BilibiliVideo> Client =>
+            client ??= new PimixServiceRestClient<BilibiliVideo>();
+
+        public static string BilibiliCookies { get; set; }
 
         public static string BiliplusCookies { get; set; }
         public static int DefaultBiliplusSourceChoice { get; set; }
@@ -83,15 +85,8 @@ namespace Pimix.Bilibili {
 
         public AssDocument GenerateAssDocument() {
             var result = new AssDocument();
-            result.Sections.Add(new AssScriptInfoSection {
-                Title = Title,
-                OriginalScript = "Bilibili"
-            });
-            result.Sections.Add(new AssStylesSection {
-                Styles = new List<AssStyle> {
-                    AssStyle.DefaultStyle
-                }
-            });
+            result.Sections.Add(new AssScriptInfoSection {Title = Title, OriginalScript = "Bilibili"});
+            result.Sections.Add(new AssStylesSection {Styles = new List<AssStyle> {AssStyle.DefaultStyle}});
             var events = new AssEventsSection();
             result.Sections.Add(events);
 
@@ -121,8 +116,7 @@ namespace Pimix.Bilibili {
             var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
             var pidText = $"P{pid.ToString("D" + Pages.Count.ToString().Length)}";
 
-            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" +
-                   (extraPath == null ? "" : $"/{extraPath}") +
+            return $"{$"{Author}-{AuthorId}".NormalizeFileName()}" + (extraPath == null ? "" : $"/{extraPath}") +
                    (Pages.Count > 1
                        ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
                        : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}");
@@ -136,16 +130,14 @@ namespace Pimix.Bilibili {
 
             firstDownload = false;
 
-            biliplusClient = new HttpClient {
-                Timeout = TimeSpan.FromMinutes(10)
-            };
+            biliplusClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+
+            var cid = Pages[pid - 1].Cid;
 
             if (UseMergedSource) {
                 biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
 
                 AddDownloadJob(Id);
-
-                var cid = Pages[pid - 1].Cid;
 
                 while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
                     logger.Debug("Download not ready. Sleep 30 seconds...");
@@ -156,8 +148,8 @@ namespace Pimix.Bilibili {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(GetDownloadPage(cid));
 
-                var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
-                    => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
+                var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode =>
+                    (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
 
                 if (choices == null) {
                     logger.Warn("No sources found. Job not successful?");
@@ -182,8 +174,8 @@ namespace Pimix.Bilibili {
                     }
                 }
             } else {
-                biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
-                var (extension, links) = GetDownloadLinks(Id, pid);
+                bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                var (extension, links) = GetDownloadLinks(Id, cid);
                 return extension == null
                     ? (null, null)
                     : (extension, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
@@ -199,49 +191,42 @@ namespace Pimix.Bilibili {
                 throw new Exception("Content length is not found.");
             }
 
-            return new SeekableReadStream(length.Value,
-                (buffer, bufferOffset, offset, count) => {
-                    if (count < 0) {
-                        count = buffer.Length - bufferOffset;
+            return new SeekableReadStream(length.Value, (buffer, bufferOffset, offset, count) => {
+                if (count < 0) {
+                    count = buffer.Length - bufferOffset;
+                }
+
+                logger.Trace($"Downloading from {offset} to {offset + count}...");
+
+                return Retry.Run(() => {
+                    var request = new HttpRequestMessage(HttpMethod.Get, link);
+
+                    request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
+                    using var response = biliplusClient.SendAsync(request).Result;
+                    response.EnsureSuccessStatusCode();
+                    var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
+                    response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+                    return (int) memoryStream.Position;
+                }, (ex, i) => {
+                    if (i >= 5) {
+                        throw ex;
                     }
 
-                    logger.Trace($"Downloading from {offset} to {offset + count}...");
-
-                    return Retry.Run(() => {
-                        var request = new HttpRequestMessage(HttpMethod.Get, link);
-
-                        request.Headers.Range =
-                            new RangeHeaderValue(offset, offset + count - 1);
-                        using var response = biliplusClient.SendAsync(request).Result;
-                        response.EnsureSuccessStatusCode();
-                        var memoryStream =
-                            new MemoryStream(buffer, bufferOffset, count, true);
-                        response.Content.ReadAsStreamAsync().Result
-                            .CopyTo(memoryStream, count);
-                        return (int) memoryStream.Position;
-                    }, (ex, i) => {
-                        if (i >= 5) {
-                            throw ex;
-                        }
-
-                        logger.Warn(ex,
-                            $"Download from {offset} to {offset + count} failed ({i})...");
-                        Thread.Sleep(TimeSpan.FromSeconds(30));
-                    });
+                    logger.Warn(ex, $"Download from {offset} to {offset + count} failed ({i})...");
+                    Thread.Sleep(TimeSpan.FromSeconds(30));
                 });
+            });
         }
 
         static void AddDownloadJob(string aid) {
             using var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
-                .Result;
+                .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall").Result;
             var content = response.GetString();
             logger.Debug($"Add download request result: {content}");
         }
 
         static void UpdateDownloadStatus(string cid) {
-            using var response = biliplusClient
-                .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}")
+            using var response = biliplusClient.GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}")
                 .Result;
             var content = response.GetString();
             logger.Debug($"Check saver status: {content}");
@@ -249,8 +234,7 @@ namespace Pimix.Bilibili {
 
         static DownloadStatus GetDownloadStatus(string aid, int pid) {
             using var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
-                .Result;
+                .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}").Result;
             var content = response.GetString();
             logger.Debug($"Get download result: {content}");
             var storage = JToken.Parse(content)["storage"];
@@ -269,33 +253,41 @@ namespace Pimix.Bilibili {
             }
         }
 
-        static (string extension, List<string> links) GetDownloadLinks(string aid, int pid) {
-            for (var i = 0; i < 3; i++) {
-                using var response = biliplusClient
+        static (string extension, List<string> links) GetDownloadLinks(string aid, string cid) {
+            var quality = 120;
+            while (true) {
+                using var response = bilibiliClient
                     .GetAsync(
-                        $"https://www.biliplus.com/api/geturl?bangumi={i}&av={aid.Substring(2)}&page={pid}&update=1")
+                        $"https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid.Substring(2)}&qn={quality}&fourk=1")
                     .Result;
                 var content = response.GetString();
                 logger.Debug($"Get download result: {content}");
                 var data = JToken.Parse(content);
-                if ((string) data["mode"] == "error") {
+                if ((int) data["code"] != 0) {
+                    logger.Warn($"bilibili API error: {data["message"]} ({data["code"]}).");
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
                     continue;
                 }
 
-                var parts = data["data"][0]["parts"];
-                var extension = (string) parts[0]["url"];
+                if ((int) data["data"]["quality"] != (int) data["data"]["accept_quality"][0]) {
+                    quality = (int) data["data"]["accept_quality"][0];
+                    logger.Warn($"Quality mismatch: received quality {data["data"]["quality"]}, " +
+                                $"best quality {data["data"]["accept_quality"][0]}.");
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    continue;
+                }
+
+                var urls = data["data"]["durl"];
+                var extension = (string) urls[0]["url"];
                 extension = extension[..extension.IndexOf('?')];
                 extension = extension[(extension.LastIndexOf('.') + 1)..];
-                return (extension, parts.Select(x => (string) x["url"]).ToList());
+                return (extension, urls.Select(x => (string) x["url"]).ToList());
             }
-
-            return (null, null);
         }
 
         static string GetDownloadPage(string cid) {
             using var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4")
-                .Result;
+                .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4").Result;
             var content = response.GetString();
             logger.Debug($"Downloaded page content: {content}");
 
@@ -303,14 +295,11 @@ namespace Pimix.Bilibili {
         }
 
         public static string GetAid(string cid) {
-            using var response = biliplusClient
-                .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}")
-                .Result;
+            using var response = biliplusClient.GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
             var content = response.GetString();
             logger.Debug($"Cid info: {content}");
 
             var data = JToken.Parse(content)["data"];
-
             return $"av{data["aid"]}p{data["page"]}";
         }
     }
