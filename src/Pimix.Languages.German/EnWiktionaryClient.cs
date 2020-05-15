@@ -23,7 +23,8 @@ namespace Pimix.Languages.German {
             "Declension",
             "See also",
             "References",
-            "Hyponyms"
+            "Hyponyms",
+            "Synonyms"
         };
 
         public Word GetWord(string wordId) {
