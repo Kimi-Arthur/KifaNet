@@ -1,0 +1,46 @@
+### Add
+POST {{server}}/api/guitar/chords/C
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+Name: C
+Arrangement:
+- Strings: [1]
+  Fret: 0
+  Finger: 0
+- Strings: [2]
+  Fret: 1
+  Finger: 1
+- Strings: [3]
+  Fret: 0
+  Finger: 0
+- Strings: [4]
+  Fret: 2
+  Finger: 2
+- Strings: [5]
+  Fret: 3
+  Finger: 3
+
+### List
+GET {{server}}/api/guitar/chords/
+Accept: application/x-yaml
+
+### All
+GET {{server}}/api/animes/?query=$.*.id
+Accept: application/x-yaml
+
+### Get
+GET {{server}}/api/animes/DRAGON BALL
+Accept: application/x-yaml
+
+### List
+GET {{server}}/api/animes/$format_path?path=咲-Saki-/1
+Accept: application/x-yaml
+
+### TMDB episode
+GET https://api.themoviedb.org/3/tv/1399?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
+
+### TMDB Season
+GET https://api.themoviedb.org/3/tv/60573/season/1?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
+
+###
