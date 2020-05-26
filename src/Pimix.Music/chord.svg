@@ -1,0 +1,32 @@
+<svg viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+  <symbol id="string"  viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+    <line x1="0" y1="0" x2="0" y2="128" stroke="black" stroke-width="1"/>
+  </symbol>
+  <symbol id="bar">
+    <line x1="0" y1="0" x2="80" y2="0" stroke="black" stroke-width="1"/>
+  </symbol>
+  <symbol id="finger">
+    <line x1="50" y1="50" x2="64" y2="64" stroke="blue" stroke-width="4"/>
+  </symbol>
+
+  <use xlink:href="#string" x="0" y="0" height="1000"/>
+
+  <use xlink:href="#string" x="16" y="0" width="8"/>
+
+  <use xlink:href="#string" x="32" y="0" height="100"/>
+
+  <use xlink:href="#string" x="48" y="0" width="8"/>
+
+  <use xlink:href="#string" x="64" y="0" width="8"/>
+
+  <use xlink:href="#string" x="80" y="0" width="8"/>
+
+  <use xlink:href="#bar" x="0" y="0" height="8" />
+
+  <use xlink:href="#bar" x="0" y="16" height="8" />
+
+  <use xlink:href="#bar" x="0" y="32" height="8" />
+
+  <use xlink:href="#bar" x="0" y="48" height="8" />
+</svg>
