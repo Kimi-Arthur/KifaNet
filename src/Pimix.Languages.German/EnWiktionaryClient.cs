@@ -24,7 +24,8 @@ namespace Pimix.Languages.German {
             "See also",
             "References",
             "Hyponyms",
-            "Synonyms"
+            "Synonyms",
+            "External links"
         };
 
         public Word GetWord(string wordId) {
