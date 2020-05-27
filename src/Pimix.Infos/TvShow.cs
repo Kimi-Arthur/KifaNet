@@ -10,8 +10,7 @@ namespace Pimix.Infos {
 
         static TvShowServiceClient client;
 
-        public static TvShowServiceClient Client
-            => client ??= new TvShowRestServiceClient();
+        public static TvShowServiceClient Client => client ??= new TvShowRestServiceClient();
 
         public string Title { get; set; }
         public Date AirDate { get; set; }
@@ -48,18 +47,18 @@ namespace Pimix.Infos {
                 var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, Language.Code);
 
                 var episodes = data.Episodes.Select(episode => new Episode {
-                        Id = episode.EpisodeNumber,
-                        Title = Helper.NormalizeTitle(episode.Name, Language),
-                        AirDate = episode.AirDate,
-                        Overview = episode.Overview
-                    })
-                    .ToList();
+                    Id = episode.EpisodeNumber,
+                    Title = Helper.NormalizeTitle(episode.Name, Language),
+                    AirDate = episode.AirDate,
+                    Overview = episode.Overview
+                }).ToList();
 
                 if (seasonInfo.SeasonNumber > 0) {
+                    var seasonName = Helper.NormalizeTitle(seasonInfo.Name);
                     Seasons.Add(new Season {
                         AirDate = seasonInfo.AirDate,
                         Id = seasonInfo.SeasonNumber,
-                        Title = Helper.NormalizeTitle(seasonInfo.Name),
+                        Title = seasonName != $"Season {seasonInfo.SeasonNumber}" ? seasonName : "",
                         Overview = seasonInfo.Overview,
                         Episodes = episodes
                     });
@@ -72,8 +71,7 @@ namespace Pimix.Infos {
         public string Format(Season season, Episode episode) {
             var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
             var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
-            var episodeIdWidth =
-                episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
+            var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
             var sid = season.Id.ToString();
             sid = new string('0', Math.Max(seasonIdWidth - sid.Length, 0)) + sid;
@@ -85,8 +83,7 @@ namespace Pimix.Infos {
             switch (patternId) {
                 case "multi_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/Season {season.Id} {season.Title}".TrimEnd() +
-                           $" ({season.AirDate.Year})" +
+                           $"/Season {season.Id} {season.Title}".TrimEnd() + $" ({season.AirDate.Year})" +
                            $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd();
                 case "single_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +

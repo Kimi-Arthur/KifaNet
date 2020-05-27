@@ -13,14 +13,14 @@ PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/The Witcher
+POST {{server}}/api/tv_shows/Friends
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 PatternId: multi_season
 SeasonIdWidth: 2
 EpisodeIdWidth: 2
-TmdbId: '71912'
+TmdbId: '1668'
 Language: en
 
 ### Manual Fix of data
@@ -35,7 +35,7 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/The Witcher
+GET {{server}}/api/tv_shows/Friends
 
 ### List
 GET {{server}}/api/tv_shows/$format_path?path=Miss PILOT
