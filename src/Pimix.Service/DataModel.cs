@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 using NLog;
 
 namespace Pimix.Service {
+    /// <summary>
+    /// When used, specify a public const string field named ModelId.
+    /// </summary>
     public abstract class DataModel {
         public string Id { get; set; }
 
