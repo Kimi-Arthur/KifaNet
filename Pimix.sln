@@ -85,6 +85,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages", "src\Pimi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Music", "src\Pimix.Music\Pimix.Music.csproj", "{63DA2454-374B-43CF-9946-34134D20225C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito.Dmm", "src\Pimix.Mito.Dmm\Pimix.Mito.Dmm.csproj", "{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito", "src\Pimix.Mito\Pimix.Mito.csproj", "{D3318132-B9A6-4FDD-AE31-D5876DF06024}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -255,6 +259,14 @@ Global
 		{63DA2454-374B-43CF-9946-34134D20225C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63DA2454-374B-43CF-9946-34134D20225C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63DA2454-374B-43CF-9946-34134D20225C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
