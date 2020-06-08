@@ -27,6 +27,7 @@ namespace Pimix.Mito.Dmm {
                     foreach (var actressNode in row.SelectNodes("./td[2]/span[1]/a") ?? Enumerable.Empty<HtmlNode>()) {
                         video.Actresses.Add(new Actress {
                             Id = actressNode.InnerText,
+                            Name = actressNode.InnerText,
                             Ids = new JavIds {
                                 DmmId = actressNode.GetAttributeValue("href", "0")
                                     .Split("/", StringSplitOptions.RemoveEmptyEntries).Last().Split("=").Last()
@@ -38,6 +39,11 @@ namespace Pimix.Mito.Dmm {
 
             video.Description = doc.DocumentNode.SelectNodes("//div[@class='mg-b20 lh4']").Single().InnerHtml
                 .Split("<", 2).First().Trim();
+
+            var actress = video.Actresses.First().Name;
+            if (video.Title.EndsWith($" {actress}")) {
+                video.Title = video.Title.Substring(0, video.Title.Length - 1 - actress.Length);
+            }
         }
 
         /// <summary>
