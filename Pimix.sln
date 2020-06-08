@@ -89,6 +89,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito.Dmm", "src\Pimix
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito", "src\Pimix.Mito\Pimix.Mito.csproj", "{D3318132-B9A6-4FDD-AE31-D5876DF06024}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Mito.Dmm", "tests\PimixTest.Mito.Dmm\PimixTest.Mito.Dmm.csproj", "{3B159E04-B8DA-42A4-98B7-D84564391502}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -267,6 +269,10 @@ Global
 		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3318132-B9A6-4FDD-AE31-D5876DF06024}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B159E04-B8DA-42A4-98B7-D84564391502}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B159E04-B8DA-42A4-98B7-D84564391502}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B159E04-B8DA-42A4-98B7-D84564391502}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B159E04-B8DA-42A4-98B7-D84564391502}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,9 +7,15 @@ namespace Pimix.Mito {
         public const string ModelId = "mito/videos";
 
         public string Title { get; set; }
-        public List<Actress> Actresses { get; set; }
+        public List<Actress> Actresses { get; set; } = new List<Actress>();
         public string Description { get; set; }
         public Date Published { get; set; }
         public TimeSpan Length { get; set; }
+        public VideoIds VideoIds { get; set; } = new VideoIds();
+    }
+
+    public class VideoIds {
+        public string DmmId { get; set; }
+        public string DmmDvdId { get; set; }
     }
 }

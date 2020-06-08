@@ -8,4 +8,8 @@
     <ProjectReference Include="..\Pimix.Mito\Pimix.Mito.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
+  </ItemGroup>
+
 </Project>
