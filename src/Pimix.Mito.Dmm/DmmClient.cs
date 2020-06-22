@@ -34,9 +34,14 @@ namespace Pimix.Mito.Dmm {
                             }
                         });
                     }
+                } else if (row.SelectNodes("./td[1]")?.Single()?.InnerText == "ジャンル：") {
+                    foreach (var categoryNode in row.SelectNodes("./td[2]/a") ?? Enumerable.Empty<HtmlNode>()) {
+                        video.Categories.Add(categoryNode.InnerText);
+                    }
                 }
             }
 
+            video.Type = video.Categories.Contains("VR専用") ? VideoType.Vr : VideoType.Jav;
             video.Description = doc.DocumentNode.SelectNodes("//div[@class='mg-b20 lh4']").Single().InnerHtml
                 .Split("<", 2).First().Trim();
 
