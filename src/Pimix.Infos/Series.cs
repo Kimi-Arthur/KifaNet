@@ -43,14 +43,16 @@ namespace Pimix.Infos {
         static Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>> LanguagePatterns =
             new Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>> {
                 [Language.Japanese] = new List<(Regex pattern, MatchEvaluator replacer)> {
-                    (new Regex(@" *\([ぁ-ヿ]+\) *"), match => ""), (new Regex(@" *\[[ぁ-ヿ]+\] *"), match => ""),
+                    (new Regex(@" *\([ぁ-ヿ]+\) *"), match => ""),
+                    (new Regex(@" *\[[ぁ-ヿ]+\] *"), match => ""),
                     (new Regex(@", "), match => "、"),
                     (new Regex(@"\? *"), match => "？"),
                     (new Regex(@"! *"), match => "！"),
                     (new Regex(@"… *"), match => "…")
                 },
                 [Language.English] = new List<(Regex pattern, MatchEvaluator replacer)> {
-                    (new Regex(@" \((\d+)\)"), match => $" - Part {match.Groups[1].Value}")
+                    (new Regex(@" \((\d+)\)"), match => $" - Part {match.Groups[1].Value}"),
+                    (new Regex(@""""), match => "'")
                 }
             };
 

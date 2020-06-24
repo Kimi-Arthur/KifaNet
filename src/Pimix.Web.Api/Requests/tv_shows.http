@@ -1,5 +1,5 @@
 ### Refresh
-GET {{server}}/api/tv_shows/$refresh?id=Silicon Valley
+GET {{server}}/api/tv_shows/$refresh?id=Friends
 Accept: application/x-yaml
 
 ### Add Single
