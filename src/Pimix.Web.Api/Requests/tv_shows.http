@@ -37,8 +37,8 @@ Accept: application/x-yaml
 ### Get
 GET {{server}}/api/tv_shows/Friends
 
-### List
-GET {{server}}/api/tv_shows/$format_path?path=Miss PILOT
+### Format
+GET {{server}}/api/tv_shows/$format?id=Friends&seasonId=9&episodeIds=23,24
 Accept: application/x-yaml
 
 ### TMDB series

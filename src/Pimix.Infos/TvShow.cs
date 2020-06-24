@@ -8,6 +8,7 @@ namespace Pimix.Infos {
     public class TvShow : DataModel, Formattable {
         public const string ModelId = "tv_shows";
 
+        const string Part1Suffix = " - Part 1";
         static TvShowServiceClient client;
 
         public static TvShowServiceClient Client => client ??= new TvShowRestServiceClient();
@@ -69,6 +70,11 @@ namespace Pimix.Infos {
         }
 
         public string Format(Season season, Episode episode) {
+            return Format(season, new List<Episode> {episode});
+        }
+
+        public string Format(Season season, List<Episode> episodes) {
+            var episode = episodes.First();
             var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
             var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
             var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
@@ -76,34 +82,60 @@ namespace Pimix.Infos {
             var sid = season.Id.ToString();
             sid = new string('0', Math.Max(seasonIdWidth - sid.Length, 0)) + sid;
 
-            var eid = episode.Id.ToString();
-            eid = new string('0', Math.Max(episodeIdWidth - eid.Length, 0)) + eid;
+            var eids = episodes.Select(e => e.Id.ToString())
+                .Select(eid => new string('0', Math.Max(episodeIdWidth - eid.Length, 0)) + eid);
+
+            var episodeTitle = GetTitle(episodes.Select(e => e.Title).ToList());
 
             // season.Title and episode.Title can be empty.
             switch (patternId) {
                 case "multi_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
                            $"/Season {season.Id} {season.Title}".TrimEnd() + $" ({season.AirDate.Year})" +
-                           $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd();
+                           $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}".TrimEnd();
                 case "single_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/{Title} EP{eid} {episode.Title}".TrimEnd();
+                           $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}".TrimEnd();
                 default:
                     return "Unexpected!";
             }
+        }
+
+        static string GetTitle(IReadOnlyList<string> titles) => GetSharedTitle(titles) ?? string.Join(" ", titles);
+
+        static string GetSharedTitle(IReadOnlyList<string> titles) {
+            var firstTitle = titles.First();
+            if (!firstTitle.EndsWith(Part1Suffix)) {
+                return null;
+            }
+
+            var sharedTitle = firstTitle.Substring(0, firstTitle.Length - Part1Suffix.Length);
+
+            for (var i = 1; i < titles.Count; i++) {
+                if (titles[i] != $"{sharedTitle} - Part {i + 1}") {
+                    return null;
+                }
+            }
+
+            return sharedTitle;
         }
     }
 
     public interface TvShowServiceClient : PimixServiceClient<TvShow> {
         string Format(string id, int seasonId, int episodeId);
+        string Format(string id, int seasonId, List<int> episodeIds);
     }
 
     public class TvShowRestServiceClient : PimixServiceRestClient<TvShow>, TvShowServiceClient {
         public string Format(string id, int seasonId, int episodeId) {
+            return Format(id, seasonId, new List<int> {episodeId});
+        }
+
+        public string Format(string id, int seasonId, List<int> episodeIds) {
             var show = Get(id);
             var season = show.Seasons.First(s => s.Id == seasonId);
-            var episode = season.Episodes.First(e => e.Id == episodeId);
-            return show.Format(season, episode);
+            var episodes = episodeIds.Select(episodeId => season.Episodes.First(e => e.Id == episodeId)).ToList();
+            return show.Format(season, episodes);
         }
     }
 }
