@@ -8,6 +8,11 @@ namespace Pimix.Infos {
             Code = "CN"
         };
 
+        public static readonly Region Germany = new Region {
+            Name = "Germany",
+            Code = "DE"
+        };
+
         public static readonly Region UnitedKingdom = new Region {
             Name = "United Kingdom",
             Code = "GB"
@@ -35,6 +40,7 @@ namespace Pimix.Infos {
 
         public static readonly Dictionary<string, Region> All = new List<Region> {
             China,
+            Germany,
             UnitedKingdom,
             Japan,
             Poland,
