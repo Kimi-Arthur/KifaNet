@@ -14,7 +14,8 @@ namespace Pimix.Infos {
             new Dictionary<Language, Func<int, string>> {
                 [Language.German] = s => $"Staffel {s}",
                 [Language.English] = s => $"Season {s}",
-                [Language.Japanese] = s => $"シーズン{s}"
+                [Language.Japanese] = s => $"シーズン{s}",
+                [Language.Chinese] = s => $"第{GetChineseNumber(s)}季"
             };
 
         static TvShowServiceClient client;
@@ -130,6 +131,24 @@ namespace Pimix.Infos {
             }
 
             return sharedTitle;
+        }
+
+        static List<string> ChineseNumbers = new List<string> {
+            "零",
+            "一",
+            "二",
+            "三",
+            "四",
+            "五",
+            "六",
+            "七",
+            "八",
+            "九",
+            "十",
+        };
+
+        static string GetChineseNumber(int number) {
+            return ChineseNumbers[number];
         }
     }
 
