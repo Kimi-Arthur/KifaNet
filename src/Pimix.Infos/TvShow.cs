@@ -10,9 +10,12 @@ namespace Pimix.Infos {
 
         const string Part1Suffix = " - Part 1";
 
-        static Dictionary<Language, string> StandardSeasonNames = new Dictionary<Language, string> {
-            [Language.German] = "Staffel", [Language.English] = "Season"
-        };
+        static Dictionary<Language, Func<int, string>> StandardSeasonNames =
+            new Dictionary<Language, Func<int, string>> {
+                [Language.German] = s => $"Staffel {s}",
+                [Language.English] = s => $"Season {s}",
+                [Language.Japanese] = s => $"シーズン{s}"
+            };
 
         static TvShowServiceClient client;
 
@@ -64,7 +67,7 @@ namespace Pimix.Infos {
                     Seasons.Add(new Season {
                         AirDate = seasonInfo.AirDate,
                         Id = seasonInfo.SeasonNumber,
-                        Title = IsStandardSeasonName(seasonName, seasonInfo.SeasonNumber, Language) ? seasonName : "",
+                        Title = IsStandardSeasonName(seasonName, seasonInfo.SeasonNumber, Language) ? null : seasonName,
                         Overview = seasonInfo.Overview,
                         Episodes = episodes
                     });
@@ -75,7 +78,7 @@ namespace Pimix.Infos {
         }
 
         static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {
-            return seasonName == StandardSeasonNames.GetValueOrDefault(language, "") + " " + seasonNumber;
+            return seasonName == StandardSeasonNames.GetValueOrDefault(language, (s) => "")(seasonNumber);
         }
 
         public string Format(Season season, Episode episode) {
