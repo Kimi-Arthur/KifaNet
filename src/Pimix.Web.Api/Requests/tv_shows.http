@@ -3,25 +3,25 @@ GET {{server}}/api/tv_shows/$refresh?id=Friends
 Accept: application/x-yaml
 
 ### Add Single
-POST {{server}}/api/tv_shows/%E3%81%82%E3%81%AA%E3%81%9F%E3%81%AE%E7%95%AA%E3%81%A7%E3%81%99
+POST {{server}}/api/tv_shows/隐秘的角落
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-TmdbId: '88570'
-Language: ja
+TmdbId: '104960'
+Language: zh
 PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/Friends
+POST {{server}}/api/tv_shows/Dark
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 PatternId: multi_season
 SeasonIdWidth: 2
 EpisodeIdWidth: 2
-TmdbId: '1668'
-Language: en
+TmdbId: '70523'
+Language: de
 
 ### Manual Fix of data
 PATCH {{server}}/api/tv_shows/Westworld
@@ -35,7 +35,8 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/Friends
+GET {{server}}/api/tv_shows/隐秘的角落
+Accept: application/x-yaml
 
 ### Format
 GET {{server}}/api/tv_shows/$format?id=Friends&seasonId=9&episodeIds=23,24
