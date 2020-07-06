@@ -186,7 +186,7 @@ namespace Pimix.Bilibili {
             biliplusClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                 "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
 
-            var length = biliplusClient.GetContentLength(link);
+            var length = bilibiliClient.GetContentLength(link);
             if (length == null) {
                 throw new Exception("Content length is not found.");
             }
@@ -196,13 +196,13 @@ namespace Pimix.Bilibili {
                     count = buffer.Length - bufferOffset;
                 }
 
-                logger.Trace($"Downloading from {offset} to {offset + count}...");
+                logger.Trace($"Downloading from {offset} to {offset + count} of {link}...");
 
                 return Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get, link);
 
                     request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                    using var response = biliplusClient.SendAsync(request).Result;
+                    using var response = bilibiliClient.SendAsync(request).Result;
                     response.EnsureSuccessStatusCode();
                     var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                     response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);

@@ -28,6 +28,7 @@ namespace Pimix {
             => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
         public static long? GetContentLength(this HttpClient client, string url) {
+            logger.Trace($"Get content length of {url}...");
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Range = new RangeHeaderValue(0, 0);
             return client.SendAsync(request,
