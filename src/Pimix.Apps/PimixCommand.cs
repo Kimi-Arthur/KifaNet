@@ -43,8 +43,8 @@ namespace Pimix.Apps {
         static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
         public static void Initialize() {
-            AppDomain.CurrentDomain.AssemblyLoad +=
-                (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+            AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
+                PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
             PimixConfigs.LoadFromSystemConfigs();
 
@@ -91,7 +91,8 @@ namespace Pimix.Apps {
         }
 
         public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
-            Func<TChoice, string> choiceToString = null, string choiceName = null) {
+            Func<TChoice, string> choiceToString = null, string choiceName = null,
+            DefaultChoice defaultChoice = DefaultChoice.SelectAll) {
             var choiceStrings = choiceToString == null
                 ? choices.Select(c => c.ToString()).ToList()
                 : choices.Select(choiceToString).ToList();
@@ -101,6 +102,22 @@ namespace Pimix.Apps {
             for (var i = 0; i < choices.Count; i++) {
                 Console.WriteLine($"[{i}] {choiceStrings[i]}");
             }
+            // switch (defaultChoice) {
+            //     case DefaultChoice.SelectAll:
+            //         Console.Write(
+            //             $"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
+            //         var reply = Console.ReadLine() ?? "";
+            //         break;
+            //     case DefaultChoice.SelectFirst:
+            // }
+            // var chosen = reply == "" ? choices :
+            //     reply == "." ? new List<TChoice>() : reply.Split(',').SelectMany(i =>
+            //         i.Contains('-')
+            //             ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
+            //                 .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
+            //             : new List<TChoice> {choices[int.Parse(i)]}).ToList();
+            // logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
+            // return chosen;
 
             Console.Write(
                 $"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
@@ -129,5 +146,11 @@ namespace Pimix.Apps {
                 suggested = line;
             }
         }
+    }
+
+    public enum DefaultChoice {
+        SelectAll,
+        SelectFirst,
+        SelectNone
     }
 }
