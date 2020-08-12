@@ -10,8 +10,7 @@ namespace Pimix.Web.Api {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel>
-        where TDataModel : DataModel {
+    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         Dictionary<string, List<string>> Groups { get; } = new Dictionary<string, List<string>>();
 
         public override SortedDictionary<string, TDataModel> List() {
@@ -21,8 +20,7 @@ namespace Pimix.Web.Api {
             }
 
             var directory = new DirectoryInfo(prefix);
-            var items = directory.GetFiles("*.json",
-                SearchOption.AllDirectories);
+            var items = directory.GetFiles("*.json", SearchOption.AllDirectories);
             return new SortedDictionary<string, TDataModel>(items.Select(i =>
                     JsonConvert.DeserializeObject<TDataModel>(i.OpenText().ReadToEnd(),
                         Defaults.JsonSerializerSettings))
@@ -39,8 +37,7 @@ namespace Pimix.Web.Api {
                 return obj;
             }
 
-            return JsonConvert.DeserializeObject<TDataModel>(Read(id),
-                Defaults.JsonSerializerSettings);
+            return JsonConvert.DeserializeObject<TDataModel>(Read(id), Defaults.JsonSerializerSettings);
         }
 
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
@@ -61,8 +58,7 @@ namespace Pimix.Web.Api {
         void Save(string id, TDataModel data) {
             var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
             MakeParent(path);
-            File.WriteAllText(path,
-                JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
+            File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
         }
 
         public override void Delete(string id) {
@@ -71,6 +67,12 @@ namespace Pimix.Web.Api {
 
         public override void Link(string targetId, string linkId) {
             throw new NotImplementedException();
+        }
+
+        public override void Refresh(string id) {
+            var value = Get(id);
+            value.Fill();
+            Set(value);
         }
 
         string Read(string id) {

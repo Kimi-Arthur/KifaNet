@@ -79,3 +79,6 @@ Updates:
 
 ### 9.0
 - Added `filex decode` to extract/process games files.
+
+### 12.0
+- Added `filex refresh` to refresh resources.

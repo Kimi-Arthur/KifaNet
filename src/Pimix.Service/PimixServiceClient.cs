@@ -13,6 +13,7 @@ namespace Pimix.Service {
         void Update(TDataModel data, string id = null);
         void Delete(string id);
         void Link(string targetId, string linkId);
+        void Refresh(string id);
     }
 
     public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel>
@@ -41,5 +42,6 @@ namespace Pimix.Service {
         public abstract void Update(TDataModel data, string id = null);
         public abstract void Delete(string id);
         public abstract void Link(string targetId, string linkId);
+        public abstract void Refresh(string id);
     }
 }

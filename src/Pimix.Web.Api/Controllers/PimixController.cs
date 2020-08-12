@@ -53,10 +53,13 @@ namespace Pimix.Web.Api.Controllers {
         // GET api/values/$refresh?id={id}
         [HttpGet("$refresh")]
         public void Refresh(string id) {
-            id = Uri.UnescapeDataString(id);
-            var value = Client.Get(id);
-            value.Fill();
-            Client.Set(value);
+            RefreshPost(new RefreshRequest {Id = Uri.UnescapeDataString(id)});
+        }
+
+        // POST api/values/$refresh?id={id}
+        [HttpPost("$refresh")]
+        public void RefreshPost([FromBody] RefreshRequest request) {
+            Client.Refresh(request.Id);
         }
     }
 
@@ -80,5 +83,9 @@ namespace Pimix.Web.Api.Controllers {
 
         public IActionResult Convert() =>
             ((IConvertToActionResult) new ActionResult<RestActionResult<TValue>>(Result)).Convert();
+    }
+
+    public class RefreshRequest {
+        public string Id { get; set; }
     }
 }

@@ -15,12 +15,11 @@ namespace Pimix.Service {
 
         static HttpClient client;
 
-        internal static HttpClient Client
-            => LazyInitializer.EnsureInitialized(ref client, ()
-                => CertPath != null
+        internal static HttpClient Client =>
+            LazyInitializer.EnsureInitialized(ref client,
+                () => CertPath != null
                     ? new HttpClient(new HttpClientHandler {
-                        ClientCertificates =
-                            {new X509Certificate2(CertPath, CertPassword)}
+                        ClientCertificates = {new X509Certificate2(CertPath, CertPassword)}
                     })
                     : new HttpClient());
 
@@ -30,8 +29,7 @@ namespace Pimix.Service {
         public static string CertPassword { get; set; }
     }
 
-    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel>
-        where TDataModel : DataModel {
+    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
         public override void Update(TDataModel data, string id = null) {
@@ -42,8 +40,7 @@ namespace Pimix.Service {
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8,
-                            "application/json")
+                            Encoding.UTF8, "application/json")
                     };
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
@@ -59,8 +56,7 @@ namespace Pimix.Service {
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8,
-                            "application/json")
+                            Encoding.UTF8, "application/json")
                     };
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
@@ -70,9 +66,8 @@ namespace Pimix.Service {
 
         public override SortedDictionary<string, TDataModel> List() =>
             Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Get,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/");
+                var request = new HttpRequestMessage(HttpMethod.Get,
+                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/");
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<SortedDictionary<string, TDataModel>>();
@@ -80,9 +75,8 @@ namespace Pimix.Service {
 
         public override TDataModel Get(string id) =>
             Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Get,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
+                var request = new HttpRequestMessage(HttpMethod.Get,
+                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<TDataModel>();
@@ -91,81 +85,68 @@ namespace Pimix.Service {
         public override List<TDataModel> Get(List<string> ids) =>
             ids.Any()
                 ? Retry.Run(() => {
-                        var request =
-                            new HttpRequestMessage(HttpMethod.Get,
-                                $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+                    var request = new HttpRequestMessage(HttpMethod.Get,
+                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
 
-                        using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                        return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
-                    },
-                    (ex, i) => HandleException(ex, i,
-                        $"Failure in GET {modelId}({string.Join(", ", ids)})"))
+                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                    return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
+                }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({string.Join(", ", ids)})"))
                 : new List<TDataModel>();
 
         public override void Link(string targetId, string linkId) {
             Retry.Run(() => {
-                    var request =
-                        new HttpRequestMessage(HttpMethod.Get,
-                            $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/" +
-                            $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
+                var request = new HttpRequestMessage(HttpMethod.Get,
+                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/" +
+                    $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
 
-                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                    return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-                },
-                (ex, i) => HandleException(ex, i,
-                    $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})"));
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
+            }, (ex, i) => HandleException(ex, i, $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})"));
         }
 
         public override void Delete(string id) {
             Retry.Run(() => {
-                var request =
-                    new HttpRequestMessage(HttpMethod.Delete,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
+                var request = new HttpRequestMessage(HttpMethod.Delete,
+                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
         }
 
-        public void Call(string action,
-            string id = null, Dictionary<string, object> parameters = null)
-            => Call<object>(action, id, parameters);
+        public void Call(string action, string id = null, Dictionary<string, object> parameters = null) =>
+            Call<object>(action, id, parameters);
 
-        public TResponse Call<TResponse>(string action,
-            string id = null, Dictionary<string, object> parameters = null) {
+        public TResponse Call<TResponse>(string action, string id = null,
+            Dictionary<string, object> parameters = null) {
             return Retry.Run(() => {
-                    var request =
-                        new HttpRequestMessage(HttpMethod.Post,
-                            $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/${action}");
+                var request = new HttpRequestMessage(HttpMethod.Post,
+                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/${action}");
 
-                    if (parameters != null) {
-                        if (id != null) {
-                            parameters["id"] = id;
-                        }
-
-                        request.Content = new StringContent(JsonConvert.SerializeObject(parameters,
-                                Defaults.JsonSerializerSettings),
-                            Encoding.UTF8,
-                            "application/json");
+                if (parameters != null) {
+                    if (id != null) {
+                        parameters["id"] = id;
                     }
 
-                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                    var result = response.GetObject<RestActionResult<TResponse>>();
-                    if (result.Status == RestActionStatus.OK) {
-                        return result.Response;
-                    }
+                    request.Content =
+                        new StringContent(JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
+                            Encoding.UTF8, "application/json");
+                }
 
-                    throw new RestActionFailedException {
-                        Result = result
-                    };
-                },
-                (ex, i) => HandleException(ex, i,
-                    $"Failure in CALL {modelId}({id}).{action}({id})"));
+                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                var result = response.GetObject<RestActionResult<TResponse>>();
+                if (result.Status == RestActionStatus.OK) {
+                    return result.Response;
+                }
+
+                throw new RestActionFailedException {Result = result};
+            }, (ex, i) => HandleException(ex, i, $"Failure in CALL {modelId}({id}).{action}({id})"));
         }
 
+        public override void Refresh(string id) => Call<object>("refresh", id);
+
         static void HandleException(Exception ex, int index, string message) {
-            if (index >= 5 || ex is RestActionFailedException ||
-                ex is HttpRequestException &&
+            if (index >= 5 || ex is RestActionFailedException || ex is HttpRequestException &&
                 ex.InnerException is SocketException socketException &&
                 socketException.Message == "Device not configured") {
                 throw ex;
