@@ -1,27 +1,35 @@
 ### Refresh
-GET {{server}}/api/tv_shows/$refresh?id=Friends
+GET {{server}}/api/tv_shows/$refresh?id=%E5%8D%8A%E6%B2%A2%E7%9B%B4%E6%A8%B9
 Accept: application/x-yaml
 
-### Add Single
-POST {{server}}/api/tv_shows/隐秘的角落
+### Refresh (POST
+POST {{server}}/api/tv_shows/$refresh
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-TmdbId: '104960'
-Language: zh
+Id: 半沢直樹
+
+
+### Add Single
+POST {{server}}/api/tv_shows/アンサング・シンデレラ 病院薬剤師の処方箋
+Accept: application/x-yaml
+Content-Type: application/x-yaml
+
+TmdbId: '106002'
+Language: ja
 PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/Dark
+POST {{server}}/api/tv_shows/%E5%8D%8A%E6%B2%A2%E7%9B%B4%E6%A8%B9
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 PatternId: multi_season
 SeasonIdWidth: 2
 EpisodeIdWidth: 2
-TmdbId: '70523'
-Language: de
+TmdbId: '55925'
+Language: ja
 
 ### Manual Fix of data
 PATCH {{server}}/api/tv_shows/Westworld
@@ -35,7 +43,7 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/隐秘的角落
+GET {{server}}/api/tv_shows/%E5%8D%8A%E6%B2%A2%E7%9B%B4%E6%A8%B9
 Accept: application/x-yaml
 
 ### Format
