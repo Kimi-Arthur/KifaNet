@@ -7,8 +7,7 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [ApiController]
-    public abstract class PimixController<TDataModel> : ControllerBase
-        where TDataModel : DataModel {
+    public abstract class PimixController<TDataModel> : ControllerBase where TDataModel : DataModel {
         protected abstract PimixServiceClient<TDataModel> Client { get; }
 
         // GET api/values
@@ -19,6 +18,10 @@ namespace Pimix.Web.Api.Controllers {
         [HttpGet("{id}")]
         public ActionResult<TDataModel> Get(string id) {
             id = Uri.UnescapeDataString(id);
+            if (id.StartsWith("$")) {
+                return new NotFoundResult();
+            }
+
             return Client.Get(id);
         }
 
@@ -55,9 +58,8 @@ namespace Pimix.Web.Api.Controllers {
             return new PimixActionResult {Result = result};
         }
 
-        public IActionResult Convert()
-            => ((IConvertToActionResult)
-                new ActionResult<RestActionResult>(Result)).Convert();
+        public IActionResult Convert() =>
+            ((IConvertToActionResult) new ActionResult<RestActionResult>(Result)).Convert();
     }
 
     public class PimixActionResult<TValue> : IConvertToActionResult {
@@ -67,8 +69,7 @@ namespace Pimix.Web.Api.Controllers {
             return new PimixActionResult<TValue> {Result = new RestActionResult<TValue>(value)};
         }
 
-        public IActionResult Convert()
-            => ((IConvertToActionResult)
-                new ActionResult<RestActionResult<TValue>>(Result)).Convert();
+        public IActionResult Convert() =>
+            ((IConvertToActionResult) new ActionResult<RestActionResult<TValue>>(Result)).Convert();
     }
 }
