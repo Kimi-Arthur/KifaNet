@@ -79,7 +79,7 @@ namespace Pimix.Infos {
         }
 
         static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {
-            return seasonName == StandardSeasonNames.GetValueOrDefault(language, (s) => "")(seasonNumber);
+            return seasonName == StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
         }
 
         public string Format(Season season, Episode episode) {

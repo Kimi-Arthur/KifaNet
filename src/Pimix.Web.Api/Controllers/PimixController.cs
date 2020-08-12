@@ -49,6 +49,15 @@ namespace Pimix.Web.Api.Controllers {
             id = Uri.UnescapeDataString(id);
             Client.Delete(id);
         }
+
+        // GET api/values/$refresh?id={id}
+        [HttpGet("$refresh")]
+        public void Refresh(string id) {
+            id = Uri.UnescapeDataString(id);
+            var value = Client.Get(id);
+            value.Fill();
+            Client.Set(value);
+        }
     }
 
     public class PimixActionResult : IConvertToActionResult {
