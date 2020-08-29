@@ -123,15 +123,14 @@ namespace Pimix.Service {
                 var request = new HttpRequestMessage(HttpMethod.Post,
                     $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/${action}");
 
-                if (parameters != null) {
-                    if (id != null) {
-                        parameters["id"] = id;
-                    }
-
-                    request.Content =
-                        new StringContent(JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8, "application/json");
+                parameters ??= new Dictionary<string, object>();
+                if (id != null) {
+                    parameters["id"] = id;
                 }
+
+                request.Content =
+                    new StringContent(JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
+                        Encoding.UTF8, "application/json");
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 var result = response.GetObject<RestActionResult<TResponse>>();
