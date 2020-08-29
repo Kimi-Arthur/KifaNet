@@ -106,11 +106,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
             var verb = new Verb {
                 Id = parts[columnNames["Word"]],
-                Meanings = new List<Meaning> {
-                    new Meaning {
-                        Translation = parts[columnNames["Meaning"]]
-                    }
-                },
+                Meanings = new List<Meaning> {new Meaning {Translation = parts[columnNames["Meaning"]]}},
                 VerbForms = new VerbForms {
                     [VerbFormType.IndicativePresent] = new Dictionary<Person, string> {
                         [Person.Ich] = parts[columnNames["ich"]],
@@ -149,13 +145,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
 
             foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
                 parts[index] = columnName switch {
-                    "Indicative Present" =>
-                    $"<pre>ich       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Ich]}<br>"
-                    + $"du        {verb.VerbForms[VerbFormType.IndicativePresent][Person.Du]}<br>"
-                    + $"er/sie/es {verb.VerbForms[VerbFormType.IndicativePresent][Person.Er]}<br>"
-                    + $"wir       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Wir]}<br>"
-                    + $"ihr       {verb.VerbForms[VerbFormType.IndicativePresent][Person.Ihr]}<br>"
-                    + $"sie/Sie   {verb.VerbForms[VerbFormType.IndicativePresent][Person.Sie]}</pre>",
+                    "Konjugation" => $"{verb.VerbForms[VerbFormType.IndicativePresent][Person.Er]}",
                     "Pronunciation" => $"[[{verb.Pronunciation}]]({verb.PronunciationAudioLink})",
                     "Meaning" => verb.Meaning,
                     _ => parts[index]
