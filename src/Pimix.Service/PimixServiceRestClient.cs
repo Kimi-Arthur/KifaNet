@@ -142,7 +142,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in CALL {modelId}({id}).{action}({id})"));
         }
 
-        public override void Refresh(string id) => Call<object>("refresh", id);
+        public override void Refresh(string id) => Call("refresh", id);
 
         static void HandleException(Exception ex, int index, string message) {
             if (index >= 5 || ex is RestActionFailedException || ex is HttpRequestException &&

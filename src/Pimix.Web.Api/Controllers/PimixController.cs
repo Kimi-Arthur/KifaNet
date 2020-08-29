@@ -27,39 +27,44 @@ namespace Pimix.Web.Api.Controllers {
 
         // PATCH api/values/5
         [HttpPatch("{id}")]
-        public void Patch(string id, [FromBody] TDataModel value) {
+        public PimixActionResult Patch(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             var data = Client.Get(value.Id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(value, Defaults.JsonSerializerSettings), data,
                 Defaults.JsonSerializerSettings);
             Client.Set(data);
+            return RestActionResult.SuccessResult;
         }
 
         // POST api/values
         [HttpPost("{id}")]
-        public void Post(string id, [FromBody] TDataModel value) {
+        public PimixActionResult Post(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
             Client.Set(value);
+            return RestActionResult.SuccessResult;
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(string id) {
+        public PimixActionResult Delete(string id) {
             id = Uri.UnescapeDataString(id);
             Client.Delete(id);
+            return RestActionResult.SuccessResult;
         }
 
         // GET api/values/$refresh?id={id}
         [HttpGet("$refresh")]
-        public void Refresh(string id) {
+        public PimixActionResult Refresh(string id) {
             RefreshPost(new RefreshRequest {Id = Uri.UnescapeDataString(id)});
+            return RestActionResult.SuccessResult;
         }
 
         // POST api/values/$refresh?id={id}
         [HttpPost("$refresh")]
-        public void RefreshPost([FromBody] RefreshRequest request) {
+        public PimixActionResult RefreshPost([FromBody] RefreshRequest request) {
             Client.Refresh(request.Id);
+            return RestActionResult.SuccessResult;
         }
     }
 

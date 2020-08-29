@@ -3,6 +3,8 @@ using Newtonsoft.Json.Converters;
 
 namespace Pimix.Service {
     public class RestActionResult {
+        public static readonly RestActionResult SuccessResult = new RestActionResult() {Status = RestActionStatus.OK};
+
         [JsonConverter(typeof(StringEnumConverter))]
         public RestActionStatus Status { get; set; }
 
