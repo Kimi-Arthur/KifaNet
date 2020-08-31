@@ -6,15 +6,18 @@ namespace PimixTest.Languages.German {
         [Theory]
         [InlineData("kommen", "komm!", "kommt!", "kommen Sie!", "komme", "kommst", "kommt", "kommen", "kommt", "kommen",
             "kam", "kamst", "kam", "kamen", "kamt", "kamen", "bin gekommen", "bist gekommen", "ist gekommen",
-            "sind gekommen", "seid gekommen", "sind gekommen")]
+            "sind gekommen", "seid gekommen", "sind gekommen", new[] {"kommt", "kam", "ist gekommen"})]
         [InlineData("abholen", "hol ab!", "holt ab!", "holen Sie ab!", "hole ab", "holst ab", "holt ab", "holen ab",
             "holt ab", "holen ab", "holte ab", "holtest ab", "holte ab", "holten ab", "holtet ab", "holten ab",
-            "habe abgeholt", "hast abgeholt", "hat abgeholt", "haben abgeholt", "habt abgeholt", "haben abgeholt")]
+            "habe abgeholt", "hast abgeholt", "hat abgeholt", "haben abgeholt", "habt abgeholt", "haben abgeholt",
+            new[] {"holt ab", "holte ab", "hat abgeholt"})]
         public void ExtractVerbFormsTest(string id, string imp2s, string imp2p, string impsie, string p1s, string p2s,
             string p3s, string p1p, string p2p, string p3p, string pa1s, string pa2s, string pa3s, string pa1p,
-            string pa2p, string pa3p, string pe1s, string pe2s, string pe3s, string pe1p, string pe2p, string pe3p) {
+            string pa2p, string pa3p, string pe1s, string pe2s, string pe3s, string pe1p, string pe2p, string pe3p,
+            string[] kf) {
             var client = new DeWiktionaryClient();
             var word = client.GetWord(id);
+
             Assert.Equal(imp2s, word.VerbForms[VerbFormType.Imperative][Person.Du]);
             Assert.Equal(imp2p, word.VerbForms[VerbFormType.Imperative][Person.Ihr]);
             Assert.Equal(impsie, word.VerbForms[VerbFormType.Imperative][Person.Sie]);
@@ -39,6 +42,8 @@ namespace PimixTest.Languages.German {
             Assert.Equal(pe1p, word.VerbForms[VerbFormType.IndicativePerfect][Person.Wir]);
             Assert.Equal(pe2p, word.VerbForms[VerbFormType.IndicativePerfect][Person.Ihr]);
             Assert.Equal(pe3p, word.VerbForms[VerbFormType.IndicativePerfect][Person.Sie]);
+
+            Assert.Equal(kf, word.KeyVerbForms);
         }
     }
 }

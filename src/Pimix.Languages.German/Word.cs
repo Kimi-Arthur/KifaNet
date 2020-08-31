@@ -24,8 +24,8 @@ namespace Pimix.Languages.German {
         public string Pronunciation { get; set; }
 
         [JsonIgnore]
-        public string PronunciationAudioLink => PronunciationAudioLinkDuden ?? PronunciationAudioLinkWiktionary
-            ?? PronunciationAudioLinkPons;
+        public string PronunciationAudioLink =>
+            PronunciationAudioLinkDuden ?? PronunciationAudioLinkWiktionary ?? PronunciationAudioLinkPons;
 
         public string PronunciationAudioLinkDuden { get; set; }
 
@@ -35,6 +35,14 @@ namespace Pimix.Languages.German {
 
         // Shared for any meaning.
         public VerbForms VerbForms { get; set; } = new VerbForms();
+
+        [JsonIgnore]
+        public List<string> KeyVerbForms =>
+            new List<string> {
+                VerbForms[VerbFormType.IndicativePresent][Person.Er],
+                VerbForms[VerbFormType.IndicativePreterite][Person.Er],
+                VerbForms[VerbFormType.IndicativePerfect][Person.Er]
+            };
 
         public Gender Gender { get; set; }
 
