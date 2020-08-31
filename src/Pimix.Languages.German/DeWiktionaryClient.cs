@@ -8,6 +8,16 @@ namespace Pimix.Languages.German {
     public class DeWiktionaryClient {
         static HttpClient wiktionaryClient = new HttpClient();
 
+        static readonly Dictionary<string, Person> personMapping = new Dictionary<string, Person> {
+            ["1. Person Singular"] = Person.Ich,
+            ["2. Person Singular"] = Person.Du,
+            ["3. Person Singular"] = Person.Er,
+            ["1. Person Plural"] = Person.Wir,
+            ["2. Person Plural"] = Person.Ihr,
+            ["3. Person Plural"] = Person.Sie,
+            ["Höflichkeitsform"] = Person.Sie,
+        };
+
         public Word GetWord(string wordId) {
             var doc = new HtmlDocument();
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/{wordId}").Result);
@@ -16,9 +26,7 @@ namespace Pimix.Languages.German {
             var inSection = false;
             var hasPronunciation = false;
             var wordType = WordType.Unknown;
-            var word = new Word {
-                Id = wordId
-            };
+            var word = new Word {Id = wordId};
             foreach (var node in pageContentNodes) {
                 if (inDeutsch) {
                     if (node.Name == "h2") {
@@ -37,9 +45,7 @@ namespace Pimix.Languages.German {
                             wordType = ParseWordType(wordTypeNode.Id);
                             // TODO(bug): Should not create the word every time.
                             word = wordType switch {
-                                WordType.Verb => new Verb{
-                                    Id = wordId
-                                },
+                                WordType.Verb => new Verb {Id = wordId},
                                 WordType.Noun => new Noun {
                                     Id = wordId,
                                     Gender = wordTypeNode.Id.Split(",").Last() switch {
@@ -63,29 +69,24 @@ namespace Pimix.Languages.German {
                             var noun = word as Noun;
                             var selector = new Func<int, int, string>((row, column) => {
                                 var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]").InnerText.Split("\n")
-                                    .First()
-                                    .Split(" ").Last();
+                                    .First().Split(" ").Last();
                                 return form == "—" ? null : form;
                             });
 
                             noun.NounForms[Case.Nominative] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(1, 1),
-                                [Number.Plural] = selector(1, 2)
+                                [Number.Singular] = selector(1, 1), [Number.Plural] = selector(1, 2)
                             };
 
                             noun.NounForms[Case.Genitive] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(2, 1),
-                                [Number.Plural] = selector(2, 2)
+                                [Number.Singular] = selector(2, 1), [Number.Plural] = selector(2, 2)
                             };
 
                             noun.NounForms[Case.Dative] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(3, 1),
-                                [Number.Plural] = selector(3, 2)
+                                [Number.Singular] = selector(3, 1), [Number.Plural] = selector(3, 2)
                             };
 
                             noun.NounForms[Case.Accusative] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(4, 1),
-                                [Number.Plural] = selector(4, 2)
+                                [Number.Singular] = selector(4, 1), [Number.Plural] = selector(4, 2)
                             };
                         }
 
@@ -126,23 +127,13 @@ namespace Pimix.Languages.German {
                     word.VerbForms[VerbFormType.Imperative] = new Dictionary<Person, string>();
                 } else if (state == VerbFormParsingStates.Imperative) {
                     var cells = row.SelectNodes("./td");
-                    if (cells?.Count > 1)
-                        switch (cells[0].InnerTextTrimmed()) {
-                            case "2. Person Singular":
-                                word.VerbForms[VerbFormType.Imperative][Person.Du] =
-                                    (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
-                                break;
-                            case "2. Person Plural":
-                                word.VerbForms[VerbFormType.Imperative][Person.Ihr] =
-                                    (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
-                                break;
-                            case "Höflichkeitsform":
-                                word.VerbForms[VerbFormType.Imperative][Person.Sie] =
-                                    (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
-                                break;
+                    if (cells?.Count > 1) {
+                        var person = cells[0].InnerTextTrimmed();
+                        if (personMapping.ContainsKey(person)) {
+                            word.VerbForms[VerbFormType.Imperative][personMapping[cells[0].InnerTextTrimmed()]] =
+                                (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
                         }
-                    else
-                        continue;
+                    }
                 }
             }
         }
