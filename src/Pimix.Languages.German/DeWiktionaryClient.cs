@@ -16,7 +16,9 @@ namespace Pimix.Languages.German {
             var inSection = false;
             var hasPronunciation = false;
             var wordType = WordType.Unknown;
-            var word = new Word();
+            var word = new Word {
+                Id = wordId
+            };
             foreach (var node in pageContentNodes) {
                 if (inDeutsch) {
                     if (node.Name == "h2") {
@@ -33,9 +35,13 @@ namespace Pimix.Languages.German {
                         var wordTypeNode = node.SelectSingleNode(".//span[@class='mw-headline']");
                         if (wordTypeNode != null) {
                             wordType = ParseWordType(wordTypeNode.Id);
+                            // TODO(bug): Should not create the word every time.
                             word = wordType switch {
-                                WordType.Verb => new Verb(),
+                                WordType.Verb => new Verb{
+                                    Id = wordId
+                                },
                                 WordType.Noun => new Noun {
+                                    Id = wordId,
                                     Gender = wordTypeNode.Id.Split(",").Last() switch {
                                         "_m" => Gender.Masculine,
                                         "_f" => Gender.Feminine,
@@ -45,6 +51,10 @@ namespace Pimix.Languages.German {
                                 },
                                 _ => word
                             };
+
+                            if (wordType == WordType.Verb && word.VerbForms.Count == 0) {
+                                FillVerbForms(word);
+                            }
                         }
                     }
 
@@ -100,6 +110,43 @@ namespace Pimix.Languages.German {
             return word;
         }
 
+        void FillVerbForms(Word word) {
+            // TODO(improve): use some state machine lib.
+            var doc = new HtmlDocument();
+            doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);
+            var rows = doc.DocumentNode.SelectNodes(".//tr");
+            var state = VerbFormParsingStates.Default;
+            foreach (var row in rows) {
+                if (row.SelectNodes("./td|./th")?.Count == 1) {
+                    state = VerbFormParsingStates.Default;
+                }
+
+                if (row.InnerTextTrimmed() == "Imperative") {
+                    state = VerbFormParsingStates.Imperative;
+                    word.VerbForms[VerbFormType.Imperative] = new Dictionary<Person, string>();
+                } else if (state == VerbFormParsingStates.Imperative) {
+                    var cells = row.SelectNodes("./td");
+                    if (cells?.Count > 1)
+                        switch (cells[0].InnerTextTrimmed()) {
+                            case "2. Person Singular":
+                                word.VerbForms[VerbFormType.Imperative][Person.Du] =
+                                    (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
+                                break;
+                            case "2. Person Plural":
+                                word.VerbForms[VerbFormType.Imperative][Person.Ihr] =
+                                    (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
+                                break;
+                            case "Höflichkeitsform":
+                                word.VerbForms[VerbFormType.Imperative][Person.Sie] =
+                                    (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
+                                break;
+                        }
+                    else
+                        continue;
+                }
+            }
+        }
+
         static WordType ParseWordType(string id) =>
             id.Split(",").First() switch {
                 "Adjektiv" => WordType.Adjective,
@@ -117,5 +164,10 @@ namespace Pimix.Languages.German {
                 "Verb" => WordType.Verb,
                 _ => WordType.Unknown
             };
+    }
+
+    enum VerbFormParsingStates {
+        Default,
+        Imperative
     }
 }

@@ -5,7 +5,10 @@ namespace Pimix.Languages.German {
     }
 
     public enum VerbFormType {
-        IndicativePresent
+        IndicativePresent,
+        IndicativePreterite,
+        IndicativePerfect,
+        Imperative
     }
 
     public enum Person {
