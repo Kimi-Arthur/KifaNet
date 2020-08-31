@@ -8,14 +8,30 @@ namespace Pimix.Languages.German {
     public class DeWiktionaryClient {
         static HttpClient wiktionaryClient = new HttpClient();
 
-        static readonly Dictionary<string, Person> personMapping = new Dictionary<string, Person> {
+        static readonly Dictionary<string, VerbFormType> FormMapping = new Dictionary<string, VerbFormType> {
+            ["Imperative"] = VerbFormType.Imperative,
+            ["Präsens"] = VerbFormType.IndicativePresent,
+            ["Präteritum"] = VerbFormType.IndicativePreterite,
+            ["Perfekt"] = VerbFormType.IndicativePerfect
+        };
+
+        static readonly Dictionary<string, Person> PersonMapping = new Dictionary<string, Person> {
             ["1. Person Singular"] = Person.Ich,
             ["2. Person Singular"] = Person.Du,
             ["3. Person Singular"] = Person.Er,
             ["1. Person Plural"] = Person.Wir,
             ["2. Person Plural"] = Person.Ihr,
             ["3. Person Plural"] = Person.Sie,
-            ["Höflichkeitsform"] = Person.Sie,
+            ["Höflichkeitsform"] = Person.Sie
+        };
+
+        static readonly Dictionary<Person, string> PersonPrefixes = new Dictionary<Person, string> {
+            [Person.Ich] = "ich",
+            [Person.Du] = "du",
+            [Person.Er] = "<small>er/sie/es</small>",
+            [Person.Wir] = "wir",
+            [Person.Ihr] = "ihr",
+            [Person.Sie] = "sie"
         };
 
         public Word GetWord(string wordId) {
@@ -116,27 +132,32 @@ namespace Pimix.Languages.German {
             var doc = new HtmlDocument();
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);
             var rows = doc.DocumentNode.SelectNodes(".//tr");
-            var state = VerbFormParsingStates.Default;
+            VerbFormType? state = null;
             foreach (var row in rows) {
                 if (row.SelectNodes("./td|./th")?.Count == 1) {
-                    state = VerbFormParsingStates.Default;
+                    state = null;
                 }
 
-                if (row.InnerTextTrimmed() == "Imperative") {
-                    state = VerbFormParsingStates.Imperative;
-                    word.VerbForms[VerbFormType.Imperative] = new Dictionary<Person, string>();
-                } else if (state == VerbFormParsingStates.Imperative) {
+                var form = row.InnerTextTrimmed();
+                if (FormMapping.ContainsKey(form)) {
+                    state = FormMapping[form];
+                    word.VerbForms[state.Value] = new Dictionary<Person, string>();
+                } else if (state != null) {
                     var cells = row.SelectNodes("./td");
                     if (cells?.Count > 1) {
                         var person = cells[0].InnerTextTrimmed();
-                        if (personMapping.ContainsKey(person)) {
-                            word.VerbForms[VerbFormType.Imperative][personMapping[cells[0].InnerTextTrimmed()]] =
-                                (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0];
+                        if (PersonMapping.ContainsKey(person)) {
+                            var p = PersonMapping[cells[0].InnerTextTrimmed()];
+                            word.VerbForms[state.Value][p] = RemovePrefix(
+                                (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0], p);
                         }
                     }
                 }
             }
         }
+
+        static string RemovePrefix(string s, Person p) =>
+            s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s;
 
         static WordType ParseWordType(string id) =>
             id.Split(",").First() switch {
@@ -155,10 +176,5 @@ namespace Pimix.Languages.German {
                 "Verb" => WordType.Verb,
                 _ => WordType.Unknown
             };
-    }
-
-    enum VerbFormParsingStates {
-        Default,
-        Imperative
     }
 }
