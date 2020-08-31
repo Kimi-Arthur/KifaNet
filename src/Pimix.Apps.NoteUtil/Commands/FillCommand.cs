@@ -145,7 +145,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
 
             foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
                 parts[index] = columnName switch {
-                    "Konjugation" => $"{verb.VerbForms[VerbFormType.IndicativePresent][Person.Er]}",
+                    "Konjugation" => string.Join(", ", verb.KeyVerbForms),
                     "Pronunciation" => $"[[{verb.Pronunciation}]]({verb.PronunciationAudioLink})",
                     "Meaning" => verb.Meaning,
                     _ => parts[index]
