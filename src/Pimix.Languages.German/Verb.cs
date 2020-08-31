@@ -10,7 +10,7 @@ namespace Pimix.Languages.German {
         public override void Fill() {
             var words = GetWords();
             FillWithData(words);
-            VerbForms = words.pons.VerbForms;
+            VerbForms = words.wiki.VerbForms;
         }
     }
 

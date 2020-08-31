@@ -11,7 +11,10 @@ namespace Pimix.Languages.German {
         const string SelectField = "data-pons-flection-id";
 
         static readonly Dictionary<VerbFormType, string> verbFormIds = new Dictionary<VerbFormType, string> {
-            [VerbFormType.IndicativePresent] = "INDIKATIV_PRAESENS"
+            [VerbFormType.IndicativePresent] = "INDIKATIV_PRAESENS",
+            [VerbFormType.IndicativePreterite] = "INDIKATIV_PRAETERITUM",
+            [VerbFormType.IndicativePerfect] = "INDIKATIV_PERFEKT",
+            [VerbFormType.Imperative] = "KONJUNKTIV_PRAESENS"
         };
 
         static readonly Dictionary<Person, string> personIds = new Dictionary<Person, string> {
