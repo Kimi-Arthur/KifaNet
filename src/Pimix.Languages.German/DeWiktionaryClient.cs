@@ -148,7 +148,7 @@ namespace Pimix.Languages.German {
                         var person = cells[0].InnerTextTrimmed();
                         if (PersonMapping.ContainsKey(person)) {
                             var p = PersonMapping[cells[0].InnerTextTrimmed()];
-                            word.VerbForms[state.Value][p] = RemovePrefix(
+                            word.VerbForms[state.Value][p] = Normalize(
                                 (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0], p);
                         }
                     }
@@ -156,8 +156,8 @@ namespace Pimix.Languages.German {
             }
         }
 
-        static string RemovePrefix(string s, Person p) =>
-            s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s;
+        static string Normalize(string s, Person p) =>
+            (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s).Trim(',');
 
         static WordType ParseWordType(string id) =>
             id.Split(",").First() switch {
