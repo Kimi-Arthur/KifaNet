@@ -120,7 +120,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         }
 
         static void FillNounRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var noun = new Noun {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+            var noun = new Word {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing noun: {noun.Id}");
 
             noun.Fill();

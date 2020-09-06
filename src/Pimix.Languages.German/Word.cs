@@ -48,6 +48,56 @@ namespace Pimix.Languages.German {
 
         public NounForms NounForms { get; set; } = new NounForms();
 
+        public string GetNounFormWithArticle(Case formCase, Number formNumber) =>
+            NounForms.GetValueOrDefault(formCase, new Dictionary<Number, string>()).ContainsKey(formNumber)
+                ? $"{GetArticle(Gender, formCase, formNumber)} {NounForms[formCase][formNumber]}"
+                : "-";
+
+        public static string GetArticle(Gender gender, Case formCase, Number formNumber) =>
+            formCase switch {
+                Case.Nominative => formNumber switch {
+                    Number.Singular => gender switch {
+                        Gender.Masculine => "der",
+                        Gender.Feminine => "die",
+                        Gender.Neuter => "das",
+                        _ => null
+                    },
+                    Number.Plural => "die",
+                    _ => null
+                },
+                Case.Genitive => formNumber switch {
+                    Number.Singular => gender switch {
+                        Gender.Masculine => "des",
+                        Gender.Feminine => "der",
+                        Gender.Neuter => "des",
+                        _ => null
+                    },
+                    Number.Plural => "der",
+                    _ => null
+                },
+                Case.Dative => formNumber switch {
+                    Number.Singular => gender switch {
+                        Gender.Masculine => "dem",
+                        Gender.Feminine => "der",
+                        Gender.Neuter => "dem",
+                        _ => null
+                    },
+                    Number.Plural => "den",
+                    _ => null
+                },
+                Case.Accusative => formNumber switch {
+                    Number.Singular => gender switch {
+                        Gender.Masculine => "den",
+                        Gender.Feminine => "die",
+                        Gender.Neuter => "das",
+                        _ => null
+                    },
+                    Number.Plural => "die",
+                    _ => null
+                },
+                _ => null
+            };
+
         protected (Word wiki, Word enWiki, Word pons, Word duden) GetWords() {
             var wiki = new Word();
             try {
@@ -90,6 +140,11 @@ namespace Pimix.Languages.German {
 
             if (Meanings.Any(m => m.Type == WordType.Verb)) {
                 VerbForms = words.wiki.VerbForms;
+            }
+
+            if (Meanings.Any(m => m.Type == WordType.Noun)) {
+                Gender = words.wiki.Gender;
+                NounForms = words.wiki.NounForms;
             }
         }
     }

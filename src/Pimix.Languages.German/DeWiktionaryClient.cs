@@ -87,26 +87,25 @@ namespace Pimix.Languages.German {
 
                     if (inSection) {
                         if (node.Name == "table" && node.HasClass("wikitable") && wordType == WordType.Noun) {
-                            var noun = word as Noun;
                             var selector = new Func<int, int, string>((row, column) => {
                                 var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]").InnerText.Split("\n")
                                     .First().Split(" ").Last();
                                 return form == "—" ? null : form;
                             });
 
-                            noun.NounForms[Case.Nominative] = new Dictionary<Number, string> {
+                            word.NounForms[Case.Nominative] = new Dictionary<Number, string> {
                                 [Number.Singular] = selector(1, 1), [Number.Plural] = selector(1, 2)
                             };
 
-                            noun.NounForms[Case.Genitive] = new Dictionary<Number, string> {
+                            word.NounForms[Case.Genitive] = new Dictionary<Number, string> {
                                 [Number.Singular] = selector(2, 1), [Number.Plural] = selector(2, 2)
                             };
 
-                            noun.NounForms[Case.Dative] = new Dictionary<Number, string> {
+                            word.NounForms[Case.Dative] = new Dictionary<Number, string> {
                                 [Number.Singular] = selector(3, 1), [Number.Plural] = selector(3, 2)
                             };
 
-                            noun.NounForms[Case.Accusative] = new Dictionary<Number, string> {
+                            word.NounForms[Case.Accusative] = new Dictionary<Number, string> {
                                 [Number.Singular] = selector(4, 1), [Number.Plural] = selector(4, 2)
                             };
                         }

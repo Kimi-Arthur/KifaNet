@@ -20,9 +20,9 @@ namespace PimixTest.Languages.German {
         public void ExtractMeaningWithExamplesTest() {
             var client = new EnWiktionaryClient();
             var word = client.GetWord("zu");
-            Assert.Equal(20, word.Meanings.Count);
+            Assert.Equal(21, word.Meanings.Count);
             Assert.Equal("to, towards", word.Meaning);
-            Assert.Equal("for; as, by way of", word.Meanings[5].Translation);
+            Assert.Equal("for; as, by way of", word.Meanings[6].Translation);
             var meaning = word.Meanings[0];
             Assert.Equal(WordType.Preposition, meaning.Type);
             Assert.Equal("to, towards", meaning.Translation);

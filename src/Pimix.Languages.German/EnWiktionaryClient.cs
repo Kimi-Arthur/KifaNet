@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using MwParserFromScratch;
 using MwParserFromScratch.Nodes;
 using NLog;
@@ -144,15 +145,17 @@ namespace Pimix.Languages.German {
         }
 
         static string GetLineWithoutNotes(Node line) {
-            return string.Join("",
-                    line.EnumChildren().Select(c =>
-                        c is Template template && template.Name.ToPlainText() == "l" ? GetText(c) : c.ToPlainText()))
-                .Trim();
+            return Normalize(string.Join("",
+                line.EnumChildren().Select(c =>
+                    c is Template template && template.Name.ToPlainText() == "l" ? GetText(c) : c.ToPlainText())));
         }
 
         static string GetLineWithNotes(Node line) {
-            return string.Join("", line.EnumChildren().Select(GetText)).Trim();
+            return Normalize(string.Join("", line.EnumChildren().Select(GetText)));
         }
+
+        static readonly Regex SpacesPattern = new Regex(" +");
+        static string Normalize(string text) => SpacesPattern.Replace(text.Trim(), " ");
 
         static string GetText(Node node) {
             if (node is Template template) {
