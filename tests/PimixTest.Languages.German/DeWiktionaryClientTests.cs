@@ -11,6 +11,10 @@ namespace PimixTest.Languages.German {
             "holt ab", "holen ab", "holte ab", "holtest ab", "holte ab", "holten ab", "holtet ab", "holten ab",
             "habe abgeholt", "hast abgeholt", "hat abgeholt", "haben abgeholt", "habt abgeholt", "haben abgeholt",
             new[] {"holt ab", "holte ab", "hat abgeholt"})]
+        [InlineData("bedienen", "bedien!", "bedient!", "bedienen Sie!", "bedien", "bedienst", "bedient", "bedienen",
+            "bedient", "bedienen", "bediente", "bedientest", "bediente", "bedienten", "bedientet", "bedienten",
+            "habe bedient", "hast bedient", "hat bedient", "haben bedient", "habt bedient", "haben bedient",
+            new[] {"bedient", "bediente", "hat bedient"})]
         public void ExtractVerbFormsTest(string id, string imp2s, string imp2p, string impsie, string p1s, string p2s,
             string p3s, string p1p, string p2p, string p3p, string pa1s, string pa2s, string pa3s, string pa1p,
             string pa2p, string pa3p, string pe1s, string pe2s, string pe3s, string pe1p, string pe2p, string pe3p,

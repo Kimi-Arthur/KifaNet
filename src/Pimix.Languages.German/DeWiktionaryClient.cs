@@ -130,7 +130,10 @@ namespace Pimix.Languages.German {
             // TODO(improve): use some state machine lib.
             var doc = new HtmlDocument();
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);
-            var rows = doc.DocumentNode.SelectNodes(".//tr");
+            var rows = doc.DocumentNode.SelectNodes(".//tr|.//h2")
+                .SkipWhile(node => node.Name != "h2" || node.InnerText != $"{word.Id} (Konjugation) (Deutsch)").Skip(1)
+                .TakeWhile(node => node.Name != "h2").ToList();
+
             VerbFormType? state = null;
             foreach (var row in rows) {
                 if (row.SelectNodes("./td|./th")?.Count == 1) {
@@ -148,15 +151,19 @@ namespace Pimix.Languages.German {
                         if (PersonMapping.ContainsKey(person)) {
                             var p = PersonMapping[cells[0].InnerTextTrimmed()];
                             word.VerbForms[state.Value][p] = Normalize(
-                                (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0], p);
+                                (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0],
+                                state.Value, p);
                         }
                     }
                 }
             }
         }
 
-        static string Normalize(string s, Person p) =>
-            (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s).Trim(',');
+        static string Normalize(string s, VerbFormType v, Person p) {
+            var value =
+                (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s).Trim(' ', ',');
+            return v == VerbFormType.Imperative && !value.EndsWith("!") ? value + "!" : value;
+        }
 
         static WordType ParseWordType(string id) =>
             id.Split(",").First() switch {
