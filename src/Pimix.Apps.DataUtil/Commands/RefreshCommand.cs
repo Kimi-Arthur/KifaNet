@@ -5,7 +5,7 @@ using CommandLine;
 using NLog;
 using Pimix.Infos;
 
-namespace Pimix.Apps.FileUtil.Commands {
+namespace Pimix.Apps.DataUtil.Commands {
     [Verb("refresh", HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]
     class RefreshCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
