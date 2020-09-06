@@ -17,11 +17,17 @@ namespace Pimix.Languages.German {
 
         static readonly Dictionary<string, Person> PersonMapping = new Dictionary<string, Person> {
             ["1. Person Singular"] = Person.Ich,
+            ["Sg. 1. Pers."] = Person.Ich,
             ["2. Person Singular"] = Person.Du,
+            ["Sg. 2. Pers."] = Person.Du,
             ["3. Person Singular"] = Person.Er,
+            ["Sg. 3. Pers."] = Person.Er,
             ["1. Person Plural"] = Person.Wir,
+            ["Pl. 1. Pers."] = Person.Wir,
             ["2. Person Plural"] = Person.Ihr,
+            ["Pl. 2. Pers."] = Person.Ihr,
             ["3. Person Plural"] = Person.Sie,
+            ["Pl. 3. Pers."] = Person.Sie,
             ["Höflichkeitsform"] = Person.Sie
         };
 
@@ -145,7 +151,7 @@ namespace Pimix.Languages.German {
                     state = FormMapping[form];
                     word.VerbForms[state.Value] = new Dictionary<Person, string>();
                 } else if (state != null) {
-                    var cells = row.SelectNodes("./td");
+                    var cells = row.SelectNodes("./td")?.SkipWhile(c => c.InnerTextTrimmed() == "").ToList();
                     if (cells?.Count > 1) {
                         var person = cells[0].InnerTextTrimmed();
                         if (PersonMapping.ContainsKey(person)) {
@@ -160,8 +166,8 @@ namespace Pimix.Languages.German {
         }
 
         static string Normalize(string s, VerbFormType v, Person p) {
-            var value =
-                (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s).Trim(' ', ',');
+            var value = (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s)
+                .Trim(' ', ',');
             return v == VerbFormType.Imperative && !value.EndsWith("!") ? value + "!" : value;
         }
 
