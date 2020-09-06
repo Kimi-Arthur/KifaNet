@@ -40,16 +40,13 @@ namespace Pimix.Languages.German {
             var word = new Word();
             switch (type) {
                 case WordType.Verb:
-                    var verb = new Verb();
-                    verb.VerbForms = GetVerbForms(wordId);
-                    word = verb;
+                    word.VerbForms = GetVerbForms(wordId);
                     break;
             }
 
             var pronunciationNode = wordNode.SelectSingleNode("(.//span[@class='phonetics'])[1]");
             if (pronunciationNode != null) {
-                word.Pronunciation = pronunciationNode.InnerText
-                    .Split('[', ']', ',')[1];
+                word.Pronunciation = pronunciationNode.InnerText.Split('[', ']', ',')[1];
             }
 
             var audioLinkNode = wordNode.SelectSingleNode(".//dl[1]");
@@ -58,31 +55,31 @@ namespace Pimix.Languages.German {
             }
 
             word.Meanings.Add(new Meaning {
-                Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim(),
-                Type = type
+                Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim(), Type = type
             });
             return word;
         }
 
-        static WordType GetWordType(string value) => value switch {
-            "verb" => WordType.Verb,
-            "noun" => WordType.Noun,
-            "pronoun" => WordType.Pronoun,
-            "adjective" => WordType.Adjective,
-            "adverb" => WordType.Adverb,
-            "preposition" => WordType.Preposition,
-            _ => WordType.Unknown
-        };
+        static WordType GetWordType(string value) =>
+            value switch {
+                "verb" => WordType.Verb,
+                "noun" => WordType.Noun,
+                "pronoun" => WordType.Pronoun,
+                "adjective" => WordType.Adjective,
+                "adverb" => WordType.Adverb,
+                "preposition" => WordType.Preposition,
+                _ => WordType.Unknown
+            };
 
         public VerbForms GetVerbForms(string wordId) {
             var forms = new VerbForms();
             var doc = new HtmlDocument();
             doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/verb-tables/german/{wordId}").Result);
             foreach (VerbFormType form in Enum.GetValues(typeof(VerbFormType))) {
-                var x = Enum.GetValues(typeof(Person)).Cast<Person>().ToDictionary(p => p, p => doc
-                    .DocumentNode
-                    .SelectSingleNode($"(//span[@{SelectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
-                    .InnerText);
+                var x = Enum.GetValues(typeof(Person)).Cast<Person>().ToDictionary(p => p,
+                    p => doc.DocumentNode
+                        .SelectSingleNode($"(//span[@{SelectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
+                        .InnerText);
                 forms[form] = x;
             }
 

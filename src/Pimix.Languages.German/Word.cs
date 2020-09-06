@@ -87,6 +87,10 @@ namespace Pimix.Languages.German {
             PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
 
             Meanings = enWiki.Meanings.Any() ? enWiki.Meanings : pons.Meanings;
+
+            if (Meanings.Any(m => m.Type == WordType.Verb)) {
+                VerbForms = words.wiki.VerbForms;
+            }
         }
     }
 

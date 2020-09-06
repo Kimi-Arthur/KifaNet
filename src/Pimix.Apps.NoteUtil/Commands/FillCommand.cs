@@ -103,42 +103,8 @@ namespace Pimix.Apps.NoteUtil.Commands {
             return 0;
         }
 
-        static Verb ParseVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var verb = new Verb {
-                Id = parts[columnNames["Word"]],
-                Meanings = new List<Meaning> {new Meaning {Translation = parts[columnNames["Meaning"]]}},
-                VerbForms = new VerbForms {
-                    [VerbFormType.IndicativePresent] = new Dictionary<Person, string> {
-                        [Person.Ich] = parts[columnNames["ich"]],
-                        [Person.Du] = parts[columnNames["du"]],
-                        [Person.Er] = parts[columnNames["er/sie/es"]],
-                        [Person.Wir] = parts[columnNames["wir"]],
-                        [Person.Ihr] = parts[columnNames["ihr"]],
-                        [Person.Sie] = parts[columnNames["sie/Sie"]],
-                    }
-                }
-            };
-
-            var pronunciationText = parts[columnNames["Pronunciation"]];
-            if (pronunciationText.Length > 0) {
-                var segments =
-                    pronunciationText.Split(new[] {"[\\[", "\\]](", ")"}, StringSplitOptions.RemoveEmptyEntries);
-                verb.Pronunciation = segments.First();
-                var audioLink = segments.Last();
-                if (audioLink.StartsWith("https://cdn.duden.de/")) {
-                    verb.PronunciationAudioLinkDuden = audioLink;
-                } else if (audioLink.StartsWith("https://sounds.pons.com/")) {
-                    verb.PronunciationAudioLinkPons = audioLink;
-                } else if (audioLink.StartsWith("https://upload.wikimedia.org/")) {
-                    verb.PronunciationAudioLinkWiktionary = audioLink;
-                }
-            }
-
-            return verb;
-        }
-
         static void FillVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var verb = new Verb {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+            var verb = new Word {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing verb: {verb.Id}");
 
             verb.Fill();

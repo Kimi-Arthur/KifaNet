@@ -1,3 +1,4 @@
+using Pimix.Languages;
 using Pimix.Languages.German;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace PimixTest.Languages.German {
         public void VerbTest() {
             var client = new PonsClient();
             var verb = client.GetWord("malen");
-            Assert.IsType<Verb>(verb);
+            Assert.Equal(WordType.Verb, verb.Type);
             Assert.Equal("to paint", verb.Meaning);
             Assert.Equal("ˈma:lən", verb.Pronunciation);
         }

@@ -59,23 +59,22 @@ namespace Pimix.Languages.German {
                         var wordTypeNode = node.SelectSingleNode(".//span[@class='mw-headline']");
                         if (wordTypeNode != null) {
                             wordType = ParseWordType(wordTypeNode.Id);
-                            // TODO(bug): Should not create the word every time.
-                            word = wordType switch {
-                                WordType.Verb => new Verb {Id = wordId},
-                                WordType.Noun => new Noun {
-                                    Id = wordId,
-                                    Gender = wordTypeNode.Id.Split(",").Last() switch {
+                            switch (wordType) {
+                                case WordType.Verb:
+                                    if (word.VerbForms.Count == 0) {
+                                        FillVerbForms(word);
+                                    }
+
+                                    break;
+
+                                case WordType.Noun:
+                                    word.Gender = wordTypeNode.Id.Split(",").Last() switch {
                                         "_m" => Gender.Masculine,
                                         "_f" => Gender.Feminine,
                                         "_n" => Gender.Neuter,
                                         _ => Gender.Error // Should not happen.
-                                    }
-                                },
-                                _ => word
-                            };
-
-                            if (wordType == WordType.Verb && word.VerbForms.Count == 0) {
-                                FillVerbForms(word);
+                                    };
+                                    break;
                             }
                         }
                     }
