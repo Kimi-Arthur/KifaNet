@@ -22,7 +22,7 @@
     <ProjectReference Include="..\Pimix.Music\Pimix.Music.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="NLog.config">
+    <Content Update="..\..\resources\NLog.config">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

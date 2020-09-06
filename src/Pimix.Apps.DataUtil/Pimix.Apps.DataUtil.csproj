@@ -24,9 +24,9 @@
     <PackageReference Include="NLog.Schema" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="NLog.config">
+    <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\Pimix.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>
