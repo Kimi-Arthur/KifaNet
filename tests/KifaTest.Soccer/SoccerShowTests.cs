@@ -1,0 +1,21 @@
+using System;
+using Kifa.Soccer;
+using Pimix;
+using Xunit;
+
+namespace KifaTest.Soccer {
+    public class SoccerShowTests {
+        [Fact]
+        public void ToStringTest() {
+            var s = new SoccerShow {
+                Competition = Competition.PremierLeague,
+                Program = Program.MatchOfTheDay,
+                AirDate = Date.Parse("2020-09-12"),
+                Round = Round.Regular(1),
+                Season = Season.Regular(2020)
+            };
+            Assert.Equal("/Soccer/Match of the Day/Season 2020-21/2020-09-12 Match of the Day Premier League Round 1",
+                s.ToString());
+        }
+    }
+}

@@ -95,6 +95,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.BookUtil", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.DataUtil", "src\Pimix.Apps.DataUtil\Pimix.Apps.DataUtil.csproj", "{035673B0-C4C3-49A1-BA0D-92D82BCFB231}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Soccer", "src\Kifa.Soccer\Kifa.Soccer.csproj", "{701711A9-90DE-4A30-B79C-88288D4E029C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KifaTest.Soccer", "tests\KifaTest.Soccer\KifaTest.Soccer.csproj", "{8FE6DC51-6C93-4CE2-A035-B83179E9057A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -285,6 +289,14 @@ Global
 		{035673B0-C4C3-49A1-BA0D-92D82BCFB231}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{035673B0-C4C3-49A1-BA0D-92D82BCFB231}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{035673B0-C4C3-49A1-BA0D-92D82BCFB231}.Release|Any CPU.Build.0 = Release|Any CPU
+		{701711A9-90DE-4A30-B79C-88288D4E029C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{701711A9-90DE-4A30-B79C-88288D4E029C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{701711A9-90DE-4A30-B79C-88288D4E029C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{701711A9-90DE-4A30-B79C-88288D4E029C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
