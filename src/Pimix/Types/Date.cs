@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Pimix {
     public class Date : JsonSerializable, IComparable<Date> {
@@ -8,14 +9,28 @@ namespace Pimix {
         public int Month => date.Month;
         public int Day => date.Day;
 
-        public static Date Parse(string data) => new Date {
-            date = DateTime.Parse(data)
-        };
+        public static Date Parse(string data) => new Date {date = ParseDateTime(data)};
 
         public string ToJson() => date.ToString("yyyy-MM-dd");
 
         public void FromJson(string data) {
-            date = DateTime.Parse(data);
+            date = ParseDateTime(data);
+        }
+
+        static DateTime ParseDateTime(string data) {
+            FormatException exception;
+            try {
+                return DateTime.Parse(data);
+            } catch (FormatException ex) {
+                exception = ex;
+            }
+
+            DateTime date;
+            if (DateTime.TryParseExact(data, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date)) {
+                return date;
+            }
+
+            throw exception;
         }
 
         public override string ToString() => ToJson();

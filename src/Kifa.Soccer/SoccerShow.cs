@@ -1,4 +1,5 @@
-﻿using Pimix;
+﻿using System.Text.RegularExpressions;
+using Pimix;
 using Pimix.Service;
 
 namespace Kifa.Soccer {
@@ -8,6 +9,38 @@ namespace Kifa.Soccer {
         public Season Season { get; set; }
         public Round Round { get; set; }
         public Date AirDate { get; set; }
+
+        // GaLaTaMaN HD Football - https://galatamanhdfb.blogspot.com
+        static readonly Regex GalatamanPattern =
+            new Regex(@"^(?<date>\d+)-(?<program>\w+)-M(?<round>\d+)-(?<competition>\w+)-F-1080\.\w+$");
+
+        public static SoccerShow FromFileName(string fileName) => ParseGalataman(fileName);
+
+        static SoccerShow ParseGalataman(string fileName) {
+            var match = GalatamanPattern.Match(fileName);
+            if (!match.Success) {
+                return null;
+            }
+
+            var show = new SoccerShow {
+                AirDate = Date.Parse(match.Groups["date"].Value),
+                Round = Round.Regular(int.Parse(match.Groups["round"].Value)),
+                Program = match.Groups["program"].Value switch {
+                    "MTD" => Program.MatchOfTheDay,
+                    "MTD2" => Program.MatchOfTheDay2,
+                    _ => null
+                },
+                Competition = match.Groups["competition"].Value switch {
+                    "EPL" => Competition.PremierLeague,
+                    _ => null
+                }
+            };
+
+            // TODO: Season should be based on competition and date.
+            show.Season = Season.Regular(show.AirDate.Month > 6 ? show.AirDate.Year : show.AirDate.Year - 1);
+
+            return show;
+        }
 
         public override string ToString() =>
             $"/Soccer/{Program.CommonName}/{Season}/{AirDate} {Program.Name} {Competition.Name} {Round}";
@@ -19,7 +52,8 @@ namespace Kifa.Soccer {
 
         public static Program MatchOfTheDay = new Program {Name = "Match of the Day", CommonName = "Match of the Day"};
 
-        public static Program MatchOfTheDay2 = new Program {Name = "Match of the Day 2", CommonName = "Match of the Day"};
+        public static Program MatchOfTheDay2 =
+            new Program {Name = "Match of the Day 2", CommonName = "Match of the Day"};
     }
 
     public class Competition {
@@ -32,6 +66,8 @@ namespace Kifa.Soccer {
 
         public static Competition UefaChampionsLeague =
             new Competition {Name = "UEFA Champions League", ShortName = "UCL"};
+
+        public override string ToString() => Name;
     }
 
     public class Season {
