@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>filex</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>12.0.1</Version>
+    <Version>12.1.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIcon>Pimix.png</PackageIcon>
@@ -18,6 +18,7 @@
     <PackageReference Include="NLog.Schema" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
     <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
     <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj" />
     <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />

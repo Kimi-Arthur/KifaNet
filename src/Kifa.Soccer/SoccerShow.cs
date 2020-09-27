@@ -12,7 +12,7 @@ namespace Kifa.Soccer {
 
         // GaLaTaMaN HD Football - https://galatamanhdfb.blogspot.com
         static readonly Regex GalatamanPattern =
-            new Regex(@"^(?<date>\d+)-(?<program>\w+)-M(?<round>\d+)-(?<competition>\w+)-F-1080\.\w+$");
+            new Regex(@"/(?<date>\d+)-(?<program>\w+)-M(?<round>\d+)-(?<competition>\w+)-F-1080\.\w+$");
 
         public static SoccerShow FromFileName(string fileName) => ParseGalataman(fileName);
 
