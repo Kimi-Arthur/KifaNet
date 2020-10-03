@@ -21,8 +21,7 @@ namespace Pimix.Apps.BiliUtil {
                 return (null, 0, null);
             }
 
-            return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value),
-                match.Groups[3].Value);
+            return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value), match.Groups[3].Value);
         }
 
         public static string GetDesiredFileName(BilibiliVideo video, int pid, string cid = null) {
@@ -126,20 +125,17 @@ namespace Pimix.Apps.BiliUtil {
             }
         }
 
-        static void MergePartFiles(List<PimixFile> parts, PimixFile target) {
-            var partPaths = parts.Select(p => ((FileStorageClient) p.Client).GetPath(p.Path)).ToList();
+        public static void MergePartFiles(List<PimixFile> parts, PimixFile target) {
+            // Convert parts first
+            var partPaths = parts.Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
+
             var fileListPath = Path.GetTempFileName();
             File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GeFfmpegTargetPath(p)}"));
 
             var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
-            var arguments = $"-safe 0 -f concat -i {fileListPath} -c copy \"{targetPath}\"";
+            var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
             logger.Debug($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {
-                StartInfo = {
-                    FileName = "ffmpeg",
-                    Arguments = arguments
-                }
-            };
+            using var proc = new Process {StartInfo = {FileName = "ffmpeg", Arguments = arguments}};
             proc.Start();
             proc.WaitForExit();
             if (proc.ExitCode != 0) {
@@ -147,6 +143,25 @@ namespace Pimix.Apps.BiliUtil {
             }
 
             File.Delete(fileListPath);
+            
+            // Delete part files
+            foreach (var partPath in partPaths) {
+                File.Delete(partPath);
+            }
+        }
+
+        static string ConvertPartFile(string path) {
+            var newPath = Path.GetTempPath() + path.Split("/").Last() + ".mp4";
+            var arguments = $"-i \"{path}\" -c copy \"{newPath}\"";
+            logger.Debug($"Executing: ffmpeg {arguments}");
+            using var proc = new Process {StartInfo = {FileName = "ffmpeg", Arguments = arguments}};
+            proc.Start();
+            proc.WaitForExit();
+            if (proc.ExitCode != 0) {
+                throw new Exception("Converting part files failed.");
+            }
+
+            return newPath;
         }
 
         static string GeFfmpegTargetPath(string targetPath) {
