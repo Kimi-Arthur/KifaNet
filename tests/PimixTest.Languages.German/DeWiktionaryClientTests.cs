@@ -20,6 +20,11 @@ namespace PimixTest.Languages.German {
             "unterrichtetest", "unterrichtete", "unterrichteten", "unterrichtetet", "unterrichteten",
             "habe unterrichtet", "hast unterrichtet", "hat unterrichtet", "haben unterrichtet", "habt unterrichtet",
             "haben unterrichtet", new[] {"unterrichtet", "unterrichtete", "hat unterrichtet"})]
+        [InlineData("unternehmen", "unternimm!", "unternehmt!", "unternehmen Sie!", "unternehme", "unternimmst",
+            "unternimmt", "unternehmen", "unternehmt", "unternehmen", "unternahm", "unternahmst", "unternahm",
+            "unternahmen", "unternahmt", "unternahmen", "habe unternommen", "hast unternommen", "hat unternommen",
+            "haben unternommen", "habt unternommen", "haben unternommen",
+            new[] {"unternimmt", "unternahm", "hat unternommen"})]
         public void ExtractVerbFormsTest(string id, string imp2s, string imp2p, string impsie, string p1s, string p2s,
             string p3s, string p1p, string p2p, string p3p, string pa1s, string pa2s, string pa3s, string pa1p,
             string pa2p, string pa3p, string pe1s, string pe2s, string pe3s, string pe1p, string pe2p, string pe3p,

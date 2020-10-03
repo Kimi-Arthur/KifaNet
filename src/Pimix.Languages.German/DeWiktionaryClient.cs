@@ -11,6 +11,7 @@ namespace Pimix.Languages.German {
         static readonly Dictionary<string, VerbFormType> FormMapping = new Dictionary<string, VerbFormType> {
             ["Imperative"] = VerbFormType.Imperative,
             ["Präsens"] = VerbFormType.IndicativePresent,
+            ["Indikativ und Konjunktiv"] = VerbFormType.IndicativePresent,
             ["Präteritum"] = VerbFormType.IndicativePreterite,
             ["Perfekt"] = VerbFormType.IndicativePerfect
         };
@@ -136,7 +137,8 @@ namespace Pimix.Languages.German {
             var doc = new HtmlDocument();
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);
             var rows = doc.DocumentNode.SelectNodes(".//tr|.//h2")
-                .SkipWhile(node => node.Name != "h2" || node.InnerText != $"{word.Id} (Konjugation) (Deutsch)").Skip(1)
+                .SkipWhile(node => node.Name != "h2" || !(node.InnerText.StartsWith($"{word.Id} (Konjugation)") &&
+                                                          node.InnerText.EndsWith(" (Deutsch)"))).Skip(1)
                 .TakeWhile(node => node.Name != "h2").ToList();
 
             VerbFormType? state = null;
