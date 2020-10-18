@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+"""The only parameter is the prefix of accounts to create.
+
+For example, if you want accounts from p1000 ~ p100f, just use
+
+python <register_swisscom.py> p100
+
+"""
 
 from selenium import webdriver
 import multiprocessing
@@ -14,6 +21,9 @@ def retry(x):
         try:
             if x() != False:
                 break
+        except KeyboardInterrupt:
+            print('keyboard')
+            raise
         except:
             time.sleep(1)
 
@@ -22,8 +32,7 @@ def register(account):
     email = account[1]
     driver = webdriver.Chrome()
     z = email[0] * 2
-    driver.get('https://www.swisscom.ch/en/residential/mycloud/registrieren.html')
-    retry(lambda: driver.find_elements_by_css_selector('button[data-omni-action="Create new Login"]')[0].click())
+    driver.get('https://registration.scl.swisscom.ch/userinfo-xs')
     retry(lambda: driver.find_element_by_id('email').send_keys(email))
     driver.find_element_by_id('lastName').send_keys(z)
     driver.find_element_by_id('firstName').send_keys(z)
