@@ -45,8 +45,7 @@ namespace Pimix.Cloud.Swisscom {
 
         public override long Length(string path) {
             using var response = client.SendWithRetry(() => APIList.GetFileInfo.GetRequest(
-                new Dictionary<string, string>
-                    {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
+                new Dictionary<string, string> {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
             if (response.IsSuccessStatusCode) {
                 return response.GetJToken().Value<long>("Length");
             }
@@ -59,8 +58,10 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override void Delete(string path) {
-            using var response = client.SendWithRetry(() => APIList.DeleteFile.GetRequest(new Dictionary<string, string>
-                {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
+            using var response = client.SendWithRetry(() =>
+                APIList.DeleteFile.GetRequest(new Dictionary<string, string> {
+                    ["file_id"] = GetFileId(path), ["access_token"] = Account.Token
+                }));
             if (!response.IsSuccessStatusCode) {
                 logger.Debug($"Delete of {path} is not successful, but is ignored.");
             }
@@ -82,8 +83,8 @@ namespace Pimix.Cloud.Swisscom {
 
         public override Stream OpenRead(string path) =>
             new SeekableReadStream(Length(path),
-                (buffer, bufferOffset, offset, count)
-                    => Download(buffer, GetFileId(path), bufferOffset, offset, count));
+                (buffer, bufferOffset, offset, count) =>
+                    Download(buffer, GetFileId(path), bufferOffset, offset, count));
 
         public override void Write(string path, Stream stream) {
             if (Exists(path)) {
@@ -102,15 +103,9 @@ namespace Pimix.Cloud.Swisscom {
                 var content = new ByteArrayContent(buffer, 0, blockLength);
                 content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                 var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
-                    ["access_token"] = Account.Token,
-                    ["upload_id"] = uploadId,
-                    ["block_index"] = blockIndex.ToString(),
+                    ["access_token"] = Account.Token, ["upload_id"] = uploadId, ["block_index"] = blockIndex.ToString(),
                 });
-                uploadRequest.Content = new MultipartFormDataContent {
-                    {
-                        content, "files[]", path.Split("/").Last()
-                    }
-                };
+                uploadRequest.Content = new MultipartFormDataContent {{content, "files[]", path.Split("/").Last()}};
                 uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
                 using var response = client.SendAsync(uploadRequest).Result;
                 blockIds.Add((response.GetJToken().Value<string>("ETag")[1..^1], blockLength));
@@ -120,11 +115,14 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         string InitUpload(string path, long length) {
-            using var response = client.SendWithRetry(() => APIList.InitUpload.GetRequest(new Dictionary<string, string> {
-                ["file_path"] = path, ["file_length"] = length.ToString(),
-                ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
-                ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), ["access_token"] = Account.Token
-            }));
+            using var response = client.SendWithRetry(() => APIList.InitUpload.GetRequest(
+                new Dictionary<string, string> {
+                    ["file_path"] = path,
+                    ["file_length"] = length.ToString(),
+                    ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
+                    ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                    ["access_token"] = Account.Token
+                }));
             return response.GetJToken().Value<string>("Identifier");
         }
 
@@ -136,25 +134,25 @@ namespace Pimix.Cloud.Swisscom {
                     ["access_token"] = Account.Token,
                     ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
                     ["file_path"] = path,
-                    ["parts"] = "[" + string.Join(",", blockIds.Select((item, index) => partTemplate.Format(
-                                    new Dictionary<string, string> {
-                                        ["index"] = index.ToString(),
-                                        ["length"] = item.length.ToString(),
-                                        ["etag"] = item.etag
-                                    }))) + "]"
+                    ["parts"] = "[" + string.Join(",",
+                        blockIds.Select((item, index) =>
+                            partTemplate.Format(new Dictionary<string, string> {
+                                ["index"] = index.ToString(),
+                                ["length"] = item.length.ToString(),
+                                ["etag"] = item.etag
+                            }))) + "]"
                 }));
             return response.GetJToken().Value<string>("Path").EndsWith(path);
         }
 
-        int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
-            int count = -1) {
+        int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0, int count = -1) {
             if (count < 0) {
                 count = buffer.Length - bufferOffset;
             }
 
             using var response = client.SendWithRetry(() => {
-                var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string>
-                    {["file_id"] = fileId, ["access_token"] = Account.Token});
+                var request = APIList.DownloadFile.GetRequest(
+                    new Dictionary<string, string> {["file_id"] = fileId, ["access_token"] = Account.Token});
 
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
                 return request;
@@ -165,9 +163,8 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public override (long total, long used, long left) GetQuota() {
-            using var response = client.SendWithRetry(() => APIList.Quota.GetRequest(new Dictionary<string, string> {
-                ["access_token"] = Account.Token
-            }));
+            using var response = client.SendWithRetry(() =>
+                APIList.Quota.GetRequest(new Dictionary<string, string> {["access_token"] = Account.Token}));
             var data = response.GetJToken();
             var used = data.Value<long>("TotalBytes");
             var total = data.Value<long>("StorageLimit");
@@ -185,8 +182,8 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public static string FindAccount(List<string> accounts, long length) {
-            var accountIndex = accounts
-                .FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + GraceSize);
+            var accountIndex =
+                accounts.FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + GraceSize);
             if (accountIndex < 0) {
                 throw new InsufficientStorageException();
             }
@@ -243,11 +240,12 @@ namespace Pimix.Cloud.Swisscom {
             service.SuppressInitialDiagnosticInformation = true;
             using var driver = new ChromeDriver(service, options);
             return Retry.Run(() => {
-                driver.Navigate().GoToUrl("https://www.swisscom.ch/en/residential/mycloud/login.html");
+                driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
                 driver.FindElementById("username").SendKeys(Username);
-                driver.FindElementById("anmelden").Click();
+                driver.FindElementById("continueButton").Click();
+                Thread.Sleep(TimeSpan.FromSeconds(2));
                 driver.FindElementById("password").SendKeys(Password);
-                driver.FindElementById("anmelden").Click();
+                driver.FindElementById("submitButton").Click();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
                 return JToken.Parse(
                         HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token").Value))
