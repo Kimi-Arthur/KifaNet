@@ -12,14 +12,13 @@ import multiprocessing
 import time
 import sys
 
-
 password = 'P2019myc'
 
 
 def retry(x):
     while True:
         try:
-            if x() != False:
+            if x():
                 break
         except KeyboardInterrupt:
             print('keyboard')
@@ -70,7 +69,8 @@ def get_mail(account):
 
 if __name__ == "__main__":
     spec = sys.argv[1]
-    accounts = [(f'{spec}{i:x}', get_mail(f'{spec}{i:x}')) for i in range(pow(16, 5 - len(spec)))]
+    base = int(spec[1:], 16) << (5 - len(spec)) * 4
+    accounts = [(f'{spec[0]}{i:>04x}', get_mail(f'{spec[0]}{i:>04x}')) for i in range(base, base + pow(16, 5 - len(spec)))]
     for account in accounts:
         print(f'    {account[0]}:')
         print(f'        Username: {account[1]}')
