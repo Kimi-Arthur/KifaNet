@@ -18,7 +18,7 @@ password = 'P2019myc'
 def retry(x):
     while True:
         try:
-            if x():
+            if x() != False:
                 break
         except KeyboardInterrupt:
             print('keyboard')
@@ -43,15 +43,15 @@ def register(account):
     driver.find_element_by_id('repeat-password').send_keys(password)
     driver.find_element_by_id('captcha-input-field').click()
     retry(lambda: driver.find_element_by_id('confirmation-btn').click())
-    while True:
-        boxes = driver.find_elements_by_css_selector('label[for]')
-        if boxes:
-            for b in boxes:
-                b.click()
-            break
-        time.sleep(1)
-    driver.find_element_by_tag_name('button').click()
-    retry(lambda: driver.find_element_by_css_selector('div.mono-home2-usage-legend-amount').text == '0 B / 10 GB used')
+    # while True:
+    #     boxes = driver.find_elements_by_css_selector('label[for]')
+    #     if boxes:
+    #         for b in boxes:
+    #             b.click()
+    #         break
+    #     time.sleep(1)
+    # driver.find_element_by_tag_name('button').click()
+    # retry(lambda: driver.find_element_by_css_selector('div.mono-home2-usage-legend-amount').text == '0 B / 10 GB used')
     print(f'{account[0]} done.')
     driver.quit()
 

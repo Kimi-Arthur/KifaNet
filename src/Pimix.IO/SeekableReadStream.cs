@@ -6,8 +6,7 @@ using NLog;
 
 namespace Pimix.IO {
     public class SeekableReadStream : Stream {
-        public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0,
-            int count = -1);
+        public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0, int count = -1);
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -78,31 +77,27 @@ namespace Pimix.IO {
                 return 0;
             }
 
-            Parallel.For(0, (count - 1) / maxChunkSize + 1,
-                new ParallelOptions {
-                    MaxDegreeOfParallelism = threadCount
-                }, i => {
+            Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {MaxDegreeOfParallelism = threadCount},
+                i => {
                     Thread.Sleep(TimeSpan.FromSeconds(i * 4));
 
                     var chunkOffset = i * maxChunkSize;
                     var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
-                    var readCount = 0;
-
-                    while (readCount != chunkSize) {
-                        try {
-                            readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset, chunkSize);
-                            if (readCount != chunkSize) {
-                                logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
-                                    chunkSize, Position + chunkOffset, readCount);
-                                Thread.Sleep(TimeSpan.FromSeconds(5));
-                            }
-                        } catch (Exception ex) {
-                            logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:",
-                                chunkSize,
-                                Position + chunkOffset);
+                    Retry.Run(() => {
+                        var readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset, chunkSize);
+                        if (readCount != chunkSize) {
+                            logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}", chunkSize,
+                                Position + chunkOffset, readCount);
                             Thread.Sleep(TimeSpan.FromSeconds(5));
                         }
-                    }
+                    }, (ex, index) => {
+                        if (index >= 5) {
+                            throw ex;
+                        }
+
+                        logger.Warn(ex, $"Internal failure getting {chunkSize} bytes from {Position + chunkOffset}.");
+                        Thread.Sleep(TimeSpan.FromSeconds(5 * index));
+                    });
                 });
 
             Position += count;
