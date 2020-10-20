@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using OpenQA.Selenium;
 using Pimix.Cloud.Swisscom;
 using Pimix.Configs;
 using Pimix.IO;
@@ -124,16 +125,25 @@ namespace PimixTest.Cloud.Swisscom {
 
         [Fact]
         public void FindAccountTest() {
+            PimixConfigs.LoadFromSystemConfigs();
+
             var validAccounts = new List<(string, long)>();
+            var failedAccounts = new List<string>();
             var invalidAccounts = new List<(string, long)>();
             foreach (var account in SwisscomStorageClient.Accounts.Keys.Where(a =>
                 SwisscomStorageClient.StorageMappings.FirstOrDefault(s => s.Accounts.Contains(a))?.Pattern
                     ?.StartsWith("/") ?? false)) {
-                var (_, _, left) = new SwisscomStorageClient(account).GetQuota();
-                if (left < 20 << 20) {
-                    invalidAccounts.Add((account, left));
-                } else {
-                    validAccounts.Add((account, left));
+                try {
+                    var (_, _, left) = new SwisscomStorageClient(account).GetQuota();
+
+                    if (left < 20 << 20) {
+                        invalidAccounts.Add((account, left));
+                    } else {
+                        validAccounts.Add((account, left));
+                    }
+                } catch (NoSuchElementException ex) {
+                    failedAccounts.Add(account);
+                    continue;
                 }
             }
 
