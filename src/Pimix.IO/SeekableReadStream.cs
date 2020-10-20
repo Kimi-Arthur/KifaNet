@@ -86,9 +86,7 @@ namespace Pimix.IO {
                     Retry.Run(() => {
                         var readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset, chunkSize);
                         if (readCount != chunkSize) {
-                            logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}", chunkSize,
-                                Position + chunkOffset, readCount);
-                            Thread.Sleep(TimeSpan.FromSeconds(5));
+                            throw new Exception($"Expected {chunkSize}, only got {readCount}");
                         }
                     }, (ex, index) => {
                         if (index >= 5) {

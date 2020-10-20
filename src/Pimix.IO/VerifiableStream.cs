@@ -51,8 +51,7 @@ namespace Pimix.IO {
             }
 
             var startPosition = Position.RoundDown(FileInformation.BlockSize);
-            var endPosition =
-                Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
+            var endPosition = Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
             logger.Trace($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
@@ -67,42 +66,28 @@ namespace Pimix.IO {
                     bytesRead = bytesToRead;
                 } else {
                     bool? successful = null;
-                    var candidates =
-                        new Dictionary<(string md5, string sha1, string sha256), int>();
+                    var candidates = new Dictionary<(string md5, string sha1, string sha256), int>();
                     for (var i = 0; i < 5; ++i) {
-                        var ok = true;
-                        while (true) {
-                            try {
-                                stream.Seek(pos, SeekOrigin.Begin);
-                                bytesRead = stream.Read(lastBlock, 0, bytesToRead);
-                                if (bytesRead == bytesToRead) {
-                                    break;
-                                }
-
+                        try {
+                            stream.Seek(pos, SeekOrigin.Begin);
+                            bytesRead = stream.Read(lastBlock, 0, bytesToRead);
+                            if (bytesRead != bytesToRead) {
                                 logger.Warn("Didn't get expected amount of data.");
-                                logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead,
-                                    bytesToRead);
-                            } catch (CryptographicException ex) {
-                                logger.Warn(ex, "Decrypt error when reading from {0} to {1}:",
-                                    Position,
-                                    Position + count);
-                                ok = false;
-                                break;
-                            } catch (Exception ex) {
-                                logger.Warn(ex, "Failed once when reading from {0} to {1}:",
-                                    Position,
-                                    Position + count);
+                                logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
+                                Thread.Sleep(TimeSpan.FromSeconds(10));
+                                continue;
                             }
-
-                            Thread.Sleep(TimeSpan.FromSeconds(10));
-                        }
-
-                        if (!ok) {
-                            logger.Warn("Block {0} is problematic, retrying ({1})...",
-                                pos / FileInformation.BlockSize, i);
+                        } catch (CryptographicException ex) {
+                            logger.Warn(ex,
+                                $"Decrypt error when reading from {Position} to {Position + count}: retrying ({i})...");
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                             continue;
+                        } catch (Exception ex) {
+                            logger.Warn(ex, "Failed to read from {0} to {1}:", Position, Position + count);
+                            successful = false;
+                            break;
                         }
+
 
                         var (result, md5, sha1, sha256) = IsBlockValid(lastBlock, 0, bytesRead,
                             (int) (pos / FileInformation.BlockSize));
@@ -111,13 +96,11 @@ namespace Pimix.IO {
                             break;
                         }
 
-                        candidates[(md5, sha1, sha256)] =
-                            candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
+                        candidates[(md5, sha1, sha256)] = candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
 
                         if (HasMajority(candidates)) {
                             if (result == false) {
-                                logger.Warn("Block {0} is consistently wrong.",
-                                    pos / FileInformation.BlockSize);
+                                logger.Warn("Block {0} is consistently wrong.", pos / FileInformation.BlockSize);
                                 successful = false;
                                 break;
                             }
@@ -150,8 +133,7 @@ namespace Pimix.IO {
                             logger.Error($"Block {pos / FileInformation.BlockSize} is invalid.");
                         } else {
                             if (candidates.Count > 1) {
-                                logger.Warn("Block {0} is too inconsistent:",
-                                    pos / FileInformation.BlockSize);
+                                logger.Warn("Block {0} is too inconsistent:", pos / FileInformation.BlockSize);
                                 foreach (var candidate in candidates) {
                                     logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
                                 }
@@ -186,8 +168,8 @@ namespace Pimix.IO {
             return candidates.Values.Any(i => i > totalCount / 2);
         }
 
-        (bool? result, string md5, string sha1, string sha256) IsBlockValid(byte[] buffer,
-            int offset, int count, int blockId) {
+        (bool? result, string md5, string sha1, string sha256) IsBlockValid(byte[] buffer, int offset, int count,
+            int blockId) {
             bool? result = null;
 
             var md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
