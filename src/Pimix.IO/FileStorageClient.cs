@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using NLog;
 using Renci.SshNet;
 
 namespace Pimix.IO {
@@ -22,6 +23,8 @@ namespace Pimix.IO {
 
         string serverId;
 
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } =
             new Dictionary<string, ServerConfig>();
 
@@ -35,32 +38,38 @@ namespace Pimix.IO {
 
         public ServerConfig Server { get; set; }
 
-        static bool IsUnixLike
-            => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-               RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        static bool IsUnixLike =>
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-        public override void Copy(string sourcePath, string destinationPath,
-            bool neverLink = false) {
+        public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
+            logger.Trace($"Copying {sourcePath} to {destinationPath}...");
             Directory.GetParent(GetPath(destinationPath)).Create();
 
             if (neverLink) {
+                logger.Trace($"Use raw file copying.");
                 File.Copy(GetPath(sourcePath), GetPath(destinationPath));
             } else if (Server.RemotePrefix != null) {
+                logger.Trace($"Use remote linking.");
                 RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));
             } else {
+                logger.Trace($"Use local linking.");
                 Link(GetPath(sourcePath), GetPath(destinationPath));
             }
+
+            logger.Trace($"Copying succeeded.");
         }
 
         void RemoteLink(string sourcePath, string destinationPath) {
-            var connectionInfo = new ConnectionInfo(Server.Host,
-                Server.Username,
+            var connectionInfo = new ConnectionInfo(Server.Host, Server.Username,
                 new PasswordAuthenticationMethod(Server.Username, Server.Password));
 
             using var client = new SshClient(connectionInfo);
             client.Connect();
             var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
+            logger.Trace($"stdout: {new StreamReader(result.OutputStream).ReadToEnd()}");
+
             if (result.ExitStatus != 0) {
+                logger.Warn($"Failed to remote link: {result.Result}");
                 throw new Exception("Remote link command failed: " + result.Result);
             }
         }
@@ -77,7 +86,10 @@ namespace Pimix.IO {
             };
             proc.Start();
             proc.WaitForExit();
+            logger.Trace($"stdout: {proc.StandardOutput.ReadToEnd()}");
+            logger.Trace($"stderr: {proc.StandardError.ReadToEnd()}");
             if (proc.ExitCode != 0) {
+                logger.Warn($"Failed to local link.");
                 throw new Exception("Local link command failed");
             }
         }
@@ -124,14 +136,10 @@ namespace Pimix.IO {
             return items.OrderBy(i => i.Name.Normalize(NormalizationForm.FormC)).Select(i => {
                 try {
                     return new FileInformation {
-                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
-                        Size = i.Length
+                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)), Size = i.Length
                     };
                 } catch (Exception) {
-                    return new FileInformation {
-                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
-                        Size = 0
-                    };
+                    return new FileInformation {Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)), Size = 0};
                 }
             });
         }
@@ -140,12 +148,10 @@ namespace Pimix.IO {
             var localPath = GetPath(path);
             var fileSize = new FileInfo(localPath).Length;
             return new SeekableReadStream(fileSize,
-                (buffer, bufferOffset, offset, count)
-                    => Read(buffer, localPath, bufferOffset, offset, count));
+                (buffer, bufferOffset, offset, count) => Read(buffer, localPath, bufferOffset, offset, count));
         }
 
-        int Read(byte[] buffer, string localPath, int bufferOffset = 0, long offset = 0,
-            int count = -1) {
+        int Read(byte[] buffer, string localPath, int bufferOffset = 0, long offset = 0, int count = -1) {
             if (count < 0) {
                 count = buffer.Length - bufferOffset;
             }
