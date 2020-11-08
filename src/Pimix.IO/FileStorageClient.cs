@@ -65,12 +65,17 @@ namespace Pimix.IO {
 
             using var client = new SshClient(connectionInfo);
             client.Connect();
-            var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
-            logger.Trace($"stdout: {new StreamReader(result.OutputStream).ReadToEnd()}");
+            try {
+                var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
+                logger.Trace($"stdout: {new StreamReader(result.OutputStream).ReadToEnd()}");
 
-            if (result.ExitStatus != 0) {
-                logger.Warn($"Failed to remote link: {result.Result}");
-                throw new Exception("Remote link command failed: " + result.Result);
+                if (result.ExitStatus != 0) {
+                    logger.Warn($"Failed to remote link: {result.Result}");
+                    throw new Exception("Remote link command failed: " + result.Result);
+                }
+            } catch (Exception ex) {
+                logger.Warn(ex, "Failed to remote link");
+                throw;
             }
         }
 
