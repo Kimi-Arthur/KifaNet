@@ -117,6 +117,10 @@ namespace Pimix.Infos {
         static string GetTitle(IReadOnlyList<string> titles) => GetSharedTitle(titles) ?? string.Join(" ", titles);
 
         static string GetSharedTitle(IReadOnlyList<string> titles) {
+            if (titles.Count < 2) {
+                return null;
+            }
+
             var firstTitle = titles.First();
             if (!firstTitle.EndsWith(Part1Suffix)) {
                 return null;
