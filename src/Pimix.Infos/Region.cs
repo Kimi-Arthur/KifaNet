@@ -18,6 +18,11 @@ namespace Pimix.Infos {
             Code = "GB"
         };
 
+        public static readonly Region Italy = new Region {
+            Name = "Italy",
+            Code = "IT"
+        };
+
         public static readonly Region Japan = new Region {
             Name = "Japan",
             Code = "JP"
@@ -42,6 +47,7 @@ namespace Pimix.Infos {
             China,
             Germany,
             UnitedKingdom,
+            Italy,
             Japan,
             Poland,
             UnitedStates,

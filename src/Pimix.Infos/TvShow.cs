@@ -15,7 +15,8 @@ namespace Pimix.Infos {
                 [Language.German] = s => $"Staffel {s}",
                 [Language.English] = s => $"Season {s}",
                 [Language.Japanese] = s => $"シーズン{s}",
-                [Language.Chinese] = s => $"第{GetChineseNumber(s)}季"
+                [Language.Chinese] = s => $"第{GetChineseNumber(s)}季",
+                [Language.Italian] = s => $"Stagione {s}"
             };
 
         static TvShowServiceClient client;
