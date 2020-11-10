@@ -23,8 +23,7 @@ namespace Pimix.Api.Files {
 
         static Regex fullPathIgnoredFiles;
 
-        static readonly Dictionary<string, StorageClient> knownClients =
-            new Dictionary<string, StorageClient>();
+        static readonly Dictionary<string, StorageClient> knownClients = new Dictionary<string, StorageClient>();
 
         FileInformation fileInfo;
 
@@ -95,12 +94,12 @@ namespace Pimix.Api.Files {
 
         public static string FullPathIgnorePattern { get; set; } = "$^";
 
-        static Regex SubPathIgnoredFiles
-            => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
+        static Regex SubPathIgnoredFiles =>
+            LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
                 () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
 
-        static Regex FullPathIgnoredFiles
-            => LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
+        static Regex FullPathIgnoredFiles =>
+            LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
                 () => new Regex(FullPathIgnorePattern, RegexOptions.Compiled));
 
         public string Id { get; set; }
@@ -116,8 +115,7 @@ namespace Pimix.Api.Files {
 
         public string Extension { get; set; }
 
-        public string Name
-            => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+        public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
 
         public string Path => $"{ParentPath}{Name}";
 
@@ -132,9 +130,9 @@ namespace Pimix.Api.Files {
 
         public bool UseCache { get; set; }
 
-        public bool IsCloud
-            => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
-                Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
+        public bool IsCloud =>
+            (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
+             Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
 
         public int CompareTo(PimixFile other) {
             if (ReferenceEquals(this, other)) {
@@ -225,8 +223,8 @@ namespace Pimix.Api.Files {
 
         public PimixFile GetFileSuffixed(string suffix) => new PimixFile($"{Host}{Path}{suffix}");
 
-        public PimixFile GetFilePrefixed(string prefix)
-            => prefix == null ? this : new PimixFile($"{Host}{prefix}{Path}");
+        public PimixFile GetFilePrefixed(string prefix) =>
+            prefix == null ? this : new PimixFile($"{Host}{prefix}{Path}");
 
         public override string ToString() => $"{Host}{Path}";
 
@@ -240,22 +238,21 @@ namespace Pimix.Api.Files {
 
         public bool HasEntry => FileInfo.Locations?.ContainsKey(ToString()) == true;
 
-        public FileInformation QuickInfo()
-            => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
+        public FileInformation QuickInfo() =>
+            FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
         public void Delete() => Client.Delete(Path);
 
         public void Touch() => Client.Touch(Path);
 
-        public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true,
-            string pattern = "*")
-            => Exists()
+        public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true, string pattern = "*") =>
+            Exists()
                 ? Enumerable.Repeat(this, 1)
                 : Client.List(Path, recursive)
                     .Where(f => IsMatch(f.Id, pattern) && (!ignoreFiles ||
                                                            !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
-                                                           !FullPathIgnoredFiles.IsMatch(f.Id)))
-                    .Select(info => new PimixFile(Host + info.Id, fileInfo: info));
+                                                           !FullPathIgnoredFiles.IsMatch(f.Id))).Select(info =>
+                        new PimixFile(Host + info.Id, fileInfo: info));
 
         public static (bool isMultiple, List<PimixFile> files) ExpandFiles(IEnumerable<string> sources,
             string prefix = null, bool recursive = true, bool fullFile = false) {
@@ -274,8 +271,7 @@ namespace Pimix.Api.Files {
                     var pimixFiles = fileInfo.List(recursive).ToList();
                     if (pimixFiles.Count > 0) {
                         multi = 2;
-                        files.AddRange(pimixFiles
-                            .Select(f => (f.ToString().GetNaturalSortKey(), f)));
+                        files.AddRange(pimixFiles.Select(f => (f.ToString().GetNaturalSortKey(), f)));
                     } else {
                         multi++;
                         files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
@@ -378,12 +374,10 @@ namespace Pimix.Api.Files {
             }
         }
 
-        public Stream OpenRead()
-            => new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey),
-                FileInfo);
+        public Stream OpenRead() =>
+            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
 
-        public void Write(Stream stream)
-            => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+        public void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
         public void Write(byte[] data) => Write(new MemoryStream(data));
 
@@ -391,8 +385,7 @@ namespace Pimix.Api.Files {
 
         public FileInformation CalculateInfo(FileProperties properties) {
             var info = FileInfo.Clone();
-            info.RemoveProperties((FileProperties.AllVerifiable & properties) |
-                                  FileProperties.Locations);
+            info.RemoveProperties((FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
             using (var stream = OpenRead()) {
                 info.AddProperties(stream, properties);
@@ -406,10 +399,15 @@ namespace Pimix.Api.Files {
                 throw new FileNotFoundException(ToString());
             }
 
-            if (!alwaysCheck &&
-                (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
-                Registered) {
-                logger.Info("Skipped checking for {0}.", ToString());
+            if (!alwaysCheck && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All && Registered) {
+                var partialInfo = CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
+                var compareResults = partialInfo.CompareProperties(FileInfo, FileProperties.AllVerifiable);
+                if (compareResults != FileProperties.None) {
+                    logger.Error($"Quick check failed for {ToString()} ({compareResults}).");
+                    throw new Exception($"Quick check failed ({compareResults}).");
+                }
+
+                logger.Info($"Quick check passed for {ToString()}.");
                 return FileProperties.None;
             }
 
@@ -427,8 +425,7 @@ namespace Pimix.Api.Files {
 
             var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 
-            var quickCompareResult =
-                info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
+            var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
 
             if (quickCompareResult != FileProperties.None) {
                 logger.Warn("Quick data:\n{0}",
@@ -440,8 +437,7 @@ namespace Pimix.Api.Files {
                 return quickCompareResult;
             }
 
-            var compareResultWithOld =
-                info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResultWithOld != FileProperties.None) {
                 logger.Warn("Expected data:\n{0}",
                     JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
@@ -463,8 +459,7 @@ namespace Pimix.Api.Files {
             var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
             if (compareResult == FileProperties.None) {
                 info.EncryptionKey =
-                    sha256Info.EncryptionKey ??
-                    info.EncryptionKey; // Only happens for unencrypted file.
+                    sha256Info.EncryptionKey ?? info.EncryptionKey; // Only happens for unencrypted file.
 
                 client.Update(info);
                 Register(true);
@@ -490,8 +485,7 @@ namespace Pimix.Api.Files {
             fileInfo = null;
         }
 
-        public bool IsCompatible(PimixFile other)
-            => Host == other.Host && FileFormat == other.FileFormat;
+        public bool IsCompatible(PimixFile other) => Host == other.Host && FileFormat == other.FileFormat;
 
         static StorageClient GetClient(string spec) {
             if (knownClients.ContainsKey(spec)) {
@@ -547,15 +541,14 @@ namespace Pimix.Api.Files {
             FileInfo.Sha256 == null
                 ? null
                 : FileInfo.Locations.Keys.FirstOrDefault(l =>
-                      new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
-                          .Match(l).Success) ??
-                  serviceType switch {
-                      CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
-                      CloudServiceType.Swiss =>
-                      // TODO: Use format specific header size.
-                      $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
-                      _ => ""
-                  };
+                    new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
+                        .Match(l).Success) ?? serviceType switch {
+                    CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
+                    CloudServiceType.Swiss =>
+                        // TODO: Use format specific header size.
+                        $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
+                    _ => ""
+                };
     }
 
     public enum CloudServiceType {
