@@ -9,7 +9,6 @@ using System.Threading;
 using System.Web;
 using Newtonsoft.Json.Linq;
 using NLog;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Pimix.IO;
 using Pimix.Service;
@@ -135,12 +134,9 @@ namespace Pimix.Cloud.Swisscom {
                     ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
                     ["file_path"] = path,
                     ["parts"] = "[" + string.Join(",",
-                        blockIds.Select((item, index) =>
-                            partTemplate.Format(new Dictionary<string, string> {
-                                ["index"] = index.ToString(),
-                                ["length"] = item.length.ToString(),
-                                ["etag"] = item.etag
-                            }))) + "]"
+                        blockIds.Select((item, index) => partTemplate.Format(new Dictionary<string, string> {
+                            ["index"] = index.ToString(), ["length"] = item.length.ToString(), ["etag"] = item.etag
+                        }))) + "]"
                 }));
             return response.GetJToken().Value<string>("Path").EndsWith(path);
         }

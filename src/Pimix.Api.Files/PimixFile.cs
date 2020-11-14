@@ -538,7 +538,7 @@ namespace Pimix.Api.Files {
         public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;
 
         public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
-            FileInfo.Sha256 == null
+            FileInfo.Sha256 == null || FileInfo.Size == null
                 ? null
                 : FileInfo.Locations.Keys.FirstOrDefault(l =>
                     new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
