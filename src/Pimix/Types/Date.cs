@@ -18,6 +18,10 @@ namespace Pimix {
         }
 
         static DateTime ParseDateTime(string data) {
+            if (string.IsNullOrEmpty(data)) {
+                return DateTime.MinValue;
+            }
+
             FormatException exception;
             try {
                 return DateTime.Parse(data);
