@@ -21,15 +21,15 @@ PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/L'amica geniale
+POST {{server}}/api/tv_shows/LEGAL HIGH
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 PatternId: multi_season
 SeasonIdWidth: 2
 EpisodeIdWidth: 2
-TmdbId: '78154'
-Language: it
+TmdbId: '46234'
+Language: ja
 
 ### Manual Fix of data
 PATCH {{server}}/api/tv_shows/Westworld
@@ -43,7 +43,7 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/%E5%8D%8A%E6%B2%A2%E7%9B%B4%E6%A8%B9
+GET {{server}}/api/tv_shows/LEGAL HIGH
 Accept: application/x-yaml
 
 ### Format

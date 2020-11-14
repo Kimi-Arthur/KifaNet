@@ -37,7 +37,15 @@ namespace Pimix {
         }
 
         public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
-            Retry.Run(() => client.SendAsync(request()).Result, (ex, index) => {
+            Retry.Run(() => {
+                var task = client.SendAsync(request());
+                task.Wait();
+                if (task.IsCompleted) {
+                    return task.Result;
+                }
+
+                throw new Exception($"Unexpected task status {task.Status}");
+            }, (ex, index) => {
                 if (index >= 5 ||
                     ex is HttpRequestException &&
                     ex.InnerException is SocketException socketException &&

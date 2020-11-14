@@ -141,9 +141,8 @@ namespace PimixTest.Cloud.Swisscom {
                     } else {
                         validAccounts.Add((account, left));
                     }
-                } catch (NoSuchElementException ex) {
+                } catch (NoSuchElementException) {
                     failedAccounts.Add(account);
-                    continue;
                 }
             }
 
