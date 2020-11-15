@@ -7,8 +7,7 @@ namespace Pimix.Cloud.Swisscom {
 
         static PimixServiceClient<SwisscomConfig> client;
 
-        public static PimixServiceClient<SwisscomConfig> Client =>
-            client ??= new SwisscomConfigRestServiceClient();
+        public static PimixServiceClient<SwisscomConfig> Client => client ??= new SwisscomConfigRestServiceClient();
 
         public Dictionary<string, SwisscomAccount> Accounts { get; set; }
 
@@ -32,8 +31,15 @@ namespace Pimix.Cloud.Swisscom {
         public List<string> Accounts { get; set; }
     }
 
-
     public interface SwisscomConfigServiceClient : PimixServiceClient<SwisscomConfig> {
+        void UpdateQuota(string id, string accountId) {
+            var config = Get(id);
+            var quota = config.Accounts[accountId].GetQuota();
+            config.Accounts[accountId].TotalQuota = quota.total;
+            config.Accounts[accountId].UsedQuota = quota.used;
+
+            Set(config);
+        }
     }
 
     public class SwisscomConfigRestServiceClient : PimixServiceRestClient<SwisscomConfig>, SwisscomConfigServiceClient {

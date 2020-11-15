@@ -161,15 +161,6 @@ namespace Pimix.Cloud.Swisscom {
             return (int) memoryStream.Position;
         }
 
-        public override (long total, long used, long left) GetQuota() {
-            using var response = client.SendWithRetry(() =>
-                APIList.Quota.GetRequest(new Dictionary<string, string> {["access_token"] = Account.Token}));
-            var data = response.GetJToken();
-            var used = data.Value<long>("TotalBytes");
-            var total = data.Value<long>("StorageLimit");
-            return (total, used, total - used);
-        }
-
         public static string FindAccounts(string path, long length) {
             var accounts = Config.StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
             var selectedAccounts = new List<string>();
@@ -181,8 +172,8 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public static string FindAccount(List<string> accounts, long length) {
-            var accountIndex =
-                accounts.FindIndex(s => new SwisscomStorageClient(s).GetQuota().left >= length + GraceSize);
+            var accountIndex = accounts.FindIndex(s =>
+                new SwisscomStorageClient(s).Account.GetQuota().left >= length + GraceSize);
             if (accountIndex < 0) {
                 throw new InsufficientStorageException();
             }
@@ -208,6 +199,8 @@ namespace Pimix.Cloud.Swisscom {
 
     public partial class SwisscomAccount {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        readonly HttpClient client = new HttpClient();
 
         string token;
 
@@ -255,6 +248,16 @@ namespace Pimix.Cloud.Swisscom {
                 logger.Warn(ex, $"Failed to get token for {Username}...");
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             });
+        }
+
+        public (long total, long used, long left) GetQuota() {
+            using var response = client.SendWithRetry(() =>
+                SwisscomStorageClient.APIList.Quota.GetRequest(
+                    new Dictionary<string, string> {["access_token"] = Token}));
+            var data = response.GetJToken();
+            var used = data.Value<long>("TotalBytes");
+            var total = data.Value<long>("StorageLimit");
+            return (total, used, total - used);
         }
     }
 }

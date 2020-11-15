@@ -103,7 +103,7 @@ namespace PimixTest.Cloud.Swisscom {
         public void QuotaTest() {
             var client = GetStorageClient();
 
-            var (total, used, left) = client.GetQuota();
+            var (total, used, left) = client.Account.GetQuota();
             Assert.Equal(10737418240, total);
             Assert.NotEqual(0, used);
             Assert.Equal(total - used, left);

@@ -1,2 +1,5 @@
 ### Get
 GET {{server}}/api/configs/swisscom/default
+
+### Update quota
+POST {{server}}/api/configs/swisscom/$update_quota?accountId=s0000&id=default
