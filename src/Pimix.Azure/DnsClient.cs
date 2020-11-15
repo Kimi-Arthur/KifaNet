@@ -48,7 +48,7 @@ namespace Pimix.Azure {
         static JToken Run(string arguments) {
             using var proc = new Process {
                 StartInfo = {
-                    FileName = "/usr/local/bin/az",
+                    FileName = "az",
                     Arguments = arguments,
                     UseShellExecute = false,
                     RedirectStandardOutput = true
