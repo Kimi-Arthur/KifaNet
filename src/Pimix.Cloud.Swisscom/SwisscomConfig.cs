@@ -31,4 +31,11 @@ namespace Pimix.Cloud.Swisscom {
         public string Pattern { get; set; }
         public List<string> Accounts { get; set; }
     }
+
+
+    public interface SwisscomConfigServiceClient : PimixServiceClient<SwisscomConfig> {
+    }
+
+    public class SwisscomConfigRestServiceClient : PimixServiceRestClient<SwisscomConfig>, SwisscomConfigServiceClient {
+    }
 }
