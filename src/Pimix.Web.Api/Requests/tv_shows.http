@@ -9,7 +9,6 @@ Content-Type: application/x-yaml
 
 Id: 半沢直樹
 
-
 ### Add Single
 POST {{server}}/api/tv_shows/アンサング・シンデレラ 病院薬剤師の処方箋
 Accept: application/x-yaml

@@ -50,16 +50,24 @@ namespace Pimix.Web.Api.Controllers {
         public PimixActionResult Delete(string id) =>
             RestActionResult.FromAction(() => Client.Delete(Uri.UnescapeDataString(id)));
 
-        // GET api/values/$refresh?id={id}
+        // POST api/values/$refresh?id={id}
+        // TODO: should be generated.
         [HttpGet("$refresh")]
-        public PimixActionResult Refresh(string id) =>
-            RefreshPost(new RefreshRequest {Id = Uri.UnescapeDataString(id)});
+        public PimixActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
 
         // POST api/values/$refresh?id={id}
+        // TODO: should be generated.
         [HttpPost("$refresh")]
-        public PimixActionResult RefreshPost([FromBody] RefreshRequest request) {
-            return RestActionResult.FromAction(() => Client.Refresh(request.Id));
+        public PimixActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
+
+        public class RefreshRequest {
+            public string Id { get; set; }
         }
+
+        // Action [HttpAction("$refresh")]
+        // TODO: Should use the attribute above.
+        public PimixActionResult Refresh(RefreshRequest request) =>
+            RestActionResult.FromAction(() => Client.Refresh(request.Id));
     }
 
     public class PimixActionResult : IConvertToActionResult {
@@ -82,9 +90,5 @@ namespace Pimix.Web.Api.Controllers {
 
         public IActionResult Convert() =>
             ((IConvertToActionResult) new ActionResult<RestActionResult<TValue>>(Result)).Convert();
-    }
-
-    public class RefreshRequest {
-        public string Id { get; set; }
     }
 }
