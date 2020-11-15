@@ -8,7 +8,7 @@ namespace Pimix.Cloud.Swisscom {
         static PimixServiceClient<SwisscomConfig> client;
 
         public static PimixServiceClient<SwisscomConfig> Client =>
-            client ??= new PimixServiceRestClient<SwisscomConfig>();
+            client ??= new SwisscomConfigRestServiceClient();
 
         public Dictionary<string, SwisscomAccount> Accounts { get; set; }
 
