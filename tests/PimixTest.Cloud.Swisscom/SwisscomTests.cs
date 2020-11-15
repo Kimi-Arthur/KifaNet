@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using OpenQA.Selenium;
 using Pimix.Cloud.Swisscom;
 using Pimix.Configs;
 using Pimix.IO;
@@ -11,15 +8,9 @@ using Xunit;
 
 namespace PimixTest.Cloud.Swisscom {
     public class SwisscomTests {
-        const string FileSHA256 =
-            "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+        const string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
-        const string BigFileSHA256 =
-            "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
-
-        public SwisscomTests() {
-            PimixConfigs.LoadFromSystemConfigs();
-        }
+        const string BigFileSHA256 = "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
         [Fact]
         public void LoginTest() {
@@ -49,12 +40,10 @@ namespace PimixTest.Cloud.Swisscom {
             var client = GetStorageClient();
 
             using var s = client.OpenRead("/Test/2010-11-25.bin");
-            Assert.Equal(FileSHA256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
 
             // Test again for seekness.
-            Assert.Equal(FileSHA256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
         [Fact]
@@ -73,8 +62,7 @@ namespace PimixTest.Cloud.Swisscom {
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
             using (var s = client.OpenRead("/Test/big.bin")) {
-                Assert.Equal(BigFileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+                Assert.Equal(BigFileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/big.bin");
@@ -86,8 +74,7 @@ namespace PimixTest.Cloud.Swisscom {
 
             client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
             using (var s = client.OpenRead("/Test/2010-11-25.bin_bak")) {
-                Assert.Equal(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+                Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/2010-11-25.bin_bak");
@@ -106,8 +93,7 @@ namespace PimixTest.Cloud.Swisscom {
             Assert.True(client.Exists("/Test/2010-11-25.bin_2"));
 
             using (var s = client.OpenRead("/Test/2010-11-25.bin_2")) {
-                Assert.Equal(FileSHA256,
-                    FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+                Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
             }
 
             client.Delete("/Test/2010-11-25.bin_2");
@@ -123,38 +109,38 @@ namespace PimixTest.Cloud.Swisscom {
             Assert.Equal(total - used, left);
         }
 
-        [Fact]
-        public void FindAccountTest() {
+        // [Fact]
+        // public void FindAccountTest() {
+        //     PimixConfigs.LoadFromSystemConfigs();
+        //
+        //     var validAccounts = new List<(string, long)>();
+        //     var failedAccounts = new List<string>();
+        //     var invalidAccounts = new List<(string, long)>();
+        //     foreach (var account in SwisscomStorageClient.Accounts.Keys.Where(a =>
+        //         SwisscomStorageClient.StorageMappings.FirstOrDefault(s => s.Accounts.Contains(a))?.Pattern
+        //             ?.StartsWith("/") ?? false)) {
+        //         try {
+        //             var (_, _, left) = new SwisscomStorageClient(account).GetQuota();
+        //
+        //             if (left < 20 << 20) {
+        //                 invalidAccounts.Add((account, left));
+        //             } else {
+        //                 validAccounts.Add((account, left));
+        //             }
+        //         } catch (NoSuchElementException) {
+        //             failedAccounts.Add(account);
+        //         }
+        //     }
+        //
+        //     Assert.Empty(invalidAccounts);
+        // }
+
+        static SwisscomStorageClient GetStorageClient() {
             PimixConfigs.LoadFromSystemConfigs();
 
-            var validAccounts = new List<(string, long)>();
-            var failedAccounts = new List<string>();
-            var invalidAccounts = new List<(string, long)>();
-            foreach (var account in SwisscomStorageClient.Accounts.Keys.Where(a =>
-                SwisscomStorageClient.StorageMappings.FirstOrDefault(s => s.Accounts.Contains(a))?.Pattern
-                    ?.StartsWith("/") ?? false)) {
-                try {
-                    var (_, _, left) = new SwisscomStorageClient(account).GetQuota();
-
-                    if (left < 20 << 20) {
-                        invalidAccounts.Add((account, left));
-                    } else {
-                        validAccounts.Add((account, left));
-                    }
-                } catch (NoSuchElementException) {
-                    failedAccounts.Add(account);
-                }
-            }
-
-            Assert.Empty(invalidAccounts);
-        }
-
-        static SwisscomStorageClient GetStorageClient()
-            => new SwisscomStorageClient {
-                Account = new SwisscomAccount {
-                    Username = "pimixserver@gmail.com",
-                    Password = "Pny3YQzV"
-                }
+            return new SwisscomStorageClient {
+                Account = new SwisscomAccount {Username = "pimixserver@gmail.com", Password = "Pny3YQzV"}
             };
+        }
     }
 }

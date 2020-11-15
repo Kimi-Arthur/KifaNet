@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Web;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using OpenQA.Selenium.Chrome;
@@ -22,9 +23,11 @@ namespace Pimix.Cloud.Swisscom {
 
         public static APIList APIList { get; set; }
 
-        public static List<StorageMapping> StorageMappings { get; set; }
+        static SwisscomConfig config;
 
-        public static Dictionary<string, SwisscomAccount> Accounts { get; set; }
+        static SwisscomConfig Config =>
+            LazyInitializer.EnsureInitialized(ref config, () => SwisscomConfig.Client.Get("default"));
+
         public SwisscomAccount Account { get; set; }
 
         public override string Type => "swiss";
@@ -36,7 +39,7 @@ namespace Pimix.Cloud.Swisscom {
         public SwisscomStorageClient(string accountId = null) {
             AccountId = accountId;
             if (accountId != null) {
-                Account = Accounts[accountId];
+                Account = Config.Accounts[accountId];
             }
         }
 
@@ -168,7 +171,7 @@ namespace Pimix.Cloud.Swisscom {
         }
 
         public static string FindAccounts(string path, long length) {
-            var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
+            var accounts = Config.StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
             var selectedAccounts = new List<string>();
             for (var i = 0L; i < length; i += ShardSize) {
                 selectedAccounts.Add(FindAccount(accounts, Math.Min(ShardSize, length - i)));
@@ -203,11 +206,8 @@ namespace Pimix.Cloud.Swisscom {
         public API Quota { get; set; }
     }
 
-    public class SwisscomAccount {
+    public partial class SwisscomAccount {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        public string Username { get; set; }
-        public string Password { get; set; }
 
         string token;
 
@@ -215,6 +215,7 @@ namespace Pimix.Cloud.Swisscom {
 
         static readonly TimeSpan RefreshInterval = TimeSpan.FromHours(4);
 
+        [JsonIgnore]
         public string Token {
             get {
                 if (DateTime.Now - lastRefreshed > RefreshInterval) {
@@ -255,10 +256,5 @@ namespace Pimix.Cloud.Swisscom {
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             });
         }
-    }
-
-    public class StorageMapping {
-        public string Pattern { get; set; }
-        public List<string> Accounts { get; set; }
     }
 }
