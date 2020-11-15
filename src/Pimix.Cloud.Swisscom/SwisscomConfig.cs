@@ -32,14 +32,6 @@ namespace Pimix.Cloud.Swisscom {
     }
 
     public interface SwisscomConfigServiceClient : PimixServiceClient<SwisscomConfig> {
-        void UpdateQuota(string id, string accountId) {
-            var config = Get(id);
-            var quota = config.Accounts[accountId].GetQuota();
-            config.Accounts[accountId].TotalQuota = quota.total;
-            config.Accounts[accountId].UsedQuota = quota.used;
-
-            Set(config);
-        }
     }
 
     public class SwisscomConfigRestServiceClient : PimixServiceRestClient<SwisscomConfig>, SwisscomConfigServiceClient {

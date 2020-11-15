@@ -250,6 +250,12 @@ namespace Pimix.Cloud.Swisscom {
             });
         }
 
+        public void UpdateQuota() {
+            var quota = GetQuota();
+            TotalQuota = quota.total;
+            UsedQuota = quota.used;
+        }
+
         public (long total, long used, long left) GetQuota() {
             using var response = client.SendWithRetry(() =>
                 SwisscomStorageClient.APIList.Quota.GetRequest(
