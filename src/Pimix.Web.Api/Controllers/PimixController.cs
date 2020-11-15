@@ -47,24 +47,18 @@ namespace Pimix.Web.Api.Controllers {
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public PimixActionResult Delete(string id) {
-            id = Uri.UnescapeDataString(id);
-            Client.Delete(id);
-            return RestActionResult.SuccessResult;
-        }
+        public PimixActionResult Delete(string id) =>
+            RestActionResult.FromAction(() => Client.Delete(Uri.UnescapeDataString(id)));
 
         // GET api/values/$refresh?id={id}
         [HttpGet("$refresh")]
-        public PimixActionResult Refresh(string id) {
+        public PimixActionResult Refresh(string id) =>
             RefreshPost(new RefreshRequest {Id = Uri.UnescapeDataString(id)});
-            return RestActionResult.SuccessResult;
-        }
 
         // POST api/values/$refresh?id={id}
         [HttpPost("$refresh")]
         public PimixActionResult RefreshPost([FromBody] RefreshRequest request) {
-            Client.Refresh(request.Id);
-            return RestActionResult.SuccessResult;
+            return RestActionResult.FromAction(() => Client.Refresh(request.Id));
         }
     }
 

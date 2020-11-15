@@ -1,9 +1,20 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace Pimix.Service {
     public class RestActionResult {
-        public static readonly RestActionResult SuccessResult = new RestActionResult() {Status = RestActionStatus.OK};
+        public static readonly RestActionResult SuccessResult = new RestActionResult {Status = RestActionStatus.OK};
+
+        public static RestActionResult FromAction(Action action) {
+            try {
+                action.Invoke();
+            } catch (Exception ex) {
+                return new RestActionResult {Status = RestActionStatus.Error, Message = ex.ToString()};
+            }
+
+            return SuccessResult;
+        }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public RestActionStatus Status { get; set; }
