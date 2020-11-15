@@ -99,6 +99,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Soccer", "src\Kifa.Soc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KifaTest.Soccer", "tests\KifaTest.Soccer\KifaTest.Soccer.csproj", "{8FE6DC51-6C93-4CE2-A035-B83179E9057A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Azure", "src\Pimix.Azure\Pimix.Azure.csproj", "{1A84B94B-B06C-4357-AD8A-23F8608B2423}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Azure", "tests\PimixTest.Azure\PimixTest.Azure.csproj", "{22F248B5-CB91-4130-8468-1570F6B1AA21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -297,6 +301,14 @@ Global
 		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FE6DC51-6C93-4CE2-A035-B83179E9057A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A84B94B-B06C-4357-AD8A-23F8608B2423}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A84B94B-B06C-4357-AD8A-23F8608B2423}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A84B94B-B06C-4357-AD8A-23F8608B2423}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A84B94B-B06C-4357-AD8A-23F8608B2423}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
