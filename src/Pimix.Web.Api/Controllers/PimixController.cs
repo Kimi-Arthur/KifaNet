@@ -7,8 +7,9 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [ApiController]
-    public abstract class PimixController<TDataModel> : ControllerBase where TDataModel : DataModel {
-        protected abstract PimixServiceClient<TDataModel> Client { get; }
+    public abstract class PimixController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
+        where TServiceClient : PimixServiceClient<TDataModel>, new() {
+        protected readonly TServiceClient Client = new TServiceClient();
 
         // GET api/values
         [HttpGet]

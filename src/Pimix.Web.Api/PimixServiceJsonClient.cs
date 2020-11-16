@@ -21,10 +21,10 @@ namespace Pimix.Web.Api {
 
             var directory = new DirectoryInfo(prefix);
             var items = directory.GetFiles("*.json", SearchOption.AllDirectories);
-            return new SortedDictionary<string, TDataModel>(items.Select(i =>
-                    JsonConvert.DeserializeObject<TDataModel>(i.OpenText().ReadToEnd(),
-                        Defaults.JsonSerializerSettings))
-                .ToDictionary(i => i.Id, i => i));
+            return new SortedDictionary<string, TDataModel>(items.Select(i => {
+                using var reader = i.OpenText();
+                return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(), Defaults.JsonSerializerSettings);
+            }).ToDictionary(i => i.Id, i => i));
         }
 
         public override TDataModel Get(string id) {

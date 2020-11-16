@@ -6,22 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Pimix.Api.Files;
 using Pimix.IO;
-using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + FileInformation.ModelId)]
-    public class FilesController : PimixController<FileInformation> {
-        static readonly FileExtensionContentTypeProvider provider =
-            new FileExtensionContentTypeProvider();
-
-        static readonly FileInformationServiceClient
-            client = new FileInformationJsonServiceClient();
-
-        protected override PimixServiceClient<FileInformation> Client => client;
+    public class FilesController : PimixController<FileInformation, FileInformationJsonServiceClient> {
+        static readonly FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
 
         [HttpGet("$list_folder")]
-        public PimixActionResult<List<string>> ListFolder(string folder, bool recursive)
-            => client.ListFolder(folder, recursive);
+        public PimixActionResult<List<string>> ListFolder(string folder, bool recursive) =>
+            Client.ListFolder(folder, recursive);
 
         [HttpGet("$stream")]
         public FileStreamResult Stream(string id) {
@@ -30,19 +23,15 @@ namespace Pimix.Web.Api.Controllers {
                 contentType = "application/octet-stream";
             }
 
-            return new FileStreamResult(new PimixFile(client.Get(id).Locations.Keys.First(x => x.StartsWith("google")))
-                .OpenRead(), contentType) {
-                FileDownloadName = id.Substring(id.LastIndexOf('/') + 1),
-                EnableRangeProcessing = true
-            };
+            return new FileStreamResult(
+                new PimixFile(Client.Get(id).Locations.Keys.First(x => x.StartsWith("google"))).OpenRead(),
+                contentType) {FileDownloadName = id.Substring(id.LastIndexOf('/') + 1), EnableRangeProcessing = true};
         }
     }
 
     public class FileInformationJsonServiceClient : PimixServiceJsonClient<FileInformation>,
         FileInformationServiceClient {
-        static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {
-            ["swiss"] = 1 << 30
-        };
+        static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {["swiss"] = 1 << 30};
 
         public List<string> ListFolder(string folder, bool recursive = false) {
             var prefix = $"{PimixServiceJsonClient.DataFolder}/{modelId}";
@@ -54,8 +43,7 @@ namespace Pimix.Web.Api.Controllers {
             var directory = new DirectoryInfo(folder);
             var items = directory.GetFiles("*.json",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-            return items.Select(i
-                    => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
+            return items.Select(i => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
                 .ToList();
         }
 
@@ -78,14 +66,13 @@ namespace Pimix.Web.Api.Controllers {
             var path = $"/$/{file.Sha256}.{format}";
 
             return file.Locations.Keys.FirstOrDefault(location =>
-                       location.StartsWith($"{type}:") && location.EndsWith(path)) ?? type switch {
-                       "google" => $"google:good{path}",
-                       "swiss" => $"swiss:s0000{path}",
-                       _ => null
-                   };
+                location.StartsWith($"{type}:") && location.EndsWith(path)) ?? type switch {
+                "google" => $"google:good{path}",
+                "swiss" => $"swiss:s0000{path}",
+                _ => null
+            };
         }
 
-        public string GetLocation(string id, List<string> types = null)
-            => throw new NotImplementedException();
+        public string GetLocation(string id, List<string> types = null) => throw new NotImplementedException();
     }
 }

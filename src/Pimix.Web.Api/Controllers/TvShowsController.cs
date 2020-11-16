@@ -2,21 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Pimix.Infos;
-using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + TvShow.ModelId)]
-    public class TvShowsController : PimixController<TvShow> {
-        static readonly TvShowServiceClient client = new TvShowJsonServiceClient();
-
-        protected override PimixServiceClient<TvShow> Client => client;
-
+    public class TvShowsController : PimixController<TvShow, TvShowJsonServiceClient> {
         [HttpGet("$format")]
         [HttpPost("$format")]
         public PimixActionResult<string> Format(string id, int seasonId, int? episodeId, string episodeIds) =>
             episodeId == null
-                ? client.Format(id, seasonId, episodeIds.Split(",").Select(int.Parse).ToList())
-                : client.Format(id, seasonId, episodeId.Value);
+                ? Client.Format(id, seasonId, episodeIds.Split(",").Select(int.Parse).ToList())
+                : Client.Format(id, seasonId, episodeId.Value);
     }
 
     public class TvShowJsonServiceClient : PimixServiceJsonClient<TvShow>, TvShowServiceClient {
