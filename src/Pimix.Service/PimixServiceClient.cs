@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NLog;
 
 namespace Pimix.Service {
     public interface PimixServiceClient<TDataModel> where TDataModel : DataModel {
@@ -18,6 +19,8 @@ namespace Pimix.Service {
 
     public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel>
         where TDataModel : DataModel {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         protected readonly string modelId;
 
         protected BasePimixServiceClient() {
@@ -32,7 +35,8 @@ namespace Pimix.Service {
         public TDataModel GetOr(string id, Func<string, TDataModel> defaultValue = null) {
             try {
                 return Get(id);
-            } catch (Exception) {
+            } catch (Exception ex) {
+                logger.Warn(ex, $"Failed to get value for {modelId}/{id}.");
                 return defaultValue?.Invoke(id);
             }
         }
