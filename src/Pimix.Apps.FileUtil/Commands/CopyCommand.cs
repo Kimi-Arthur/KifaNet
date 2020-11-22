@@ -5,20 +5,20 @@ using Pimix.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
-    [Verb("ln", HelpText = "Create a link to TARGET with the name LINK_NAME.")]
-    class LinkCommand : PimixCommand {
+    [Verb("cp", HelpText = "Copy FILE1 to FILE2. The files will be linked.")]
+    class CopyCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, MetaName = "TARGET", MetaValue = "STRING", Required = true,
-            HelpText = "The target for this link.")]
+        [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true,
+            HelpText = "File to copy from.")]
         public string Target { get; set; }
 
-        [Value(1, MetaName = "LINK_NAME", MetaValue = "STRING", Required = true,
-            HelpText = "The link's name.")]
+        [Value(1, MetaName = "FILE2", MetaValue = "STRING", Required = true,
+            HelpText = "File to copy to.")]
         public string LinkName { get; set; }
 
         [Option('i', "id", HelpText =
-            "Treat all file names as id. Note that linking is always about conceptual files.")]
+            "Treat all file names as id. And only file ids are linked")]
         public bool ById { get; set; } = false;
 
         public override int Execute() {
@@ -26,7 +26,14 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return LinkFile(Target.TrimEnd('/'), LinkName.TrimEnd('/'));
             }
 
-            return LinkFile(new PimixFile(Target).Id, new PimixFile(LinkName).Id);
+            LinkLocalFile(new PimixFile(Target), new PimixFile(LinkName));
+            return 0;
+        }
+
+        static void LinkLocalFile(PimixFile file1, PimixFile file2) {
+            LinkFile(file1.Id, file2.Id);
+            file1.Copy(file2);
+            file2.Add();
         }
 
         static int LinkFile(string target, string linkName) {
