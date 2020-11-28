@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,7 +13,7 @@ namespace Pimix.Languages.German {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         const string TranslationDivider = "–";
-        const string EtymologyPrefix = "Etymology ";
+        static readonly HashSet<string> NextLevelPrefixes = new HashSet<string> {"Etymology", "Pronunciation"};
 
         static readonly HashSet<string> SkippedSections = new HashSet<string> {
             "Further reading",
@@ -52,8 +51,11 @@ namespace Pimix.Languages.German {
                             break;
                         }
                     } else if (inGerman) {
-                        if (heading.Level == 3 && heading.GetTitle().StartsWith(EtymologyPrefix)) {
-                            targetLevel = 4;
+                        if (heading.Level == 3) {
+                            var title = heading.GetTitle();
+                            if (title.Contains(" ") && NextLevelPrefixes.Contains(title.Split(" ").First())) {
+                                targetLevel = 4;
+                            }
                         }
 
                         if (heading.Level == targetLevel) {
