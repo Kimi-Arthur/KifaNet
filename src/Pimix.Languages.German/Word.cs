@@ -25,13 +25,11 @@ namespace Pimix.Languages.German {
 
         [JsonIgnore]
         public string PronunciationAudioLink =>
-            PronunciationAudioLinkDuden ?? PronunciationAudioLinkWiktionary ?? PronunciationAudioLinkPons;
+            PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Pons);
 
-        public string PronunciationAudioLinkDuden { get; set; }
-
-        public string PronunciationAudioLinkPons { get; set; }
-
-        public string PronunciationAudioLinkWiktionary { get; set; }
+        public Dictionary<Source, string> PronunciationAudioLinks { get; set; } = new Dictionary<Source, string>();
 
         // Shared for any meaning.
         public VerbForms VerbForms { get; set; } = new VerbForms();
@@ -132,9 +130,11 @@ namespace Pimix.Languages.German {
         protected void FillWithData((Word wiki, Word enWiki, Word pons, Word duden) words) {
             var (wiki, enWiki, pons, duden) = words;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
-            PronunciationAudioLinkDuden = duden.PronunciationAudioLinkDuden;
-            PronunciationAudioLinkWiktionary = wiki.PronunciationAudioLinkWiktionary;
-            PronunciationAudioLinkPons = pons.PronunciationAudioLinkPons;
+
+            PronunciationAudioLinks[Source.Duden] = duden.PronunciationAudioLinks.GetValueOrDefault(Source.Duden);
+            PronunciationAudioLinks[Source.Wiktionary] =
+                wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary);
+            PronunciationAudioLinks[Source.Pons] = pons.PronunciationAudioLinks.GetValueOrDefault(Source.Pons);
 
             Meanings = enWiki.Meanings.Any() ? enWiki.Meanings : pons.Meanings;
 

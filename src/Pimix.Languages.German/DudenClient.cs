@@ -10,8 +10,7 @@ namespace Pimix.Languages.German {
         static Dictionary<string, string> AudioLinks {
             get {
                 if (audioLinks == null) {
-                    using var stream = Assembly
-                        .GetExecutingAssembly()
+                    using var stream = Assembly.GetExecutingAssembly()
                         .GetManifestResourceStream($"{typeof(DudenClient).Namespace}.duden_audio.json");
                     if (stream != null) {
                         audioLinks =
@@ -27,7 +26,8 @@ namespace Pimix.Languages.German {
         public Word GetWord(string wordId) =>
             new Word {
                 Id = wordId,
-                PronunciationAudioLinkDuden = AudioLinks.GetValueOrDefault(wordId)
+                PronunciationAudioLinks =
+                    new Dictionary<Source, string> {{Source.Duden, AudioLinks.GetValueOrDefault(wordId)}}
             };
     }
 }

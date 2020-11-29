@@ -51,7 +51,7 @@ namespace Pimix.Languages.German {
 
             var audioLinkNode = wordNode.SelectSingleNode(".//dl[1]");
             if (audioLinkNode != null) {
-                word.PronunciationAudioLinkPons = $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}";
+                word.PronunciationAudioLinks[Source.Pons] = $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}";
             }
 
             word.Meanings.Add(new Meaning {

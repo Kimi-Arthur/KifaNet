@@ -121,7 +121,8 @@ namespace Pimix.Languages.German {
 
                         var audioNode = node.SelectSingleNode($"(.//a[@class='internal'])[1]");
                         if (audioNode != null) {
-                            word.PronunciationAudioLinkWiktionary = $"https:{audioNode.Attributes["href"].Value}";
+                            word.PronunciationAudioLinks[Source.Wiktionary] =
+                                $"https:{audioNode.Attributes["href"].Value}";
                         }
                     }
                 } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {
