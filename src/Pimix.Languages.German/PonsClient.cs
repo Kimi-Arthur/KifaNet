@@ -79,7 +79,7 @@ namespace Pimix.Languages.German {
                 var x = Enum.GetValues(typeof(Person)).Cast<Person>().ToDictionary(p => p,
                     p => doc.DocumentNode
                         .SelectSingleNode($"(//span[@{SelectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
-                        .InnerText);
+                        ?.InnerText);
                 forms[form] = x;
             }
 
