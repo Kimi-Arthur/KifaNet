@@ -37,8 +37,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Subtitle", "src\Pimix
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Bilibili", "src\Pimix.Bilibili\Pimix.Bilibili.csproj", "{92F48950-18F4-4891-8114-47847E0063B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Bilibili", "tests\PimixTest.Bilibili\PimixTest.Bilibili.csproj", "{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.SubUtil", "src\Pimix.Apps.SubUtil\Pimix.Apps.SubUtil.csproj", "{4B103459-90B8-4F4A-93EF-D594D24B58F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Configs", "src\Pimix.Configs\Pimix.Configs.csproj", "{EF17EA06-8245-49DF-B74A-098856EA9754}"
@@ -102,6 +100,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Azure", "src\Pimix.Azure\Pimix.Azure.csproj", "{1A84B94B-B06C-4357-AD8A-23F8608B2423}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Azure", "tests\PimixTest.Azure\PimixTest.Azure.csproj", "{22F248B5-CB91-4130-8468-1570F6B1AA21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KifaTest", "tests\KifaTest\KifaTest.csproj", "{88E7038D-C434-4BE7-B33F-F669E7A81912}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KifaTest.Bilibili", "tests\KifaTest.Bilibili\KifaTest.Bilibili.csproj", "{FDC3D389-C593-4FB0-9CD8-C4EFB359A196}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -177,10 +179,6 @@ Global
 		{92F48950-18F4-4891-8114-47847E0063B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92F48950-18F4-4891-8114-47847E0063B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92F48950-18F4-4891-8114-47847E0063B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C28CDD6-2DF6-4761-ABC7-989B48DAC736}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B103459-90B8-4F4A-93EF-D594D24B58F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -309,6 +307,14 @@ Global
 		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22F248B5-CB91-4130-8468-1570F6B1AA21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88E7038D-C434-4BE7-B33F-F669E7A81912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88E7038D-C434-4BE7-B33F-F669E7A81912}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88E7038D-C434-4BE7-B33F-F669E7A81912}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88E7038D-C434-4BE7-B33F-F669E7A81912}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDC3D389-C593-4FB0-9CD8-C4EFB359A196}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDC3D389-C593-4FB0-9CD8-C4EFB359A196}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDC3D389-C593-4FB0-9CD8-C4EFB359A196}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDC3D389-C593-4FB0-9CD8-C4EFB359A196}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
