@@ -59,5 +59,14 @@ namespace PimixTest.Languages.German {
 
             Assert.Equal(kf, word.KeyVerbForms);
         }
+
+        [Theory]
+        [InlineData("Lernen", "Lernen", null, "Lernens", null, "Lernen", null, "Lernen", null)]
+        public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp, string ds, string dp, string @as, string ap) {
+            var client = new DeWiktionaryClient();
+            var word = client.GetWord(id);
+
+            Assert.Equal(ns, word.NounForms[Case.Nominative][Number.Singular]);
+        }
     }
 }

@@ -109,6 +109,13 @@ namespace Pimix.Languages.German {
                             word.NounForms[Case.Accusative] = new Dictionary<Number, string> {
                                 [Number.Singular] = selector(4, 1), [Number.Plural] = selector(4, 2)
                             };
+
+                            foreach (var nounForm in word.NounForms.Values) {
+                                foreach (var number in nounForm.Where(e => e.Value == null).Select(e => e.Key)
+                                    .ToList()) {
+                                    nounForm.Remove(number);
+                                }
+                            }
                         }
 
                         if (!hasPronunciation) {
