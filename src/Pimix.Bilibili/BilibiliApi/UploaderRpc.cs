@@ -1,12 +1,14 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using Pimix.Service;
 
 namespace Pimix.Bilibili.BilibiliApi {
     public class UploaderRpc : JsonRpc<string, UploaderRpc.UploaderResponse> {
         public class UploaderResponse {
             public long Code { get; set; }
-            public long Message { get; set; }
+            public string Message { get; set; }
             public long Ttl { get; set; }
             public Data Data { get; set; }
         }
@@ -64,17 +66,18 @@ namespace Pimix.Bilibili.BilibiliApi {
 
         const string UploaderUrlPattern = "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
 
-        static HttpClient client = new HttpClient();
+        static HttpClient client = BilibiliVideo.GetBilibiliClient();
 
         public override UploaderResponse Call(string uploaderId) {
             var url = UploaderUrlPattern.Format(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
             var result = client.GetAsync(url).Result.GetObject<UploaderResponse>();
             var allResult = result.Clone();
             var page = 1;
-            while (result.Data.Page.Count <= allResult.Data.List.Vlist.Count) {
+            while (result.Data?.Page?.Count < allResult.Data?.List?.Vlist?.Count) {
                 url = UploaderUrlPattern.Format(new Dictionary<string, string> {
                     {"id", uploaderId}, {"page", (++page).ToString()}
                 });
+                Thread.Sleep(TimeSpan.FromSeconds(5));
                 result = client.GetAsync(url).Result.GetObject<UploaderResponse>();
                 allResult.Data.List.Vlist.AddRange(result.Data.List.Vlist);
             }

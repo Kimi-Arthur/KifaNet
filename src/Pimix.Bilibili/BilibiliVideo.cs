@@ -38,7 +38,7 @@ namespace Pimix.Bilibili {
 
         static bool firstDownload = true;
 
-        static HttpClient bilibiliClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+        static HttpClient bilibiliClient = GetBilibiliClient();
 
         static HttpClient biliplusClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
 
@@ -174,7 +174,6 @@ namespace Pimix.Bilibili {
                     }
                 }
             } else {
-                bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
                 var (extension, links) = GetDownloadLinks(Id, cid);
                 return extension == null
                     ? (null, null)
@@ -301,6 +300,12 @@ namespace Pimix.Bilibili {
 
             var data = JToken.Parse(content)["data"];
             return $"av{data["aid"]}p{data["page"]}";
+        }
+
+        public static HttpClient GetBilibiliClient() {
+            var client = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+            client.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+            return client;
         }
     }
 }
