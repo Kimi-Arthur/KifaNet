@@ -16,9 +16,6 @@ namespace Pimix.Languages.German {
 
         public List<Meaning> Meanings { get; set; } = new List<Meaning>();
 
-        public Dictionary<string, string> MMM { get; set; } =
-            new Dictionary<string, string> {{"Good", "bad"}, {"bad", "baba"}};
-
         [JsonIgnore]
         public string Meaning => Meanings.FirstOrDefault()?.Translation;
 
