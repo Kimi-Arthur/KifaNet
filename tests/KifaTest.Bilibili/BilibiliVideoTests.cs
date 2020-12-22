@@ -17,12 +17,12 @@ namespace KifaTest.Bilibili {
             Assert.True(video.Tags.SequenceEqual(new[] {"BILIBILI正版", "TV动画"}), "Keywords differ");
             Assert.Single(video.Pages);
             Assert.Equal("49053680", video.Pages.ElementAt(0).Cid);
-            Assert.Equal("hatarakusaibou_ep01.mp4", video.Pages.ElementAt(0).Title);
+            Assert.Equal("[1]肺炎链球菌", video.Pages.ElementAt(0).Title);
             Assert.Equal(BilibiliVideo.PartModeType.SinglePartMode, video.PartMode);
             var doc = video.GenerateAssDocument();
-            Assert.StartsWith("[Script Info]\n" + "Title: 【7月】工作细胞 01【独家正版】\n" +
-                                                  "Original Script: Bilibili\n" + "Script Type: V4.00+\n" +
-                                                  "Collisions: Normal\n" + "PlayResX: 1920\n" + "PlayResY: 1080\n\n", doc.ToString());
+            Assert.StartsWith(
+                "[Script Info]\n" + "Title: 【7月】工作细胞 01【独家正版】\n" + "Original Script: Bilibili\n" +
+                "Script Type: V4.00+\n" + "Collisions: Normal\n", doc.ToString());
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace KifaTest.Bilibili {
             video.PartMode = BilibiliVideo.PartModeType.ContinuousPartMode;
             Assert.Equal("av2044037", video.Id);
             Assert.Equal("【日语学习】发音入门基础：50音图", video.Title);
-            Assert.Equal("【封面爸爸去哪儿】\n日语发音基础详解，查漏补缺。", video.Description);
+            Assert.Equal("【封面爸爸去哪儿】\r\n日语发音基础详解，查漏补缺。", video.Description);
             Assert.True(video.Tags.SequenceEqual(new[] {"日语教程", "日语学习", "日语五十音图", "学习日语的过程"}), "Keywords differ");
             Assert.Equal(6, video.Pages.Count());
             var data = new List<Tuple<string, string>> {
