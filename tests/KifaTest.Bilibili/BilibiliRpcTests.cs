@@ -3,7 +3,7 @@ using Pimix.Bilibili.BilibiliApi;
 using Xunit;
 
 namespace KifaTest.Bilibili {
-    public class PlaylistRpcTests {
+    public class BilibiliRpcTests {
         [Fact]
         public void RpcTest() {
             Assert.True(new PlaylistRpc().Call("743911266").Data.Medias.Count > 50);
