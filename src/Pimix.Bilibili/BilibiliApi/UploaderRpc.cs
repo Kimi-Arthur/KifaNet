@@ -38,7 +38,8 @@ namespace Pimix.Bilibili.BilibiliApi {
         public class Video {
             public long Comment { get; set; }
             public long Typeid { get; set; }
-            public long Play { get; set; }
+            // This field can be string...
+            // public long Play { get; set; }
             public string Pic { get; set; }
             public string Subtitle { get; set; }
             public string Description { get; set; }
@@ -73,11 +74,11 @@ namespace Pimix.Bilibili.BilibiliApi {
             var result = client.GetAsync(url).Result.GetObject<UploaderResponse>();
             var allResult = result.Clone();
             var page = 1;
-            while (result.Data?.Page?.Count < allResult.Data?.List?.Vlist?.Count) {
+            while (result.Data?.Page?.Count > allResult.Data?.List?.Vlist?.Count) {
                 url = UploaderUrlPattern.Format(new Dictionary<string, string> {
                     {"id", uploaderId}, {"page", (++page).ToString()}
                 });
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                Thread.Sleep(TimeSpan.FromSeconds(1));
                 result = client.GetAsync(url).Result.GetObject<UploaderResponse>();
                 allResult.Data.List.Vlist.AddRange(result.Data.List.Vlist);
             }
