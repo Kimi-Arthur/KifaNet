@@ -16,7 +16,17 @@ GET {{server}}/api/bilibili/videos/$refresh?id=av536046
 
 ###
 
-GET {{server}}/api/bilibili/videos/av536046
+POST {{server}}/api/bilibili/videos/av415600320
+Content-Type: application/json
+
+{}
+
+###
+
+POST {{server}}/api/bilibili/playlists/743911266
+Content-Type: application/json
+
+{}
 
 ###
 

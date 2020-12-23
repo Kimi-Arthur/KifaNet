@@ -15,6 +15,8 @@ using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
     public class BilibiliVideo : DataModel {
+        public const string ModelId = "bilibili/videos";
+
         public static bool UseMergedSource { get; set; }
 
         public enum PartModeType {
@@ -29,8 +31,6 @@ namespace Pimix.Bilibili {
             InProgress,
             Done
         }
-
-        public const string ModelId = "bilibili/videos";
 
         static PimixServiceClient<BilibiliVideo> client;
 
