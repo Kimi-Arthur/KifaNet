@@ -3,9 +3,11 @@ Accept: application/x-yaml
 
 ### Refresh
 
-POST {{server}}/api/bilibili/uploaders/$refresh?id=122879
+POST {{server}}/api/bilibili/uploaders/$refresh
 Content-Type: application/x-yaml
 Accept: application/x-yaml
+
+Id: '43536'
 
 ### Batch Refresh
 POST {{server}}/api/bilibili/uploaders/$$refresh
