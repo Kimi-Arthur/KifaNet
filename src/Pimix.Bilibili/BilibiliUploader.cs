@@ -18,8 +18,9 @@ namespace Pimix.Bilibili {
         public override void Fill() {
             var info = new UploaderInfoRpc().Call(Id).Data;
             Name = info.Name;
-            var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist;
-            Aids = list.OrderBy(v => v.Aid).Select(v => $"av{v.Aid}").ToList();
+            var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => v.Aid).ToHashSet();
+            list.UnionWith(Aids.Select(aid => long.Parse(aid.Substring(2))).ToHashSet());
+            Aids = list.OrderBy(v => v).Select(v => $"av{v}").ToList();
         }
     }
 }
