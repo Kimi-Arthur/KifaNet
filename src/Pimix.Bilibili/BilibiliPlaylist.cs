@@ -22,6 +22,7 @@ namespace Pimix.Bilibili {
             Title = data.Info.Title;
             Uploader = data.Info.Upper.Name;
             Videos = data.Medias.Select(m => $"av{m.Id}").ToList();
+            Videos.Reverse();
         }
     }
 }
