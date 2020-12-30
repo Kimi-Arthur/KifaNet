@@ -5,8 +5,8 @@ using System.Threading;
 using Pimix.Service;
 
 namespace Pimix.Bilibili.BilibiliApi {
-    public class UploaderRpc : JsonRpc<string, UploaderRpc.UploaderResponse> {
-        public class UploaderResponse {
+    public class UploaderVideoRpc : JsonRpc<string, UploaderVideoRpc.UploaderVideoResponse> {
+        public class UploaderVideoResponse {
             public long Code { get; set; }
             public string Message { get; set; }
             public long Ttl { get; set; }
@@ -65,21 +65,21 @@ namespace Pimix.Bilibili.BilibiliApi {
             public long Count { get; set; }
         }
 
-        const string UploaderUrlPattern = "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
+        const string UploaderVideoUrlPattern = "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
 
         static HttpClient client = BilibiliVideo.GetBilibiliClient();
 
-        public override UploaderResponse Call(string uploaderId) {
-            var url = UploaderUrlPattern.Format(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
-            var result = client.GetAsync(url).Result.GetObject<UploaderResponse>();
+        public override UploaderVideoResponse Call(string uploaderId) {
+            var url = UploaderVideoUrlPattern.Format(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
+            var result = client.GetAsync(url).Result.GetObject<UploaderVideoResponse>();
             var allResult = result.Clone();
             var page = 1;
             while (result.Data?.Page?.Count > allResult.Data?.List?.Vlist?.Count) {
-                url = UploaderUrlPattern.Format(new Dictionary<string, string> {
+                url = UploaderVideoUrlPattern.Format(new Dictionary<string, string> {
                     {"id", uploaderId}, {"page", (++page).ToString()}
                 });
                 Thread.Sleep(TimeSpan.FromSeconds(1));
-                result = client.GetAsync(url).Result.GetObject<UploaderResponse>();
+                result = client.GetAsync(url).Result.GetObject<UploaderVideoResponse>();
                 allResult.Data.List.Vlist.AddRange(result.Data.List.Vlist);
             }
 
