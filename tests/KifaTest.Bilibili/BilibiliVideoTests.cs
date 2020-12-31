@@ -8,6 +8,14 @@ using Xunit;
 namespace KifaTest.Bilibili {
     public class BilibiliVideoTests {
         [Fact]
+        public void FillTest() {
+            var video = new BilibiliVideo {Id = "av170001"};
+            video.Fill();
+            Assert.Equal("【MV】保加利亚妖王AZIS视频合辑", video.Title);
+            Assert.Equal(new DateTime(2011, 11, 9, 22, 55, 33), video.Uploaded);
+        }
+
+        [Fact]
         public void SinglePartTest() {
             PimixServiceRestClient.PimixServerApiAddress = "http://www.kifa.ga/api";
             var video = BilibiliVideo.Client.Get("av26361000");

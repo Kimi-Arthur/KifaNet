@@ -9,11 +9,22 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using Pimix.Bilibili.BiliplusApi;
 using Pimix.IO;
 using Pimix.Service;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Bilibili {
+    public class BilibiliVideoStats {
+        public long PlayCount { get; set; }
+        public long DanmakuCount { get; set; }
+        public long CoinCount { get; set; }
+        public long LikeCount { get; set; }
+        public long FavoriteCount { get; set; }
+        public long ReplyCount { get; set; }
+        public long ShareCount { get; set; }
+    }
+
     public class BilibiliVideo : DataModel {
         public const string ModelId = "bilibili/videos";
 
@@ -40,7 +51,7 @@ namespace Pimix.Bilibili {
 
         static HttpClient bilibiliClient = GetBilibiliClient();
 
-        static HttpClient biliplusClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+        static HttpClient biliplusClient = GetBiliplusClient();
 
         PartModeType partMode;
 
@@ -58,11 +69,12 @@ namespace Pimix.Bilibili {
         public string Description { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        public List<string> Tags { get; set; }
+        public List<string> Tags { get; set; } = new List<string>();
         public string Category { get; set; }
-        public string Cover { get; set; }
+        public Uri Cover { get; set; }
         public DateTime? Uploaded { get; set; }
         public List<BilibiliChat> Pages { get; set; }
+        public BilibiliVideoStats Stats { get; set; } = new BilibiliVideoStats();
 
         [JsonIgnore]
         public PartModeType PartMode {
@@ -80,6 +92,60 @@ namespace Pimix.Bilibili {
                         part.ChatOffset = TimeSpan.Zero;
                     }
                 }
+            }
+        }
+
+        public override void Fill() {
+            var data = new BiliplusVideoRpc().Call(Id);
+            var v2 = data.V2AppApi;
+
+            if (v2 != null) {
+                Title = v2.Title;
+                Author = v2.Owner.Name;
+                AuthorId = v2.Owner.Mid.ToString();
+                Description = v2.Desc;
+                if (v2.Dimension != null) {
+                    Width = v2.Dimension.Width;
+                    Height = v2.Dimension.Height;
+                }
+
+                if (v2.Tag != null) {
+                    Tags.AddRange(v2.Tag.Select(t => t.TagName));
+                }
+
+                Category = v2.Tname;
+                Cover = v2.Pic;
+                Pages = v2.Pages.Select(p => new BilibiliChat {
+                    Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part, Duration = TimeSpan.FromSeconds(p.Duration)
+                }).ToList();
+                Uploaded = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UnixEpoch.AddSeconds(v2.Pubdate),
+                    TimeZones.ShanghaiTimeZone);
+
+                var stat = v2.Stat;
+                Stats.PlayCount = stat.View;
+                Stats.DanmakuCount = stat.Danmaku;
+                Stats.CoinCount = stat.Coin;
+                Stats.LikeCount = stat.Like;
+                Stats.FavoriteCount = stat.Favorite;
+                Stats.ReplyCount = stat.Reply;
+                Stats.ShareCount = stat.Share;
+            } else {
+                Title = data.Title;
+                Author = data.Author;
+                AuthorId = data.Mid.ToString();
+                Description = data.Description;
+                Tags = data.Tag.Split(",").ToList();
+                Category = data.Typename;
+                Cover = data.Pic;
+                Pages = data.List.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title =  p.Part}).ToList();
+                Uploaded = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UnixEpoch.AddSeconds(data.Created),
+                    TimeZones.ShanghaiTimeZone);
+
+                Stats.PlayCount = data.Play;
+                Stats.DanmakuCount = data.VideoReview;
+                Stats.CoinCount = data.Coins;
+                Stats.FavoriteCount = data.Favorites;
+                Stats.ReplyCount = data.Review;
             }
         }
 
@@ -130,13 +196,9 @@ namespace Pimix.Bilibili {
 
             firstDownload = false;
 
-            biliplusClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
-
             var cid = Pages[pid - 1].Cid;
 
             if (UseMergedSource) {
-                biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
-
                 AddDownloadJob(Id);
 
                 while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
@@ -182,9 +244,6 @@ namespace Pimix.Bilibili {
         }
 
         static Stream BuildDownloadStream(string link) {
-            biliplusClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
-
             var length = bilibiliClient.GetContentLength(link);
             if (length == null) {
                 throw new Exception("Content length is not found.");
@@ -305,6 +364,14 @@ namespace Pimix.Bilibili {
         public static HttpClient GetBilibiliClient() {
             var client = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
             client.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+            return client;
+        }
+
+        public static HttpClient GetBiliplusClient() {
+            var client = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+            client.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(
+                "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
             return client;
         }
     }

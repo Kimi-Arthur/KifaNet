@@ -40,6 +40,7 @@ namespace Pimix.Bilibili {
             }
         }
 
+        [JsonIgnore]
         public TimeSpan ChatOffset { get; set; } = TimeSpan.Zero;
 
         [JsonIgnore]
