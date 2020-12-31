@@ -72,7 +72,7 @@ namespace Pimix.Bilibili {
         public List<string> Tags { get; set; } = new List<string>();
         public string Category { get; set; }
         public Uri Cover { get; set; }
-        public DateTime? Uploaded { get; set; }
+        public DateTimeOffset? Uploaded { get; set; }
         public List<BilibiliChat> Pages { get; set; }
         public BilibiliVideoStats Stats { get; set; } = new BilibiliVideoStats();
 
@@ -118,8 +118,8 @@ namespace Pimix.Bilibili {
                 Pages = v2.Pages.Select(p => new BilibiliChat {
                     Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part, Duration = TimeSpan.FromSeconds(p.Duration)
                 }).ToList();
-                Uploaded = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UnixEpoch.AddSeconds(v2.Pubdate),
-                    TimeZones.ShanghaiTimeZone);
+                Uploaded = DateTimeOffset.FromUnixTimeSeconds(v2.Pubdate);
+                Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
 
                 var stat = v2.Stat;
                 Stats.PlayCount = stat.View;
@@ -137,9 +137,10 @@ namespace Pimix.Bilibili {
                 Tags = data.Tag.Split(",").ToList();
                 Category = data.Typename;
                 Cover = data.Pic;
-                Pages = data.List.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title =  p.Part}).ToList();
-                Uploaded = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UnixEpoch.AddSeconds(data.Created),
-                    TimeZones.ShanghaiTimeZone);
+                Pages = data.List.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
+                    .ToList();
+                Uploaded = DateTimeOffset.FromUnixTimeSeconds(v2.Pubdate);
+                Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
 
                 Stats.PlayCount = data.Play;
                 Stats.DanmakuCount = data.VideoReview;

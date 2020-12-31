@@ -12,7 +12,8 @@ namespace KifaTest.Bilibili {
             var video = new BilibiliVideo {Id = "av170001"};
             video.Fill();
             Assert.Equal("【MV】保加利亚妖王AZIS视频合辑", video.Title);
-            Assert.Equal(new DateTime(2011, 11, 9, 22, 55, 33), video.Uploaded);
+            Assert.Equal(new DateTimeOffset(2011, 11, 9, 22, 55, 33, TimeSpan.FromHours(8)), video.Uploaded);
+            Assert.Contains("2011-11-09T22:55:33+08:00", video.ToString());
         }
 
         [Fact]
