@@ -9,6 +9,8 @@ namespace Pimix {
     public static class Defaults {
         public static readonly JsonSerializerSettings JsonSerializerSettings =
             new JsonSerializerSettings {
+                DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffffzzz",
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
                 ContractResolver = new OrderedContractResolver {
                     NamingStrategy = new SnakeCaseNamingStrategy()
                 },
@@ -22,6 +24,8 @@ namespace Pimix {
 
         public static readonly JsonSerializerSettings PrettyJsonSerializerSettings =
             new JsonSerializerSettings {
+                DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffffzzz",
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
                 Formatting = Formatting.Indented,
                 ContractResolver = new OrderedContractResolver {
                     NamingStrategy = new SnakeCaseNamingStrategy()
