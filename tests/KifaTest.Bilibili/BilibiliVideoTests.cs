@@ -9,7 +9,7 @@ using Xunit;
 namespace KifaTest.Bilibili {
     public class BilibiliVideoTests {
         [Fact]
-        public void CacheApiTest() {
+        public void CacheRpcTest() {
             var data = new BiliplusVideoCacheRpc().Call("av170001").Data;
             Assert.Equal("Хоп", data.Parts[0].Part);
         }
