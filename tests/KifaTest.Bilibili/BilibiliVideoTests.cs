@@ -2,11 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Pimix.Bilibili;
+using Pimix.Bilibili.BiliplusApi;
 using Pimix.Service;
 using Xunit;
 
 namespace KifaTest.Bilibili {
     public class BilibiliVideoTests {
+        [Fact]
+        public void CacheApiTest() {
+            var data = new BiliplusVideoCacheRpc().Call("av170001").Data;
+            Assert.Equal("Хоп", data.Parts[0].Part);
+        }
+        
         [Fact]
         public void FillTest() {
             var video = new BilibiliVideo {Id = "av170001"};

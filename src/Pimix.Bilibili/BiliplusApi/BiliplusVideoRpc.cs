@@ -185,12 +185,12 @@ namespace Pimix.Bilibili.BiliplusApi {
             public long Dislike { get; set; }
         }
 
-        const string UploaderInfoPattern = "https://www.biliplus.com/api/view?id={id}";
+        const string UploaderInfoPattern = "https://www.biliplus.com/api/view?id={aid}";
 
         static HttpClient client = BilibiliVideo.GetBiliplusClient();
 
         public override VideoResponse Call(string aid) {
-            var url = UploaderInfoPattern.Format(new Dictionary<string, string> {{"id", aid.Substring(2)}});
+            var url = UploaderInfoPattern.Format(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
             return client.GetAsync(url).Result.GetObject<VideoResponse>();
         }
     }
