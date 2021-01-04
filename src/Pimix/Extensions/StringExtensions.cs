@@ -92,6 +92,11 @@ namespace Pimix {
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
         }
 
+        public static DateTimeOffset ParseDateTimeOffset(this string dateTimeOffsetString, TimeZoneInfo timeZone) {
+            var dateTime = DateTime.Parse(dateTimeOffsetString);
+            return new DateTimeOffset(dateTime, timeZone.GetUtcOffset(dateTime));
+        }
+
         public static string GetNaturalSortKey(this string path) =>
             path.Contains("/$/") || path.Length >= 5
                 ? path

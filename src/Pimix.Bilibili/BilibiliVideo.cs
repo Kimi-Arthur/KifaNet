@@ -222,7 +222,7 @@ namespace Pimix.Bilibili {
             Cover = info.Pic;
             Pages = data.Parts.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
                 .ToList();
-            Uploaded = DateTimeOffset.Parse(info.Create);
+            Uploaded = info.Create.ParseDateTimeOffset(TimeZones.ShanghaiTimeZone);
 
             Stats.PlayCount = info.Play;
             Stats.DanmakuCount = info.VideoReview;
