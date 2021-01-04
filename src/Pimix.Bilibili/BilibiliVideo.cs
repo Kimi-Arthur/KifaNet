@@ -96,6 +96,10 @@ namespace Pimix.Bilibili {
         }
 
         public override void Fill() {
+            FillWithBiliplus();
+        }
+
+        bool FillWithBiliplus() {
             var data = new BiliplusVideoRpc().Call(Id);
             var v2 = data.V2AppApi;
 
@@ -148,6 +152,8 @@ namespace Pimix.Bilibili {
                 Stats.FavoriteCount = data.Favorites;
                 Stats.ReplyCount = data.Review;
             }
+
+            return true;
         }
 
         public AssDocument GenerateAssDocument() {
