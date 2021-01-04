@@ -12,7 +12,7 @@ GET https://www.biliplus.com/api/cidinfo?cid=84360986
 
 ###
 
-GET {{server}}/api/bilibili/videos/$refresh?id=av536046
+GET {{server}}/api/bilibili/videos/av585933762?refresh=true
 
 ###
 

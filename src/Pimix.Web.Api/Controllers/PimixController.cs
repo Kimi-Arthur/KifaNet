@@ -17,13 +17,21 @@ namespace Pimix.Web.Api.Controllers {
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<TDataModel> Get(string id) {
+        public ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
             id = Uri.UnescapeDataString(id);
             if (id.StartsWith("$")) {
                 return new NotFoundResult();
             }
 
-            return Client.Get(id);
+            var value = Client.Get(id);
+            if (refresh || value.Id == null) {
+                value.Id ??= id;
+                value.Fill();
+
+                Client.Set(value);
+            }
+
+            return value;
         }
 
         // PATCH api/values/5
