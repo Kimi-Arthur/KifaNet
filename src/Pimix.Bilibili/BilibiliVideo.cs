@@ -97,8 +97,9 @@ namespace Pimix.Bilibili {
 
         public override void Fill() {
             try {
-                FillWithBiliplus();
-                return;
+                if (FillWithBiliplus()) {
+                    return;
+                }
             } catch (Exception e) {
                 logger.Debug(e, $"Unable to find video {Id} from biliplus API.");
             }
@@ -110,9 +111,13 @@ namespace Pimix.Bilibili {
             }
         }
 
-        void FillWithBiliplus() {
+        bool FillWithBiliplus() {
             var data = new BiliplusVideoRpc().Call(Id);
             var v2 = data.V2AppApi;
+
+            if (data.Title == null && v2 == null) {
+                return false;
+            }
 
             if (v2 != null) {
                 Title = v2.Title;
@@ -145,7 +150,7 @@ namespace Pimix.Bilibili {
                 Stats.ReplyCount = stat.Reply;
                 Stats.ShareCount = stat.Share;
             } else {
-                Title = data.Title ?? throw new Exception($"Video {Id} is not found.");
+                Title = data.Title;
                 Author = data.Author;
                 AuthorId = data.Mid.ToString();
                 Description = data.Description;
@@ -163,9 +168,11 @@ namespace Pimix.Bilibili {
                 Stats.FavoriteCount = data.Favorites;
                 Stats.ReplyCount = data.Review;
             }
+
+            return true;
         }
 
-        void FillWithBiliplusCache() {
+        bool FillWithBiliplusCache() {
             var data = new BiliplusVideoCacheRpc().Call(Id).Data;
             var info = data.Info;
             Title = info.Title;
@@ -184,6 +191,8 @@ namespace Pimix.Bilibili {
             Stats.CoinCount = info.Coins;
             Stats.FavoriteCount = info.Favorites;
             Stats.ReplyCount = info.Review;
+
+            return true;
         }
 
         public AssDocument GenerateAssDocument() {
