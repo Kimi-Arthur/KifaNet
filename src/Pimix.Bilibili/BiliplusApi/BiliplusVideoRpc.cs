@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 
 namespace Pimix.Bilibili.BiliplusApi {
-    public class BiliplusVideoRpc : JsonRpc<string, BiliplusVideoRpc.VideoResponse> {
-        public class VideoResponse {
+    public class BiliplusVideoRpc : JsonRpc<string, BiliplusVideoRpc.BiliplusVideoResponse> {
+        public class BiliplusVideoResponse {
             public long Id { get; set; }
             public long Ver { get; set; }
             public long Aid { get; set; }
@@ -185,13 +185,13 @@ namespace Pimix.Bilibili.BiliplusApi {
             public long Dislike { get; set; }
         }
 
-        const string UploaderInfoPattern = "https://www.biliplus.com/api/view?id={aid}";
+        const string VideoInfoPattern = "https://www.biliplus.com/api/view?id={aid}";
 
         static HttpClient client = BilibiliVideo.GetBiliplusClient();
 
-        public override VideoResponse Call(string aid) {
-            var url = UploaderInfoPattern.Format(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
-            return client.GetAsync(url).Result.GetObject<VideoResponse>();
+        public override BiliplusVideoResponse Call(string aid) {
+            var url = VideoInfoPattern.Format(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
+            return client.GetAsync(url).Result.GetObject<BiliplusVideoResponse>();
         }
     }
 }

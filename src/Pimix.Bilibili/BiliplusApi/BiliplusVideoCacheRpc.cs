@@ -6,7 +6,7 @@ using Pimix.Service;
 
 namespace Pimix.Bilibili.BiliplusApi {
     public class BiliplusVideoCacheRpc : JsonRpc<string, BiliplusVideoCacheRpc.BiliplusVideoCache> {
-        public class BiliplusVideoCache : DataModel {
+        public class BiliplusVideoCache {
             public long Code { get; set; }
             public Data Data { get; set; }
         }
