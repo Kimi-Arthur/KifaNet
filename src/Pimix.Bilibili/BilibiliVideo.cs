@@ -96,10 +96,21 @@ namespace Pimix.Bilibili {
         }
 
         public override void Fill() {
-            FillWithBiliplus();
+            try {
+                FillWithBiliplus();
+                return;
+            } catch (Exception e) {
+                logger.Debug(e, $"Unable to find video {Id} from biliplus API.");
+            }
+
+            try {
+                FillWithBiliplusCache();
+            } catch (Exception e) {
+                logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
+            }
         }
 
-        bool FillWithBiliplus() {
+        void FillWithBiliplus() {
             var data = new BiliplusVideoRpc().Call(Id);
             var v2 = data.V2AppApi;
 
@@ -134,7 +145,7 @@ namespace Pimix.Bilibili {
                 Stats.ReplyCount = stat.Reply;
                 Stats.ShareCount = stat.Share;
             } else {
-                Title = data.Title;
+                Title = data.Title ?? throw new Exception($"Video {Id} is not found.");
                 Author = data.Author;
                 AuthorId = data.Mid.ToString();
                 Description = data.Description;
@@ -152,8 +163,27 @@ namespace Pimix.Bilibili {
                 Stats.FavoriteCount = data.Favorites;
                 Stats.ReplyCount = data.Review;
             }
+        }
 
-            return true;
+        void FillWithBiliplusCache() {
+            var data = new BiliplusVideoCacheRpc().Call(Id).Data;
+            var info = data.Info;
+            Title = info.Title;
+            Author = info.Author;
+            AuthorId = info.Mid.ToString();
+            Description = info.Description;
+            Tags = info.Keywords.Split(",").ToList();
+            Category = info.Typename;
+            Cover = info.Pic;
+            Pages = data.Parts.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
+                .ToList();
+            Uploaded = DateTimeOffset.Parse(info.Create);
+
+            Stats.PlayCount = info.Play;
+            Stats.DanmakuCount = info.VideoReview;
+            Stats.CoinCount = info.Coins;
+            Stats.FavoriteCount = info.Favorites;
+            Stats.ReplyCount = info.Review;
         }
 
         public AssDocument GenerateAssDocument() {

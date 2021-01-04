@@ -30,13 +30,14 @@ namespace KifaTest.Bilibili {
             Assert.Equal("Хоп", data.Pages[0].Part);
         }
 
-        [Fact]
-        public void FillTest() {
-            var video = new BilibiliVideo {Id = "av170001"};
+        [Theory]
+        [InlineData("av170001", "【MV】保加利亚妖王AZIS视频合辑", "2011-11-09 22:55:33.000000+08:00")]
+        [InlineData("av1757900", "【李狗嗨】可爱的雅人叔", "2014-11-29 18:19:00.000000+08:00")]
+        public void FillTest(string id, string title, string dateString) {
+            var video = new BilibiliVideo {Id = id};
             video.Fill();
-            Assert.Equal("【MV】保加利亚妖王AZIS视频合辑", video.Title);
-            Assert.Equal(new DateTimeOffset(2011, 11, 9, 22, 55, 33, TimeSpan.FromHours(8)), video.Uploaded);
-            Assert.Contains("2011-11-09 22:55:33.000000+08:00", video.ToString());
+            Assert.Equal(title, video.Title);
+            Assert.Contains(dateString, video.ToString());
         }
 
         [Fact]

@@ -36,11 +36,11 @@ namespace Pimix.Bilibili.BiliplusApi {
         }
 
         public class PartType {
-            public long Page { get; set; }
+            public int Page { get; set; }
             public string Part { get; set; }
             public long Cid { get; set; }
             public string Type { get; set; }
-            public long Vid { get; set; }
+            public string Vid { get; set; }
         }
 
         const string CachePagePattern = "https://www.biliplus.com/all/video/{aid}/";
