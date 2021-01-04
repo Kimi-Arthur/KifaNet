@@ -10,10 +10,24 @@ using Xunit;
 namespace KifaTest.Bilibili {
     public class BilibiliVideoTests {
         [Fact]
-        public void CacheRpcTest() {
+        public void BiliplusVideoCacheRpcTest() {
             var data = new BiliplusVideoCacheRpc().Call("av170001").Data;
             Assert.Equal(5, data.Parts.Count);
             Assert.Equal("Хоп", data.Parts[0].Part);
+        }
+
+        [Fact]
+        public void BiliplusVideoRpcTest() {
+            var data = new BiliplusVideoRpc().Call("av170001");
+            Assert.Equal(10, data.List.Count);
+            Assert.Equal("Хоп", data.List[0].Part);
+        }
+
+        [Fact]
+        public void BilibiliVideoRpcTest() {
+            var data = new VideoRpc().Call("av170001").Data;
+            Assert.Equal(10, data.Pages.Count);
+            Assert.Equal("Хоп", data.Pages[0].Part);
         }
 
         [Fact]
@@ -23,13 +37,6 @@ namespace KifaTest.Bilibili {
             Assert.Equal("【MV】保加利亚妖王AZIS视频合辑", video.Title);
             Assert.Equal(new DateTimeOffset(2011, 11, 9, 22, 55, 33, TimeSpan.FromHours(8)), video.Uploaded);
             Assert.Contains("2011-11-09 22:55:33.000000+08:00", video.ToString());
-        }
-
-        [Fact]
-        public void BilibiliVideoRpcTest() {
-            var data = new VideoRpc().Call("av170001").Data;
-            Assert.Equal(10, data.Pages.Count);
-            Assert.Equal("Хоп", data.Pages[0].Part);
         }
 
         [Fact]
