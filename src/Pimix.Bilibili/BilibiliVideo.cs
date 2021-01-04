@@ -9,6 +9,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using Pimix.Bilibili.BilibiliApi;
 using Pimix.Bilibili.BiliplusApi;
 using Pimix.IO;
 using Pimix.Service;
@@ -97,6 +98,14 @@ namespace Pimix.Bilibili {
 
         public override void Fill() {
             try {
+                if (FillWithBilibili()) {
+                    return;
+                }
+            } catch (Exception e) {
+                logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
+            }
+
+            try {
                 if (FillWithBiliplus()) {
                     return;
                 }
@@ -109,6 +118,35 @@ namespace Pimix.Bilibili {
             } catch (Exception e) {
                 logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
             }
+        }
+
+        bool FillWithBilibili() {
+            var data = new VideoRpc().Call(Id).Data;
+            Title = data.Title;
+            Author = data.Owner.Name;
+            AuthorId = data.Owner.Mid.ToString();
+            Description = data.Desc;
+            // TODO: tagname from https://api.bilibili.com/x/tag/archive/tags?aid=170001
+            Category = data.Tname;
+            Cover = data.Pic;
+            Pages = data.Pages.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
+                .ToList();
+            Uploaded = DateTimeOffset.FromUnixTimeSeconds(data.Pubdate);
+            Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
+
+            Height = data.Dimension.Height;
+            Width = data.Dimension.Width;
+
+            var stat = data.Stat;
+            Stats.PlayCount = stat.View;
+            Stats.DanmakuCount = stat.Danmaku;
+            Stats.CoinCount = stat.Coin;
+            Stats.FavoriteCount = stat.Favorite;
+            Stats.ReplyCount = stat.Reply;
+            Stats.ShareCount = stat.Share;
+            Stats.LikeCount = stat.Like;
+
+            return true;
         }
 
         bool FillWithBiliplus() {

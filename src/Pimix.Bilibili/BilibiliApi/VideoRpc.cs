@@ -38,9 +38,9 @@ namespace Pimix.Bilibili.BilibiliApi {
         }
 
         public class Dimension {
-            public long Width { get; set; }
-            public long Height { get; set; }
-            public long Rotate { get; set; }
+            public int Width { get; set; }
+            public int Height { get; set; }
+            public int Rotate { get; set; }
         }
 
         public class Owner {
@@ -51,7 +51,7 @@ namespace Pimix.Bilibili.BilibiliApi {
 
         public class PageType {
             public long Cid { get; set; }
-            public long Page { get; set; }
+            public int Page { get; set; }
             public string From { get; set; }
             public string Part { get; set; }
             public long Duration { get; set; }
