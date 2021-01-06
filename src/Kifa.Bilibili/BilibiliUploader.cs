@@ -13,7 +13,7 @@ namespace Kifa.Bilibili {
             client ??= new PimixServiceRestClient<BilibiliUploader>();
 
         public string Name { get; set; }
-        public List<string> Aids { get; set; }
+        public List<string> Aids { get; set; } = new List<string>();
 
         public override void Fill() {
             var info = new UploaderInfoRpc().Call(Id).Data;
