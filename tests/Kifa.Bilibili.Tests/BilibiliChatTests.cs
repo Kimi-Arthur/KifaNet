@@ -3,7 +3,7 @@ using System.Linq;
 using Pimix.Bilibili;
 using Xunit;
 
-namespace KifaTest.Bilibili {
+namespace Kifa.Bilibili.Tests {
     public class BilibiliChatTests {
         [Fact]
         public void BasicTest() {

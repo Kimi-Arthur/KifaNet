@@ -2,7 +2,7 @@ using Pimix.Bilibili;
 using Pimix.Bilibili.BilibiliApi;
 using Xunit;
 
-namespace KifaTest.Bilibili {
+namespace Kifa.Bilibili.Tests {
     public class BilibiliPlaylistTests {
         [Fact]
         public void RpcTest() {

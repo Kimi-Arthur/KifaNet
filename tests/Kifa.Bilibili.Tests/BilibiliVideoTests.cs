@@ -7,7 +7,7 @@ using Pimix.Bilibili.BiliplusApi;
 using Pimix.Service;
 using Xunit;
 
-namespace KifaTest.Bilibili {
+namespace Kifa.Bilibili.Tests {
     public class BilibiliVideoTests {
         [Fact]
         public void BiliplusVideoCacheRpcTest() {

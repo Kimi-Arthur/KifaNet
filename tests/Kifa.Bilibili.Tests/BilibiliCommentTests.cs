@@ -2,7 +2,7 @@ using System;
 using Pimix.Bilibili;
 using Xunit;
 
-namespace KifaTest.Bilibili {
+namespace Kifa.Bilibili.Tests {
     public class BilibiliCommentTests {
         [Fact]
         public void BasicTest() {

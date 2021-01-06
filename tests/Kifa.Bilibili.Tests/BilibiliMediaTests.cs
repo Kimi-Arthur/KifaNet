@@ -1,7 +1,7 @@
 using Pimix.Bilibili.BilibiliApi;
 using Xunit;
 
-namespace KifaTest.Bilibili {
+namespace Kifa.Bilibili.Tests {
     public class BilibiliMediaTests {
         [Theory]
         [InlineData("md28222837", "深夜食堂 第三季", "电视剧", 28671)]

@@ -3,7 +3,7 @@ using Pimix.Bilibili;
 using Pimix.Bilibili.BilibiliApi;
 using Xunit;
 
-namespace KifaTest.Bilibili {
+namespace Kifa.Bilibili.Tests {
     public class BilibiliUploaderTests {
         [Fact]
         public void VideoRpcTest() {
