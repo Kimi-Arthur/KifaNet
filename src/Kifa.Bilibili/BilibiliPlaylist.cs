@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using Pimix.Bilibili.BilibiliApi;
+using Kifa.Bilibili.BilibiliApi;
 using Pimix.Service;
 
-namespace Pimix.Bilibili {
+namespace Kifa.Bilibili {
     public class BilibiliPlaylist : DataModel {
         public const string ModelId = "bilibili/playlists";
 

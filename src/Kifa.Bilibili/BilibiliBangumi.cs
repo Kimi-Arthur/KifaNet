@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Pimix.Service;
 
-namespace Pimix.Bilibili {
+namespace Kifa.Bilibili {
     public class BilibiliBangumi : DataModel {
         public const string ModelId = "bilibili/bangumis";
 

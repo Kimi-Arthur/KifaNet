@@ -7,7 +7,7 @@ using System.Xml;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
-using Pimix.Bilibili;
+using Kifa.Bilibili;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("get", HelpText = "Get Bilibili chat as xml document.")]

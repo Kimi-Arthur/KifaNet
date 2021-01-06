@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Pimix;
 
-namespace Pimix.Bilibili.BilibiliApi {
+namespace Kifa.Bilibili.BilibiliApi {
     public class UploaderInfoRpc : JsonRpc<string, UploaderInfoRpc.UploaderInfoResponse> {
         public class UploaderInfoResponse {
             public long Code { get; set; }

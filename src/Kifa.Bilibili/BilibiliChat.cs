@@ -8,7 +8,7 @@ using System.Text;
 using System.Xml;
 using Newtonsoft.Json;
 
-namespace Pimix.Bilibili {
+namespace Kifa.Bilibili {
     public class BilibiliChat {
         readonly HttpClient client = new HttpClient(new HttpClientHandler {
             AutomaticDecompression = DecompressionMethods.Deflate

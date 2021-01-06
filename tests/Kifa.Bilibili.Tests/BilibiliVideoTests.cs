@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pimix.Bilibili;
-using Pimix.Bilibili.BilibiliApi;
-using Pimix.Bilibili.BiliplusApi;
+using Kifa.Bilibili.BilibiliApi;
+using Kifa.Bilibili.BiliplusApi;
 using Pimix.Service;
 using Xunit;
 

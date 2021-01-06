@@ -1,14 +1,11 @@
 using System;
-using Pimix.Bilibili;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests {
     public class BilibiliCommentTests {
         [Fact]
         public void BasicTest() {
-            var comment =
-                new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841",
-                    "听不懂也能跟着笑～～～");
+            var comment = new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841", "听不懂也能跟着笑～～～");
             Assert.Equal(TimeSpan.FromSeconds(163.708), comment.VideoTime);
             Assert.Equal(BilibiliComment.ModeType.Normal, comment.Mode);
             Assert.Equal(25, comment.FontSize);
@@ -22,9 +19,7 @@ namespace Kifa.Bilibili.Tests {
 
         [Fact]
         public void StructCopyTest() {
-            var comment1 =
-                new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841",
-                    "听不懂也能跟着笑～～～");
+            var comment1 = new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841", "听不懂也能跟着笑～～～");
             var comment2 = comment1;
             comment2.Text = "abc";
             Assert.Equal("听不懂也能跟着笑～～～", comment1.Text);
@@ -32,14 +27,10 @@ namespace Kifa.Bilibili.Tests {
 
         [Fact]
         public void WithOffsetTest() {
-            var comment =
-                new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841",
-                    "听不懂也能跟着笑～～～");
-            Assert.Equal(TimeSpan.FromSeconds(263.708),
-                comment.WithOffset(TimeSpan.FromSeconds(100)).VideoTime);
+            var comment = new BilibiliComment("163.708,1,25,16777215,1420312268,0,fd235204,731262841", "听不懂也能跟着笑～～～");
+            Assert.Equal(TimeSpan.FromSeconds(263.708), comment.WithOffset(TimeSpan.FromSeconds(100)).VideoTime);
             // Test original data
             Assert.Equal(TimeSpan.FromSeconds(163.708), comment.VideoTime);
         }
-
     }
 }

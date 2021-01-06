@@ -6,16 +6,17 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using HtmlAgilityPack;
+using Kifa.Bilibili.BilibiliApi;
+using Kifa.Bilibili.BiliplusApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
-using Pimix.Bilibili.BilibiliApi;
-using Pimix.Bilibili.BiliplusApi;
+using Pimix;
 using Pimix.IO;
 using Pimix.Service;
 using Pimix.Subtitle.Ass;
 
-namespace Pimix.Bilibili {
+namespace Kifa.Bilibili {
     public class BilibiliVideoStats {
         public long PlayCount { get; set; }
         public long DanmakuCount { get; set; }

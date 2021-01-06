@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Pimix;
 
-namespace Pimix.Bilibili.BilibiliApi {
+namespace Kifa.Bilibili.BilibiliApi {
     public class VideoRpc : JsonRpc<string, VideoRpc.VideoResponse> {
         public class VideoResponse {
             public long Code { get; set; }

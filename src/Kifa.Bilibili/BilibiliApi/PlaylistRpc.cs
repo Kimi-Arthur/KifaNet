@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Pimix;
 using Pimix.Service;
 
-namespace Pimix.Bilibili.BilibiliApi {
+namespace Kifa.Bilibili.BilibiliApi {
     public class PlaylistRpc : JsonRpc<string, PlaylistRpc.PlaylistResponse> {
         public class PlaylistResponse {
             public long Code { get; set; }

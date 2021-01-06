@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Pimix;
 using Pimix.Service;
 
-namespace Pimix.Bilibili.BiliplusApi {
+namespace Kifa.Bilibili.BiliplusApi {
     public class BiliplusVideoCacheRpc : JsonRpc<string, BiliplusVideoCacheRpc.BiliplusVideoCache> {
         public class BiliplusVideoCache {
             public long Code { get; set; }

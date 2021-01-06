@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
 using Pimix.Api.Files;
-using Pimix.Bilibili;
+using Kifa.Bilibili;
 using Pimix.IO;
 
 namespace Pimix.Apps.BiliUtil {
@@ -143,7 +143,7 @@ namespace Pimix.Apps.BiliUtil {
             }
 
             File.Delete(fileListPath);
-            
+
             // Delete part files
             foreach (var partPath in partPaths) {
                 File.Delete(partPath);

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Pimix.Bilibili;
+using Kifa.Bilibili;
 
 namespace Pimix.Web.Api.Controllers.bilibili {
     [Route("api/" + BilibiliVideo.ModelId)]

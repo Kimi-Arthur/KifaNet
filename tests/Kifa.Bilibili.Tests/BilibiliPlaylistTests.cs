@@ -1,5 +1,4 @@
-using Pimix.Bilibili;
-using Pimix.Bilibili.BilibiliApi;
+using Kifa.Bilibili.BilibiliApi;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests {

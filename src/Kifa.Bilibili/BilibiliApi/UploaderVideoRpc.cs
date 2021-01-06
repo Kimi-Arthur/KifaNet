@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
+using Pimix;
 using Pimix.Service;
 
-namespace Pimix.Bilibili.BilibiliApi {
+namespace Kifa.Bilibili.BilibiliApi {
     public class UploaderVideoRpc : JsonRpc<string, UploaderVideoRpc.UploaderVideoResponse> {
         public class UploaderVideoResponse {
             public long Code { get; set; }

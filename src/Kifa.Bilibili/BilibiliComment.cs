@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Globalization;
 using Pimix.Subtitle.Ass;
 
-namespace Pimix.Bilibili {
+namespace Kifa.Bilibili {
     public struct BilibiliComment {
         public static bool UseBannerEffect { get; set; } = false;
 

@@ -35,7 +35,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cloud.GoogleDrive
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Subtitle", "src\Pimix.Subtitle\Pimix.Subtitle.csproj", "{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Bilibili", "src\Pimix.Bilibili\Pimix.Bilibili.csproj", "{92F48950-18F4-4891-8114-47847E0063B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Bilibili", "src\Kifa.Bilibili\Kifa.Bilibili.csproj", "{92F48950-18F4-4891-8114-47847E0063B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.SubUtil", "src\Pimix.Apps.SubUtil\Pimix.Apps.SubUtil.csproj", "{4B103459-90B8-4F4A-93EF-D594D24B58F9}"
 EndProject

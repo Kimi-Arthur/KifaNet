@@ -4,7 +4,7 @@ using System.Linq;
 using Pimix.Subtitle.Ass;
 using Svg;
 
-namespace Pimix.Bilibili {
+namespace Kifa.Bilibili {
     public class BilibiliMask {
         readonly List<(TimeSpan start, SvgImage mask)> Masks = new List<(TimeSpan start, SvgImage mask)>();
 

@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Pimix.Bilibili;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests {

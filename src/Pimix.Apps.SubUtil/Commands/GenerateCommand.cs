@@ -6,7 +6,7 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
-using Pimix.Bilibili;
+using Kifa.Bilibili;
 using Pimix.Subtitle.Ass;
 using Pimix.Subtitle.Srt;
 

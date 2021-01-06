@@ -1,6 +1,6 @@
 using System.Linq;
 using CommandLine;
-using Pimix.Bilibili;
+using Kifa.Bilibili;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("video", HelpText = "Download high quality Bilibili videos from biliplus.")]
