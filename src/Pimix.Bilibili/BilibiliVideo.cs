@@ -101,6 +101,8 @@ namespace Pimix.Bilibili {
                 if (FillWithBilibili()) {
                     return;
                 }
+
+                logger.Debug($"Unable to find video {Id} from bilibili API.");
             } catch (Exception e) {
                 logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
             }
@@ -109,12 +111,16 @@ namespace Pimix.Bilibili {
                 if (FillWithBiliplus()) {
                     return;
                 }
+
+                logger.Debug($"Unable to find video {Id} from biliplus API.");
             } catch (Exception e) {
                 logger.Debug(e, $"Unable to find video {Id} from biliplus API.");
             }
 
             try {
-                FillWithBiliplusCache();
+                if (!FillWithBiliplusCache()) {
+                    logger.Debug($"Unable to find video {Id} from biliplus cache.");
+                }
             } catch (Exception e) {
                 logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
             }
