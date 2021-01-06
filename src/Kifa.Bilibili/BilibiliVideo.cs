@@ -51,9 +51,9 @@ namespace Kifa.Bilibili {
 
         static bool firstDownload = true;
 
-        static HttpClient bilibiliClient = GetBilibiliClient();
+        static HttpClient bilibiliClient;
 
-        static HttpClient biliplusClient = GetBiliplusClient();
+        static HttpClient biliplusClient;
 
         PartModeType partMode;
 
@@ -63,6 +63,7 @@ namespace Kifa.Bilibili {
         public static string BilibiliCookies { get; set; }
 
         public static string BiliplusCookies { get; set; }
+
         public static int DefaultBiliplusSourceChoice { get; set; }
 
         public string Title { get; set; }
@@ -336,7 +337,7 @@ namespace Kifa.Bilibili {
         }
 
         static Stream BuildDownloadStream(string link) {
-            var length = bilibiliClient.GetContentLength(link);
+            var length = GetBilibiliClient().GetContentLength(link);
             if (length == null) {
                 throw new Exception("Content length is not found.");
             }
@@ -352,7 +353,7 @@ namespace Kifa.Bilibili {
                     var request = new HttpRequestMessage(HttpMethod.Get, link);
 
                     request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                    using var response = bilibiliClient.SendAsync(request).Result;
+                    using var response = GetBilibiliClient().SendAsync(request).Result;
                     response.EnsureSuccessStatusCode();
                     var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                     response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
@@ -369,21 +370,21 @@ namespace Kifa.Bilibili {
         }
 
         static void AddDownloadJob(string aid) {
-            using var response = biliplusClient
+            using var response = GetBiliplusClient()
                 .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall").Result;
             var content = response.GetString();
             logger.Debug($"Add download request result: {content}");
         }
 
         static void UpdateDownloadStatus(string cid) {
-            using var response = biliplusClient.GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}")
-                .Result;
+            using var response = GetBiliplusClient()
+                .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}").Result;
             var content = response.GetString();
             logger.Debug($"Check saver status: {content}");
         }
 
         static DownloadStatus GetDownloadStatus(string aid, int pid) {
-            using var response = biliplusClient
+            using var response = GetBiliplusClient()
                 .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}").Result;
             var content = response.GetString();
             logger.Debug($"Get download result: {content}");
@@ -406,7 +407,7 @@ namespace Kifa.Bilibili {
         static (string extension, List<string> links) GetDownloadLinks(string aid, string cid) {
             var quality = 120;
             while (true) {
-                using var response = bilibiliClient
+                using var response = GetBilibiliClient()
                     .GetAsync(
                         $"https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid.Substring(2)}&qn={quality}&fourk=1")
                     .Result;
@@ -436,7 +437,7 @@ namespace Kifa.Bilibili {
         }
 
         static string GetDownloadPage(string cid) {
-            using var response = biliplusClient
+            using var response = GetBiliplusClient()
                 .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4").Result;
             var content = response.GetString();
             logger.Debug($"Downloaded page content: {content}");
@@ -445,7 +446,7 @@ namespace Kifa.Bilibili {
         }
 
         public static string GetAid(string cid) {
-            using var response = biliplusClient.GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
+            using var response = GetBiliplusClient().GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
             var content = response.GetString();
             logger.Debug($"Cid info: {content}");
 
@@ -454,17 +455,25 @@ namespace Kifa.Bilibili {
         }
 
         public static HttpClient GetBilibiliClient() {
-            var client = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
-            client.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
-            return client;
+            if (bilibiliClient == null) {
+                bilibiliClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+                bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                bilibiliClient.DefaultRequestHeaders.Referrer = new Uri("https://space.bilibili.com/");
+                bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+            }
+
+            return bilibiliClient;
         }
 
         public static HttpClient GetBiliplusClient() {
-            var client = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
-            client.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
-            client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
-            return client;
+            if (biliplusClient == null) {
+                biliplusClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+                biliplusClient.DefaultRequestHeaders.Add("cookie", BiliplusCookies);
+                biliplusClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Windows NT 6.2; WOW64; rv:19.0) Gecko/20100101 Firefox/19.0");
+            }
+
+            return biliplusClient;
         }
     }
 }

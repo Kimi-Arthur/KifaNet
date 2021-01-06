@@ -76,7 +76,7 @@ namespace Pimix.Configs {
         static Dictionary<string, PropertyInfo> GetProperties(Assembly assembly) {
             var properties = new Dictionary<string, PropertyInfo>();
             foreach (var t in assembly.GetTypes()) {
-                if (t.Namespace?.StartsWith("Pimix") == true) {
+                if ((t.Namespace?.StartsWith("Pimix") ?? false) || (t.Namespace?.StartsWith("Kifa") ?? false)) {
                     foreach (var p in t.GetProperties()) {
                         if (p.GetSetMethod()?.IsStatic == true) {
                             properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
