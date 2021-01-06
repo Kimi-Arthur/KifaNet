@@ -3,6 +3,11 @@ Accept: application/x-yaml
 
 ### Refresh
 
+GET {{server}}/api/bilibili/videos/av170001?refresh=true
+Accept: application/x-yaml
+
+### Refresh
+
 POST {{server}}/api/bilibili/uploaders/$refresh
 Content-Type: application/x-yaml
 Accept: application/x-yaml
