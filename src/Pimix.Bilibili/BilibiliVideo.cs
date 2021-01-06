@@ -128,11 +128,12 @@ namespace Pimix.Bilibili {
 
         bool FillWithBilibili() {
             var data = new VideoRpc().Call(Id).Data;
+            var tags = new VideoTagRpc().Call(Id).Data;
             Title = data.Title;
             Author = data.Owner.Name;
             AuthorId = data.Owner.Mid.ToString();
             Description = data.Desc;
-            // TODO: tagname from https://api.bilibili.com/x/tag/archive/tags?aid=170001
+            Tags = tags.Select(t => t.TagName).ToList();
             Category = data.Tname;
             Cover = data.Pic;
             Pages = data.Pages.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
