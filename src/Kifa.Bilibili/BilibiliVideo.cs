@@ -283,9 +283,6 @@ namespace Kifa.Bilibili {
 
         public (string extension, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
             int biliplusSourceChoice = 0) {
-            if (!firstDownload) {
-                Thread.Sleep(TimeSpan.FromSeconds(30));
-            }
 
             firstDownload = false;
 
