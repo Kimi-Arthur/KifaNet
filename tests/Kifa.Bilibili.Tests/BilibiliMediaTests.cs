@@ -35,5 +35,21 @@ namespace Kifa.Bilibili.Tests {
                 Assert.Equal(otherEpisode1LongTitle, otherSection.Episodes.First().LongTitle);
             }
         }
+
+        [Theory]
+        [InlineData("md28222837", "深夜食堂 第三季", "电视剧", "av70710330", "av69501035")]
+        [InlineData("md28231812", "关于我转生变成史莱姆这档事 第二季", "番剧", "av373619156", "av755557176")]
+        [InlineData("md59632", "深夜食堂", "电影", "av14681109")]
+        public void BangumiTest(string mediaId, string title, string typeName, string firstEpisodeAid,
+            string firstExtraAid = null) {
+            var bangumi = new BilibiliBangumi {Id = mediaId};
+            bangumi.Fill();
+            Assert.Equal(title, bangumi.Title);
+            Assert.Equal(typeName, bangumi.Type);
+            Assert.Equal(firstEpisodeAid, bangumi.Aids.First());
+            if (firstExtraAid != null) {
+                Assert.Equal(firstExtraAid, bangumi.ExtraAids.First());
+            }
+        }
     }
 }

@@ -7,6 +7,6 @@ namespace Pimix.Apps.BiliUtil {
             PimixCommand.Run(
                 Parser.Default
                     .ParseArguments<GetChatCommand, RenameVideoCommand, LinkVideoCommand, DownloadVideoCommand,
-                        DownloadUploaderCommand, DownloadBangumiCommand, DownloadTvCommand, MergeCommand>, args);
+                        DownloadUploaderCommand, DownloadBangumiCommand, MergeCommand>, args);
     }
 }

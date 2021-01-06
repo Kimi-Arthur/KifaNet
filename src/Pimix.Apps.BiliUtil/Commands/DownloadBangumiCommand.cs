@@ -8,7 +8,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
     public class DownloadBangumiCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true, HelpText = "Bangumi ID.")]
+        [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]
         public string BangumiId { get; set; }
 
         [Option('s', "source", HelpText = "Override default source choice.")]
@@ -25,7 +25,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 });
                 var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
-                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder, $"{bangumi.Name}-{bangumi.Id}");
+                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder, $"{bangumi.Title}-{bangumi.Id}");
                 }
             }
 
