@@ -1,15 +1,14 @@
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Bilibili;
+using NLog;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("up", HelpText = "Download all high quality Bilibili videos for one uploader.")]
     public class DownloadUploaderCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true,
-            HelpText = "Uploader ID.")]
+        [Value(0, Required = true, HelpText = "Uploader ID.")]
         public string UploaderId { get; set; }
 
         [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
@@ -19,14 +18,8 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
         public override int Execute() {
-            BilibiliUploader.Client.Set(new BilibiliUploader {
-                Id = UploaderId
-            });
             var uploader = BilibiliUploader.Client.Get(UploaderId);
             foreach (var videoId in uploader.Aids.Distinct()) {
-                BilibiliVideo.Client.Set(new BilibiliVideo {
-                    Id = videoId
-                });
                 var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
                     video.DownloadPart(page.Id, SourceChoice, CurrentFolder, prefixDate: PrefixDate);
