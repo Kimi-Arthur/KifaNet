@@ -30,6 +30,13 @@ namespace KifaTest.Bilibili {
             Assert.Equal("Хоп", data.Pages[0].Part);
         }
 
+        [Fact]
+        public void BilibiliVideoTagRpcTest() {
+            var data = new VideoTagRpc().Call("av170001").Data;
+            Assert.Equal(5, data.Count);
+            Assert.Equal("保加利亚妖王", data[0].TagName);
+        }
+
         [Theory]
         [InlineData("av170001", "【MV】保加利亚妖王AZIS视频合辑", "2011-11-09 22:55:33.000000+08:00")]
         [InlineData("av1757900", "【李狗嗨】可爱的雅人叔", "2014-11-29 18:19:00.000000+08:00")]
