@@ -66,6 +66,10 @@ namespace Kifa.Bilibili {
 
         public static int DefaultBiliplusSourceChoice { get; set; }
 
+        public static int BlockSize { get; set; } = 32 << 20;
+
+        public static int ThreadCount { get; set; } = 1;
+
         public string Title { get; set; }
         public string Author { get; set; }
         public string AuthorId { get; set; }
@@ -363,7 +367,7 @@ namespace Kifa.Bilibili {
                     logger.Warn(ex, $"Download from {offset} to {offset + count} failed ({i})...");
                     Thread.Sleep(TimeSpan.FromSeconds(30));
                 });
-            });
+            }, BlockSize, ThreadCount);
         }
 
         static void AddDownloadJob(string aid) {
