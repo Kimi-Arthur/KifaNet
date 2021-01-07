@@ -138,8 +138,9 @@ namespace Kifa.Bilibili {
             Tags = tags.Select(t => t.TagName).ToList();
             Category = data.Tname;
             Cover = data.Pic;
-            Pages = data.Pages.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
-                .ToList();
+            Pages = data.Pages.Select(p => new BilibiliChat {
+                Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part, Duration = TimeSpan.FromSeconds(p.Duration)
+            }).ToList();
             Uploaded = DateTimeOffset.FromUnixTimeSeconds(data.Pubdate);
             Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
 
@@ -283,7 +284,6 @@ namespace Kifa.Bilibili {
 
         public (string extension, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
             int biliplusSourceChoice = 0) {
-
             firstDownload = false;
 
             var cid = Pages[pid - 1].Cid;
@@ -456,7 +456,8 @@ namespace Kifa.Bilibili {
                 bilibiliClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
                 bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
                 bilibiliClient.DefaultRequestHeaders.Referrer = new Uri("https://space.bilibili.com/");
-                bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+                bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
             }
 
             return bilibiliClient;
