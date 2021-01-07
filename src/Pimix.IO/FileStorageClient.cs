@@ -89,6 +89,8 @@ namespace Pimix.IO {
                     UseShellExecute = false
                 }
             };
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
             proc.Start();
             proc.WaitForExit();
             logger.Trace($"stdout: {proc.StandardOutput.ReadToEnd()}");

@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Kifa.Bilibili;
 using NLog;
 using Pimix.Api.Files;
-using Kifa.Bilibili;
 using Pimix.IO;
 
 namespace Pimix.Apps.BiliUtil {
@@ -75,28 +75,63 @@ namespace Pimix.Apps.BiliUtil {
 
 
         public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder,
-            string extraPath = null, bool prefixDate = false) {
+            string extraPath = null, bool prefixDate = false, string uploader = null, string uploaderId = null) {
+            uploader ??= video.Author;
+            uploaderId ??= video.AuthorId;
             var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
             if (extension == null) {
                 return;
             }
 
             if (extension != "mp4") {
-                var prefix = $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate)}";
+                var prefix =
+                    $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate, uploader: uploader, uploaderId: uploaderId)}";
+                var canonicalPrefix = video.GetCanonicalName(pid);
+                var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
                 var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
                 if (finalTargetFile.ExistsSomewhere()) {
                     logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                    if (!canonicalTargetFile.ExistsSomewhere()) {
+                        FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
+                        logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
+                    }
+
+                    return;
+                }
+
+                if (canonicalTargetFile.ExistsSomewhere()) {
+                    logger.Info($"{canonicalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                    if (!finalTargetFile.ExistsSomewhere()) {
+                        FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
+                        logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
+                    }
+
+                    return;
+                }
+
+                if (canonicalTargetFile.Exists()) {
+                    logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
+                    if (!finalTargetFile.Exists()) {
+                        canonicalTargetFile.Copy(finalTargetFile);
+                        logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
+                    }
+
                     return;
                 }
 
                 if (finalTargetFile.Exists()) {
                     logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
+                    if (!canonicalTargetFile.Exists()) {
+                        finalTargetFile.Copy(canonicalTargetFile);
+                        logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
+                    }
+
                     return;
                 }
 
                 List<PimixFile> partFiles = new List<PimixFile>();
                 for (int i = 0; i < streamGetters.Count; i++) {
-                    var targetFile = currentFolder.GetFile($"{prefix}-{i + 1}.{extension}");
+                    var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
                     try {
                         targetFile.WriteIfNotFinished(streamGetters[i]);
                     } catch (Exception e) {
@@ -108,8 +143,9 @@ namespace Pimix.Apps.BiliUtil {
                 }
 
                 try {
-                    MergePartFiles(partFiles, finalTargetFile);
+                    MergePartFiles(partFiles, canonicalTargetFile);
                     RemovePartFiles(partFiles);
+                    canonicalTargetFile.Copy(finalTargetFile);
                 } catch (Exception e) {
                     logger.Warn(e, $"Failed to merge files.");
                 }
