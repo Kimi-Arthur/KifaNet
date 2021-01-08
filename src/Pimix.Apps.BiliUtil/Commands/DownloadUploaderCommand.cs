@@ -14,6 +14,9 @@ namespace Pimix.Apps.BiliUtil.Commands {
         [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
         public bool PrefixDate { get; set; } = false;
 
+        [Option('a', "all-staff", HelpText = "Put video in all folders owned by any staff.")]
+        public bool AllStaff { get; set; } = false;
+
         [Option('s', "source", HelpText = "Override default source choice.")]
         public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
@@ -22,7 +25,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             foreach (var videoId in uploader.Aids.Distinct()) {
                 var video = BilibiliVideo.Client.Get(videoId);
                 foreach (var page in video.Pages) {
-                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder, prefixDate: PrefixDate);
+                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder, prefixDate: PrefixDate, uploader: uploader);
                 }
             }
 

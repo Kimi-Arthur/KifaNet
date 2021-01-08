@@ -268,12 +268,12 @@ namespace Kifa.Bilibili {
             if (cid != null && cid != p.Cid) {
                 return null;
             }
-            
+
             return $"$/{Id}p{pid}.c{p.Cid}";
         }
 
         public string GetDesiredName(int pid, string cid = null, string extraPath = null, bool prefixDate = false,
-            string uploader = null, string uploaderId = null) {
+            BilibiliUploader uploader = null) {
             var p = Pages.First(x => x.Id == pid);
 
             if (cid != null && cid != p.Cid) {
@@ -291,11 +291,10 @@ namespace Kifa.Bilibili {
             var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
             var pidText = $"P{pid.ToString("D" + Pages.Count.ToString().Length)}";
 
-            uploader ??= Author;
-            uploaderId ??= AuthorId;
+            uploader ??= new BilibiliUploader {Id = AuthorId, Name = Author};
 
-            return $"{$"{uploader}-{uploaderId}".NormalizeFileName()}" + (extraPath == null ? "" : $"/{extraPath}") +
-                   (Pages.Count > 1
+            return $"{$"{uploader.Name}-{uploader.Id}".NormalizeFileName()}" +
+                   (extraPath == null ? "" : $"/{extraPath}") + (Pages.Count > 1
                        ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
                        : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}");
         }
