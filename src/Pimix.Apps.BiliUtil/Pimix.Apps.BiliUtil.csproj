@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <ToolCommandName>bilix</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>6.0.4</Version>
+    <Version>6.0.5</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
     <PackageIcon>Pimix.png</PackageIcon>

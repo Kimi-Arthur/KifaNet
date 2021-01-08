@@ -78,15 +78,15 @@ namespace Pimix.Apps.BiliUtil {
             string extraPath = null, bool prefixDate = false, BilibiliUploader uploader = null) {
             uploader ??= new BilibiliUploader {Id = video.AuthorId, Name = video.Author};
 
-            var (extension, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
+            var (extension, quality, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
             if (extension == null) {
                 return;
             }
 
             if (extension != "mp4") {
                 var prefix =
-                    $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate, uploader: uploader)}";
-                var canonicalPrefix = video.GetCanonicalName(pid);
+                    $"{video.GetDesiredName(pid, quality, extraPath: extraPath, prefixDate: prefixDate, uploader: uploader)}";
+                var canonicalPrefix = video.GetCanonicalName(pid, quality);
                 var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
                 var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
                 if (finalTargetFile.ExistsSomewhere()) {
@@ -152,7 +152,7 @@ namespace Pimix.Apps.BiliUtil {
             } else {
                 var targetFile =
                     currentFolder.GetFile(
-                        $"{video.GetDesiredName(pid, extraPath: extraPath, prefixDate: prefixDate)}.{extension}");
+                        $"{video.GetDesiredName(pid, quality, extraPath: extraPath, prefixDate: prefixDate)}.{extension}");
                 try {
                     targetFile.WriteIfNotFinished(streamGetters.First());
                 } catch (Exception e) {

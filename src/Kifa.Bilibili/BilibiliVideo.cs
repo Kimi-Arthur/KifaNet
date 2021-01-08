@@ -262,17 +262,17 @@ namespace Kifa.Bilibili {
             return result;
         }
 
-        public string GetCanonicalName(int pid, string cid = null) {
+        public string GetCanonicalName(int pid, int quality, string cid = null) {
             var p = Pages.First(x => x.Id == pid);
 
             if (cid != null && cid != p.Cid) {
                 return null;
             }
 
-            return $"$/{Id}p{pid}.c{p.Cid}";
+            return $"$/{Id}p{pid}.c{p.Cid}.{quality}";
         }
 
-        public string GetDesiredName(int pid, string cid = null, string extraPath = null, bool prefixDate = false,
+        public string GetDesiredName(int pid, int quality, string cid = null, string extraPath = null, bool prefixDate = false,
             BilibiliUploader uploader = null) {
             var p = Pages.First(x => x.Id == pid);
 
@@ -295,11 +295,11 @@ namespace Kifa.Bilibili {
 
             return $"{$"{uploader.Name}-{uploader.Id}".NormalizeFileName()}" +
                    (extraPath == null ? "" : $"/{extraPath}") + (Pages.Count > 1
-                       ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}"
-                       : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}");
+                       ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}.{quality}"
+                       : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}.{quality}");
         }
 
-        public (string extension, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
+        public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
             int biliplusSourceChoice = 0) {
             firstDownload = false;
 
@@ -322,7 +322,7 @@ namespace Kifa.Bilibili {
 
                 if (choices == null) {
                     logger.Warn("No sources found. Job not successful?");
-                    return (null, null);
+                    return (null, -1, null);
                 }
 
                 var initialSource = biliplusSourceChoice;
@@ -331,7 +331,7 @@ namespace Kifa.Bilibili {
                         logger.Debug("Choosen source: " +
                                      $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                         var link = choices[biliplusSourceChoice].link;
-                        return ("mp4", new List<Func<Stream>> {() => BuildDownloadStream(link)});
+                        return ("mp4", -1, new List<Func<Stream>> {() => BuildDownloadStream(link)});
                     } catch (Exception ex) {
                         biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                         if (biliplusSourceChoice == initialSource) {
@@ -343,10 +343,10 @@ namespace Kifa.Bilibili {
                     }
                 }
             } else {
-                var (extension, links) = GetDownloadLinks(Id, cid);
+                var (extension, quality, links) = GetDownloadLinks(Id, cid);
                 return extension == null
-                    ? (null, null)
-                    : (extension, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
+                    ? (null, -1, null)
+                    : (extension, quality, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
             }
         }
 
@@ -418,7 +418,7 @@ namespace Kifa.Bilibili {
             }
         }
 
-        static (string extension, List<string> links) GetDownloadLinks(string aid, string cid) {
+        static (string extension, int quality, List<string> links) GetDownloadLinks(string aid, string cid) {
             var quality = 120;
             while (true) {
                 using var response = GetBilibiliClient()
@@ -434,9 +434,10 @@ namespace Kifa.Bilibili {
                     continue;
                 }
 
-                if ((int) data["data"]["quality"] != (int) data["data"]["accept_quality"][0]) {
+                var receivedQuality = (int) data["data"]["quality"];
+                if (receivedQuality != (int) data["data"]["accept_quality"][0]) {
                     quality = (int) data["data"]["accept_quality"][0];
-                    logger.Warn($"Quality mismatch: received quality {data["data"]["quality"]}, " +
+                    logger.Warn($"Quality mismatch: received quality {receivedQuality}, " +
                                 $"best quality {data["data"]["accept_quality"][0]}.");
                     Thread.Sleep(TimeSpan.FromSeconds(2));
                     continue;
@@ -446,7 +447,7 @@ namespace Kifa.Bilibili {
                 var extension = (string) urls[0]["url"];
                 extension = extension[..extension.IndexOf('?')];
                 extension = extension[(extension.LastIndexOf('.') + 1)..];
-                return (extension, urls.Select(x => (string) x["url"]).ToList());
+                return (extension, receivedQuality, urls.Select(x => (string) x["url"]).ToList());
             }
         }
 
