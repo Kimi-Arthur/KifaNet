@@ -75,7 +75,7 @@ namespace Pimix.Web.Api.Controllers {
 
         // Action [HttpAction("$refresh")]
         // TODO: Should use the attribute above.
-        public PimixActionResult Refresh(RefreshRequest request) =>
+        public virtual PimixActionResult Refresh(RefreshRequest request) =>
             RestActionResult.FromAction(() => Client.Refresh(request.Id));
     }
 

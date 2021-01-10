@@ -4,10 +4,11 @@ using System.Web;
 using Kifa.Cloud.GooglePhotos;
 using Kifa.Cloud.GooglePhotos.PhotosApi;
 using Microsoft.AspNetCore.Mvc;
+using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers.OAuth {
-    [Route("oauth/google")]
-    public class OAuthController : ControllerBase {
+    [Route("api/" + GoogleAccount.ModelId)]
+    public class OAuthController : KifaDataController<GoogleAccount, PimixServiceJsonClient<GoogleAccount>> {
         const string AuthUrlPattern =
             "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_url}&prompt=consent&access_type=offline&scope={scope}";
 
@@ -23,7 +24,7 @@ namespace Pimix.Web.Api.Controllers.OAuth {
 
         static readonly PimixServiceJsonClient<GoogleAccount> ServiceClient = new();
 
-        [HttpGet("add")]
+        [HttpGet("$add")]
         public RedirectResult AccountAdd() {
             var targetUrl = AuthUrlPattern.Format(new Dictionary<string, string> {
                 {"client_id", GoogleCloudConfigs.ClientId},
@@ -34,7 +35,7 @@ namespace Pimix.Web.Api.Controllers.OAuth {
             return Redirect(targetUrl);
         }
 
-        [HttpGet("redirect")]
+        [HttpGet("$redirect")]
         public ContentResult AccountRedirect([FromQuery] string code) {
             var tokenUrl = GetTokenUrlPattern.Format(new Dictionary<string, string> {
                 {"code", code},
@@ -59,9 +60,8 @@ namespace Pimix.Web.Api.Controllers.OAuth {
             return Content(account.ToString());
         }
 
-        [HttpGet("refresh")]
-        public ContentResult AccountRefresh([FromQuery] string id) {
-            var account = ServiceClient.Get(id);
+        public override PimixActionResult Refresh(RefreshRequest request) {
+            var account = ServiceClient.Get(request.Id);
             var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
                 {"client_id", GoogleCloudConfigs.ClientId},
                 {"client_secret", GoogleCloudConfigs.ClientSecret},
@@ -75,7 +75,7 @@ namespace Pimix.Web.Api.Controllers.OAuth {
             account.AccessToken = (string) response["access_token"];
 
             ServiceClient.Set(account);
-            return Content(account.ToString());
+            return new RestActionResult();
         }
     }
 }
