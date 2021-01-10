@@ -4,7 +4,7 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + SwisscomConfig.ModelId)]
-    public class SwisscomConfigController : PimixController<SwisscomConfig, SwisscomConfigJsonServiceClient> {
+    public class SwisscomConfigController : KifaDataController<SwisscomConfig, SwisscomConfigJsonServiceClient> {
         [HttpPost("$update_quota")]
         public PimixActionResult UpdateQuota(string id, string accountId = null) {
             var config = Client.Get(id);

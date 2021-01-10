@@ -4,7 +4,7 @@ using Pimix.Infos;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + Anime.ModelId)]
-    public class AnimesController : PimixController<Anime, AnimeJsonServiceClient> {
+    public class AnimesController : KifaDataController<Anime, AnimeJsonServiceClient> {
         [HttpGet("$format")]
         public PimixActionResult<string> Format(string id, int seasonId, int episodeId) =>
             Client.Format(id, seasonId, episodeId);

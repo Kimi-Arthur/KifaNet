@@ -3,6 +3,6 @@ using Kifa.Bilibili;
 
 namespace Pimix.Web.Api.Controllers.bilibili {
     [Route("api/" + BilibiliVideo.ModelId)]
-    public class BilibiliVideoController : PimixController<BilibiliVideo, PimixServiceJsonClient<BilibiliVideo>> {
+    public class BilibiliVideoController : KifaDataController<BilibiliVideo, PimixServiceJsonClient<BilibiliVideo>> {
     }
 }

@@ -7,7 +7,7 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     [ApiController]
-    public abstract class PimixController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
+    public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
         where TServiceClient : PimixServiceClient<TDataModel>, new() {
         protected readonly TServiceClient Client = new TServiceClient();
 
