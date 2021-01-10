@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Pimix.Web.Api {
     public static class ControllerExtensions {
         const string OriginalUriHeader = "X-Original-URI";
 
-        public static string ForAction(this ControllerBase controller, string action) {
-            var actionPath = controller.Url.Action(action);
+        public static string ForAction(this ControllerBase controller, string action,
+            RouteValueDictionary values = null) {
+            var actionPath = values == null ? controller.Url.Action(action) : controller.Url.Action(action, values);
             var originalPath = controller.Request.Path;
             var originalFullUrl =
                 controller.Request.Headers.GetValueOrDefault(OriginalUriHeader, controller.Request.GetDisplayUrl())[0];

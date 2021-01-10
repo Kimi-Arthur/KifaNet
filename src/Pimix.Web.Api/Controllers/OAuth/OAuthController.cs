@@ -4,13 +4,14 @@ using System.Web;
 using Kifa.Cloud.GooglePhotos;
 using Kifa.Cloud.GooglePhotos.PhotosApi;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers.OAuth {
     [Route("api/" + GoogleAccount.ModelId)]
     public class OAuthController : KifaDataController<GoogleAccount, PimixServiceJsonClient<GoogleAccount>> {
         const string AuthUrlPattern =
-            "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_url}&prompt=consent&access_type=offline&scope={scope}";
+            "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_url}&prompt=consent&access_type=offline&scope={scope}&state={state}";
 
         const string GetTokenUrlPattern =
             "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={code}&client_id={client_id}&client_secret={client_secret}&redirect_uri={redirect_url}";
@@ -24,19 +25,28 @@ namespace Pimix.Web.Api.Controllers.OAuth {
 
         static readonly PimixServiceJsonClient<GoogleAccount> ServiceClient = new();
 
-        [HttpGet("$add")]
-        public RedirectResult AccountAdd() {
+        public override ActionResult<GoogleAccount> Get(string id, bool refresh = false) {
+            var account = ServiceClient.Get(id);
+            if (account.UserName != null) {
+                return base.Get(id, refresh);
+            }
+
+            return AccountAdd(id);
+        }
+
+        public RedirectResult AccountAdd(string id) {
             var targetUrl = AuthUrlPattern.Format(new Dictionary<string, string> {
                 {"client_id", GoogleCloudConfigs.ClientId},
                 {"redirect_url", HttpUtility.UrlEncode(this.ForAction(nameof(AccountRedirect)))},
-                {"scope", HttpUtility.UrlEncode(GoogleCloudConfigs.Scope)}
+                {"scope", HttpUtility.UrlEncode(GoogleCloudConfigs.Scope)},
+                {"state", id}
             });
 
             return Redirect(targetUrl);
         }
 
         [HttpGet("$redirect")]
-        public ContentResult AccountRedirect([FromQuery] string code) {
+        public ActionResult<GoogleAccount> AccountRedirect([FromQuery] string code, [FromQuery] string state) {
             var tokenUrl = GetTokenUrlPattern.Format(new Dictionary<string, string> {
                 {"code", code},
                 {"client_id", GoogleCloudConfigs.ClientId},
@@ -46,6 +56,7 @@ namespace Pimix.Web.Api.Controllers.OAuth {
 
             var response = HttpClient.PostAsync(tokenUrl, null).Result.GetJToken();
             var account = new GoogleAccount {
+                Id = state,
                 AccessToken = (string) response["access_token"],
                 RefreshToken = (string) response["refresh_token"],
                 Scope = (string) response["scope"]
@@ -54,10 +65,10 @@ namespace Pimix.Web.Api.Controllers.OAuth {
             var userInfoUrl =
                 UserInfoUrlPattern.Format(new Dictionary<string, string> {{"access_token", account.AccessToken}});
             var info = HttpClient.GetAsync(userInfoUrl).Result.GetJToken();
-            account.Id = account.UserName = (string) info["email"];
+            account.UserName = (string) info["email"];
             account.UserId = (string) info["id"];
             ServiceClient.Set(account);
-            return Content(account.ToString());
+            return Redirect(this.ForAction(nameof(Get), new RouteValueDictionary {{"id", state}}));
         }
 
         public override PimixActionResult Refresh(RefreshRequest request) {
@@ -69,13 +80,8 @@ namespace Pimix.Web.Api.Controllers.OAuth {
             });
 
             var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
-
-
-            account.RefreshToken = (string) response["refresh_token"];
             account.AccessToken = (string) response["access_token"];
-
-            ServiceClient.Set(account);
-            return new RestActionResult();
+            return RestActionResult.FromAction(() => ServiceClient.Set(account));
         }
     }
 }

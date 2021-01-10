@@ -17,7 +17,7 @@ namespace Pimix.Web.Api.Controllers {
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
+        public virtual ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
             id = Uri.UnescapeDataString(id);
             if (id.StartsWith("$")) {
                 return new NotFoundResult();
