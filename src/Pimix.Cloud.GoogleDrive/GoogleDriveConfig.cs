@@ -10,8 +10,6 @@ namespace Pimix.Cloud.GoogleDrive {
 
         public static PimixServiceClient<GoogleDriveConfig> Client => client ??= new PimixServiceRestClient<GoogleDriveConfig>();
 
-        public Dictionary<string, AccountInfo> Accounts { get; set; }
-
         public string RootFolder { get; set; }
 
         public string ClientId { get; set; }
@@ -20,12 +18,6 @@ namespace Pimix.Cloud.GoogleDrive {
 
         [JsonProperty("apis")]
         public APIList APIList { get; set; }
-    }
-
-    public class AccountInfo {
-        public string AccessToken { get; set; }
-
-        public string RefreshToken { get; set; }
     }
 
     public class APIList {

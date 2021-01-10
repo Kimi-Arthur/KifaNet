@@ -5,4 +5,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kifa.Cloud.GooglePhotos\Kifa.Cloud.GooglePhotos.csproj" />
+  </ItemGroup>
 </Project>
