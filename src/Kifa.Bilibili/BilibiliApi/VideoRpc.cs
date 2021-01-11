@@ -26,6 +26,7 @@ namespace Kifa.Bilibili.BilibiliApi {
             public string Desc { get; set; }
             public long State { get; set; }
             public long Duration { get; set; }
+            public long MissionId { get; set; }
             public Dictionary<string, long> Rights { get; set; }
             public Owner Owner { get; set; }
             public Stat Stat { get; set; }
@@ -35,6 +36,7 @@ namespace Kifa.Bilibili.BilibiliApi {
             public bool NoCache { get; set; }
             public List<PageType> Pages { get; set; }
             public Subtitle Subtitle { get; set; }
+            public List<Staff> Staff { get; set; }
             public UserGarb UserGarb { get; set; }
         }
 
@@ -59,6 +61,34 @@ namespace Kifa.Bilibili.BilibiliApi {
             public string Vid { get; set; }
             public string Weblink { get; set; }
             public Dimension Dimension { get; set; }
+        }
+
+        public class Staff
+        {
+            public long Mid { get; set; }
+            public string Title { get; set; }
+            public string Name { get; set; }
+            public Uri Face { get; set; }
+            public Vip Vip { get; set; }
+            public Official Official { get; set; }
+            public long Follower { get; set; }
+            public long LabelStyle { get; set; }
+        }
+
+        public class Official
+        {
+            public long Role { get; set; }
+            public string Title { get; set; }
+            public string Desc { get; set; }
+            public long Type { get; set; }
+        }
+
+        public class Vip
+        {
+            public long Type { get; set; }
+            public long Status { get; set; }
+            public long VipPayType { get; set; }
+            public long ThemeType { get; set; }
         }
 
         public class Stat {

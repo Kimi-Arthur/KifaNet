@@ -46,3 +46,5 @@ HEAD http://upos-sz-mirrorkodo.bilivideo.com/upgcxcode/06/06/139020606/139020606
 Cookie: _ga=GA1.2.1685566566.1578336113; _gid=GA1.2.248265979.1578336113; access_key=41b429f175275ca540fe2672685c6011; expires=1580928370; face=http%3A%2F%2Fstatic.hdslb.com%2Fimages%2Fmember%2Fnoface.gif; level=4; login=2; mid=1283356; passlogin=1; refresh_token=df475d0b529f0f658aed74b97d525911; secure_header=access_key%2Cmid%2Clevel%2Csecurev2_time; securev2=83767d28; securev2_time=1578336373; uname=%E8%9B%AD%E9%AD%94%E6%9D%A5%E5%95%A6; vipDueDate=1580054400000; visiturl=%2Fvideo%2Fav30837009%2F; UsingLang=en; bp_user_id=eZ29-4SGtLx4omvymw27Gg; freetoview=3
 
 ###
+
+GET https://api.bilibili.com/x/web-interface/view?aid=628202375
