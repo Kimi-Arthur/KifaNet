@@ -231,6 +231,7 @@ namespace Pimix.Cloud.Swisscom {
             using var driver = new ChromeDriver(service, options);
             return Retry.Run(() => {
                 driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
+                driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]").Click();
                 driver.FindElementById("username").SendKeys(Username);
                 driver.FindElementById("continueButton").Click();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
