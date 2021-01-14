@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Newtonsoft.Json;
@@ -9,7 +10,10 @@ namespace Pimix.Web.Api.Controllers {
     [ApiController]
     public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
         where TServiceClient : PimixServiceClient<TDataModel>, new() {
-        protected readonly TServiceClient Client = new TServiceClient();
+        protected static readonly TimeSpan[] WeeklyIntervals = {TimeSpan.FromDays(1), TimeSpan.FromDays(10)};
+
+        protected readonly TServiceClient Client = new();
+        protected virtual IEnumerable<TimeSpan> RefreshIntervals => null;
 
         // GET api/values
         [HttpGet]
@@ -24,14 +28,37 @@ namespace Pimix.Web.Api.Controllers {
             }
 
             var value = Client.Get(id);
-            if (refresh || value.Id == null) {
+            if (refresh || value.Id == null || NeedRefresh(value)) {
                 value.Id ??= id;
-                value.Fill();
+                if (RefreshIntervals != null) {
+                    value.Metadata ??= new DataMetadata();
+                    value.Metadata.LastRefreshed = DateTimeOffset.Now;
+                    if (value.Fill() || value.Metadata.LastUpdated == null) {
+                        value.Metadata.LastUpdated = value.Metadata.LastRefreshed;
+                    }
+                } else {
+                    value.Fill();
+                }
 
                 Client.Set(value);
             }
 
             return value;
+        }
+
+        bool NeedRefresh(TDataModel value) {
+            if (RefreshIntervals == null) {
+                return false;
+            }
+
+            if (value.Metadata?.LastRefreshed == null) {
+                return true;
+            }
+
+            var stableDuration = value.Metadata.LastRefreshed - value.Metadata.LastUpdated;
+            var newDuration = DateTimeOffset.UtcNow - value.Metadata.LastRefreshed;
+
+            return RefreshIntervals.Reverse().FirstOrDefault(interval => interval < stableDuration) < newDuration;
         }
 
         // PATCH api/values/5

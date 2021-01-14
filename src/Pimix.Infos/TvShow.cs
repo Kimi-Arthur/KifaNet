@@ -40,7 +40,9 @@ namespace Pimix.Infos {
         public int? SeasonIdWidth { get; set; }
         public int? EpisodeIdWidth { get; set; }
 
-        public override void Fill() {
+        public override bool Fill() {
+            var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ?? 0 + Specials?.Count ?? 0;
+
             var tmdb = new TmdbClient();
             var series = tmdb.GetSeries(TmdbId, Language.Code);
             Title ??= Id;
@@ -77,6 +79,10 @@ namespace Pimix.Infos {
                     Specials = episodes;
                 }
             }
+
+            var newEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ?? 0 + Specials?.Count ?? 0;
+
+            return newEpisodeCount != oldEpisodeCount;
         }
 
         static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {

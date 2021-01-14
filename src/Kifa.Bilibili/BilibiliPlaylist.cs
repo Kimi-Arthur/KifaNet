@@ -17,12 +17,14 @@ namespace Kifa.Bilibili {
 
         public List<string> Videos { get; set; }
 
-        public override void Fill() {
+        public override bool Fill() {
             var data = new PlaylistRpc().Call(Id).Data;
             Title = data.Info.Title;
             Uploader = data.Info.Upper.Name;
             Videos = data.Medias.Select(m => $"av{m.Id}").ToList();
             Videos.Reverse();
+
+            return true;
         }
     }
 }

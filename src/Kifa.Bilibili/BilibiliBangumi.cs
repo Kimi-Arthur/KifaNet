@@ -18,7 +18,7 @@ namespace Kifa.Bilibili {
         public List<string> Aids { get; set; }
         public List<string> ExtraAids { get; set; }
 
-        public override void Fill() {
+        public override bool Fill() {
             var mediaData = new MediaRpc().Call(Id).Result;
             SeasonId = $"ss{mediaData.Media.SeasonId}";
             Title = mediaData.Media.Title;
@@ -26,6 +26,8 @@ namespace Kifa.Bilibili {
             var seasonData = new MediaSeasonRpc().Call(SeasonId).Result;
             Aids = seasonData.MainSection.Episodes.Select(e => $"av{e.Aid}").ToList();
             ExtraAids = seasonData.Section.SelectMany(s => s.Episodes.Select(e => $"av{e.Aid}")).ToList();
+
+            return true;
         }
     }
 }

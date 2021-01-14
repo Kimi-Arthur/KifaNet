@@ -102,10 +102,10 @@ namespace Kifa.Bilibili {
             }
         }
 
-        public override void Fill() {
+        public override bool Fill() {
             try {
                 if (FillWithBilibili()) {
-                    return;
+                    return true;
                 }
 
                 logger.Debug($"Unable to find video {Id} from bilibili API.");
@@ -115,7 +115,7 @@ namespace Kifa.Bilibili {
 
             try {
                 if (FillWithBiliplus()) {
-                    return;
+                    return true;
                 }
 
                 logger.Debug($"Unable to find video {Id} from biliplus API.");
@@ -130,6 +130,8 @@ namespace Kifa.Bilibili {
             } catch (Exception e) {
                 logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
             }
+
+            return true;
         }
 
         bool FillWithBilibili() {

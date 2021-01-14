@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -12,10 +13,20 @@ namespace Pimix.Service {
     public abstract class DataModel {
         public string Id { get; set; }
 
-        public virtual void Fill() {
-        }
+        [JsonProperty("$metadata")]
+        public DataMetadata Metadata { get; set; }
+
+        public virtual bool Fill() => false;
 
         public override string ToString() => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
+    }
+
+    public class DataMetadata {
+        public string Id { get; set; }
+        public List<string> Links { get; set; }
+
+        public DateTimeOffset? LastUpdated { get; set; }
+        public DateTimeOffset? LastRefreshed { get; set; }
     }
 
     public abstract class TranslatableDataModel<T> : DataModel where T : DataModel {
@@ -68,8 +79,7 @@ namespace Pimix.Service {
             }
 
             if (Data != null) {
-                request.Content =
-                    new ByteArrayContent(Encoding.UTF8.GetBytes(Data.Format(parameters)));
+                request.Content = new ByteArrayContent(Encoding.UTF8.GetBytes(Data.Format(parameters)));
 
                 foreach (var header in Headers.Where(h => h.Key.StartsWith("Content-"))) {
                     request.Content.Headers.Add(header.Key, header.Value.Format(parameters));

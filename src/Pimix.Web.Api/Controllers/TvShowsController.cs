@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,8 @@ using Pimix.Infos;
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + TvShow.ModelId)]
     public class TvShowsController : KifaDataController<TvShow, TvShowJsonServiceClient> {
+        protected override IEnumerable<TimeSpan> RefreshIntervals => WeeklyIntervals;
+
         [HttpGet("$format")]
         [HttpPost("$format")]
         public PimixActionResult<string> Format(string id, int seasonId, int? episodeId, string episodeIds) =>

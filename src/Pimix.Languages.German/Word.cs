@@ -123,8 +123,9 @@ namespace Pimix.Languages.German {
             return (wiki, enWiki, pons, duden);
         }
 
-        public override void Fill() {
+        public override bool Fill() {
             FillWithData(GetWords());
+            return false;
         }
 
         protected void FillWithData((Word wiki, Word enWiki, Word pons, Word duden) words) {
