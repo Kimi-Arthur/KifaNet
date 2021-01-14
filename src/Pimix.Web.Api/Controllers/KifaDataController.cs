@@ -10,11 +10,9 @@ namespace Pimix.Web.Api.Controllers {
     [ApiController]
     public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
         where TServiceClient : PimixServiceClient<TDataModel>, new() {
-        protected static readonly TimeSpan[] DailyIntervals = {TimeSpan.FromDays(3)};
-        protected static readonly TimeSpan[] WeekdailyIntervals = {TimeSpan.FromDays(5)};
-        protected static readonly TimeSpan[] WeeklyIntervals = {TimeSpan.FromDays(10)};
-        protected static readonly TimeSpan[] MonthlyIntervals = {TimeSpan.FromDays(40)};
-        protected static readonly TimeSpan[] YearlyIntervals = {TimeSpan.FromDays(400)};
+        protected static readonly TimeSpan[] DefaultIntervals = {
+            TimeSpan.FromDays(1), TimeSpan.FromDays(10), TimeSpan.FromDays(40), TimeSpan.FromDays(400)
+        };
 
         protected readonly TServiceClient Client = new();
         protected virtual IEnumerable<TimeSpan> RefreshIntervals => null;
