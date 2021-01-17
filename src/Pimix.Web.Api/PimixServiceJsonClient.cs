@@ -45,20 +45,14 @@ namespace Pimix.Web.Api {
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
 
         public override void Set(TDataModel data) {
-            Save(data);
+            Write(data);
         }
 
         public override void Update(TDataModel data) {
             var original = Get(data.Id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
 
-            Save(original);
-        }
-
-        void Save(TDataModel data) {
-            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{data.Id.Trim('/')}.json";
-            MakeParent(path);
-            File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
+            Write(original);
         }
 
         public override void Delete(string id) {
@@ -87,13 +81,14 @@ namespace Pimix.Web.Api {
                 return;
             }
 
-            Set(new TDataModel {Id = linkId, Metadata = new DataMetadata {Id = realTargetId}});
+            Write(new TDataModel {Id = linkId, Metadata = new DataMetadata {Id = realTargetId}});
+
             target.Metadata ??= new DataMetadata();
             target.Metadata.Links ??= new HashSet<string>();
             target.Metadata.Links.Add(linkId);
             target.Id = realTargetId;
             target.Metadata.Id = null;
-            Set(target);
+            Write(target);
         }
 
         public override void Refresh(string id) {
@@ -104,6 +99,12 @@ namespace Pimix.Web.Api {
 
         TDataModel Read(string id) {
             return JsonConvert.DeserializeObject<TDataModel>(ReadRaw(id), Defaults.JsonSerializerSettings);
+        }
+
+        void Write(TDataModel data) {
+            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{data.Id.Trim('/')}.json";
+            MakeParent(path);
+            File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
         }
 
         string ReadRaw(string id) {

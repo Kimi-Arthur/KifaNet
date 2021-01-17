@@ -2,12 +2,12 @@ GET {{server}}/api/files/%5E%2FData%2Fbotw%2Fmaterials%2Facorn.png.ok%7C%2FData%
 
 ###
 
-GET {{server}}/api/files/%2FData%2Fbotw%2Fmaterials%2Facorn.png.bad
+GET {{server}}/api/files/%2FData%2Fbotw%2Fmaterials%2Facorn.png
 
 ###
 
 PATCH {{server}}/api/files/%2FData%2Fbotw%2Fmaterials%2Facorn.png.bad
+Content-Type: text/json
 
 {
-"size":1
 }
