@@ -32,36 +32,32 @@ namespace Pimix.Service {
     public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
-        public override void Update(TDataModel data, string id = null) {
-            id ??= data.Id;
-
+        public override void Update(TDataModel data) {
             Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
+                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
                     };
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({id})"));
+            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({data.Id})"));
         }
 
-        public override void Set(TDataModel data, string id = null) {
-            id ??= data.Id;
-
+        public override void Set(TDataModel data) {
             Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}") {
+                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
                     };
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({id})"));
+            }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({data.Id})"));
         }
 
         public override SortedDictionary<string, TDataModel> List() =>

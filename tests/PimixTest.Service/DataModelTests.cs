@@ -63,8 +63,9 @@ namespace PimixTest.Service {
             Assert.Equal(1225, data.IntPROP);
             Assert.Equal("str prop value", data.StrProp);
             FakeDataModel.Client.Update(new FakeDataModel {
+                Id = "item0",
                 IntPROP = 19910123
-            }, "item0");
+            });
             FakeDataModel.Client.Update(new FakeDataModel {
                 StrProp = "new str",
                 Id = "item0"

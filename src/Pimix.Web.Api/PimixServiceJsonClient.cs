@@ -44,21 +44,19 @@ namespace Pimix.Web.Api {
 
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
 
-        public override void Set(TDataModel data, string id = null) {
-            id ??= data.Id;
-            Save(id, data);
+        public override void Set(TDataModel data) {
+            Save(data);
         }
 
-        public override void Update(TDataModel data, string id = null) {
-            id ??= data.Id;
-            var original = Get(id);
+        public override void Update(TDataModel data) {
+            var original = Get(data.Id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
 
-            Save(id, original);
+            Save(original);
         }
 
-        void Save(string id, TDataModel data) {
-            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
+        void Save(TDataModel data) {
+            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{data.Id.Trim('/')}.json";
             MakeParent(path);
             File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
         }
