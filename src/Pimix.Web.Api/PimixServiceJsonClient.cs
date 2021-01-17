@@ -44,40 +44,44 @@ namespace Pimix.Web.Api {
 
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
 
-        public override void Set(TDataModel data) {
-            data.Metadata ??= Get(data.Id).Metadata;
-            if (data.Metadata?.Id != null) {
-                // The data is linked.
-                data.Id = data.Metadata.Id;
-                data.Metadata.Id = null;
-            }
+        public override RestActionResult Set(TDataModel data) =>
+            RestActionResult.FromAction(() => {
+                data.Metadata ??= Get(data.Id).Metadata;
+                if (data.Metadata?.Id != null) {
+                    // The data is linked.
+                    data.Id = data.Metadata.Id;
+                    data.Metadata.Id = null;
+                }
 
-            Write(data);
-        }
+                Write(data);
+            });
 
-        public override void Update(TDataModel data) {
-            var original = Get(data.Id);
-            JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
-            if (data.Metadata?.Id != null) {
-                // The data is linked.
-                data.Id = data.Metadata.Id;
-                data.Metadata.Id = null;
-            }
+        public override RestActionResult Update(TDataModel data) =>
+            RestActionResult.FromAction(() => {
+                var original = Get(data.Id);
+                JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                    original);
+                if (data.Metadata?.Id != null) {
+                    // The data is linked.
+                    data.Id = data.Metadata.Id;
+                    data.Metadata.Id = null;
+                }
 
-            Write(data);
-        }
+                Write(data);
+            });
 
-        public override void Delete(string id) {
+        public override RestActionResult Delete(string id) {
             throw new NotImplementedException();
         }
 
-        public override void Link(string targetId, string linkId) {
+        public override RestActionResult Link(string targetId, string linkId) {
             var target = Get(targetId);
             var link = Get(linkId);
 
             if (target.Id == null) {
-                logger.Warn($"Target {targetId} doesn't exist.");
-                return;
+                return LogAndReturn(new RestActionResult {
+                    Status = RestActionStatus.BadRequest, Message = $"Target {targetId} doesn't exist."
+                });
             }
 
             var realTargetId = target.Metadata?.Id ?? target.Id;
@@ -85,12 +89,16 @@ namespace Pimix.Web.Api {
             if (link.Id != null) {
                 var realLinkId = link.Metadata?.Id ?? link.Id;
                 if (realLinkId == realTargetId) {
-                    logger.Info($"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId}).");
-                    return;
+                    return LogAndReturn(new RestActionResult {
+                        Status = RestActionStatus.BadRequest,
+                        Message = $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
+                    });
                 }
 
-                logger.Warn($"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated.");
-                return;
+                return LogAndReturn(new RestActionResult {
+                    Status = RestActionStatus.BadRequest,
+                    Message = $"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated."
+                });
             }
 
             Write(new TDataModel {Id = linkId, Metadata = new DataMetadata {Id = realTargetId}});
@@ -101,12 +109,13 @@ namespace Pimix.Web.Api {
             target.Id = realTargetId;
             target.Metadata.Id = null;
             Write(target);
+            return RestActionResult.SuccessResult;
         }
 
-        public override void Refresh(string id) {
+        public override RestActionResult Refresh(string id) {
             var value = Get(id);
             value.Fill();
-            Set(value);
+            return Set(value);
         }
 
         TDataModel Read(string id) {
@@ -124,39 +133,17 @@ namespace Pimix.Web.Api {
             return !File.Exists(path) ? "{}" : File.ReadAllText(path);
         }
 
-        void LoadGroups() {
-            Groups.Clear();
-
-            var groupsPath = $"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json";
-            if (!File.Exists(groupsPath)) {
-                return;
-            }
-
-            var rawGroups =
-                JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(File.ReadAllText(groupsPath));
-            foreach (var rawGroup in rawGroups) {
-                var group = rawGroup.Value;
-                group.Insert(0, rawGroup.Key);
-                foreach (var i in group) {
-                    Groups[i] = group;
-                }
-            }
+        static RestActionResult LogAndReturn(RestActionResult result) {
+            logger.Log(result.Status switch {
+                RestActionStatus.Error => LogLevel.Error,
+                RestActionStatus.BadRequest => LogLevel.Warn,
+                RestActionStatus.OK => LogLevel.Info,
+                _ => LogLevel.Info
+            }, result.Message);
+            return result;
         }
 
-        void SaveGroups() {
-            var data = new Dictionary<string, List<string>>();
-            foreach (var g in Groups) {
-                if (g.Key == g.Value.First()) {
-                    // TODO(C# 8): data[g.Key] = g.Value[1..^0];
-                    data[g.Key] = g.Value.Skip(1).ToList();
-                }
-            }
-
-            File.WriteAllText($"{PimixServiceJsonClient.DataFolder}/metadata/{modelId}/groups.json",
-                JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings));
-        }
-
-        void MakeParent(string path) {
+        static void MakeParent(string path) {
             Directory.CreateDirectory(path[..path.LastIndexOf('/')]);
         }
     }

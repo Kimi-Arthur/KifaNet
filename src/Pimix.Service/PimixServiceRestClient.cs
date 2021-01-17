@@ -32,8 +32,8 @@ namespace Pimix.Service {
     public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
-        public override void Update(TDataModel data) {
-            Retry.Run(() => {
+        public override RestActionResult Update(TDataModel data) =>
+            RestActionResult.FromAction(() => Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
@@ -43,11 +43,10 @@ namespace Pimix.Service {
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({data.Id})"));
-        }
+            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({data.Id})")));
 
-        public override void Set(TDataModel data) {
-            Retry.Run(() => {
+        public override RestActionResult Set(TDataModel data) =>
+            RestActionResult.FromAction(() => Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
                         $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
@@ -57,8 +56,7 @@ namespace Pimix.Service {
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({data.Id})"));
-        }
+            }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({data.Id})")));
 
         public override SortedDictionary<string, TDataModel> List() =>
             Retry.Run(() => {
@@ -89,26 +87,24 @@ namespace Pimix.Service {
                 }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({string.Join(", ", ids)})"))
                 : new List<TDataModel>();
 
-        public override void Link(string targetId, string linkId) {
-            Retry.Run(() => {
+        public override RestActionResult Link(string targetId, string linkId) =>
+            RestActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
                     $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/" +
                     $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})"));
-        }
+            }, (ex, i) => HandleException(ex, i, $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})")));
 
-        public override void Delete(string id) {
-            Retry.Run(() => {
+        public override RestActionResult Delete(string id) =>
+            RestActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Delete,
                     $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
                 using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})"));
-        }
+            }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})")));
 
         public void Call(string action, string id = null, Dictionary<string, object> parameters = null) =>
             Call<object>(action, id, parameters);
@@ -138,7 +134,7 @@ namespace Pimix.Service {
             }, (ex, i) => HandleException(ex, i, $"Failure in CALL {modelId}({id}).{action}({id})"));
         }
 
-        public override void Refresh(string id) => Call("refresh", id);
+        public override RestActionResult Refresh(string id) => RestActionResult.FromAction(() => Call("refresh", id));
 
         static void HandleException(Exception ex, int index, string message) {
             if (index >= 5 || ex is RestActionFailedException || ex is HttpRequestException &&

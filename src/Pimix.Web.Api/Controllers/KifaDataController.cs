@@ -69,8 +69,7 @@ namespace Pimix.Web.Api.Controllers {
         [HttpPatch("{id}")]
         public PimixActionResult Patch(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
-            Client.Update(value);
-            return RestActionResult.SuccessResult;
+            return Client.Update(value);
         }
 
         // POST api/values
@@ -78,21 +77,18 @@ namespace Pimix.Web.Api.Controllers {
         public PimixActionResult Post(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
-            Client.Set(value);
-            return RestActionResult.SuccessResult;
+            return Client.Set(value);
         }
 
         // POST api/values/^+<TARGET>|<LINK>
         // TODO: Change to ^{target}|{link}.
         [HttpGet("^+{target}|{link}")]
         public PimixActionResult Link(string target, string link) =>
-            RestActionResult.FromAction(() =>
-                Client.Link(Uri.UnescapeDataString(target), Uri.UnescapeDataString(link)));
+            Client.Link(Uri.UnescapeDataString(target), Uri.UnescapeDataString(link));
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public PimixActionResult Delete(string id) =>
-            RestActionResult.FromAction(() => Client.Delete(Uri.UnescapeDataString(id)));
+        public PimixActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
@@ -110,8 +106,7 @@ namespace Pimix.Web.Api.Controllers {
 
         // Action [HttpAction("$refresh")]
         // TODO: Should use the attribute above.
-        public virtual PimixActionResult Refresh(RefreshRequest request) =>
-            RestActionResult.FromAction(() => Client.Refresh(request.Id));
+        public virtual PimixActionResult Refresh(RefreshRequest request) => Client.Refresh(request.Id);
     }
 
     public class PimixActionResult : IConvertToActionResult {

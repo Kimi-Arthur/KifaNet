@@ -10,11 +10,11 @@ namespace Pimix.Service {
 
         TDataModel GetOr(string id, Func<string, TDataModel> defaultValue = null);
 
-        void Set(TDataModel data);
-        void Update(TDataModel data);
-        void Delete(string id);
-        void Link(string targetId, string linkId);
-        void Refresh(string id);
+        RestActionResult Set(TDataModel data);
+        RestActionResult Update(TDataModel data);
+        RestActionResult Delete(string id);
+        RestActionResult Link(string targetId, string linkId);
+        RestActionResult Refresh(string id);
     }
 
     public abstract class BasePimixServiceClient<TDataModel> : PimixServiceClient<TDataModel>
@@ -42,10 +42,10 @@ namespace Pimix.Service {
         }
 
         public abstract List<TDataModel> Get(List<string> ids);
-        public abstract void Set(TDataModel data);
-        public abstract void Update(TDataModel data);
-        public abstract void Delete(string id);
-        public abstract void Link(string targetId, string linkId);
-        public abstract void Refresh(string id);
+        public abstract RestActionResult Set(TDataModel data);
+        public abstract RestActionResult Update(TDataModel data);
+        public abstract RestActionResult Delete(string id);
+        public abstract RestActionResult Link(string targetId, string linkId);
+        public abstract RestActionResult Refresh(string id);
     }
 }
