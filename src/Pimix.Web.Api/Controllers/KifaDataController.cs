@@ -69,10 +69,7 @@ namespace Pimix.Web.Api.Controllers {
         [HttpPatch("{id}")]
         public PimixActionResult Patch(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
-            var data = Client.Get(value.Id);
-            JsonConvert.PopulateObject(JsonConvert.SerializeObject(value, Defaults.JsonSerializerSettings), data,
-                Defaults.JsonSerializerSettings);
-            Client.Set(data);
+            Client.Update(value);
             return RestActionResult.SuccessResult;
         }
 

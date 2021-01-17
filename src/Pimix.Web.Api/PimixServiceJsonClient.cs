@@ -45,14 +45,26 @@ namespace Pimix.Web.Api {
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
 
         public override void Set(TDataModel data) {
+            data.Metadata ??= Get(data.Id).Metadata;
+            if (data.Metadata?.Id != null) {
+                // The data is linked.
+                data.Id = data.Metadata.Id;
+                data.Metadata.Id = null;
+            }
+
             Write(data);
         }
 
         public override void Update(TDataModel data) {
             var original = Get(data.Id);
             JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
+            if (data.Metadata?.Id != null) {
+                // The data is linked.
+                data.Id = data.Metadata.Id;
+                data.Metadata.Id = null;
+            }
 
-            Write(original);
+            Write(data);
         }
 
         public override void Delete(string id) {
