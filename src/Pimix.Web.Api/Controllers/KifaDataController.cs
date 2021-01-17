@@ -39,7 +39,7 @@ namespace Pimix.Web.Api.Controllers {
                 var updated = value.Fill();
                 if (updated != null && ShouldAutoRefresh) {
                     value.Metadata ??= new DataMetadata();
-                    value.Metadata.LastRefreshed = DateTimeOffset.Now;
+                    value.Metadata.LastRefreshed = DateTimeOffset.UtcNow;
                     value.Metadata.LastUpdated ??= value.Metadata.LastRefreshed;
                 }
 
