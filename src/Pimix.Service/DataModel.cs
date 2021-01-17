@@ -25,11 +25,11 @@ namespace Pimix.Service {
         public string Id { get; set; }
 
         // If this one is the source, this field will be populated with all other instances with the data.
-        public List<string> Links { get; set; }
+        public HashSet<string> Links { get; set; }
 
         // If this one is the source, this field will be populated with all other instances that can be automatically
         // generated.
-        public List<string> VirtualLinks { get; set; }
+        public HashSet<string> VirtualLinks { get; set; }
 
         public DateTimeOffset? LastUpdated { get; set; }
         public DateTimeOffset? LastRefreshed { get; set; }

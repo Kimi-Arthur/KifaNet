@@ -85,6 +85,12 @@ namespace Pimix.Web.Api.Controllers {
             return RestActionResult.SuccessResult;
         }
 
+        // POST api/values/^<TARGET>|<LINK>
+        [HttpGet("^{target}|{link}")]
+        public PimixActionResult Link(string target, string link) =>
+            RestActionResult.FromAction(() =>
+                Client.Link(Uri.UnescapeDataString(target), Uri.UnescapeDataString(link)));
+
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public PimixActionResult Delete(string id) =>

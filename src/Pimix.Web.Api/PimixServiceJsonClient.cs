@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using NLog;
 using Pimix.Service;
 
 namespace Pimix.Web.Api {
@@ -10,8 +11,11 @@ namespace Pimix.Web.Api {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
-        Dictionary<string, List<string>> Groups { get; } = new Dictionary<string, List<string>>();
+    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel>
+        where TDataModel : DataModel, new() {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
+        Dictionary<string, List<string>> Groups { get; } = new();
 
         public override SortedDictionary<string, TDataModel> List() {
             var prefix = $"{PimixServiceJsonClient.DataFolder}/{modelId}";
@@ -28,16 +32,14 @@ namespace Pimix.Web.Api {
         }
 
         public override TDataModel Get(string id) {
-            LoadGroups();
-
-            if (Groups.ContainsKey(id)) {
-                var obj = JsonConvert.DeserializeObject<TDataModel>(Read(Groups[id].First()),
-                    Defaults.JsonSerializerSettings);
-                JsonConvert.PopulateObject(Read(id), obj);
-                return obj;
+            var data = Read(id);
+            if (data.Metadata?.Id != null) {
+                data = Read(data.Metadata.Id);
+                data.Metadata.Id = data.Id;
+                data.Id = id;
             }
 
-            return JsonConvert.DeserializeObject<TDataModel>(Read(id), Defaults.JsonSerializerSettings);
+            return data;
         }
 
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
@@ -66,7 +68,34 @@ namespace Pimix.Web.Api {
         }
 
         public override void Link(string targetId, string linkId) {
-            throw new NotImplementedException();
+            var target = Get(targetId);
+            var link = Get(linkId);
+
+            if (target.Id == null) {
+                logger.Warn($"Target {targetId} doesn't exist.");
+                return;
+            }
+
+            var realTargetId = target.Metadata?.Id ?? target.Id;
+
+            if (link.Id != null) {
+                var realLinkId = link.Metadata?.Id ?? link.Id;
+                if (realLinkId == realTargetId) {
+                    logger.Info($"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId}).");
+                    return;
+                }
+
+                logger.Warn($"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated.");
+                return;
+            }
+
+            Set(new TDataModel {Id = linkId, Metadata = new DataMetadata {Id = realTargetId}});
+            target.Metadata ??= new DataMetadata();
+            target.Metadata.Links ??= new HashSet<string>();
+            target.Metadata.Links.Add(linkId);
+            target.Id = realTargetId;
+            target.Metadata.Id = null;
+            Set(target);
         }
 
         public override void Refresh(string id) {
@@ -75,7 +104,11 @@ namespace Pimix.Web.Api {
             Set(value);
         }
 
-        string Read(string id) {
+        TDataModel Read(string id) {
+            return JsonConvert.DeserializeObject<TDataModel>(ReadRaw(id), Defaults.JsonSerializerSettings);
+        }
+
+        string ReadRaw(string id) {
             var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
             return !File.Exists(path) ? "{}" : File.ReadAllText(path);
         }
