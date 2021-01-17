@@ -15,7 +15,7 @@ namespace Kifa.Bilibili {
         public string Name { get; set; }
         public List<string> Aids { get; set; } = new List<string>();
 
-        public override bool Fill() {
+        public override bool? Fill() {
             var info = new UploaderInfoRpc().Call(Id).Data;
             Name = info.Name;
             var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => v.Aid).ToHashSet();

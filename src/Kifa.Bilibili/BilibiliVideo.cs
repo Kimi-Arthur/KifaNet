@@ -102,7 +102,7 @@ namespace Kifa.Bilibili {
             }
         }
 
-        public override bool Fill() {
+        public override bool? Fill() {
             try {
                 if (FillWithBilibili()) {
                     return true;

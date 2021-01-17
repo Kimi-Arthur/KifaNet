@@ -7,8 +7,6 @@ using Pimix.Infos;
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + TvShow.ModelId)]
     public class TvShowsController : KifaDataController<TvShow, TvShowJsonServiceClient> {
-        protected override IEnumerable<TimeSpan> RefreshIntervals => DefaultIntervals;
-
         [HttpGet("$format")]
         [HttpPost("$format")]
         public PimixActionResult<string> Format(string id, int seasonId, int? episodeId, string episodeIds) =>

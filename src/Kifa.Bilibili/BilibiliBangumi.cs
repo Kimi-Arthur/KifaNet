@@ -18,7 +18,7 @@ namespace Kifa.Bilibili {
         public List<string> Aids { get; set; }
         public List<string> ExtraAids { get; set; }
 
-        public override bool Fill() {
+        public override bool? Fill() {
             var mediaData = new MediaRpc().Call(Id).Result;
             SeasonId = $"ss{mediaData.Media.SeasonId}";
             Title = mediaData.Media.Title;

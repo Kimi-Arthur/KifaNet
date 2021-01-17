@@ -17,7 +17,7 @@ namespace Kifa.Bilibili {
 
         public List<string> Videos { get; set; }
 
-        public override bool Fill() {
+        public override bool? Fill() {
             var data = new PlaylistRpc().Call(Id).Data;
             Title = data.Info.Title;
             Uploader = data.Info.Upper.Name;

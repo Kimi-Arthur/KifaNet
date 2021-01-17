@@ -16,7 +16,7 @@ namespace Pimix.Service {
         [JsonProperty("$metadata")]
         public DataMetadata Metadata { get; set; }
 
-        public virtual bool Fill() => false;
+        public virtual bool? Fill() => null;
 
         public override string ToString() => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
     }

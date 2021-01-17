@@ -1,4 +1,4 @@
-POST {{server}}/api/bilibili/uploaders/353240497
+GET {{server}}/api/bilibili/uploaders/43536
 Accept: application/x-yaml
 
 ### Bangumi

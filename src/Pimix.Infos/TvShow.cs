@@ -40,7 +40,7 @@ namespace Pimix.Infos {
         public int? SeasonIdWidth { get; set; }
         public int? EpisodeIdWidth { get; set; }
 
-        public override bool Fill() {
+        public override bool? Fill() {
             var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ?? 0 + Specials?.Count ?? 0;
 
             var tmdb = new TmdbClient();

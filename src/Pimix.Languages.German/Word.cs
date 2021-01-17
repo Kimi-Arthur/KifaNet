@@ -123,7 +123,7 @@ namespace Pimix.Languages.German {
             return (wiki, enWiki, pons, duden);
         }
 
-        public override bool Fill() {
+        public override bool? Fill() {
             FillWithData(GetWords());
             return false;
         }

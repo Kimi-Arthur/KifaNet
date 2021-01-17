@@ -10,12 +10,16 @@ namespace Pimix.Web.Api.Controllers {
     [ApiController]
     public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
         where TServiceClient : PimixServiceClient<TDataModel>, new() {
-        protected static readonly TimeSpan[] DefaultIntervals = {
+        static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
+
+        static readonly TimeSpan[] RefreshIntervals = {
             TimeSpan.FromDays(1), TimeSpan.FromDays(10), TimeSpan.FromDays(40), TimeSpan.FromDays(400)
         };
 
         protected readonly TServiceClient Client = new();
-        protected virtual IEnumerable<TimeSpan> RefreshIntervals => null;
+
+        // Only need to override this if the DataModel can be fill()ed but should not be.
+        protected virtual bool ShouldAutoRefresh => true;
 
         // GET api/values
         [HttpGet]
@@ -32,14 +36,11 @@ namespace Pimix.Web.Api.Controllers {
             var value = Client.Get(id);
             if (refresh || value.Id == null || NeedRefresh(value)) {
                 value.Id ??= id;
-                if (RefreshIntervals != null) {
+                var updated = value.Fill();
+                if (updated != null && ShouldAutoRefresh) {
                     value.Metadata ??= new DataMetadata();
                     value.Metadata.LastRefreshed = DateTimeOffset.Now;
-                    if (value.Fill() || value.Metadata.LastUpdated == null) {
-                        value.Metadata.LastUpdated = value.Metadata.LastRefreshed;
-                    }
-                } else {
-                    value.Fill();
+                    value.Metadata.LastUpdated ??= value.Metadata.LastRefreshed;
                 }
 
                 Client.Set(value);
@@ -48,7 +49,7 @@ namespace Pimix.Web.Api.Controllers {
             return value;
         }
 
-        bool NeedRefresh(TDataModel value) {
+        static bool NeedRefresh(TDataModel value) {
             if (RefreshIntervals == null) {
                 return false;
             }
@@ -60,7 +61,8 @@ namespace Pimix.Web.Api.Controllers {
             var stableDuration = value.Metadata.LastRefreshed - value.Metadata.LastUpdated;
             var newDuration = DateTimeOffset.UtcNow - value.Metadata.LastRefreshed;
 
-            return RefreshIntervals.Reverse().FirstOrDefault(interval => interval < stableDuration) < newDuration;
+            return RefreshIntervals.Reverse().FirstOrDefault(interval => interval < stableDuration)
+                .Or(MinRefreshInterval) < newDuration;
         }
 
         // PATCH api/values/5
