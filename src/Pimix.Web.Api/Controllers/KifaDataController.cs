@@ -85,8 +85,9 @@ namespace Pimix.Web.Api.Controllers {
             return RestActionResult.SuccessResult;
         }
 
-        // POST api/values/^<TARGET>|<LINK>
-        [HttpGet("^{target}|{link}")]
+        // POST api/values/^+<TARGET>|<LINK>
+        // TODO: Change to ^{target}|{link}.
+        [HttpGet("^+{target}|{link}")]
         public PimixActionResult Link(string target, string link) =>
             RestActionResult.FromAction(() =>
                 Client.Link(Uri.UnescapeDataString(target), Uri.UnescapeDataString(link)));
