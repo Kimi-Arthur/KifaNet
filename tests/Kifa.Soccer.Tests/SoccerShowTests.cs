@@ -1,9 +1,7 @@
-using System;
-using Kifa.Soccer;
 using Pimix;
 using Xunit;
 
-namespace KifaTest.Soccer {
+namespace Kifa.Soccer.Tests {
     public class SoccerShowTests {
         [Fact]
         public void ToStringTest() {

@@ -93,7 +93,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.DataUtil", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Soccer", "src\Kifa.Soccer\Kifa.Soccer.csproj", "{701711A9-90DE-4A30-B79C-88288D4E029C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KifaTest.Soccer", "tests\KifaTest.Soccer\KifaTest.Soccer.csproj", "{8FE6DC51-6C93-4CE2-A035-B83179E9057A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Soccer.Tests", "tests\Kifa.Soccer.Tests\Kifa.Soccer.Tests.csproj", "{8FE6DC51-6C93-4CE2-A035-B83179E9057A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Azure", "src\Pimix.Azure\Pimix.Azure.csproj", "{1A84B94B-B06C-4357-AD8A-23F8608B2423}"
 EndProject
