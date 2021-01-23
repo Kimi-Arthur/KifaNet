@@ -14,11 +14,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.GooglePhotos\Kifa.Cloud.GooglePhotos.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
-    <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
     <ProjectReference Include="..\Pimix.Azure\Pimix.Azure.csproj" />
     <ProjectReference Include="..\Pimix.Games.BreathOfTheWild\Pimix.Games.BreathOfTheWild.csproj" />
     <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />

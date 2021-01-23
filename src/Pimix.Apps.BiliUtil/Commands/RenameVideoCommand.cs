@@ -1,6 +1,6 @@
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Kifa.Bilibili;
 
 namespace Pimix.Apps.BiliUtil.Commands {
@@ -12,7 +12,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var target = new PimixFile(FileUri);
+            var target = new KifaFile(FileUri);
 
             var ids = Helper.GetIds(target.BaseName);
 
@@ -28,7 +28,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
                 return 1;
             }
 
-            var newTarget = new PimixFile(FileUri) {
+            var newTarget = new KifaFile(FileUri) {
                 BaseName = Confirm($"Confirm renaming\n{target.BaseName}\nto\n", newName)
             };
             logger.Info($"Renaming {target} to {newTarget}");

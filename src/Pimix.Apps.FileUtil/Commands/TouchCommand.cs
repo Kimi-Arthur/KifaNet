@@ -2,7 +2,7 @@
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -14,7 +14,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var target = new PimixFile(FileUri);
+            var target = new KifaFile(FileUri);
             if (target.Client == null) {
                 Console.WriteLine($"Target {FileUri} not accessible. Wrong server?");
                 return 1;
@@ -29,13 +29,13 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.Write($"Confirm touching the {files.Count} files above?");
                 Console.ReadLine();
 
-                return files.Select(f => TouchFile(new PimixFile(target.Host + f))).Max();
+                return files.Select(f => TouchFile(new KifaFile(target.Host + f))).Max();
             }
 
             return TouchFile(target);
         }
 
-        int TouchFile(PimixFile target) {
+        int TouchFile(KifaFile target) {
             if (target.Exists()) {
                 logger.Info($"{target} already exists!");
                 return 0;

@@ -1,7 +1,7 @@
 ﻿using System;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -26,11 +26,11 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return LinkFile(Target.TrimEnd('/'), LinkName.TrimEnd('/'));
             }
 
-            LinkLocalFile(new PimixFile(Target), new PimixFile(LinkName));
+            LinkLocalFile(new KifaFile(Target), new KifaFile(LinkName));
             return 0;
         }
 
-        static void LinkLocalFile(PimixFile file1, PimixFile file2) {
+        static void LinkLocalFile(KifaFile file1, KifaFile file2) {
             LinkFile(file1.Id, file2.Id);
             file1.Copy(file2);
             file2.Add();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("clean", HelpText = "Clean file entries.")]
@@ -21,7 +21,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         void RemoveMissingFiles() {
-            var (_, files) = PimixFile.ExpandLogicalFiles(FileNames, fullFile: true);
+            var (_, files) = KifaFile.ExpandLogicalFiles(FileNames, fullFile: true);
             var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
             if (filesToRemove.Count == 0) {
@@ -43,7 +43,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         }
 
         void DeduplicateFiles() {
-            var (_, files) = PimixFile.ExpandFiles(FileNames, fullFile: true);
+            var (_, files) = KifaFile.ExpandFiles(FileNames, fullFile: true);
             foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Sha256}")) {
                 var target = sameFiles.First();
                 foreach (var file in sameFiles.Skip(1)) {

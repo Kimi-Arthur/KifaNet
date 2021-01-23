@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
+using Kifa.Api.Files;
 using NLog;
-using Pimix.Api.Files;
 using Pimix.Languages.German;
 
 namespace Pimix.Apps.NoteUtil.Commands {
@@ -16,7 +16,7 @@ namespace Pimix.Apps.NoteUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var noteFile = new PimixFile(FileUri, simpleMode: true);
+            var noteFile = new KifaFile(FileUri, simpleMode: true);
             using var sr = new StreamReader(noteFile.OpenRead());
             var state = ParsingState.New;
             var lines = new List<string>();

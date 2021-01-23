@@ -1,6 +1,6 @@
 ﻿using System;
 using CommandLine;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
@@ -22,7 +22,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             return 0;
         }
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             counter++;
             Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.ToString());
             return 0;

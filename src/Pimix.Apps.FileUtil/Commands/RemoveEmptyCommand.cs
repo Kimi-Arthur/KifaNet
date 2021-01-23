@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 
 namespace Pimix.Apps.FileUtil.Commands {
     [Verb("rm-empty", HelpText = "Remove empty folders recursively.")]

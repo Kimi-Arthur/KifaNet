@@ -1,35 +1,35 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
+using Pimix;
 using Pimix.Cloud.BaiduCloud;
 using Pimix.Cloud.GoogleDrive;
 using Pimix.Cloud.MegaNz;
 using Pimix.Cloud.Swisscom;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
-using Kifa.Service;
 
-namespace Pimix.Api.Files {
-    public class PimixFile : IComparable<PimixFile>, IEquatable<PimixFile> {
+namespace Kifa.Api.Files {
+    public class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static Regex subPathIgnoredFiles;
 
         static Regex fullPathIgnoredFiles;
 
-        static readonly Dictionary<string, StorageClient> knownClients = new Dictionary<string, StorageClient>();
+        static readonly System.Collections.Generic.Dictionary<string, StorageClient> knownClients = new();
 
         FileInformation fileInfo;
 
         public bool SimpleMode { get; set; }
 
-        public PimixFile(string uri = null, string id = null, FileInformation fileInfo = null, bool simpleMode = false,
+        public KifaFile(string uri = null, string id = null, FileInformation fileInfo = null, bool simpleMode = false,
             bool useCache = false) {
             SimpleMode = simpleMode;
             if (uri == null) {
@@ -107,9 +107,9 @@ namespace Pimix.Api.Files {
         // Ends with a slash.
         string ParentPath { get; }
 
-        public PimixFile Parent => new PimixFile($"{Host}{ParentPath}");
+        public KifaFile Parent => new KifaFile($"{Host}{ParentPath}");
 
-        public PimixFile LocalCacheFile => new PimixFile($"{CacheLocation}{Id}");
+        public KifaFile LocalCacheFile => new KifaFile($"{CacheLocation}{Id}");
 
         public string BaseName { get; set; }
 
@@ -134,7 +134,7 @@ namespace Pimix.Api.Files {
             (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
              Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
 
-        public int CompareTo(PimixFile other) {
+        public int CompareTo(KifaFile other) {
             if (ReferenceEquals(this, other)) {
                 return 0;
             }
@@ -146,7 +146,7 @@ namespace Pimix.Api.Files {
             return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
         }
 
-        public bool Equals(PimixFile other) {
+        public bool Equals(KifaFile other) {
             if (ReferenceEquals(null, other)) {
                 return false;
             }
@@ -165,7 +165,7 @@ namespace Pimix.Api.Files {
             if (info.Locations != null) {
                 foreach (var location in info.Locations) {
                     if (location.Value != null) {
-                        var file = new PimixFile(location.Key, fileInfo: info);
+                        var file = new KifaFile(location.Key, fileInfo: info);
                         if (file.Client is FileStorageClient && file.Exists()) {
                             return location.Key;
                         }
@@ -209,7 +209,7 @@ namespace Pimix.Api.Files {
 
             foreach (var p in FileStorageClient.ServerConfigs.Keys) {
                 var location = $"local:{p}{id}";
-                var score = new PimixFile(location).Length();
+                var score = new KifaFile(location).Length();
                 if (score > bestScore) {
                     bestScore = score;
                     candidate = location;
@@ -219,12 +219,12 @@ namespace Pimix.Api.Files {
             return candidate;
         }
 
-        public PimixFile GetFile(string name) => new PimixFile($"{Host}{Path}/{name}");
+        public KifaFile GetFile(string name) => new KifaFile($"{Host}{Path}/{name}");
 
-        public PimixFile GetFileSuffixed(string suffix) => new PimixFile($"{Host}{Path}{suffix}");
+        public KifaFile GetFileSuffixed(string suffix) => new KifaFile($"{Host}{Path}{suffix}");
 
-        public PimixFile GetFilePrefixed(string prefix) =>
-            prefix == null ? this : new PimixFile($"{Host}{prefix}{Path}");
+        public KifaFile GetFilePrefixed(string prefix) =>
+            prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
 
         public override string ToString() => $"{Host}{Path}";
 
@@ -245,21 +245,23 @@ namespace Pimix.Api.Files {
 
         public void Touch() => Client.Touch(Path);
 
-        public IEnumerable<PimixFile> List(bool recursive = false, bool ignoreFiles = true, string pattern = "*") =>
+        public System.Collections.Generic.IEnumerable<KifaFile>
+            List(bool recursive = false, bool ignoreFiles = true, string pattern = "*") =>
             Exists()
                 ? Enumerable.Repeat(this, 1)
                 : Client.List(Path, recursive)
                     .Where(f => IsMatch(f.Id, pattern) && (!ignoreFiles ||
                                                            !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
                                                            !FullPathIgnoredFiles.IsMatch(f.Id))).Select(info =>
-                        new PimixFile(Host + info.Id, fileInfo: info));
+                        new KifaFile(Host + info.Id, fileInfo: info));
 
-        public static (bool isMultiple, List<PimixFile> files) ExpandFiles(IEnumerable<string> sources,
-            string prefix = null, bool recursive = true, bool fullFile = false) {
+        public static (bool isMultiple, System.Collections.Generic.List<KifaFile> files) ExpandFiles(
+            System.Collections.Generic.IEnumerable<string> sources, string prefix = null, bool recursive = true,
+            bool fullFile = false) {
             var multi = 0;
-            var files = new List<(string sortKey, PimixFile value)>();
+            var files = new System.Collections.Generic.List<(string sortKey, KifaFile value)>();
             foreach (var fileName in sources) {
-                var fileInfo = new PimixFile(fileName);
+                var fileInfo = new KifaFile(fileName);
                 if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
                     fileInfo = fileInfo.GetFilePrefixed(prefix);
                 }
@@ -281,15 +283,16 @@ namespace Pimix.Api.Files {
 
             files.Sort();
 
-            return (multi > 1, files.Select(f => fullFile ? new PimixFile(f.value.ToString()) : f.value).ToList());
+            return (multi > 1, files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
         }
 
-        public static (bool isMultiple, List<PimixFile> files) ExpandLogicalFiles(IEnumerable<string> sources,
-            string prefix = null, bool recursive = true, bool fullFile = false) {
+        public static (bool isMultiple, System.Collections.Generic.List<KifaFile> files) ExpandLogicalFiles(
+            System.Collections.Generic.IEnumerable<string> sources, string prefix = null, bool recursive = true,
+            bool fullFile = false) {
             var multi = 0;
-            var files = new List<(string sortKey, PimixFile value)>();
+            var files = new System.Collections.Generic.List<(string sortKey, KifaFile value)>();
             foreach (var fileName in sources) {
-                var fileInfo = new PimixFile(fileName);
+                var fileInfo = new KifaFile(fileName);
                 if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
                     fileInfo = fileInfo.GetFilePrefixed(prefix);
                 }
@@ -300,16 +303,16 @@ namespace Pimix.Api.Files {
                 var thisFolder = FileInformation.Client.ListFolder(path, recursive);
                 if (thisFolder.Count > 0) {
                     multi = 2;
-                    files.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), new PimixFile(host + f))));
+                    files.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), new KifaFile(host + f))));
                 } else {
                     multi++;
-                    files.Add((fileInfo.ToString().GetNaturalSortKey(), new PimixFile(host + path)));
+                    files.Add((fileInfo.ToString().GetNaturalSortKey(), new KifaFile(host + path)));
                 }
             }
 
             files.Sort();
 
-            return (multi > 1, files.Select(f => fullFile ? new PimixFile(f.value.ToString()) : f.value).ToList());
+            return (multi > 1, files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
         }
 
         static bool IsMatch(string path, string pattern) {
@@ -329,7 +332,7 @@ namespace Pimix.Api.Files {
         }
 
 
-        public void Copy(PimixFile destination, bool neverLink = false) {
+        public void Copy(KifaFile destination, bool neverLink = false) {
             if (UseCache) {
                 CacheFileToLocal();
                 LocalCacheFile.Copy(destination, neverLink);
@@ -343,7 +346,7 @@ namespace Pimix.Api.Files {
             }
         }
 
-        public void Move(PimixFile destination) {
+        public void Move(KifaFile destination) {
             if (UseCache) {
                 CacheFileToLocal();
                 LocalCacheFile.Move(destination);
@@ -485,7 +488,7 @@ namespace Pimix.Api.Files {
             fileInfo = null;
         }
 
-        public bool IsCompatible(PimixFile other) => Host == other.Host && FileFormat == other.FileFormat;
+        public bool IsCompatible(KifaFile other) => Host == other.Host && FileFormat == other.FileFormat;
 
         static StorageClient GetClient(string spec) {
             if (knownClients.ContainsKey(spec)) {
@@ -532,7 +535,7 @@ namespace Pimix.Api.Files {
                 return true;
             }
 
-            return obj.GetType() == GetType() && Equals((PimixFile) obj);
+            return obj.GetType() == GetType() && Equals((KifaFile) obj);
         }
 
         public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;

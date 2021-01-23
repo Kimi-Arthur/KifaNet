@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Kifa.Bilibili;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.BiliUtil {
@@ -36,7 +36,7 @@ namespace Pimix.Apps.BiliUtil {
                 : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
         }
 
-        public static void WriteIfNotFinished(this PimixFile file, Func<Stream> getStream) {
+        public static void WriteIfNotFinished(this KifaFile file, Func<Stream> getStream) {
             if (file.ExistsSomewhere()) {
                 logger.Info($"{file.FileInfo.Id} already exists in the system. Skipped.");
                 return;
@@ -74,7 +74,7 @@ namespace Pimix.Apps.BiliUtil {
         }
 
 
-        public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, PimixFile currentFolder,
+        public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
             string extraPath = null, bool prefixDate = false, BilibiliUploader uploader = null) {
             uploader ??= new BilibiliUploader {Id = video.AuthorId, Name = video.Author};
 
@@ -129,7 +129,7 @@ namespace Pimix.Apps.BiliUtil {
                     return;
                 }
 
-                List<PimixFile> partFiles = new List<PimixFile>();
+                List<KifaFile> partFiles = new List<KifaFile>();
                 for (int i = 0; i < streamGetters.Count; i++) {
                     var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
                     try {
@@ -161,7 +161,7 @@ namespace Pimix.Apps.BiliUtil {
             }
         }
 
-        public static void MergePartFiles(List<PimixFile> parts, PimixFile target) {
+        public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
             // Convert parts first
             var partPaths = parts.Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
 
@@ -204,7 +204,7 @@ namespace Pimix.Apps.BiliUtil {
             return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
         }
 
-        static void RemovePartFiles(List<PimixFile> partFiles) {
+        static void RemovePartFiles(List<KifaFile> partFiles) {
             partFiles.ForEach(p => p.Delete());
         }
     }

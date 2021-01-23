@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
@@ -16,7 +16,7 @@ namespace Pimix.Apps.SubUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var target = new PimixFile(FileUri);
+            var target = new KifaFile(FileUri);
             if (!target.Path.StartsWith(SubtitlesPrefix)) {
                 target = target.GetFilePrefixed(SubtitlesPrefix);
             }

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using WebApiContrib.Core.Formatter.Yaml;
 
 namespace Pimix.Web.Api {
@@ -63,7 +63,7 @@ namespace Pimix.Web.Api {
 
             app.UseMvc();
             app.UseStaticFiles(new StaticFileOptions {
-                FileProvider = new PimixFileProvider(),
+                FileProvider = new KifaFileProvider(),
                 RequestPath = "/resources"
             });
         }

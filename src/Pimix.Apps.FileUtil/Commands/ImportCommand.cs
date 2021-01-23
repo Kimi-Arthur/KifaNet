@@ -4,7 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Soccer;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.Infos;
 using Pimix.IO;
 using Season = Pimix.Infos.Season;
@@ -53,8 +53,8 @@ namespace Pimix.Apps.FileUtil.Commands {
                     break;
                 case "soccer":
                     foreach (var file in FileNames.SelectMany(path =>
-                        FileInformation.Client.ListFolder(ById ? path : new PimixFile(path).Id, Recursive)
-                            .DefaultIfEmpty(ById ? path : new PimixFile(path).Id))) {
+                        FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
+                            .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
                         var ext = file.Substring(file.LastIndexOf(".") + 1);
                         var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
                         targetFileName = Confirm($"Confirm importing {file} as ", targetFileName);
@@ -68,7 +68,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             }
 
             foreach (var file in FileNames.SelectMany(path =>
-                FileInformation.Client.ListFolder(ById ? path : new PimixFile(path).Id, Recursive))) {
+                FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id, Recursive))) {
                 var suffix = file.Substring(file.LastIndexOf('.'));
                 var ((season, episode), index) = SelectOne(episodes,
                     e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping", (null, null));

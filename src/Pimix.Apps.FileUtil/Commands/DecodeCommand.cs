@@ -2,7 +2,7 @@
 using System.Linq;
 using CommandLine;
 using Newtonsoft.Json;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.Games.Files;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -13,7 +13,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override int Execute() {
             foreach (var file in FileNames.SelectMany(path =>
-                new PimixFile(path).List())) {
+                new KifaFile(path).List())) {
                 var folder = file.Parent.GetFile(file.BaseName);
                 if (file.Extension == "lzs") {
                     foreach (var (name, data) in LzssFile.GetFiles(file.OpenRead())) {

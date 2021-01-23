@@ -6,7 +6,7 @@ using System.Text;
 using System.Xml;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Kifa.Bilibili;
 
 namespace Pimix.Apps.BiliUtil.Commands {
@@ -48,7 +48,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             return base.Execute();
         }
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             var inferredAid = InferAid(file.ToString());
             if (inferredAid != null) {
                 var ids = inferredAid.Split('p');
@@ -66,7 +66,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             return index >= 0 ? GetChat(chat, file) : 0;
         }
 
-        int GetChat(BilibiliChat chat, PimixFile rawFile) {
+        int GetChat(BilibiliChat chat, KifaFile rawFile) {
             var memoryStream = new MemoryStream();
             var writer = new XmlTextWriter(memoryStream, new UpperCaseUtf8Encoding()) {
                 Formatting = Formatting.Indented
@@ -84,7 +84,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
             var segments = rawFile.ToString().Split(".");
             var skippedSegments = segments[segments.Length - 2] == suffix ? 2 : 1;
             var targetUri = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
-            var target = new PimixFile(targetUri).GetFilePrefixed("/Subtitles");
+            var target = new KifaFile(targetUri).GetFilePrefixed("/Subtitles");
             target.Delete();
             target.Write(memoryStream);
 

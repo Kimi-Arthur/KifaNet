@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -35,7 +35,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool UseCache { get; set; }
 
         public override int Execute() {
-            var (multi, files) = PimixFile.ExpandFiles(FileNames);
+            var (multi, files) = KifaFile.ExpandFiles(FileNames);
             if (multi) {
                 foreach (var file in files) {
                     Console.WriteLine(file);
@@ -46,19 +46,19 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.ReadLine();
             }
 
-            var results = files.Select(f => (f.ToString(), UploadFile(new PimixFile(f.ToString()), true))).ToList();
+            var results = files.Select(f => (f.ToString(), UploadFile(new KifaFile(f.ToString()), true))).ToList();
             return results.Select(r => r.Item2)
-                .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new PimixFile(r.Item1))))
+                .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new KifaFile(r.Item1))))
                 .Max();
         }
 
-        int UploadFile(PimixFile source, bool skipRegistered = false) {
+        int UploadFile(KifaFile source, bool skipRegistered = false) {
             source.UseCache = UseCache;
             // TODO: Better catching.
             try {
                 var destinationLocation = source.CreateLocation(ServiceType, FormatType);
                 if (!DeleteSource && skipRegistered) {
-                    if (destinationLocation != null && new PimixFile(destinationLocation).Registered) {
+                    if (destinationLocation != null && new KifaFile(destinationLocation).Registered) {
                         logger.Info($"Skipped uploading of {source} to {destinationLocation} for now " +
                                     "as it's supposed to be already uploaded...");
                         return -1;
@@ -82,7 +82,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 }
 
                 destinationLocation ??= source.CreateLocation(ServiceType, FormatType);
-                var destination = new PimixFile(destinationLocation);
+                var destination = new KifaFile(destinationLocation);
 
                 if (destination.Exists()) {
                     destination.Register();

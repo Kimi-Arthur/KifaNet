@@ -2,7 +2,7 @@
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 
 namespace Pimix.Apps.BiliUtil.Commands {
     [Verb("merge", HelpText = "Merge flv to mp4.")]
@@ -16,17 +16,17 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public string OutputFile { get; set; }
 
         public override int Execute() {
-            var (_, files) = PimixFile.ExpandFiles(FileNames);
+            var (_, files) = KifaFile.ExpandFiles(FileNames);
             var targetFileName = Confirm($"Confirming merging files {string.Join(", ", files)} to ",
                 GetTargetFileName(files));
-            Helper.MergePartFiles(files, new PimixFile(targetFileName));
+            Helper.MergePartFiles(files, new KifaFile(targetFileName));
             logger.Info($"Successfully merged files {string.Join(", ", files)} to {targetFileName}!");
             return 0;
         }
 
-        string GetTargetFileName(IEnumerable<PimixFile> files) =>
+        string GetTargetFileName(IEnumerable<KifaFile> files) =>
             string.IsNullOrEmpty(OutputFile)
                 ? string.Join(".", files.First().ToString().Split(".")[..^1]) + ".mp4"
-                : new PimixFile(OutputFile).ToString();
+                : new KifaFile(OutputFile).ToString();
     }
 }

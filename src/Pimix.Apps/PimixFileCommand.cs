@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps {
@@ -40,7 +40,7 @@ namespace Pimix.Apps {
                     var host = "";
                     var path = fileName;
                     if (IterateOverLogicalFiles) {
-                        var f = new PimixFile(path);
+                        var f = new KifaFile(path);
                         if (!ById) {
                             host = f.Host;
                         }
@@ -63,11 +63,11 @@ namespace Pimix.Apps {
                 var files = fileInfos.Select(f => f.value).ToList();
                 return ById
                     ? ExecuteAllFileInformation(files, multi)
-                    : ExecuteAllPimixFiles(files.Select(f => new PimixFile(f)).ToList(), multi);
+                    : ExecuteAllPimixFiles(files.Select(f => new KifaFile(f)).ToList(), multi);
             } else {
-                var files = new List<(string sortKey, PimixFile value)>();
+                var files = new List<(string sortKey, KifaFile value)>();
                 foreach (var fileName in FileNames) {
-                    var fileInfo = new PimixFile(fileName);
+                    var fileInfo = new KifaFile(fileName);
                     if (Prefix != null && !fileInfo.Path.StartsWith(Prefix)) {
                         fileInfo = fileInfo.GetFilePrefixed(Prefix);
                     }
@@ -122,10 +122,10 @@ namespace Pimix.Apps {
     }
 
     public abstract partial class PimixFileCommand {
-        protected virtual Func<List<PimixFile>, string> PimixFileConfirmText => null;
-        protected virtual int ExecuteOnePimixFile(PimixFile file) => -1;
+        protected virtual Func<List<KifaFile>, string> PimixFileConfirmText => null;
+        protected virtual int ExecuteOnePimixFile(KifaFile file) => -1;
 
-        int ExecuteAllPimixFiles(List<PimixFile> files, bool multi) {
+        int ExecuteAllPimixFiles(List<KifaFile> files, bool multi) {
             if (multi && PimixFileConfirmText != null) {
                 files.ForEach(Console.WriteLine);
                 Console.Write(PimixFileConfirmText(files));

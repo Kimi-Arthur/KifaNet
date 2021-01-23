@@ -2,7 +2,7 @@
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -18,7 +18,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool Unsafe { get; set; } = false;
 
         public override int Execute() {
-            var files = PimixFile.ExpandLogicalFiles(FileNames, fullFile: true).files.Select(f => f.FileInfo);
+            var files = KifaFile.ExpandLogicalFiles(FileNames, fullFile: true).files.Select(f => f.FileInfo);
             var filesToDelete = new List<(string truth, FileInformation toDelete)>();
             foreach (var sameFiles in files.GroupBy(f => f.Sha256)) {
                 var target = sameFiles.Select(f => (f.Id.Length, f.Id, f)).Min().f;
@@ -46,7 +46,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         void RemoveLogicalFile(FileInformation fileInfo) {
             var id = fileInfo.Id;
             foreach (var fileName in fileInfo.Locations.Keys) {
-                var file = new PimixFile(fileName);
+                var file = new KifaFile(fileName);
                 if (file.Id == id) {
                     logger.Info($"Removing {file}...");
                     file.Delete();

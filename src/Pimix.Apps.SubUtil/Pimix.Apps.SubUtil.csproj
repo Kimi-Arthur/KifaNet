@@ -14,10 +14,10 @@
     <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
-    <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
     <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj" />
     <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
   </ItemGroup>

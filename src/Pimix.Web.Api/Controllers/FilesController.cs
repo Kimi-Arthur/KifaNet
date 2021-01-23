@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Web.Api.Controllers {
@@ -24,7 +24,7 @@ namespace Pimix.Web.Api.Controllers {
             }
 
             return new FileStreamResult(
-                new PimixFile(Client.Get(id).Locations.Keys.First(x => x.StartsWith("google"))).OpenRead(),
+                new KifaFile(Client.Get(id).Locations.Keys.First(x => x.StartsWith("google"))).OpenRead(),
                 contentType) {FileDownloadName = id.Substring(id.LastIndexOf('/') + 1), EnableRangeProcessing = true};
         }
     }

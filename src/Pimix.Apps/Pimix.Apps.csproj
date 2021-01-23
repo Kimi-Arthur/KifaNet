@@ -7,7 +7,7 @@
     <PackageReference Include="NLog" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
-    <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
   </ItemGroup>
 </Project>

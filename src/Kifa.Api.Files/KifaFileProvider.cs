@@ -3,10 +3,10 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace Pimix.Api.Files {
-    public class PimixFileProvider : IFileProvider {
+namespace Kifa.Api.Files {
+    public class KifaFileProvider : IFileProvider {
         public IFileInfo GetFileInfo(string path)
-            => new PimixFileInfo(new PimixFile(id: path));
+            => new PimixFileInfo(new KifaFile(id: path));
 
         public IDirectoryContents GetDirectoryContents(string path)
             => new NotFoundDirectoryContents();
@@ -15,9 +15,9 @@ namespace Pimix.Api.Files {
     }
 
     class PimixFileInfo : IFileInfo {
-        readonly PimixFile file;
+        readonly KifaFile file;
 
-        public PimixFileInfo(PimixFile pimixFile) {
+        public PimixFileInfo(KifaFile pimixFile) {
             file = pimixFile;
         }
 

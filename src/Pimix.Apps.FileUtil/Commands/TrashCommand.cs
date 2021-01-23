@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -43,7 +43,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             var targetInfo = client.Get(target);
             if (targetInfo.Locations != null) {
                 foreach (var location in targetInfo.Locations.Keys) {
-                    var instance = new PimixFile(location);
+                    var instance = new KifaFile(location);
                     if (instance.Client == null) {
                         logger.Warn($"{instance} not accessible.");
                         continue;

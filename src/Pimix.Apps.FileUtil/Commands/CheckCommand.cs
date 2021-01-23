@@ -1,7 +1,7 @@
 ﻿using System;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -21,8 +21,8 @@ namespace Pimix.Apps.FileUtil.Commands {
             "Overwrite existing data if asked (with confirmation).")]
         public bool Overwrite { get; set; } = false;
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
-            file = new PimixFile(file.ToString());
+        protected override int ExecuteOnePimixFile(KifaFile file) {
+            file = new KifaFile(file.ToString());
             if (!file.Exists()) {
                 logger.Info($"{file} doesn't exist.");
                 throw new Exception("Doesn't exist.");

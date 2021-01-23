@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.Subtitle.Ass;
 
 namespace Pimix.Apps.SubUtil.Commands {
@@ -12,7 +12,7 @@ namespace Pimix.Apps.SubUtil.Commands {
 
         protected override string Prefix => "/Subtitles";
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             if (!file.Path.EndsWith(".ass")) {
                 return 0;
             }

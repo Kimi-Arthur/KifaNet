@@ -18,9 +18,9 @@
         <PackageReference Include="NLog.Schema" Version="4.6.7" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
         <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
         <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
-        <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
         <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj" />
         <ProjectReference Include="..\Pimix.Games.Files\Pimix.Games.Files.csproj" />
         <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />

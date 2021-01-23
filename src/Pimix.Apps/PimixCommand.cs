@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Kifa.Configs;
 
 namespace Pimix.Apps {
@@ -12,7 +12,7 @@ namespace Pimix.Apps {
 
         public static HashSet<string> LoggingTargets { get; set; }
 
-        public static PimixFile CurrentFolder => new PimixFile(".");
+        public static KifaFile CurrentFolder => new KifaFile(".");
 
         [Option('v', "verbose", HelpText = "Show most detailed log.")]
         public virtual bool Verbose { get; set; } = false;

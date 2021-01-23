@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
+using Kifa.Api.Files;
 using NLog;
-using Pimix.Api.Files;
 
 namespace Pimix.Apps.NoteUtil.Commands {
     [Verb("collect", HelpText = "Collect all vocabulary into vocabulary files.")]
@@ -17,8 +17,8 @@ namespace Pimix.Apps.NoteUtil.Commands {
         public string BookUri { get; set; }
 
         public override int Execute() {
-            var source = new PimixFile(FileUri, simpleMode: true);
-            var destination = new PimixFile(BookUri, simpleMode: true);
+            var source = new KifaFile(FileUri, simpleMode: true);
+            var destination = new KifaFile(BookUri, simpleMode: true);
             var wordsSections = new Dictionary<string, WordsSection>();
 
             using var sr = new StreamReader(source.OpenRead());
@@ -55,9 +55,9 @@ namespace Pimix.Apps.NoteUtil.Commands {
                         } else if (columnNames.Count == 0) {
                             var definition = MarkdownHelpers.GetColumnsDefinition(line);
                             if (definition != null) {
-                                if (wordsSections.ContainsKey(section) &&
-                                    (wordsSections[section].Type != section ||
-                                     !wordsSections[section].ColumnNames.SequenceEqual(definition))) {
+                                if (wordsSections.ContainsKey(section) && (wordsSections[section].Type != section ||
+                                                                           !wordsSections[section].ColumnNames
+                                                                               .SequenceEqual(definition))) {
                                     logger.Error("Different definitions.");
                                 }
 

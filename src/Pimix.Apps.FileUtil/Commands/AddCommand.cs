@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -23,7 +23,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         public bool Overwrite { get; set; } = false;
 
         public override int Execute() {
-            var (multi, files) = PimixFile.ExpandFiles(FileNames);
+            var (multi, files) = KifaFile.ExpandFiles(FileNames);
             if (multi) {
                 foreach (var file in files) {
                     Console.WriteLine(file);
@@ -33,13 +33,13 @@ namespace Pimix.Apps.FileUtil.Commands {
                 Console.ReadLine();
             }
 
-            var executionHandler = new PimixExecutionHandler<PimixFile>(logger);
+            var executionHandler = new PimixExecutionHandler<KifaFile>(logger);
 
             foreach (var file in files) {
-                executionHandler.Execute(new PimixFile(file.ToString()), AddFile, "Failed to add {0}.");
+                executionHandler.Execute(new KifaFile(file.ToString()), AddFile, "Failed to add {0}.");
             }
 
-            (_, files) = PimixFile.ExpandLogicalFiles(FileNames);
+            (_, files) = KifaFile.ExpandLogicalFiles(FileNames);
             var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists()).ToList();
 
             if (filesToRemove.Count > 0) {
@@ -55,7 +55,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             return executionHandler.PrintSummary("Failed to add the following {0} files:");
         }
 
-        void AddFile(PimixFile file) {
+        void AddFile(KifaFile file) {
             logger.Info($"Adding {file}...");
             var result = file.Add(ForceRecheck);
 

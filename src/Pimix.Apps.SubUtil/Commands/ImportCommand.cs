@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommandLine;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.Infos;
 
 namespace Pimix.Apps.SubUtil.Commands {
@@ -75,13 +75,13 @@ namespace Pimix.Apps.SubUtil.Commands {
             return base.Execute();
         }
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             var suffix = file.Path.Substring(file.Path.LastIndexOf('.'));
             var ((season, episode), index) = SelectOne(episodes,
                 e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
                 "mapping", (null, null));
             if (index >= 0) {
-                file.Copy(new PimixFile($"{file.Host}/Subtitles{series.Format(season, episode)}" +
+                file.Copy(new KifaFile($"{file.Host}/Subtitles{series.Format(season, episode)}" +
                                         $".{LanguageCode}-{ReleaseGroup}{suffix}"),
                     true);
                 episodes.RemoveAt(index);

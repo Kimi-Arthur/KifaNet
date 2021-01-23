@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -15,12 +15,12 @@ namespace Pimix.Apps.FileUtil.Commands {
 
         public override bool Recursive { get; set; } = true;
 
-        protected override Func<List<PimixFile>, string> PimixFileConfirmText =>
+        protected override Func<List<KifaFile>, string> PimixFileConfirmText =>
             files => $"Confirm getting the {files.Count} files above?";
 
         protected override bool IterateOverLogicalFiles => true;
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             if (file.Exists()) {
                 if (file.CalculateInfo(FileProperties.Size).Size != file.FileInfo.Size) {
                     logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");
@@ -48,7 +48,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
             foreach (var location in info.Locations) {
                 if (location.Value != null) {
-                    var linkSource = new PimixFile(location.Key);
+                    var linkSource = new KifaFile(location.Key);
                     if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(file) &&
                         linkSource.Exists()) {
                         linkSource.Copy(file);
@@ -64,7 +64,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return 1;
             }
 
-            var source = new PimixFile(fileInfo: info);
+            var source = new KifaFile(fileInfo: info);
             source.Copy(file);
 
             if (file.Exists()) {

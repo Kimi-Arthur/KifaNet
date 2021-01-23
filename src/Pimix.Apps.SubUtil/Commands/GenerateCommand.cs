@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Pimix.Subtitle.Ass;
 using Pimix.Subtitle.Srt;
@@ -22,10 +22,10 @@ namespace Pimix.Apps.SubUtil.Commands {
         [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
         public bool Force { get; set; }
 
-        protected override Func<List<PimixFile>, string> PimixFileConfirmText
+        protected override Func<List<KifaFile>, string> PimixFileConfirmText
             => files => $"Confirm generating comments for the {files.Count} files above?";
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             var actualFile = file.Parent.GetFile($"{file.BaseName}.ass");
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
@@ -267,7 +267,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }
         }
 
-        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(PimixFile parent,
+        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(KifaFile parent,
             string baseName)
             => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
                 using var sr = new StreamReader(file.OpenRead());
@@ -276,7 +276,7 @@ namespace Pimix.Apps.SubUtil.Commands {
                     new List<AssStyle>());
             }).ToList();
 
-        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(PimixFile parent,
+        static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(KifaFile parent,
             string baseName)
             => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
                 var document = AssDocument.Parse(file.OpenRead());
@@ -287,7 +287,7 @@ namespace Pimix.Apps.SubUtil.Commands {
             }).ToList();
 
         static List<(string id, List<AssDialogue> content)>
-            GetBilibiliChats(PimixFile parent, string baseName) {
+            GetBilibiliChats(KifaFile parent, string baseName) {
             var result = new List<(string id, List<AssDialogue> content)>();
             foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}*.xml")) {
                 var chat = new BilibiliChat();

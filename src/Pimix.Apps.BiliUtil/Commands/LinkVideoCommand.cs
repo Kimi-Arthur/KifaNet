@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.BiliUtil.Commands {
@@ -14,7 +14,7 @@ namespace Pimix.Apps.BiliUtil.Commands {
         public string FileUri { get; set; }
 
         public override int Execute() {
-            var target = new PimixFile(FileUri).Id;
+            var target = new KifaFile(FileUri).Id;
             var newName = GetDesiredFileName(target);
             if (newName == null) {
                 logger.Info($"No need to rename {target}");

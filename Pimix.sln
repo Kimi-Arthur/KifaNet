@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.JobUtil", "src\P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.FileUtil", "src\Pimix.Apps.FileUtil\Pimix.Apps.FileUtil.csproj", "{FA56DE78-275B-453E-B241-4AE0C2E43C27}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Api.Files", "src\Pimix.Api.Files\Pimix.Api.Files.csproj", "{A1FCD94B-1107-4404-8A66-109537B2D6DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Api.Files", "src\Kifa.Api.Files\Kifa.Api.Files.csproj", "{A1FCD94B-1107-4404-8A66-109537B2D6DA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Cloud.GoogleDrive", "src\Pimix.Cloud.GoogleDrive\Pimix.Cloud.GoogleDrive.csproj", "{4BBA747F-6EEC-47BB-9A88-EDFFE88E00AA}"
 EndProject

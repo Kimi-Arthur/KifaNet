@@ -2,7 +2,7 @@
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 using Pimix.IO;
 
 namespace Pimix.Apps.FileUtil.Commands {
@@ -42,7 +42,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                 return RemoveLogicalFile(FileInformation.Client.Get(FileId));
             }
 
-            var source = new PimixFile(FileUri);
+            var source = new KifaFile(FileUri);
             if (source.Client == null) {
                 Console.WriteLine($"Source {FileUri} not accessible. Wrong server?");
                 return 1;
@@ -56,7 +56,7 @@ namespace Pimix.Apps.FileUtil.Commands {
 
                 var potentialFiles = FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
                 var potentialFileInstances = potentialFiles.Select(f =>
-                        f.Locations.Keys.Select(l => new PimixFile(l)).FirstOrDefault(l => l.Host == source.Host))
+                        f.Locations.Keys.Select(l => new KifaFile(l)).FirstOrDefault(l => l.Host == source.Host))
                     .Where(f => f != null && !localFiles.Contains(f)).ToList();
 
                 if (potentialFileInstances.Any()) {
@@ -69,7 +69,7 @@ namespace Pimix.Apps.FileUtil.Commands {
                     Console.ReadLine();
 
                     return localFiles.Concat(potentialFileInstances)
-                        .Select(f => RemoveFileInstance(new PimixFile(f.ToString()))).Max();
+                        .Select(f => RemoveFileInstance(new KifaFile(f.ToString()))).Max();
                 }
             }
 
@@ -79,7 +79,7 @@ namespace Pimix.Apps.FileUtil.Commands {
         int RemoveLogicalFile(FileInformation info) {
             if (!RemoveLinkOnly && info.Locations != null) {
                 foreach (var location in info.Locations.Keys) {
-                    var file = new PimixFile(location);
+                    var file = new KifaFile(location);
 
                     var toRemove = file.Id == info.Id;
                     if (!toRemove && ForceRemove) {
@@ -112,7 +112,7 @@ namespace Pimix.Apps.FileUtil.Commands {
             return 0;
         }
 
-        int RemoveFileInstance(PimixFile file) {
+        int RemoveFileInstance(KifaFile file) {
             if (file.FileInfo.Locations?.ContainsKey(file.ToString()) != true) {
                 if (file.Exists()) {
                     file.Delete();

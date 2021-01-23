@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using CommandLine;
-using Pimix.Api.Files;
+using Kifa.Api.Files;
 
 namespace Pimix.Apps.SubUtil.Commands {
     [Verb("clean", HelpText = "Clean subtitle file.")]
     class CleanCommand : PimixFileCommand {
         protected override string Prefix => "/Subtitles";
 
-        protected override Func<List<PimixFile>, string> PimixFileConfirmText
+        protected override Func<List<KifaFile>, string> PimixFileConfirmText
             => files => $"Confirm cleaning comments for the {files.Count} files above?";
 
-        protected override int ExecuteOnePimixFile(PimixFile file) {
+        protected override int ExecuteOnePimixFile(KifaFile file) {
             var lines = new List<string>();
             using (var sr = new StreamReader(file.OpenRead())) {
                 string line;
