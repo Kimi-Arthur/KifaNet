@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Newtonsoft.Json;
 using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {

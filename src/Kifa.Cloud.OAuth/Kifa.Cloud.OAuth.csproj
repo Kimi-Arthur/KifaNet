@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
     <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
 

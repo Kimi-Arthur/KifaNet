@@ -107,6 +107,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Bilibili.Tests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.GooglePhotos", "src\Kifa.Cloud.GooglePhotos\Kifa.Cloud.GooglePhotos.csproj", "{A7901698-1788-491F-8D98-D7C6C730985F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.OAuth", "src\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj", "{4243CA3B-425E-49F2-A111-30A91946F39D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -321,6 +323,10 @@ Global
 		{A7901698-1788-491F-8D98-D7C6C730985F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7901698-1788-491F-8D98-D7C6C730985F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7901698-1788-491F-8D98-D7C6C730985F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4243CA3B-425E-49F2-A111-30A91946F39D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4243CA3B-425E-49F2-A111-30A91946F39D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4243CA3B-425E-49F2-A111-30A91946F39D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4243CA3B-425E-49F2-A111-30A91946F39D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
