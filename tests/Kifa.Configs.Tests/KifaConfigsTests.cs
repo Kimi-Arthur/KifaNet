@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Kifa.Configs;
 using Xunit;
 
 namespace Kifa.Configs.Tests {
@@ -33,8 +32,7 @@ namespace Kifa.Configs.Tests {
   ComplexConfig:
     I: 123
     S: AS";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
             Assert.Equal(123, ComplexConfig.I);
             Assert.Equal("AS", ComplexConfig.S);
@@ -48,14 +46,9 @@ namespace Kifa.Configs.Tests {
   - 123
   - 233
   - 344";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
-            Assert.Equal(new List<int> {
-                123,
-                233,
-                344
-            }, IntListConfig);
+            Assert.Equal(new List<int> {123, 233, 344}, IntListConfig);
         }
 
         [Fact]
@@ -63,8 +56,7 @@ namespace Kifa.Configs.Tests {
             var properties = KifaConfigs.GetAllProperties();
             var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   IntConfig: 123";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
             Assert.Equal(123, IntConfig);
         }
@@ -75,8 +67,7 @@ namespace Kifa.Configs.Tests {
             var config = @"Kifa.Configs.Tests:
   KifaConfigsTests:
     MultiSegmentConfig: 123";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
             Assert.Equal(123, MultiSegmentConfig);
         }
@@ -90,15 +81,9 @@ namespace Kifa.Configs.Tests {
     c:
       d
     d: ""e""";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
-            Assert.Equal(new Dictionary<string, string> {
-                    ["a"] = "b",
-                    ["c"] = "d",
-                    ["d"] = "e"
-                },
-                StringDictConfig);
+            Assert.Equal(new Dictionary<string, string> {["a"] = "b", ["c"] = "d", ["d"] = "e"}, StringDictConfig);
         }
 
         [Fact]
@@ -110,15 +95,9 @@ namespace Kifa.Configs.Tests {
   - 233
   - 344
   - abc";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
-            Assert.Equal(new List<string> {
-                "123",
-                "233",
-                "344",
-                "abc"
-            }, StringListConfig);
+            Assert.Equal(new List<string> {"123", "233", "344", "abc"}, StringListConfig);
         }
 
         [Fact]
@@ -126,8 +105,7 @@ namespace Kifa.Configs.Tests {
             var properties = KifaConfigs.GetAllProperties();
             var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   StringConfig: abc";
-            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
-                properties);
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
             Assert.Equal("abc", StringConfig);
         }
