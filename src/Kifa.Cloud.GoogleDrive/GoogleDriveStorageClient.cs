@@ -8,7 +8,7 @@ using System.Threading;
 using Kifa.Cloud.GooglePhotos;
 using Kifa.Cloud.GooglePhotos.PhotosApi;
 using NLog;
-using Pimix.IO;
+using Kifa.IO;
 using Kifa.Service;
 using Pimix;
 

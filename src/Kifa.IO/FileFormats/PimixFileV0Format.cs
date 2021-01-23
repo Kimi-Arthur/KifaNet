@@ -2,9 +2,10 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Pimix;
 using Pimix.Cryptography;
 
-namespace Pimix.IO.FileFormats {
+namespace Kifa.IO.FileFormats {
     /// <summary>
     ///     Legacy file format with encryption and information header.
     ///     There is a verbose header part, 0x1225 bytes long and starts with "0x01231225".

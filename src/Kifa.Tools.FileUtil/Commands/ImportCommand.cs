@@ -6,7 +6,7 @@ using Kifa.Soccer;
 using NLog;
 using Kifa.Api.Files;
 using Pimix.Infos;
-using Pimix.IO;
+using Kifa.IO;
 using Season = Pimix.Infos.Season;
 
 namespace Kifa.Tools.FileUtil.Commands {

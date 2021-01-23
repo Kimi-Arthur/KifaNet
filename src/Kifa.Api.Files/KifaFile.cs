@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,8 +13,8 @@ using Kifa.Cloud.BaiduCloud;
 using Kifa.Cloud.GoogleDrive;
 using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
-using Pimix.IO;
-using Pimix.IO.FileFormats;
+using Kifa.IO;
+using Kifa.IO.FileFormats;
 
 namespace Kifa.Api.Files {
     public class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {

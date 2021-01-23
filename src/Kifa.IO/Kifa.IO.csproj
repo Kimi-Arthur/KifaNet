@@ -9,5 +9,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Pimix.Cryptography\Pimix.Cryptography.csproj" />
   </ItemGroup>
 </Project>

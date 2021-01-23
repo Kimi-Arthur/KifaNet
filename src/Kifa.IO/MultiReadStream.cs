@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class MultiReadStream : Stream {
         public MultiReadStream(List<Stream> streams) {
             this.streams = streams;

@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Pimix.IO.FileFormats {
+namespace Kifa.IO.FileFormats {
     public class RawFileFormat : PimixFileFormat {
         public static readonly RawFileFormat Instance = new RawFileFormat();
 

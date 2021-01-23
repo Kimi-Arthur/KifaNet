@@ -2,7 +2,7 @@
 using CommandLine;
 using NLog;
 using Kifa.Api.Files;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy FILE1 to FILE2. The files will be linked.")]

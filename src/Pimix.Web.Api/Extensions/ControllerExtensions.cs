@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
-namespace Pimix.Web.Api {
+namespace Pimix.Web.Api.Extensions {
     public static class ControllerExtensions {
         const string OriginalUriHeader = "X-Original-URI";
 

@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using Pimix;
 using Pimix.Cryptography;
-using Pimix.IO;
+using Kifa.IO;
 using Xunit;
 
 namespace PimixTest.Cryptography {

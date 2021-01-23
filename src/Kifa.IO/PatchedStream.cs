@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class PatchedStream : Stream {
         Stream stream;
 

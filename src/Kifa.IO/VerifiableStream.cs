@@ -5,8 +5,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using NLog;
+using Pimix;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class VerifiableStream : Stream {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

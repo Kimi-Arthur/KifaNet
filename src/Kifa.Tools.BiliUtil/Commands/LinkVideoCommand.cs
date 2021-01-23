@@ -3,7 +3,7 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Kifa.Api.Files;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("link", HelpText = "Link video file to proper location.")]

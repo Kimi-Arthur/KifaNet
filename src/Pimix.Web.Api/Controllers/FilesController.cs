@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Kifa.Api.Files;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + FileInformation.ModelId)]

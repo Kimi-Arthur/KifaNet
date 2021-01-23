@@ -5,7 +5,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 using Pimix;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Tools {
     public abstract partial class PimixFileCommand : PimixCommand {

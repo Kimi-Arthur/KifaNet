@@ -8,8 +8,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HashLib;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class FileInformation : DataModel {
         public const string ModelId = "files";
 

@@ -7,8 +7,7 @@
     <ProjectReference Include="..\Kifa.Cloud.GoogleDrive\Kifa.Cloud.GoogleDrive.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj" />
-    <ProjectReference Include="..\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj" />
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0" />

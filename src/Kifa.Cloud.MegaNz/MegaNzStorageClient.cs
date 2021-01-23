@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using CG.Web.MegaApiClient;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Cloud.MegaNz {
     public class MegaNzStorageClient : StorageClient {

@@ -4,7 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using NLog;
 using Pimix;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("dedup", HelpText = "Deduplicate file entries.")]

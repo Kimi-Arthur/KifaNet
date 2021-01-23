@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Kifa.Cloud.MegaNz;
-using Pimix.IO;
+using Kifa.IO;
 using Kifa.Service;
 
 namespace Kifa.Cloud.MegaNz.Tests {

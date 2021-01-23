@@ -5,11 +5,9 @@ VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix", "src\Pimix\Pimix.csproj", "{6E1E7ED5-1DED-4543-9E71-6AF74EE90F4A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.IO", "src\Pimix.IO\Pimix.IO.csproj", "{224429E0-2CC0-4D0C-A599-C311C1BEA819}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.IO", "src\Kifa.IO\Kifa.IO.csproj", "{224429E0-2CC0-4D0C-A599-C311C1BEA819}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Service", "src\Kifa.Service\Kifa.Service.csproj", "{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.IO.FileFormats", "src\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{F303C16E-D5DD-4453-818A-3926F7F9C8EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Cryptography", "src\Pimix.Cryptography\Pimix.Cryptography.csproj", "{D24F82E0-2851-4564-9A1E-13CE7C9B8567}"
 EndProject
@@ -17,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Cloud.BaiduCloud", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Cloud.MegaNz", "src\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj", "{1D344A63-9D06-46DE-8EED-9575E2CFC4F0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PimixTest.IO", "tests\PimixTest.IO\PimixTest.IO.csproj", "{CBA70C35-4E96-439D-A2F9-13F57F05DCD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.IO.Tests", "tests\Kifa.IO.Tests\Kifa.IO.Tests.csproj", "{CBA70C35-4E96-439D-A2F9-13F57F05DCD5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Cloud.BaiduCloud.Tests", "tests\Kifa.Cloud.BaiduCloud.Tests\Kifa.Cloud.BaiduCloud.Tests.csproj", "{41F72EE5-9A64-4A27-A1CC-575D8A9A495D}"
 EndProject
@@ -58,8 +56,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Infos", "tests\PimixTest.Infos\PimixTest.Infos.csproj", "{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Benchmarks", "benchmarks\Pimix.Benchmarks\Pimix.Benchmarks.csproj", "{3186AB8A-24DF-4134-92AC-37D3448BF648}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.IO.FileFormats", "tests\PimixTest.IO.FileFormats\PimixTest.IO.FileFormats.csproj", "{386607A9-3CF8-4844-A6D7-C7D2C200877D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cryptography", "tests\PimixTest.Cryptography\PimixTest.Cryptography.csproj", "{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}"
 EndProject
@@ -125,10 +121,6 @@ Global
 		{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F303C16E-D5DD-4453-818A-3926F7F9C8EA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D24F82E0-2851-4564-9A1E-13CE7C9B8567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D24F82E0-2851-4564-9A1E-13CE7C9B8567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D24F82E0-2851-4564-9A1E-13CE7C9B8567}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -225,10 +217,6 @@ Global
 		{3186AB8A-24DF-4134-92AC-37D3448BF648}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3186AB8A-24DF-4134-92AC-37D3448BF648}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3186AB8A-24DF-4134-92AC-37D3448BF648}.Release|Any CPU.Build.0 = Release|Any CPU
-		{386607A9-3CF8-4844-A6D7-C7D2C200877D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{386607A9-3CF8-4844-A6D7-C7D2C200877D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{386607A9-3CF8-4844-A6D7-C7D2C200877D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{386607A9-3CF8-4844-A6D7-C7D2C200877D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}.Release|Any CPU.ActiveCfg = Release|Any CPU

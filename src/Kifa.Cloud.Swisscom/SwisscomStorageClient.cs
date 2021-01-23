@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using OpenQA.Selenium.Chrome;
-using Pimix.IO;
+using Kifa.IO;
 using Kifa.Service;
 using Pimix;
 

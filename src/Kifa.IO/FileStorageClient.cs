@@ -6,9 +6,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using NLog;
+using Pimix;
 using Renci.SshNet;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class ServerConfig {
         public bool Removed { get; set; }
         public string Username { get; set; }

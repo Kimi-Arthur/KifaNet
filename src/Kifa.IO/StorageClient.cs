@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Schema;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public abstract class StorageClient : IDisposable {
         public virtual void Dispose() {
         }

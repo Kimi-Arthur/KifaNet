@@ -3,8 +3,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using Pimix;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class SeekableReadStream : Stream {
         public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0, int count = -1);
 

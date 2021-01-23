@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     [Flags]
     public enum FileProperties {
         None = 0x0,

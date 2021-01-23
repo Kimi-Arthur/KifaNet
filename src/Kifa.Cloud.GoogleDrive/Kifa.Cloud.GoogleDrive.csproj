@@ -2,11 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Cloud.GooglePhotos\Kifa.Cloud.GooglePhotos.csproj" />
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
   </ItemGroup>
 </Project>

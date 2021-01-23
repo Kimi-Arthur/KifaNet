@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using Kifa.Bilibili;
 using NLog;
 using Kifa.Api.Files;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Tools.BiliUtil {
     public static class Helper {

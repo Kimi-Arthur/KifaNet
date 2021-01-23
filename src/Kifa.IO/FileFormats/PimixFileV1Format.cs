@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using Pimix;
 using Pimix.Cryptography;
 
-namespace Pimix.IO.FileFormats {
+namespace Kifa.IO.FileFormats {
     /// <summary>
     ///     V1 file format.
     ///     Common header for v1 and onward:

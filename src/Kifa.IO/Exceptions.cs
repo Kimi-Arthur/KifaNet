@@ -1,6 +1,6 @@
 using System;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class StorageException : Exception {
     }
 

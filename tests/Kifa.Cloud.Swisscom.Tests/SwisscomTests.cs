@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
-using Pimix.IO;
+using Kifa.IO;
 using Xunit;
 
 namespace Kifa.Cloud.Swisscom.Tests {

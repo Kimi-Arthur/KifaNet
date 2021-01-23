@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Pimix.IO.FileFormats {
+namespace Kifa.IO.FileFormats {
     public class PimixFileFormat {
         public virtual Stream GetEncodeStream(Stream rawStream, FileInformation info)
             => throw new NotImplementedException();

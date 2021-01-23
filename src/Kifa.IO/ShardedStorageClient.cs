@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Pimix.IO {
+namespace Kifa.IO {
     public class ShardedStorageClient : StorageClient {
         public long ShardSize { get; set; }
         public List<StorageClient> Clients { get; set; }

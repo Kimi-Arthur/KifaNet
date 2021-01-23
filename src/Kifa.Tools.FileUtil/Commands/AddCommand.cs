@@ -4,7 +4,7 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Kifa.Api.Files;
-using Pimix.IO;
+using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("add", HelpText = "Add file entry.")]
