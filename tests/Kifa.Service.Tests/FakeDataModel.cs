@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using Kifa.Service;
 
-namespace PimixTest.Service {
+namespace Kifa.Service.Tests {
     class FakeDataModel : TranslatableDataModel<FakeDataModel> {
         public const string ModelId = "api_test";
 
@@ -24,8 +23,7 @@ namespace PimixTest.Service {
     class FakeSubDataModel {
         public string SubProp1 { get; set; }
 
-        [JsonProperty("sub_prop2")]
-        public List<string> Sub2 { get; set; }
+        [JsonProperty("sub_prop2")] public List<string> Sub2 { get; set; }
     }
 
     interface FakeDataModelServiceClient : KifaServiceClient<FakeDataModel> {

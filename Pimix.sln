@@ -47,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Subtitle", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Web.Api", "src\Pimix.Web.Api\Pimix.Web.Api.csproj", "{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Service", "tests\PimixTest.Service\PimixTest.Service.csproj", "{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Service.Tests", "tests\Kifa.Service.Tests\Kifa.Service.Tests.csproj", "{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.BiliUtil", "src\Pimix.Apps.BiliUtil\Pimix.Apps.BiliUtil.csproj", "{97D0B607-7960-4B35-BBDF-9CE2410691B3}"
 EndProject
