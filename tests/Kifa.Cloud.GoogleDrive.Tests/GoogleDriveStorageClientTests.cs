@@ -1,12 +1,12 @@
 using System;
 using System.IO;
 using System.Threading;
-using Pimix.Cloud.GoogleDrive;
+using Kifa.Cloud.GoogleDrive;
 using Pimix.IO;
 using Kifa.Service;
 using Xunit;
 
-namespace PimixTest.Cloud.GoogleDrive {
+namespace Kifa.Cloud.GoogleDrive.Tests {
     public class GoogleDriveStorageClientTests {
         public GoogleDriveStorageClientTests() {
             KifaServiceRestClient.ServerAddress = PimixServerApiAddress;

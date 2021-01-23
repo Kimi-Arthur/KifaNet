@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Pimix.Cloud.MegaNz {
+namespace Kifa.Cloud.MegaNz {
     public class MegaNzConfig : DataModel {
         public const string ModelId = "configs/mega_nz";
 

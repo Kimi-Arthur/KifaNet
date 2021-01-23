@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Pimix.Cloud.Swisscom;
+using Kifa.Cloud.Swisscom;
 using Kifa.Service;
 
 namespace Pimix.Web.Api.Controllers {

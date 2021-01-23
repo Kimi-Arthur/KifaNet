@@ -9,14 +9,17 @@
         <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Pimix.Cloud.MegaNz\Pimix.Cloud.MegaNz.csproj" />
-    </ItemGroup>
-    <ItemGroup>
         <None Update="data.bin">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="LocalConfig.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
     <ItemGroup>
         <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj" />
     </ItemGroup>
 </Project>

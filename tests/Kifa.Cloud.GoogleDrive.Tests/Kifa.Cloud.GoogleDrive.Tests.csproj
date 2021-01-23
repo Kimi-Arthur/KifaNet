@@ -10,11 +10,11 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pimix.Cloud.GoogleDrive\Pimix.Cloud.GoogleDrive.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="data.bin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Kifa.Cloud.GoogleDrive\Kifa.Cloud.GoogleDrive.csproj" />
   </ItemGroup>
 </Project>

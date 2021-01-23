@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Kifa.Service;
 
-namespace Pimix.Cloud.GoogleDrive {
+namespace Kifa.Cloud.GoogleDrive {
     public class GoogleDriveConfig : DataModel {
         public const string ModelId = "configs/google";
 

@@ -13,8 +13,9 @@ using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix.IO;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Cloud.BaiduCloud {
+namespace Kifa.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {
         const long MaxBlockCount = 1L << 10;
         const long MaxBlockSize = 2L << 30;

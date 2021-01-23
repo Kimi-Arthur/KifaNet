@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Pimix.Cloud.Swisscom {
+namespace Kifa.Cloud.Swisscom {
     public class SwisscomConfig : DataModel {
         public const string ModelId = "configs/swisscom";
 

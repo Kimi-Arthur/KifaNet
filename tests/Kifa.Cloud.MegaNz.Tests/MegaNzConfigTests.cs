@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Cloud.MegaNz;
+using Kifa.Cloud.MegaNz;
 using Kifa.Service;
 
-namespace PimixTest.Cloud.MegaNz {
+namespace Kifa.Cloud.MegaNz.Tests {
     [TestClass]
     public class MegaNzConfigTests {
         public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";

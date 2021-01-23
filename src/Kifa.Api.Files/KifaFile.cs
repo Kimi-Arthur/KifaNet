@@ -8,10 +8,10 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
 using Pimix;
-using Pimix.Cloud.BaiduCloud;
-using Pimix.Cloud.GoogleDrive;
-using Pimix.Cloud.MegaNz;
-using Pimix.Cloud.Swisscom;
+using Kifa.Cloud.BaiduCloud;
+using Kifa.Cloud.GoogleDrive;
+using Kifa.Cloud.MegaNz;
+using Kifa.Cloud.Swisscom;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
 

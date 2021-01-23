@@ -10,8 +10,9 @@ using Kifa.Cloud.GooglePhotos.PhotosApi;
 using NLog;
 using Pimix.IO;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Cloud.GoogleDrive {
+namespace Kifa.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {
         const int BlockSize = 32 << 20;
         static readonly Logger logger = LogManager.GetCurrentClassLogger();

@@ -5,7 +5,7 @@ using System.Threading;
 using CG.Web.MegaApiClient;
 using Pimix.IO;
 
-namespace Pimix.Cloud.MegaNz {
+namespace Kifa.Cloud.MegaNz {
     public class MegaNzStorageClient : StorageClient {
         static MegaNzConfig config;
         string accountId;

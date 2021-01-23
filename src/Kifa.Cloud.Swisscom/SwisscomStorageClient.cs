@@ -13,8 +13,9 @@ using NLog;
 using OpenQA.Selenium.Chrome;
 using Pimix.IO;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Cloud.Swisscom {
+namespace Kifa.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         const int BlockSize = 8 << 20;

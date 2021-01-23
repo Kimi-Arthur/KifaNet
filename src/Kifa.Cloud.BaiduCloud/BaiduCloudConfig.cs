@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Kifa.Service;
 
-namespace Pimix.Cloud.BaiduCloud {
+namespace Kifa.Cloud.BaiduCloud {
     public class BaiduCloudConfig : DataModel {
         public const string ModelId = "configs/baidu_cloud";
 

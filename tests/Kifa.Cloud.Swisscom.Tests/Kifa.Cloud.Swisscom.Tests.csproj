@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
-    <ProjectReference Include="..\..\src\Pimix.Cloud.Swisscom\Pimix.Cloud.Swisscom.csproj" />
   </ItemGroup>
 
   <ItemGroup>

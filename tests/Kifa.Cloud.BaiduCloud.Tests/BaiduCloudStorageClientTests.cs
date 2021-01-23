@@ -2,11 +2,11 @@
 using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Cloud.BaiduCloud;
+using Kifa.Cloud.BaiduCloud;
 using Pimix.IO;
 using Kifa.Service;
 
-namespace PimixTest.Cloud.BaiduCloud {
+namespace Kifa.Cloud.BaiduCloud.Tests {
     [TestClass]
     public class BaiduCloudStorageClientTests {
         const string FileSha256 =

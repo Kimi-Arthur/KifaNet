@@ -2,11 +2,11 @@
 using System.IO;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pimix.Cloud.MegaNz;
+using Kifa.Cloud.MegaNz;
 using Pimix.IO;
 using Kifa.Service;
 
-namespace PimixTest.Cloud.MegaNz {
+namespace Kifa.Cloud.MegaNz.Tests {
     [TestClass]
     public class MegaNzStorageClientTests {
         readonly string FileSHA256 =

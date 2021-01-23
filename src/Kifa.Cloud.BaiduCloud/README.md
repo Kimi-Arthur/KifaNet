@@ -3,7 +3,7 @@ Pimix Baidu Cloud Library
 
 Assembly Name
 ---
-Pimix.Cloud.BaiduCloud.dll
+Kifa.Cloud.BaiduCloud.dll
 
 APIs
 ---

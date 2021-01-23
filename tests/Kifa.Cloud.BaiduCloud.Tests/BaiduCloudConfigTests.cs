@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using Pimix.Cloud.BaiduCloud;
+using Kifa.Cloud.BaiduCloud;
 using Kifa.Service;
 
-namespace PimixTest.Cloud.BaiduCloud {
+namespace Kifa.Cloud.BaiduCloud.Tests {
     [TestClass]
     public class BaiduCloudConfigTests {
         public string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";

@@ -1,12 +1,12 @@
 using System;
 using System.IO;
 using System.Threading;
-using Pimix.Cloud.Swisscom;
+using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
 using Pimix.IO;
 using Xunit;
 
-namespace PimixTest.Cloud.Swisscom {
+namespace Kifa.Cloud.Swisscom.Tests {
     public class SwisscomTests {
         const string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
