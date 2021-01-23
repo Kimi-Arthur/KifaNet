@@ -6,6 +6,6 @@ namespace Pimix.Web.Api.Controllers {
     public class GuitarChordsController : KifaDataController<GuitarChord, GuitarChordJsonServiceClient> {
     }
 
-    public class GuitarChordJsonServiceClient : PimixServiceJsonClient<GuitarChord>, GuitarChordServiceClient {
+    public class GuitarChordJsonServiceClient : KifaServiceJsonClient<GuitarChord>, GuitarChordServiceClient {
     }
 }

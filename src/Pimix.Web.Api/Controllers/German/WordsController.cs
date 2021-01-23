@@ -6,6 +6,6 @@ namespace Pimix.Web.Api.Controllers {
     public class WordsController : KifaDataController<Word, WordJsonServiceClient> {
     }
 
-    public class WordJsonServiceClient : PimixServiceJsonClient<Word>, WordServiceClient {
+    public class WordJsonServiceClient : KifaServiceJsonClient<Word>, WordServiceClient {
     }
 }

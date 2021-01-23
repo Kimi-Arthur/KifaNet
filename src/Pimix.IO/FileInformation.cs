@@ -199,7 +199,7 @@ namespace Pimix.IO {
         }
     }
 
-    public interface FileInformationServiceClient : PimixServiceClient<FileInformation> {
+    public interface FileInformationServiceClient : KifaServiceClient<FileInformation> {
         List<string> ListFolder(string folder, bool recursive = false);
         void AddLocation(string id, string location, bool verified = false);
         void RemoveLocation(string id, string location);
@@ -209,7 +209,7 @@ namespace Pimix.IO {
         string GetLocation(string id, List<string> types = null);
     }
 
-    public class FileInformationRestServiceClient : PimixServiceRestClient<FileInformation>,
+    public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
         FileInformationServiceClient {
         public List<string> ListFolder(string folder, bool recursive = false) =>
             Call<List<string>>("list_folder",

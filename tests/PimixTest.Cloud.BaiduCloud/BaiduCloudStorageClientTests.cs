@@ -131,7 +131,7 @@ namespace PimixTest.Cloud.BaiduCloud {
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx) {
-            PimixServiceRestClient.PimixServerApiAddress = PimixServerApiAddress;
+            KifaServiceRestClient.ServerAddress = PimixServerApiAddress;
             DataCleanup();
         }
 

@@ -10,69 +10,73 @@ using Newtonsoft.Json;
 using NLog;
 
 namespace Pimix.Service {
-    public class PimixServiceRestClient {
+    public class KifaServiceRestClient {
         internal static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static HttpClient client;
 
         internal static HttpClient Client =>
             LazyInitializer.EnsureInitialized(ref client,
-                () => CertPath != null
+                () => ClientCertPath != null
                     ? new HttpClient(new HttpClientHandler {
-                        ClientCertificates = {new X509Certificate2(CertPath, CertPassword)}
+                        ClientCertificates = {new X509Certificate2(ClientCertPath, ClientCertPassword)}
                     })
                     : new HttpClient());
 
-        public static string PimixServerApiAddress { get; set; }
-
-        public static string CertPath { get; set; }
-        public static string CertPassword { get; set; }
+        // Should probably be ending with `/api`.
+        public static string ServerAddress { get; set; }
+        
+        // pfx cert path.
+        public static string ClientCertPath { get; set; }
+        
+        // pfx cert password.
+        public static string ClientCertPassword { get; set; }
     }
 
-    public class PimixServiceRestClient<TDataModel> : BasePimixServiceClient<TDataModel> where TDataModel : DataModel {
+    public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataModel> where TDataModel : DataModel {
         const string IdDeliminator = "|";
 
-        public override RestActionResult Update(TDataModel data) =>
-            RestActionResult.FromAction(() => Retry.Run(() => {
+        public override KifaActionResult Update(TDataModel data) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
+                        $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
                     };
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({data.Id})")));
 
-        public override RestActionResult Set(TDataModel data) =>
-            RestActionResult.FromAction(() => Retry.Run(() => {
+        public override KifaActionResult Set(TDataModel data) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
+                        $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
                     };
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({data.Id})")));
 
         public override SortedDictionary<string, TDataModel> List() =>
             Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/");
+                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/");
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<SortedDictionary<string, TDataModel>>();
             }, (ex, i) => HandleException(ex, i, $"Failure in LIST {modelId}"));
 
         public override TDataModel Get(string id) =>
             Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
+                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<TDataModel>();
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
 
@@ -80,30 +84,30 @@ namespace Pimix.Service {
             ids.Any()
                 ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
-                        $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+                        $"{KifaServiceRestClient.ServerAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
 
-                    using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
+                    using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                     return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
                 }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({string.Join(", ", ids)})"))
                 : new List<TDataModel>();
 
-        public override RestActionResult Link(string targetId, string linkId) =>
-            RestActionResult.FromAction(() => Retry.Run(() => {
+        public override KifaActionResult Link(string targetId, string linkId) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/" +
+                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/" +
                     $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})")));
 
-        public override RestActionResult Delete(string id) =>
-            RestActionResult.FromAction(() => Retry.Run(() => {
+        public override KifaActionResult Delete(string id) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Delete,
-                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/{Uri.EscapeDataString(id)}");
+                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(id)}");
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                return response.GetObject<RestActionResult>().Status == RestActionStatus.OK;
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})")));
 
         public void Call(string action, string id = null, Dictionary<string, object> parameters = null) =>
@@ -113,7 +117,7 @@ namespace Pimix.Service {
             Dictionary<string, object> parameters = null) {
             return Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Post,
-                    $"{PimixServiceRestClient.PimixServerApiAddress}/{modelId}/${action}");
+                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/${action}");
 
                 parameters ??= new Dictionary<string, object>();
                 if (id != null) {
@@ -124,26 +128,26 @@ namespace Pimix.Service {
                     new StringContent(JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
                         Encoding.UTF8, "application/json");
 
-                using var response = PimixServiceRestClient.Client.SendAsync(request).Result;
-                var result = response.GetObject<RestActionResult<TResponse>>();
-                if (result.Status == RestActionStatus.OK) {
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                var result = response.GetObject<KifaActionResult<TResponse>>();
+                if (result.Status == KifaActionStatus.OK) {
                     return result.Response;
                 }
 
-                throw new RestActionFailedException {Result = result};
+                throw new KifaActionFailedException {ActionResult = result};
             }, (ex, i) => HandleException(ex, i, $"Failure in CALL {modelId}({id}).{action}({id})"));
         }
 
-        public override RestActionResult Refresh(string id) => RestActionResult.FromAction(() => Call("refresh", id));
+        public override KifaActionResult Refresh(string id) => KifaActionResult.FromAction(() => Call("refresh", id));
 
         static void HandleException(Exception ex, int index, string message) {
-            if (index >= 5 || ex is RestActionFailedException || ex is HttpRequestException &&
+            if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException &&
                 ex.InnerException is SocketException socketException &&
                 socketException.Message == "Device not configured") {
                 throw ex;
             }
 
-            PimixServiceRestClient.logger.Warn(ex, $"{message} ({index})");
+            KifaServiceRestClient.logger.Warn(ex, $"{message} ({index})");
             Thread.Sleep(TimeSpan.FromSeconds(5));
         }
     }

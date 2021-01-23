@@ -8,7 +8,7 @@ namespace Pimix.Web.Api.Controllers {
         [HttpGet("$update_dns")]
         public PimixActionResult UpdateDomainName(string name, string ip) {
             new DnsClient().ReplaceIp(name, ip);
-            return RestActionResult.SuccessResult;
+            return KifaActionResult.SuccessActionResult;
         }
     }
 }

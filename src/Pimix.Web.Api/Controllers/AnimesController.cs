@@ -10,7 +10,7 @@ namespace Pimix.Web.Api.Controllers {
             Client.Format(id, seasonId, episodeId);
     }
 
-    public class AnimeJsonServiceClient : PimixServiceJsonClient<Anime>, AnimeServiceClient {
+    public class AnimeJsonServiceClient : KifaServiceJsonClient<Anime>, AnimeServiceClient {
         public string Format(string id, int seasonId, int episodeId) {
             var show = Get(id);
             var season = show.Seasons.First(s => s.Id == seasonId);

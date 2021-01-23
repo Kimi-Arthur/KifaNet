@@ -9,7 +9,7 @@ using Xunit;
 namespace PimixTest.Cloud.GoogleDrive {
     public class GoogleDriveStorageClientTests {
         public GoogleDriveStorageClientTests() {
-            PimixServiceRestClient.PimixServerApiAddress = PimixServerApiAddress;
+            KifaServiceRestClient.ServerAddress = PimixServerApiAddress;
             GetStorageClient().Delete("/Test/big.bin");
         }
 

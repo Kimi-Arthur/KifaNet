@@ -7,10 +7,10 @@ namespace Kifa.Bilibili {
     public class BilibiliUploader : DataModel {
         public const string ModelId = "bilibili/uploaders";
 
-        static PimixServiceClient<BilibiliUploader> client;
+        static KifaServiceClient<BilibiliUploader> client;
 
-        public static PimixServiceClient<BilibiliUploader> Client =>
-            client ??= new PimixServiceRestClient<BilibiliUploader>();
+        public static KifaServiceClient<BilibiliUploader> Client =>
+            client ??= new KifaServiceRestClient<BilibiliUploader>();
 
         public string Name { get; set; }
         public List<string> Aids { get; set; } = new List<string>();

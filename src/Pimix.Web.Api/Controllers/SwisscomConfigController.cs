@@ -18,10 +18,10 @@ namespace Pimix.Web.Api.Controllers {
                 Client.Set(config);
             }
 
-            return RestActionResult.SuccessResult;
+            return KifaActionResult.SuccessActionResult;
         }
     }
 
-    public class SwisscomConfigJsonServiceClient : PimixServiceJsonClient<SwisscomConfig>, SwisscomConfigServiceClient {
+    public class SwisscomConfigJsonServiceClient : KifaServiceJsonClient<SwisscomConfig>, SwisscomConfigServiceClient {
     }
 }

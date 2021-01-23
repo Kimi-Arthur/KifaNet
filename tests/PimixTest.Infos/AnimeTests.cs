@@ -8,11 +8,11 @@ using Xunit;
 namespace PimixTest.Infos {
     public class AnimeTests {
         public AnimeTests() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.jingbian.tk/api";
-            Client = new PimixServiceRestClient<Anime>();
+            KifaServiceRestClient.ServerAddress = "http://www.jingbian.tk/api";
+            Client = new KifaServiceRestClient<Anime>();
         }
 
-        public PimixServiceClient<Anime> Client { get; set; }
+        public KifaServiceClient<Anime> Client { get; set; }
 
         [Fact]
         public void FormatMultiSeason() {

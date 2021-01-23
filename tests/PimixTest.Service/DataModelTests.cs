@@ -5,7 +5,7 @@ using Xunit;
 namespace PimixTest.Service {
     public class DataModelTests {
         public DataModelTests() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.jingbian.tk/api";
+            KifaServiceRestClient.ServerAddress = "http://www.jingbian.tk/api";
             FakeDataModel.Client.Reset();
         }
 

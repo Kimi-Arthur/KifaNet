@@ -167,9 +167,9 @@ namespace Pimix.Languages.German {
         public string Translation { get; set; }
     }
 
-    public interface WordServiceClient : PimixServiceClient<Word> {
+    public interface WordServiceClient : KifaServiceClient<Word> {
     }
 
-    public class WordRestServiceClient : PimixServiceRestClient<Word>, WordServiceClient {
+    public class WordRestServiceClient : KifaServiceRestClient<Word>, WordServiceClient {
     }
 }

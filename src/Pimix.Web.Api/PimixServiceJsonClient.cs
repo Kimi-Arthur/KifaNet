@@ -11,7 +11,7 @@ namespace Pimix.Web.Api {
         public static string DataFolder { get; set; }
     }
 
-    public class PimixServiceJsonClient<TDataModel> : BasePimixServiceClient<TDataModel>
+    public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataModel>
         where TDataModel : DataModel, new() {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -44,8 +44,8 @@ namespace Pimix.Web.Api {
 
         public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
 
-        public override RestActionResult Set(TDataModel data) =>
-            RestActionResult.FromAction(() => {
+        public override KifaActionResult Set(TDataModel data) =>
+            KifaActionResult.FromAction(() => {
                 data.Metadata ??= Get(data.Id).Metadata;
                 if (data.Metadata?.Id != null) {
                     // The data is linked.
@@ -56,8 +56,8 @@ namespace Pimix.Web.Api {
                 Write(data);
             });
 
-        public override RestActionResult Update(TDataModel data) =>
-            RestActionResult.FromAction(() => {
+        public override KifaActionResult Update(TDataModel data) =>
+            KifaActionResult.FromAction(() => {
                 var original = Get(data.Id);
                 JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                     original);
@@ -70,17 +70,17 @@ namespace Pimix.Web.Api {
                 Write(data);
             });
 
-        public override RestActionResult Delete(string id) {
+        public override KifaActionResult Delete(string id) {
             throw new NotImplementedException();
         }
 
-        public override RestActionResult Link(string targetId, string linkId) {
+        public override KifaActionResult Link(string targetId, string linkId) {
             var target = Get(targetId);
             var link = Get(linkId);
 
             if (target.Id == null) {
-                return LogAndReturn(new RestActionResult {
-                    Status = RestActionStatus.BadRequest, Message = $"Target {targetId} doesn't exist."
+                return LogAndReturn(new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest, Message = $"Target {targetId} doesn't exist."
                 });
             }
 
@@ -89,14 +89,14 @@ namespace Pimix.Web.Api {
             if (link.Id != null) {
                 var realLinkId = link.Metadata?.Id ?? link.Id;
                 if (realLinkId == realTargetId) {
-                    return LogAndReturn(new RestActionResult {
-                        Status = RestActionStatus.BadRequest,
+                    return LogAndReturn(new KifaActionResult {
+                        Status = KifaActionStatus.BadRequest,
                         Message = $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
                     });
                 }
 
-                return LogAndReturn(new RestActionResult {
-                    Status = RestActionStatus.BadRequest,
+                return LogAndReturn(new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
                     Message = $"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated."
                 });
             }
@@ -109,10 +109,10 @@ namespace Pimix.Web.Api {
             target.Id = realTargetId;
             target.Metadata.Id = null;
             Write(target);
-            return RestActionResult.SuccessResult;
+            return KifaActionResult.SuccessActionResult;
         }
 
-        public override RestActionResult Refresh(string id) {
+        public override KifaActionResult Refresh(string id) {
             var value = Get(id);
             value.Fill();
             return Set(value);
@@ -133,14 +133,14 @@ namespace Pimix.Web.Api {
             return !File.Exists(path) ? "{}" : File.ReadAllText(path);
         }
 
-        static RestActionResult LogAndReturn(RestActionResult result) {
-            logger.Log(result.Status switch {
-                RestActionStatus.Error => LogLevel.Error,
-                RestActionStatus.BadRequest => LogLevel.Warn,
-                RestActionStatus.OK => LogLevel.Info,
+        static KifaActionResult LogAndReturn(KifaActionResult actionResult) {
+            logger.Log(actionResult.Status switch {
+                KifaActionStatus.Error => LogLevel.Error,
+                KifaActionStatus.BadRequest => LogLevel.Warn,
+                KifaActionStatus.OK => LogLevel.Info,
                 _ => LogLevel.Info
-            }, result.Message);
-            return result;
+            }, actionResult.Message);
+            return actionResult;
         }
 
         static void MakeParent(string path) {

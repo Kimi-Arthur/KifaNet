@@ -5,9 +5,9 @@ namespace Pimix.Cloud.MegaNz {
     public class MegaNzConfig : DataModel {
         public const string ModelId = "configs/mega_nz";
 
-        static PimixServiceClient<MegaNzConfig> client;
+        static KifaServiceClient<MegaNzConfig> client;
 
-        public static PimixServiceClient<MegaNzConfig> Client => client ??= new PimixServiceRestClient<MegaNzConfig>();
+        public static KifaServiceClient<MegaNzConfig> Client => client ??= new KifaServiceRestClient<MegaNzConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
     }

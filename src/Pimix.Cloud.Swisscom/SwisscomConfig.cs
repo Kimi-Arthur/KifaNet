@@ -5,9 +5,9 @@ namespace Pimix.Cloud.Swisscom {
     public class SwisscomConfig : DataModel {
         public const string ModelId = "configs/swisscom";
 
-        static PimixServiceClient<SwisscomConfig> client;
+        static KifaServiceClient<SwisscomConfig> client;
 
-        public static PimixServiceClient<SwisscomConfig> Client => client ??= new SwisscomConfigRestServiceClient();
+        public static KifaServiceClient<SwisscomConfig> Client => client ??= new SwisscomConfigRestServiceClient();
 
         public Dictionary<string, SwisscomAccount> Accounts { get; set; }
 
@@ -31,9 +31,9 @@ namespace Pimix.Cloud.Swisscom {
         public List<string> Accounts { get; set; }
     }
 
-    public interface SwisscomConfigServiceClient : PimixServiceClient<SwisscomConfig> {
+    public interface SwisscomConfigServiceClient : KifaServiceClient<SwisscomConfig> {
     }
 
-    public class SwisscomConfigRestServiceClient : PimixServiceRestClient<SwisscomConfig>, SwisscomConfigServiceClient {
+    public class SwisscomConfigRestServiceClient : KifaServiceRestClient<SwisscomConfig>, SwisscomConfigServiceClient {
     }
 }

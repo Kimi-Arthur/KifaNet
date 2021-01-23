@@ -13,8 +13,8 @@ namespace Kifa.Cloud.OAuth {
 
         public abstract string GetTokenUrl(string code, string redirectUrl);
 
-        public abstract RestActionResult FillUserInfo();
+        public abstract KifaActionResult FillUserInfo();
 
-        public abstract RestActionResult RefreshAccount();
+        public abstract KifaActionResult RefreshAccount();
     }
 }

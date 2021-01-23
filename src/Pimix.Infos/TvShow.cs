@@ -163,12 +163,12 @@ namespace Pimix.Infos {
         }
     }
 
-    public interface TvShowServiceClient : PimixServiceClient<TvShow> {
+    public interface TvShowServiceClient : KifaServiceClient<TvShow> {
         string Format(string id, int seasonId, int episodeId);
         string Format(string id, int seasonId, List<int> episodeIds);
     }
 
-    public class TvShowRestServiceClient : PimixServiceRestClient<TvShow>, TvShowServiceClient {
+    public class TvShowRestServiceClient : KifaServiceRestClient<TvShow>, TvShowServiceClient {
         public string Format(string id, int seasonId, int episodeId) {
             return Format(id, seasonId, new List<int> {episodeId});
         }

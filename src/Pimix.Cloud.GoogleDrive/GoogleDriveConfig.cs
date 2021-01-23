@@ -6,9 +6,9 @@ namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveConfig : DataModel {
         public const string ModelId = "configs/google";
 
-        static PimixServiceClient<GoogleDriveConfig> client;
+        static KifaServiceClient<GoogleDriveConfig> client;
 
-        public static PimixServiceClient<GoogleDriveConfig> Client => client ??= new PimixServiceRestClient<GoogleDriveConfig>();
+        public static KifaServiceClient<GoogleDriveConfig> Client => client ??= new KifaServiceRestClient<GoogleDriveConfig>();
 
         public string RootFolder { get; set; }
 

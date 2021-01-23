@@ -6,9 +6,9 @@ namespace Pimix.Cloud.BaiduCloud {
     public class BaiduCloudConfig : DataModel {
         public const string ModelId = "configs/baidu_cloud";
 
-        static PimixServiceClient<BaiduCloudConfig> client;
+        static KifaServiceClient<BaiduCloudConfig> client;
 
-        public static PimixServiceClient<BaiduCloudConfig> Client => client ??= new PimixServiceRestClient<BaiduCloudConfig>();
+        public static KifaServiceClient<BaiduCloudConfig> Client => client ??= new KifaServiceRestClient<BaiduCloudConfig>();
 
         public Dictionary<string, AccountInfo> Accounts { get; set; }
 

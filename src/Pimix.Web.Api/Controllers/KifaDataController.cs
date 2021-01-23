@@ -8,7 +8,7 @@ using Pimix.Service;
 namespace Pimix.Web.Api.Controllers {
     [ApiController]
     public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
-        where TServiceClient : PimixServiceClient<TDataModel>, new() {
+        where TServiceClient : KifaServiceClient<TDataModel>, new() {
         static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
 
         static readonly TimeSpan[] RefreshIntervals = {
@@ -22,11 +22,11 @@ namespace Pimix.Web.Api.Controllers {
 
         // GET api/values
         [HttpGet]
-        public ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
+        public Microsoft.AspNetCore.Mvc.ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public virtual ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
+        public virtual Microsoft.AspNetCore.Mvc.ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
             id = Uri.UnescapeDataString(id);
             if (id.StartsWith("$")) {
                 return new NotFoundResult();
@@ -109,24 +109,24 @@ namespace Pimix.Web.Api.Controllers {
     }
 
     public class PimixActionResult : IConvertToActionResult {
-        RestActionResult Result { get; set; }
+        KifaActionResult ActionResult { get; set; }
 
-        public static implicit operator PimixActionResult(RestActionResult result) {
-            return new PimixActionResult {Result = result};
+        public static implicit operator PimixActionResult(KifaActionResult actionResult) {
+            return new PimixActionResult {ActionResult = actionResult};
         }
 
         public IActionResult Convert() =>
-            ((IConvertToActionResult) new ActionResult<RestActionResult>(Result)).Convert();
+            ((IConvertToActionResult) new Microsoft.AspNetCore.Mvc.ActionResult<KifaActionResult>(ActionResult)).Convert();
     }
 
     public class PimixActionResult<TValue> : IConvertToActionResult {
-        RestActionResult<TValue> Result { get; set; }
+        Service.KifaActionResult<TValue> ActionResult { get; set; }
 
         public static implicit operator PimixActionResult<TValue>(TValue value) {
-            return new PimixActionResult<TValue> {Result = new RestActionResult<TValue>(value)};
+            return new PimixActionResult<TValue> {ActionResult = new Service.KifaActionResult<TValue>(value)};
         }
 
         public IActionResult Convert() =>
-            ((IConvertToActionResult) new ActionResult<RestActionResult<TValue>>(Result)).Convert();
+            ((IConvertToActionResult) new Microsoft.AspNetCore.Mvc.ActionResult<Service.KifaActionResult<TValue>>(ActionResult)).Convert();
     }
 }

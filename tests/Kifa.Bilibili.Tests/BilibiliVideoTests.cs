@@ -52,7 +52,7 @@ namespace Kifa.Bilibili.Tests {
 
         [Fact]
         public void SinglePartTest() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.kifa.ga/api";
+            KifaServiceRestClient.ServerAddress = "http://www.kifa.ga/api";
             var video = BilibiliVideo.Client.Get("av26361000");
             Assert.Equal("av26361000", video.Id);
             Assert.Equal("【7月】工作细胞 01【独家正版】", video.Title);
@@ -70,7 +70,7 @@ namespace Kifa.Bilibili.Tests {
 
         [Fact]
         public void MultiPartsTest() {
-            PimixServiceRestClient.PimixServerApiAddress = "http://www.kifa.ga/api";
+            KifaServiceRestClient.ServerAddress = "http://www.kifa.ga/api";
             var video = BilibiliVideo.Client.Get("av2044037");
             video.PartMode = BilibiliVideo.PartModeType.ContinuousPartMode;
             Assert.Equal("av2044037", video.Id);

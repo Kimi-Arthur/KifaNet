@@ -10,10 +10,10 @@ namespace Kifa.Cloud.GooglePhotos {
     public class GoogleAccount : OAuthAccount {
         public const string ModelId = "accounts/google";
 
-        static PimixServiceClient<GoogleAccount> client;
+        static KifaServiceClient<GoogleAccount> client;
 
-        public static PimixServiceClient<GoogleAccount> Client =>
-            client ??= new PimixServiceRestClient<GoogleAccount>();
+        public static KifaServiceClient<GoogleAccount> Client =>
+            client ??= new KifaServiceRestClient<GoogleAccount>();
 
         static readonly HttpClient HttpClient = new HttpClient();
 
@@ -48,8 +48,8 @@ namespace Kifa.Cloud.GooglePhotos {
             });
         }
 
-        public override RestActionResult FillUserInfo() =>
-            RestActionResult.FromAction(() => {
+        public override KifaActionResult FillUserInfo() =>
+            KifaActionResult.FromAction(() => {
                 var userInfoUrl =
                     UserInfoUrlPattern.Format(new Dictionary<string, string> {{"access_token", AccessToken}});
                 var info = HttpClient.GetAsync(userInfoUrl).Result.GetJToken();
@@ -57,8 +57,8 @@ namespace Kifa.Cloud.GooglePhotos {
                 UserId = (string) info["id"];
             });
 
-        public override RestActionResult RefreshAccount() {
-            return RestActionResult.FromAction(() => {
+        public override KifaActionResult RefreshAccount() {
+            return KifaActionResult.FromAction(() => {
                 var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
                     {"client_id", GoogleCloudConfigs.ClientId},
                     {"client_secret", GoogleCloudConfigs.ClientSecret},

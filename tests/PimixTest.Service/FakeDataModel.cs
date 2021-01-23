@@ -28,11 +28,11 @@ namespace PimixTest.Service {
         public List<string> Sub2 { get; set; }
     }
 
-    interface FakeDataModelServiceClient : PimixServiceClient<FakeDataModel> {
+    interface FakeDataModelServiceClient : KifaServiceClient<FakeDataModel> {
         void Reset();
     }
 
-    class FakeDataModelRestServiceClient : PimixServiceRestClient<FakeDataModel>, FakeDataModelServiceClient {
+    class FakeDataModelRestServiceClient : KifaServiceRestClient<FakeDataModel>, FakeDataModelServiceClient {
         public void Reset() => Call<FakeDataModel>("reset");
     }
 }

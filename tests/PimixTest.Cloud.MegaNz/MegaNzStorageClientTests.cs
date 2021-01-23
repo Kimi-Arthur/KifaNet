@@ -84,7 +84,7 @@ namespace PimixTest.Cloud.MegaNz {
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx) {
-            PimixServiceRestClient.PimixServerApiAddress = PimixServerApiAddress;
+            KifaServiceRestClient.ServerAddress = PimixServerApiAddress;
             DataCleanup();
         }
 

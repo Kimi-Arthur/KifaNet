@@ -3,6 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Pimix.Web.Api.Controllers.bilibili {
     [Route("api/" + BilibiliBangumi.ModelId)]
-    public class BilibiliBangumiController : KifaDataController<BilibiliBangumi, PimixServiceJsonClient<BilibiliBangumi>> {
+    public class BilibiliBangumiController : KifaDataController<BilibiliBangumi, KifaServiceJsonClient<BilibiliBangumi>> {
     }
 }

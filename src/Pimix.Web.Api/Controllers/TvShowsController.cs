@@ -15,7 +15,7 @@ namespace Pimix.Web.Api.Controllers {
                 : Client.Format(id, seasonId, episodeId.Value);
     }
 
-    public class TvShowJsonServiceClient : PimixServiceJsonClient<TvShow>, TvShowServiceClient {
+    public class TvShowJsonServiceClient : KifaServiceJsonClient<TvShow>, TvShowServiceClient {
         public string Format(string id, int seasonId, int episodeId) {
             return Format(id, seasonId, new List<int> {episodeId});
         }

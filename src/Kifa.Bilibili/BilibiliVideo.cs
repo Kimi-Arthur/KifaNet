@@ -45,7 +45,7 @@ namespace Kifa.Bilibili {
             Done
         }
 
-        static PimixServiceClient<BilibiliVideo> client;
+        static KifaServiceClient<BilibiliVideo> client;
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -57,8 +57,8 @@ namespace Kifa.Bilibili {
 
         PartModeType partMode;
 
-        public static PimixServiceClient<BilibiliVideo> Client =>
-            client ??= new PimixServiceRestClient<BilibiliVideo>();
+        public static KifaServiceClient<BilibiliVideo> Client =>
+            client ??= new KifaServiceRestClient<BilibiliVideo>();
 
         public static string BilibiliCookies { get; set; }
 

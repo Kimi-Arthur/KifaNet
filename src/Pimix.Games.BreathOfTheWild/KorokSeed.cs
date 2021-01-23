@@ -6,9 +6,9 @@ namespace Pimix.Games.BreathOfTheWild {
     public class KorokSeed : DataModel {
         public const string ModelId = "botw/seeds";
 
-        static PimixServiceClient<KorokSeed> client;
+        static KifaServiceClient<KorokSeed> client;
 
-        public static PimixServiceClient<KorokSeed> Client => client ??= new PimixServiceRestClient<KorokSeed>();
+        public static KifaServiceClient<KorokSeed> Client => client ??= new KifaServiceRestClient<KorokSeed>();
 
         public string Page { get; set; }
         public List<Location> Locations { get; set; }

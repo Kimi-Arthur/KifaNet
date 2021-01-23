@@ -5,9 +5,9 @@ namespace Pimix.Music {
     public class GuitarChord : DataModel {
         public const string ModelId = "guitar/chords";
 
-        static PimixServiceClient<GuitarChord> client;
+        static KifaServiceClient<GuitarChord> client;
 
-        public static PimixServiceClient<GuitarChord> Client => client ??= new PimixServiceRestClient<GuitarChord>();
+        public static KifaServiceClient<GuitarChord> Client => client ??= new KifaServiceRestClient<GuitarChord>();
 
         /// Name of the chord. Can be like, `C`, `Cmaj7`, `Em` etc.
         public string Name { get; set; }
@@ -28,9 +28,9 @@ namespace Pimix.Music {
         public int Fret { get; set; }
     }
 
-    public interface GuitarChordServiceClient : PimixServiceClient<GuitarChord> {
+    public interface GuitarChordServiceClient : KifaServiceClient<GuitarChord> {
     }
 
-    public class GuitarChordRestServiceClient : PimixServiceRestClient<GuitarChord>, GuitarChordServiceClient {
+    public class GuitarChordRestServiceClient : KifaServiceRestClient<GuitarChord>, GuitarChordServiceClient {
     }
 }

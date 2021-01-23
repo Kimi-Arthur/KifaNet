@@ -6,13 +6,13 @@ using Pimix.Service;
 
 namespace Pimix.Web.Api.Controllers {
     public abstract class
-        OAuthAccountController<TAccount> : KifaDataController<TAccount, PimixServiceJsonClient<TAccount>>
+        OAuthAccountController<TAccount> : KifaDataController<TAccount, KifaServiceJsonClient<TAccount>>
         where TAccount : OAuthAccount, new() {
         static readonly HttpClient HttpClient = new();
 
-        static readonly PimixServiceJsonClient<TAccount> ServiceClient = new();
+        static readonly KifaServiceJsonClient<TAccount> ServiceClient = new();
 
-        public override ActionResult<TAccount> Get(string id, bool refresh = false) {
+        public override Microsoft.AspNetCore.Mvc.ActionResult<TAccount> Get(string id, bool refresh = false) {
             var account = ServiceClient.Get(id);
             return account.Id != null ? base.Get(id, refresh) : AccountAdd(id);
         }
@@ -21,7 +21,7 @@ namespace Pimix.Web.Api.Controllers {
             Redirect(new TAccount().GetAuthUrl(this.ForAction(nameof(AccountRedirect)), id));
 
         [HttpGet("$redirect")]
-        public ActionResult<TAccount> AccountRedirect([FromQuery] string code, [FromQuery] string state) {
+        public Microsoft.AspNetCore.Mvc.ActionResult<TAccount> AccountRedirect([FromQuery] string code, [FromQuery] string state) {
             var tokenUrl = new TAccount().GetTokenUrl(code, this.ForAction(nameof(AccountRedirect)));
 
             var response = HttpClient.PostAsync(tokenUrl, null).Result.GetJToken();
@@ -41,7 +41,7 @@ namespace Pimix.Web.Api.Controllers {
         public override PimixActionResult Refresh(RefreshRequest request) {
             var account = ServiceClient.Get(request.Id);
             account.RefreshAccount();
-            return RestActionResult.FromAction(() => ServiceClient.Set(account));
+            return KifaActionResult.FromAction(() => ServiceClient.Set(account));
         }
     }
 }

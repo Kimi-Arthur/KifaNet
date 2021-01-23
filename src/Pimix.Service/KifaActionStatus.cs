@@ -1,5 +1,5 @@
 ﻿namespace Pimix.Service {
-    public enum RestActionStatus {
+    public enum KifaActionStatus {
         OK,
         BadRequest,
         Error

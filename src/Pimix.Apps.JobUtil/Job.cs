@@ -78,7 +78,7 @@ namespace Pimix.Apps.JobUtil {
         }
     }
 
-    interface JobServiceClient : PimixServiceClient<Job> {
+    interface JobServiceClient : KifaServiceClient<Job> {
         Job PullJob(string id = null, string idPrefix = null, string runner = null);
         Job StartJob(string id = null, string idPrefix = null, string runner = null);
         void ResetJob(string id);
@@ -87,7 +87,7 @@ namespace Pimix.Apps.JobUtil {
         void Log(string id, string message, string level = "i");
     }
 
-    class JobRestServiceClient : PimixServiceRestClient<Job>, JobServiceClient {
+    class JobRestServiceClient : KifaServiceRestClient<Job>, JobServiceClient {
         public Job PullJob(string id = null, string idPrefix = null, string runner = null)
             => Call<Job>("pull_job",
                 id,

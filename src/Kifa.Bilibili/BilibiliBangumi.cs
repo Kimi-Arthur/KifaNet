@@ -7,10 +7,10 @@ namespace Kifa.Bilibili {
     public class BilibiliBangumi : DataModel {
         public const string ModelId = "bilibili/bangumis";
 
-        static PimixServiceClient<BilibiliBangumi> client;
+        static KifaServiceClient<BilibiliBangumi> client;
 
-        public static PimixServiceClient<BilibiliBangumi> Client =>
-            client ??= new PimixServiceRestClient<BilibiliBangumi>();
+        public static KifaServiceClient<BilibiliBangumi> Client =>
+            client ??= new KifaServiceRestClient<BilibiliBangumi>();
 
         public string SeasonId { get; set; }
         public string Title { get; set; }
