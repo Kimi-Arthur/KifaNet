@@ -1,6 +1,7 @@
 ﻿using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Mito {
+namespace Kifa.Mito {
     public class Actress : DataModel {
         public const string ModelId = "mito/actresses";
 

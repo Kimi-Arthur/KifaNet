@@ -81,11 +81,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages", "src\Pimi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Music", "src\Pimix.Music\Pimix.Music.csproj", "{63DA2454-374B-43CF-9946-34134D20225C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito.Dmm", "src\Pimix.Mito.Dmm\Pimix.Mito.Dmm.csproj", "{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Mito.Dmm", "src\Kifa.Mito.Dmm\Kifa.Mito.Dmm.csproj", "{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito", "src\Pimix.Mito\Pimix.Mito.csproj", "{D3318132-B9A6-4FDD-AE31-D5876DF06024}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Mito", "src\Kifa.Mito\Kifa.Mito.csproj", "{D3318132-B9A6-4FDD-AE31-D5876DF06024}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Mito.Dmm", "tests\PimixTest.Mito.Dmm\PimixTest.Mito.Dmm.csproj", "{3B159E04-B8DA-42A4-98B7-D84564391502}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Mito.Dmm.Tests", "tests\Kifa.Mito.Dmm.Tests\Kifa.Mito.Dmm.Tests.csproj", "{3B159E04-B8DA-42A4-98B7-D84564391502}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.BookUtil", "src\Kifa.Tools.BookUtil\Kifa.Tools.BookUtil.csproj", "{412801F3-6032-48EF-A6B5-1FCDF5F1EB35}"
 EndProject

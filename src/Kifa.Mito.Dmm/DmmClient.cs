@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
+using Pimix;
 
-namespace Pimix.Mito.Dmm {
+namespace Kifa.Mito.Dmm {
     public class DmmClient {
-        const string VideoLink = "https://www.dmm.co.jp/digital/videoa/-/detail/=/cid={dvd_id}/";
+        const string DmmLink = "https://www.dmm.co.jp/digital/videoa/-/detail/=/cid={dvd_id}/";
+        const string R18Link = "https://www.r18.com/videos/vod/movies/detail/-/id={dvd_id}/";
+        static string VideoLink => DmmLink;
 
-        HttpClient httpClient = new HttpClient();
+        HttpClient httpClient = new();
 
         public void Fill(Video video) {
             video.VideoIds.DmmId = video.Id;

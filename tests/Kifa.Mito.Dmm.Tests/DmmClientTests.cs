@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using Pimix.Mito;
-using Pimix.Mito.Dmm;
 using Xunit;
 
-namespace PimixTest.Mito.Dmm {
+namespace Kifa.Mito.Dmm.Tests {
     public class DmmClientTests {
         [Fact]
         public void GetVideoTest() {

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Mito {
+namespace Kifa.Mito {
     public class Video : DataModel {
         public const string ModelId = "mito/videos";
 

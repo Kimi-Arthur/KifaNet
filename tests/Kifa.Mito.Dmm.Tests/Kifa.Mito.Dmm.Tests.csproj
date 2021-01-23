@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pimix.Mito.Dmm\Pimix.Mito.Dmm.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Mito.Dmm\Kifa.Mito.Dmm.csproj" />
   </ItemGroup>
 
 </Project>
