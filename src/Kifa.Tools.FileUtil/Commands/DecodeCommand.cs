@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
-using Newtonsoft.Json;
 using Kifa.Api.Files;
+using Kifa.GameHacking.Files;
+using Newtonsoft.Json;
 using Pimix;
-using Pimix.Games.Files;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("decode", HelpText = "Decode file.")]
@@ -13,8 +13,7 @@ namespace Kifa.Tools.FileUtil.Commands {
         public IEnumerable<string> FileNames { get; set; }
 
         public override int Execute() {
-            foreach (var file in FileNames.SelectMany(path =>
-                new KifaFile(path).List())) {
+            foreach (var file in FileNames.SelectMany(path => new KifaFile(path).List())) {
                 var folder = file.Parent.GetFile(file.BaseName);
                 if (file.Extension == "lzs") {
                     foreach (var (name, data) in LzssFile.GetFiles(file.OpenRead())) {

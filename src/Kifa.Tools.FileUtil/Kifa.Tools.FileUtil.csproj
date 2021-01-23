@@ -20,10 +20,10 @@
     <ItemGroup>
         <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
         <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
+        <ProjectReference Include="..\Kifa.GameHacking\Kifa.GameHacking.csproj" />
         <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
         <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
         <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
-        <ProjectReference Include="..\Pimix.Games.Files\Pimix.Games.Files.csproj" />
         <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
     </ItemGroup>
     <ItemGroup>

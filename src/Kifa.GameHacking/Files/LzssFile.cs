@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace Pimix.Games.Files {
+namespace Kifa.GameHacking.Files {
     public class LzssFile {
         const int BufferSize = 4096;
 

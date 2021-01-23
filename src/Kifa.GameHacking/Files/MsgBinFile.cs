@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Pimix.Games.Files {
+namespace Kifa.GameHacking.Files {
     public class MsgBinFile {
         public static IEnumerable<string> GetMessages(Stream data) {
             var reader = new BinaryReader(data);

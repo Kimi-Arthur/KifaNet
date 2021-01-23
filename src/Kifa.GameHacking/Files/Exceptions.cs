@@ -1,6 +1,6 @@
 using System;
 
-namespace Pimix.Games.Files {
+namespace Kifa.GameHacking.Files {
     public class DecodeException : Exception {
         public DecodeException() {
         }

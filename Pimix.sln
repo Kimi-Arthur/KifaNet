@@ -65,7 +65,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Games.BreathOfTheWild
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Swisscom.Tests", "tests\Kifa.Cloud.Swisscom.Tests\Kifa.Cloud.Swisscom.Tests.csproj", "{56A44251-9FF7-4144-A145-F660DFDADCA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Games.Files", "src\Pimix.Games.Files\Pimix.Games.Files.csproj", "{78D59B79-0B43-4281-A121-8C1915A9BC9D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.GameHacking", "src\Kifa.GameHacking\Kifa.GameHacking.csproj", "{78D59B79-0B43-4281-A121-8C1915A9BC9D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages.German", "src\Pimix.Languages.German\Pimix.Languages.German.csproj", "{15292670-AC73-4E6F-8F72-1B6CF2C48767}"
 EndProject
