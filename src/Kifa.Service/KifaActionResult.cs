@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 
 namespace Kifa.Service {
     public class KifaActionResult {
-        public static readonly KifaActionResult SuccessActionResult = new KifaActionResult {Status = KifaActionStatus.OK};
+        public static readonly KifaActionResult SuccessActionResult = new() {Status = KifaActionStatus.OK};
 
         public static KifaActionResult FromAction(Action action) {
             try {
@@ -15,6 +15,21 @@ namespace Kifa.Service {
 
             return SuccessActionResult;
         }
+
+        public KifaActionResult And(KifaActionResult nextResult) => Status == KifaActionStatus.OK ? nextResult : this;
+
+        public KifaActionResult And(Action nextAction) => Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
+
+        public KifaActionResult And(Func<KifaActionResult> nextAction) =>
+            Status == KifaActionStatus.OK ? nextAction() : this;
+
+        public KifaActionResult<TValue> And<TValue>(KifaActionResult<TValue> nextResult) =>
+            Status == KifaActionStatus.OK ? nextResult : new KifaActionResult<TValue>(this);
+
+        public KifaActionResult<TValue> And<TValue>(Func<TValue> nextAction) =>
+            Status == KifaActionStatus.OK
+                ? KifaActionResult<TValue>.FromAction(nextAction)
+                : new KifaActionResult<TValue>(this);
 
         [JsonConverter(typeof(StringEnumConverter))]
         public KifaActionStatus Status { get; set; }
@@ -38,6 +53,19 @@ namespace Kifa.Service {
             Message = message;
         }
 
+        public KifaActionResult(KifaActionResult result) {
+            Status = result.Status;
+            Message = result.Message;
+        }
+
         public TValue Response { get; set; }
+
+        public static KifaActionResult<TValue> FromAction(Func<TValue> action) {
+            try {
+                return new KifaActionResult<TValue>(action.Invoke());
+            } catch (Exception ex) {
+                return new KifaActionResult<TValue> {Status = KifaActionStatus.Error, Message = ex.ToString()};
+            }
+        }
     }
 }

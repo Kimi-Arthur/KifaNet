@@ -2,7 +2,6 @@ using System.Net.Http;
 using Kifa.Cloud.OAuth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Kifa.Service;
 using Pimix.Web.Api.Extensions;
 
 namespace Pimix.Web.Api.Controllers {
@@ -13,7 +12,7 @@ namespace Pimix.Web.Api.Controllers {
 
         static readonly KifaServiceJsonClient<TAccount> ServiceClient = new();
 
-        public override Microsoft.AspNetCore.Mvc.ActionResult<TAccount> Get(string id, bool refresh = false) {
+        public override ActionResult<TAccount> Get(string id, bool refresh = false) {
             var account = ServiceClient.Get(id);
             return account.Id != null ? base.Get(id, refresh) : AccountAdd(id);
         }
@@ -22,7 +21,7 @@ namespace Pimix.Web.Api.Controllers {
             Redirect(new TAccount().GetAuthUrl(this.ForAction(nameof(AccountRedirect)), id));
 
         [HttpGet("$redirect")]
-        public Microsoft.AspNetCore.Mvc.ActionResult<TAccount> AccountRedirect([FromQuery] string code, [FromQuery] string state) {
+        public IActionResult AccountRedirect([FromQuery] string code, [FromQuery] string state) {
             var tokenUrl = new TAccount().GetTokenUrl(code, this.ForAction(nameof(AccountRedirect)));
 
             var response = HttpClient.PostAsync(tokenUrl, null).Result.GetJToken();
@@ -33,16 +32,13 @@ namespace Pimix.Web.Api.Controllers {
                 Scope = (string) response["scope"]
             };
 
-            account.FillUserInfo();
-            ServiceClient.Set(account);
-
-            return Redirect(this.ForAction(nameof(Get), new RouteValueDictionary {{"id", state}}));
+            return account.FillUserInfo().And(() => ServiceClient.Set(account))
+                .And(Redirect(this.ForAction(nameof(Get), new RouteValueDictionary {{"id", state}})));
         }
 
         public override PimixActionResult Refresh(RefreshRequest request) {
             var account = ServiceClient.Get(request.Id);
-            account.RefreshAccount();
-            return KifaActionResult.FromAction(() => ServiceClient.Set(account));
+            return account.RefreshAccount().And(() => ServiceClient.Set(account));
         }
     }
 }
