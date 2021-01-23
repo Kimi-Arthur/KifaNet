@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Pimix;
 using Xunit;
 
-namespace KifaTest {
+namespace Kifa.Tests {
     public enum MyEnum {
         Value1,
         TextValue

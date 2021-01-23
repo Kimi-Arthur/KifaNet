@@ -99,7 +99,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Azure", "src\Pimix.Az
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Azure", "tests\PimixTest.Azure\PimixTest.Azure.csproj", "{22F248B5-CB91-4130-8468-1570F6B1AA21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KifaTest", "tests\KifaTest\KifaTest.csproj", "{88E7038D-C434-4BE7-B33F-F669E7A81912}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tests", "tests\Kifa.Tests\Kifa.Tests.csproj", "{88E7038D-C434-4BE7-B33F-F669E7A81912}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Bilibili.Tests", "tests\Kifa.Bilibili.Tests\Kifa.Bilibili.Tests.csproj", "{FDC3D389-C593-4FB0-9CD8-C4EFB359A196}"
 EndProject
