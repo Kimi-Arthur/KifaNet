@@ -49,8 +49,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Web.Api", "src\Pimix.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Service", "tests\PimixTest.Service\PimixTest.Service.csproj", "{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.MongoUtil", "src\Pimix.Apps.MongoUtil\Pimix.Apps.MongoUtil.csproj", "{D784E571-A2D4-46BB-AA37-DCB11F2079D4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.BiliUtil", "src\Pimix.Apps.BiliUtil\Pimix.Apps.BiliUtil.csproj", "{97D0B607-7960-4B35-BBDF-9CE2410691B3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps", "src\Pimix.Apps\Pimix.Apps.csproj", "{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}"
@@ -207,10 +205,6 @@ Global
 		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D784E571-A2D4-46BB-AA37-DCB11F2079D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D784E571-A2D4-46BB-AA37-DCB11F2079D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D784E571-A2D4-46BB-AA37-DCB11F2079D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D784E571-A2D4-46BB-AA37-DCB11F2079D4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{97D0B607-7960-4B35-BBDF-9CE2410691B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{97D0B607-7960-4B35-BBDF-9CE2410691B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97D0B607-7960-4B35-BBDF-9CE2410691B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
