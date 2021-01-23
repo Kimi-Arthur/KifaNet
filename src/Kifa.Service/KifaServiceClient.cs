@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NLog;
 
-namespace Pimix.Service {
+namespace Kifa.Service {
     public interface KifaServiceClient<TDataModel> where TDataModel : DataModel {
         SortedDictionary<string, TDataModel> List();
         TDataModel Get(string id);

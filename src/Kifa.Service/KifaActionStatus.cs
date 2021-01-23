@@ -1,4 +1,4 @@
-﻿namespace Pimix.Service {
+﻿namespace Kifa.Service {
     public enum KifaActionStatus {
         OK,
         BadRequest,

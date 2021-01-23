@@ -13,7 +13,7 @@ using Pimix.Cloud.MegaNz;
 using Pimix.Cloud.Swisscom;
 using Pimix.IO;
 using Pimix.IO.FileFormats;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Api.Files {
     public class PimixFile : IComparable<PimixFile>, IEquatable<PimixFile> {

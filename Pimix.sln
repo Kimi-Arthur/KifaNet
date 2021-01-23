@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix", "src\Pimix\Pimix.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.IO", "src\Pimix.IO\Pimix.IO.csproj", "{224429E0-2CC0-4D0C-A599-C311C1BEA819}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Service", "src\Pimix.Service\Pimix.Service.csproj", "{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Service", "src\Kifa.Service\Kifa.Service.csproj", "{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.IO.FileFormats", "src\Pimix.IO.FileFormats\Pimix.IO.FileFormats.csproj", "{F303C16E-D5DD-4453-818A-3926F7F9C8EA}"
 EndProject

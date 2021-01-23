@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Games.BreathOfTheWild {
     public class Game : DataModel {

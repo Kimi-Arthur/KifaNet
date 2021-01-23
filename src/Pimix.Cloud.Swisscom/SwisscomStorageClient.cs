@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 using NLog;
 using OpenQA.Selenium.Chrome;
 using Pimix.IO;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {

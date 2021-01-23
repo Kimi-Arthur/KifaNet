@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
-using Pimix.Service;
+using Kifa.Service;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests {

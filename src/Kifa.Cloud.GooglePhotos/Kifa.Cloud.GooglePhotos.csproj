@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 
 </Project>

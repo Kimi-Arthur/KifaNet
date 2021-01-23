@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using Pimix;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Kifa.Bilibili.BilibiliApi {
     public class UploaderVideoRpc : JsonRpc<string, UploaderVideoRpc.UploaderVideoResponse> {

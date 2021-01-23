@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace PimixTest.Service {
     class FakeDataModel : TranslatableDataModel<FakeDataModel> {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using NLog;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Languages.German {
     public class Word : DataModel {

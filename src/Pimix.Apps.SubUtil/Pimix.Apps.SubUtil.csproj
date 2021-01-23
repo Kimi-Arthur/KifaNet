@@ -15,11 +15,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
     <ProjectReference Include="..\Pimix.Api.Files\Pimix.Api.Files.csproj" />
     <ProjectReference Include="..\Pimix.Apps\Pimix.Apps.csproj" />
     <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
     <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.6.0" />

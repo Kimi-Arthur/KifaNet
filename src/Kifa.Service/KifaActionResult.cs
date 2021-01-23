@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Pimix.Service {
+namespace Kifa.Service {
     public class KifaActionResult {
         public static readonly KifaActionResult SuccessActionResult = new KifaActionResult {Status = KifaActionStatus.OK};
 

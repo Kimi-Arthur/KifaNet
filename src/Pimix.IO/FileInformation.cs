@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HashLib;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.IO {
     public class FileInformation : DataModel {

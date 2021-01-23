@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using Pimix.Cloud.GoogleDrive;
 using Pimix.IO;
-using Pimix.Service;
+using Kifa.Service;
 using Xunit;
 
 namespace PimixTest.Cloud.GoogleDrive {

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Pimix.Service;
+using Kifa.Service;
 using Xunit;
 
 namespace PimixTest.Service {

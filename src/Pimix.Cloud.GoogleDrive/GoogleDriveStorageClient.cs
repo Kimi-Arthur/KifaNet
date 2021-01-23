@@ -9,7 +9,7 @@ using Kifa.Cloud.GooglePhotos;
 using Kifa.Cloud.GooglePhotos.PhotosApi;
 using NLog;
 using Pimix.IO;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {

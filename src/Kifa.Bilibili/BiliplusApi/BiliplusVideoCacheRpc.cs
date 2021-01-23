@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Pimix;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Kifa.Bilibili.BiliplusApi {
     public class BiliplusVideoCacheRpc : JsonRpc<string, BiliplusVideoCacheRpc.BiliplusVideoCache> {

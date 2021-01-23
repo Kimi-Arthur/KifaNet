@@ -17,7 +17,7 @@
     <PackageReference Include="CommandLineParser" Version="2.6.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
     <ProjectReference Include="..\Pimix.Configs\Pimix.Configs.csproj" />
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
 </Project>

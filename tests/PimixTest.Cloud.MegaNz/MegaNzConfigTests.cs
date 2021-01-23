@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pimix.Cloud.MegaNz;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace PimixTest.Cloud.MegaNz {
     [TestClass]

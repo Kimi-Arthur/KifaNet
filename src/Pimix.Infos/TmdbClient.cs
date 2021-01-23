@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Infos.Tmdb {
     public class TmdbClient {

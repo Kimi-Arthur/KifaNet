@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 using NLog;
 using Pimix;
 using Pimix.IO;
-using Pimix.Service;
+using Kifa.Service;
 using Pimix.Subtitle.Ass;
 
 namespace Kifa.Bilibili {

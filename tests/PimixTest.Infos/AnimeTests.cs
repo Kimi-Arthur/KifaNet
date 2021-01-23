@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Pimix;
 using Pimix.Infos;
-using Pimix.Service;
+using Kifa.Service;
 using Xunit;
 
 namespace PimixTest.Infos {

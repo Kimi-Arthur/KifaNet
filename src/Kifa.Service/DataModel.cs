@@ -5,8 +5,9 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using NLog;
+using Pimix;
 
-namespace Pimix.Service {
+namespace Kifa.Service {
     /// <summary>
     /// When used, specify a public const string field named ModelId.
     /// </summary>

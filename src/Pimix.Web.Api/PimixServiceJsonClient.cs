@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using NLog;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Web.Api {
     public class PimixServiceJsonClient {

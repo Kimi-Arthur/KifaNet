@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Kifa.Cloud.OAuth {
     public abstract class OAuthAccount : DataModel {

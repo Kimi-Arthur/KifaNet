@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj"/>
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj"/>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
   </ItemGroup>
 </Project>

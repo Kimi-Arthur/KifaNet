@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Cloud.Swisscom {
     public class SwisscomConfig : DataModel {

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Pimix;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Kifa.Soccer {
     public class SoccerShow : DataModel {

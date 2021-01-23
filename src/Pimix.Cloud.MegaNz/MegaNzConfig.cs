@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Pimix.Cloud.MegaNz {
     public class MegaNzConfig : DataModel {

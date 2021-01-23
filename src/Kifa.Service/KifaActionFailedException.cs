@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Pimix.Service {
+namespace Kifa.Service {
     class KifaActionFailedException : Exception {
         public KifaActionResult ActionResult { get; set; }
 

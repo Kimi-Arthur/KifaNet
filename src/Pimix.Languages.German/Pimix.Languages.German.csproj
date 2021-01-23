@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
     <ProjectReference Include="..\Pimix.Languages\Pimix.Languages.csproj" />
-    <ProjectReference Include="..\Pimix.Service\Pimix.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

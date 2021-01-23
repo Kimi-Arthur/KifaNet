@@ -4,7 +4,7 @@ using System.Web;
 using Kifa.Cloud.GooglePhotos.PhotosApi;
 using Kifa.Cloud.OAuth;
 using Pimix;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Kifa.Cloud.GooglePhotos {
     public class GoogleAccount : OAuthAccount {

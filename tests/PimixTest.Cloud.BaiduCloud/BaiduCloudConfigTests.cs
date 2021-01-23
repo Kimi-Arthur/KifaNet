@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Pimix.Cloud.BaiduCloud;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace PimixTest.Cloud.BaiduCloud {
     [TestClass]

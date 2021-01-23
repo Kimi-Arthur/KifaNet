@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
-using Pimix.Service;
+using Kifa.Service;
 
 namespace Kifa.Bilibili {
     public class BilibiliBangumi : DataModel {
