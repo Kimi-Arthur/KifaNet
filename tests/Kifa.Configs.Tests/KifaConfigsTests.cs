@@ -5,8 +5,8 @@ using System.Text;
 using Kifa.Configs;
 using Xunit;
 
-namespace PimixTest.Configs {
-    public class PimixConfigsTests {
+namespace Kifa.Configs.Tests {
+    public class KifaConfigsTests {
         public static int IntConfig { get; set; }
 
         public static string StringConfig { get; set; }
@@ -29,7 +29,7 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureComplexPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs.PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   ComplexConfig:
     I: 123
     S: AS";
@@ -43,7 +43,7 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureIntListPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs.PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   IntListConfig:
   - 123
   - 233
@@ -61,7 +61,7 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureIntPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs.PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   IntConfig: 123";
             KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
@@ -72,8 +72,8 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureMultiSegmentPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs:
-  PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests:
+  KifaConfigsTests:
     MultiSegmentConfig: 123";
             KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
@@ -84,7 +84,7 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureStringDictPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs.PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   StringDictConfig:
     a: b
     c:
@@ -104,7 +104,7 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureStringListPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs.PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   StringListConfig:
   - 123
   - 233
@@ -124,7 +124,7 @@ namespace PimixTest.Configs {
         [Fact]
         public void ConfigureStringPropertyTest() {
             var properties = KifaConfigs.GetAllProperties();
-            var config = @"PimixTest.Configs.PimixConfigsTests:
+            var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   StringConfig: abc";
             KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
@@ -136,12 +136,12 @@ namespace PimixTest.Configs {
         public void GetAllPropertiesTest() {
             var properties = KifaConfigs.GetAllProperties();
             var keys = properties.Keys.ToList();
-            Assert.Contains("PimixTest.Configs.PimixConfigsTests.IntConfig", keys);
-            Assert.Contains("PimixTest.Configs.PimixConfigsTests.StringConfig", keys);
-            Assert.Contains("PimixTest.Configs.PimixConfigsTests.IntListConfig", keys);
-            Assert.Contains("PimixTest.Configs.PimixConfigsTests.StringListConfig", keys);
-            Assert.Contains("PimixTest.Configs.PimixConfigsTests.StringDictConfig", keys);
-            Assert.Contains("PimixTest.Configs.PimixConfigsTests.ComplexConfig", keys);
+            Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.IntConfig", keys);
+            Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.StringConfig", keys);
+            Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.IntListConfig", keys);
+            Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.StringListConfig", keys);
+            Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.StringDictConfig", keys);
+            Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.ComplexConfig", keys);
         }
     }
 }

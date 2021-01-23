@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.SubUtil", "src\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Configs", "src\Kifa.Configs\Kifa.Configs.csproj", "{EF17EA06-8245-49DF-B74A-098856EA9754}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Configs", "tests\PimixTest.Configs\PimixTest.Configs.csproj", "{6144F201-F164-4AB1-9A45-35764710FCF7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Configs.Tests", "tests\Kifa.Configs.Tests\Kifa.Configs.Tests.csproj", "{6144F201-F164-4AB1-9A45-35764710FCF7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Subtitle", "tests\PimixTest.Subtitle\PimixTest.Subtitle.csproj", "{B7B90EB1-FFEA-4B1D-A613-8A62CCDC4AD2}"
 EndProject
