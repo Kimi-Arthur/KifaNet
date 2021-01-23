@@ -8,7 +8,7 @@ using Xunit;
 namespace PimixTest.Infos {
     public class AnimeTests {
         public AnimeTests() {
-            KifaServiceRestClient.ServerAddress = "http://www.jingbian.tk/api";
+            KifaServiceRestClient.ServerAddress = "http://www.kifa.ga/api";
             Client = new KifaServiceRestClient<Anime>();
         }
 
