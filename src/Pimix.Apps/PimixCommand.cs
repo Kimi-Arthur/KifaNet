@@ -4,7 +4,7 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Pimix.Api.Files;
-using Pimix.Configs;
+using Kifa.Configs;
 
 namespace Pimix.Apps {
     public abstract class PimixCommand {
@@ -44,9 +44,9 @@ namespace Pimix.Apps {
 
         public static void Initialize() {
             AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
-                PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+                KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
-            PimixConfigs.LoadFromSystemConfigs();
+            KifaConfigs.LoadFromSystemConfigs();
 
             if (LoggingTargets != null) {
                 ConfigureLogger();

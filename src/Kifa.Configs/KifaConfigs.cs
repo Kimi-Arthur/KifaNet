@@ -5,8 +5,8 @@ using System.Reflection;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
-namespace Pimix.Configs {
-    public static class PimixConfigs {
+namespace Kifa.Configs {
+    public static class KifaConfigs {
         static string configFilePath;
 
         static readonly Deserializer deserializer = new Deserializer();

@@ -1,15 +1,15 @@
 ﻿using System;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Pimix.Configs;
+using Kifa.Configs;
 
 namespace Pimix.Web.Api {
     public class Program {
         public static void Main(string[] args) {
             AppDomain.CurrentDomain.AssemblyLoad +=
-                (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+                (sender, eventArgs) => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
-            PimixConfigs.LoadFromSystemConfigs();
+            KifaConfigs.LoadFromSystemConfigs();
 
             CreateWebHostBuilder(args).Build().Run();
         }

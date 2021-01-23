@@ -4,7 +4,7 @@ using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.RepresentationModel;
 
-namespace Pimix.Configs {
+namespace Kifa.Configs {
     /// <summary>
     ///     Work around to use YamlNode to deserialize. Taken from https://stackoverflow.com/a/40727087/8212226
     /// </summary>

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommandLine;
-using Pimix.Configs;
+using Kifa.Configs;
 
 namespace Pimix.Apps.JobUtil {
     class Program {
         static int Main(string[] args) {
             AppDomain.CurrentDomain.AssemblyLoad +=
-                (sender, eventArgs) => PimixConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+                (sender, eventArgs) => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
-            PimixConfigs.LoadFromSystemConfigs();
+            KifaConfigs.LoadFromSystemConfigs();
 
             return Parser.Default
                 .ParseArguments<RunJobCommand, RunAllJobsCommand, ResetJobCommand>(args)

@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Pimix.Configs\Pimix.Configs.csproj" />
+      <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
     </ItemGroup>
 
 </Project>

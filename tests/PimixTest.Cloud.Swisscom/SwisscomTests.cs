@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using Pimix.Cloud.Swisscom;
-using Pimix.Configs;
+using Kifa.Configs;
 using Pimix.IO;
 using Xunit;
 
@@ -136,7 +136,7 @@ namespace PimixTest.Cloud.Swisscom {
         // }
 
         static SwisscomStorageClient GetStorageClient() {
-            PimixConfigs.LoadFromSystemConfigs();
+            KifaConfigs.LoadFromSystemConfigs();
 
             return new SwisscomStorageClient {
                 Account = new SwisscomAccount {Username = "pimixserver@gmail.com", Password = "Pny3YQzV"}

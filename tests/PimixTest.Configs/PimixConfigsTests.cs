@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Pimix.Configs;
+using Kifa.Configs;
 using Xunit;
 
 namespace PimixTest.Configs {
@@ -28,12 +28,12 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureComplexPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs.PimixConfigsTests:
   ComplexConfig:
     I: 123
     S: AS";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal(123, ComplexConfig.I);
@@ -42,13 +42,13 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureIntListPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs.PimixConfigsTests:
   IntListConfig:
   - 123
   - 233
   - 344";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal(new List<int> {
@@ -60,10 +60,10 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureIntPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs.PimixConfigsTests:
   IntConfig: 123";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal(123, IntConfig);
@@ -71,11 +71,11 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureMultiSegmentPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs:
   PimixConfigsTests:
     MultiSegmentConfig: 123";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal(123, MultiSegmentConfig);
@@ -83,14 +83,14 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureStringDictPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs.PimixConfigsTests:
   StringDictConfig:
     a: b
     c:
       d
     d: ""e""";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal(new Dictionary<string, string> {
@@ -103,14 +103,14 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureStringListPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs.PimixConfigsTests:
   StringListConfig:
   - 123
   - 233
   - 344
   - abc";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal(new List<string> {
@@ -123,10 +123,10 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void ConfigureStringPropertyTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var config = @"PimixTest.Configs.PimixConfigsTests:
   StringConfig: abc";
-            PimixConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
+            KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)),
                 properties);
 
             Assert.Equal("abc", StringConfig);
@@ -134,7 +134,7 @@ namespace PimixTest.Configs {
 
         [Fact]
         public void GetAllPropertiesTest() {
-            var properties = PimixConfigs.GetAllProperties();
+            var properties = KifaConfigs.GetAllProperties();
             var keys = properties.Keys.ToList();
             Assert.Contains("PimixTest.Configs.PimixConfigsTests.IntConfig", keys);
             Assert.Contains("PimixTest.Configs.PimixConfigsTests.StringConfig", keys);
