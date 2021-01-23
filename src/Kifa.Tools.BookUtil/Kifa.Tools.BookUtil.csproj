@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ToolCommandName>bookx</ToolCommandName>
+    <PackAsTool>true</PackAsTool>
+    <Version>1.0.1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+    <PackageIcon>Pimix.png</PackageIcon>
+    <Description>Utility to manage books.</Description>
+    <Copyright>Copyright © 2015-2020 Kimi Arthur</Copyright>
+    <PackageTags>Pimix Apps BookUtil app</PackageTags>
+    <Authors>KimiArthur</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PDFSharp.Standard" Version="1.51.12" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1" />
+    <PackageReference Include="NLog.Schema" Version="4.6.7" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\resources\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+  </ItemGroup>
+</Project>

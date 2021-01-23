@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <ToolCommandName>filex</ToolCommandName>
+        <PackAsTool>true</PackAsTool>
+        <Version>12.2.1</Version>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+        <PackageIcon>Pimix.png</PackageIcon>
+        <Description>Utility to manage files.</Description>
+        <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
+        <PackageTags>Pimix Apps FileUtil app</PackageTags>
+        <Authors>KimiArthur</Authors>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.6.0" />
+        <PackageReference Include="NLog.Schema" Version="4.6.7" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
+        <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
+        <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
+        <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+        <ProjectReference Include="..\Pimix.Games.Files\Pimix.Games.Files.csproj" />
+        <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
+        <ProjectReference Include="..\Pimix.IO\Pimix.IO.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\resources\NLog.config">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+</Project>

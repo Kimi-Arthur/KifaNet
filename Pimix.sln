@@ -23,9 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PimixTest.Cloud.BaiduCloud"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PimixTest.Cloud.MegaNz", "tests\PimixTest.Cloud.MegaNz\PimixTest.Cloud.MegaNz.csproj", "{ABCA6615-FF57-452B-AEBF-6CA6EE98BDD3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.JobUtil", "src\Pimix.Apps.JobUtil\Pimix.Apps.JobUtil.csproj", "{AA48DD43-1AB2-4625-8CDD-9DE10A334F37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Tools.JobUtil", "src\Kifa.Tools.JobUtil\Kifa.Tools.JobUtil.csproj", "{AA48DD43-1AB2-4625-8CDD-9DE10A334F37}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Apps.FileUtil", "src\Pimix.Apps.FileUtil\Pimix.Apps.FileUtil.csproj", "{FA56DE78-275B-453E-B241-4AE0C2E43C27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Tools.FileUtil", "src\Kifa.Tools.FileUtil\Kifa.Tools.FileUtil.csproj", "{FA56DE78-275B-453E-B241-4AE0C2E43C27}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Api.Files", "src\Kifa.Api.Files\Kifa.Api.Files.csproj", "{A1FCD94B-1107-4404-8A66-109537B2D6DA}"
 EndProject
@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Subtitle", "src\Pimix
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Bilibili", "src\Kifa.Bilibili\Kifa.Bilibili.csproj", "{92F48950-18F4-4891-8114-47847E0063B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.SubUtil", "src\Pimix.Apps.SubUtil\Pimix.Apps.SubUtil.csproj", "{4B103459-90B8-4F4A-93EF-D594D24B58F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.SubUtil", "src\Kifa.Tools.SubUtil\Kifa.Tools.SubUtil.csproj", "{4B103459-90B8-4F4A-93EF-D594D24B58F9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Configs", "src\Kifa.Configs\Kifa.Configs.csproj", "{EF17EA06-8245-49DF-B74A-098856EA9754}"
 EndProject
@@ -49,9 +49,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Web.Api", "src\Pimix.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Service.Tests", "tests\Kifa.Service.Tests\Kifa.Service.Tests.csproj", "{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.BiliUtil", "src\Pimix.Apps.BiliUtil\Pimix.Apps.BiliUtil.csproj", "{97D0B607-7960-4B35-BBDF-9CE2410691B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.BiliUtil", "src\Kifa.Tools.BiliUtil\Kifa.Tools.BiliUtil.csproj", "{97D0B607-7960-4B35-BBDF-9CE2410691B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps", "src\Pimix.Apps\Pimix.Apps.csproj", "{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools", "src\Kifa.Tools\Kifa.Tools.csproj", "{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Infos", "src\Pimix.Infos\Pimix.Infos.csproj", "{572327E1-2C76-4253-BB97-44A7B43F0AD5}"
 EndProject
@@ -75,7 +75,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages.German", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Languages.German", "tests\PimixTest.Languages.German\PimixTest.Languages.German.csproj", "{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.NoteUtil", "src\Pimix.Apps.NoteUtil\Pimix.Apps.NoteUtil.csproj", "{52F95839-91F3-4BB6-948A-4BD4904609DC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.NoteUtil", "src\Kifa.Tools.NoteUtil\Kifa.Tools.NoteUtil.csproj", "{52F95839-91F3-4BB6-948A-4BD4904609DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages", "src\Pimix.Languages\Pimix.Languages.csproj", "{B6254585-27B0-4C9F-9847-397AAE2A0F87}"
 EndProject
@@ -87,9 +87,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Mito", "src\Pimix.Mit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Mito.Dmm", "tests\PimixTest.Mito.Dmm\PimixTest.Mito.Dmm.csproj", "{3B159E04-B8DA-42A4-98B7-D84564391502}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.BookUtil", "src\Pimix.Apps.BookUtil\Pimix.Apps.BookUtil.csproj", "{412801F3-6032-48EF-A6B5-1FCDF5F1EB35}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.BookUtil", "src\Kifa.Tools.BookUtil\Kifa.Tools.BookUtil.csproj", "{412801F3-6032-48EF-A6B5-1FCDF5F1EB35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Apps.DataUtil", "src\Pimix.Apps.DataUtil\Pimix.Apps.DataUtil.csproj", "{035673B0-C4C3-49A1-BA0D-92D82BCFB231}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.DataUtil", "src\Kifa.Tools.DataUtil\Kifa.Tools.DataUtil.csproj", "{035673B0-C4C3-49A1-BA0D-92D82BCFB231}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Soccer", "src\Kifa.Soccer\Kifa.Soccer.csproj", "{701711A9-90DE-4A30-B79C-88288D4E029C}"
 EndProject
