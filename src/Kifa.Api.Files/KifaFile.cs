@@ -38,7 +38,7 @@ namespace Kifa.Api.Files {
             }
 
             // Example uri:
-            //   baidu:Pimix_1;v1/a/b/c/d.txt
+            //   baidu:Pimix_1/a/b/c/d.txt.v1
             //   mega:0z/a/b/c/d.txt
             //   local:cubie/a/b/c/d.txt
             //   local:/a/b/c/d.txt
@@ -223,8 +223,7 @@ namespace Kifa.Api.Files {
 
         public KifaFile GetFileSuffixed(string suffix) => new KifaFile($"{Host}{Path}{suffix}");
 
-        public KifaFile GetFilePrefixed(string prefix) =>
-            prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
+        public KifaFile GetFilePrefixed(string prefix) => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
 
         public override string ToString() => $"{Host}{Path}";
 
@@ -270,10 +269,10 @@ namespace Kifa.Api.Files {
                     multi++;
                     files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
                 } else {
-                    var pimixFiles = fileInfo.List(recursive).ToList();
-                    if (pimixFiles.Count > 0) {
+                    var fileInfos = fileInfo.List(recursive).ToList();
+                    if (fileInfos.Count > 0) {
                         multi = 2;
-                        files.AddRange(pimixFiles.Select(f => (f.ToString().GetNaturalSortKey(), f)));
+                        files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
                     } else {
                         multi++;
                         files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));

@@ -5,19 +5,17 @@ using Microsoft.Extensions.Primitives;
 
 namespace Kifa.Api.Files {
     public class KifaFileProvider : IFileProvider {
-        public IFileInfo GetFileInfo(string path)
-            => new PimixFileInfo(new KifaFile(id: path));
+        public IFileInfo GetFileInfo(string path) => new KifaFileInfo(new KifaFile(id: path));
 
-        public IDirectoryContents GetDirectoryContents(string path)
-            => new NotFoundDirectoryContents();
+        public IDirectoryContents GetDirectoryContents(string path) => new NotFoundDirectoryContents();
 
         public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
     }
 
-    class PimixFileInfo : IFileInfo {
+    class KifaFileInfo : IFileInfo {
         readonly KifaFile file;
 
-        public PimixFileInfo(KifaFile pimixFile) {
+        public KifaFileInfo(KifaFile pimixFile) {
             file = pimixFile;
         }
 
