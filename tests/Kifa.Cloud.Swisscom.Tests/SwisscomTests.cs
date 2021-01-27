@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Threading;
-using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
 using Kifa.IO;
 using Xunit;

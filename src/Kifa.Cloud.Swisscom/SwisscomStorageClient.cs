@@ -7,12 +7,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Web;
+using Kifa.IO;
+using Kifa.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using OpenQA.Selenium.Chrome;
-using Kifa.IO;
-using Kifa.Service;
 using Pimix;
 
 namespace Kifa.Cloud.Swisscom {
@@ -23,6 +23,10 @@ namespace Kifa.Cloud.Swisscom {
         public const long ShardSize = 1 << 30;
 
         public static APIList APIList { get; set; }
+
+        public static TimeSpan WebDriverTimeout { get; set; } = TimeSpan.Zero;
+
+        public static TimeSpan PageLoadWait { get; set; } = TimeSpan.Zero;
 
         static SwisscomConfig config;
 
@@ -229,16 +233,18 @@ namespace Kifa.Cloud.Swisscom {
 
             var service = ChromeDriverService.CreateDefaultService();
             service.SuppressInitialDiagnosticInformation = true;
-            using var driver = new ChromeDriver(service, options);
+            using var driver = new ChromeDriver(service, options, SwisscomStorageClient.WebDriverTimeout);
+
             return Retry.Run(() => {
                 driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
+                Thread.Sleep(SwisscomStorageClient.PageLoadWait);
                 driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]").Click();
                 driver.FindElementById("username").SendKeys(Username);
                 driver.FindElementById("continueButton").Click();
-                Thread.Sleep(TimeSpan.FromSeconds(2));
+                Thread.Sleep(SwisscomStorageClient.PageLoadWait);
                 driver.FindElementById("password").SendKeys(Password);
                 driver.FindElementById("submitButton").Click();
-                Thread.Sleep(TimeSpan.FromSeconds(2));
+                Thread.Sleep(SwisscomStorageClient.PageLoadWait);
                 return JToken.Parse(
                         HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token").Value))
                     .Value<string>("access_token");
