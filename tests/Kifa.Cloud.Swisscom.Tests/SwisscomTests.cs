@@ -48,6 +48,25 @@ namespace Kifa.Cloud.Swisscom.Tests {
         [Fact]
         public void UploadTest() {
             var client = GetStorageClient();
+            var data = new byte[1 << 20];
+            File.OpenRead("data.bin").Read(data, 0, 1 << 20);
+
+            var dataStream = new MemoryStream(data);
+
+            client.Write("/Test/small.bin", dataStream);
+
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+
+            using (var s = client.OpenRead("/Test/small.bin")) {
+                Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            }
+
+            client.Delete("/Test/small.bin");
+        }
+
+        [Fact]
+        public void UploadBigTest() {
+            var client = GetStorageClient();
             var data = new byte[34 << 20];
             File.OpenRead("data.bin").Read(data, 0, 1 << 20);
             for (var i = 1; i < 34; ++i) {
