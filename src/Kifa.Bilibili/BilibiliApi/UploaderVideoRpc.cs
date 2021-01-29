@@ -6,7 +6,7 @@ using Kifa.Service;
 using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class UploaderVideoRpc : JsonRpc<string, UploaderVideoRpc.UploaderVideoResponse> {
+    public class UploaderVideoRpc : JsonRpc<UploaderVideoRpc.UploaderVideoResponse> {
         public class UploaderVideoResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -73,7 +73,7 @@ namespace Kifa.Bilibili.BilibiliApi {
 
         public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override UploaderVideoResponse Call(string uploaderId) {
+        public UploaderVideoResponse Call(string uploaderId) {
             var result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
             var allResult = result.Clone();
             var page = 1;

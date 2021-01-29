@@ -4,7 +4,7 @@ using System.Net.Http;
 using Pimix;
 
 namespace Kifa.Bilibili.BiliplusApi {
-    public class BiliplusVideoRpc : JsonRpc<string, BiliplusVideoRpc.BiliplusVideoResponse> {
+    public class BiliplusVideoRpc : JsonRpc<BiliplusVideoRpc.BiliplusVideoResponse> {
         public class BiliplusVideoResponse {
             public long Id { get; set; }
             public long Ver { get; set; }
@@ -190,7 +190,7 @@ namespace Kifa.Bilibili.BiliplusApi {
 
         public override HttpClient HttpClient { get; } = BilibiliVideo.GetBiliplusClient();
 
-        public override BiliplusVideoResponse Call(string aid) =>
+        public BiliplusVideoResponse Call(string aid) =>
             Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
     }
 }

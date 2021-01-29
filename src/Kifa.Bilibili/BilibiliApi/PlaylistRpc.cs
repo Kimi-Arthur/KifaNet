@@ -5,7 +5,7 @@ using Pimix;
 using Kifa.Service;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class PlaylistRpc : JsonRpc<string, PlaylistRpc.PlaylistResponse> {
+    public class PlaylistRpc : JsonRpc<PlaylistRpc.PlaylistResponse> {
         public class PlaylistResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -91,7 +91,7 @@ namespace Kifa.Bilibili.BilibiliApi {
 
         public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override PlaylistResponse Call(string playlistId) {
+        public PlaylistResponse Call(string playlistId) {
             var result = Call(new Dictionary<string, string> {{"id", playlistId}, {"page", "1"}});
             var allResult = result.Clone();
             var page = 1;

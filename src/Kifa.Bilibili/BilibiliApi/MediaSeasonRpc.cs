@@ -5,7 +5,7 @@ using System.Net.Http;
 using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class MediaSeasonRpc : JsonRpc<string, MediaSeasonRpc.MediaSeasonResponse> {
+    public class MediaSeasonRpc : JsonRpc<MediaSeasonRpc.MediaSeasonResponse> {
         public class MediaSeasonResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -51,7 +51,7 @@ namespace Kifa.Bilibili.BilibiliApi {
 
         public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override MediaSeasonResponse Call(string seasonId) =>
+        public MediaSeasonResponse Call(string seasonId) =>
             Call(new Dictionary<string, string> {{"id", seasonId.Substring(2)}});
     }
 }

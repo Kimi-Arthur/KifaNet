@@ -6,7 +6,7 @@ using Pimix;
 using Kifa.Service;
 
 namespace Kifa.Bilibili.BiliplusApi {
-    public class BiliplusVideoCacheRpc : JsonRpc<string, BiliplusVideoCacheRpc.BiliplusVideoCache> {
+    public class BiliplusVideoCacheRpc : JsonRpc<BiliplusVideoCacheRpc.BiliplusVideoCache> {
         public class BiliplusVideoCache {
             public long Code { get; set; }
             public Data Data { get; set; }
@@ -52,7 +52,7 @@ namespace Kifa.Bilibili.BiliplusApi {
 
         public override HttpClient HttpClient { get; } = BilibiliVideo.GetBiliplusClient();
 
-        public override BiliplusVideoCache Call(string aid) {
+        public BiliplusVideoCache Call(string aid) {
             var url = CachePagePattern.Format(new Dictionary<string, string> {{"aid", aid}});
             var match = ApiRegex.Match(HttpClient.GetAsync(url).Result.GetString());
             return match.Success ? Call(new Dictionary<string, string> {{"api_path", match.Groups[1].Value}}) : null;
