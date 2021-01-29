@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using Kifa.Service;
-using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class UploaderVideoRpc : JsonRpc<UploaderVideoRpc.UploaderVideoResponse> {
+    public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoResponse> {
         public class UploaderVideoResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -70,8 +68,6 @@ namespace Kifa.Bilibili.BilibiliApi {
 
         public override string UrlPattern { get; } =
             "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
-
-        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public UploaderVideoResponse Call(string uploaderId) {
             var result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});

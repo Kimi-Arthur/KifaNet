@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Net.Http;
-using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class MediaSeasonRpc : JsonRpc<MediaSeasonRpc.MediaSeasonResponse> {
+    public class MediaSeasonRpc : BilibiliRpc<MediaSeasonRpc.MediaSeasonResponse> {
         public class MediaSeasonResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -48,8 +46,6 @@ namespace Kifa.Bilibili.BilibiliApi {
         }
 
         public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
-
-        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public MediaSeasonResponse Call(string seasonId) =>
             Call(new Dictionary<string, string> {{"id", seasonId.Substring(2)}});

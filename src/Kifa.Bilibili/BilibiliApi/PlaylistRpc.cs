@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using Pimix;
 using Kifa.Service;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class PlaylistRpc : JsonRpc<PlaylistRpc.PlaylistResponse> {
+    public class PlaylistRpc : BilibiliRpc<PlaylistRpc.PlaylistResponse> {
         public class PlaylistResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -88,8 +86,6 @@ namespace Kifa.Bilibili.BilibiliApi {
 
         public override string UrlPattern { get; } =
             "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
-
-        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public PlaylistResponse Call(string playlistId) {
             var result = Call(new Dictionary<string, string> {{"id", playlistId}, {"page", "1"}});

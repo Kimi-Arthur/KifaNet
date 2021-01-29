@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class VideoRpc : JsonRpc<VideoRpc.VideoResponse> {
+    public class VideoRpc : BilibiliRpc<VideoRpc.VideoResponse> {
         public class VideoResponse {
             public long Code { get; set; }
             public long Message { get; set; }
@@ -114,8 +112,6 @@ namespace Kifa.Bilibili.BilibiliApi {
         }
 
         public override string UrlPattern { get; } = "https://api.bilibili.com/x/web-interface/view?aid={aid}";
-
-        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public VideoResponse Call(string aid) => Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
     }

@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Net.Http;
-using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class VideoTagRpc : JsonRpc<VideoTagRpc.VideoTagResponse> {
+    public class VideoTagRpc : BilibiliRpc<VideoTagRpc.VideoTagResponse> {
         public class VideoTagResponse {
             public long Code { get; set; }
             public long Message { get; set; }
@@ -38,8 +36,6 @@ namespace Kifa.Bilibili.BilibiliApi {
         }
 
         public override string UrlPattern { get; } = "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
-
-        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public VideoTagResponse Call(string aid) => Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
     }

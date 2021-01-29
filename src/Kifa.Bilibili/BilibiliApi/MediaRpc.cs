@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
-    public class MediaRpc : JsonRpc<MediaRpc.MediaResponse> {
+    public class MediaRpc : BilibiliRpc<MediaRpc.MediaResponse> {
         public class MediaResponse {
             public long Code { get; set; }
             public string Message { get; set; }
@@ -44,8 +42,6 @@ namespace Kifa.Bilibili.BilibiliApi {
         }
 
         public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/review/user?media_id={id}";
-
-        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public MediaResponse Call(string mediaId) =>
             Call(new Dictionary<string, string> {{"id", mediaId.Substring(2)}});
