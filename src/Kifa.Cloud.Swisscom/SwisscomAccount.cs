@@ -48,8 +48,18 @@ namespace Kifa.Cloud.Swisscom {
         public string AccessToken { get; set; }
 
         public override bool? Fill() {
+            if (UpdateQuota().Status == KifaActionStatus.OK) {
+                return false;
+            }
+
+            logger.Info("Access token expired.");
+
             AccessToken = GetToken();
-            UpdateQuota();
+
+            var result = UpdateQuota();
+            if (result.Status != KifaActionStatus.OK) {
+                logger.Warn($"Failed to get quota: {result}.");
+            }
 
             return true;
         }
@@ -82,20 +92,14 @@ namespace Kifa.Cloud.Swisscom {
             });
         }
 
-        void UpdateQuota() {
-            var quota = GetQuota();
-            TotalQuota = quota.total;
-            UsedQuota = quota.used;
-        }
-
-        (long total, long used) GetQuota() {
-            using var response = httpClient.SendWithRetry(() =>
-                SwisscomStorageClient.APIList.Quota.GetRequest(
-                    new Dictionary<string, string> {["access_token"] = AccessToken}));
-            var data = response.GetJToken();
-            var used = data.Value<long>("TotalBytes");
-            var total = data.Value<long>("StorageLimit");
-            return (total, used);
-        }
+        KifaActionResult UpdateQuota() =>
+            KifaActionResult.FromAction(() => {
+                using var response = httpClient.SendWithRetry(() =>
+                    SwisscomStorageClient.APIList.Quota.GetRequest(
+                        new Dictionary<string, string> {["access_token"] = AccessToken}));
+                var data = response.GetJToken();
+                UsedQuota = data.Value<long>("TotalBytes");
+                TotalQuota = data.Value<long>("StorageLimit");
+            });
     }
 }
