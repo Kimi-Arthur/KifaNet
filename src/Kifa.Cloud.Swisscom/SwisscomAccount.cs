@@ -17,9 +17,9 @@ namespace Kifa.Cloud.Swisscom {
 
         public static string WebDriverUrl { get; set; }
 
-        public static TimeSpan WebDriverTimeout { get; set; } = TimeSpan.Zero;
+        public static TimeSpan WebDriverTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
-        public static TimeSpan PageLoadWait { get; set; } = TimeSpan.Zero;
+        public static TimeSpan PageLoadWait { get; set; } = TimeSpan.FromSeconds(3);
 
         static KifaServiceClient<SwisscomAccount> client;
 
