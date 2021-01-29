@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Kifa.IO {
+namespace Kifa.IO.StorageClients {
     public class ShardedStorageClient : StorageClient {
         public long ShardSize { get; set; }
         public List<StorageClient> Clients { get; set; }
@@ -24,7 +24,7 @@ namespace Kifa.IO {
         }
 
         public override void Touch(string path) {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public override Stream OpenRead(string path) =>

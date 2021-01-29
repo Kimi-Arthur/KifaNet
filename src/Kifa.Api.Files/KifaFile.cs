@@ -15,6 +15,7 @@ using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
 using Kifa.IO;
 using Kifa.IO.FileFormats;
+using Kifa.IO.StorageClients;
 
 namespace Kifa.Api.Files {
     public class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {

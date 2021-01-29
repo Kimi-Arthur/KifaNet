@@ -16,7 +16,7 @@ namespace Kifa.IO {
 
         public abstract long Length(string path);
 
-        public virtual FileInformation QuickInfo(string path) => new FileInformation();
+        public virtual FileInformation QuickInfo(string path) => new();
 
         public abstract void Delete(string path);
 

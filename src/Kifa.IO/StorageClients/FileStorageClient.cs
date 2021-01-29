@@ -26,8 +26,7 @@ namespace Kifa.IO {
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } =
-            new Dictionary<string, ServerConfig>();
+        public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
 
         public string ServerId {
             get => serverId;
