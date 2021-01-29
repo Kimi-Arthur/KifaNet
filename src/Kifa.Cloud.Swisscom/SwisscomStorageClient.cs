@@ -6,13 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
-using System.Web;
 using Kifa.IO;
 using Kifa.Service;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NLog;
-using OpenQA.Selenium.Chrome;
 using Pimix;
 
 namespace Kifa.Cloud.Swisscom {
@@ -24,16 +20,12 @@ namespace Kifa.Cloud.Swisscom {
 
         public static APIList APIList { get; set; }
 
-        public static TimeSpan WebDriverTimeout { get; set; } = TimeSpan.Zero;
-
-        public static TimeSpan PageLoadWait { get; set; } = TimeSpan.Zero;
-
         static SwisscomConfig config;
 
         static SwisscomConfig Config =>
             LazyInitializer.EnsureInitialized(ref config, () => SwisscomConfig.Client.Get("default"));
 
-        public SwisscomAccount Account { get; set; }
+        public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId);
 
         public override string Type => "swiss";
 
@@ -43,16 +35,13 @@ namespace Kifa.Cloud.Swisscom {
 
         public SwisscomStorageClient(string accountId = null) {
             AccountId = accountId;
-            if (accountId != null) {
-                Account = Config.Accounts[accountId];
-            }
         }
 
         public string AccountId { get; set; }
 
         public override long Length(string path) {
             using var response = client.SendWithRetry(() => APIList.GetFileInfo.GetRequest(
-                new Dictionary<string, string> {["file_id"] = GetFileId(path), ["access_token"] = Account.Token}));
+                new Dictionary<string, string> {["file_id"] = GetFileId(path), ["access_token"] = Account.AccessToken}));
             if (response.IsSuccessStatusCode) {
                 return response.GetJToken().Value<long>("Length");
             }
@@ -67,7 +56,7 @@ namespace Kifa.Cloud.Swisscom {
         public override void Delete(string path) {
             using var response = client.SendWithRetry(() =>
                 APIList.DeleteFile.GetRequest(new Dictionary<string, string> {
-                    ["file_id"] = GetFileId(path), ["access_token"] = Account.Token
+                    ["file_id"] = GetFileId(path), ["access_token"] = Account.AccessToken
                 }));
             if (!response.IsSuccessStatusCode) {
                 logger.Debug($"Delete of {path} is not successful, but is ignored.");
@@ -76,7 +65,7 @@ namespace Kifa.Cloud.Swisscom {
 
         public override void Move(string sourcePath, string destinationPath) {
             using var response = client.SendWithRetry(() => APIList.MoveFile.GetRequest(new Dictionary<string, string> {
-                ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.Token
+                ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.AccessToken
             }));
 
             if (!response.IsSuccessStatusCode) {
@@ -110,7 +99,7 @@ namespace Kifa.Cloud.Swisscom {
                 var content = new ByteArrayContent(buffer, 0, blockLength);
                 content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                 var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
-                    ["access_token"] = Account.Token, ["upload_id"] = uploadId, ["block_index"] = blockIndex.ToString(),
+                    ["access_token"] = Account.AccessToken, ["upload_id"] = uploadId, ["block_index"] = blockIndex.ToString(),
                 });
                 uploadRequest.Content = new MultipartFormDataContent {{content, "files[]", path.Split("/").Last()}};
                 uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
@@ -128,7 +117,7 @@ namespace Kifa.Cloud.Swisscom {
                     ["file_length"] = length.ToString(),
                     ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
                     ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                    ["access_token"] = Account.Token
+                    ["access_token"] = Account.AccessToken
                 }));
             return response.GetJToken().Value<string>("Identifier");
         }
@@ -138,7 +127,7 @@ namespace Kifa.Cloud.Swisscom {
             using var response = client.SendWithRetry(() => APIList.FinishUpload.GetRequest(
                 new Dictionary<string, string> {
                     ["upload_id"] = uploadId,
-                    ["access_token"] = Account.Token,
+                    ["access_token"] = Account.AccessToken,
                     ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
                     ["file_path"] = path,
                     ["parts"] = "[" + string.Join(",",
@@ -156,7 +145,7 @@ namespace Kifa.Cloud.Swisscom {
 
             using var response = client.SendWithRetry(() => {
                 var request = APIList.DownloadFile.GetRequest(
-                    new Dictionary<string, string> {["file_id"] = fileId, ["access_token"] = Account.Token});
+                    new Dictionary<string, string> {["file_id"] = fileId, ["access_token"] = Account.AccessToken});
 
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
                 return request;
@@ -178,7 +167,7 @@ namespace Kifa.Cloud.Swisscom {
 
         public static string FindAccount(List<string> accounts, long length) {
             var accountIndex = accounts.FindIndex(s =>
-                new SwisscomStorageClient(s).Account.GetQuota().left >= length + GraceSize);
+                SwisscomAccount.Client.Get(s).LeftQuota >= length + GraceSize);
             if (accountIndex < 0) {
                 throw new InsufficientStorageException();
             }
@@ -200,78 +189,5 @@ namespace Kifa.Cloud.Swisscom {
         public API UploadBlock { get; set; }
         public API FinishUpload { get; set; }
         public API Quota { get; set; }
-    }
-
-    public partial class SwisscomAccount {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-        readonly HttpClient client = new HttpClient();
-
-        string token;
-
-        DateTime lastRefreshed = DateTime.MinValue;
-
-        static readonly TimeSpan RefreshInterval = TimeSpan.FromHours(4);
-
-        [JsonIgnore]
-        public string Token {
-            get {
-                if (DateTime.Now - lastRefreshed > RefreshInterval) {
-                    token = GetToken();
-                    lastRefreshed = DateTime.Now;
-                    logger.Debug($"Account {Username} refreshed.");
-                }
-
-                return token;
-            }
-        }
-
-        string GetToken() {
-            var options = new ChromeOptions();
-            options.AddArgument("--headless");
-            options.AddArgument("--log-level=3");
-
-            var service = ChromeDriverService.CreateDefaultService();
-            service.SuppressInitialDiagnosticInformation = true;
-            using var driver = new ChromeDriver(service, options, SwisscomStorageClient.WebDriverTimeout);
-
-            return Retry.Run(() => {
-                driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
-                Thread.Sleep(SwisscomStorageClient.PageLoadWait);
-                driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]").Click();
-                driver.FindElementById("username").SendKeys(Username);
-                driver.FindElementById("continueButton").Click();
-                Thread.Sleep(SwisscomStorageClient.PageLoadWait);
-                driver.FindElementById("password").SendKeys(Password);
-                driver.FindElementById("submitButton").Click();
-                Thread.Sleep(SwisscomStorageClient.PageLoadWait);
-                return JToken.Parse(
-                        HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token").Value))
-                    .Value<string>("access_token");
-            }, (ex, i) => {
-                if (i >= 5) {
-                    throw ex;
-                }
-
-                logger.Warn(ex, $"Failed to get token for {Username}...");
-                Thread.Sleep(TimeSpan.FromSeconds(5));
-            });
-        }
-
-        public void UpdateQuota() {
-            var quota = GetQuota();
-            TotalQuota = quota.total;
-            UsedQuota = quota.used;
-        }
-
-        public (long total, long used, long left) GetQuota() {
-            using var response = client.SendWithRetry(() =>
-                SwisscomStorageClient.APIList.Quota.GetRequest(
-                    new Dictionary<string, string> {["access_token"] = Token}));
-            var data = response.GetJToken();
-            var used = data.Value<long>("TotalBytes");
-            var total = data.Value<long>("StorageLimit");
-            return (total, used, total - used);
-        }
     }
 }

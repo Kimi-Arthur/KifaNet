@@ -9,21 +9,9 @@ namespace Kifa.Cloud.Swisscom {
 
         public static KifaServiceClient<SwisscomConfig> Client => client ??= new SwisscomConfigRestServiceClient();
 
-        public Dictionary<string, SwisscomAccount> Accounts { get; set; }
-
         public Dictionary<string, Dictionary<string, long>> Reservations { get; set; }
 
         public List<StorageMapping> StorageMappings { get; set; }
-    }
-
-    public partial class SwisscomAccount {
-        public string Id { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public long TotalQuota { get; set; }
-        public long UsedQuota { get; set; }
-
-        public long ReservedQuota { get; set; }
     }
 
     public class StorageMapping {

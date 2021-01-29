@@ -15,7 +15,7 @@ namespace Kifa.Cloud.Swisscom.Tests {
         public void LoginTest() {
             var account = GetStorageClient().Account;
 
-            Assert.EndsWith("==", account.Token);
+            Assert.EndsWith("==", account.AccessToken);
         }
 
         [Fact]
@@ -121,10 +121,10 @@ namespace Kifa.Cloud.Swisscom.Tests {
         public void QuotaTest() {
             var client = GetStorageClient();
 
-            var (total, used, left) = client.Account.GetQuota();
-            Assert.Equal(10737418240, total);
-            Assert.NotEqual(0, used);
-            Assert.Equal(total - used, left);
+            var account = client.Account;
+            Assert.Equal(10737418240, account.TotalQuota);
+            Assert.NotEqual(0, account.UsedQuota);
+            Assert.Equal(10737418240, account.LeftQuota);
         }
 
         // [Fact]
@@ -156,9 +156,7 @@ namespace Kifa.Cloud.Swisscom.Tests {
         static SwisscomStorageClient GetStorageClient() {
             KifaConfigs.LoadFromSystemConfigs();
 
-            return new SwisscomStorageClient {
-                Account = new SwisscomAccount {Username = "pimixserver@gmail.com", Password = "Pny3YQzV"}
-            };
+            return new SwisscomStorageClient("test");
         }
     }
 }
