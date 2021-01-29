@@ -105,7 +105,18 @@ namespace Pimix.Web.Api.Controllers {
 
         // Action [HttpAction("$refresh")]
         // TODO: Should use the attribute above.
-        public virtual PimixActionResult Refresh(RefreshRequest request) => Client.Refresh(request.Id);
+        public virtual PimixActionResult Refresh(RefreshRequest request) {
+            if (request.Id == "$") {
+                var result = new KifaBatchActionResult();
+                foreach (var id in Client.List().Keys) {
+                    result.Add(Client.Refresh(id));
+                }
+
+                return result;
+            }
+
+            return Client.Refresh(request.Id);
+        }
     }
 
     public class PimixActionResult : IConvertToActionResult {

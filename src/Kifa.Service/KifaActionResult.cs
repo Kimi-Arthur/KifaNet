@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -32,11 +34,24 @@ namespace Kifa.Service {
                 : new KifaActionResult<TValue>(this);
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public KifaActionStatus Status { get; set; }
+        public virtual KifaActionStatus Status { get; set; }
 
-        public string Message { get; set; }
+        public virtual string Message { get; set; }
 
         public override string ToString() => $"status: {Status}, message: {Message}";
+    }
+
+    public class KifaBatchActionResult : KifaActionResult {
+        public List<KifaActionResult> Results { get; set; } = new List<KifaActionResult>();
+
+        public void Add(KifaActionResult moreResult) {
+            Results.Add(moreResult);
+        }
+
+        [JsonConverter(typeof(StringEnumConverter))]
+        public override KifaActionStatus Status => Results.Max(r => r.Status);
+
+        public override string Message => string.Join("; ", Results.Where(r => r.Message != null));
     }
 
     public class KifaActionResult<TValue> : KifaActionResult {
