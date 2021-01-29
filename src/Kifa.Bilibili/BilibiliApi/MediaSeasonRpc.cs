@@ -47,13 +47,11 @@ namespace Kifa.Bilibili.BilibiliApi {
             public string Text { get; set; }
         }
 
-        const string UrlPattern = "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
+        public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
 
-        static HttpClient client = BilibiliVideo.GetBilibiliClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override MediaSeasonResponse Call(string seasonId) {
-            var url = UrlPattern.Format(new Dictionary<string, string> {{"id", seasonId.Substring(2)}});
-            return client.GetAsync(url).Result.GetObject<MediaSeasonResponse>();
-        }
+        public override MediaSeasonResponse Call(string seasonId) =>
+            Call(new Dictionary<string, string> {{"id", seasonId.Substring(2)}});
     }
 }

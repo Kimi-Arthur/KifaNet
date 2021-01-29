@@ -48,19 +48,14 @@ namespace Kifa.Bilibili.BiliplusApi {
 
         static readonly Regex ApiRegex = new Regex(@".'(/api/view_all.*)'.*");
 
-        const string CacheApiPattern = "https://www.biliplus.com{api_path}";
+        public override string UrlPattern { get; } = "https://www.biliplus.com{api_path}";
 
-        static HttpClient client = BilibiliVideo.GetBiliplusClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBiliplusClient();
 
         public override BiliplusVideoCache Call(string aid) {
             var url = CachePagePattern.Format(new Dictionary<string, string> {{"aid", aid}});
-            var match = ApiRegex.Match(client.GetAsync(url).Result.GetString());
-            if (match.Success) {
-                url = CacheApiPattern.Format(new Dictionary<string, string> {{"api_path", match.Groups[1].Value}});
-                return client.GetAsync(url).Result.GetObject<BiliplusVideoCache>();
-            }
-
-            return null;
+            var match = ApiRegex.Match(HttpClient.GetAsync(url).Result.GetString());
+            return match.Success ? Call(new Dictionary<string, string> {{"api_path", match.Groups[1].Value}}) : null;
         }
     }
 }

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
-using Pimix;
 using Kifa.Service;
+using Pimix;
 
 namespace Kifa.Bilibili.BilibiliApi {
     public class UploaderVideoRpc : JsonRpc<string, UploaderVideoRpc.UploaderVideoResponse> {
@@ -38,7 +38,9 @@ namespace Kifa.Bilibili.BilibiliApi {
 
         public class Video {
             public long Comment { get; set; }
+
             public long Typeid { get; set; }
+
             // This field can be string...
             // public long Play { get; set; }
             public string Pic { get; set; }
@@ -66,21 +68,18 @@ namespace Kifa.Bilibili.BilibiliApi {
             public long Count { get; set; }
         }
 
-        const string UploaderVideoUrlPattern = "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
+        public override string UrlPattern { get; } =
+            "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
 
-        static HttpClient client = BilibiliVideo.GetBilibiliClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public override UploaderVideoResponse Call(string uploaderId) {
-            var url = UploaderVideoUrlPattern.Format(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
-            var result = client.GetAsync(url).Result.GetObject<UploaderVideoResponse>();
+            var result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
             var allResult = result.Clone();
             var page = 1;
             while (result.Data?.Page?.Count > allResult.Data?.List?.Vlist?.Count) {
-                url = UploaderVideoUrlPattern.Format(new Dictionary<string, string> {
-                    {"id", uploaderId}, {"page", (++page).ToString()}
-                });
                 Thread.Sleep(TimeSpan.FromSeconds(1));
-                result = client.GetAsync(url).Result.GetObject<UploaderVideoResponse>();
+                result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", (++page).ToString()}});
                 allResult.Data.List.Vlist.AddRange(result.Data.List.Vlist);
             }
 

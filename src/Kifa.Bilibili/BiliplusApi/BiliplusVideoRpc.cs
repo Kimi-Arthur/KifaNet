@@ -186,13 +186,11 @@ namespace Kifa.Bilibili.BiliplusApi {
             public long Dislike { get; set; }
         }
 
-        const string VideoInfoPattern = "https://www.biliplus.com/api/view?id={aid}";
+        public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
 
-        static HttpClient client = BilibiliVideo.GetBiliplusClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBiliplusClient();
 
-        public override BiliplusVideoResponse Call(string aid) {
-            var url = VideoInfoPattern.Format(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
-            return client.GetAsync(url).Result.GetObject<BiliplusVideoResponse>();
-        }
+        public override BiliplusVideoResponse Call(string aid) =>
+            Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
     }
 }

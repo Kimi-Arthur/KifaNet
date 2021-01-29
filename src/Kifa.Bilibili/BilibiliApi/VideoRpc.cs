@@ -63,8 +63,7 @@ namespace Kifa.Bilibili.BilibiliApi {
             public Dimension Dimension { get; set; }
         }
 
-        public class Staff
-        {
+        public class Staff {
             public long Mid { get; set; }
             public string Title { get; set; }
             public string Name { get; set; }
@@ -75,16 +74,14 @@ namespace Kifa.Bilibili.BilibiliApi {
             public long LabelStyle { get; set; }
         }
 
-        public class Official
-        {
+        public class Official {
             public long Role { get; set; }
             public string Title { get; set; }
             public string Desc { get; set; }
             public long Type { get; set; }
         }
 
-        public class Vip
-        {
+        public class Vip {
             public long Type { get; set; }
             public long Status { get; set; }
             public long VipPayType { get; set; }
@@ -116,13 +113,11 @@ namespace Kifa.Bilibili.BilibiliApi {
             public string UrlImageAniCut { get; set; }
         }
 
-        const string VideoInfoPattern = "https://api.bilibili.com/x/web-interface/view?aid={aid}";
+        public override string UrlPattern { get; } = "https://api.bilibili.com/x/web-interface/view?aid={aid}";
 
-        static HttpClient client = BilibiliVideo.GetBilibiliClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override VideoResponse Call(string aid) {
-            var url = VideoInfoPattern.Format(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
-            return client.GetAsync(url).Result.GetObject<VideoResponse>();
-        }
+        public override VideoResponse Call(string aid) =>
+            Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
     }
 }

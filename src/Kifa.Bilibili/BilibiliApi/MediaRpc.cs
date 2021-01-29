@@ -43,13 +43,11 @@ namespace Kifa.Bilibili.BilibiliApi {
             public double Score { get; set; }
         }
 
-        const string UrlPattern = "https://api.bilibili.com/pgc/review/user?media_id={id}";
+        public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/review/user?media_id={id}";
 
-        static HttpClient client = BilibiliVideo.GetBilibiliClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override MediaResponse Call(string mediaId) {
-            var url = UrlPattern.Format(new Dictionary<string, string> {{"id", mediaId.Substring(2)}});
-            return client.GetAsync(url).Result.GetObject<MediaResponse>();
-        }
+        public override MediaResponse Call(string mediaId) =>
+            Call(new Dictionary<string, string> {{"id", mediaId.Substring(2)}});
     }
 }

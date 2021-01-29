@@ -86,21 +86,17 @@ namespace Kifa.Bilibili.BilibiliApi {
             public Uri Face { get; set; }
         }
 
-        const string PlaylistUrlPattern =
+        public override string UrlPattern { get; } =
             "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
 
-        static HttpClient client = new HttpClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
         public override PlaylistResponse Call(string playlistId) {
-            var url = PlaylistUrlPattern.Format(new Dictionary<string, string> {{"id", playlistId}, {"page", "1"}});
-            var result = client.GetAsync(url).Result.GetObject<PlaylistResponse>();
+            var result = Call(new Dictionary<string, string> {{"id", playlistId}, {"page", "1"}});
             var allResult = result.Clone();
             var page = 1;
             while (result.Data.HasMore) {
-                url = PlaylistUrlPattern.Format(new Dictionary<string, string> {
-                    {"id", playlistId}, {"page", (++page).ToString()}
-                });
-                result = client.GetAsync(url).Result.GetObject<PlaylistResponse>();
+                result = Call(new Dictionary<string, string> {{"id", playlistId}, {"page", (++page).ToString()}});
                 allResult.Data.Medias.AddRange(result.Data.Medias);
             }
 

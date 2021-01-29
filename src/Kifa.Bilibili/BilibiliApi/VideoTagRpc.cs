@@ -37,13 +37,11 @@ namespace Kifa.Bilibili.BilibiliApi {
             public long Atten { get; set; }
         }
 
-        const string VideoTagPattern = "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
+        public override string UrlPattern { get; } = "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
 
-        static HttpClient client = BilibiliVideo.GetBilibiliClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override VideoTagResponse Call(string aid) {
-            var url = VideoTagPattern.Format(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
-            return client.GetAsync(url).Result.GetObject<VideoTagResponse>();
-        }
+        public override VideoTagResponse Call(string aid) =>
+            Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
     }
 }

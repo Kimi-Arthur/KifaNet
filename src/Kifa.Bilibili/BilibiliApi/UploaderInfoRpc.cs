@@ -70,13 +70,11 @@ namespace Kifa.Bilibili.BilibiliApi {
             public string ImageEnhance { get; set; }
         }
 
-        const string UploaderInfoPattern = "https://api.bilibili.com/x/space/acc/info?mid={id}";
+        public override string UrlPattern { get; } = "https://api.bilibili.com/x/space/acc/info?mid={id}";
 
-        static HttpClient client = BilibiliVideo.GetBilibiliClient();
+        public override HttpClient HttpClient { get; } = BilibiliVideo.GetBilibiliClient();
 
-        public override UploaderInfoResponse Call(string uploaderId) {
-            var url = UploaderInfoPattern.Format(new Dictionary<string, string> {{"id", uploaderId}});
-            return client.GetAsync(url).Result.GetObject<UploaderInfoResponse>();
-        }
+        public override UploaderInfoResponse Call(string uploaderId) =>
+            Call(new Dictionary<string, string> {{"id", uploaderId}});
     }
 }
