@@ -124,7 +124,6 @@ namespace Kifa.Cloud.Swisscom.Tests {
             var account = client.Account;
             Assert.Equal(10737418240, account.TotalQuota);
             Assert.NotEqual(0, account.UsedQuota);
-            Assert.Equal(10737418240, account.LeftQuota);
         }
 
         // [Fact]
