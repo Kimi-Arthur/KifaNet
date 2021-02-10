@@ -22,6 +22,7 @@ namespace Pimix.Languages.German {
         public string Pronunciation { get; set; }
 
         public string PronunciationAudioLink =>
+            PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
             PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
             PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
             PronunciationAudioLinks.GetValueOrDefault(Source.Pons);
@@ -93,7 +94,7 @@ namespace Pimix.Languages.German {
                 _ => null
             };
 
-        protected (Word wiki, Word enWiki, Word pons, Word duden) GetWords() {
+        protected (Word wiki, Word enWiki, Word pons, Word duden, Word dwds) GetWords() {
             var wiki = new Word();
             try {
                 wiki = new DeWiktionaryClient().GetWord(Id);
@@ -117,7 +118,9 @@ namespace Pimix.Languages.German {
 
             var duden = new DudenClient().GetWord(Id);
 
-            return (wiki, enWiki, pons, duden);
+            var dwds = new DwdsClient().GetWord(Id);
+
+            return (wiki, enWiki, pons, duden, dwds);
         }
 
         public override bool? Fill() {
@@ -125,14 +128,15 @@ namespace Pimix.Languages.German {
             return false;
         }
 
-        protected void FillWithData((Word wiki, Word enWiki, Word pons, Word duden) words) {
-            var (wiki, enWiki, pons, duden) = words;
+        protected void FillWithData((Word wiki, Word enWiki, Word pons, Word duden, Word dwds) words) {
+            var (wiki, enWiki, pons, duden, dwds) = words;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
 
             PronunciationAudioLinks[Source.Duden] = duden.PronunciationAudioLinks.GetValueOrDefault(Source.Duden);
             PronunciationAudioLinks[Source.Wiktionary] =
                 wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary);
             PronunciationAudioLinks[Source.Pons] = pons.PronunciationAudioLinks.GetValueOrDefault(Source.Pons);
+            PronunciationAudioLinks[Source.Dwds] = dwds.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds);
 
             Meanings = enWiki.Meanings.Any() ? enWiki.Meanings : pons.Meanings;
 

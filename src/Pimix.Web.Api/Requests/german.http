@@ -1,6 +1,5 @@
 ### Set
-GET {{server}}/api/languages/german/words/kommen
-Accept: application/x-yaml
+GET {{server}}/api/languages/german/words/Aussage?refresh=true
 
 ### Set
 POST {{server}}/api/languages/german/words/kommen

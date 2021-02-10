@@ -6,7 +6,7 @@ using HtmlAgilityPack;
 
 namespace Pimix.Languages.German {
     public class PonsClient {
-        static HttpClient ponsClient = new HttpClient();
+        static HttpClient ponsClient = new();
 
         const string SelectField = "data-pons-flection-id";
 
