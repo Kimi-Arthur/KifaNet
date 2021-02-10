@@ -111,7 +111,7 @@ namespace Kifa.Api.Files {
 
         public KifaFile Parent => new($"{Host}{ParentPath}");
 
-        public KifaFile LocalCacheFile => new($"{CacheLocation}{Id}");
+        public KifaFile LocalCacheFile => new($"{CacheLocation}{Id}.v2");
 
         public string BaseName { get; set; }
 
