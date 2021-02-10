@@ -25,7 +25,7 @@ namespace Kifa.Api.Files {
 
         static Regex fullPathIgnoredFiles;
 
-        static readonly System.Collections.Generic.Dictionary<string, StorageClient> knownClients = new();
+        static readonly Dictionary<string, StorageClient> knownClients = new();
 
         FileInformation fileInfo;
 
@@ -109,9 +109,9 @@ namespace Kifa.Api.Files {
         // Ends with a slash.
         string ParentPath { get; }
 
-        public KifaFile Parent => new KifaFile($"{Host}{ParentPath}");
+        public KifaFile Parent => new($"{Host}{ParentPath}");
 
-        public KifaFile LocalCacheFile => new KifaFile($"{CacheLocation}{Id}");
+        public KifaFile LocalCacheFile => new($"{CacheLocation}{Id}");
 
         public string BaseName { get; set; }
 
