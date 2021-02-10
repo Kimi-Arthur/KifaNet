@@ -246,8 +246,7 @@ namespace Kifa.Api.Files {
 
         public void Touch() => Client.Touch(Path);
 
-        public System.Collections.Generic.IEnumerable<KifaFile>
-            List(bool recursive = false, bool ignoreFiles = true, string pattern = "*") =>
+        public IEnumerable<KifaFile> List(bool recursive = false, bool ignoreFiles = true, string pattern = "*") =>
             Exists()
                 ? Enumerable.Repeat(this, 1)
                 : Client.List(Path, recursive)
@@ -256,11 +255,10 @@ namespace Kifa.Api.Files {
                                                            !FullPathIgnoredFiles.IsMatch(f.Id))).Select(info =>
                         new KifaFile(Host + info.Id, fileInfo: info));
 
-        public static (bool isMultiple, System.Collections.Generic.List<KifaFile> files) ExpandFiles(
-            System.Collections.Generic.IEnumerable<string> sources, string prefix = null, bool recursive = true,
-            bool fullFile = false) {
+        public static (bool isMultiple, List<KifaFile> files) ExpandFiles(IEnumerable<string> sources,
+            string prefix = null, bool recursive = true, bool fullFile = false) {
             var multi = 0;
-            var files = new System.Collections.Generic.List<(string sortKey, KifaFile value)>();
+            var files = new List<(string sortKey, KifaFile value)>();
             foreach (var fileName in sources) {
                 var fileInfo = new KifaFile(fileName);
                 if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
@@ -287,11 +285,10 @@ namespace Kifa.Api.Files {
             return (multi > 1, files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
         }
 
-        public static (bool isMultiple, System.Collections.Generic.List<KifaFile> files) ExpandLogicalFiles(
-            System.Collections.Generic.IEnumerable<string> sources, string prefix = null, bool recursive = true,
-            bool fullFile = false) {
+        public static (bool isMultiple, List<KifaFile> files) ExpandLogicalFiles(IEnumerable<string> sources,
+            string prefix = null, bool recursive = true, bool fullFile = false) {
             var multi = 0;
-            var files = new System.Collections.Generic.List<(string sortKey, KifaFile value)>();
+            var files = new List<(string sortKey, KifaFile value)>();
             foreach (var fileName in sources) {
                 var fileInfo = new KifaFile(fileName);
                 if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
