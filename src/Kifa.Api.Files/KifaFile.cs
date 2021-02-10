@@ -48,7 +48,8 @@ namespace Kifa.Api.Files {
             //   C:/files/a.txt
             //   ~/a.txt
             //   ../a.txt
-            if (!uri.Contains(":") || uri.Contains(":/") || uri.Contains(":\\")) {
+            if (!uri.Contains(":") || uri.Contains(":/") && !uri.StartsWith("http://") && !uri.StartsWith("https://") ||
+                uri.Contains(":\\")) {
                 // Local path, convert to canonical one.
                 var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
                 foreach (var p in FileStorageClient.ServerConfigs) {
@@ -63,7 +64,7 @@ namespace Kifa.Api.Files {
                 }
             }
 
-            var segments = uri.Split('/');
+            var segments = uri.Split('/', StringSplitOptions.RemoveEmptyEntries);
             var pathSegmentCount = segments.Length - 1;
             ParentPath = "/" + string.Join("/", segments.Skip(1).Take(pathSegmentCount - 1));
             if (!ParentPath.EndsWith("/")) {
@@ -111,7 +112,7 @@ namespace Kifa.Api.Files {
 
         public KifaFile Parent => new($"{Host}{ParentPath}");
 
-        public KifaFile LocalCacheFile => new($"{CacheLocation}{Id}.v2");
+        public KifaFile LocalCacheFile => new($"{CacheLocation}{Id}");
 
         public string BaseName { get; set; }
 
@@ -175,6 +176,10 @@ namespace Kifa.Api.Files {
                         var score = 0;
                         if (file.Client is GoogleDriveStorageClient) {
                             score = 32;
+                        }
+
+                        if (file.Client is WebStorageClient) {
+                            score = 24;
                         }
 
                         if (file.Client is SwisscomStorageClient) {
@@ -512,6 +517,9 @@ namespace Kifa.Api.Files {
                     return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
                 case "swiss":
                     return knownClients[spec] = new SwisscomStorageClient(specs[1]);
+                case "http":
+                case "https":
+                    return knownClients[spec] = new WebStorageClient {Protocol = specs[0]};
                 case "local":
                     var c = new FileStorageClient {ServerId = specs[1]};
                     if (c.Server == null) {
