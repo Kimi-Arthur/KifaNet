@@ -37,8 +37,8 @@ namespace Kifa.IO.StorageClients {
         }
 
         public override string Type => Protocol;
-        public override string Id => "/";
+        public override string Id => "";
 
-        string GetUrl(string path) => $"{Protocol}:/{path}";
+        string GetUrl(string path) => $"{Protocol}:{path}";
     }
 }

@@ -59,7 +59,7 @@ namespace Kifa.IO {
 
         public static string GetId(string location) {
             var m = idPattern.Match(location);
-            return m.Success ? m.Groups[1].Value.Replace("//", "/") : null;
+            return m.Success ? m.Groups[1].Value.Replace("//", "/Web/") : null;
         }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {

@@ -64,9 +64,8 @@ namespace Kifa.Api.Files {
                 }
             }
 
-            var segments = uri.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var pathSegmentCount = segments.Length - 1;
-            ParentPath = "/" + string.Join("/", segments.Skip(1).Take(pathSegmentCount - 1));
+            var segments = uri.Split('/');
+            ParentPath = "/" + string.Join("/", segments[1..^1]);
             if (!ParentPath.EndsWith("/")) {
                 ParentPath += "/";
             }
