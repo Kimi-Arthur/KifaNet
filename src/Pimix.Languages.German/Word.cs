@@ -11,19 +11,16 @@ namespace Pimix.Languages.German {
 
         public const string ModelId = "languages/german/words";
 
-        [JsonIgnore]
         public WordType Type => Meanings.First().Type;
 
         public List<Meaning> Meanings { get; set; } = new List<Meaning>();
 
-        [JsonIgnore]
         public string Meaning => Meanings.FirstOrDefault()?.Translation;
 
         public Breakdown Breakdown { get; set; }
 
         public string Pronunciation { get; set; }
 
-        [JsonIgnore]
         public string PronunciationAudioLink =>
             PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
             PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
@@ -36,7 +33,7 @@ namespace Pimix.Languages.German {
 
         [JsonIgnore]
         public List<string> KeyVerbForms =>
-            new List<string> {
+            new() {
                 VerbForms[VerbFormType.IndicativePresent][Person.Er],
                 VerbForms[VerbFormType.IndicativePreterite][Person.Er],
                 VerbForms[VerbFormType.IndicativePerfect][Person.Er]

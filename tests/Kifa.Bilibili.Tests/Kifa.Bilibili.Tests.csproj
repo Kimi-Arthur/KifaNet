@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kifa.Bilibili\Kifa.Bilibili.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
   </ItemGroup>
 
 </Project>
