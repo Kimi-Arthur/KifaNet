@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HashLib;
 using Kifa.Service;
+using Newtonsoft.Json;
 using Pimix;
 
 namespace Kifa.IO {
@@ -58,6 +59,9 @@ namespace Kifa.IO {
 
         public Dictionary<string, DateTime?> Locations { get; set; }
 
+        [JsonIgnore]
+        public bool Exists => Size > 0;
+        
         public static string GetId(string location) {
             var linkMatch = linkIdPattern.Match(location);
             if (linkMatch.Success) {

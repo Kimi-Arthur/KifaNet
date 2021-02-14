@@ -9,16 +9,13 @@ namespace Kifa.Tools.FileUtil.Commands {
     class CopyCommand : PimixCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true,
-            HelpText = "File to copy from.")]
+        [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true, HelpText = "File to copy from.")]
         public string Target { get; set; }
 
-        [Value(1, MetaName = "FILE2", MetaValue = "STRING", Required = true,
-            HelpText = "File to copy to.")]
+        [Value(1, MetaName = "FILE2", MetaValue = "STRING", Required = true, HelpText = "File to copy to.")]
         public string LinkName { get; set; }
 
-        [Option('i', "id", HelpText =
-            "Treat all file names as id. And only file ids are linked")]
+        [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
         public bool ById { get; set; } = false;
 
         public override int Execute() {
@@ -44,12 +41,21 @@ namespace Kifa.Tools.FileUtil.Commands {
 
             var files = FileInformation.Client.ListFolder(target, true);
             if (files.Count == 0) {
+                if (!FileInformation.Client.Get(target).Exists) {
+                    logger.Fatal($"Target {target} not found.");
+                    return 1;
+                }
+
+                if (FileInformation.Client.Get(linkName).Exists) {
+                    logger.Fatal($"Link name {linkName} already exists.");
+                    return 1;
+                }
+
                 FileInformation.Client.Link(target, linkName);
                 logger.Info($"Successfully linked {linkName} => {target}!");
             } else {
                 foreach (var file in files) {
                     var linkFile = linkName + file.Substring(target.Length);
-                    FileInformation.Client.Link(file, linkFile);
                     Console.WriteLine($"{linkFile} => {file}");
                 }
 
@@ -58,6 +64,16 @@ namespace Kifa.Tools.FileUtil.Commands {
 
                 foreach (var file in files) {
                     var linkFile = linkName + file.Substring(target.Length);
+                    if (!FileInformation.Client.Get(file).Exists) {
+                        logger.Warn($"Target {file} not found.");
+                        continue;
+                    }
+
+                    if (FileInformation.Client.Get(linkFile).Exists) {
+                        logger.Warn($"Link name {linkFile} already exists. Ignored.");
+                        continue;
+                    }
+
                     FileInformation.Client.Link(file, linkFile);
                     logger.Info($"Successfully linked {linkFile} => {file}!");
                 }
