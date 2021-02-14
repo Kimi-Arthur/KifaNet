@@ -18,7 +18,8 @@ namespace Kifa.IO {
 
         public const int BlockSize = 32 << 20;
         static FileInformationServiceClient client;
-        static readonly Regex idPattern = new Regex(@"^[^/]*(/.*?)(\.v\d)?$");
+        static readonly Regex linkIdPattern = new Regex(@"^(http|https|ftp)://([^:#?]*)([#?].*)?$");
+        static readonly Regex fileIdPattern = new Regex(@"^[^/]*(/.*?)(\.v\d)?$");
 
         static readonly Dictionary<FileProperties, PropertyInfo> properties;
 
@@ -58,8 +59,13 @@ namespace Kifa.IO {
         public Dictionary<string, DateTime?> Locations { get; set; }
 
         public static string GetId(string location) {
-            var m = idPattern.Match(location);
-            return m.Success ? m.Groups[1].Value.Replace("//", "/Web/") : null;
+            var linkMatch = linkIdPattern.Match(location);
+            if (linkMatch.Success) {
+                return $"/Web/{linkMatch.Groups[1].Value}.{linkMatch.Groups[2].Value}";
+            }
+
+            var fileMatch = fileIdPattern.Match(location);
+            return fileMatch.Success ? fileMatch.Groups[1].Value : null;
         }
 
         public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
