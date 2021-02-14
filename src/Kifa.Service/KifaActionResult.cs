@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using NLog;
 
 namespace Kifa.Service {
     public class KifaActionResult {
@@ -38,7 +39,7 @@ namespace Kifa.Service {
 
         public virtual string Message { get; set; }
 
-        public override string ToString() => $"status: {Status}, message: {Message}";
+        public override string ToString() => $"{Status} ({Message})";
     }
 
     public class KifaBatchActionResult : KifaActionResult {
@@ -81,6 +82,12 @@ namespace Kifa.Service {
             } catch (Exception ex) {
                 return new KifaActionResult<TValue> {Status = KifaActionStatus.Error, Message = ex.ToString()};
             }
+        }
+    }
+
+    public static class KifaActionResultLogger {
+        public static void LogResult(this Logger logger, KifaActionResult result, string action) {
+            logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
         }
     }
 }

@@ -3,6 +3,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Service;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy FILE1 to FILE2. The files will be linked.")]
@@ -51,8 +52,7 @@ namespace Kifa.Tools.FileUtil.Commands {
                     return 1;
                 }
 
-                FileInformation.Client.Link(target, linkName);
-                logger.Info($"Successfully linked {linkName} => {target}!");
+                logger.LogResult(FileInformation.Client.Link(target, linkName), $"Linked {linkName} => {target}!");
             } else {
                 foreach (var file in files) {
                     var linkFile = linkName + file.Substring(target.Length);
@@ -74,8 +74,7 @@ namespace Kifa.Tools.FileUtil.Commands {
                         continue;
                     }
 
-                    FileInformation.Client.Link(file, linkFile);
-                    logger.Info($"Successfully linked {linkFile} => {file}!");
+                    logger.LogResult(FileInformation.Client.Link(file, linkFile), $"Linked {linkFile} => {file}!");
                 }
             }
 
