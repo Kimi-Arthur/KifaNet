@@ -9,14 +9,14 @@ namespace Kifa.IO {
         public virtual void Dispose() {
         }
 
-        public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
-            => Enumerable.Empty<FileInformation>();
+        public virtual IEnumerable<FileInformation> List(string path, bool recursive = false) =>
+            Enumerable.Empty<FileInformation>();
 
         public bool Exists(string path) => Length(path) > 0;
 
         public abstract long Length(string path);
 
-        public virtual FileInformation QuickInfo(string path) => new();
+        public virtual FileInformation QuickInfo(string path) => new() {Size = Length(path)};
 
         public abstract void Delete(string path);
 
