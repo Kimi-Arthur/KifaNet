@@ -414,31 +414,38 @@ namespace Kifa.Api.Files {
                 throw new FileNotFoundException(ToString());
             }
 
+            var file = this; 
+            var oldInfo = FileInfo;
+
+            if (UseCache) {
+                var cacheQuickInfo = LocalFile.QuickInfo();
+                if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) == FileProperties.None) {
+                    file = LocalFile;
+                }
+            }
+
             if (shouldCheckKnown != true && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
-                Registered) {
+                file.Registered) {
                 if (shouldCheckKnown == false) {
                     logger.Info($"Quick check skipped for {ToString()}.");
                     return FileProperties.None;
                 }
 
-                var partialInfo = CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
-                var compareResults = partialInfo.CompareProperties(FileInfo, FileProperties.AllVerifiable);
+                var partialInfo = file.CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
+                var compareResults = partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
                 if (compareResults != FileProperties.None) {
-                    logger.Error($"Quick check failed for {ToString()} ({compareResults}).");
+                    logger.Error($"Quick check failed for {file} ({compareResults}).");
                     throw new Exception($"Quick check failed ({compareResults}).");
                 }
 
-                logger.Info($"Quick check passed for {ToString()}.");
+                logger.Info($"Quick check passed for {file}.");
                 return FileProperties.None;
             }
 
-            var file = this;
             if (UseCache) {
                 CacheFileToLocal();
                 file = LocalFile;
             }
-
-            var oldInfo = FileInfo;
 
             // Compare with quick info.
             var quickInfo = file.QuickInfo();

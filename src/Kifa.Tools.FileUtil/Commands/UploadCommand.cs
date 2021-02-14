@@ -53,7 +53,7 @@ namespace Kifa.Tools.FileUtil.Commands {
         }
 
         int UploadFile(KifaFile source, bool skipRegistered = false) {
-            source.UseCache = UseCache;
+            source.UseCache = UseCache | DownloadLocal;
             // TODO: Better catching.
             try {
                 var destinationLocation = source.CreateLocation(ServiceType, FormatType);
@@ -66,6 +66,11 @@ namespace Kifa.Tools.FileUtil.Commands {
                 }
 
                 source.Register();
+                if (DownloadLocal) {
+                    // We will download it anyway.
+                    source.CacheFileToLocal();
+                }
+
                 logger.Info("Checking source {0}...", source);
                 try {
                     var sourceCheckResult = source.Add();
