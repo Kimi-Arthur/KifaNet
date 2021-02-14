@@ -19,20 +19,21 @@ namespace Kifa.Tools.FileUtil.Commands {
             HelpText = "Remove source if upload is successful. Won't remove valid cloud version.")]
         public bool DeleteSource { get; set; } = false;
 
-        [Option('q', "quick", HelpText =
-            "Finish quickly by not verifying validity of destination.")]
+        [Option('q', "quick", HelpText = "Finish quickly by not verifying validity of destination.")]
         public bool QuickMode { get; set; } = false;
 
-        [Option('s', "service", HelpText =
-            "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega, swiss]")]
+        [Option('s', "service",
+            HelpText = "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega, swiss]")]
         public CloudServiceType ServiceType { get; set; } = CloudServiceType.Google;
 
-        [Option('f', "format", HelpText =
-            "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
+        [Option('f', "format", HelpText = "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
         public CloudFormatType FormatType { get; set; } = CloudFormatType.V1;
 
         [Option('c', "use-cache", HelpText = "Use cache to help upload.")]
-        public bool UseCache { get; set; }
+        public bool UseCache { get; set; } = false;
+
+        [Option('l', "download-local", HelpText = "Download the file to local.")]
+        public bool DownloadLocal { get; set; } = false;
 
         public override int Execute() {
             var (multi, files) = KifaFile.ExpandFiles(FileNames);
@@ -48,8 +49,7 @@ namespace Kifa.Tools.FileUtil.Commands {
 
             var results = files.Select(f => (f.ToString(), UploadFile(new KifaFile(f.ToString()), true))).ToList();
             return results.Select(r => r.Item2)
-                .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new KifaFile(r.Item1))))
-                .Max();
+                .Concat(results.Where(r => r.Item2 == -1).Select(r => UploadFile(new KifaFile(r.Item1)))).Max();
         }
 
         int UploadFile(KifaFile source, bool skipRegistered = false) {
@@ -71,8 +71,7 @@ namespace Kifa.Tools.FileUtil.Commands {
                     var sourceCheckResult = source.Add();
 
                     if (sourceCheckResult != FileProperties.None) {
-                        logger.Error("Source is wrong! The following fields differ: {0}",
-                            sourceCheckResult);
+                        logger.Error($"Source is wrong! The following fields differ: {sourceCheckResult}");
                         return 1;
                     }
                 } catch (FileNotFoundException ex) {
@@ -98,16 +97,14 @@ namespace Kifa.Tools.FileUtil.Commands {
 
                         if (DeleteSource) {
                             if (source.IsCloud) {
-                                logger.Info("Source {0} is not removed as it's in cloud.",
-                                    source);
+                                logger.Info("Source {0} is not removed as it's in cloud.", source);
                                 source.Register(true);
                                 return 0;
                             }
 
                             source.Delete();
                             FileInformation.Client.RemoveLocation(source.Id, source.ToString());
-                            logger.Info("Source {0} removed since upload is successful.",
-                                source);
+                            logger.Info("Source {0} removed since upload is successful.", source);
                         }
 
                         return 0;
@@ -135,20 +132,20 @@ namespace Kifa.Tools.FileUtil.Commands {
                     if (destinationCheckResult == FileProperties.None) {
                         logger.Info("Successfully uploaded {0} to {1}!", source, destination);
 
-                        source.RemoveLocalCacheFile();
+                        if (!DownloadLocal) {
+                            source.RemoveLocalCacheFile();
+                        }
 
                         if (DeleteSource) {
                             if (source.IsCloud) {
-                                logger.Info("Source {0} is not removed as it's in cloud.",
-                                    source);
+                                logger.Info("Source {0} is not removed as it's in cloud.", source);
                                 source.Register(true);
                                 return 0;
                             }
 
                             source.Delete();
                             FileInformation.Client.RemoveLocation(source.Id, source.ToString());
-                            logger.Info("Source {0} removed since upload is successful.",
-                                source);
+                            logger.Info("Source {0} removed since upload is successful.", source);
                         } else {
                             source.Register(true);
                         }
@@ -157,8 +154,7 @@ namespace Kifa.Tools.FileUtil.Commands {
                     }
 
                     destination.Delete();
-                    logger.Fatal("Upload failed! The following fields differ (removed): {0}",
-                        destinationCheckResult);
+                    logger.Fatal("Upload failed! The following fields differ (removed): {0}", destinationCheckResult);
                     return 2;
                 }
 

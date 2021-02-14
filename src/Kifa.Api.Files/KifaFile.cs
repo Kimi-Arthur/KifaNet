@@ -90,7 +90,7 @@ namespace Kifa.Api.Files {
             UseCache = useCache;
         }
 
-        public static string CacheLocation { get; set; }
+        public static string LocalServer { get; set; }
 
         public static string SubPathIgnorePattern { get; set; } = "$^";
 
@@ -111,7 +111,7 @@ namespace Kifa.Api.Files {
 
         public KifaFile Parent => new($"{Host}{ParentPath}");
 
-        public KifaFile LocalCacheFile => new($"{CacheLocation}{Id}");
+        public KifaFile LocalFile => new($"{LocalServer}{Id}");
 
         public string BaseName { get; set; }
 
@@ -337,7 +337,7 @@ namespace Kifa.Api.Files {
         public void Copy(KifaFile destination, bool neverLink = false) {
             if (UseCache) {
                 CacheFileToLocal();
-                LocalCacheFile.Copy(destination, neverLink);
+                LocalFile.Copy(destination, neverLink);
                 return;
             }
 
@@ -351,7 +351,7 @@ namespace Kifa.Api.Files {
         public void Move(KifaFile destination) {
             if (UseCache) {
                 CacheFileToLocal();
-                LocalCacheFile.Move(destination);
+                LocalFile.Move(destination);
                 return;
             }
 
@@ -364,18 +364,18 @@ namespace Kifa.Api.Files {
         }
 
         public void CacheFileToLocal() {
-            if (!LocalCacheFile.Registered) {
-                logger.Info($"Caching {this} to {LocalCacheFile}...");
-                LocalCacheFile.Write(OpenRead());
-                LocalCacheFile.Add();
+            if (!LocalFile.Registered) {
+                logger.Info($"Caching {this} to {LocalFile}...");
+                LocalFile.Write(OpenRead());
+                LocalFile.Add();
             }
         }
 
         public void RemoveLocalCacheFile() {
             if (UseCache) {
-                logger.Info($"Remove cache file {LocalCacheFile}...");
-                LocalCacheFile.Delete();
-                LocalCacheFile.Unregister();
+                logger.Info($"Remove cache file {LocalFile}...");
+                LocalFile.Delete();
+                LocalFile.Unregister();
             }
         }
 
@@ -399,12 +399,28 @@ namespace Kifa.Api.Files {
             return info;
         }
 
-        public FileProperties Add(bool alwaysCheck = false) {
+        /// <summary>
+        /// Register the file with optional check.
+        /// </summary>
+        /// <param name="shouldCheckKnown">
+        /// If it's true, it will do a full checkup no matter what.<br/>
+        /// If it's false, it will never do a check.<br/>
+        /// If it's null (default case), it will do a quick check for known instance.</param>
+        /// <returns>The differing properties if the file exists.</returns>
+        /// <exception cref="FileNotFoundException">The file doesn't exist.</exception>
+        /// <exception cref="Exception">Unexpected error, i.e. check failed for known file.</exception>
+        public FileProperties Add(bool? shouldCheckKnown = null) {
             if (!Exists()) {
                 throw new FileNotFoundException(ToString());
             }
 
-            if (!alwaysCheck && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All && Registered) {
+            if (shouldCheckKnown != true && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
+                Registered) {
+                if (shouldCheckKnown == false) {
+                    logger.Info($"Quick check skipped for {ToString()}.");
+                    return FileProperties.None;
+                }
+
                 var partialInfo = CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
                 var compareResults = partialInfo.CompareProperties(FileInfo, FileProperties.AllVerifiable);
                 if (compareResults != FileProperties.None) {
@@ -419,37 +435,29 @@ namespace Kifa.Api.Files {
             var file = this;
             if (UseCache) {
                 CacheFileToLocal();
-                file = LocalCacheFile;
+                file = LocalFile;
             }
 
             var oldInfo = FileInfo;
 
             // Compare with quick info.
             var quickInfo = file.QuickInfo();
-            logger.Debug("Quick info:\n{0}", JsonConvert.SerializeObject(quickInfo));
+            logger.Debug($"Quick info:\n{quickInfo}");
 
             var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 
             var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
 
             if (quickCompareResult != FileProperties.None) {
-                logger.Warn("Quick data:\n{0}",
-                    JsonConvert.SerializeObject(quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult),
-                        Formatting.Indented));
-                logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ quickCompareResult),
-                        Formatting.Indented));
+                logger.Warn($"Quick data:\n{quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
+                logger.Warn($"Actual data:\n{info.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
                 return quickCompareResult;
             }
 
             var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResultWithOld != FileProperties.None) {
-                logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld),
-                        Formatting.Indented));
-                logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResultWithOld),
-                        Formatting.Indented));
+                logger.Warn($"Expected data:\n{oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
+                logger.Warn($"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
                 return compareResultWithOld;
             }
 
@@ -469,12 +477,8 @@ namespace Kifa.Api.Files {
                 client.Update(info);
                 Register(true);
             } else {
-                logger.Warn("Expected data:\n{0}",
-                    JsonConvert.SerializeObject(sha256Info.RemoveProperties(FileProperties.All ^ compareResult),
-                        Formatting.Indented));
-                logger.Warn("Actual data:\n{0}",
-                    JsonConvert.SerializeObject(info.RemoveProperties(FileProperties.All ^ compareResult),
-                        Formatting.Indented));
+                logger.Warn($"Expected data:\n{sha256Info.RemoveProperties(FileProperties.All ^ compareResult)}");
+                logger.Warn($"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResult)}");
             }
 
             return compareResult;
