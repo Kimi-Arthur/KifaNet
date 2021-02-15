@@ -42,8 +42,9 @@ namespace Kifa.Tools.FileUtil.Commands {
                     Console.WriteLine(file);
                 }
 
-                var removalText = DeleteSource ? " and remove them afterwards" : "";
-                Console.Write($"Confirm uploading the {files.Count} files above{removalText}?");
+                var downloadText = DownloadLocal ? " and download to local" : "";
+                var removalText = DeleteSource ? " and remove source afterwards" : "";
+                Console.Write($"Confirm uploading the {files.Count} files above{downloadText}{removalText}?");
                 Console.ReadLine();
             }
 
