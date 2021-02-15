@@ -5,10 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using Kifa.Service;
-using Newtonsoft.Json;
-using NLog;
-using Pimix;
 using Kifa.Cloud.BaiduCloud;
 using Kifa.Cloud.GoogleDrive;
 using Kifa.Cloud.MegaNz;
@@ -16,6 +12,9 @@ using Kifa.Cloud.Swisscom;
 using Kifa.IO;
 using Kifa.IO.FileFormats;
 using Kifa.IO.StorageClients;
+using Kifa.Service;
+using NLog;
+using Pimix;
 
 namespace Kifa.Api.Files {
     public class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
