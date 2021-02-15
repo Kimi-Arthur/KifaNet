@@ -26,6 +26,45 @@ namespace Kifa.Api.Files {
 
         static readonly Dictionary<string, StorageClient> knownClients = new();
 
+        static StorageClient GetClient(string spec) {
+            if (knownClients.ContainsKey(spec)) {
+                return knownClients[spec];
+            }
+
+            var specs = spec.Split(':');
+
+            if (specs[1].Contains("+")) {
+                // Sharded client.
+                return knownClients[spec] = new ShardedStorageClient() {
+                    Clients = specs[1].Split("+").Select(s => GetClient($"{specs[0]}:{s}")).ToList(),
+                    ShardSize = SwisscomStorageClient.ShardSize
+                };
+            }
+
+            switch (specs[0]) {
+                case "baidu":
+                    return knownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
+                case "google":
+                    return knownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
+                case "mega":
+                    return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
+                case "swiss":
+                    return knownClients[spec] = new SwisscomStorageClient(specs[1]);
+                case "http":
+                case "https":
+                    return knownClients[spec] = new WebStorageClient {Protocol = specs[0]};
+                case "local":
+                    var c = new FileStorageClient {ServerId = specs[1]};
+                    if (c.Server == null) {
+                        c = null;
+                    }
+
+                    return knownClients[spec] = c;
+            }
+
+            return knownClients[spec];
+        }
+
         FileInformation fileInfo;
 
         public bool SimpleMode { get; set; }
@@ -134,30 +173,6 @@ namespace Kifa.Api.Files {
         public bool IsCloud =>
             (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
              Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
-
-        public int CompareTo(KifaFile other) {
-            if (ReferenceEquals(this, other)) {
-                return 0;
-            }
-
-            if (ReferenceEquals(null, other)) {
-                return 1;
-            }
-
-            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
-        }
-
-        public bool Equals(KifaFile other) {
-            if (ReferenceEquals(null, other)) {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other)) {
-                return true;
-            }
-
-            return string.Equals(ToString(), other.ToString());
-        }
 
         static string GetUri(string id) {
             string candidate = null;
@@ -505,43 +520,43 @@ namespace Kifa.Api.Files {
 
         public bool IsCompatible(KifaFile other) => Host == other.Host && FileFormat == other.FileFormat;
 
-        static StorageClient GetClient(string spec) {
-            if (knownClients.ContainsKey(spec)) {
-                return knownClients[spec];
-            }
-
-            var specs = spec.Split(':');
-
-            if (specs[1].Contains("+")) {
-                // Sharded client.
-                return knownClients[spec] = new ShardedStorageClient() {
-                    Clients = specs[1].Split("+").Select(s => GetClient($"{specs[0]}:{s}")).ToList(),
-                    ShardSize = SwisscomStorageClient.ShardSize
+        public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
+            FileInfo.Sha256 == null || FileInfo.Size == null
+                ? null
+                : FileInfo.Locations.Keys.FirstOrDefault(l =>
+                    new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
+                        .Match(l).Success) ?? serviceType switch {
+                    CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
+                    CloudServiceType.Swiss =>
+                        // TODO: Use format specific header size.
+                        $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
+                    _ => ""
                 };
+
+        public override int GetHashCode() => ToString()?.GetHashCode() ?? 0;
+
+        public bool Equals(KifaFile other) {
+            if (ReferenceEquals(null, other)) {
+                return false;
             }
 
-            switch (specs[0]) {
-                case "baidu":
-                    return knownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
-                case "google":
-                    return knownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
-                case "mega":
-                    return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
-                case "swiss":
-                    return knownClients[spec] = new SwisscomStorageClient(specs[1]);
-                case "http":
-                case "https":
-                    return knownClients[spec] = new WebStorageClient {Protocol = specs[0]};
-                case "local":
-                    var c = new FileStorageClient {ServerId = specs[1]};
-                    if (c.Server == null) {
-                        c = null;
-                    }
-
-                    return knownClients[spec] = c;
+            if (ReferenceEquals(this, other)) {
+                return true;
             }
 
-            return knownClients[spec];
+            return string.Equals(ToString(), other.ToString());
+        }
+
+        public int CompareTo(KifaFile other) {
+            if (ReferenceEquals(this, other)) {
+                return 0;
+            }
+
+            if (ReferenceEquals(null, other)) {
+                return 1;
+            }
+
+            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
         }
 
         public override bool Equals(object obj) {
@@ -555,32 +570,5 @@ namespace Kifa.Api.Files {
 
             return obj.GetType() == GetType() && Equals((KifaFile) obj);
         }
-
-        public override int GetHashCode() => ToString() != null ? ToString().GetHashCode() : 0;
-
-        public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
-            FileInfo.Sha256 == null || FileInfo.Size == null
-                ? null
-                : FileInfo.Locations.Keys.FirstOrDefault(l =>
-                    new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
-                        .Match(l).Success) ?? serviceType switch {
-                    CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
-                    CloudServiceType.Swiss =>
-                        // TODO: Use format specific header size.
-                        $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
-                    _ => ""
-                };
-    }
-
-    public enum CloudServiceType {
-        Google,
-        Baidu,
-        Mega,
-        Swiss
-    }
-
-    public enum CloudFormatType {
-        V1,
-        V2
     }
 }
