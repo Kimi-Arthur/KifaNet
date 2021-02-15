@@ -260,6 +260,15 @@ namespace Kifa.Api.Files {
         public FileInformation QuickInfo() =>
             FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
+        public Stream OpenRead() =>
+            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
+
+        public void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+
+        public void Write(byte[] data) => Write(new MemoryStream(data));
+
+        public void Write(string text) => Write(new UTF8Encoding(false).GetBytes(text));
+
         public void Delete() => Client.Delete(Path);
 
         public void Touch() => Client.Touch(Path);
@@ -347,7 +356,6 @@ namespace Kifa.Api.Files {
             return true;
         }
 
-
         public void Copy(KifaFile destination, bool neverLink = false) {
             if (UseCache) {
                 CacheFileToLocal();
@@ -392,15 +400,6 @@ namespace Kifa.Api.Files {
                 LocalFile.Unregister();
             }
         }
-
-        public Stream OpenRead() =>
-            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
-
-        public void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
-
-        public void Write(byte[] data) => Write(new MemoryStream(data));
-
-        public void Write(string text) => Write(new UTF8Encoding(false).GetBytes(text));
 
         public FileInformation CalculateInfo(FileProperties properties) {
             var info = FileInfo.Clone();
