@@ -17,7 +17,7 @@ using NLog;
 using Pimix;
 
 namespace Kifa.Api.Files {
-    public class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
+    public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         static Regex subPathIgnoredFiles;
