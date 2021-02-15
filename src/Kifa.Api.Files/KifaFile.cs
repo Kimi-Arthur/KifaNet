@@ -414,20 +414,23 @@ namespace Kifa.Api.Files {
                 throw new FileNotFoundException(ToString());
             }
 
-            var file = this; 
+            var file = this;
+            logger.Info($"Checking file {file}...");
+
             var oldInfo = FileInfo;
 
             if (UseCache) {
                 var cacheQuickInfo = LocalFile.QuickInfo();
                 if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) == FileProperties.None) {
                     file = LocalFile;
+                    logger.Debug($"Use local file {file} instead.");
                 }
             }
 
             if (shouldCheckKnown != true && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
                 file.Registered) {
                 if (shouldCheckKnown == false) {
-                    logger.Info($"Quick check skipped for {ToString()}.");
+                    logger.Info($"Quick check skipped for {file}.");
                     return FileProperties.None;
                 }
 
