@@ -7,7 +7,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("link", HelpText = "Link video file to proper location.")]
-    class LinkVideoCommand : PimixCommand {
+    class LinkVideoCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to rename.")]

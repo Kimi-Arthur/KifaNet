@@ -4,7 +4,7 @@ using Kifa.Api.Files;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
-    class ListCommand : PimixFileCommand {
+    class ListCommand : KifaFileCommand {
         int counter;
 
         [Option('l', "long", HelpText = "Long list mode")]

@@ -15,8 +15,8 @@ namespace Kifa.Api.Files {
     class KifaFileInfo : IFileInfo {
         readonly KifaFile file;
 
-        public KifaFileInfo(KifaFile pimixFile) {
-            file = pimixFile;
+        public KifaFileInfo(KifaFile file) {
+            this.file = file;
         }
 
         public Stream CreateReadStream() => file.OpenRead();

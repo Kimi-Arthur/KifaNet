@@ -8,7 +8,7 @@ using Kifa.IO;
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("rm", HelpText =
         "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
-    class RemoveCommand : PimixCommand {
+    class RemoveCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, MetaName = "FILE", MetaValue = "STRING", HelpText = "File to be removed.")]

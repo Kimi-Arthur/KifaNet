@@ -122,8 +122,8 @@ namespace Kifa.Api.Files {
 
             Client = GetClient(segments[0]);
 
-            FileFormat = PimixFileV2Format.Get(uri) ?? PimixFileV1Format.Get(uri) ??
-                PimixFileV0Format.Get(uri) ?? RawFileFormat.Instance;
+            FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
+                KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
             UseCache = useCache;
         }
 
@@ -162,7 +162,7 @@ namespace Kifa.Api.Files {
 
         public StorageClient Client { get; set; }
 
-        PimixFileFormat FileFormat { get; }
+        KifaFileFormat FileFormat { get; }
 
         public FileInformation FileInfo =>
             fileInfo ??= SimpleMode ? new FileInformation() : FileInformation.Client.Get(Id);
@@ -171,7 +171,7 @@ namespace Kifa.Api.Files {
 
         public bool IsCloud =>
             (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
-             Client is MegaNzStorageClient) && FileFormat is PimixFileV1Format;
+             Client is MegaNzStorageClient) && FileFormat is KifaFileV1Format;
 
         static string GetUri(string id) {
             string candidate = null;
@@ -202,15 +202,15 @@ namespace Kifa.Api.Files {
                             score = 8;
                         }
 
-                        if (file.FileFormat is PimixFileV2Format) {
+                        if (file.FileFormat is KifaFileV2Format) {
                             score += 4;
                         }
 
-                        if (file.FileFormat is PimixFileV1Format) {
+                        if (file.FileFormat is KifaFileV1Format) {
                             score += 2;
                         }
 
-                        if (file.FileFormat is PimixFileV0Format) {
+                        if (file.FileFormat is KifaFileV0Format) {
                             score += 1;
                         }
 

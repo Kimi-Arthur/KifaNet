@@ -11,7 +11,7 @@ using Kifa.Bilibili;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
-    class GetChatCommand : PimixFileCommand {
+    class GetChatCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Option('c', "cid", HelpText = "Bilibili cid for comments.")]

@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("decode", HelpText = "Decode file.")]
-    class DecodeCommand : PimixCommand {
+    class DecodeCommand : KifaCommand {
         [Value(0, Required = true, HelpText = "Target file(s) to import.")]
         public IEnumerable<string> FileNames { get; set; }
 

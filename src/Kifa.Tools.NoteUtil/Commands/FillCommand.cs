@@ -9,7 +9,7 @@ using NLog;
 
 namespace Kifa.Tools.NoteUtil.Commands {
     [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]
-    public class FillCommand : PimixCommand {
+    public class FillCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to rename.")]

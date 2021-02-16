@@ -6,7 +6,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("check", HelpText = "Check file integrity.")]
-    class CheckCommand : PimixFileCommand {
+    class CheckCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Option('q', "quick", HelpText =

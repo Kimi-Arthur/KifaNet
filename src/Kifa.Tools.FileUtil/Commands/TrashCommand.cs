@@ -8,7 +8,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("trash", HelpText = "Move the file to trash.")]
-    class TrashCommand : PimixFileCommand {
+    class TrashCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         static readonly FileInformationServiceClient client = FileInformation.Client;
 

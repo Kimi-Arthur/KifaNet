@@ -7,7 +7,7 @@ using Kifa.Api.Files;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("normalize", HelpText = "Rename the file with proper normalization.")]
-    class NormalizeCommand : PimixFileCommand {
+    class NormalizeCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         protected override Func<List<KifaFile>, string> PimixFileConfirmText

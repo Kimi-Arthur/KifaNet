@@ -13,10 +13,10 @@ namespace Kifa.IO.FileFormats {
     ///     File size starts at 0x073e (1854) and will end with space.
     ///     We only provide decoder for this format.
     /// </summary>
-    public class PimixFileV0Format : PimixFileFormat {
-        static readonly PimixFileV0Format Instance = new PimixFileV0Format();
+    public class KifaFileV0Format : KifaFileFormat {
+        static readonly KifaFileV0Format Instance = new KifaFileV0Format();
 
-        public static PimixFileFormat Get(string fileSpec) {
+        public static KifaFileFormat Get(string fileSpec) {
             var specs = fileSpec.Split('/').First().Split(';');
             foreach (var spec in specs) {
                 if (spec == "v0") {
@@ -53,7 +53,7 @@ namespace Kifa.IO.FileFormats {
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PatchedStream(encodedStream) {
+            return new KifaCryptoStream(new PatchedStream(encodedStream) {
                     IgnoreBefore = 0x1225
                 },
                 decoder, size, true);

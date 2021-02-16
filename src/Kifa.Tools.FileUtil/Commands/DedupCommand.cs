@@ -7,7 +7,7 @@ using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("dedup", HelpText = "Deduplicate file entries.")]
-    class DedupCommand : PimixCommand {
+    class DedupCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to upload.")]

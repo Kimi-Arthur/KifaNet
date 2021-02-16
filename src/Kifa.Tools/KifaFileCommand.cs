@@ -7,7 +7,7 @@ using Kifa.Api.Files;
 using Kifa.IO;
 
 namespace Kifa.Tools {
-    public abstract partial class PimixFileCommand : PimixCommand {
+    public abstract partial class KifaFileCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
@@ -88,7 +88,7 @@ namespace Kifa.Tools {
         }
     }
 
-    public abstract partial class PimixFileCommand {
+    public abstract partial class KifaFileCommand {
         protected virtual Func<List<string>, string> FileInformationConfirmText => null;
         protected virtual int ExecuteOneFileInformation(string file) => -1;
 
@@ -121,7 +121,7 @@ namespace Kifa.Tools {
         }
     }
 
-    public abstract partial class PimixFileCommand {
+    public abstract partial class KifaFileCommand {
         protected virtual Func<List<KifaFile>, string> PimixFileConfirmText => null;
         protected virtual int ExecuteOnePimixFile(KifaFile file) => -1;
 

@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 
 namespace Kifa.Cryptography {
-    public class PimixCryptoStream : Stream {
+    public class KifaCryptoStream : Stream {
         readonly bool needBlockAhead;
         byte[] padBuffer;
 
@@ -11,7 +11,7 @@ namespace Kifa.Cryptography {
         Stream stream;
         ICryptoTransform transform;
 
-        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength, bool needBlockAhead) {
+        public KifaCryptoStream(Stream stream, ICryptoTransform transform, long outputLength, bool needBlockAhead) {
             this.stream = stream;
             Length = outputLength;
             this.needBlockAhead = needBlockAhead;

@@ -7,7 +7,7 @@ using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("fix", HelpText = "Fix subtitle.")]
-    class FixCommand : PimixFileCommand {
+    class FixCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         protected override string Prefix => "/Subtitles";

@@ -7,7 +7,7 @@ using Kifa.Api.Files;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("clean", HelpText = "Clean file entries.")]
-    class CleanCommand : PimixCommand {
+    class CleanCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to upload.")]

@@ -4,7 +4,7 @@ using Kifa.Bilibili;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("video", HelpText = "Download high quality Bilibili videos from biliplus.")]
-    public class DownloadVideoCommand : PimixCommand {
+    public class DownloadVideoCommand : KifaCommand {
         [Value(0, Required = true,
             HelpText = "The video id from Bilibili. With possible p{n} as a suffix.")]
         public string Aid { get; set; }

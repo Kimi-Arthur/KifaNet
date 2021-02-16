@@ -11,7 +11,7 @@ using Season = Kifa.Infos.Season;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
-    class ImportCommand : PimixCommand {
+    class ImportCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to import.")]

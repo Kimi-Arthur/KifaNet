@@ -5,7 +5,7 @@ using Kifa.Bilibili;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("rename", HelpText = "Rename video file to comply.")]
-    class RenameVideoCommand : PimixCommand {
+    class RenameVideoCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to rename.")]

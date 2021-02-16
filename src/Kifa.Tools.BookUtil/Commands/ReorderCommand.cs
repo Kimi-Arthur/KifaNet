@@ -7,7 +7,7 @@ using PdfSharp.Pdf.IO;
 
 namespace Kifa.Tools.BookUtil.Commands {
     [Verb("reorder", HelpText = "Reorder page orders to make it easy to print two paged like a book.")]
-    public class ReorderCommand : PimixCommand {
+    public class ReorderCommand : KifaCommand {
         [Value(0, Required = true, HelpText = "Target PDF file(s) to reorder the pages.")]
         public string FileName { get; set; }
 

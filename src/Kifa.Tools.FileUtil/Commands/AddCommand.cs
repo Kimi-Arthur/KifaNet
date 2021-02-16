@@ -8,7 +8,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("add", HelpText = "Add file entry.")]
-    class AddCommand : PimixCommand {
+    class AddCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
@@ -33,7 +33,7 @@ namespace Kifa.Tools.FileUtil.Commands {
                 Console.ReadLine();
             }
 
-            var executionHandler = new PimixExecutionHandler<KifaFile>(logger);
+            var executionHandler = new KifaExecutionHandler<KifaFile>(logger);
 
             foreach (var file in files) {
                 executionHandler.Execute(new KifaFile(file.ToString()), AddFile, "Failed to add {0}.");
@@ -65,7 +65,7 @@ namespace Kifa.Tools.FileUtil.Commands {
             }
 
             if (!Overwrite) {
-                throw new PimixExecutionException($"Conflict with recorded file info! Please check: {result}");
+                throw new KifaExecutionException($"Conflict with recorded file info! Please check: {result}");
             }
 
             var info = file.CalculateInfo(FileProperties.AllVerifiable);

@@ -7,7 +7,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("get", HelpText = "Get files.")]
-    class GetCommand : PimixFileCommand {
+    class GetCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]

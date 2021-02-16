@@ -5,7 +5,7 @@ using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("up", HelpText = "Download all high quality Bilibili videos for one uploader.")]
-    public class DownloadUploaderCommand : PimixCommand {
+    public class DownloadUploaderCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Uploader ID.")]

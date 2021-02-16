@@ -1,7 +1,7 @@
 using System.IO;
 
 namespace Kifa.IO.FileFormats {
-    public class RawFileFormat : PimixFileFormat {
+    public class RawFileFormat : KifaFileFormat {
         public static readonly RawFileFormat Instance = new RawFileFormat();
 
         public override string ToString() => "";

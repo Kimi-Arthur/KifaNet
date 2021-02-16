@@ -4,7 +4,7 @@ using Kifa.Tools.FileUtil.Commands;
 namespace Kifa.Tools.FileUtil {
     class Program {
         static int Main(string[] args) =>
-            PimixCommand.Run(
+            KifaCommand.Run(
                 parameters => Parser.Default.ParseArguments(parameters,
                     new[] {
                         typeof(CheckCommand), typeof(CleanCommand), typeof(RemoveCommand), typeof(CopyCommand),

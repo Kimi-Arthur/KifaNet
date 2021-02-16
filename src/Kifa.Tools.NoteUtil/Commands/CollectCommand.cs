@@ -7,7 +7,7 @@ using NLog;
 
 namespace Kifa.Tools.NoteUtil.Commands {
     [Verb("collect", HelpText = "Collect all vocabulary into vocabulary files.")]
-    public class CollectCommand : PimixCommand {
+    public class CollectCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file to collect vocabulary from.")]

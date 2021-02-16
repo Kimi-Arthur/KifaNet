@@ -8,7 +8,7 @@ using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("update", HelpText = "Update subtitle with given modification.")]
-    class UpdateCommand : PimixCommand {
+    class UpdateCommand : KifaCommand {
         const string SubtitlesPrefix = "/Subtitles";
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -38,9 +38,9 @@ namespace Kifa.Tools.SubUtil.Commands {
 
     class TimeShiftAction : Action {
         public override void Update(AssDocument sub) {
-            var selectedLines = PimixCommand.SelectMany(
+            var selectedLines = KifaCommand.SelectMany(
                 sub.Sections.OfType<AssEventsSection>().First().Events.ToList());
-            var shift = PimixCommand.Confirm("Input the amount of time to shift").ParseTimeSpanString();
+            var shift = KifaCommand.Confirm("Input the amount of time to shift").ParseTimeSpanString();
             ShiftTime(selectedLines, shift);
         }
 

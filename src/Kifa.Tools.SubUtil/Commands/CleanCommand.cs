@@ -6,7 +6,7 @@ using Kifa.Api.Files;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("clean", HelpText = "Clean subtitle file.")]
-    class CleanCommand : PimixFileCommand {
+    class CleanCommand : KifaFileCommand {
         protected override string Prefix => "/Subtitles";
 
         protected override Func<List<KifaFile>, string> PimixFileConfirmText

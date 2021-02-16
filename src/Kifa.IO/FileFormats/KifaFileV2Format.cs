@@ -18,11 +18,11 @@ namespace Kifa.IO.FileFormats {
     ///     B8~15: File Length (int64)
     ///     B16~47: SHA256 (256bit)
     /// </summary>
-    public class PimixFileV2Format : PimixFileFormat {
-        static readonly PimixFileV2Format Instance = new PimixFileV2Format();
+    public class KifaFileV2Format : KifaFileFormat {
+        static readonly KifaFileV2Format Instance = new KifaFileV2Format();
         const byte HeaderLength = 0x30;
 
-        public static PimixFileFormat Get(string fileUri) {
+        public static KifaFileFormat Get(string fileUri) {
             return fileUri.EndsWith(".v2") ? Instance : null;
         }
 

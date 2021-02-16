@@ -17,10 +17,10 @@ namespace Kifa.IO.FileFormats {
     ///     B8~15: File Length (int64)
     ///     B16~47: SHA256 (256bit)
     /// </summary>
-    public class PimixFileV1Format : PimixFileFormat {
-        static readonly PimixFileV1Format Instance = new PimixFileV1Format();
+    public class KifaFileV1Format : KifaFileFormat {
+        static readonly KifaFileV1Format Instance = new KifaFileV1Format();
 
-        public static PimixFileFormat Get(string fileUri) {
+        public static KifaFileFormat Get(string fileUri) {
             if (fileUri.EndsWith(".v1")) {
                 return Instance;
             }
@@ -54,7 +54,7 @@ namespace Kifa.IO.FileFormats {
                 decoder = aesAlgorithm.CreateDecryptor();
             }
 
-            return new PimixCryptoStream(new PatchedStream(encodedStream) {
+            return new KifaCryptoStream(new PatchedStream(encodedStream) {
                     IgnoreBefore = 0x30
                 },
                 decoder, size, true);
@@ -82,7 +82,7 @@ namespace Kifa.IO.FileFormats {
                 encoder = aesAlgorithm.CreateEncryptor();
             }
 
-            return new PatchedStream(new PimixCryptoStream(rawStream, encoder,
+            return new PatchedStream(new KifaCryptoStream(rawStream, encoder,
                 info.Size.Value.RoundDown(16) + 16, false)) {
                 BufferBefore = header
             };

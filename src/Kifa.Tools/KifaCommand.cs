@@ -7,7 +7,7 @@ using Kifa.Api.Files;
 using Kifa.Configs;
 
 namespace Kifa.Tools {
-    public abstract class PimixCommand {
+    public abstract class KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static HashSet<string> LoggingTargets { get; set; }
@@ -19,10 +19,10 @@ namespace Kifa.Tools {
 
         public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
             Initialize();
-            return parse(args).MapResult<PimixCommand, int>(ExecuteCommand, HandleParseFail);
+            return parse(args).MapResult<KifaCommand, int>(ExecuteCommand, HandleParseFail);
         }
 
-        static int ExecuteCommand(PimixCommand command) {
+        static int ExecuteCommand(KifaCommand command) {
             if (command.Verbose) {
                 ConfigureLogger(true);
             }

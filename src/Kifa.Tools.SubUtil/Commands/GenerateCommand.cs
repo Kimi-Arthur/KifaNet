@@ -12,7 +12,7 @@ using Kifa.Subtitle.Srt;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
-    class GenerateCommand : PimixFileCommand {
+    class GenerateCommand : KifaFileCommand {
         const string SubtitlesPrefix = "/Subtitles";
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         List<int> selectedBilibiliChatIndexes;

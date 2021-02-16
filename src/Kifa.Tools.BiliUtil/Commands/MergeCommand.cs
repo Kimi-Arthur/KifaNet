@@ -6,7 +6,7 @@ using Kifa.Api.Files;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("merge", HelpText = "Merge flv to mp4.")]
-    public class MergeCommand : PimixCommand {
+    public class MergeCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to upload.")]

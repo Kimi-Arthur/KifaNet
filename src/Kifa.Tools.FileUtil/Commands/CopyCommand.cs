@@ -7,7 +7,7 @@ using Kifa.Service;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("cp", HelpText = "Copy FILE1 to FILE2. The files will be linked.")]
-    class CopyCommand : PimixCommand {
+    class CopyCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true, HelpText = "File to copy from.")]

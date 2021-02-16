@@ -9,7 +9,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("upload", HelpText = "Upload file to a cloud location.")]
-    class UploadCommand : PimixCommand {
+    class UploadCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Target file(s) to upload.")]

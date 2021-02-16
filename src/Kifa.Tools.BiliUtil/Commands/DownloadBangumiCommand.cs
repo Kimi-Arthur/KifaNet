@@ -5,7 +5,7 @@ using Kifa.Bilibili;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
-    public class DownloadBangumiCommand : PimixCommand {
+    public class DownloadBangumiCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]

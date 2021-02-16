@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using NLog;
 
 namespace Kifa.Tools {
-    public class PimixExecutionHandler<TArgument> {
+    public class KifaExecutionHandler<TArgument> {
         readonly Logger logger;
 
-        public List<(TArgument argument, PimixExecutionException exception)> Errors { get; set; } =
-            new List<(TArgument argument, PimixExecutionException exception)>();
+        public List<(TArgument argument, KifaExecutionException exception)> Errors { get; set; } =
+            new List<(TArgument argument, KifaExecutionException exception)>();
 
-        public PimixExecutionHandler(Logger logger) {
+        public KifaExecutionHandler(Logger logger) {
             this.logger = logger;
         }
 
@@ -19,8 +19,8 @@ namespace Kifa.Tools {
                 action(argument);
             } catch (Exception ex) {
                 var exception = ex switch {
-                    PimixExecutionException executionException => executionException,
-                    _ => new PimixExecutionException("Unhandled execution exception.", ex)
+                    KifaExecutionException executionException => executionException,
+                    _ => new KifaExecutionException("Unhandled execution exception.", ex)
                 };
 
                 Errors.Add((argument, exception));

@@ -7,7 +7,7 @@ using Kifa.Infos;
 
 namespace Kifa.Tools.DataUtil.Commands {
     [Verb("refresh", HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]
-    class RefreshCommand : PimixCommand {
+    class RefreshCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Entity to refresh.")]

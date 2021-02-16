@@ -7,7 +7,7 @@ using Kifa.Api.Files;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("rm-empty", HelpText = "Remove empty folders recursively.")]
-    public class RemoveEmptyCommand : PimixCommand {
+    public class RemoveEmptyCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, HelpText = "Folders to be removed.")]

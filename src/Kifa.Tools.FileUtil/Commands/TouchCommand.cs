@@ -7,7 +7,7 @@ using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("touch", HelpText = "Touch file.")]
-    class TouchCommand : PimixCommand {
+    class TouchCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         [Value(0, Required = true, MetaName = "File URL")]
