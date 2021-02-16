@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
-using Pimix.Subtitle.Ass;
+using Kifa.Subtitle.Ass;
+using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("fix", HelpText = "Fix subtitle.")]
@@ -26,18 +26,13 @@ namespace Kifa.Tools.SubUtil.Commands {
         }
 
         static AssDocument FixSubtitleResolution(AssDocument sub) {
-            if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is
-                AssScriptInfoSection header)) {
+            if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header)) {
                 return sub;
             }
 
-            var scriptHeight = header.PlayResY > 0
-                ? header.PlayResY
-                : AssScriptInfoSection.DefaultPlayResY;
+            var scriptHeight = header.PlayResY > 0 ? header.PlayResY : AssScriptInfoSection.DefaultPlayResY;
 
-            var scriptWidth = header.PlayResX > 0
-                ? header.PlayResX
-                : AssScriptInfoSection.DefaultPlayResX;
+            var scriptWidth = header.PlayResX > 0 ? header.PlayResX : AssScriptInfoSection.DefaultPlayResX;
 
             if (scriptWidth == AssScriptInfoSection.PreferredPlayResX &&
                 scriptHeight == AssScriptInfoSection.PreferredPlayResY) {

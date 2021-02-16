@@ -5,7 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
-    <ProjectReference Include="..\Pimix.Subtitle\Pimix.Subtitle.csproj" />
+    <ProjectReference Include="..\Kifa.Subtitle\Kifa.Subtitle.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />

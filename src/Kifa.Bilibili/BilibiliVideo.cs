@@ -14,7 +14,7 @@ using NLog;
 using Pimix;
 using Kifa.IO;
 using Kifa.Service;
-using Pimix.Subtitle.Ass;
+using Kifa.Subtitle.Ass;
 
 namespace Kifa.Bilibili {
     public class BilibiliVideoStats {

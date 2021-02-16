@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pimix.Subtitle.Ass;
+using Kifa.Subtitle.Ass;
 using Svg;
 
 namespace Kifa.Bilibili {

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
+using Kifa.Subtitle.Ass;
+using NLog;
 using Pimix;
-using Pimix.Subtitle.Ass;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("update", HelpText = "Update subtitle with given modification.")]
@@ -24,9 +24,7 @@ namespace Kifa.Tools.SubUtil.Commands {
 
             var sub = AssDocument.Parse(target.OpenRead());
 
-            SelectOne(new List<Action> {
-                new TimeShiftAction()
-            }, choiceName: "actions").choice.Update(sub);
+            SelectOne(new List<Action> {new TimeShiftAction()}, choiceName: "actions").choice.Update(sub);
 
             logger.Info(sub.ToString());
             target.Delete();
@@ -43,8 +41,7 @@ namespace Kifa.Tools.SubUtil.Commands {
         public override void Update(AssDocument sub) {
             var selectedLines = PimixCommand.SelectMany(
                 sub.Sections.OfType<AssEventsSection>().First().Events.ToList());
-            var shift = PimixCommand.Confirm("Input the amount of time to shift")
-                .ParseTimeSpanString();
+            var shift = PimixCommand.Confirm("Input the amount of time to shift").ParseTimeSpanString();
             ShiftTime(selectedLines, shift);
         }
 

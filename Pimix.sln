@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.GoogleDrive", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.GoogleDrive.Tests", "tests\Kifa.Cloud.GoogleDrive.Tests\Kifa.Cloud.GoogleDrive.Tests.csproj", "{359007A6-3F48-456A-AF9C-75F51B3A4F3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Subtitle", "src\Pimix.Subtitle\Pimix.Subtitle.csproj", "{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Subtitle", "src\Kifa.Subtitle\Kifa.Subtitle.csproj", "{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Bilibili", "src\Kifa.Bilibili\Kifa.Bilibili.csproj", "{92F48950-18F4-4891-8114-47847E0063B4}"
 EndProject
@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Configs", "src\Kifa.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Configs.Tests", "tests\Kifa.Configs.Tests\Kifa.Configs.Tests.csproj", "{6144F201-F164-4AB1-9A45-35764710FCF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Subtitle", "tests\PimixTest.Subtitle\PimixTest.Subtitle.csproj", "{B7B90EB1-FFEA-4B1D-A613-8A62CCDC4AD2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Subtitle.Tests", "tests\Kifa.Subtitle.Tests\Kifa.Subtitle.Tests.csproj", "{B7B90EB1-FFEA-4B1D-A613-8A62CCDC4AD2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Web.Api", "src\Pimix.Web.Api\Pimix.Web.Api.csproj", "{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}"
 EndProject

@@ -7,8 +7,8 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
-using Pimix.Subtitle.Ass;
-using Pimix.Subtitle.Srt;
+using Kifa.Subtitle.Ass;
+using Kifa.Subtitle.Srt;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("generate", HelpText = "Generate subtitle.")]
