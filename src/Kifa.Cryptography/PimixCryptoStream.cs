@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using Pimix;
 
-namespace Pimix.Cryptography {
+namespace Kifa.Cryptography {
     public class PimixCryptoStream : Stream {
         readonly bool needBlockAhead;
         byte[] padBuffer;
@@ -11,8 +12,7 @@ namespace Pimix.Cryptography {
         Stream stream;
         ICryptoTransform transform;
 
-        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
-            bool needBlockAhead) {
+        public PimixCryptoStream(Stream stream, ICryptoTransform transform, long outputLength, bool needBlockAhead) {
             this.stream = stream;
             Length = outputLength;
             this.needBlockAhead = needBlockAhead;
@@ -70,8 +70,7 @@ namespace Pimix.Cryptography {
 
             if (padBuffer != null) {
                 var leftOverCount = (int) Math.Min(Position.RoundUp(BlockSize) - Position, count);
-                Buffer.BlockCopy(padBuffer, (int) (Position % BlockSize), buffer, offset,
-                    leftOverCount);
+                Buffer.BlockCopy(padBuffer, (int) (Position % BlockSize), buffer, offset, leftOverCount);
 
                 Position += leftOverCount;
                 readCount += leftOverCount;
@@ -96,8 +95,8 @@ namespace Pimix.Cryptography {
                 }
             } else {
                 var internalToRead =
-                    (int) ((Position + count - readCount).RoundUp(BlockSize) -
-                           Position.RoundDown(BlockSize)) + (needBlockAhead ? BlockSize : 0);
+                    (int) ((Position + count - readCount).RoundUp(BlockSize) - Position.RoundDown(BlockSize)) +
+                    (needBlockAhead ? BlockSize : 0);
                 var internalBuffer = new byte[internalToRead];
 
                 if (stream.CanSeek) {
@@ -115,14 +114,12 @@ namespace Pimix.Cryptography {
                     transform.TransformBlock(internalBuffer, needBlockAhead ? BlockSize : 0,
                         internalReadCount - (needBlockAhead ? BlockSize : 0), tmp, 0);
                 } else {
-                    tmp = transform.TransformFinalBlock(internalBuffer,
-                        needBlockAhead ? BlockSize : 0,
+                    tmp = transform.TransformFinalBlock(internalBuffer, needBlockAhead ? BlockSize : 0,
                         internalReadCount - (needBlockAhead ? BlockSize : 0));
                 }
             }
 
-            Buffer.BlockCopy(tmp, (int) (Position % BlockSize), buffer, offset + readCount,
-                count - readCount);
+            Buffer.BlockCopy(tmp, (int) (Position % BlockSize), buffer, offset + readCount, count - readCount);
 
             Position += count - readCount;
             var padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;

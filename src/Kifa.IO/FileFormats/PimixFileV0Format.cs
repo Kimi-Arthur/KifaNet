@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Pimix;
-using Pimix.Cryptography;
+using Kifa.Cryptography;
 
 namespace Kifa.IO.FileFormats {
     /// <summary>

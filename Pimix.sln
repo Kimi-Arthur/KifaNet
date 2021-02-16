@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.IO", "src\Kifa.IO\Kifa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Service", "src\Kifa.Service\Kifa.Service.csproj", "{14523B38-BC5E-4D14-A2DE-C4E47DBC1F92}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix.Cryptography", "src\Pimix.Cryptography\Pimix.Cryptography.csproj", "{D24F82E0-2851-4564-9A1E-13CE7C9B8567}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Cryptography", "src\Kifa.Cryptography\Kifa.Cryptography.csproj", "{D24F82E0-2851-4564-9A1E-13CE7C9B8567}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Cloud.BaiduCloud", "src\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj", "{7DEB0798-1264-440A-AAD2-F6CEE1F10D5A}"
 EndProject
@@ -57,7 +57,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Infos.Tests", "tests\K
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Benchmarks", "benchmarks\Pimix.Benchmarks\Pimix.Benchmarks.csproj", "{3186AB8A-24DF-4134-92AC-37D3448BF648}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Cryptography", "tests\PimixTest.Cryptography\PimixTest.Cryptography.csproj", "{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cryptography.Tests", "tests\Kifa.Cryptography.Tests\Kifa.Cryptography.Tests.csproj", "{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Swisscom", "src\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj", "{2E30EF8C-FAED-4B28-9D85-104DC5FD31CD}"
 EndProject

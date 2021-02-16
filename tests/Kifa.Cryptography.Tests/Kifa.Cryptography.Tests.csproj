@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Kifa.Cryptography\Kifa.Cryptography.csproj" />
     <ProjectReference Include="..\..\src\Kifa.IO\Kifa.IO.csproj" />
-    <ProjectReference Include="..\..\src\Pimix.Cryptography\Pimix.Cryptography.csproj" />
   </ItemGroup>
 
   <ItemGroup>

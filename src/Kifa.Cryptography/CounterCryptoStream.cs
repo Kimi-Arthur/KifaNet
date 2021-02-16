@@ -3,8 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Pimix;
 
-namespace Pimix.Cryptography {
+namespace Kifa.Cryptography {
     public class CounterCryptoStream : Stream {
         readonly byte[] initialCounter;
 
