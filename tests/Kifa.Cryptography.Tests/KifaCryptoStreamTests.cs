@@ -22,7 +22,7 @@ namespace Kifa.Cryptography.Tests {
             };
 
         [Fact]
-        public void PimixCryptoStreamDecryptionReadBasicTest() {
+        public void KifaCryptoStreamDecryptionReadBasicTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateDecryptor();
 
@@ -53,7 +53,7 @@ namespace Kifa.Cryptography.Tests {
         }
 
         [Fact]
-        public void PimixCryptoStreamDecryptionReadIncompleteEndTest() {
+        public void KifaCryptoStreamDecryptionReadIncompleteEndTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateDecryptor();
 
@@ -80,7 +80,7 @@ namespace Kifa.Cryptography.Tests {
         }
 
         [Fact]
-        public void PimixCryptoStreamEncryptionReadBasicTest() {
+        public void KifaCryptoStreamEncryptionReadBasicTest() {
             foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
                 var transform = aesAlgorithm.CreateEncryptor();
 
