@@ -1,32 +1,32 @@
-﻿Pimix Common Library
+﻿Kifax Common Library
 ===
 
 Assembly Name
 ---
-**Pimix.dll**
+**Kifax.dll**
 
 APIs
 ---
-- `Pimix.Retry`
+- `Kifax.Retry`
   - `Retry.Run(action, handleException)`
-- `Pimix.ByteArrayExtensions`
+- `Kifax.ByteArrayExtensions`
   - `byte[].ToHexString()`
   - `long.ToByteArray()`
   - `byte[].ToInt64()`
-- `Pimix.DictionaryExtensions`
+- `Kifax.DictionaryExtensions`
   - `IDictionary.GetValueOrDefault(key, defaultValue)`
-- `Pimix.MathExtensions`
+- `Kifax.MathExtensions`
   - `long.RoundUp(period)`
   - `int.RoundUp(period)`
   - `long.RoundDown(period)`
   - `int.RoundDown(period)`
-- `Pimix.StringExtensions`
+- `Kifax.StringExtensions`
   - `string.Format(parameters)`
   - `string.Format(args)`
   - `string.ParseSizeString()`
   - `string.ParseHexString()`
   - `string.ParseTimeSpanString()`
-- `Pimix.WebResponseExtensions`
+- `Kifax.WebResponseExtensions`
   - `WebResponse.GetJToken()`
   - `WebResponse.GetObject()`
   - `WebResponse.GetDictionary()`

@@ -1,11 +1,11 @@
-﻿Pimix Configs Library
+﻿Kifax Configs Library
 ===
 
 Assembly Name
 ---
-**Pimix.Configs.dll**
+**Kifax.Configs.dll**
 
 APIs
 ---
-- `Pimix.Configs.PimixConfigs`
-  - `PimixConfigs.LoadFromSystemConfigs(assemby = null)`
+- `Kifax.Configs.KifaxConfigs`
+  - `KifaxConfigs.LoadFromSystemConfigs(assemby = null)`

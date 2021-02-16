@@ -12,8 +12,8 @@ Current Version:
 Dependencies:
 ---
  - **CommandLineParser**: 2.3.0
- - **Pimix.Configs**
- - **Pimix.Service**
+ - **Kifax.Configs**
+ - **Kifax.Service**
 
 Updates:
 ---
@@ -25,4 +25,4 @@ Updates:
 - Support running job.
 - 1.1
   - Added retry logic for uploading logs.
-  - Incorporated Pimix.Service's retry logic.
+  - Incorporated Kifax.Service's retry logic.

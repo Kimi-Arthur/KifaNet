@@ -1,11 +1,11 @@
-﻿Pimix Subtitle Library
+﻿Kifax Subtitle Library
 ===
 
 Assembly Name
 ---
-**Pimix.Subtitle.dll**
+**Kifax.Subtitle.dll**
 
 APIs
 ---
-- `Pimix.Subtitle.Ass`
-- `Pimix.Subtitle.Srt`
+- `Kifax.Subtitle.Ass`
+- `Kifax.Subtitle.Srt`

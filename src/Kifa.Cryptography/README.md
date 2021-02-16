@@ -1,11 +1,11 @@
-Pimix Cryptography Library
+Kifax Cryptography Library
 ===
 
 Assembly Name
 ---
-**Pimix.Cryptography.dll**
+**Kifax.Cryptography.dll**
 
 APIs
 ---
-- `Pimix.Cryptography.PimixCryptoStream`
+- `Kifax.Cryptography.KifaxCryptoStream`
   - A `Stream` wrapping other stream with Cryptographic processing.

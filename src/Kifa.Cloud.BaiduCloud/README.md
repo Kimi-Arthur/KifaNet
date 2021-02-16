@@ -1,4 +1,4 @@
-Pimix Baidu Cloud Library
+Kifa Baidu Cloud Library
 ===
 
 Assembly Name

@@ -1,20 +1,20 @@
-Pimix Service Library
+Kifax Service Library
 ===
 
 Assembly Name
 ---
-**Pimix.Service.dll**
+**Kifax.Service.dll**
 
 Configurable properties
 ---
-Suggested to use Pimix.Config to configure.
-- `Pimix.Service.PimixService`
-  - `PimixServerApiAddress`
-  - `PimixServerCredential`
+Suggested to use Kifax.Config to configure.
+- `Kifax.Service.KifaxService`
+  - `KifaxServerApiAddress`
+  - `KifaxServerCredential`
 
 APIs
 ---
-- `Pimix.Service.PimixService`
+- `Kifax.Service.KifaxService`
   - `Patch`
   - `Post`
   - `Get`

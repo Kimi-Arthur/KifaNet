@@ -28,9 +28,9 @@ Commands
 Dependencies:
 ---
 - **CommandLineParser**: 2.3.0
-- **Pimix.Api.Files**
-- **Pimix.Configs**
-- **Pimix.IO**
+- **Kifax.Api.Files**
+- **Kifax.Configs**
+- **Kifax.IO**
 
 Updates:
 ---

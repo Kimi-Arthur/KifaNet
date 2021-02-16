@@ -1,13 +1,13 @@
-Pimix File Formats Library
+Kifax File Formats Library
 ===
 
 Assembly Name
 ---
-**Pimix.IO.FileFormats.dll**
+**Kifax.IO.FileFormats.dll**
 
 APIs
 ---
-- `Pimix.IO.FileFormats.PimixFileFormat`
-- `Pimix.IO.FileFormats.PimixFileV0Format`
-- `Pimix.IO.FileFormats.PimixFileV1Format`
-- `Pimix.IO.FileFormats.RawFileFormat`
+- `Kifax.IO.FileFormats.KifaxFileFormat`
+- `Kifax.IO.FileFormats.KifaxFileV0Format`
+- `Kifax.IO.FileFormats.KifaxFileV1Format`
+- `Kifax.IO.FileFormats.RawFileFormat`
