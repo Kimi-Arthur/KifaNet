@@ -6,7 +6,7 @@
     <PackAsTool>true</PackAsTool>
     <Version>6.0.6</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Pimix.png</PackageIcon>
     <Description>Utility to interact with bilibili.</Description>
     <Copyright>Copyright © 2019 Kimi Arthur</Copyright>

@@ -6,7 +6,7 @@
     <PackAsTool>true</PackAsTool>
     <Version>4.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Kimi-Arthur/Pimix</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Pimix.png</PackageIcon>
     <Description>Utility to update subtitles.</Description>
     <Copyright>Copyright © 2015-2018 Kimi Arthur</Copyright>
