@@ -1,4 +1,4 @@
-### PimixServer section
+### KifaServer section
 
 POST http://{{server}}/api/configs/google/$refresh_account?id=default
 Accept: application/x-yaml
