@@ -105,6 +105,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.OAuth", "src\Kif
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.MemriseUtil", "src\Kifa.Tools.MemriseUtil\Kifa.Tools.MemriseUtil.csproj", "{238E0209-05B1-424F-AB1F-3436387B32DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Memrise", "src\Kifa.Memrise\Kifa.Memrise.csproj", "{6B0A496E-5117-436F-B954-FBB9EA49D358}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Memrise.Tests", "tests\Kifa.Memrise.Tests\Kifa.Memrise.Tests.csproj", "{C820AD4A-1F69-4691-BC8D-0C4F3165AF07}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -315,6 +319,14 @@ Global
 		{238E0209-05B1-424F-AB1F-3436387B32DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{238E0209-05B1-424F-AB1F-3436387B32DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{238E0209-05B1-424F-AB1F-3436387B32DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B0A496E-5117-436F-B954-FBB9EA49D358}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B0A496E-5117-436F-B954-FBB9EA49D358}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B0A496E-5117-436F-B954-FBB9EA49D358}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B0A496E-5117-436F-B954-FBB9EA49D358}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C820AD4A-1F69-4691-BC8D-0C4F3165AF07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C820AD4A-1F69-4691-BC8D-0C4F3165AF07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C820AD4A-1F69-4691-BC8D-0C4F3165AF07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C820AD4A-1F69-4691-BC8D-0C4F3165AF07}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
