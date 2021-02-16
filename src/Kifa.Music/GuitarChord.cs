@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Pimix.Music {
+namespace Kifa.Music {
     public class GuitarChord : DataModel {
         public const string ModelId = "guitar/chords";
 

@@ -75,7 +75,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.NoteUtil", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages", "src\Pimix.Languages\Pimix.Languages.csproj", "{B6254585-27B0-4C9F-9847-397AAE2A0F87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Music", "src\Pimix.Music\Pimix.Music.csproj", "{63DA2454-374B-43CF-9946-34134D20225C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Music", "src\Kifa.Music\Kifa.Music.csproj", "{63DA2454-374B-43CF-9946-34134D20225C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Mito.Dmm", "src\Kifa.Mito.Dmm\Kifa.Mito.Dmm.csproj", "{856AFAAF-6DAD-41EC-B44B-ED71C5C2D64D}"
 EndProject

@@ -22,9 +22,9 @@
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
     <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
     <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
+    <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj" />
     <ProjectReference Include="..\Pimix.Games.BreathOfTheWild\Pimix.Games.BreathOfTheWild.csproj" />
     <ProjectReference Include="..\Pimix.Languages.German\Pimix.Languages.German.csproj" />
-    <ProjectReference Include="..\Pimix.Music\Pimix.Music.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="..\..\resources\NLog.config">

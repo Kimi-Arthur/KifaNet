@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Pimix.Music;
+using Kifa.Music;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + GuitarChord.ModelId)]
