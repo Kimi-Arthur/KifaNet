@@ -12,7 +12,7 @@ namespace Kifa.Tools.SubUtil.Commands {
 
         protected override string Prefix => "/Subtitles";
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             if (!file.Path.EndsWith(".ass")) {
                 return 0;
             }

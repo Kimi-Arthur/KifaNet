@@ -75,7 +75,7 @@ namespace Kifa.Tools.SubUtil.Commands {
             return base.Execute();
         }
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             var suffix = file.Path.Substring(file.Path.LastIndexOf('.'));
             var ((season, episode), index) = SelectOne(episodes,
                 e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",

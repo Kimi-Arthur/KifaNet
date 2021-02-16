@@ -63,7 +63,7 @@ namespace Kifa.Tools {
                 var files = fileInfos.Select(f => f.value).ToList();
                 return ById
                     ? ExecuteAllFileInformation(files, multi)
-                    : ExecuteAllPimixFiles(files.Select(f => new KifaFile(f)).ToList(), multi);
+                    : ExecuteAllKifaFiles(files.Select(f => new KifaFile(f)).ToList(), multi);
             } else {
                 var files = new List<(string sortKey, KifaFile value)>();
                 foreach (var fileName in FileNames) {
@@ -83,7 +83,7 @@ namespace Kifa.Tools {
 
                 files.Sort();
 
-                return ExecuteAllPimixFiles(files.Select(f => f.value).ToList(), multi);
+                return ExecuteAllKifaFiles(files.Select(f => f.value).ToList(), multi);
             }
         }
     }
@@ -122,20 +122,20 @@ namespace Kifa.Tools {
     }
 
     public abstract partial class KifaFileCommand {
-        protected virtual Func<List<KifaFile>, string> PimixFileConfirmText => null;
-        protected virtual int ExecuteOnePimixFile(KifaFile file) => -1;
+        protected virtual Func<List<KifaFile>, string> KifaFileConfirmText => null;
+        protected virtual int ExecuteOneKifaFile(KifaFile file) => -1;
 
-        int ExecuteAllPimixFiles(List<KifaFile> files, bool multi) {
-            if (multi && PimixFileConfirmText != null) {
+        int ExecuteAllKifaFiles(List<KifaFile> files, bool multi) {
+            if (multi && KifaFileConfirmText != null) {
                 files.ForEach(Console.WriteLine);
-                Console.Write(PimixFileConfirmText(files));
+                Console.Write(KifaFileConfirmText(files));
                 Console.ReadLine();
             }
 
             var errors = new Dictionary<string, Exception>();
             var result = files.Select(s => {
                 try {
-                    return ExecuteOnePimixFile(s);
+                    return ExecuteOneKifaFile(s);
                 } catch (Exception ex) {
                     errors[s.ToString()] = ex;
                     return 255;

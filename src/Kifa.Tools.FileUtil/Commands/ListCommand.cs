@@ -22,7 +22,7 @@ namespace Kifa.Tools.FileUtil.Commands {
             return 0;
         }
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             counter++;
             Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.ToString());
             return 0;

@@ -22,10 +22,10 @@ namespace Kifa.Tools.SubUtil.Commands {
         [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
         public bool Force { get; set; }
 
-        protected override Func<List<KifaFile>, string> PimixFileConfirmText
+        protected override Func<List<KifaFile>, string> KifaFileConfirmText
             => files => $"Confirm generating comments for the {files.Count} files above?";
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             var actualFile = file.Parent.GetFile($"{file.BaseName}.ass");
             var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 

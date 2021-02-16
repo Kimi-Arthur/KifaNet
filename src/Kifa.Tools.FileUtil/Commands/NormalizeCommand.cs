@@ -10,10 +10,10 @@ namespace Kifa.Tools.FileUtil.Commands {
     class NormalizeCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        protected override Func<List<KifaFile>, string> PimixFileConfirmText
+        protected override Func<List<KifaFile>, string> KifaFileConfirmText
             => files => $"Confirm normalizing the {files.Count} files above?";
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             var path = file.ToString();
             if (path.IsNormalized(NormalizationForm.FormC)) {
                 logger.Info($"{path} is already normalized.");

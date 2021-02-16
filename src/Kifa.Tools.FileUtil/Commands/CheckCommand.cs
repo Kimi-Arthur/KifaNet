@@ -21,7 +21,7 @@ namespace Kifa.Tools.FileUtil.Commands {
             "Overwrite existing data if asked (with confirmation).")]
         public bool Overwrite { get; set; } = false;
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             file = new KifaFile(file.ToString());
             if (!file.Exists()) {
                 logger.Info($"{file} doesn't exist.");

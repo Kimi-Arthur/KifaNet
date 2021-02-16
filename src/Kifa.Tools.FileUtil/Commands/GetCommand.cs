@@ -15,12 +15,12 @@ namespace Kifa.Tools.FileUtil.Commands {
 
         public override bool Recursive { get; set; } = true;
 
-        protected override Func<List<KifaFile>, string> PimixFileConfirmText =>
+        protected override Func<List<KifaFile>, string> KifaFileConfirmText =>
             files => $"Confirm getting the {files.Count} files above?";
 
         protected override bool IterateOverLogicalFiles => true;
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             if (file.Exists()) {
                 if (file.CalculateInfo(FileProperties.Size).Size != file.FileInfo.Size) {
                     logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");

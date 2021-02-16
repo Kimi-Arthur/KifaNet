@@ -9,10 +9,10 @@ namespace Kifa.Tools.SubUtil.Commands {
     class CleanCommand : KifaFileCommand {
         protected override string Prefix => "/Subtitles";
 
-        protected override Func<List<KifaFile>, string> PimixFileConfirmText
+        protected override Func<List<KifaFile>, string> KifaFileConfirmText
             => files => $"Confirm cleaning comments for the {files.Count} files above?";
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             var lines = new List<string>();
             using (var sr = new StreamReader(file.OpenRead())) {
                 string line;

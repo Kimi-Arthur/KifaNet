@@ -9,11 +9,11 @@ using Xunit;
 namespace Kifa.Cloud.GoogleDrive.Tests {
     public class GoogleDriveStorageClientTests {
         public GoogleDriveStorageClientTests() {
-            KifaServiceRestClient.ServerAddress = PimixServerApiAddress;
+            KifaServiceRestClient.ServerAddress = KifaServerApiAddress;
             GetStorageClient().Delete("/Test/big.bin");
         }
 
-        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
+        public static string KifaServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         const string FileSHA256 =
             "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";

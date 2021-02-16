@@ -48,7 +48,7 @@ namespace Kifa.Tools.BiliUtil.Commands {
             return base.Execute();
         }
 
-        protected override int ExecuteOnePimixFile(KifaFile file) {
+        protected override int ExecuteOneKifaFile(KifaFile file) {
             var inferredAid = InferAid(file.ToString());
             if (inferredAid != null) {
                 var ids = inferredAid.Split('p');

@@ -15,7 +15,7 @@ namespace Kifa.Cloud.BaiduCloud.Tests {
         const string BigFileSha256 =
             "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
-        public static string PimixServerApiAddress { get; set; } = "http://www.pimix.tk/api";
+        public static string KifaServerApiAddress { get; set; } = "http://www.pimix.tk/api";
 
         [TestMethod]
         public void DownloadTest() {
@@ -131,7 +131,7 @@ namespace Kifa.Cloud.BaiduCloud.Tests {
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext ctx) {
-            KifaServiceRestClient.ServerAddress = PimixServerApiAddress;
+            KifaServiceRestClient.ServerAddress = KifaServerApiAddress;
             DataCleanup();
         }
 

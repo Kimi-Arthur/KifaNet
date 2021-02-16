@@ -7,7 +7,7 @@ using NLog;
 using Kifa.Service;
 
 namespace Kifa.Web.Api {
-    public class PimixServiceJsonClient {
+    public class KifaServiceJsonClient {
         public static string DataFolder { get; set; }
     }
 
@@ -18,7 +18,7 @@ namespace Kifa.Web.Api {
         Dictionary<string, List<string>> Groups { get; } = new();
 
         public override SortedDictionary<string, TDataModel> List() {
-            var prefix = $"{PimixServiceJsonClient.DataFolder}/{modelId}";
+            var prefix = $"{KifaServiceJsonClient.DataFolder}/{modelId}";
             if (!Directory.Exists(prefix)) {
                 return new SortedDictionary<string, TDataModel>();
             }
@@ -123,13 +123,13 @@ namespace Kifa.Web.Api {
         }
 
         void Write(TDataModel data) {
-            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{data.Id.Trim('/')}.json";
+            var path = $"{KifaServiceJsonClient.DataFolder}/{modelId}/{data.Id.Trim('/')}.json";
             MakeParent(path);
             File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
         }
 
         string ReadRaw(string id) {
-            var path = $"{PimixServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
+            var path = $"{KifaServiceJsonClient.DataFolder}/{modelId}/{id.Trim('/')}.json";
             return !File.Exists(path) ? "{}" : File.ReadAllText(path);
         }
 

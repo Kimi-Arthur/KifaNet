@@ -34,7 +34,7 @@ namespace Kifa.Web.Api.Controllers {
         static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {["swiss"] = 1 << 30};
 
         public List<string> ListFolder(string folder, bool recursive = false) {
-            var prefix = $"{PimixServiceJsonClient.DataFolder}/{modelId}";
+            var prefix = $"{KifaServiceJsonClient.DataFolder}/{modelId}";
             folder = $"{prefix}/{folder.TrimEnd('/')}";
             if (!Directory.Exists(folder)) {
                 return new List<string>();
