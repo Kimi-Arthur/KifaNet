@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using NLog;
 
-namespace Pimix.Azure {
+namespace Kifa.Azure {
     public class DnsClient {
         public static string ResourceGroup { get; set; }
         public static string Zone { get; set; }

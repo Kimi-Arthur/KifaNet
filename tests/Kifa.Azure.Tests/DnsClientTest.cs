@@ -1,9 +1,8 @@
 using System;
-using Pimix.Azure;
 using Kifa.Configs;
 using Xunit;
 
-namespace PimixTest.Azure {
+namespace Kifa.Azure.Tests {
     public class DnsClientTest {
         [Fact]
         public void ShouldUpdateIp() {
