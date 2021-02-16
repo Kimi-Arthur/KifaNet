@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public class VerbForms : Dictionary<VerbFormType, Dictionary<Person, string>> {
     }
 

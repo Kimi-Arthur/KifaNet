@@ -3,7 +3,7 @@ using System.Web;
 using HtmlAgilityPack;
 using MwParserFromScratch.Nodes;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public static class WikiExtensions {
         public static string GetTitle(this Heading heading) => heading.Inlines.First().ToPlainText();
 

@@ -8,7 +8,7 @@ using WikiClientLibrary.Client;
 using WikiClientLibrary.Pages;
 using WikiClientLibrary.Sites;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public class EnWiktionaryClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public class DudenClient {
         static Dictionary<string, string> audioLinks;
 

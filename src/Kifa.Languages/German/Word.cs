@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
-using Kifa.Service;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public class Word : DataModel {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

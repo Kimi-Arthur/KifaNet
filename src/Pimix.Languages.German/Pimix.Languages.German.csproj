@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
-    <ProjectReference Include="..\Pimix.Languages\Pimix.Languages.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,9 +17,6 @@
 
   <ItemGroup>
     <None Remove="duden_audio.json" />
-    <EmbeddedResource Include="duden_audio.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

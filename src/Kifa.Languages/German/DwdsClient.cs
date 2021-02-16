@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using HtmlAgilityPack;
 using NLog;
+using Pimix;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public class DwdsClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

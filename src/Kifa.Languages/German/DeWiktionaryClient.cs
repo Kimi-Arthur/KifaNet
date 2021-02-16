@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
 
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public class DeWiktionaryClient {
         static HttpClient wiktionaryClient = new HttpClient();
 

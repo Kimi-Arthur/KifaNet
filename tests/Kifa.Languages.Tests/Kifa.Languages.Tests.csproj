@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pimix.Languages.German\Pimix.Languages.German.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages\Kifa.Languages.csproj" />
   </ItemGroup>
 
 </Project>

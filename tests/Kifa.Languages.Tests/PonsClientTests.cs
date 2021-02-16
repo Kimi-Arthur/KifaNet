@@ -1,8 +1,7 @@
-using Pimix.Languages;
-using Pimix.Languages.German;
+using Kifa.Languages.German;
 using Xunit;
 
-namespace PimixTest.Languages.German {
+namespace Kifa.Languages.Tests {
     public class PonsClientTests {
         [Fact]
         public void VerbFormsTest() {

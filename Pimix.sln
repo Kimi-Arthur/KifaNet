@@ -67,13 +67,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Swisscom.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.GameHacking", "src\Kifa.GameHacking\Kifa.GameHacking.csproj", "{78D59B79-0B43-4281-A121-8C1915A9BC9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages.German", "src\Pimix.Languages.German\Pimix.Languages.German.csproj", "{15292670-AC73-4E6F-8F72-1B6CF2C48767}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Languages.German", "tests\PimixTest.Languages.German\PimixTest.Languages.German.csproj", "{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Languages.Tests", "tests\Kifa.Languages.Tests\Kifa.Languages.Tests.csproj", "{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.NoteUtil", "src\Kifa.Tools.NoteUtil\Kifa.Tools.NoteUtil.csproj", "{52F95839-91F3-4BB6-948A-4BD4904609DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Languages", "src\Pimix.Languages\Pimix.Languages.csproj", "{B6254585-27B0-4C9F-9847-397AAE2A0F87}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Languages", "src\Kifa.Languages\Kifa.Languages.csproj", "{B6254585-27B0-4C9F-9847-397AAE2A0F87}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Music", "src\Kifa.Music\Kifa.Music.csproj", "{63DA2454-374B-43CF-9946-34134D20225C}"
 EndProject
@@ -243,10 +241,6 @@ Global
 		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78D59B79-0B43-4281-A121-8C1915A9BC9D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{15292670-AC73-4E6F-8F72-1B6CF2C48767}.Release|Any CPU.Build.0 = Release|Any CPU
 		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22AD3BC5-6451-4A02-9FC2-BC307C0B500F}.Release|Any CPU.ActiveCfg = Release|Any CPU

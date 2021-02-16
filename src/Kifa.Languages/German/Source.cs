@@ -1,4 +1,4 @@
-namespace Pimix.Languages.German {
+namespace Kifa.Languages.German {
     public enum Source {
         Duden,
         Wiktionary,

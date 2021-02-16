@@ -1,7 +1,7 @@
-using Pimix.Languages.German;
+using Kifa.Languages.German;
 using Xunit;
 
-namespace PimixTest.Languages.German {
+namespace Kifa.Languages.Tests {
     public class DeWiktionaryClientTests {
         [Theory]
         [InlineData("kommen", "komm!", "kommt!", "kommen Sie!", "komme", "kommst", "kommt", "kommen", "kommt", "kommen",
@@ -62,7 +62,8 @@ namespace PimixTest.Languages.German {
 
         [Theory]
         [InlineData("Lernen", "Lernen", null, "Lernens", null, "Lernen", null, "Lernen", null)]
-        public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp, string ds, string dp, string @as, string ap) {
+        public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp, string ds, string dp,
+            string @as, string ap) {
             var client = new DeWiktionaryClient();
             var word = client.GetWord(id);
 

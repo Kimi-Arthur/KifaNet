@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Pimix.Languages.German;
+using Kifa.Languages.German;
 using Xunit;
 
-namespace PimixTest.Languages.German {
+namespace Kifa.Languages.Tests {
     public class DwdsClientTests {
         [Theory]
         [InlineData("malen", "https://media.dwds.de/dwds2/audio/019/mahlen.mp3")]

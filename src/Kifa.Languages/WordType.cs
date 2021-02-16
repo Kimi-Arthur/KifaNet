@@ -1,4 +1,4 @@
-﻿namespace Pimix.Languages {
+﻿namespace Kifa.Languages {
     public enum WordType {
         Unknown,
         Adjective,
