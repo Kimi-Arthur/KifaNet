@@ -9,7 +9,7 @@ namespace Kifa.Web.Api.Controllers {
     public class TvShowsController : KifaDataController<TvShow, TvShowJsonServiceClient> {
         [HttpGet("$format")]
         [HttpPost("$format")]
-        public PimixActionResult<string> Format(string id, int seasonId, int? episodeId, string episodeIds) =>
+        public KifaApiActionResult<string> Format(string id, int seasonId, int? episodeId, string episodeIds) =>
             episodeId == null
                 ? Client.Format(id, seasonId, episodeIds.Split(",").Select(int.Parse).ToList())
                 : Client.Format(id, seasonId, episodeId.Value);

@@ -13,7 +13,7 @@ namespace Kifa.Web.Api.Controllers {
         static readonly FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
 
         [HttpGet("$list_folder")]
-        public PimixActionResult<List<string>> ListFolder(string folder, bool recursive) =>
+        public KifaApiActionResult<List<string>> ListFolder(string folder, bool recursive) =>
             Client.ListFolder(folder, recursive);
 
         [HttpGet("$stream")]

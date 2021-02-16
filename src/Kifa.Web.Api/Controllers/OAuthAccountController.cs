@@ -36,7 +36,7 @@ namespace Kifa.Web.Api.Controllers {
                 .And(Redirect(this.ForAction(nameof(Get), new RouteValueDictionary {{"id", state}})));
         }
 
-        public override PimixActionResult Refresh(RefreshRequest request) {
+        public override KifaApiActionResult Refresh(RefreshRequest request) {
             var account = ServiceClient.Get(request.Id);
             return account.RefreshAccount().And(() => ServiceClient.Set(account));
         }

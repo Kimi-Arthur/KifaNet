@@ -66,14 +66,14 @@ namespace Kifa.Web.Api.Controllers {
 
         // PATCH api/values/5
         [HttpPatch("{id}")]
-        public PimixActionResult Patch(string id, [FromBody] TDataModel value) {
+        public KifaApiActionResult Patch(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             return Client.Update(value);
         }
 
         // POST api/values
         [HttpPost("{id}")]
-        public PimixActionResult Post(string id, [FromBody] TDataModel value) {
+        public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
             return Client.Set(value);
@@ -82,22 +82,22 @@ namespace Kifa.Web.Api.Controllers {
         // POST api/values/^+<TARGET>|<LINK>
         // TODO: Change to ^{target}|{link}.
         [HttpGet("^+{target}|{link}")]
-        public PimixActionResult Link(string target, string link) =>
+        public KifaApiActionResult Link(string target, string link) =>
             Client.Link(Uri.UnescapeDataString(target), Uri.UnescapeDataString(link));
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public PimixActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
+        public KifaApiActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpGet("$refresh")]
-        public PimixActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
+        public KifaApiActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpPost("$refresh")]
-        public PimixActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
+        public KifaApiActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
 
         public class RefreshRequest {
             public string Id { get; set; }
@@ -105,7 +105,7 @@ namespace Kifa.Web.Api.Controllers {
 
         // Action [HttpAction("$refresh")]
         // TODO: Should use the attribute above.
-        public virtual PimixActionResult Refresh(RefreshRequest request) {
+        public virtual KifaApiActionResult Refresh(RefreshRequest request) {
             if (request.Id == "$") {
                 var result = new KifaBatchActionResult();
                 foreach (var id in Client.List().Keys) {
@@ -119,10 +119,10 @@ namespace Kifa.Web.Api.Controllers {
         }
     }
 
-    public class PimixActionResult : IConvertToActionResult {
+    public class KifaApiActionResult : IConvertToActionResult {
         KifaActionResult ActionResult { get; set; }
 
-        public static implicit operator PimixActionResult(KifaActionResult actionResult) {
+        public static implicit operator KifaApiActionResult(KifaActionResult actionResult) {
             return new() {ActionResult = actionResult};
         }
 
@@ -130,10 +130,10 @@ namespace Kifa.Web.Api.Controllers {
             ((IConvertToActionResult) new ActionResult<KifaActionResult>(ActionResult)).Convert();
     }
 
-    public class PimixActionResult<TValue> : IConvertToActionResult {
+    public class KifaApiActionResult<TValue> : IConvertToActionResult {
         KifaActionResult<TValue> ActionResult { get; set; }
 
-        public static implicit operator PimixActionResult<TValue>(TValue value) =>
+        public static implicit operator KifaApiActionResult<TValue>(TValue value) =>
             new() {ActionResult = new KifaActionResult<TValue>(value)};
 
         public IActionResult Convert() =>
