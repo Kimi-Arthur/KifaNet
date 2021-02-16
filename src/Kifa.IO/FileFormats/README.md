@@ -1,13 +1,13 @@
-Kifax File Formats Library
+Kifa File Formats Library
 ===
 
 Assembly Name
 ---
-**Kifax.IO.FileFormats.dll**
+**Kifa.IO.FileFormats.dll**
 
 APIs
 ---
-- `Kifax.IO.FileFormats.KifaxFileFormat`
-- `Kifax.IO.FileFormats.KifaxFileV0Format`
-- `Kifax.IO.FileFormats.KifaxFileV1Format`
-- `Kifax.IO.FileFormats.RawFileFormat`
+- `Kifa.IO.FileFormats.KifaFileFormat`
+- `Kifa.IO.FileFormats.KifaFileV0Format`
+- `Kifa.IO.FileFormats.KifaFileV1Format`
+- `Kifa.IO.FileFormats.RawFileFormat`

@@ -1,11 +1,11 @@
-Kifax Cryptography Library
+Kifa Cryptography Library
 ===
 
 Assembly Name
 ---
-**Kifax.Cryptography.dll**
+**Kifa.Cryptography.dll**
 
 APIs
 ---
-- `Kifax.Cryptography.KifaxCryptoStream`
+- `Kifa.Cryptography.KifaCryptoStream`
   - A `Stream` wrapping other stream with Cryptographic processing.

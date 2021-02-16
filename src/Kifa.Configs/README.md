@@ -1,11 +1,11 @@
-﻿Kifax Configs Library
+﻿Kifa Configs Library
 ===
 
 Assembly Name
 ---
-**Kifax.Configs.dll**
+**Kifa.Configs.dll**
 
 APIs
 ---
-- `Kifax.Configs.KifaxConfigs`
-  - `KifaxConfigs.LoadFromSystemConfigs(assemby = null)`
+- `Kifa.Configs.KifaConfigs`
+  - `KifaConfigs.LoadFromSystemConfigs(assemby = null)`

@@ -19,10 +19,10 @@ Current Version:
 Dependencies:
 ---
 - **CommandLineParser**: 2.3.0
-- **Kifax.Api.Files**
-- **Kifax.Bilibili**
-- **Kifax.Configs**
-- **Kifax.Service**
+- **Kifa.Api.Files**
+- **Kifa.Bilibili**
+- **Kifa.Configs**
+- **Kifa.Service**
 
 Updates:
 ---

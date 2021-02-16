@@ -1,20 +1,20 @@
-Kifax Service Library
+Kifa Service Library
 ===
 
 Assembly Name
 ---
-**Kifax.Service.dll**
+**Kifa.Service.dll**
 
 Configurable properties
 ---
-Suggested to use Kifax.Config to configure.
-- `Kifax.Service.KifaxService`
-  - `KifaxServerApiAddress`
-  - `KifaxServerCredential`
+Suggested to use Kifa.Config to configure.
+- `Kifa.Service.KifaService`
+  - `KifaServerApiAddress`
+  - `KifaServerCredential`
 
 APIs
 ---
-- `Kifax.Service.KifaxService`
+- `Kifa.Service.KifaService`
   - `Patch`
   - `Post`
   - `Get`

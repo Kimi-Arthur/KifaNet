@@ -1,11 +1,11 @@
-﻿Kifax Subtitle Library
+﻿Kifa Subtitle Library
 ===
 
 Assembly Name
 ---
-**Kifax.Subtitle.dll**
+**Kifa.Subtitle.dll**
 
 APIs
 ---
-- `Kifax.Subtitle.Ass`
-- `Kifax.Subtitle.Srt`
+- `Kifa.Subtitle.Ass`
+- `Kifa.Subtitle.Srt`

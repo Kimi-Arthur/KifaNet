@@ -28,9 +28,9 @@ Commands
 Dependencies:
 ---
 - **CommandLineParser**: 2.3.0
-- **Kifax.Api.Files**
-- **Kifax.Configs**
-- **Kifax.IO**
+- **Kifa.Api.Files**
+- **Kifa.Configs**
+- **Kifa.IO**
 
 Updates:
 ---

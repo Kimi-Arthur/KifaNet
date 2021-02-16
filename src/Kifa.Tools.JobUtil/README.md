@@ -12,8 +12,8 @@ Current Version:
 Dependencies:
 ---
  - **CommandLineParser**: 2.3.0
- - **Kifax.Configs**
- - **Kifax.Service**
+ - **Kifa.Configs**
+ - **Kifa.Service**
 
 Updates:
 ---
@@ -25,4 +25,4 @@ Updates:
 - Support running job.
 - 1.1
   - Added retry logic for uploading logs.
-  - Incorporated Kifax.Service's retry logic.
+  - Incorporated Kifa.Service's retry logic.

@@ -1,32 +1,32 @@
-﻿Kifax Common Library
+﻿Kifa Common Library
 ===
 
 Assembly Name
 ---
-**Kifax.dll**
+**Kifa.dll**
 
 APIs
 ---
-- `Kifax.Retry`
+- `Kifa.Retry`
   - `Retry.Run(action, handleException)`
-- `Kifax.ByteArrayExtensions`
+- `Kifa.ByteArrayExtensions`
   - `byte[].ToHexString()`
   - `long.ToByteArray()`
   - `byte[].ToInt64()`
-- `Kifax.DictionaryExtensions`
+- `Kifa.DictionaryExtensions`
   - `IDictionary.GetValueOrDefault(key, defaultValue)`
-- `Kifax.MathExtensions`
+- `Kifa.MathExtensions`
   - `long.RoundUp(period)`
   - `int.RoundUp(period)`
   - `long.RoundDown(period)`
   - `int.RoundDown(period)`
-- `Kifax.StringExtensions`
+- `Kifa.StringExtensions`
   - `string.Format(parameters)`
   - `string.Format(args)`
   - `string.ParseSizeString()`
   - `string.ParseHexString()`
   - `string.ParseTimeSpanString()`
-- `Kifax.WebResponseExtensions`
+- `Kifa.WebResponseExtensions`
   - `WebResponse.GetJToken()`
   - `WebResponse.GetObject()`
   - `WebResponse.GetDictionary()`
