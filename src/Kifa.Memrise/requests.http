@@ -1,0 +1,18 @@
+GET {{server}}/api/memrise/german/
+
+###
+
+POST {{server}}/api/memrise/german/der+Abwart
+Content-Type: application/x-yaml
+
+Word: der Abwart
+Level: B1
+Form: -e
+Synonym: (CH) = (D, A) Hausmeister
+Feminine:
+  Word: die Abwartin
+  Level: B1
+  Form: -nen
+Meaning: caretaker, janitor
+Examples:
+  - Der Abwart hat mir geholfen, den Schrank in die Wohnung zu tragen.

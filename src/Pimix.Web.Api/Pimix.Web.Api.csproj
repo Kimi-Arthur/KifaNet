@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Kifa.Cloud.GooglePhotos\Kifa.Cloud.GooglePhotos.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
     <ProjectReference Include="..\Pimix.Azure\Pimix.Azure.csproj" />
     <ProjectReference Include="..\Pimix.Games.BreathOfTheWild\Pimix.Games.BreathOfTheWild.csproj" />
     <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />

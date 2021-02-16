@@ -8,4 +8,8 @@
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+  </ItemGroup>
+
 </Project>
