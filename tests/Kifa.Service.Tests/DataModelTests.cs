@@ -4,7 +4,6 @@ using Xunit;
 namespace Kifa.Service.Tests {
     public class DataModelTests {
         public DataModelTests() {
-            KifaServiceRestClient.ServerAddress = "http://www.kifa.ga/api";
             FakeDataModel.Client.Reset();
         }
 

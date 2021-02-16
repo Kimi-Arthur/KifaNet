@@ -24,11 +24,11 @@ namespace Kifa.Service {
                     : new HttpClient());
 
         // Should probably be ending with `/api`.
-        public static string ServerAddress { get; set; }
-        
+        public static string ServerAddress { get; set; } = "http://www.kifa.ga/api";
+
         // pfx cert path.
         public static string ClientCertPath { get; set; }
-        
+
         // pfx cert password.
         public static string ClientCertPassword { get; set; }
     }
