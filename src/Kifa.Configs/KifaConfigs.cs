@@ -12,13 +12,8 @@ namespace Kifa.Configs {
         static readonly Deserializer deserializer = new Deserializer();
         static string name => AppDomain.CurrentDomain.FriendlyName;
 
-        static List<string> ConfigFilePaths
-            => new List<string> {
-                $"~/.{name}.yaml",
-                "~/.pimix.yaml",
-                $"/etc/{name}.yaml",
-                "/etc/pimix.yaml"
-            };
+        static List<string> ConfigFilePaths =>
+            new() {$"~/.{name}.yaml", "~/.kifa.yaml", $"/etc/{name}.yaml", "/etc/kifa.yaml"};
 
         static string ConfigFilePath {
             get {
@@ -39,8 +34,7 @@ namespace Kifa.Configs {
         }
 
         public static void LoadFromSystemConfigs(Assembly assembly = null) {
-            var properties =
-                assembly == null ? GetAllProperties() : GetProperties(assembly);
+            var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
             if (ConfigFilePath != null) {
                 var localConfig = ConfigFilePath;
                 var remoteConfig = localConfig.Replace(".yaml", ".remote.yaml");
@@ -52,8 +46,7 @@ namespace Kifa.Configs {
             }
         }
 
-        public static void LoadFromStream(Stream stream,
-            Dictionary<string, PropertyInfo> properties) {
+        public static void LoadFromStream(Stream stream, Dictionary<string, PropertyInfo> properties) {
             var yaml = new YamlStream();
             using (var sr = new StreamReader(stream)) {
                 yaml.Load(sr);
@@ -88,8 +81,7 @@ namespace Kifa.Configs {
             return properties;
         }
 
-        static void Apply(YamlMappingNode node, string prefix,
-            IReadOnlyDictionary<string, PropertyInfo> properties) {
+        static void Apply(YamlMappingNode node, string prefix, IReadOnlyDictionary<string, PropertyInfo> properties) {
             foreach (var p in node) {
                 if (p.Value == null) {
                     continue;

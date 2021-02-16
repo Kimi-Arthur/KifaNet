@@ -128,7 +128,7 @@ namespace Kifa.Cloud.Swisscom.Tests {
 
         // [Fact]
         // public void FindAccountTest() {
-        //     PimixConfigs.LoadFromSystemConfigs();
+        //     KifaConfigs.LoadFromSystemConfigs();
         //
         //     var validAccounts = new List<(string, long)>();
         //     var failedAccounts = new List<string>();
