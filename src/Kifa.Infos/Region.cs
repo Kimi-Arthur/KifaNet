@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Pimix;
 
-namespace Pimix.Infos {
+namespace Kifa.Infos {
     public class Region : JsonSerializable {
         public static readonly Region China = new Region {
             Name = "China",

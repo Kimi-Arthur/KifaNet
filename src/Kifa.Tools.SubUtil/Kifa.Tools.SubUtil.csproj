@@ -17,9 +17,9 @@
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
+    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
-    <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.6.0" />

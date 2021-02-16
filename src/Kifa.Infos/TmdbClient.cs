@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Infos.Tmdb {
+namespace Kifa.Infos.Tmdb {
     public class TmdbClient {
         public static string ApiKey { get; set; }
         public static APIList Apis { get; set; }

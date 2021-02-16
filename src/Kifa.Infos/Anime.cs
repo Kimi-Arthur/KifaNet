@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Infos {
+namespace Kifa.Infos {
     public class Anime : DataModel, Formattable {
         public const string ModelId = "animes";
 

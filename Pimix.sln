@@ -51,9 +51,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.BiliUtil", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools", "src\Kifa.Tools\Kifa.Tools.csproj", "{6FA4C189-49C0-4913-9206-FA5D7F89F1E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Infos", "src\Pimix.Infos\Pimix.Infos.csproj", "{572327E1-2C76-4253-BB97-44A7B43F0AD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Infos", "src\Kifa.Infos\Kifa.Infos.csproj", "{572327E1-2C76-4253-BB97-44A7B43F0AD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PimixTest.Infos", "tests\PimixTest.Infos\PimixTest.Infos.csproj", "{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Infos.Tests", "tests\Kifa.Infos.Tests\Kifa.Infos.Tests.csproj", "{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Benchmarks", "benchmarks\Pimix.Benchmarks\Pimix.Benchmarks.csproj", "{3186AB8A-24DF-4134-92AC-37D3448BF648}"
 EndProject

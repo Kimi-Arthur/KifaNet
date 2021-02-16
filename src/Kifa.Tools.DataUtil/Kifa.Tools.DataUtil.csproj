@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
-    <ProjectReference Include="..\Pimix.Infos\Pimix.Infos.csproj" />
   </ItemGroup>
 
   <ItemGroup>

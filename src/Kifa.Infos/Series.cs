@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Pimix;
 
-namespace Pimix.Infos {
+namespace Kifa.Infos {
     public class Season : WithFormatInfo {
         public int Id { get; set; }
         public string Title { get; set; }

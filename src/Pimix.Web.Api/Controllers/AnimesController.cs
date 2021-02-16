@@ -1,6 +1,6 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using Pimix.Infos;
+using Kifa.Infos;
 
 namespace Pimix.Web.Api.Controllers {
     [Route("api/" + Anime.ModelId)]

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Pimix;
-using Pimix.Infos;
+using Kifa.Infos;
 using Kifa.Service;
 using Xunit;
 
-namespace PimixTest.Infos {
+namespace Kifa.Infos.Tests {
     public class TvShowTests {
         public TvShowTests() {
             KifaServiceRestClient.ServerAddress = "http://www.jingbian.tk/api";

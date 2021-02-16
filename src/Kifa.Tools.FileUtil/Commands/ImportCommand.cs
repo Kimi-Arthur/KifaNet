@@ -5,9 +5,9 @@ using CommandLine;
 using Kifa.Soccer;
 using NLog;
 using Kifa.Api.Files;
-using Pimix.Infos;
+using Kifa.Infos;
 using Kifa.IO;
-using Season = Pimix.Infos.Season;
+using Season = Kifa.Infos.Season;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]

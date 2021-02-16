@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using CommandLine;
 using Kifa.Api.Files;
-using Pimix.Infos;
+using Kifa.Infos;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("import", HelpText = "Import files from /Subtitles/Sources folder with resource id.")]

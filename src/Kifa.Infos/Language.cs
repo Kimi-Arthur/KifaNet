@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Pimix;
 
-namespace Pimix.Infos {
+namespace Kifa.Infos {
     public class Language : JsonSerializable {
         public static readonly Language German = new Language {
             Name = "German",

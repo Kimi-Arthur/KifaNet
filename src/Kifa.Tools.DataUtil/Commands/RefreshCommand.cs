@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using NLog;
-using Pimix.Infos;
+using Kifa.Infos;
 
 namespace Kifa.Tools.DataUtil.Commands {
     [Verb("refresh", HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]

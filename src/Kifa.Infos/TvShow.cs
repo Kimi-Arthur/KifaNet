@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Pimix.Infos.Tmdb;
+using Kifa.Infos.Tmdb;
 using Kifa.Service;
+using Pimix;
 
-namespace Pimix.Infos {
+namespace Kifa.Infos {
     public class TvShow : DataModel, Formattable {
         public const string ModelId = "tv_shows";
 
