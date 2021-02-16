@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using NLog;
-using Pimix;
 using Renci.SshNet;
 
 namespace Kifa.IO {

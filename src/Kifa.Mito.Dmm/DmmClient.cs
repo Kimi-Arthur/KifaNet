@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
-using Pimix;
 
 namespace Kifa.Mito.Dmm {
     public class DmmClient {

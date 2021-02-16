@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Languages.German;
 using NLog;
-using Pimix.Languages.German;
 
 namespace Kifa.Tools.NoteUtil.Commands {
     [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]

@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Pimix;
-using Kifa.Infos;
 using Kifa.Service;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Kifa.Infos.Tests {

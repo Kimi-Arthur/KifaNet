@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using Pimix;
 using Kifa.Cryptography;
 
 namespace Kifa.IO.FileFormats {

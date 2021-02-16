@@ -1,5 +1,4 @@
 using System.Drawing;
-using Pimix;
 
 namespace Kifa.Subtitle.Ass {
     public static class AssFormatter {

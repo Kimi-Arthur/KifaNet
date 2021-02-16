@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Pimix;
 
 namespace Kifa.Infos {
     public class Season : WithFormatInfo {

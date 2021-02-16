@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using Pimix;
 
 namespace Kifa.Subtitle.Ass {
     public class AssDrawingCommand {

@@ -1,5 +1,4 @@
 ﻿using Kifa.Service;
-using Pimix;
 
 namespace Kifa.Mito {
     public class Actress : DataModel {

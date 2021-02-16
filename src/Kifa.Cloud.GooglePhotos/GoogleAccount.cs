@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Web;
 using Kifa.Cloud.GooglePhotos.PhotosApi;
 using Kifa.Cloud.OAuth;
-using Pimix;
 using Kifa.Service;
 
 namespace Kifa.Cloud.GooglePhotos {

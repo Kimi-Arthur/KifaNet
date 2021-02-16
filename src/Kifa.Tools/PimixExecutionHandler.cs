@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NLog;
-using Pimix;
 
 namespace Kifa.Tools {
     public class PimixExecutionHandler<TArgument> {

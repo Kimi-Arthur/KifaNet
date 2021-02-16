@@ -3,6 +3,6 @@
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Pimix\Pimix.csproj" />
+      <ProjectReference Include="..\Kifa\Kifa.csproj" />
     </ItemGroup>
 </Project>

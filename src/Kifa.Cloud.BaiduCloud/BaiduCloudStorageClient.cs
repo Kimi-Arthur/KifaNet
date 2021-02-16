@@ -13,7 +13,6 @@ using Newtonsoft.Json.Linq;
 using NLog;
 using Kifa.IO;
 using Kifa.Service;
-using Pimix;
 
 namespace Kifa.Cloud.BaiduCloud {
     public class BaiduCloudStorageClient : StorageClient {

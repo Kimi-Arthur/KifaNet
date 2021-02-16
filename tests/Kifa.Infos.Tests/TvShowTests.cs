@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Pimix;
-using Kifa.Infos;
 using Kifa.Service;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Kifa.Infos.Tests {
@@ -26,11 +24,7 @@ namespace Kifa.Infos.Tests {
                         Id = 1,
                         AirDate = Date.Parse("2016-10-02"),
                         SeasonIdWidth = 1,
-                        Episodes = new List<Episode> {
-                            new Episode {
-                                Id = 4
-                            }
-                        }
+                        Episodes = new List<Episode> {new Episode {Id = 4}}
                     },
                     new Season {
                         Id = 2,
@@ -39,11 +33,7 @@ namespace Kifa.Infos.Tests {
                         EpisodeIdWidth = 1,
                         AirDate = Date.Parse("2018-04-22"),
                         Episodes = new List<Episode> {
-                            new Episode {
-                                SeasonIdWidth = 3,
-                                Id = 1,
-                                Title = "Journey Into Night"
-                            }
+                            new Episode {SeasonIdWidth = 3, Id = 1, Title = "Journey Into Night"}
                         }
                     }
                 }
@@ -64,15 +54,7 @@ namespace Kifa.Infos.Tests {
                 Region = Region.Japan,
                 PatternId = "single_season",
                 Seasons = new List<Season> {
-                    new Season {
-                        Id = 1,
-                        Episodes = new List<Episode> {
-                            new Episode {
-                                Id = 1,
-                                Title = "高校生"
-                            }
-                        }
-                    }
+                    new Season {Id = 1, Episodes = new List<Episode> {new Episode {Id = 1, Title = "高校生"}}}
                 }
             };
 

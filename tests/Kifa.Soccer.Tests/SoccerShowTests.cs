@@ -1,4 +1,3 @@
-using Pimix;
 using Xunit;
 
 namespace Kifa.Soccer.Tests {

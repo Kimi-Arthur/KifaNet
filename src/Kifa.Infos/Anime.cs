@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
-using Pimix;
 
 namespace Kifa.Infos {
     public class Anime : DataModel, Formattable {

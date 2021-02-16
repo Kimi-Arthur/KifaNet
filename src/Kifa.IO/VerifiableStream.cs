@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using NLog;
-using Pimix;
 
 namespace Kifa.IO {
     public class VerifiableStream : Stream {

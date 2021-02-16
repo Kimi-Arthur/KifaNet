@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using HashLib;
 using Kifa.Service;
 using Newtonsoft.Json;
-using Pimix;
 
 namespace Kifa.IO {
     public class FileInformation : DataModel {

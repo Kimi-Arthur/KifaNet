@@ -4,7 +4,6 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Kifa.Api.Files;
-using Pimix;
 using Kifa.IO;
 
 namespace Kifa.Tools {

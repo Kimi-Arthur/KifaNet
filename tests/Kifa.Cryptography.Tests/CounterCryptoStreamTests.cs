@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using Pimix;
-using Kifa.Cryptography;
 using Kifa.IO;
 using Xunit;
 
@@ -10,8 +8,7 @@ namespace Kifa.Cryptography.Tests {
     public class CounterCryptoStreamTests {
         readonly Aes aesAlgorithm = new AesCryptoServiceProvider {
             Padding = PaddingMode.None,
-            Key = "C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795"
-                .ParseHexString(),
+            Key = "C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795".ParseHexString(),
             Mode = CipherMode.ECB
         };
 
@@ -19,16 +16,12 @@ namespace Kifa.Cryptography.Tests {
 
         readonly
             List<(string rawFile, long rawSize, string rawHash, string encryptedFile, long encryptedSize, string
-                encryptedHash)> data =
-                new List<(string rawFile, long rawSize, string rawHash, string encryptedFile, long encryptedSize, string
-                    encryptedHash)> {
-                    ("data-1.raw.bin", 65536, "0A43E6858977A39B861420FA31877030A0E683F1E25FFCF6A42098E6CB4C4948",
-                        "data-1.ctr.bin", 65536,
-                        "BB1DC1539DE7930FCD11D720A471C58EDCB074B54372209F199CEC12C56B83EB"),
-                    ("data-2.raw.bin", 13659, "8FFB7A1DFF0EDF9A670AAD939828357FB017D9C6526648BF2D31292DA983DFDF",
-                        "data-2.ctr.bin", 13659,
-                        "787EE39879AB57FBEA5A9999C67FBF7FC1FB0AD0E2E3100AF8C3AD115014BF0C")
-                };
+                encryptedHash)> data = new() {
+                ("data-1.raw.bin", 65536, "0A43E6858977A39B861420FA31877030A0E683F1E25FFCF6A42098E6CB4C4948",
+                    "data-1.ctr.bin", 65536, "BB1DC1539DE7930FCD11D720A471C58EDCB074B54372209F199CEC12C56B83EB"),
+                ("data-2.raw.bin", 13659, "8FFB7A1DFF0EDF9A670AAD939828357FB017D9C6526648BF2D31292DA983DFDF",
+                    "data-2.ctr.bin", 13659, "787EE39879AB57FBEA5A9999C67FBF7FC1FB0AD0E2E3100AF8C3AD115014BF0C")
+            };
 
         [Fact]
         public void CounterCryptoStreamRoundTripTest() {
@@ -36,12 +29,9 @@ namespace Kifa.Cryptography.Tests {
                 var transform = aesAlgorithm.CreateEncryptor();
 
                 var baseStream = File.OpenRead(rawFile);
-                var baseInfo = FileInformation.GetInformation(baseStream,
-                    FileProperties.Sha256 | FileProperties.Size);
-                using var stream = new CounterCryptoStream(baseStream, transform,
-                    encryptedSize, initialCounter);
-                using var roundTripStream =
-                    new CounterCryptoStream(stream, transform, rawSize, initialCounter);
+                var baseInfo = FileInformation.GetInformation(baseStream, FileProperties.Sha256 | FileProperties.Size);
+                using var stream = new CounterCryptoStream(baseStream, transform, encryptedSize, initialCounter);
+                using var roundTripStream = new CounterCryptoStream(stream, transform, rawSize, initialCounter);
                 var roundTripInfo = FileInformation.GetInformation(roundTripStream,
                     FileProperties.Sha256 | FileProperties.Size);
 

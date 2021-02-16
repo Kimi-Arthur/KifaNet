@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using NLog;
-using Pimix;
 
 namespace Kifa.Service {
     public class KifaServiceRestClient {

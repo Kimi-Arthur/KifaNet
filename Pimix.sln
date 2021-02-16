@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pimix", "src\Pimix\Pimix.csproj", "{6E1E7ED5-1DED-4543-9E71-6AF74EE90F4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa", "src\Kifa\Kifa.csproj", "{6E1E7ED5-1DED-4543-9E71-6AF74EE90F4A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.IO", "src\Kifa.IO\Kifa.IO.csproj", "{224429E0-2CC0-4D0C-A599-C311C1BEA819}"
 EndProject
@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Configs.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Subtitle.Tests", "tests\Kifa.Subtitle.Tests\Kifa.Subtitle.Tests.csproj", "{B7B90EB1-FFEA-4B1D-A613-8A62CCDC4AD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Web.Api", "src\Pimix.Web.Api\Pimix.Web.Api.csproj", "{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Web.Api", "src\Kifa.Web.Api\Kifa.Web.Api.csproj", "{2339CF48-0F55-4432-A6F0-5E38FB8AFDC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Service.Tests", "tests\Kifa.Service.Tests\Kifa.Service.Tests.csproj", "{78DFBF6C-5A6E-4C22-911F-7EAFA3FD91B2}"
 EndProject
@@ -55,13 +55,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Infos", "src\Kifa.Info
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Infos.Tests", "tests\Kifa.Infos.Tests\Kifa.Infos.Tests.csproj", "{822FE2EA-D14A-44A4-BDF4-B35B0BBFF6E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Benchmarks", "benchmarks\Pimix.Benchmarks\Pimix.Benchmarks.csproj", "{3186AB8A-24DF-4134-92AC-37D3448BF648}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Benchmarks", "benchmarks\Kifa.Benchmarks\Kifa.Benchmarks.csproj", "{3186AB8A-24DF-4134-92AC-37D3448BF648}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cryptography.Tests", "tests\Kifa.Cryptography.Tests\Kifa.Cryptography.Tests.csproj", "{2D426E84-DDDD-4548-ACBF-BD4F8944D9C4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Swisscom", "src\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj", "{2E30EF8C-FAED-4B28-9D85-104DC5FD31CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pimix.Games.BreathOfTheWild", "src\Pimix.Games.BreathOfTheWild\Pimix.Games.BreathOfTheWild.csproj", "{DE807BE3-9C9E-474E-A7A1-261DE65CF191}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Games.BreathOfTheWild", "src\Kifa.Games.BreathOfTheWild\Kifa.Games.BreathOfTheWild.csproj", "{DE807BE3-9C9E-474E-A7A1-261DE65CF191}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Swisscom.Tests", "tests\Kifa.Cloud.Swisscom.Tests\Kifa.Cloud.Swisscom.Tests.csproj", "{56A44251-9FF7-4144-A145-F660DFDADCA7}"
 EndProject

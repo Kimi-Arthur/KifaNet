@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Pimix;
 
 namespace Kifa.Infos {
     public class Region : JsonSerializable {

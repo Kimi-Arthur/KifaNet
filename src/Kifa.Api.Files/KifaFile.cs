@@ -14,7 +14,6 @@ using Kifa.IO.FileFormats;
 using Kifa.IO.StorageClients;
 using Kifa.Service;
 using NLog;
-using Pimix;
 
 namespace Kifa.Api.Files {
     public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {

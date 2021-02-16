@@ -5,7 +5,6 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Subtitle.Ass;
 using NLog;
-using Pimix;
 
 namespace Kifa.Tools.SubUtil.Commands {
     [Verb("update", HelpText = "Update subtitle with given modification.")]

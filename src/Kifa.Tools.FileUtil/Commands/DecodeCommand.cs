@@ -4,7 +4,6 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.GameHacking.Files;
 using Newtonsoft.Json;
-using Pimix;
 
 namespace Kifa.Tools.FileUtil.Commands {
     [Verb("decode", HelpText = "Decode file.")]

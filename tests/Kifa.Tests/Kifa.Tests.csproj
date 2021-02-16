@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Pimix\Pimix.csproj" />
+    <ProjectReference Include="..\..\src\Kifa\Kifa.csproj" />
   </ItemGroup>
 
 </Project>

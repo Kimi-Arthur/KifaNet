@@ -9,7 +9,6 @@ using Newtonsoft.Json.Linq;
 using NLog;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
-using Pimix;
 
 namespace Kifa.Cloud.Swisscom {
     public class SwisscomAccount : DataModel {

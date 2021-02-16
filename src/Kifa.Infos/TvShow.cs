@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Kifa.Infos.Tmdb;
 using Kifa.Service;
-using Pimix;
 
 namespace Kifa.Infos {
     public class TvShow : DataModel, Formattable {

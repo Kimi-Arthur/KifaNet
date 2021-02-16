@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using HtmlAgilityPack;
 using NLog;
-using Pimix;
 
 namespace Kifa.Languages.German {
     public class DwdsClient {

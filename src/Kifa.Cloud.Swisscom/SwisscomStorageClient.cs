@@ -9,7 +9,6 @@ using System.Threading;
 using Kifa.IO;
 using Kifa.Service;
 using NLog;
-using Pimix;
 
 namespace Kifa.Cloud.Swisscom {
     public class SwisscomStorageClient : StorageClient {

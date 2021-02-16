@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
-using Pimix;
 
 namespace Kifa.Subtitle.Ass {
     public class AssDialogueControlTextElement : AssDialogueTextElement {

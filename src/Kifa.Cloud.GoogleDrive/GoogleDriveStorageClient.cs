@@ -10,7 +10,6 @@ using Kifa.Cloud.GooglePhotos.PhotosApi;
 using NLog;
 using Kifa.IO;
 using Kifa.Service;
-using Pimix;
 
 namespace Kifa.Cloud.GoogleDrive {
     public class GoogleDriveStorageClient : StorageClient {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using Pimix;
 
 namespace Kifa.Cryptography {
     public class PimixCryptoStream : Stream {
