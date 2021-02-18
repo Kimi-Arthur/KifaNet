@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text;
 using NLog;
 
-namespace Kifa {
+namespace Kifa.Rpc {
     public abstract class JsonRpc<TResponse> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
