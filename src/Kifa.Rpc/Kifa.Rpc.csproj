@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kifa\Kifa.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NLog" Version="4.6.7" />
+  </ItemGroup>
+
+</Project>
