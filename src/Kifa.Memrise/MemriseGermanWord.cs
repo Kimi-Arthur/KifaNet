@@ -3,7 +3,7 @@ using Kifa.Service;
 
 namespace Kifa.Memrise {
     public class MemriseGermanWord : DataModel {
-        public const string ModelId = "memrise/german";
+        public const string ModelId = "memrise/german/words";
 
         public string Word {
             get => Id;

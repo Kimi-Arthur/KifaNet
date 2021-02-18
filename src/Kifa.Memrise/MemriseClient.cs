@@ -9,13 +9,14 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 
 namespace Kifa.Memrise {
-    public class MemriseClient {
+    public class MemriseClient : IDisposable {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         string lineBreak = new(' ', 100);
 
         public static string WebDriverUrl { get; set; }
         public static string Cookies { get; set; }
+        public static string CsrfToken { get; set; }
 
         public string CourseId { get; set; }
 
@@ -31,7 +32,7 @@ namespace Kifa.Memrise {
             get {
                 if (webDriver == null) {
                     var options = new ChromeOptions();
-                    //options.AddArgument("--headless");
+                    options.AddArgument("--headless");
                     webDriver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
                         TimeSpan.FromMinutes(10));
 
@@ -55,8 +56,7 @@ namespace Kifa.Memrise {
                 if (httpClient == null) {
                     httpClient = new HttpClient();
                     httpClient.DefaultRequestHeaders.Add("cookie", Cookies);
-                    httpClient.DefaultRequestHeaders.Add("x-csrftoken",
-                        "LpeIgjFbA8N8hMCP9kJI6gCUOVoErxV2EHcCnWuiTq5j8JU8f6fdSXILA1L9jCEn");
+                    httpClient.DefaultRequestHeaders.Add("x-csrftoken", CsrfToken);
                     httpClient.DefaultRequestHeaders.Add("x-requested-with", "XMLHttpRequest");
                     httpClient.DefaultRequestHeaders.Add("referer", DatabaseUrl);
                 }
@@ -107,14 +107,21 @@ namespace Kifa.Memrise {
             return null;
         }
 
+        // Columns order: German, English, Form, Pronunciation, Full Form, Examples, Audio
         string FillBasicWord(MemriseGermanWord word) {
+            var data = new Dictionary<string, string> {{"1", word.Word}, {"2", word.Meaning}};
+
+            if (word.Form != null) {
+                data["3"] = word.Form;
+            }
+
+            if (!word.Examples[0].StartsWith("example")) {
+                data["6"] = string.Join(lineBreak, word.Examples);
+            }
+
             var response = HttpClient.PostAsync("https://app.memrise.com/ajax/thing/add/",
-                new FormUrlEncodedContent(new List<KeyValuePair<string?, string?>> {
-                    new("columns",
-                        JsonConvert.SerializeObject(new Dictionary<string, string> {
-                            {"1", word.Word}, {"2", word.Meaning}
-                        })),
-                    new("pool_id", DatabaseId)
+                new FormUrlEncodedContent(new List<KeyValuePair<string, string>> {
+                    new("columns", JsonConvert.SerializeObject(data)), new("pool_id", DatabaseId)
                 })).Result;
             if (response.IsSuccessStatusCode) {
                 var result = response.GetJToken();
@@ -125,6 +132,11 @@ namespace Kifa.Memrise {
         }
 
         void FillRow(IWebElement existingRow, MemriseGermanWord word) {
+        }
+
+        public void Dispose() {
+            webDriver?.Dispose();
+            httpClient?.Dispose();
         }
     }
 }
