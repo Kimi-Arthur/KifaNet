@@ -12,6 +12,8 @@ namespace Kifa.Memrise {
     public class MemriseClient {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+        string lineBreak = new(' ', 100);
+
         public static string WebDriverUrl { get; set; }
         public static string Cookies { get; set; }
 
