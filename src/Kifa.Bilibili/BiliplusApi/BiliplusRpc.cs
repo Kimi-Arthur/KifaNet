@@ -3,6 +3,6 @@ using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BiliplusApi {
     public abstract class BiliplusRpc<TResponse> : JsonRpc<TResponse> {
-        public override HttpClient HttpClient { get; } = BiliplusHttpClient.Instance;
+        public override HttpClient HttpClient { get; set; } = BiliplusHttpClient.Instance;
     }
 }

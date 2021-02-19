@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Kifa.Memrise.Api;
 using Newtonsoft.Json;
 using NLog;
 using OpenQA.Selenium;
@@ -119,16 +120,9 @@ namespace Kifa.Memrise {
                 data["6"] = string.Join(lineBreak, word.Examples);
             }
 
-            var response = HttpClient.PostAsync("https://app.memrise.com/ajax/thing/add/",
-                new FormUrlEncodedContent(new List<KeyValuePair<string, string>> {
-                    new("columns", JsonConvert.SerializeObject(data)), new("pool_id", DatabaseId)
-                })).Result;
-            if (response.IsSuccessStatusCode) {
-                var result = response.GetJToken();
-                return result["thing"]["id"].ToString();
-            }
+            var response = new AddWordRpc {HttpClient = HttpClient}.Call(DatabaseId, DatabaseUrl, data);
 
-            return null;
+            return response.Thing.Id.ToString();
         }
 
         void FillRow(IWebElement existingRow, MemriseGermanWord word) {
