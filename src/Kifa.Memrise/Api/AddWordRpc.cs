@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Kifa.Memrise.Api {
     public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
         public class AddWordResponse {
-            public bool Success { get; set; }
+            public bool? Success { get; set; }
             public Thing Thing { get; set; }
             public string RenderedThing { get; set; }
         }

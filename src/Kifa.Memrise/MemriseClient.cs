@@ -32,7 +32,7 @@ namespace Kifa.Memrise {
             get {
                 if (webDriver == null) {
                     var options = new ChromeOptions();
-                    options.AddArgument("--headless");
+                    //options.AddArgument("--headless");
                     webDriver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
                         TimeSpan.FromMinutes(10));
 
@@ -109,6 +109,28 @@ namespace Kifa.Memrise {
 
         // Columns order: German, English, Form, Pronunciation, Full Form, Examples, Audio
         string FillBasicWord(MemriseGermanWord word) {
+            var response =
+                new AddWordRpc {HttpClient = HttpClient}.Call(DatabaseId, DatabaseUrl, GetDataFromWord(word));
+
+            return response.Thing.Id.ToString();
+        }
+
+        int FillRow(IWebElement existingRow, MemriseGermanWord word) {
+            var (thingId, originalData) = GetDataFromRow(existingRow);
+            var newData = GetDataFromWord(word);
+
+            var updatedFields = 0;
+            foreach (var (dataKey, newValue) in newData) {
+                if (originalData.GetValueOrDefault(dataKey) != newValue) {
+                    new UpdateWordRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, dataKey, newValue);
+                    updatedFields++;
+                }
+            }
+
+            return updatedFields;
+        }
+
+        Dictionary<string, string> GetDataFromWord(MemriseGermanWord word) {
             var data = new Dictionary<string, string> {{"1", word.Word}, {"2", word.Meaning}};
 
             if (word.Form != null) {
@@ -119,12 +141,17 @@ namespace Kifa.Memrise {
                 data["6"] = string.Join(lineBreak, word.Examples);
             }
 
-            var response = new AddWordRpc {HttpClient = HttpClient}.Call(DatabaseId, DatabaseUrl, data);
-
-            return response.Thing.Id.ToString();
+            return data;
         }
 
-        void FillRow(IWebElement existingRow, MemriseGermanWord word) {
+        (string thingId, Dictionary<string, string> data) GetDataFromRow(IWebElement existingRow) {
+            var data = new Dictionary<string, string> { };
+
+            foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {
+                data[td.GetAttribute("data-key")] = td.Text;
+            }
+
+            return (existingRow.GetAttribute("data-thing-id"), data);
         }
 
         public void Dispose() {

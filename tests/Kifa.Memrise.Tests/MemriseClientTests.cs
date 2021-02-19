@@ -16,5 +16,17 @@ namespace Kifa.Memrise.Tests {
                 Examples = new List<string> {"abc", "bcd"}
             });
         }
+
+        [Test]
+        public void UpdateWordTest() {
+            KifaConfigs.LoadFromSystemConfigs();
+            using var client =
+                new MemriseClient {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"};
+            client.AddWord(new MemriseGermanWord {
+                Word = "drehen",
+                Meaning = "to turn",
+                Examples = new List<string> {"abc" + new Random().Next(), "bcd" + new Random().Next()}
+            });
+        }
     }
 }
