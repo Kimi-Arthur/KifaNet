@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Kifa.Memrise.Api;
-using Newtonsoft.Json;
 using NLog;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
