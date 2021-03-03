@@ -45,6 +45,7 @@ namespace Kifa.Infos {
                 [Language.Japanese] = new List<(Regex pattern, MatchEvaluator replacer)> {
                     (new Regex(@" *\([ぁ-ヿ]+\) *"), match => ""),
                     (new Regex(@" *\[[ぁ-ヿ]+\] *"), match => ""),
+                    (new Regex(@"\""(.+)\"""), match => $"“{match.Groups[1].Value}”"),
                     (new Regex(@", "), match => "、"),
                     (new Regex(@"\? *"), match => "？"),
                     (new Regex(@"! *"), match => "！"),
