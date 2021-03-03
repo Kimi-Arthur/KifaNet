@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Kifa.Api.Files;
+using Kifa.Languages.German;
 using Kifa.Memrise.Api;
 using NLog;
 using OpenQA.Selenium;
@@ -65,7 +67,7 @@ namespace Kifa.Memrise {
             }
         }
 
-        public void AddWord(MemriseGermanWord word) {
+        public void AddWord(MemriseGermanWord word, Word baseWord) {
             WebDriver.Url = DatabaseUrl;
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}");
@@ -79,6 +81,18 @@ namespace Kifa.Memrise {
             }
 
             FillRow(existingRow, word);
+
+            UploadAudios(existingRow, baseWord);
+        }
+
+        void UploadAudios(IWebElement existingRow, Word baseWord) {
+            var (thingId, originalData) = GetDataFromRow(existingRow);
+
+            // TODO: Check if audio is already there.
+            foreach (var (source, link) in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key).Take(3)) {
+                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, "7", CsrfToken,
+                    new KifaFile(link).OpenRead().ToByteArray());
+            }
         }
 
         List<string> GetHeaders() =>
@@ -145,7 +159,7 @@ namespace Kifa.Memrise {
         }
 
         (string thingId, Dictionary<string, string> data) GetDataFromRow(IWebElement existingRow) {
-            var data = new Dictionary<string, string> { };
+            var data = new Dictionary<string, string>();
 
             foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {
                 data[td.GetAttribute("data-key")] = td.Text;

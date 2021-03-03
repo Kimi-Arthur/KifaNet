@@ -14,7 +14,7 @@ namespace Kifa.Memrise.Api {
 
         public override string UrlPattern { get; } = "https://app.memrise.com/ajax/thing/cell/update/";
 
-        public override List<KeyValuePair<string, string>> FormUrlEncodedContent { get; set; } = new() {
+        public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
             new("thing_id", "{thing_id}"),
             new("cell_id", "{cell_id}"),
             new("cell_type", "column"),

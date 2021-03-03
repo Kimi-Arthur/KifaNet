@@ -1,9 +1,9 @@
 ﻿using System;
+using System.IO;
 
 namespace Kifa {
     public static class ByteArrayExtensions {
-        public static string ToHexString(this byte[] input)
-            => BitConverter.ToString(input).Replace("-", "");
+        public static string ToHexString(this byte[] input) => BitConverter.ToString(input).Replace("-", "");
 
         public static byte[] ToByteArray(this long input) {
             var result = new byte[8];
@@ -13,6 +13,14 @@ namespace Kifa {
             }
 
             return result;
+        }
+
+        // Will close the stream after reading.
+        public static byte[] ToByteArray(this Stream input) {
+            using var memoryStream = new MemoryStream();
+            input.CopyTo(memoryStream);
+            input.Dispose();
+            return memoryStream.ToArray();
         }
 
         public static long ToInt64(this byte[] input) {

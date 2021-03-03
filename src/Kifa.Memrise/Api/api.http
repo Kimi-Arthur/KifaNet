@@ -1,3 +1,36 @@
+POST https://app.memrise.com/ajax/thing/cell/upload_file/
+cookie: __gads=ID=624712eca0d025d5-22ff9f4fdfc50081:T=1611933973:RT=1611933973:S=ALNI_MZoDmjf3i3Y6K29jkmCRv_ybMZF0g; ajs_anonymous_id=%226661c885-e9e8-471c-a5a8-cdb2d47bd44a%22; _ga=GA1.2.1932932878.1611933973; _gcl_au=1.1.802036669.1611933975; _fbp=fb.1.1611933984512.723063242; hubspotutk=8e7e155eb7375c700f2cfc0614231653; __hssrc=1; ab.storage.deviceId.81b5a720-d869-44a3-b051-fbf0e709467a=%7B%22g%22%3A%22a5ec1171-c421-07a7-4312-bc459b32f838%22%2C%22c%22%3A1611934129825%2C%22l%22%3A1611934129825%7D; __stripe_mid=510294ae-d937-489f-b022-6b6b9cbb31affc15f2; G_ENABLED_IDPS=google; G_AUTHUSER_H=0; sessionid_2=pfw4kdavn86vvbcgbqqowv7ej0i23vtdu; i18next=en; ajs_user_id=51993472; ab.storage.userId.81b5a720-d869-44a3-b051-fbf0e709467a=%7B%22g%22%3A%2251993472%22%2C%22c%22%3A1611936780916%2C%22l%22%3A1611936780916%7D; cookieconsent_status=allow; _gid=GA1.2.163687621.1613308550; __hstc=179716859.8e7e155eb7375c700f2cfc0614231653.1611934045237.1612946245687.1613308553084.7; csrftoken=E30hsZhX8b5l3V4OPqR5r3mB8dJgVYDAMhf2qcFBxsJQZrrHRx9PMHRcGfkRFflx; ab.storage.sessionId.81b5a720-d869-44a3-b051-fbf0e709467a=%7B%22g%22%3A%222d03383c-6523-9056-4b5e-04067453c8b4%22%2C%22e%22%3A1613405402067%2C%22c%22%3A1613405372069%2C%22l%22%3A1613405372069%7D; _gat=1
+referer: https://app.memrise.com/course/5942698/test-course/edit/database/6977236/?q=2021-03-03T22%3A36%3A40.4926710%2B00%3A00
+Content-Type: multipart/form-data; boundary=d32f7499-0b91-46c4-b84c-fdb76a45795d
+
+--d32f7499-0b91-46c4-b84c-fdb76a45795d
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: form-data; name=thing_id
+
+279739219
+--d32f7499-0b91-46c4-b84c-fdb76a45795d
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: form-data; name=cell_id
+
+7
+--d32f7499-0b91-46c4-b84c-fdb76a45795d
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: form-data; name=cell_type
+
+column
+--d32f7499-0b91-46c4-b84c-fdb76a45795d
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: form-data; name=csrfmiddlewaretoken
+
+E30hsZhX8b5l3V4OPqR5r3mB8dJgVYDAMhf2qcFBxsJQZrrHRx9PMHRcGfkRFflx
+--d32f7499-0b91-46c4-b84c-fdb76a45795d
+Content-Type: audio/mpeg
+Content-Disposition: form-data; name=f; filename=f.mp3; filename*=utf-8''f.mp3
+
+< ~/Web/https.media.dwds.de/dwds2/audio/002/die_Aussage.mp3
+--d32f7499-0b91-46c4-b84c-fdb76a45795d--
+
+###
 POST https://app.memrise.com/ajax/thing/add/
 Content-Type: application/x-www-form-urlencoded
 cookie: __gads=ID=624712eca0d025d5-22ff9f4fdfc50081:T=1611933973:RT=1611933973:S=ALNI_MZoDmjf3i3Y6K29jkmCRv_ybMZF0g; ajs_anonymous_id=%226661c885-e9e8-471c-a5a8-cdb2d47bd44a%22; _ga=GA1.2.1932932878.1611933973; _gcl_au=1.1.802036669.1611933975; _fbp=fb.1.1611933984512.723063242; hubspotutk=8e7e155eb7375c700f2cfc0614231653; __hssrc=1; ab.storage.deviceId.81b5a720-d869-44a3-b051-fbf0e709467a=%7B%22g%22%3A%22a5ec1171-c421-07a7-4312-bc459b32f838%22%2C%22c%22%3A1611934129825%2C%22l%22%3A1611934129825%7D; __stripe_mid=510294ae-d937-489f-b022-6b6b9cbb31affc15f2; G_ENABLED_IDPS=google; G_AUTHUSER_H=0; sessionid_2=pfw4kdavn86vvbcgbqqowv7ej0i23vtdu; i18next=en; ajs_user_id=51993472; ab.storage.userId.81b5a720-d869-44a3-b051-fbf0e709467a=%7B%22g%22%3A%2251993472%22%2C%22c%22%3A1611936780916%2C%22l%22%3A1611936780916%7D; cookieconsent_status=allow; _gid=GA1.2.163687621.1613308550; __hstc=179716859.8e7e155eb7375c700f2cfc0614231653.1611934045237.1612946245687.1613308553084.7; csrftoken=zvpDbIjbWgYQkLy7Tu6TNgFNNzMzZkfksNnxil8ifyg1bIQqZgCozXLEzF94RpYF; ab.storage.sessionId.81b5a720-d869-44a3-b051-fbf0e709467a=%7B%22g%22%3A%222d03383c-6523-9056-4b5e-04067453c8b4%22%2C%22e%22%3A1613405402067%2C%22c%22%3A1613405372069%2C%22l%22%3A1613405372069%7D; _gat=1

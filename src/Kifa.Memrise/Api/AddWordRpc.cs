@@ -45,7 +45,7 @@ namespace Kifa.Memrise.Api {
 
         public override string UrlPattern { get; } = "https://app.memrise.com/ajax/thing/add/";
 
-        public override List<KeyValuePair<string, string>> FormUrlEncodedContent { get; set; } =
+        public override List<KeyValuePair<string, string>> FormContent { get; set; } =
             new() {new("columns", "{data}"), new("pool_id", "{databaseId}")};
 
         public AddWordResponse Call(string databaseId, string referer, Dictionary<string, string> data) {
