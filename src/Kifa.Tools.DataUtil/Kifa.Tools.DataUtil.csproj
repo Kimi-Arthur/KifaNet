@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
   </ItemGroup>
 

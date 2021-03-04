@@ -12,7 +12,7 @@ namespace Kifa.Memrise.Tests {
             using var client =
                 new MemriseClient {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"};
             client.AddWord(
-                new MemriseGermanWord {
+                new GoetheGermanWord {
                     Word = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
                     Meaning = "M" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
                     Examples = new List<string> {"abc", "bcd"}
@@ -33,7 +33,7 @@ namespace Kifa.Memrise.Tests {
             using var client =
                 new MemriseClient {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"};
             client.AddWord(
-                new MemriseGermanWord {
+                new GoetheGermanWord {
                     Word = "drehen",
                     Meaning = "to turn",
                     Examples = new List<string> {"abc" + new Random().Next(), "bcd" + new Random().Next()}

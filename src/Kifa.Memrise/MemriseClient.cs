@@ -67,7 +67,7 @@ namespace Kifa.Memrise {
             }
         }
 
-        public void AddWord(MemriseGermanWord word, Word baseWord) {
+        public void AddWord(GoetheGermanWord word, Word baseWord) {
             WebDriver.Url = DatabaseUrl;
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}");
@@ -99,7 +99,7 @@ namespace Kifa.Memrise {
             WebDriver.FindElement(By.CssSelector("thead.columns")).FindElements(By.CssSelector("th.column"))
                 .Select(th => th.Text.Trim()).ToList();
 
-        IWebElement GetExistingRow(MemriseGermanWord word) {
+        IWebElement GetExistingRow(GoetheGermanWord word) {
             var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
             searchBar.Clear();
             searchBar.SendKeys(word.Word);
@@ -122,14 +122,14 @@ namespace Kifa.Memrise {
         }
 
         // Columns order: German, English, Form, Pronunciation, Full Form, Examples, Audio
-        string FillBasicWord(MemriseGermanWord word) {
+        string FillBasicWord(GoetheGermanWord word) {
             var response =
                 new AddWordRpc {HttpClient = HttpClient}.Call(DatabaseId, DatabaseUrl, GetDataFromWord(word));
 
             return response.Thing.Id.ToString();
         }
 
-        int FillRow(IWebElement existingRow, MemriseGermanWord word) {
+        int FillRow(IWebElement existingRow, GoetheGermanWord word) {
             var (thingId, originalData) = GetDataFromRow(existingRow);
             var newData = GetDataFromWord(word);
 
@@ -144,7 +144,7 @@ namespace Kifa.Memrise {
             return updatedFields;
         }
 
-        Dictionary<string, string> GetDataFromWord(MemriseGermanWord word) {
+        Dictionary<string, string> GetDataFromWord(GoetheGermanWord word) {
             var data = new Dictionary<string, string> {{"1", word.Word}, {"2", word.Meaning}};
 
             if (word.Form != null) {
