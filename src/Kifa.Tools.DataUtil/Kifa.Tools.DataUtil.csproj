@@ -8,7 +8,7 @@
     <Version>1.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
-    <PackageIcon>Pimix.png</PackageIcon>
+    <PackageIcon>Kifa.png</PackageIcon>
     <Description>Utility to manage data.</Description>
     <Copyright>Copyright © 2015-2020 Kimi Arthur</Copyright>
     <PackageTags>Pimix Apps DataUtil app</PackageTags>
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
   </ItemGroup>
 
@@ -27,6 +28,6 @@
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>

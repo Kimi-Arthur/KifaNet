@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Kifa.Service;
 
 namespace Kifa.Memrise {
-    public class MemriseGermanWord : DataModel {
-        public const string ModelId = "memrise/german/words";
+    public class GoetheGermanWord : DataModel {
+        public const string ModelId = "goethe/words";
 
         public string Word {
             get => Id;
@@ -18,15 +18,17 @@ namespace Kifa.Memrise {
         public string Synonym { get; set; }
 
         // Only Word, Level, Form are included.
-        public MemriseGermanWord Feminine { get; set; }
+        public GoetheGermanWord Feminine { get; set; }
+
+        public GoetheGermanWord Abbreviation { get; set; }
 
         public List<string> Examples { get; set; }
     }
 
-    public interface MemriseGermanWordServiceClient : KifaServiceClient<MemriseGermanWord> {
+    public interface MemriseGermanWordServiceClient : KifaServiceClient<GoetheGermanWord> {
     }
 
-    public class MemriseGermanWordRestServiceClient : KifaServiceRestClient<MemriseGermanWord>,
+    public class MemriseGermanWordRestServiceClient : KifaServiceRestClient<GoetheGermanWord>,
         MemriseGermanWordServiceClient {
     }
 }
