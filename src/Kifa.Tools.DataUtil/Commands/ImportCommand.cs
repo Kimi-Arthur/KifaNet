@@ -23,7 +23,7 @@ namespace Kifa.Tools.DataUtil.Commands {
                 using var reader = new StreamReader(new KifaFile(File).OpenRead());
                 var words = new Deserializer().Deserialize<List<GoetheGermanWord>>(reader.ReadToEnd());
 
-                var client = new MemriseGermanWordRestServiceClient();
+                var client = new GoetheGermanWordRestServiceClient();
                 foreach (var word in words) {
                     logger.LogResult(client.Update(word), $"Update ({word.Id})");
                 }

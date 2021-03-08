@@ -25,10 +25,10 @@ namespace Kifa.Languages.German.Goethe {
         public List<string> Examples { get; set; }
     }
 
-    public interface MemriseGermanWordServiceClient : KifaServiceClient<GoetheGermanWord> {
+    public interface GoetheGermanWordServiceClient : KifaServiceClient<GoetheGermanWord> {
     }
 
-    public class MemriseGermanWordRestServiceClient : KifaServiceRestClient<GoetheGermanWord>,
-        MemriseGermanWordServiceClient {
+    public class GoetheGermanWordRestServiceClient : KifaServiceRestClient<GoetheGermanWord>,
+        GoetheGermanWordServiceClient {
     }
 }
