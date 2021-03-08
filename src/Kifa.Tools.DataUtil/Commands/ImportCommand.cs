@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using YamlDotNet.Serialization;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Memrise;
+using Kifa.Languages.German;
 using Kifa.Service;
 using NLog;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Tools.DataUtil.Commands {
     [Verb("import", HelpText = "Import data from a specific file.")]

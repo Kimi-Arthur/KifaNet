@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Kifa.Memrise {
+namespace Kifa.Languages.German {
     public class GoetheGermanWord : DataModel {
         public const string ModelId = "goethe/words";
 
