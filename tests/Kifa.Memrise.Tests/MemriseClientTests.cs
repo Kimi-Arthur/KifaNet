@@ -18,11 +18,13 @@ namespace Kifa.Memrise.Tests {
                     Examples = new List<string> {"abc", "bcd"}
                 },
                 new Word {
-                    PronunciationAudioLinks = new Dictionary<Source, string> {
-                        {Source.Duden, "https://cdn.duden.de/_media_/audio/ID4117087_349083091.mp3"},
-                        {Source.Dwds, "https://media.dwds.de/dwds2/audio/004/drehen.mp3"},
-                        {Source.Wiktionary, "https://upload.wikimedia.org/wikipedia/commons/a/a8/De-drehen.ogg"},
-                        {Source.Pons, "https://sounds.pons.com/audio_tts/de/Tdeen148903"}
+                    PronunciationAudioLinks = new() {
+                        {Source.Duden, new() {"https://cdn.duden.de/_media_/audio/ID4117087_349083091.mp3"}},
+                        {Source.Dwds, new() {"https://media.dwds.de/dwds2/audio/004/drehen.mp3"}}, {
+                            Source.Wiktionary,
+                            new() {"https://upload.wikimedia.org/wikipedia/commons/a/a8/De-drehen.ogg"}
+                        },
+                        {Source.Pons, new() {"https://sounds.pons.com/audio_tts/de/Tdeen148903"}}
                     }
                 });
         }

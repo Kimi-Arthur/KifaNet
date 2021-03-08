@@ -22,12 +22,12 @@ namespace Kifa.Languages.German {
         public string Pronunciation { get; set; }
 
         public string PronunciationAudioLink =>
-            PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
-            PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
-            PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
-            PronunciationAudioLinks.GetValueOrDefault(Source.Pons);
+            (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
+             PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
+             PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
+             PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
 
-        public Dictionary<Source, string> PronunciationAudioLinks { get; set; } = new Dictionary<Source, string>();
+        public Dictionary<Source, List<string>> PronunciationAudioLinks { get; set; } = new();
 
         // Shared for any meaning.
         public VerbForms VerbForms { get; set; } = new VerbForms();

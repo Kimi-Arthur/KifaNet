@@ -89,7 +89,8 @@ namespace Kifa.Memrise {
             var (thingId, originalData) = GetDataFromRow(existingRow);
 
             // TODO: Check if audio is already there.
-            foreach (var (source, link) in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key).Take(3)) {
+            foreach (var link in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key)
+                .SelectMany(item => item.Value).Take(3)) {
                 new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, "7", CsrfToken,
                     new KifaFile(link).OpenRead().ToByteArray());
             }

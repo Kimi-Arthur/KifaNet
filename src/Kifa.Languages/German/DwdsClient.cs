@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
 using NLog;
@@ -15,10 +16,11 @@ namespace Kifa.Languages.German {
             doc.LoadHtml(response.GetString());
             var audioNodes = doc.DocumentNode.SelectNodes("//audio/source");
 
-            var word = new Word {PronunciationAudioLinks = new Dictionary<Source, string>()};
+            var word = new Word {PronunciationAudioLinks = new Dictionary<Source, List<string>>()};
 
             if (audioNodes?.Count > 0) {
-                word.PronunciationAudioLinks[Source.Dwds] = $"https:{audioNodes[0].Attributes["src"].Value}";
+                word.PronunciationAudioLinks[Source.Dwds] =
+                    audioNodes.Select(audioNode => $"https:{audioNode.Attributes["src"].Value}").ToList();
             }
 
             return word;

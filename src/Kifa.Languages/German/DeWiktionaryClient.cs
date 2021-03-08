@@ -126,10 +126,10 @@ namespace Kifa.Languages.German {
                             }
                         }
 
-                        var audioNode = node.SelectSingleNode($"(.//a[@class='internal'])[1]");
-                        if (audioNode != null) {
-                            word.PronunciationAudioLinks[Source.Wiktionary] =
-                                $"https:{audioNode.Attributes["href"].Value}";
+                        var audioNodes = node.SelectNodes($"(.//a[@class='internal'])");
+                        if (audioNodes != null) {
+                            word.PronunciationAudioLinks[Source.Wiktionary] = audioNodes
+                                .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}").ToList();
                         }
                     }
                 } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {

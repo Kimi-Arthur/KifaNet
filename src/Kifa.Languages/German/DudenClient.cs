@@ -24,10 +24,10 @@ namespace Kifa.Languages.German {
         }
 
         public Word GetWord(string wordId) =>
-            new Word {
+            new() {
                 Id = wordId,
                 PronunciationAudioLinks =
-                    new Dictionary<Source, string> {{Source.Duden, AudioLinks.GetValueOrDefault(wordId)}}
+                    new() {{Source.Duden, new List<string> {AudioLinks.GetValueOrDefault(wordId)}}}
             };
     }
 }

@@ -12,7 +12,7 @@ namespace Kifa.Languages.Tests {
         public void AudioLinkTest(string wordId, string link) {
             var client = new DwdsClient();
             var word = client.GetWord(wordId);
-            Assert.Equal(link, word.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds));
+            Assert.Equal(link, word.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds)?[0]);
         }
     }
 }
