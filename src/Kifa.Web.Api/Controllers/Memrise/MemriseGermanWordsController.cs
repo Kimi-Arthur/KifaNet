@@ -1,4 +1,4 @@
-using Kifa.Languages.German;
+using Kifa.Languages.German.Goethe;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Memrise {

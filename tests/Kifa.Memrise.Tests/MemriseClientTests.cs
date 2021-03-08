@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Kifa.Configs;
 using Kifa.Languages.German;
+using Kifa.Languages.German.Goethe;
 using NUnit.Framework;
 
 namespace Kifa.Memrise.Tests {

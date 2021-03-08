@@ -2,7 +2,7 @@
 using System.IO;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Languages.German;
+using Kifa.Languages.German.Goethe;
 using Kifa.Service;
 using NLog;
 using YamlDotNet.Serialization;

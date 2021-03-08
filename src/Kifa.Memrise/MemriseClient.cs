@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using Kifa.Api.Files;
 using Kifa.Languages.German;
+using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
 using NLog;
 using OpenQA.Selenium;
