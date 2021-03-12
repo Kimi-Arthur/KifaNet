@@ -26,8 +26,12 @@ namespace Kifa.Languages.German {
         public Word GetWord(string wordId) =>
             new() {
                 Id = wordId,
-                PronunciationAudioLinks =
-                    new() {{Source.Duden, new List<string> {AudioLinks.GetValueOrDefault(wordId)}}}
+                PronunciationAudioLinks = new() {
+                    {
+                        Source.Duden,
+                        AudioLinks.ContainsKey(wordId) ? new List<string> {AudioLinks.GetValueOrDefault(wordId)} : null
+                    }
+                }
             };
     }
 }
