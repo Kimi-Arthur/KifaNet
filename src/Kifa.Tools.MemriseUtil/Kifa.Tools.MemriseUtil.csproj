@@ -6,7 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\resources\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>NLog.config</Link>
+    </None>
   </ItemGroup>
 
 </Project>
