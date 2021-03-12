@@ -19,13 +19,28 @@ namespace Kifa.Tools.DataUtil.Commands {
         public string File { get; set; }
 
         public override int Execute() {
-            if (GoetheGermanWord.ModelId == Type) {
-                using var reader = new StreamReader(new KifaFile(File).OpenRead());
-                var words = new Deserializer().Deserialize<List<GoetheGermanWord>>(reader.ReadToEnd());
+            switch (Type) {
+                case GoetheGermanWord.ModelId: {
+                    using var reader = new StreamReader(new KifaFile(File).OpenRead());
+                    var words = new Deserializer().Deserialize<List<GoetheGermanWord>>(reader.ReadToEnd());
 
-                var client = new GoetheGermanWordRestServiceClient();
-                foreach (var word in words) {
-                    logger.LogResult(client.Update(word), $"Update ({word.Id})");
+                    var client = new GoetheGermanWordRestServiceClient();
+                    foreach (var word in words) {
+                        logger.LogResult(client.Update(word), $"Update ({Type}/{word.Id})");
+                    }
+
+                    break;
+                }
+                case GoetheWordList.ModelId: {
+                    using var reader = new StreamReader(new KifaFile(File).OpenRead());
+                    var lists = new Deserializer().Deserialize<List<GoetheWordList>>(reader.ReadToEnd());
+
+                    var client = new GoetheWordListRestServiceClient();
+                    foreach (var list in lists) {
+                        logger.LogResult(client.Update(list), $"Update ({Type}/{list.Id})");
+                    }
+
+                    break;
                 }
             }
 
