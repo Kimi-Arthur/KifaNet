@@ -10,8 +10,9 @@ namespace Kifa.Memrise.Tests {
         [Test]
         public void AddWordTest() {
             KifaConfigs.LoadFromSystemConfigs();
-            using var client =
-                new MemriseClient {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"};
+            using var client = new MemriseClient {
+                Course = new MemriseCourse {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"}
+            };
             client.AddWord(
                 new GoetheGermanWord {
                     Word = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
@@ -33,8 +34,9 @@ namespace Kifa.Memrise.Tests {
         [Test]
         public void UpdateWordTest() {
             KifaConfigs.LoadFromSystemConfigs();
-            using var client =
-                new MemriseClient {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"};
+            using var client = new MemriseClient {
+                Course = new MemriseCourse {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"}
+            };
             client.AddWord(
                 new GoetheGermanWord {
                     Word = "drehen",

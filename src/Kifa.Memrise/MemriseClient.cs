@@ -21,13 +21,10 @@ namespace Kifa.Memrise {
         public static string Cookies { get; set; }
         public static string CsrfToken { get; set; }
 
-        public string CourseId { get; set; }
+        public MemriseCourse Course { get; set; }
 
-        public string CourseName { get; set; }
-
-        public string DatabaseId { get; set; }
-
-        string DatabaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/database/{DatabaseId}/";
+        string DatabaseUrl =>
+            $"https://app.memrise.com/course/{Course.CourseId}/{Course.CourseName}/edit/database/{Course.DatabaseId}/";
 
         IWebDriver webDriver;
 
@@ -126,7 +123,7 @@ namespace Kifa.Memrise {
         // Columns order: German, English, Form, Pronunciation, Full Form, Examples, Audio
         string FillBasicWord(GoetheGermanWord word) {
             var response =
-                new AddWordRpc {HttpClient = HttpClient}.Call(DatabaseId, DatabaseUrl, GetDataFromWord(word));
+                new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, DatabaseUrl, GetDataFromWord(word));
 
             return response.Thing.Id.ToString();
         }
