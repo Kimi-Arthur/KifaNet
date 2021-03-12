@@ -18,7 +18,7 @@ namespace Kifa.Configs {
         static string ConfigFilePath {
             get {
                 if (configFilePath == null) {
-                    configFilePath = Environment.GetEnvironmentVariable("CONFIG");
+                    configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
                     if (configFilePath == null) {
                         foreach (var path in ConfigFilePaths) {
                             if (File.Exists(path)) {
