@@ -23,9 +23,6 @@ namespace Kifa.Memrise {
 
         public MemriseCourse Course { get; set; }
 
-        string DatabaseUrl =>
-            $"https://app.memrise.com/course/{Course.CourseId}/{Course.CourseName}/edit/database/{Course.DatabaseId}/";
-
         IWebDriver webDriver;
 
         IWebDriver WebDriver {
@@ -58,7 +55,7 @@ namespace Kifa.Memrise {
                     httpClient.DefaultRequestHeaders.Add("cookie", Cookies);
                     httpClient.DefaultRequestHeaders.Add("x-csrftoken", CsrfToken);
                     httpClient.DefaultRequestHeaders.Add("x-requested-with", "XMLHttpRequest");
-                    httpClient.DefaultRequestHeaders.Add("referer", DatabaseUrl);
+                    httpClient.DefaultRequestHeaders.Add("referer", Course.BaseUrl);
                 }
 
                 return httpClient;
@@ -66,7 +63,7 @@ namespace Kifa.Memrise {
         }
 
         public void AddWord(GoetheGermanWord word, Word baseWord) {
-            WebDriver.Url = DatabaseUrl;
+            WebDriver.Url = Course.DatabaseUrl;
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}");
 
@@ -123,7 +120,7 @@ namespace Kifa.Memrise {
         // Columns order: German, English, Form, Pronunciation, Full Form, Examples, Audio
         string FillBasicWord(GoetheGermanWord word) {
             var response =
-                new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, DatabaseUrl, GetDataFromWord(word));
+                new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, Course.BaseUrl, GetDataFromWord(word));
 
             return response.Thing.Id.ToString();
         }
@@ -165,6 +162,14 @@ namespace Kifa.Memrise {
             }
 
             return (existingRow.GetAttribute("data-thing-id"), data);
+        }
+
+        public (string levelId, string levelName) GetLevels() {
+            // Search url: https://app.memrise.com/ajax/pool/search/?pool_id=6975760&columns=%7B%221%22%3A%22die%20Abbildungen%22%7D
+            // Level url: https://app.memrise.com/ajax/level/editing_html/?level_id=13304295
+            WebDriver.Url = Course.BaseUrl;
+            var levelNodes = WebDriver.FindElements(By.CssSelector("div.level"));
+            return (null, null);
         }
 
         public void Dispose() {

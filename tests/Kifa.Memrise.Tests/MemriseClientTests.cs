@@ -7,12 +7,13 @@ using NUnit.Framework;
 
 namespace Kifa.Memrise.Tests {
     public class MemriseClientTests {
+        private static readonly MemriseCourse TestCourse =
+            new MemriseCourse {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"};
+
         [Test]
         public void AddWordTest() {
             KifaConfigs.LoadFromSystemConfigs();
-            using var client = new MemriseClient {
-                Course = new MemriseCourse {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"}
-            };
+            using var client = new MemriseClient {Course = TestCourse};
             client.AddWord(
                 new GoetheGermanWord {
                     Word = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
@@ -34,9 +35,7 @@ namespace Kifa.Memrise.Tests {
         [Test]
         public void UpdateWordTest() {
             KifaConfigs.LoadFromSystemConfigs();
-            using var client = new MemriseClient {
-                Course = new MemriseCourse {CourseId = "5942698", CourseName = "test-course", DatabaseId = "6977236"}
-            };
+            using var client = new MemriseClient {Course = TestCourse};
             client.AddWord(
                 new GoetheGermanWord {
                     Word = "drehen",
