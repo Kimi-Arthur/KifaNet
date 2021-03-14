@@ -86,7 +86,7 @@ namespace Kifa.Memrise {
             // TODO: Check if audio is already there.
             foreach (var link in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key)
                 .SelectMany(item => item.Value).Take(3)) {
-                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, "7", CsrfToken,
+                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, "6", CsrfToken,
                     new KifaFile(link).OpenRead().ToByteArray());
             }
         }
@@ -117,7 +117,7 @@ namespace Kifa.Memrise {
             return null;
         }
 
-        // Columns order: German, English, Form, Pronunciation, Full Form, Examples, Audio
+        // Columns order: German, English, Form, Pronunciation, Examples, Audio
         string FillBasicWord(GoetheGermanWord word) {
             var response =
                 new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, Course.BaseUrl, GetDataFromWord(word));
@@ -148,7 +148,7 @@ namespace Kifa.Memrise {
             }
 
             if (!word.Examples[0].StartsWith("example")) {
-                data["6"] = string.Join(lineBreak, word.Examples);
+                data["5"] = string.Join(lineBreak, word.Examples);
             }
 
             return data;

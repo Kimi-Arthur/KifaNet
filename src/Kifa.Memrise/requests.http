@@ -16,3 +16,24 @@ Feminine:
 Meaning: caretaker, janitor
 Examples:
   - Der Abwart hat mir geholfen, den Schrank in die Wohnung zu tragen.
+
+###
+
+POST {{server}}/api/memrise/courses/test-course
+Content-Type: application/x-yaml
+
+CourseName: goethe-zertifikat-wortliste
+CourseId: '5941264'
+DatabaseId: '7001191'
+Columns:
+  German: '1'
+  English: '2'
+  Form: '3'
+  Pronunciation: '4'
+  Examples: '5'
+  Audio: '6'
+Levels:
+  A1: '13403229'
+  A2: '13403230'
+  B1: '13403231'
+  M: '13403232'
