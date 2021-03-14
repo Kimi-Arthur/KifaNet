@@ -83,16 +83,37 @@ namespace Kifa.Memrise {
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{baseWord}");
 
-            var headers = GetHeaders();
-            logger.Debug($"Headers: {string.Join(", ", headers)}");
-
             // Check headers
+            var checkHeadersResult = CheckHeaders(GetHeaders());
+            if (checkHeadersResult.Status != KifaActionStatus.OK) {
+                return new KifaActionResult<string>(checkHeadersResult);
+            }
+
+            var newData = GetDataFromWord(word, baseWord);
+
+            var existingRow = GetExistingRow(word);
+            if (existingRow == null) {
+                FillBasicWord(newData);
+                existingRow = GetExistingRow(word);
+            }
+
+            var (thingId, data) = GetDataFromRow(existingRow);
+
+            FillRow(thingId, data, newData);
+
+            UploadAudios(thingId, baseWord);
+
+            return new KifaActionResult<string>(thingId);
+        }
+
+        KifaActionResult CheckHeaders(Dictionary<string, string> headers) {
+            logger.Debug($"Headers: {string.Join(", ", headers)}");
             foreach (var column in Course.Columns) {
                 var headerIndex = headers.GetValueOrDefault(column.Key) ?? "not found";
                 if (headerIndex != column.Value) {
                     logger.Fatal(
                         $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}.");
-                    return new KifaActionResult<string> {
+                    return new KifaActionResult {
                         Status = KifaActionStatus.Error,
                         Message =
                             $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}."
@@ -100,19 +121,7 @@ namespace Kifa.Memrise {
                 }
             }
 
-            var existingRow = GetExistingRow(word);
-            if (existingRow == null) {
-                FillBasicWord(word);
-                existingRow = GetExistingRow(word);
-            }
-
-            (var thingId, var data) = GetDataFromRow(existingRow);
-
-            FillRow(thingId, data, word);
-
-            UploadAudios(thingId, baseWord);
-
-            return new KifaActionResult<string>(thingId);
+            return KifaActionResult.SuccessActionResult;
         }
 
         void UploadAudios(string thingId, GermanWord baseWord) {
@@ -150,17 +159,14 @@ namespace Kifa.Memrise {
             return null;
         }
 
-        // Columns order: German, English, Form, Pronunciation, Examples, Audio
-        string FillBasicWord(GoetheGermanWord word) {
-            var response =
-                new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, Course.BaseUrl, GetDataFromWord(word));
+        // Columns order: German, English, Form, Pronunciation, Examples, Audios
+        string FillBasicWord(Dictionary<string, string> newData) {
+            var response = new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, Course.BaseUrl, newData);
 
             return response.Thing.Id.ToString();
         }
 
-        int FillRow(string thingId, Dictionary<string, string> originalData, GoetheGermanWord word) {
-            var newData = GetDataFromWord(word);
-
+        int FillRow(string thingId, Dictionary<string, string> originalData, Dictionary<string, string> newData) {
             var updatedFields = 0;
             foreach (var (dataKey, newValue) in newData) {
                 if (originalData.GetValueOrDefault(dataKey) != newValue) {
@@ -172,15 +178,21 @@ namespace Kifa.Memrise {
             return updatedFields;
         }
 
-        Dictionary<string, string> GetDataFromWord(GoetheGermanWord word) {
-            var data = new Dictionary<string, string> {{"1", word.Word}, {"2", word.Meaning}};
+        Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord baseWord) {
+            var data = new Dictionary<string, string> {
+                {Course.Columns["German"], word.Word}, {Course.Columns["English"], word.Meaning}
+            };
 
             if (word.Form != null) {
-                data["3"] = word.Form;
+                data[Course.Columns["Form"]] = word.Form;
             }
 
-            if (!word.Examples[0].StartsWith("example")) {
-                data["5"] = string.Join(lineBreak, word.Examples);
+            if (baseWord.Pronunciation != null) {
+                data[Course.Columns["Pronunciation"]] = $"[{baseWord.Pronunciation}]";
+            }
+
+            if (word.Examples.Count > 0 && !word.Examples[0].StartsWith("example")) {
+                data[Course.Columns["Examples"]] = string.Join(lineBreak, word.Examples);
             }
 
             return data;
