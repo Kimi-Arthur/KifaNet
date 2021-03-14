@@ -52,7 +52,7 @@ namespace Kifa.Languages.German {
             var audioLinkNode = wordNode.SelectSingleNode(".//dl[1]");
             if (audioLinkNode != null) {
                 word.PronunciationAudioLinks[Source.Pons] =
-                    new List<string> {$"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"};
+                    new() {$"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"};
             }
 
             word.Meanings.Add(new Meaning {

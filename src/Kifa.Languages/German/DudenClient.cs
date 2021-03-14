@@ -29,7 +29,7 @@ namespace Kifa.Languages.German {
                 PronunciationAudioLinks = new() {
                     {
                         Source.Duden,
-                        AudioLinks.ContainsKey(wordId) ? new List<string> {AudioLinks.GetValueOrDefault(wordId)} : null
+                        AudioLinks.ContainsKey(wordId) ? new () {AudioLinks.GetValueOrDefault(wordId)} : null
                     }
                 }
             };

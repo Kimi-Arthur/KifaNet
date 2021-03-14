@@ -27,7 +27,7 @@ namespace Kifa.Languages.German {
              PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
              PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
 
-        public Dictionary<Source, List<string>> PronunciationAudioLinks { get; set; } = new();
+        public Dictionary<Source, HashSet<string>> PronunciationAudioLinks { get; set; } = new();
 
         // Shared for any meaning.
         public VerbForms VerbForms { get; set; } = new VerbForms();

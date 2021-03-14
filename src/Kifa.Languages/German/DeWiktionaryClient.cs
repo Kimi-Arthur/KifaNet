@@ -47,7 +47,7 @@ namespace Kifa.Languages.German {
             var pageContentNodes = doc.DocumentNode.SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
             var inDeutsch = false;
             var inSection = false;
-            var hasPronunciation = false;
+            var inAudio = false;
             var wordType = WordType.Unknown;
             var word = new GermanWord {Id = wordId};
             foreach (var node in pageContentNodes) {
@@ -57,10 +57,6 @@ namespace Kifa.Languages.German {
                     }
 
                     if (node.Name == "h3") {
-                        if (inSection) {
-                            break;
-                        }
-
                         inSection = true;
                         // Word type info here.
                         var wordTypeNode = node.SelectSingleNode(".//span[@class='mw-headline']");
@@ -87,7 +83,16 @@ namespace Kifa.Languages.German {
                     }
 
                     if (inSection) {
-                        if (node.Name == "table" && node.HasClass("wikitable") && wordType == WordType.Noun) {
+                        if (node.Name == "p") {
+                            if (node.InnerText.Trim() == "Aussprache:") {
+                                inAudio = true;
+                            } else {
+                                inAudio = false;
+                            }
+                        }
+
+                        if (word.NounForms.Count == 0 && node.Name == "table" && node.HasClass("wikitable") &&
+                            wordType == WordType.Noun) {
                             var selector = new Func<int, int, string>((row, column) => {
                                 var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]").InnerText.Split("\n")
                                     .First().Split(" ").Last();
@@ -118,18 +123,21 @@ namespace Kifa.Languages.German {
                             }
                         }
 
-                        if (!hasPronunciation) {
+                        if (word.Pronunciation == null) {
                             var ipaNode = node.SelectSingleNode("(.//span[@class='ipa'])[1]");
                             if (ipaNode != null) {
-                                hasPronunciation = true;
                                 word.Pronunciation = ipaNode.InnerText;
                             }
                         }
 
-                        var audioNodes = node.SelectNodes($"(.//a[@class='internal'])");
-                        if (audioNodes != null) {
-                            word.PronunciationAudioLinks[Source.Wiktionary] = audioNodes
-                                .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}").ToList();
+                        if (inAudio) {
+                            var audioNodes = node.SelectNodes($"(.//a[@class='internal'])");
+                            if (audioNodes != null) {
+                                word.PronunciationAudioLinks[Source.Wiktionary] =
+                                    word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary, new());
+                                word.PronunciationAudioLinks[Source.Wiktionary].UnionWith(audioNodes
+                                    .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}").ToHashSet());
+                            }
                         }
                     }
                 } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {

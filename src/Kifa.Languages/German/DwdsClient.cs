@@ -16,11 +16,11 @@ namespace Kifa.Languages.German {
             doc.LoadHtml(response.GetString());
             var audioNodes = doc.DocumentNode.SelectNodes("//audio/source");
 
-            var word = new GermanWord {PronunciationAudioLinks = new Dictionary<Source, List<string>>()};
+            var word = new GermanWord();
 
             if (audioNodes?.Count > 0) {
-                word.PronunciationAudioLinks[Source.Dwds] =
-                    audioNodes.Select(audioNode => $"https:{audioNode.Attributes["src"].Value}").ToList();
+                word.PronunciationAudioLinks[Source.Dwds] = audioNodes
+                    .Select(audioNode => $"https:{audioNode.Attributes["src"].Value}").ToHashSet();
             }
 
             return word;

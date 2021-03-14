@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Kifa.Languages.German;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace Kifa.Languages.Tests {
         public void AudioLinkTest(string wordId, string link) {
             var client = new DwdsClient();
             var word = client.GetWord(wordId);
-            Assert.Equal(link, word.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds)?[0]);
+            Assert.Equal(link, word.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds)?.First());
         }
     }
 }
