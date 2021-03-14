@@ -19,7 +19,7 @@ Examples:
 
 ###
 
-POST {{server}}/api/memrise/courses/goethe-zertifikat-wortliste
+POST {{server}}/api/memrise/courses/german
 Content-Type: application/x-yaml
 
 CourseName: goethe-zertifikat-wortliste
@@ -31,7 +31,7 @@ Columns:
   Form: '3'
   Pronunciation: '4'
   Examples: '5'
-  Audio: '6'
+  Audios: '6'
 Levels:
   A1: '13403229'
   A2: '13403230'

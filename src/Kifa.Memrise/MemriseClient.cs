@@ -6,6 +6,7 @@ using Kifa.Api.Files;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
+using Kifa.Service;
 using NLog;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -62,13 +63,28 @@ namespace Kifa.Memrise {
             }
         }
 
-        public void AddWord(GoetheGermanWord word, Word baseWord) {
+        public KifaActionResult AddWord(GoetheGermanWord word, Word baseWord) {
             WebDriver.Url = Course.DatabaseUrl;
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}");
 
             var headers = GetHeaders();
             logger.Debug($"Headers: {string.Join(", ", headers)}");
+
+            // Check headers
+            foreach (var column in Course.Columns) {
+                var headerIndex = headers.GetValueOrDefault(column.Key) ?? "not found";
+                if (headerIndex != column.Value) {
+                    logger.Fatal(
+                        $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}.");
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Error,
+                        Message =
+                            $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}."
+                    };
+                }
+            }
+
             var existingRow = GetExistingRow(word);
             if (existingRow == null) {
                 FillBasicWord(word);
@@ -78,6 +94,8 @@ namespace Kifa.Memrise {
             FillRow(existingRow, word);
 
             UploadAudios(existingRow, baseWord);
+
+            return KifaActionResult.SuccessActionResult;
         }
 
         void UploadAudios(IWebElement existingRow, Word baseWord) {
@@ -91,9 +109,9 @@ namespace Kifa.Memrise {
             }
         }
 
-        List<string> GetHeaders() =>
+        Dictionary<string, string> GetHeaders() =>
             WebDriver.FindElement(By.CssSelector("thead.columns")).FindElements(By.CssSelector("th.column"))
-                .Select(th => th.Text.Trim()).ToList();
+                .ToDictionary(th => th.Text.Trim(), th => th.GetAttribute("data-key"));
 
         IWebElement GetExistingRow(GoetheGermanWord word) {
             var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
