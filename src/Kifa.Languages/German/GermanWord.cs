@@ -11,7 +11,7 @@ namespace Kifa.Languages.German {
 
         public const string ModelId = "languages/german/words";
 
-        public WordType Type => Meanings.First()?.Type ?? WordType.Unknown;
+        public WordType Type => Meanings.FirstOrDefault()?.Type ?? WordType.Unknown;
 
         public List<Meaning> Meanings { get; set; } = new();
 
