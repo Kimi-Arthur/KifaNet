@@ -78,7 +78,7 @@ namespace Kifa.Memrise {
             return KifaActionResult.SuccessActionResult;
         }
 
-        public KifaActionResult AddWord(GoetheGermanWord word, GermanWord baseWord) {
+        public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord) {
             WebDriver.Url = Course.DatabaseUrl;
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{baseWord}");
@@ -92,7 +92,7 @@ namespace Kifa.Memrise {
                 if (headerIndex != column.Value) {
                     logger.Fatal(
                         $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}.");
-                    return new KifaActionResult {
+                    return new KifaActionResult<string> {
                         Status = KifaActionStatus.Error,
                         Message =
                             $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}."
@@ -106,16 +106,16 @@ namespace Kifa.Memrise {
                 existingRow = GetExistingRow(word);
             }
 
-            FillRow(existingRow, word);
+            (var thingId, var data) = GetDataFromRow(existingRow);
 
-            UploadAudios(existingRow, baseWord);
+            FillRow(thingId, data, word);
 
-            return KifaActionResult.SuccessActionResult;
+            UploadAudios(thingId, baseWord);
+
+            return new KifaActionResult<string>(thingId);
         }
 
-        void UploadAudios(IWebElement existingRow, GermanWord baseWord) {
-            var (thingId, originalData) = GetDataFromRow(existingRow);
-
+        void UploadAudios(string thingId, GermanWord baseWord) {
             // TODO: Check if audio is already there.
             foreach (var link in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key)
                 .SelectMany(item => item.Value).Take(3)) {
@@ -158,8 +158,7 @@ namespace Kifa.Memrise {
             return response.Thing.Id.ToString();
         }
 
-        int FillRow(IWebElement existingRow, GoetheGermanWord word) {
-            var (thingId, originalData) = GetDataFromRow(existingRow);
+        int FillRow(string thingId, Dictionary<string, string> originalData, GoetheGermanWord word) {
             var newData = GetDataFromWord(word);
 
             var updatedFields = 0;
