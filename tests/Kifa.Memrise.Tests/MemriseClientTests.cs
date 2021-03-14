@@ -26,24 +26,25 @@ namespace Kifa.Memrise.Tests {
         public void AddWordTest() {
             KifaConfigs.LoadFromSystemConfigs();
             using var client = new MemriseClient {Course = TestCourse};
-            var result = client.AddWord(
-                new GoetheGermanWord {
-                    Word = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
-                    Meaning = "M" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
-                    Examples = new List<string> {"abc", "bcd"}
-                },
-                new GermanWord {
-                    PronunciationAudioLinks = new() {
-                        {Source.Duden, new() {"https://cdn.duden.de/_media_/audio/ID4117087_349083091.mp3"}},
-                        {Source.Dwds, new() {"https://media.dwds.de/dwds2/audio/004/drehen.mp3"}}, {
-                            Source.Wiktionary,
-                            new() {"https://upload.wikimedia.org/wikipedia/commons/a/a8/De-drehen.ogg"}
-                        },
-                        {Source.Pons, new() {"https://sounds.pons.com/audio_tts/de/Tdeen148903"}}
-                    }
-                });
+            var goetheGermanWord = new GoetheGermanWord {
+                Word = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
+                Meaning = "M" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
+                Examples = new List<string> {"abc", "bcd"}
+            };
+            var germanWord = new GermanWord {
+                PronunciationAudioLinks = new() {
+                    {Source.Duden, new() {"https://cdn.duden.de/_media_/audio/ID4117087_349083091.mp3"}},
+                    {Source.Dwds, new() {"https://media.dwds.de/dwds2/audio/004/drehen.mp3"}},
+                    {Source.Wiktionary, new() {"https://upload.wikimedia.org/wikipedia/commons/a/a8/De-drehen.ogg"}},
+                    {Source.Pons, new() {"https://sounds.pons.com/audio_tts/de/Tdeen148903"}}
+                }
+            };
+
+            var result = client.AddWord(goetheGermanWord, germanWord);
 
             Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
+
+            client.AddWord(goetheGermanWord, germanWord);
         }
 
         [Test]

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using Kifa.Api.Files;
+using Kifa.IO;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
@@ -94,14 +97,15 @@ namespace Kifa.Memrise {
             var existingRow = GetExistingRow(word);
             if (existingRow == null) {
                 FillBasicWord(newData);
+                Thread.Sleep(TimeSpan.FromSeconds(5));
                 existingRow = GetExistingRow(word);
             }
 
-            var (thingId, data) = GetDataFromRow(existingRow);
+            var (thingId, data, audioLinks) = GetDataFromRow(existingRow);
 
             FillRow(thingId, data, newData);
 
-            UploadAudios(thingId, baseWord);
+            UploadAudios(thingId, audioLinks, baseWord);
 
             return new KifaActionResult<string>(thingId);
         }
@@ -124,13 +128,33 @@ namespace Kifa.Memrise {
             return KifaActionResult.SuccessActionResult;
         }
 
-        void UploadAudios(string thingId, GermanWord baseWord) {
-            // TODO: Check if audio is already there.
+        void UploadAudios(string thingId, List<string> currentAudioLinks, GermanWord baseWord) {
+            var currentAudios = GetAudios(currentAudioLinks);
+
             foreach (var link in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key)
                 .SelectMany(item => item.Value).Take(3)) {
-                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, "6", CsrfToken,
-                    new KifaFile(link).OpenRead().ToByteArray());
+                var newAudio = new KifaFile(link).OpenRead().ToByteArray();
+                var info = FileInformation.GetInformation(new MemoryStream(newAudio),
+                    FileProperties.Size | FileProperties.Md5);
+                if (currentAudios.Contains((info.Size ?? 0, info.Md5))) {
+                    continue;
+                }
+
+                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, Course.Columns["Audios"],
+                    CsrfToken, newAudio);
+                Thread.Sleep(TimeSpan.FromSeconds(1));
             }
+        }
+
+        HashSet<(long length, string md5)> GetAudios(List<string> currentAudioLinks) {
+            var result = new HashSet<(long length, string md5)>();
+            foreach (var link in currentAudioLinks) {
+                var response = HttpClient.GetHeaders(link);
+                result.Add((response.Content.Headers.ContentRange?.Length ?? 0,
+                    response.Headers.ETag?.Tag.ToUpperInvariant()[1..^1]));
+            }
+
+            return result;
         }
 
         Dictionary<string, string> GetHeaders() =>
@@ -198,14 +222,18 @@ namespace Kifa.Memrise {
             return data;
         }
 
-        (string thingId, Dictionary<string, string> data) GetDataFromRow(IWebElement existingRow) {
+        (string thingId, Dictionary<string, string> data, List<string> audioLinks) GetDataFromRow(
+            IWebElement existingRow) {
             var data = new Dictionary<string, string>();
 
             foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {
                 data[td.GetAttribute("data-key")] = td.Text;
             }
 
-            return (existingRow.GetAttribute("data-thing-id"), data);
+            var audioLinks = existingRow.FindElements(By.CssSelector("td[data-key='6'] a"));
+
+            return (existingRow.GetAttribute("data-thing-id"), data,
+                audioLinks.Select(link => link.GetAttribute("data-url")).ToList());
         }
 
         public (string levelId, string levelName) GetLevels() {
