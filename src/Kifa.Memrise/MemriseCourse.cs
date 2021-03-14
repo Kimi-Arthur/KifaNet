@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Kifa.Service;
+using Newtonsoft.Json;
 
 namespace Kifa.Memrise {
     public class MemriseCourse : DataModel {
