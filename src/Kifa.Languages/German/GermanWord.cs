@@ -11,9 +11,9 @@ namespace Kifa.Languages.German {
 
         public const string ModelId = "languages/german/words";
 
-        public WordType Type => Meanings.First().Type;
+        public WordType Type => Meanings.First()?.Type ?? WordType.Unknown;
 
-        public List<Meaning> Meanings { get; set; } = new List<Meaning>();
+        public List<Meaning> Meanings { get; set; } = new();
 
         public string Meaning => Meanings.FirstOrDefault()?.Translation;
 
@@ -128,7 +128,8 @@ namespace Kifa.Languages.German {
             return false;
         }
 
-        protected void FillWithData((GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds) words) {
+        protected void FillWithData(
+            (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds) words) {
             var (wiki, enWiki, pons, duden, dwds) = words;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
 
