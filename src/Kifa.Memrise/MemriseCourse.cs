@@ -19,4 +19,10 @@ namespace Kifa.Memrise {
         [JsonIgnore]
         public string BaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/";
     }
+
+    public interface MemriseCourseServiceClient : KifaServiceClient<MemriseCourse> {
+    }
+
+    public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>, MemriseCourseServiceClient {
+    }
 }
