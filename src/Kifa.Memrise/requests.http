@@ -19,7 +19,7 @@ Examples:
 
 ###
 
-POST {{server}}/api/memrise/courses/test-course
+POST {{server}}/api/memrise/courses/goethe-zertifikat-wortliste
 Content-Type: application/x-yaml
 
 CourseName: goethe-zertifikat-wortliste
@@ -37,3 +37,7 @@ Levels:
   A2: '13403230'
   B1: '13403231'
   M: '13403232'
+
+###
+
+GET {{server}}/api/memrise/courses/
