@@ -63,10 +63,25 @@ namespace Kifa.Memrise {
             }
         }
 
-        public KifaActionResult AddWord(GoetheGermanWord word, Word baseWord) {
+        GoetheGermanWordRestServiceClient GoetheClient = new();
+
+        private GermanWordRestServiceClient WordClient = new();
+
+        public KifaActionResult AddWordList(GoetheWordList wordList) {
+            var levelId = Course.Levels[wordList.Id];
+            foreach (var word in wordList.Words) {
+                var goetheWord = GoetheClient.Get(word);
+                var rootWord = WordClient.Get(goetheWord.RootWord);
+                logger.Info($"{goetheWord.Id} => {rootWord?.Id}");
+            }
+
+            return KifaActionResult.SuccessActionResult;
+        }
+
+        public KifaActionResult AddWord(GoetheGermanWord word, GermanWord baseWord) {
             WebDriver.Url = Course.DatabaseUrl;
 
-            logger.Debug($"Adding word in {WebDriver.Url}:\n{word}");
+            logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{baseWord}");
 
             var headers = GetHeaders();
             logger.Debug($"Headers: {string.Join(", ", headers)}");
@@ -98,7 +113,7 @@ namespace Kifa.Memrise {
             return KifaActionResult.SuccessActionResult;
         }
 
-        void UploadAudios(IWebElement existingRow, Word baseWord) {
+        void UploadAudios(IWebElement existingRow, GermanWord baseWord) {
             var (thingId, originalData) = GetDataFromRow(existingRow);
 
             // TODO: Check if audio is already there.

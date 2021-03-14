@@ -2,11 +2,11 @@ using Kifa.Languages.German;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers {
-    [Route("api/" + Word.ModelId)]
-    public class WordsController : KifaDataController<Word, WordJsonServiceClient> {
+    [Route("api/" + GermanWord.ModelId)]
+    public class WordsController : KifaDataController<GermanWord, GermanWordJsonServiceClient> {
         protected override bool ShouldAutoRefresh => false;
     }
 
-    public class WordJsonServiceClient : KifaServiceJsonClient<Word>, WordServiceClient {
+    public class GermanWordJsonServiceClient : KifaServiceJsonClient<GermanWord>, GermanWordServiceClient {
     }
 }

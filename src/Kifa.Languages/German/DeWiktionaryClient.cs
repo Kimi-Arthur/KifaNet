@@ -41,7 +41,7 @@ namespace Kifa.Languages.German {
             [Person.Sie] = "sie"
         };
 
-        public Word GetWord(string wordId) {
+        public GermanWord GetWord(string wordId) {
             var doc = new HtmlDocument();
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/{wordId}").Result);
             var pageContentNodes = doc.DocumentNode.SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
@@ -49,7 +49,7 @@ namespace Kifa.Languages.German {
             var inSection = false;
             var hasPronunciation = false;
             var wordType = WordType.Unknown;
-            var word = new Word {Id = wordId};
+            var word = new GermanWord {Id = wordId};
             foreach (var node in pageContentNodes) {
                 if (inDeutsch) {
                     if (node.Name == "h2") {
@@ -140,7 +140,7 @@ namespace Kifa.Languages.German {
             return word;
         }
 
-        void FillVerbForms(Word word) {
+        void FillVerbForms(GermanWord word) {
             // TODO(improve): use some state machine lib.
             var doc = new HtmlDocument();
             doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);

@@ -28,8 +28,8 @@ namespace Kifa.Languages.German {
             "External links"
         };
 
-        public Word GetWord(string wordId) {
-            var word = new Word {Id = wordId};
+        public GermanWord GetWord(string wordId) {
+            var word = new GermanWord {Id = wordId};
             var client = new WikiClient();
             var site = new WikiSite(client, "https://en.wiktionary.org/w/api.php");
             site.Initialization.Wait();

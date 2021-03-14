@@ -10,13 +10,13 @@ namespace Kifa.Languages.German {
 
         static HttpClient dwdsClient = new();
 
-        public Word GetWord(string wordId) {
+        public GermanWord GetWord(string wordId) {
             var doc = new HtmlDocument();
             using var response = dwdsClient.GetAsync($"https://www.dwds.de/wb/{wordId}").Result;
             doc.LoadHtml(response.GetString());
             var audioNodes = doc.DocumentNode.SelectNodes("//audio/source");
 
-            var word = new Word {PronunciationAudioLinks = new Dictionary<Source, List<string>>()};
+            var word = new GermanWord {PronunciationAudioLinks = new Dictionary<Source, List<string>>()};
 
             if (audioNodes?.Count > 0) {
                 word.PronunciationAudioLinks[Source.Dwds] =

@@ -23,7 +23,7 @@ namespace Kifa.Languages.German {
             }
         }
 
-        public Word GetWord(string wordId) =>
+        public GermanWord GetWord(string wordId) =>
             new() {
                 Id = wordId,
                 PronunciationAudioLinks = new() {

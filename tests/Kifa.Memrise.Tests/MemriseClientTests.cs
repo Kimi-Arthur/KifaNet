@@ -32,7 +32,7 @@ namespace Kifa.Memrise.Tests {
                     Meaning = "M" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
                     Examples = new List<string> {"abc", "bcd"}
                 },
-                new Word {
+                new GermanWord {
                     PronunciationAudioLinks = new() {
                         {Source.Duden, new() {"https://cdn.duden.de/_media_/audio/ID4117087_349083091.mp3"}},
                         {Source.Dwds, new() {"https://media.dwds.de/dwds2/audio/004/drehen.mp3"}}, {
@@ -55,7 +55,7 @@ namespace Kifa.Memrise.Tests {
                     Word = "drehen",
                     Meaning = "to turn",
                     Examples = new List<string> {"abc" + new Random().Next(), "bcd" + new Random().Next()}
-                }, new Word());
+                }, new GermanWord());
 
             Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
         }

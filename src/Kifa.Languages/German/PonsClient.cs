@@ -26,18 +26,18 @@ namespace Kifa.Languages.German {
             [Person.Sie] = "3P"
         };
 
-        public Word GetWord(string wordId) {
+        public GermanWord GetWord(string wordId) {
             var doc = new HtmlDocument();
             doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
             var wordNode = doc.DocumentNode.SelectSingleNode("(.//div[@class='entry' or @class='entry first'])[1]");
             if (wordNode == null) {
-                return new Word();
+                return new GermanWord();
             }
 
             var type = GetWordType(wordNode.SelectSingleNode(".//span[@class='wordclass']/acronym[1]")
                 .Attributes["title"].Value);
 
-            var word = new Word();
+            var word = new GermanWord();
             switch (type) {
                 case WordType.Verb:
                     word.VerbForms = GetVerbForms(wordId);

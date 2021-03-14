@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Languages.German {
-    public class Word : DataModel {
+    public class GermanWord : DataModel {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public const string ModelId = "languages/german/words";
@@ -94,22 +94,22 @@ namespace Kifa.Languages.German {
                 _ => null
             };
 
-        protected (Word wiki, Word enWiki, Word pons, Word duden, Word dwds) GetWords() {
-            var wiki = new Word();
+        protected (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds) GetWords() {
+            var wiki = new GermanWord();
             try {
                 wiki = new DeWiktionaryClient().GetWord(Id);
             } catch (Exception ex) {
                 logger.Warn(ex, $"Failed to get word from de.wiktionary.org for {Id}");
             }
 
-            var enWiki = new Word();
+            var enWiki = new GermanWord();
             try {
                 enWiki = new EnWiktionaryClient().GetWord(Id);
             } catch (Exception ex) {
                 logger.Warn(ex, $"Failed to get word from en.wiktionary.org for {Id}");
             }
 
-            var pons = new Word();
+            var pons = new GermanWord();
             try {
                 pons = new PonsClient().GetWord(Id);
             } catch (Exception ex) {
@@ -128,7 +128,7 @@ namespace Kifa.Languages.German {
             return false;
         }
 
-        protected void FillWithData((Word wiki, Word enWiki, Word pons, Word duden, Word dwds) words) {
+        protected void FillWithData((GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds) words) {
             var (wiki, enWiki, pons, duden, dwds) = words;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
 
@@ -168,9 +168,9 @@ namespace Kifa.Languages.German {
         public string Translation { get; set; }
     }
 
-    public interface WordServiceClient : KifaServiceClient<Word> {
+    public interface GermanWordServiceClient : KifaServiceClient<GermanWord> {
     }
 
-    public class WordRestServiceClient : KifaServiceRestClient<Word>, WordServiceClient {
+    public class GermanWordRestServiceClient : KifaServiceRestClient<GermanWord>, GermanWordServiceClient {
     }
 }

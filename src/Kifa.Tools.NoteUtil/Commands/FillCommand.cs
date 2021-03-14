@@ -104,7 +104,7 @@ namespace Kifa.Tools.NoteUtil.Commands {
         }
 
         static void FillVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var verb = new Word {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+            var verb = new GermanWord {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing verb: {verb.Id}");
 
             verb.Fill();
@@ -120,7 +120,7 @@ namespace Kifa.Tools.NoteUtil.Commands {
         }
 
         static void FillNounRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var noun = new Word {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+            var noun = new GermanWord {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing noun: {noun.Id}");
 
             noun.Fill();
@@ -136,7 +136,7 @@ namespace Kifa.Tools.NoteUtil.Commands {
         }
 
         static void FillWordRow(List<string> parts, Dictionary<string, int> columnNames) {
-            var word = new Word {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+            var word = new GermanWord {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
             logger.Info($"Processing word: {word.Id}");
 
             word.Fill();
