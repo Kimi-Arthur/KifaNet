@@ -19,6 +19,9 @@ namespace Kifa.Memrise.Tests {
                 {"Pronunciation", "4"},
                 {"Examples", "5"},
                 {"Audios", "6"}
+            },
+            Levels = new Dictionary<string, string> {
+                {"test", "13309553"}
             }
         };
 
@@ -59,6 +62,18 @@ namespace Kifa.Memrise.Tests {
                 }, new GermanWord());
 
             Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
+        }
+
+        [Test]
+        public void AddWordListTest() {
+            KifaConfigs.LoadFromSystemConfigs();
+            using var client = new MemriseClient {Course = TestCourse};
+            var result = client.AddWordList(new GoetheWordList {
+                Id = "test",
+                Words = new() {
+                    "drehen", "abbiegen", "außen"
+                }
+            });
         }
     }
 }

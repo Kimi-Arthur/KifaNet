@@ -74,7 +74,7 @@ namespace Kifa.Memrise {
         public KifaActionResult AddWordList(GoetheWordList wordList) {
             var levelId = Course.Levels[wordList.Id];
 
-            var wordIds = new HashSet<string>();
+            var wordIds = new List<string>();
             foreach (var word in wordList.Words) {
                 var goetheWord = GoetheClient.Get(word);
                 var rootWord = WordClient.Get(goetheWord.RootWord);
@@ -91,17 +91,23 @@ namespace Kifa.Memrise {
             return KifaActionResult.SuccessActionResult;
         }
 
-        void AddWordsToLevel(string levelId, HashSet<string> wordIds) {
+        void AddWordsToLevel(string levelId, List<string> wordIds) {
             var rendered = new GetLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId).Rendered;
             var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
-            var existingThingIds = thingIdReg.Matches(rendered).Select(m => m.Value).ToHashSet();
+            var existingThingIds = thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
 
             foreach (var wordId in wordIds.Except(existingThingIds)) {
-                AddWordToLevel(levelId, wordId);
+                logger.Debug(
+                    $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId)}");
             }
-        }
 
-        void AddWordToLevel(string levelId, string wordId) {
+            foreach (var wordId in existingThingIds.Except(wordIds)) {
+                logger.Debug(
+                    $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId)}");
+            }
+
+            logger.Debug(
+                $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds)}");
         }
 
         public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord) {
@@ -118,7 +124,7 @@ namespace Kifa.Memrise {
             var newData = GetDataFromWord(word, baseWord);
 
             var existingRow = GetExistingRow(word);
-            if (existingRow == null) {
+            while (existingRow == null) {
                 FillBasicWord(newData);
                 Thread.Sleep(TimeSpan.FromSeconds(5));
                 existingRow = GetExistingRow(word);
@@ -249,6 +255,7 @@ namespace Kifa.Memrise {
 
         (string thingId, Dictionary<string, string> data, List<string> audioLinks) GetDataFromRow(
             IWebElement existingRow) {
+            logger.Debug($"Getting word from row {existingRow.Text}.");
             var data = new Dictionary<string, string>();
 
             foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {
