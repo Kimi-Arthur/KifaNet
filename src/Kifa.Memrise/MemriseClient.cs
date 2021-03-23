@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Api.Files;
 using Kifa.IO;
@@ -72,13 +73,35 @@ namespace Kifa.Memrise {
 
         public KifaActionResult AddWordList(GoetheWordList wordList) {
             var levelId = Course.Levels[wordList.Id];
+
+            var wordIds = new HashSet<string>();
             foreach (var word in wordList.Words) {
                 var goetheWord = GoetheClient.Get(word);
                 var rootWord = WordClient.Get(goetheWord.RootWord);
                 logger.Info($"{goetheWord.Id} => {rootWord?.Id}");
+                var addedWord = AddWord(goetheWord, rootWord);
+                logger.LogResult(addedWord, $"Upload word {word}");
+                if (addedWord.Status == KifaActionStatus.OK) {
+                    wordIds.Add(addedWord.Response);
+                }
             }
 
+            AddWordsToLevel(levelId, wordIds);
+
             return KifaActionResult.SuccessActionResult;
+        }
+
+        void AddWordsToLevel(string levelId, HashSet<string> wordIds) {
+            var rendered = new GetLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId).Rendered;
+            var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
+            var existingThingIds = thingIdReg.Matches(rendered).Select(m => m.Value).ToHashSet();
+
+            foreach (var wordId in wordIds.Except(existingThingIds)) {
+                AddWordToLevel(levelId, wordId);
+            }
+        }
+
+        void AddWordToLevel(string levelId, string wordId) {
         }
 
         public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord) {
@@ -131,15 +154,17 @@ namespace Kifa.Memrise {
         void UploadAudios(string thingId, List<string> currentAudioLinks, GermanWord baseWord) {
             var currentAudios = GetAudios(currentAudioLinks);
 
-            foreach (var link in baseWord.PronunciationAudioLinks.OrderBy(item => item.Key)
-                .SelectMany(item => item.Value).Take(3)) {
+            foreach (var link in baseWord.PronunciationAudioLinks.Where(item => item.Value != null)
+                .OrderBy(item => item.Key).SelectMany(item => item.Value).Take(3)) {
                 var newAudio = new KifaFile(link).OpenRead().ToByteArray();
                 var info = FileInformation.GetInformation(new MemoryStream(newAudio),
                     FileProperties.Size | FileProperties.Md5);
                 if (currentAudios.Contains((info.Size ?? 0, info.Md5))) {
+                    logger.Debug($"{link} for {baseWord.Id} ({thingId}) already exists.");
                     continue;
                 }
 
+                logger.Debug($"Uploading {link} for {baseWord.Id} ({thingId}).");
                 new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, Course.Columns["Audios"],
                     CsrfToken, newAudio);
                 Thread.Sleep(TimeSpan.FromSeconds(1));
@@ -234,14 +259,6 @@ namespace Kifa.Memrise {
 
             return (existingRow.GetAttribute("data-thing-id"), data,
                 audioLinks.Select(link => link.GetAttribute("data-url")).ToList());
-        }
-
-        public (string levelId, string levelName) GetLevels() {
-            // Search url: https://app.memrise.com/ajax/pool/search/?pool_id=6975760&columns=%7B%221%22%3A%22die%20Abbildungen%22%7D
-            // Level url: https://app.memrise.com/ajax/level/editing_html/?level_id=13304295
-            WebDriver.Url = Course.BaseUrl;
-            var levelNodes = WebDriver.FindElements(By.CssSelector("div.level"));
-            return (null, null);
         }
 
         public void Dispose() {
