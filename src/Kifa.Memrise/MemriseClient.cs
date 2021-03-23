@@ -98,16 +98,16 @@ namespace Kifa.Memrise {
 
             foreach (var wordId in wordIds.Except(existingThingIds)) {
                 logger.Debug(
-                    $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId)}");
+                    $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId).Success}");
             }
 
             foreach (var wordId in existingThingIds.Except(wordIds)) {
                 logger.Debug(
-                    $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId)}");
+                    $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId).Success}");
             }
 
             logger.Debug(
-                $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds)}");
+                $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds).Success}");
         }
 
         public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord) {
@@ -124,10 +124,14 @@ namespace Kifa.Memrise {
             var newData = GetDataFromWord(word, baseWord);
 
             var existingRow = GetExistingRow(word);
-            while (existingRow == null) {
+            if (existingRow == null) {
                 FillBasicWord(newData);
                 Thread.Sleep(TimeSpan.FromSeconds(5));
                 existingRow = GetExistingRow(word);
+                if (existingRow == null) {
+                    logger.Error($"Failed to add word: {word.Word}.");
+                    return new KifaActionResult<string>(KifaActionStatus.Error, $"failed to add word {word.Word}");
+                }
             }
 
             var (thingId, data, audioLinks) = GetDataFromRow(existingRow);
@@ -193,9 +197,13 @@ namespace Kifa.Memrise {
                 .ToDictionary(th => th.Text.Trim(), th => th.GetAttribute("data-key"));
 
         IWebElement GetExistingRow(GoetheGermanWord word) {
+            return GetExistingRow(word, word.Word) ?? GetExistingRow(word, word.Meaning);
+        }
+
+        IWebElement GetExistingRow(GoetheGermanWord word, string searchQuery) {
             var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
             searchBar.Clear();
-            searchBar.SendKeys(word.Word);
+            searchBar.SendKeys(searchQuery);
             searchBar.Submit();
 
             var things = WebDriver.FindElement(By.CssSelector("tbody.things"));
