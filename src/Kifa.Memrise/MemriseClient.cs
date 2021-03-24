@@ -173,8 +173,8 @@ namespace Kifa.Memrise {
                 }
 
                 logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
-                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"],
-                    CsrfToken, newAudio);
+                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, originalWord.ThingId,
+                    Course.Columns["Audios"], CsrfToken, newAudio);
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
         }
@@ -204,20 +204,14 @@ namespace Kifa.Memrise {
             searchBar.SendKeys(searchQuery);
             searchBar.Submit();
 
+            return GetWordsInPage().FirstOrDefault(w =>
+                w.Data[Course.Columns["German"]] == word.Word && w.Data[Course.Columns["English"]] == word.Meaning);
+        }
+
+        List<MemriseWord> GetWordsInPage() {
             var things = WebDriver.FindElement(By.CssSelector("tbody.things"));
             var rows = things.FindElements(By.CssSelector("tr.thing"));
-            if (rows.Count < 1) {
-                return null;
-            }
-
-            foreach (var row in rows) {
-                var cells = row.FindElements(By.TagName("td"));
-                if (cells[1].Text == word.Word && cells[2].Text == word.Meaning) {
-                    return GetDataFromRow(row);
-                }
-            }
-
-            return null;
+            return rows.Select(GetDataFromRow).ToList();
         }
 
         // Columns order: German, English, Form, Pronunciation, Examples, Audios
