@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Kifa.Service;
 
 namespace Kifa.Web.Api.Controllers {
     [ApiController]
@@ -26,7 +26,8 @@ namespace Kifa.Web.Api.Controllers {
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public virtual ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
+        public virtual ActionResult<TDataModel> Get(string id, [FromQuery]
+            bool refresh = false) {
             id = Uri.UnescapeDataString(id);
             if (id.StartsWith("$")) {
                 return new NotFoundResult();
@@ -48,8 +49,8 @@ namespace Kifa.Web.Api.Controllers {
             return value;
         }
 
-        static bool NeedRefresh(TDataModel value) {
-            if (RefreshIntervals == null) {
+        bool NeedRefresh(TDataModel value) {
+            if (RefreshIntervals == null || !ShouldAutoRefresh) {
                 return false;
             }
 
@@ -66,14 +67,16 @@ namespace Kifa.Web.Api.Controllers {
 
         // PATCH api/values/5
         [HttpPatch("{id}")]
-        public KifaApiActionResult Patch(string id, [FromBody] TDataModel value) {
+        public KifaApiActionResult Patch(string id, [FromBody]
+            TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             return Client.Update(value);
         }
 
         // POST api/values
         [HttpPost("{id}")]
-        public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
+        public KifaApiActionResult Post(string id, [FromBody]
+            TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
             return Client.Set(value);
@@ -92,12 +95,16 @@ namespace Kifa.Web.Api.Controllers {
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpGet("$refresh")]
-        public KifaApiActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
+        public KifaApiActionResult RefreshGet([FromQuery]
+            RefreshRequest request) =>
+            Refresh(request);
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpPost("$refresh")]
-        public KifaApiActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
+        public KifaApiActionResult RefreshPost([FromBody]
+            RefreshRequest request) =>
+            Refresh(request);
 
         public class RefreshRequest {
             public string Id { get; set; }
