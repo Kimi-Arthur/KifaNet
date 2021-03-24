@@ -134,13 +134,11 @@ namespace Kifa.Memrise {
                 }
             }
 
-            var (thingId, data, audioLinks) = GetDataFromRow(existingRow);
+            FillRow(existingRow, newData);
 
-            FillRow(thingId, data, newData);
+            UploadAudios(existingRow, baseWord);
 
-            UploadAudios(thingId, audioLinks, baseWord);
-
-            return new KifaActionResult<string>(thingId);
+            return new KifaActionResult<string>(existingRow.ThingId);
         }
 
         KifaActionResult CheckHeaders(Dictionary<string, string> headers) {
@@ -161,8 +159,8 @@ namespace Kifa.Memrise {
             return KifaActionResult.SuccessActionResult;
         }
 
-        void UploadAudios(string thingId, List<string> currentAudioLinks, GermanWord baseWord) {
-            var currentAudios = GetAudios(currentAudioLinks);
+        void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
+            var currentAudios = GetAudios(originalWord.AudioLinks);
 
             foreach (var link in baseWord.PronunciationAudioLinks.Where(item => item.Value != null)
                 .OrderBy(item => item.Key).SelectMany(item => item.Value).Take(3)) {
@@ -170,12 +168,12 @@ namespace Kifa.Memrise {
                 var info = FileInformation.GetInformation(new MemoryStream(newAudio),
                     FileProperties.Size | FileProperties.Md5);
                 if (currentAudios.Contains((info.Size ?? 0, info.Md5))) {
-                    logger.Debug($"{link} for {baseWord.Id} ({thingId}) already exists.");
+                    logger.Debug($"{link} for {baseWord.Id} ({originalWord.ThingId}) already exists.");
                     continue;
                 }
 
-                logger.Debug($"Uploading {link} for {baseWord.Id} ({thingId}).");
-                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, Course.Columns["Audios"],
+                logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
+                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"],
                     CsrfToken, newAudio);
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
@@ -196,11 +194,11 @@ namespace Kifa.Memrise {
             WebDriver.FindElement(By.CssSelector("thead.columns")).FindElements(By.CssSelector("th.column"))
                 .ToDictionary(th => th.Text.Trim(), th => th.GetAttribute("data-key"));
 
-        IWebElement GetExistingRow(GoetheGermanWord word) {
+        MemriseWord GetExistingRow(GoetheGermanWord word) {
             return GetExistingRow(word, word.Word) ?? GetExistingRow(word, word.Meaning);
         }
 
-        IWebElement GetExistingRow(GoetheGermanWord word, string searchQuery) {
+        MemriseWord GetExistingRow(GoetheGermanWord word, string searchQuery) {
             var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
             searchBar.Clear();
             searchBar.SendKeys(searchQuery);
@@ -215,7 +213,7 @@ namespace Kifa.Memrise {
             foreach (var row in rows) {
                 var cells = row.FindElements(By.TagName("td"));
                 if (cells[1].Text == word.Word && cells[2].Text == word.Meaning) {
-                    return row;
+                    return GetDataFromRow(row);
                 }
             }
 
@@ -229,11 +227,12 @@ namespace Kifa.Memrise {
             return response.Thing.Id.ToString();
         }
 
-        int FillRow(string thingId, Dictionary<string, string> originalData, Dictionary<string, string> newData) {
+        int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
             var updatedFields = 0;
             foreach (var (dataKey, newValue) in newData) {
-                if (originalData.GetValueOrDefault(dataKey) != newValue) {
-                    new UpdateWordRpc {HttpClient = HttpClient}.Call(WebDriver.Url, thingId, dataKey, newValue);
+                if (originalData.Data.GetValueOrDefault(dataKey) != newValue) {
+                    new UpdateWordRpc {HttpClient = HttpClient}.Call(WebDriver.Url, originalData.ThingId, dataKey,
+                        newValue);
                     updatedFields++;
                 }
             }
@@ -261,8 +260,7 @@ namespace Kifa.Memrise {
             return data;
         }
 
-        (string thingId, Dictionary<string, string> data, List<string> audioLinks) GetDataFromRow(
-            IWebElement existingRow) {
+        MemriseWord GetDataFromRow(IWebElement existingRow) {
             logger.Debug($"Getting word from row {existingRow.Text}.");
             var data = new Dictionary<string, string>();
 
@@ -272,8 +270,11 @@ namespace Kifa.Memrise {
 
             var audioLinks = existingRow.FindElements(By.CssSelector("td[data-key='6'] a"));
 
-            return (existingRow.GetAttribute("data-thing-id"), data,
-                audioLinks.Select(link => link.GetAttribute("data-url")).ToList());
+            return new() {
+                ThingId = existingRow.GetAttribute("data-thing-id"),
+                Data = data,
+                AudioLinks = audioLinks.Select(link => link.GetAttribute("data-url")).ToList()
+            };
         }
 
         public void Dispose() {
