@@ -72,6 +72,8 @@ namespace Kifa.Memrise {
         private GermanWordRestServiceClient WordClient = new();
 
         public KifaActionResult AddWordList(GoetheWordList wordList) {
+            var allExistingRows = GetAllExistingRows();
+
             var levelId = Course.Levels[wordList.Id];
 
             var wordIds = new List<string>();
@@ -79,7 +81,7 @@ namespace Kifa.Memrise {
                 var goetheWord = GoetheClient.Get(word);
                 var rootWord = WordClient.Get(goetheWord.RootWord);
                 logger.Info($"{goetheWord.Id} => {rootWord?.Id}");
-                var addedWord = AddWord(goetheWord, rootWord);
+                var addedWord = AddWord(goetheWord, rootWord, allExistingRows);
                 logger.LogResult(addedWord, $"Upload word {word}");
                 if (addedWord.Status == KifaActionStatus.OK) {
                     wordIds.Add(addedWord.Response);
@@ -110,7 +112,10 @@ namespace Kifa.Memrise {
                 $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds).Success}");
         }
 
-        public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord) {
+        public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord,
+            List<MemriseWord> allExistingRows = null, bool alwaysCheckAudio = false) {
+            allExistingRows ??= new List<MemriseWord>();
+
             WebDriver.Url = Course.DatabaseUrl;
 
             logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{baseWord}");
@@ -123,7 +128,8 @@ namespace Kifa.Memrise {
 
             var newData = GetDataFromWord(word, baseWord);
 
-            var existingRow = GetExistingRow(word);
+            var existingRow = allExistingRows.FirstOrDefault(row => sameWord(row, word)) ?? GetExistingRow(word);
+
             if (existingRow == null) {
                 FillBasicWord(newData);
                 Thread.Sleep(TimeSpan.FromSeconds(5));
@@ -136,7 +142,9 @@ namespace Kifa.Memrise {
 
             FillRow(existingRow, newData);
 
-            UploadAudios(existingRow, baseWord);
+            if (alwaysCheckAudio || existingRow.AudioLinks.Count == 0) {
+                UploadAudios(existingRow, baseWord);
+            }
 
             return new KifaActionResult<string>(existingRow.ThingId);
         }
@@ -204,8 +212,26 @@ namespace Kifa.Memrise {
             searchBar.SendKeys(searchQuery);
             searchBar.Submit();
 
-            return GetWordsInPage().FirstOrDefault(w =>
-                w.Data[Course.Columns["German"]] == word.Word && w.Data[Course.Columns["English"]] == word.Meaning);
+            return GetWordsInPage().FirstOrDefault(w => sameWord(w, word));
+        }
+
+        bool sameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord) {
+            return memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Word &&
+                   memriseWord.Data[Course.Columns["English"]] == goetheGermanWord.Meaning;
+        }
+
+        public List<MemriseWord> GetAllExistingRows() {
+            WebDriver.Url = Course.DatabaseUrl;
+
+            var totalPageNumber = int.Parse(WebDriver.FindElements(By.CssSelector("ul.pagination > li"))[^2].Text);
+
+            var words = new List<MemriseWord>();
+            for (int i = 0; i < totalPageNumber; i++) {
+                WebDriver.Url = $"{Course.DatabaseUrl}?page={i + 1}";
+                words.AddRange(GetWordsInPage());
+            }
+
+            return words;
         }
 
         List<MemriseWord> GetWordsInPage() {
@@ -255,7 +281,7 @@ namespace Kifa.Memrise {
         }
 
         MemriseWord GetDataFromRow(IWebElement existingRow) {
-            logger.Debug($"Getting word from row {existingRow.Text}.");
+            logger.Trace($"Getting word from row {existingRow.Text}.");
             var data = new Dictionary<string, string>();
 
             foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {

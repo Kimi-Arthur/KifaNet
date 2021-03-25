@@ -20,7 +20,7 @@ namespace Kifa.Tools.MemriseUtil.Commands {
 
             var memriseCourseClient = new MemriseCourseRestServiceClient();
             var course = memriseCourseClient.Get(Course);
-            var memriseClient = new MemriseClient {Course = course};
+            using var memriseClient = new MemriseClient {Course = course};
             memriseClient.AddWordList(wordList);
 
             return 0;

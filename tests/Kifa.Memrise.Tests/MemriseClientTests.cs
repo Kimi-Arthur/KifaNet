@@ -75,5 +75,13 @@ namespace Kifa.Memrise.Tests {
                 }
             });
         }
+
+        [Test]
+        public void GetAllWordsTest() {
+            KifaConfigs.LoadFromSystemConfigs();
+            using var client = new MemriseClient {Course = TestCourse};
+            var rows = client.GetAllExistingRows();
+            Assert.NotZero(rows.Count);
+        }
     }
 }
