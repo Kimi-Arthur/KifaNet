@@ -104,6 +104,7 @@ namespace Kifa.Tools {
                 try {
                     return ExecuteOneFileInformation(s);
                 } catch (Exception ex) {
+                    logger.Error($"{s}: {ex}");
                     errors[s] = ex;
                     return 255;
                 }
@@ -137,6 +138,7 @@ namespace Kifa.Tools {
                 try {
                     return ExecuteOneKifaFile(s);
                 } catch (Exception ex) {
+                    logger.Error($"{s}: {ex}");
                     errors[s.ToString()] = ex;
                     return 255;
                 }
