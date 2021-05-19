@@ -171,17 +171,15 @@ namespace Kifa.IO {
             var blockSize = DefaultBlockSize;
             path = GetPath(path);
             EnsureParent(path);
-            using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            
+            // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
+            using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
             if (fs.Position != 0) {
                 stream.Seek(fs.Position, SeekOrigin.Begin);
             }
 
-            var buffer = new byte[blockSize];
-            while (stream.Position < stream.Length) {
-                var readBytes = stream.Read(buffer, 0, blockSize);
-                fs.Write(buffer, 0, readBytes);
-            }
+            stream.CopyTo(fs, blockSize);
         }
 
         public override string Type => "local";
