@@ -177,7 +177,11 @@ namespace Kifa.IO {
                 stream.Seek(fs.Position, SeekOrigin.Begin);
             }
 
-            stream.CopyTo(fs, blockSize);
+            var buffer = new byte[blockSize];
+            while (stream.Position < stream.Length) {
+                var readBytes = stream.Read(buffer, 0, blockSize);
+                fs.Write(buffer, 0, readBytes);
+            }
         }
 
         public override string Type => "local";
