@@ -282,17 +282,13 @@ namespace Kifa.Memrise {
                 {Course.Columns["German"], word.Word}, {Course.Columns["English"], word.Meaning}
             };
 
-            if (word.Form != null) {
-                data[Course.Columns["Form"]] = word.Form;
-            }
+            data[Course.Columns["Form"]] = word.Form ?? "";
 
-            if (baseWord.Pronunciation != null) {
-                data[Course.Columns["Pronunciation"]] = $"[{baseWord.Pronunciation}]";
-            }
+            data[Course.Columns["Pronunciation"]] = baseWord.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
 
-            if (word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")) {
-                data[Course.Columns["Examples"]] = string.Join(lineBreak, word.Examples);
-            }
+            data[Course.Columns["Examples"]] = (word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example"))
+                ? string.Join(lineBreak, word.Examples)
+                : "";
 
             return data;
         }
