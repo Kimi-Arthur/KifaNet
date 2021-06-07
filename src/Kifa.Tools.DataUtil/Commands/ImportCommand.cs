@@ -42,6 +42,9 @@ namespace Kifa.Tools.DataUtil.Commands {
 
                     break;
                 }
+                default:
+                    logger.Error($"Unknown type name: {Type}.");
+                    return 1;
             }
 
             return 0;
