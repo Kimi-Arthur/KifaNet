@@ -78,13 +78,27 @@ namespace Kifa.Memrise {
 
             var wordIds = new List<string>();
             foreach (var word in wordList.Words) {
-                var goetheWord = GoetheClient.Get(word);
-                var rootWord = WordClient.Get(goetheWord.RootWord);
-                logger.Info($"{goetheWord.Id} => {rootWord?.Id}");
-                var addedWord = AddWord(goetheWord, rootWord, allExistingRows);
-                logger.LogResult(addedWord, $"Upload word {word}");
-                if (addedWord.Status == KifaActionStatus.OK) {
-                    wordIds.Add(addedWord.Response);
+                var expandedWords = new Queue<GoetheGermanWord>();
+                expandedWords.Enqueue(GoetheClient.Get(word));
+                while (expandedWords.Count > 0) {
+                    var goetheWord = expandedWords.Dequeue();
+                    var addedWord = AddWord(goetheWord, allExistingRows);
+                    logger.LogResult(addedWord, $"Upload word {word}");
+                    if (addedWord.Status == KifaActionStatus.OK) {
+                        wordIds.Add(addedWord.Response);
+                    }
+
+                    if (goetheWord.Feminine != null) {
+                        var feminineWord = goetheWord.Feminine;
+                        feminineWord.Meaning = $"(female) {goetheWord.Meaning}";
+                        expandedWords.Enqueue(feminineWord);
+                    }
+
+                    if (goetheWord.Abbreviation != null) {
+                        var abbrWord = goetheWord.Abbreviation;
+                        abbrWord.Meaning = $"{goetheWord.Meaning} (abbr)";
+                        expandedWords.Enqueue(abbrWord);
+                    }
                 }
             }
 
@@ -112,21 +126,24 @@ namespace Kifa.Memrise {
                 $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds).Success}");
         }
 
-        public KifaActionResult<string> AddWord(GoetheGermanWord word, GermanWord baseWord,
-            List<MemriseWord> allExistingRows = null, bool alwaysCheckAudio = false) {
+        public KifaActionResult<string> AddWord(GoetheGermanWord word, List<MemriseWord> allExistingRows = null,
+            bool alwaysCheckAudio = false) {
+            var rootWord = WordClient.Get(word.RootWord);
+            logger.Info($"{word.Id} => {rootWord?.Id}");
+
             allExistingRows ??= new List<MemriseWord>();
 
             WebDriver.Url = Course.DatabaseUrl;
 
-            logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{baseWord}");
+            logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{rootWord}");
 
-            // Check headers
-            var checkHeadersResult = CheckHeaders(GetHeaders());
-            if (checkHeadersResult.Status != KifaActionStatus.OK) {
-                return new KifaActionResult<string>(checkHeadersResult);
-            }
+            // Check headers (temporarily disabled)
+            // var checkHeadersResult = CheckHeaders(GetHeaders());
+            // if (checkHeadersResult.Status != KifaActionStatus.OK) {
+            //     return new KifaActionResult<string>(checkHeadersResult);
+            // }
 
-            var newData = GetDataFromWord(word, baseWord);
+            var newData = GetDataFromWord(word, rootWord);
 
             var existingRow = allExistingRows.FirstOrDefault(row => sameWord(row, word)) ?? GetExistingRow(word);
 
@@ -143,7 +160,7 @@ namespace Kifa.Memrise {
             FillRow(existingRow, newData);
 
             if (alwaysCheckAudio || existingRow.AudioLinks.Count == 0) {
-                UploadAudios(existingRow, baseWord);
+                UploadAudios(existingRow, rootWord);
             }
 
             return new KifaActionResult<string>(existingRow.ThingId);
@@ -273,7 +290,7 @@ namespace Kifa.Memrise {
                 data[Course.Columns["Pronunciation"]] = $"[{baseWord.Pronunciation}]";
             }
 
-            if (word.Examples.Count > 0 && !word.Examples[0].StartsWith("example")) {
+            if (word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")) {
                 data[Course.Columns["Examples"]] = string.Join(lineBreak, word.Examples);
             }
 

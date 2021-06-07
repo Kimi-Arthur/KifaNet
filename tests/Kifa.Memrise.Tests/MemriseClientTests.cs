@@ -20,9 +20,7 @@ namespace Kifa.Memrise.Tests {
                 {"Examples", "5"},
                 {"Audios", "6"}
             },
-            Levels = new Dictionary<string, string> {
-                {"test", "13309553"}
-            }
+            Levels = new Dictionary<string, string> {{"test", "13309553"}}
         };
 
         [Test]
@@ -43,23 +41,22 @@ namespace Kifa.Memrise.Tests {
                 }
             };
 
-            var result = client.AddWord(goetheGermanWord, germanWord);
+            var result = client.AddWord(goetheGermanWord);
 
             Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
 
-            client.AddWord(goetheGermanWord, germanWord);
+            client.AddWord(goetheGermanWord);
         }
 
         [Test]
         public void UpdateWordTest() {
             KifaConfigs.LoadFromSystemConfigs();
             using var client = new MemriseClient {Course = TestCourse};
-            var result = client.AddWord(
-                new GoetheGermanWord {
-                    Word = "drehen",
-                    Meaning = "to turn",
-                    Examples = new List<string> {"abc" + new Random().Next(), "bcd" + new Random().Next()}
-                }, new GermanWord());
+            var result = client.AddWord(new GoetheGermanWord {
+                Word = "drehen",
+                Meaning = "to turn",
+                Examples = new List<string> {"abc" + new Random().Next(), "bcd" + new Random().Next()}
+            });
 
             Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
         }
@@ -69,10 +66,7 @@ namespace Kifa.Memrise.Tests {
             KifaConfigs.LoadFromSystemConfigs();
             using var client = new MemriseClient {Course = TestCourse};
             var result = client.AddWordList(new GoetheWordList {
-                Id = "test",
-                Words = new() {
-                    "drehen", "abbiegen", "außen"
-                }
+                Id = "test", Words = new() {"drehen", "abbiegen", "außen"}
             });
         }
 
