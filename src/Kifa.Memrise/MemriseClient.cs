@@ -234,7 +234,12 @@ namespace Kifa.Memrise {
 
         bool sameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord) {
             return memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Word &&
-                   memriseWord.Data[Course.Columns["English"]] == goetheGermanWord.Meaning;
+                   TrimBracket(memriseWord.Data[Course.Columns["English"]]) == TrimBracket(goetheGermanWord.Meaning);
+        }
+
+        string TrimBracket(string content) {
+            var reg = new Regex(@"^(\(.*\) )?.*( \(.*\))?$");
+            return reg.Match(content).Groups[1].Value;
         }
 
         public List<MemriseWord> GetAllExistingRows() {
