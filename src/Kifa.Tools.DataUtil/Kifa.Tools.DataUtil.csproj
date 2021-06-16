@@ -11,7 +11,7 @@
     <PackageIcon>Kifa.png</PackageIcon>
     <Description>Utility to manage data.</Description>
     <Copyright>Copyright © 2015-2020 Kimi Arthur</Copyright>
-    <PackageTags>Pimix Apps DataUtil app</PackageTags>
+    <PackageTags>Kifa Apps DataUtil app</PackageTags>
     <Authors>KimiArthur</Authors>
   </PropertyGroup>
 

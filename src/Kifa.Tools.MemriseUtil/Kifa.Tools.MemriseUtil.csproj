@@ -3,6 +3,16 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
+    <ToolCommandName>memx</ToolCommandName>
+    <PackAsTool>true</PackAsTool>
+    <Version>1.0.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
+    <PackageIcon>Kifa.png</PackageIcon>
+    <Description>Utility to import Memrise words.</Description>
+    <Copyright>Copyright © 2021 Kimi Arthur</Copyright>
+    <PackageTags>Kifa Apps MemriseUtil app</PackageTags>
+    <Authors>KimiArthur</Authors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,10 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NLog.Schema" Version="4.6.7" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>NLog.config</Link>
     </None>
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
