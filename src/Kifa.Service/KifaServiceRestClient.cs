@@ -40,75 +40,75 @@ namespace Kifa.Service {
             KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(new HttpMethod("PATCH"),
-                        $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
+                        $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(data.Id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
                     };
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {modelId}({data.Id})")));
+            }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {ModelId}({data.Id})")));
 
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request =
                     new HttpRequestMessage(HttpMethod.Post,
-                        $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(data.Id)}") {
+                        $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(data.Id)}") {
                         Content = new StringContent(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
                     };
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in POST {modelId}({data.Id})")));
+            }, (ex, i) => HandleException(ex, i, $"Failure in POST {ModelId}({data.Id})")));
 
         public override SortedDictionary<string, TDataModel> List() =>
             Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/");
+                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/");
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<SortedDictionary<string, TDataModel>>();
-            }, (ex, i) => HandleException(ex, i, $"Failure in LIST {modelId}"));
+            }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
         public override TDataModel Get(string id) =>
             Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(id)}");
+                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}");
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<TDataModel>();
-            }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({id})"));
+            }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
 
         public override List<TDataModel> Get(List<string> ids) =>
             ids.Any()
                 ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
-                        $"{KifaServiceRestClient.ServerAddress}/{modelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+                        $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
 
                     using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                     return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
-                }, (ex, i) => HandleException(ex, i, $"Failure in GET {modelId}({string.Join(", ", ids)})"))
+                }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({string.Join(", ", ids)})"))
                 : new List<TDataModel>();
 
         public override KifaActionResult Link(string targetId, string linkId) =>
             KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/" +
+                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/" +
                     $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in LINK {modelId}({linkId}) to {modelId}({targetId})")));
+            }, (ex, i) => HandleException(ex, i, $"Failure in LINK {ModelId}({linkId}) to {ModelId}({targetId})")));
 
         public override KifaActionResult Delete(string id) =>
             KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Delete,
-                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/{Uri.EscapeDataString(id)}");
+                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}");
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
-            }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {modelId}({id})")));
+            }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {ModelId}({id})")));
 
         public void Call(string action, string id = null, Dictionary<string, object> parameters = null) =>
             Call<object>(action, id, parameters);
@@ -117,7 +117,7 @@ namespace Kifa.Service {
             Dictionary<string, object> parameters = null) {
             return Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Post,
-                    $"{KifaServiceRestClient.ServerAddress}/{modelId}/${action}");
+                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/${action}");
 
                 parameters ??= new Dictionary<string, object>();
                 if (id != null) {
@@ -135,7 +135,7 @@ namespace Kifa.Service {
                 }
 
                 throw new KifaActionFailedException {ActionResult = result};
-            }, (ex, i) => HandleException(ex, i, $"Failure in CALL {modelId}({id}).{action}({id})"));
+            }, (ex, i) => HandleException(ex, i, $"Failure in CALL {ModelId}({id}).{action}({id})"));
         }
 
         public override KifaActionResult Refresh(string id) => KifaActionResult.FromAction(() => Call("refresh", id));

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Kifa.Web.Api.Controllers {
     [Route("api/" + FileInformation.ModelId)]
@@ -34,7 +34,7 @@ namespace Kifa.Web.Api.Controllers {
         static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {["swiss"] = 1 << 30};
 
         public List<string> ListFolder(string folder, bool recursive = false) {
-            var prefix = $"{KifaServiceJsonClient.DataFolder}/{modelId}";
+            var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
             folder = $"{prefix}/{folder.TrimEnd('/')}";
             if (!Directory.Exists(folder)) {
                 return new List<string>();

@@ -39,7 +39,8 @@ namespace Kifa.Service {
 
         public virtual string Message { get; set; }
 
-        public override string ToString() => $"{Status} ({Message})";
+        public override string ToString() =>
+            string.IsNullOrEmpty(Message) ? Status.ToString() : $"{Status} ({Message})";
     }
 
     public class KifaBatchActionResult : KifaActionResult {
@@ -86,8 +87,9 @@ namespace Kifa.Service {
     }
 
     public static class KifaActionResultLogger {
-        public static void LogResult(this Logger logger, KifaActionResult result, string action) {
+        public static KifaActionResult LogResult(this Logger logger, KifaActionResult result, string action) {
             logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
+            return result;
         }
     }
 }

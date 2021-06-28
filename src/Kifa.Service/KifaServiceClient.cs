@@ -3,6 +3,8 @@ using NLog;
 
 namespace Kifa.Service {
     public interface KifaServiceClient<TDataModel> where TDataModel : DataModel {
+        string ModelId { get; }
+
         SortedDictionary<string, TDataModel> List();
         TDataModel Get(string id);
         List<TDataModel> Get(List<string> ids);
@@ -17,12 +19,14 @@ namespace Kifa.Service {
         where TDataModel : DataModel {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        protected readonly string modelId;
+        readonly string modelId;
 
         protected BaseKifaServiceClient() {
             var typeInfo = typeof(TDataModel);
             modelId = (string) typeInfo.GetField("ModelId").GetValue(null);
         }
+
+        public string ModelId => modelId;
 
         public abstract SortedDictionary<string, TDataModel> List();
         public abstract TDataModel Get(string id);

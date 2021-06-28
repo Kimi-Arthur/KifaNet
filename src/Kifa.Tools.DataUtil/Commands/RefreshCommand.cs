@@ -21,14 +21,14 @@ namespace Kifa.Tools.DataUtil.Commands {
             var episodes = new List<(Season season, Episode episode)>();
 
             switch (type) {
-                case "tv_shows":
+                case TvShow.ModelId:
                     var oldTvEpisodes = TvShow.Client.Get(id).Seasons
                         .SelectMany(s => s.Episodes.Select(e => (s.Id, e.Id))).ToHashSet();
                     TvShow.Client.Refresh(id);
                     episodes.AddRange(TvShow.Client.Get(id).Seasons.SelectMany(s => s.Episodes.Select(e => (s, e)))
                         .Where(episode => !oldTvEpisodes.Contains((episode.s.Id, episode.e.Id))));
                     break;
-                case "animes":
+                case Anime.ModelId:
                     var oldAnimeEpisodes = Anime.Client.Get(id).Seasons
                         .SelectMany(s => s.Episodes.Select(e => (s.Id, e.Id))).ToHashSet();
                     Anime.Client.Refresh(id);
@@ -37,7 +37,7 @@ namespace Kifa.Tools.DataUtil.Commands {
                             !oldAnimeEpisodes.Contains((episode.s.Id, episode.e.Id))));
                     break;
                 default:
-                    Console.WriteLine($"Cannot find resource type {type}");
+                    logger.Error($"Unknown type name: {type}.");
                     return 1;
             }
 
