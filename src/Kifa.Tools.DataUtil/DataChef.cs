@@ -22,5 +22,9 @@ namespace Kifa.Tools.DataUtil {
 
             return results;
         }
+
+        public KifaActionResult Refresh(string id) {
+            return new TClient().Refresh(id);
+        }
     }
 }

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommandLine;
-using NLog;
+﻿using CommandLine;
 using Kifa.Infos;
+using Kifa.Service;
+using NLog;
 
 namespace Kifa.Tools.DataUtil.Commands {
     [Verb("refresh", HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]
@@ -18,40 +16,15 @@ namespace Kifa.Tools.DataUtil.Commands {
             var type = segments[0];
             var id = segments[1];
 
-            var episodes = new List<(Season season, Episode episode)>();
-
             switch (type) {
                 case TvShow.ModelId:
-                    var oldTvEpisodes = TvShow.Client.Get(id).Seasons
-                        .SelectMany(s => s.Episodes.Select(e => (s.Id, e.Id))).ToHashSet();
-                    TvShow.Client.Refresh(id);
-                    episodes.AddRange(TvShow.Client.Get(id).Seasons.SelectMany(s => s.Episodes.Select(e => (s, e)))
-                        .Where(episode => !oldTvEpisodes.Contains((episode.s.Id, episode.e.Id))));
-                    break;
+                    return (int) new DataChef<TvShow, TvShowRestServiceClient>().Refresh(id).Status;
                 case Anime.ModelId:
-                    var oldAnimeEpisodes = Anime.Client.Get(id).Seasons
-                        .SelectMany(s => s.Episodes.Select(e => (s.Id, e.Id))).ToHashSet();
-                    Anime.Client.Refresh(id);
-                    episodes.AddRange(Anime.Client.Get(id).Seasons
-                        .SelectMany(s => s.Episodes.Select(e => (s: s as Season, e))).Where(episode =>
-                            !oldAnimeEpisodes.Contains((episode.s.Id, episode.e.Id))));
-                    break;
+                    return (int) new DataChef<Anime, KifaServiceRestClient<Anime>>().Refresh(id).Status;
                 default:
                     logger.Error($"Unknown type name: {type}.");
                     return 1;
             }
-
-            if (episodes.Count == 0) {
-                logger.Info($"Successfully refreshed {EntityId}. No new episodes found.");
-                return 0;
-            }
-
-            logger.Info($"Added {episodes.Count} new episodes to {EntityId}!");
-            foreach (var (season, episode) in episodes) {
-                logger.Info($"Season {season.Id} episode {episode.Id}: {episode.Title}");
-            }
-
-            return 0;
         }
     }
 }

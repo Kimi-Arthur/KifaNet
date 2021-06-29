@@ -17,24 +17,18 @@ namespace Kifa.Tools.DataUtil.Commands {
 
         public override int Execute() {
             switch (Type) {
-                case GoetheGermanWord.ModelId: {
-                    logger.LogResult(
+                case GoetheGermanWord.ModelId:
+                    return (int) logger.LogResult(
                         new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>().Import(new KifaFile(File)),
-                        "Summary");
-                    break;
-                }
-                case GoetheWordList.ModelId: {
-                    logger.LogResult(
+                        "Summary").Status;
+                case GoetheWordList.ModelId:
+                    return (int) logger.LogResult(
                         new DataChef<GoetheWordList, GoetheWordListRestServiceClient>().Import(new KifaFile(File)),
-                        "Summary");
-                    break;
-                }
+                        "Summary").Status;
                 default:
                     logger.Error($"Unknown type name: {Type}.");
                     return 1;
             }
-
-            return 0;
         }
     }
 }
