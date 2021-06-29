@@ -12,7 +12,6 @@ namespace Kifa.Languages.German.Goethe {
 
         public string Level { get; set; }
         public string Form { get; set; }
-        public string Meaning { get; set; }
 
         // A synonym text like: (CH) = (D, A) Hausmeister
         public string Synonym { get; set; }
@@ -23,6 +22,7 @@ namespace Kifa.Languages.German.Goethe {
         // Only Word, Form, Feminine are included.
         public GoetheGermanWord Abbreviation { get; set; }
 
+        public string Meaning { get; set; }
         public List<string> Examples { get; set; }
 
         [JsonIgnore]

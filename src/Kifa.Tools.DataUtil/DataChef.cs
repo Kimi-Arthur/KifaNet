@@ -42,8 +42,12 @@ namespace Kifa.Tools.DataUtil {
                 updatedItems = items.Select(item => Client.Get(item)).ToList();
             }
 
-            logger.Info(new SerializerBuilder().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build()
-                .Serialize(updatedItems));
+            dataFile.Delete();
+
+            var serializer = new SerializerBuilder().WithIndentedSequences()
+                .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            dataFile.Write(string.Join("\n",
+                updatedItems.Select(item => serializer.Serialize(new List<TDataModel> {item}))));
 
             return KifaActionResult.SuccessActionResult;
         }
