@@ -152,8 +152,8 @@ namespace Kifa.Memrise {
                 Thread.Sleep(TimeSpan.FromSeconds(5));
                 existingRow = GetExistingRow(word);
                 if (existingRow == null) {
-                    logger.Error($"Failed to add word: {word.Word}.");
-                    return new KifaActionResult<string>(KifaActionStatus.Error, $"failed to add word {word.Word}");
+                    logger.Error($"Failed to add word: {word.Id}.");
+                    return new KifaActionResult<string>(KifaActionStatus.Error, $"failed to add word {word.Id}");
                 }
             }
 
@@ -220,7 +220,7 @@ namespace Kifa.Memrise {
                 .ToDictionary(th => th.Text.Trim(), th => th.GetAttribute("data-key"));
 
         MemriseWord GetExistingRow(GoetheGermanWord word) {
-            return GetExistingRow(word, word.Word) ?? GetExistingRow(word, word.Meaning);
+            return GetExistingRow(word, word.Id) ?? GetExistingRow(word, word.Meaning);
         }
 
         MemriseWord GetExistingRow(GoetheGermanWord word, string searchQuery) {
@@ -233,7 +233,7 @@ namespace Kifa.Memrise {
         }
 
         bool sameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord) {
-            return memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Word &&
+            return memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id &&
                    TrimBracket(memriseWord.Data[Course.Columns["English"]]) == TrimBracket(goetheGermanWord.Meaning);
         }
 
@@ -284,7 +284,7 @@ namespace Kifa.Memrise {
 
         Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord baseWord) {
             var data = new Dictionary<string, string> {
-                {Course.Columns["German"], word.Word}, {Course.Columns["English"], word.Meaning}
+                {Course.Columns["German"], word.Id}, {Course.Columns["English"], word.Meaning}
             };
 
             data[Course.Columns["Form"]] = word.Form ?? "";

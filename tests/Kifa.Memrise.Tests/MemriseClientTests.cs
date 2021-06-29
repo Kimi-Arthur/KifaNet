@@ -28,7 +28,7 @@ namespace Kifa.Memrise.Tests {
             KifaConfigs.LoadFromSystemConfigs();
             using var client = new MemriseClient {Course = TestCourse};
             var goetheGermanWord = new GoetheGermanWord {
-                Word = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
+                Id = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
                 Meaning = "M" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
                 Examples = new List<string> {"abc", "bcd"}
             };
@@ -53,7 +53,7 @@ namespace Kifa.Memrise.Tests {
             KifaConfigs.LoadFromSystemConfigs();
             using var client = new MemriseClient {Course = TestCourse};
             var result = client.AddWord(new GoetheGermanWord {
-                Word = "drehen",
+                Id = "drehen",
                 Meaning = "to turn",
                 Examples = new List<string> {"abc" + new Random().Next(), "bcd" + new Random().Next()}
             });

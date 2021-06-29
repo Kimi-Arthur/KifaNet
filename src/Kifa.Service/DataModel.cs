@@ -6,15 +6,18 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Service {
     /// <summary>
     /// When used, specify a public const string field named ModelId.
     /// </summary>
     public abstract class DataModel {
+        [YamlMember(Order = -1)]
         public string Id { get; set; }
 
-        [JsonProperty("$metadata")] public DataMetadata Metadata { get; set; }
+        [JsonProperty("$metadata")]
+        public DataMetadata Metadata { get; set; }
 
         public virtual bool? Fill() => null;
 

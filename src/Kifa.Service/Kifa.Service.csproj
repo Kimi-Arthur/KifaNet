@@ -5,4 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Kifa\Kifa.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="YamlDotNet" Version="8.0.0" />
+  </ItemGroup>
 </Project>
