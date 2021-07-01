@@ -32,15 +32,7 @@ namespace Kifa.Tools.DataUtil {
             var items = new Deserializer().Deserialize<List<TDataModel>>(reader.ReadToEnd()).Select(item => item.Id)
                 .ToList();
 
-            var updatedItems = new List<TDataModel>();
-
-            // TODO: more fine grade, or use other GET mechanism.
-            if (items.Count > 20) {
-                var allItems = Client.List();
-                updatedItems = items.Select(item => allItems[item]).ToList();
-            } else {
-                updatedItems = items.Select(item => Client.Get(item)).ToList();
-            }
+            var updatedItems = Client.Get(items);
 
             dataFile.Delete();
 

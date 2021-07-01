@@ -84,7 +84,10 @@ namespace Kifa.Service {
             ids.Any()
                 ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
-                        $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{string.Join(IdDeliminator, ids.Select(Uri.EscapeDataString))}");
+                        $"{KifaServiceRestClient.ServerAddress}/{ModelId}/") {
+                        Content = new StringContent(JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
+                            Encoding.UTF8, "application/json")
+                    };
 
                     using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                     return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
