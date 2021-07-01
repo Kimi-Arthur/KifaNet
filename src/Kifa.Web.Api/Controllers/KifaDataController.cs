@@ -22,17 +22,26 @@ namespace Kifa.Web.Api.Controllers {
 
         // GET api/values
         [HttpGet]
-        public ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
+        public ActionResult<SortedDictionary<string, TDataModel>> List([FromBody] List<string> ids = null,
+            [FromQuery] bool refresh = false) {
+            return ids == null
+                ? Client.List()
+                : new SortedDictionary<string, TDataModel>(ids.Select(id => GetValue(id, refresh))
+                    .ToDictionary(item => item.Id, item => item));
+        }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public virtual ActionResult<TDataModel> Get(string id, [FromQuery]
-            bool refresh = false) {
+        public virtual ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
             id = Uri.UnescapeDataString(id);
             if (id.StartsWith("$")) {
                 return new NotFoundResult();
             }
 
+            return GetValue(id, refresh);
+        }
+
+        TDataModel GetValue(string id, bool refresh) {
             var value = Client.Get(id);
             if (refresh || value.Id == null || NeedRefresh(value)) {
                 value.Id ??= id;
@@ -67,16 +76,14 @@ namespace Kifa.Web.Api.Controllers {
 
         // PATCH api/values/5
         [HttpPatch("{id}")]
-        public KifaApiActionResult Patch(string id, [FromBody]
-            TDataModel value) {
+        public KifaApiActionResult Patch(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             return Client.Update(value);
         }
 
         // POST api/values
         [HttpPost("{id}")]
-        public KifaApiActionResult Post(string id, [FromBody]
-            TDataModel value) {
+        public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
             return Client.Set(value);
@@ -95,16 +102,12 @@ namespace Kifa.Web.Api.Controllers {
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpGet("$refresh")]
-        public KifaApiActionResult RefreshGet([FromQuery]
-            RefreshRequest request) =>
-            Refresh(request);
+        public KifaApiActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpPost("$refresh")]
-        public KifaApiActionResult RefreshPost([FromBody]
-            RefreshRequest request) =>
-            Refresh(request);
+        public KifaApiActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
 
         public class RefreshRequest {
             public string Id { get; set; }
