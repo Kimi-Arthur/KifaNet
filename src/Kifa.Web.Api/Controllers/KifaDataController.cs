@@ -22,12 +22,16 @@ namespace Kifa.Web.Api.Controllers {
 
         // GET api/values
         [HttpGet]
-        public ActionResult<SortedDictionary<string, TDataModel>> List([FromBody] List<string> ids = null,
+        public ActionResult<SortedDictionary<string, TDataModel>> List() {
+            return Client.List();
+        }
+
+        // GET api/values/$
+        [HttpGet("$")]
+        public virtual ActionResult<SortedDictionary<string, TDataModel>> Get([FromBody] List<string> ids,
             [FromQuery] bool refresh = false) {
-            return ids == null
-                ? Client.List()
-                : new SortedDictionary<string, TDataModel>(ids.Select(id => GetValue(id, refresh))
-                    .ToDictionary(item => item.Id, item => item));
+            return new SortedDictionary<string, TDataModel>(ids.Select(id => GetValue(id, refresh))
+                .ToDictionary(item => item.Id, item => item));
         }
 
         // GET api/values/5
