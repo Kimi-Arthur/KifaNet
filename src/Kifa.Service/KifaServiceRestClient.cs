@@ -83,14 +83,15 @@ namespace Kifa.Service {
         public override List<TDataModel> Get(List<string> ids) =>
             ids.Any()
                 ? Retry.Run(() => {
-                    var request = new HttpRequestMessage(HttpMethod.Get,
-                        $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
-                        Content = new StringContent(JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
-                            Encoding.UTF8, "application/json")
-                    };
+                    var request =
+                        new HttpRequestMessage(HttpMethod.Get, $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
+                            Content = new StringContent(
+                                JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings), Encoding.UTF8,
+                                "application/json")
+                        };
 
                     using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
-                    return response.GetObject<Dictionary<string, TDataModel>>().Values.ToList();
+                    return response.GetObject<List<TDataModel>>();
                 }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({string.Join(", ", ids)})"))
                 : new List<TDataModel>();
 
