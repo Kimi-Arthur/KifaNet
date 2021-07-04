@@ -91,5 +91,10 @@ namespace Kifa.Service {
             logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
             return result;
         }
+
+        public static KifaActionResult<TValue> LogResult<TValue>(this Logger logger, KifaActionResult<TValue> result, string action) {
+            logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
+            return result;
+        }
     }
 }
