@@ -28,10 +28,9 @@ namespace Kifa.Web.Api.Controllers {
 
         // GET api/values/$
         [HttpGet("$")]
-        public virtual ActionResult<SortedDictionary<string, TDataModel>> Get([FromBody] List<string> ids,
+        public virtual ActionResult<List<TDataModel>> Get([FromBody] List<string> ids,
             [FromQuery] bool refresh = false) {
-            return new SortedDictionary<string, TDataModel>(ids.Select(id => GetValue(id, refresh))
-                .ToDictionary(item => item.Id, item => item));
+            return ids.Select(id => GetValue(id, refresh)).ToList();
         }
 
         // GET api/values/5
