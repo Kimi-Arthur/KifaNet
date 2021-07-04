@@ -20,7 +20,7 @@ namespace Kifa.Tools.DataUtil {
         }
 
         KifaActionResult Import(KifaFile dataFile);
-        KifaActionResult Export(KifaFile dataFile);
+        KifaActionResult Export(KifaFile dataFile, bool getAll);
         KifaActionResult Refresh(string id);
     }
 
@@ -44,12 +44,12 @@ namespace Kifa.Tools.DataUtil {
             return results;
         }
 
-        public KifaActionResult Export(KifaFile dataFile) {
+        public KifaActionResult Export(KifaFile dataFile, bool getAll) {
             using var reader = new StreamReader(dataFile.OpenRead());
             var items = new Deserializer().Deserialize<List<TDataModel>>(reader.ReadToEnd()).Select(item => item.Id)
                 .ToList();
 
-            var updatedItems = Client.Get(items);
+            var updatedItems = getAll ? Client.List().Values.ToList() : Client.Get(items);
 
             dataFile.Delete();
 
