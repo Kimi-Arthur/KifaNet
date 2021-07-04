@@ -1,6 +1,6 @@
-﻿using CommandLine;
+﻿using System;
+using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Languages.German.Goethe;
 using Kifa.Service;
 using NLog;
 
@@ -16,6 +16,8 @@ namespace Kifa.Tools.DataUtil.Commands {
         public string File { get; set; }
 
         public override int Execute() {
+            var content = new KifaFile(File).ReadAsString();
+            Type ??= GetYamlType(content[..content.IndexOf("\n", StringComparison.Ordinal)]);
             var chef = DataChef.GetChef(Type);
 
             if (chef == null) {
@@ -23,7 +25,15 @@ namespace Kifa.Tools.DataUtil.Commands {
                 return 1;
             }
 
-            return (int) logger.LogResult(chef.Import(new KifaFile(File).ReadAsString()), "Summary").Status;
+            return (int) logger.LogResult(chef.Import(content), "Summary").Status;
+        }
+
+        string GetYamlType(string s) {
+            if (!s.StartsWith("#")) {
+                return null;
+            }
+
+            return s[1..].Trim();
         }
     }
 }
