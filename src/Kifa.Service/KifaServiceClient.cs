@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using NLog;
 
 namespace Kifa.Service {
@@ -9,8 +10,11 @@ namespace Kifa.Service {
         TDataModel Get(string id);
         List<TDataModel> Get(List<string> ids);
         KifaActionResult Set(TDataModel data);
+        KifaActionResult Set(List<TDataModel> data);
         KifaActionResult Update(TDataModel data);
+        KifaActionResult Update(List<TDataModel> data);
         KifaActionResult Delete(string id);
+        KifaActionResult Delete(List<string> ids);
         KifaActionResult Link(string targetId, string linkId);
         KifaActionResult Refresh(string id);
     }
@@ -30,10 +34,26 @@ namespace Kifa.Service {
 
         public abstract SortedDictionary<string, TDataModel> List();
         public abstract TDataModel Get(string id);
-        public abstract List<TDataModel> Get(List<string> ids);
+
+        public virtual List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
+
         public abstract KifaActionResult Set(TDataModel data);
+
+        public virtual KifaActionResult Set(List<TDataModel> data) =>
+            data.Select(Set).Aggregate(new KifaBatchActionResult(), (result, actionResult) => result.Add(actionResult));
+
         public abstract KifaActionResult Update(TDataModel data);
+
+        public virtual KifaActionResult Update(List<TDataModel> data) =>
+            data.Select(Update).Aggregate(new KifaBatchActionResult(),
+                (result, actionResult) => result.Add(actionResult));
+
         public abstract KifaActionResult Delete(string id);
+
+        public virtual KifaActionResult Delete(List<string> ids) =>
+            ids.Select(Delete).Aggregate(new KifaBatchActionResult(),
+                (result, actionResult) => result.Add(actionResult));
+
         public abstract KifaActionResult Link(string targetId, string linkId);
         public abstract KifaActionResult Refresh(string id);
     }

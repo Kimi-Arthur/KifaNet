@@ -41,12 +41,8 @@ namespace Kifa.Tools.DataUtil {
         public KifaActionResult Import(string data) {
             var items = new Deserializer().Deserialize<List<TDataModel>>(data);
 
-            var results = new KifaBatchActionResult();
-            foreach (var item in items) {
-                results.Add(logger.LogResult(Client.Update(item), $"Update ({Client.ModelId}/{item.Id})"));
-            }
-
-            return results;
+            return logger.LogResult(Client.Update(items),
+                $"Update {Client.ModelId}({string.Join(", ", items.Select(item => item.Id))})");
         }
 
         public KifaActionResult<string> Export(string data, bool getAll) {

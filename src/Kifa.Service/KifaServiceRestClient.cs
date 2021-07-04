@@ -34,8 +34,6 @@ namespace Kifa.Service {
     }
 
     public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataModel> where TDataModel : DataModel {
-        const string IdDeliminator = "|";
-
         public override KifaActionResult Update(TDataModel data) =>
             KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request =
@@ -49,6 +47,23 @@ namespace Kifa.Service {
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {ModelId}({data.Id})")));
 
+        public override KifaActionResult Update(List<TDataModel> data) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
+                    var request =
+                        new HttpRequestMessage(new HttpMethod("PATCH"),
+                            $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
+                            Content = new StringContent(
+                                JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                                Encoding.UTF8, "application/json")
+                        };
+
+                    using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                    return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
+                },
+                (ex, i) => HandleException(ex, i,
+                    $"Failure in PATCH {ModelId}({string.Join(", ", data.Select(item => item.Id))})")));
+
+
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request =
@@ -61,6 +76,21 @@ namespace Kifa.Service {
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in POST {ModelId}({data.Id})")));
+
+        public override KifaActionResult Set(List<TDataModel> data) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
+                    var request =
+                        new HttpRequestMessage(HttpMethod.Post, $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
+                            Content = new StringContent(
+                                JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                                Encoding.UTF8, "application/json")
+                        };
+
+                    using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                    return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
+                },
+                (ex, i) => HandleException(ex, i,
+                    $"Failure in POST {ModelId}({string.Join(", ", data.Select(item => item.Id))})")));
 
         public override SortedDictionary<string, TDataModel> List() =>
             Retry.Run(() => {
@@ -113,6 +143,18 @@ namespace Kifa.Service {
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {ModelId}({id})")));
+
+        public override KifaActionResult Delete(List<string> ids) =>
+            KifaActionResult.FromAction(() => Retry.Run(() => {
+                var request =
+                    new HttpRequestMessage(HttpMethod.Delete, $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
+                        Content = new StringContent(JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
+                            Encoding.UTF8, "application/json")
+                    };
+
+                using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
+                return response.GetObject<KifaActionResult>().Status == KifaActionStatus.OK;
+            }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {ModelId}({string.Join(", ", ids)})")));
 
         public void Call(string action, string id = null, Dictionary<string, object> parameters = null) =>
             Call<object>(action, id, parameters);
