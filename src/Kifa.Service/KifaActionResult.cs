@@ -46,8 +46,9 @@ namespace Kifa.Service {
     public class KifaBatchActionResult : KifaActionResult {
         public List<KifaActionResult> Results { get; set; } = new List<KifaActionResult>();
 
-        public void Add(KifaActionResult moreResult) {
+        public KifaBatchActionResult Add(KifaActionResult moreResult) {
             Results.Add(moreResult);
+            return this;
         }
 
         [JsonConverter(typeof(StringEnumConverter))]
