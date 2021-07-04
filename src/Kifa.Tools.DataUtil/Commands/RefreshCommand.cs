@@ -1,5 +1,4 @@
 ﻿using CommandLine;
-using Kifa.Infos;
 using Kifa.Service;
 using NLog;
 
@@ -16,15 +15,14 @@ namespace Kifa.Tools.DataUtil.Commands {
             var type = segments[0];
             var id = segments[1];
 
-            switch (type) {
-                case TvShow.ModelId:
-                    return (int) new DataChef<TvShow, TvShowRestServiceClient>().Refresh(id).Status;
-                case Anime.ModelId:
-                    return (int) new DataChef<Anime, KifaServiceRestClient<Anime>>().Refresh(id).Status;
-                default:
-                    logger.Error($"Unknown type name: {type}.");
-                    return 1;
+            var chef = DataChef.GetChef(type);
+
+            if (chef == null) {
+                logger.Error($"Unknown type name: {type}.");
+                return 1;
             }
+
+            return (int) logger.LogResult(chef.Refresh(id), "Summary").Status;
         }
     }
 }

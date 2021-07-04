@@ -2,12 +2,29 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Kifa.Api.Files;
+using Kifa.Languages.German.Goethe;
+using Kifa.Music;
 using Kifa.Service;
 using NLog;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Tools.DataUtil {
-    public class DataChef<TDataModel, TClient> where TDataModel : DataModel
+    public interface DataChef {
+        public static DataChef GetChef(string modelId) {
+            return modelId switch {
+                GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
+                GoetheWordList.ModelId => new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
+                GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
+                _ => null
+            };
+        }
+
+        KifaActionResult Import(KifaFile dataFile);
+        KifaActionResult Export(KifaFile dataFile);
+        KifaActionResult Refresh(string id);
+    }
+
+    public class DataChef<TDataModel, TClient> : DataChef where TDataModel : DataModel
         where TClient : KifaServiceClient<TDataModel>, new() {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

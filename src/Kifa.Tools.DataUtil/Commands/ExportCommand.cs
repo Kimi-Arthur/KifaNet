@@ -1,6 +1,5 @@
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Languages.German.Goethe;
 using Kifa.Service;
 using NLog;
 
@@ -16,19 +15,14 @@ namespace Kifa.Tools.DataUtil.Commands {
         public string File { get; set; }
 
         public override int Execute() {
-            switch (Type) {
-                case GoetheGermanWord.ModelId:
-                    return (int) logger.LogResult(
-                        new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>().Export(new KifaFile(File)),
-                        "Summary").Status;
-                case GoetheWordList.ModelId:
-                    return (int) logger.LogResult(
-                        new DataChef<GoetheWordList, GoetheWordListRestServiceClient>().Export(new KifaFile(File)),
-                        "Summary").Status;
-                default:
-                    logger.Error($"Unknown type name: {Type}.");
-                    return 1;
+            var chef = DataChef.GetChef(Type);
+
+            if (chef == null) {
+                logger.Error($"Unknown type name: {Type}.");
+                return 1;
             }
+
+            return (int) logger.LogResult(chef.Export(new KifaFile(File)), "Summary").Status;
         }
     }
 }
