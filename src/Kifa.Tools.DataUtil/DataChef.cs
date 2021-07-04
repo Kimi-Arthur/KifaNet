@@ -1,7 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Kifa.Api.Files;
 using Kifa.Languages.German.Goethe;
 using Kifa.Music;
 using Kifa.Service;
@@ -10,8 +9,8 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Tools.DataUtil {
     public interface DataChef {
-        public static DataChef GetChef(string modelId) {
-            return modelId switch {
+        public static DataChef GetChef(string modelId, string content = null) {
+            return (modelId ?? GetYamlType(content)) switch {
                 GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
                 GoetheWordList.ModelId => new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
                 GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
@@ -19,8 +18,13 @@ namespace Kifa.Tools.DataUtil {
             };
         }
 
+        static string GetYamlType(string s) {
+            return s == null || !s.StartsWith("#") ? null : s[1..s.IndexOf("\n", StringComparison.Ordinal)].Trim();
+        }
+
+        string ModelId { get; }
         KifaActionResult Import(string data);
-        KifaActionResult Export(KifaFile dataFile, bool getAll);
+        KifaActionResult<string> Export(string data, bool getAll);
         KifaActionResult Refresh(string id);
     }
 
@@ -31,6 +35,8 @@ namespace Kifa.Tools.DataUtil {
         static KifaServiceClient<TDataModel> client;
 
         static KifaServiceClient<TDataModel> Client => client ??= new TClient();
+
+        public string ModelId => Client.ModelId;
 
         public KifaActionResult Import(string data) {
             var items = new Deserializer().Deserialize<List<TDataModel>>(data);
@@ -43,21 +49,15 @@ namespace Kifa.Tools.DataUtil {
             return results;
         }
 
-        public KifaActionResult Export(KifaFile dataFile, bool getAll) {
-            using var reader = new StreamReader(dataFile.OpenRead());
-            var items = new Deserializer().Deserialize<List<TDataModel>>(reader.ReadToEnd()).Select(item => item.Id)
-                .ToList();
+        public KifaActionResult<string> Export(string data, bool getAll) {
+            var items = new Deserializer().Deserialize<List<TDataModel>>(data).Select(item => item.Id).ToList();
 
             var updatedItems = getAll ? Client.List().Values.ToList() : Client.Get(items);
 
-            dataFile.Delete();
-
             var serializer = new SerializerBuilder().WithIndentedSequences()
                 .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
-            dataFile.Write(string.Join("\n",
-                updatedItems.Select(item => serializer.Serialize(new List<TDataModel> {item}))));
-
-            return KifaActionResult.SuccessActionResult;
+            return new KifaActionResult<string>(
+                $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializer.Serialize(new List<TDataModel> {item})))}");
         }
 
         public KifaActionResult Refresh(string id) {

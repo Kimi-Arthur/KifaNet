@@ -17,8 +17,8 @@ namespace Kifa.Tools.DataUtil.Commands {
 
         public override int Execute() {
             var content = new KifaFile(File).ReadAsString();
-            Type ??= GetYamlType(content[..content.IndexOf("\n", StringComparison.Ordinal)]);
-            var chef = DataChef.GetChef(Type);
+
+            var chef = DataChef.GetChef(Type, content);
 
             if (chef == null) {
                 logger.Error($"Unknown type name: {Type}.");
@@ -26,14 +26,6 @@ namespace Kifa.Tools.DataUtil.Commands {
             }
 
             return (int) logger.LogResult(chef.Import(content), "Summary").Status;
-        }
-
-        string GetYamlType(string s) {
-            if (!s.StartsWith("#")) {
-                return null;
-            }
-
-            return s[1..].Trim();
         }
     }
 }

@@ -18,6 +18,9 @@ namespace Kifa.Tools.DataUtil.Commands {
         public string File { get; set; }
 
         public override int Execute() {
+            var file = new KifaFile(File);
+            var content = file.ReadAsString();
+
             var chef = DataChef.GetChef(Type);
 
             if (chef == null) {
@@ -25,7 +28,16 @@ namespace Kifa.Tools.DataUtil.Commands {
                 return 1;
             }
 
-            return (int) logger.LogResult(chef.Export(new KifaFile(File), GetAll), "Summary").Status;
+            var result = logger.LogResult(chef.Export(content, GetAll), "Summary");
+            if (result.Status != KifaActionStatus.OK) {
+                logger.Error($"Failed to get data for {chef.ModelId}.");
+                return (int) result.Status;
+            }
+
+            file.Delete();
+            file.Write(result.Response);
+
+            return 0;
         }
     }
 }
