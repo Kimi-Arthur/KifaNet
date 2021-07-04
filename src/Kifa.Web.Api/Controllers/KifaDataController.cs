@@ -84,12 +84,28 @@ namespace Kifa.Web.Api.Controllers {
             return Client.Update(value);
         }
 
-        // POST api/values
+        // PATCH api/values/$
+        [HttpPatch("$")]
+        public KifaApiActionResult Patch([FromBody] List<TDataModel> values) {
+            return Client.Update(values);
+        }
+
+        // POST api/values/5
         [HttpPost("{id}")]
         public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
             value.Fill();
             return Client.Set(value);
+        }
+
+        // POST api/values/$
+        [HttpPost("$")]
+        public KifaApiActionResult Post([FromBody] List<TDataModel> values) {
+            foreach (var value in values) {
+                value.Fill();
+            }
+
+            return Client.Set(values);
         }
 
         // POST api/values/^+<TARGET>|<LINK>
@@ -101,6 +117,10 @@ namespace Kifa.Web.Api.Controllers {
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public KifaApiActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
+
+        // DELETE api/values/$
+        [HttpDelete("$")]
+        public KifaApiActionResult Delete([FromBody] List<string> ids) => Client.Delete(ids);
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.

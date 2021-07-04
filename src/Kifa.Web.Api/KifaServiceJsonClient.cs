@@ -42,8 +42,6 @@ namespace Kifa.Web.Api {
             return data;
         }
 
-        public override List<TDataModel> Get(List<string> ids) => ids.Select(Get).ToList();
-
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => {
                 data.Metadata ??= Get(data.Id).Metadata;
