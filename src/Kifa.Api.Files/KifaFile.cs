@@ -568,5 +568,10 @@ namespace Kifa.Api.Files {
 
             return obj.GetType() == GetType() && Equals((KifaFile) obj);
         }
+
+        public string ReadAsString() {
+            using var streamReader = new StreamReader(OpenRead());
+            return streamReader.ReadToEnd();
+        }
     }
 }
