@@ -23,7 +23,7 @@ namespace Kifa.Tools.DataUtil.Commands {
                 return 1;
             }
 
-            return (int) logger.LogResult(chef.Import(new KifaFile(File)), "Summary").Status;
+            return (int) logger.LogResult(chef.Import(new KifaFile(File).ReadAsString()), "Summary").Status;
         }
     }
 }

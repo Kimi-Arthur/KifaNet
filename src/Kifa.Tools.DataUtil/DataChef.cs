@@ -19,7 +19,7 @@ namespace Kifa.Tools.DataUtil {
             };
         }
 
-        KifaActionResult Import(KifaFile dataFile);
+        KifaActionResult Import(string data);
         KifaActionResult Export(KifaFile dataFile, bool getAll);
         KifaActionResult Refresh(string id);
     }
@@ -32,9 +32,8 @@ namespace Kifa.Tools.DataUtil {
 
         static KifaServiceClient<TDataModel> Client => client ??= new TClient();
 
-        public KifaActionResult Import(KifaFile dataFile) {
-            using var reader = new StreamReader(dataFile.OpenRead());
-            var items = new Deserializer().Deserialize<List<TDataModel>>(reader.ReadToEnd());
+        public KifaActionResult Import(string data) {
+            var items = new Deserializer().Deserialize<List<TDataModel>>(data);
 
             var results = new KifaBatchActionResult();
             foreach (var item in items) {
