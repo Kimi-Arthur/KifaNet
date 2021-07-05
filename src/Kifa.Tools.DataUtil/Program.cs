@@ -6,6 +6,6 @@ namespace Kifa.Tools.DataUtil {
         static int Main(string[] args) =>
             KifaCommand.Run(
                 parameters => Parser.Default.ParseArguments(parameters, typeof(RefreshCommand), typeof(ImportCommand),
-                    typeof(ExportCommand)), args);
+                    typeof(ExportCommand), typeof(LinkCommand)), args);
     }
 }

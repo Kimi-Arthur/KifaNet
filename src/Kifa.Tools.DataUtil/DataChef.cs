@@ -26,6 +26,7 @@ namespace Kifa.Tools.DataUtil {
         KifaActionResult Import(string data);
         KifaActionResult<string> Export(string data, bool getAll);
         KifaActionResult Refresh(string id);
+        KifaActionResult Link(string target, string link);
     }
 
     public class DataChef<TDataModel, TClient> : DataChef where TDataModel : DataModel
@@ -56,12 +57,12 @@ namespace Kifa.Tools.DataUtil {
                 $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializer.Serialize(new List<TDataModel> {item})))}");
         }
 
+        public KifaActionResult Refresh(string id) => Client.Refresh(id);
+
+        public KifaActionResult Link(string target, string link) => Client.Link(target, link);
+
         static List<TDataModel> GetItemsWithExistingOrder(IEnumerable<string> items,
             SortedDictionary<string, TDataModel> list) =>
             items.Select(list.Pop).Concat(list.Values).ToList();
-
-        public KifaActionResult Refresh(string id) {
-            return Client.Refresh(id);
-        }
     }
 }
