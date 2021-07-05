@@ -50,8 +50,8 @@ namespace Kifa.Tools.DataUtil {
 
             var updatedItems = getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
 
-            var serializer = new SerializerBuilder().WithIndentedSequences()
-                .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var serializer = new SerializerBuilder().WithEventEmitter(next => new FlowStyleScalarSequenceEmitter(next))
+                .WithIndentedSequences().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
             return new KifaActionResult<string>(
                 $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializer.Serialize(new List<TDataModel> {item})))}");
         }
