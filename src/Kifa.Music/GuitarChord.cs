@@ -21,7 +21,7 @@ namespace Kifa.Music {
         /// 指, finger to use on the string, open -> 0, thumb -> 5, index -> 1, etc.
         public int Finger { get; set; }
 
-        /// 弦, which strings this finger is on, 1 - 6, from lower to higher pitch string.
+        /// 弦, which strings this finger is on, 1 - 6, from higher to lower pitch string.
         /// Can contain multiple elements for `barre chord`, ordered.
         public List<int> Strings { get; set; }
 
