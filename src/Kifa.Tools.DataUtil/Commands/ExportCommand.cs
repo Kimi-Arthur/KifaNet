@@ -21,10 +21,10 @@ namespace Kifa.Tools.DataUtil.Commands {
             var file = new KifaFile(File);
             var content = file.ReadAsString();
 
-            var chef = DataChef.GetChef(Type);
+            var chef = DataChef.GetChef(Type, content);
 
             if (chef == null) {
-                logger.Error($"Unknown type name: {Type}.");
+                logger.Error($"Unknown type name: {Type}.\n{content}");
                 return 1;
             }
 

@@ -21,7 +21,7 @@ namespace Kifa.Tools.DataUtil.Commands {
             var chef = DataChef.GetChef(Type, content);
 
             if (chef == null) {
-                logger.Error($"Unknown type name: {Type}.");
+                logger.Error($"Unknown type name: {Type}.\n{content}");
                 return 1;
             }
 
