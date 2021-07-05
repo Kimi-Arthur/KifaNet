@@ -18,6 +18,7 @@ namespace Kifa.Web.Api.Controllers {
         protected readonly TServiceClient Client = new();
 
         // Only need to override this if the DataModel can be fill()ed but should not be.
+        // TODO: This is not working properly. Overriden doesn't help.
         protected virtual bool ShouldAutoRefresh => true;
 
         // GET api/values

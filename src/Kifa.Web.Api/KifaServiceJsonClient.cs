@@ -44,6 +44,7 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => {
+                data = data.Clone();
                 data.Metadata ??= Get(data.Id).Metadata;
                 if (data.Metadata?.Id != null) {
                     // The data is linked.
