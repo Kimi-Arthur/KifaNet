@@ -24,11 +24,21 @@ namespace Kifa.Web.Api {
             }
 
             var directory = new DirectoryInfo(prefix);
-            var items = directory.GetFiles("*.json", SearchOption.AllDirectories);
-            return new SortedDictionary<string, TDataModel>(items.Select(i => {
+            var items = directory.GetFiles("*.json", SearchOption.AllDirectories).Select(i => {
                 using var reader = i.OpenText();
                 return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(), Defaults.JsonSerializerSettings);
-            }).ToDictionary(i => i.Id, i => i));
+            }).ToDictionary(i => i.Id, i => i);
+
+            return new SortedDictionary<string, TDataModel>(items.ToDictionary(i => i.Key, i => {
+                if (i.Value.Metadata?.Id == null) {
+                    return i.Value;
+                }
+
+                var value = items[i.Value.Metadata.Id].Clone();
+                value.Metadata.Id = value.Id;
+                value.Id = i.Key;
+                return value;
+            }));
         }
 
         public override TDataModel Get(string id) {
