@@ -8,4 +8,8 @@
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Svg" Version="3.0.84" />
+  </ItemGroup>
+
 </Project>

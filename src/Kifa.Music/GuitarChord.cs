@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Kifa.Service;
+using Svg;
 
 namespace Kifa.Music {
     public class GuitarChord : DataModel {
@@ -14,6 +15,10 @@ namespace Kifa.Music {
 
         /// Arrangements by each finger.
         public List<FingerArrangement> Arrangements { get; set; }
+
+        public SvgDocument GetDemoPicture() {
+            return SvgDocument.Open("chord.svg");
+        }
     }
 
     /// Finger arrangement of one finger on one string.

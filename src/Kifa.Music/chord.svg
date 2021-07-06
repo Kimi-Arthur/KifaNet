@@ -1,32 +1,57 @@
-<svg viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg"
+<svg viewBox="0 0 256 256" width="256" height="256" xmlns="http://www.w3.org/2000/svg"
      xmlns:xlink="http://www.w3.org/1999/xlink">
-  <symbol id="string"  viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-    <line x1="0" y1="0" x2="0" y2="128" stroke="black" stroke-width="1"/>
+  <symbol id="string">
+    <rect fill="black" y="32" width="100%" height="192"/>
   </symbol>
   <symbol id="bar">
-    <line x1="0" y1="0" x2="80" y2="0" stroke="black" stroke-width="1"/>
+    <rect fill="black" x="45.4" height="2" width="163.2"/>
   </symbol>
-  <symbol id="finger">
-    <line x1="50" y1="50" x2="64" y2="64" stroke="blue" stroke-width="4"/>
+  <symbol id="finger" overflow="visible">
+    <circle r="10" fill="black"/>
+  </symbol>
+  <symbol id="open" overflow="visible">
+    <circle r="9" cy="16" fill-opacity="0" stroke="black" stroke-width="2"/>
+  </symbol>
+  <symbol id="cross">
+    <line x1="0" y1="8" x2="16" y2="24" stroke="black"/>
+    <line x1="16" y1="8" x2="0" y2="24" stroke="black"/>
   </symbol>
 
-  <use xlink:href="#string" x="0" y="0" height="1000"/>
+  <use xlink:href="#string" x="45.4" width="5.2"/>
 
-  <use xlink:href="#string" x="16" y="0" width="8"/>
+  <use xlink:href="#string" x="77.9" width="4.2"/>
 
-  <use xlink:href="#string" x="32" y="0" height="100"/>
+  <use xlink:href="#string" x="110.4" width="3.2"/>
 
-  <use xlink:href="#string" x="48" y="0" width="8"/>
+  <use xlink:href="#string" x="142.8" width="2.4"/>
 
-  <use xlink:href="#string" x="64" y="0" width="8"/>
+  <use xlink:href="#string" x="175.2" width="1.6"/>
 
-  <use xlink:href="#string" x="80" y="0" width="8"/>
+  <use xlink:href="#string" x="207.4" width="1.2"/>
 
-  <use xlink:href="#bar" x="0" y="0" height="8" />
+  <use xlink:href="#bar" y="31" height="8"/>
 
-  <use xlink:href="#bar" x="0" y="16" height="8" />
+  <use xlink:href="#bar" y="63"/>
 
-  <use xlink:href="#bar" x="0" y="32" height="8" />
+  <use xlink:href="#bar" y="95"/>
 
-  <use xlink:href="#bar" x="0" y="48" height="8" />
+  <use xlink:href="#bar" y="127"/>
+
+  <use xlink:href="#bar" y="159"/>
+
+  <use xlink:href="#bar" y="191"/>
+
+  <use xlink:href="#bar" y="223"/>
+
+  <use xlink:href="#finger" x="80" y="112"/>
+
+  <use xlink:href="#finger" x="144" y="80"/>
+
+  <use xlink:href="#finger" x="176" y="48"/>
+
+  <use xlink:href="#open" x="112"/>
+
+  <use xlink:href="#open" x="208"/>
+
+  <use xlink:href="#cross" x="40"/>
 </svg>
