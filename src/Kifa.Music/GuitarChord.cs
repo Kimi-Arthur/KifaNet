@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using Kifa.Service;
 using Svg;
 
@@ -16,8 +17,10 @@ namespace Kifa.Music {
         /// Arrangements by each finger.
         public List<FingerArrangement> Arrangements { get; set; }
 
-        public SvgDocument GetDemoPicture() {
-            return SvgDocument.Open("chord.svg");
+        public SvgDocument GetPicture() {
+            using var svgStream = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream($"{typeof(GuitarChord).Namespace}.chord.svg");
+            return SvgDocument.Open<SvgDocument>(svgStream);
         }
     }
 
@@ -35,8 +38,10 @@ namespace Kifa.Music {
     }
 
     public interface GuitarChordServiceClient : KifaServiceClient<GuitarChord> {
+        SvgDocument GetPicture(string id);
     }
 
     public class GuitarChordRestServiceClient : KifaServiceRestClient<GuitarChord>, GuitarChordServiceClient {
+        public SvgDocument GetPicture(string id) => SvgDocument.FromSvg<SvgDocument>(Call<string>("get_picture", id));
     }
 }
