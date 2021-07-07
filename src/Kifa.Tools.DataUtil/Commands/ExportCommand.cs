@@ -14,6 +14,9 @@ namespace Kifa.Tools.DataUtil.Commands {
         [Option('a', "get-all", HelpText = "Whether to get all items that don't even appear in the file.")]
         public bool GetAll { get; set; }
 
+        [Option('c', "compact", HelpText = "Whether to put leaf list into one line.")]
+        public bool Compact { get; set; }
+
         [Value(0, Required = true, HelpText = "File to export data from.")]
         public string File { get; set; }
 
@@ -28,7 +31,7 @@ namespace Kifa.Tools.DataUtil.Commands {
                 return 1;
             }
 
-            var result = logger.LogResult(chef.Export(content, GetAll), "Summary");
+            var result = logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
             if (result.Status != KifaActionStatus.OK) {
                 logger.Error($"Failed to get data for {chef.ModelId}.");
                 return (int) result.Status;

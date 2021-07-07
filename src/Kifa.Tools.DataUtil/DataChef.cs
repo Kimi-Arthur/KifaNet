@@ -24,7 +24,7 @@ namespace Kifa.Tools.DataUtil {
 
         string ModelId { get; }
         KifaActionResult Import(string data);
-        KifaActionResult<string> Export(string data, bool getAll);
+        KifaActionResult<string> Export(string data, bool getAll, bool compact);
         KifaActionResult Refresh(string id);
         KifaActionResult Link(string target, string link);
     }
@@ -46,15 +46,20 @@ namespace Kifa.Tools.DataUtil {
                 $"Update {Client.ModelId}({string.Join(", ", items.Select(item => item.Id))})");
         }
 
-        public KifaActionResult<string> Export(string data, bool getAll) {
+        public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
             var items = new Deserializer().Deserialize<List<TDataModel>>(data).Select(item => item.Id).ToList();
 
             var updatedItems = getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
 
-            var serializer = new SerializerBuilder().WithEventEmitter(next => new FlowStyleScalarSequenceEmitter(next))
-                .WithIndentedSequences().ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+            var serializerBuilder = new SerializerBuilder().WithIndentedSequences()
+                .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
+            if (compact) {
+                serializerBuilder =
+                    serializerBuilder.WithEventEmitter(next => new FlowStyleScalarSequenceEmitter(next));
+            }
+
             return new KifaActionResult<string>(
-                $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializer.Serialize(new List<TDataModel> {item})))}");
+                $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> {item})))}");
         }
 
         public KifaActionResult Refresh(string id) => Client.Refresh(id);
