@@ -8,7 +8,8 @@ namespace Kifa.Languages.German.Goethe {
     public class GoetheGermanWord : DataModel {
         public const string ModelId = "goethe/words";
 
-        static readonly Regex RootWordPattern = new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein)?$");
+        static readonly Regex RootWordPattern =
+            new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen)?$");
 
         public string Level { get; set; }
         public string Form { get; set; }
