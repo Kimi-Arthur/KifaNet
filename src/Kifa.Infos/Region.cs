@@ -3,59 +3,36 @@ using System.Linq;
 
 namespace Kifa.Infos {
     public class Region : JsonSerializable {
-        public static readonly Region China = new Region {
-            Name = "China",
-            Code = "CN"
-        };
+        public static readonly Region Canada = new() {Name = "Canada", Code = "CA"};
 
-        public static readonly Region Germany = new Region {
-            Name = "Germany",
-            Code = "DE"
-        };
+        public static readonly Region China = new() {Name = "China", Code = "CN"};
 
-        public static readonly Region UnitedKingdom = new Region {
-            Name = "United Kingdom",
-            Code = "GB"
-        };
+        public static readonly Region Germany = new() {Name = "Germany", Code = "DE"};
 
-        public static readonly Region Italy = new Region {
-            Name = "Italy",
-            Code = "IT"
-        };
+        public static readonly Region UnitedKingdom = new() {Name = "United Kingdom", Code = "GB"};
 
-        public static readonly Region Japan = new Region {
-            Name = "Japan",
-            Code = "JP"
-        };
+        public static readonly Region Italy = new() {Name = "Italy", Code = "IT"};
 
-        public static readonly Region Poland = new Region {
-            Name = "Poland",
-            Code = "PL"
-        };
+        public static readonly Region Japan = new() {Name = "Japan", Code = "JP"};
 
-        public static readonly Region UnitedStates = new Region {
-            Name = "United States",
-            Code = "US"
-        };
+        public static readonly Region Poland = new() {Name = "Poland", Code = "PL"};
 
-        public static readonly Region Unknown = new Region {
-            Name = "Unknown",
-            Code = ""
-        };
+        public static readonly Region UnitedStates = new() {Name = "United States", Code = "US"};
+
+        public static readonly Region Unknown = new() {Name = "Unknown", Code = ""};
 
         public static readonly Dictionary<string, Region> All = new List<Region> {
-            China,
-            Germany,
-            UnitedKingdom,
-            Italy,
-            Japan,
-            Poland,
-            UnitedStates,
-            Unknown
-        }.SelectMany(r => new List<(string key, Region value)> {
-            (r.Code, r),
-            (r.Name, r)
-        }).ToDictionary(tuple => tuple.key, tuple => tuple.value);
+                Canada,
+                China,
+                Germany,
+                UnitedKingdom,
+                Italy,
+                Japan,
+                Poland,
+                UnitedStates,
+                Unknown
+            }.SelectMany(r => new List<(string key, Region value)> {(r.Code, r), (r.Name, r)})
+            .ToDictionary(tuple => tuple.key, tuple => tuple.value);
 
         public string Name { get; set; }
         public string Code { get; set; }
