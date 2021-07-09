@@ -3,3 +3,6 @@ GET {{server}}/api/configs/swisscom/default
 
 ### Update quota
 POST {{server}}/api/configs/swisscom/$update_quota?id=default&accountId=s0000
+
+### Get
+GET {{server}}/api/accounts/swisscom/s0000
