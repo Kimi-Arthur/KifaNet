@@ -65,6 +65,8 @@ namespace Kifa.Cloud.Swisscom {
 
         string GetToken() {
             var options = new ChromeOptions();
+            options.AddArgument(
+                "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36");
             options.AddArgument("--headless");
             using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(), WebDriverTimeout);
 
