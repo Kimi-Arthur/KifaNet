@@ -42,7 +42,7 @@ namespace Kifa.Cloud.Swisscom {
 
         DateTime lastRefreshed = DateTime.MinValue;
 
-        static readonly TimeSpan RefreshInterval = TimeSpan.FromHours(4);
+        static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(7);
 
         public string AccessToken { get; set; }
 

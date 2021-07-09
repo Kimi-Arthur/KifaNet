@@ -21,6 +21,8 @@ namespace Kifa.Web.Api.Controllers {
         // TODO: This is not working properly. Overriden doesn't help.
         protected virtual bool ShouldAutoRefresh => true;
 
+        protected virtual bool AlwaysAutoRefresh => false;
+
         // GET api/values
         [HttpGet]
         public ActionResult<SortedDictionary<string, TDataModel>> List() {
@@ -63,6 +65,10 @@ namespace Kifa.Web.Api.Controllers {
         }
 
         bool NeedRefresh(TDataModel value) {
+            if (AlwaysAutoRefresh) {
+                return true;
+            }
+
             if (RefreshIntervals == null || !ShouldAutoRefresh) {
                 return false;
             }
