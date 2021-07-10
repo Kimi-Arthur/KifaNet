@@ -10,25 +10,25 @@ Content-Type: application/x-yaml
 Id: 半沢直樹
 
 ### Add Single
-POST {{server}}/api/tv_shows/アンサング・シンデレラ 病院薬剤師の処方箋
+POST {{server}}/api/tv_shows/觉醒年代
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-TmdbId: '106002'
-Language: ja
+TmdbId: '117954'
+Language: zh
 PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/LEGAL HIGH
+POST {{server}}/api/tv_shows/屌丝男士
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 PatternId: multi_season
 SeasonIdWidth: 2
 EpisodeIdWidth: 2
-TmdbId: '46234'
-Language: ja
+TmdbId: '75129'
+Language: zh
 
 ### Manual Fix of data
 PATCH {{server}}/api/tv_shows/Westworld
@@ -42,7 +42,7 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/LEGAL HIGH
+GET {{server}}/api/tv_shows/觉醒年代
 Accept: application/x-yaml
 
 ### Format
