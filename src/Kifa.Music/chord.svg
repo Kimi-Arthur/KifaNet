@@ -6,6 +6,11 @@
   <symbol id="bar">
     <rect fill="black" x="45.4" height="2" width="163.2"/>
   </symbol>
+  <symbol id="top_bar">
+    <rect fill="black" x="45.4" y="44" height="8" width="163.2"/>
+    <circle cx="45.4" cy="48" r="4" fill="black"/>
+    <circle cx="208.6" cy="48" r="4" fill="black"/>
+  </symbol>
   <symbol id="finger" overflow="visible">
     <circle r="14" fill="black"/>
   </symbol>
@@ -52,7 +57,7 @@
 
   <use xlink:href="#string" x="207.4" width="1.2"/>
 
-  <use xlink:href="#bar" y="47" height="8"/>
+  <use xlink:href="#bar" y="47"/>
 
   <use xlink:href="#bar" y="95"/>
 

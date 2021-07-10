@@ -33,6 +33,8 @@ namespace Kifa.Music {
                 6
             };
 
+            var maxFret = 0;
+
             foreach (var arrangement in Arrangements) {
                 if (arrangement.Finger == 0) {
                     foreach (var s in arrangement.Strings) {
@@ -51,6 +53,7 @@ namespace Kifa.Music {
 
                 foreach (var s in arrangement.Strings) {
                     document.Children.Add(GetFingering(arrangement.Finger, arrangement.Fret, s));
+                    maxFret = Math.Max(maxFret, arrangement.Fret);
                     leftStrings.Remove(s);
                 }
             }
@@ -59,8 +62,17 @@ namespace Kifa.Music {
                 document.Children.Add(GetCross(s));
             }
 
+            if (maxFret <= 4) {
+                document.Children.Add(GetTopBar());
+            }
+
             return document;
         }
+
+        static SvgElement GetTopBar() =>
+            new SvgUse {
+                ReferencedElement = new Uri("#top_bar", UriKind.Relative)
+            };
 
         static SvgElement GetOpenString(int s) =>
             new SvgUse {
