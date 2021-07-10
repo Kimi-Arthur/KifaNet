@@ -33,7 +33,15 @@ namespace Kifa.Music {
                 6
             };
 
-            var maxFret = 0;
+            var maxFret = Arrangements.Max(a => a.Fret);
+            var minFret = 1;
+
+            if (maxFret <= 4) {
+                document.Children.Add(GetTopBar());
+            } else {
+                minFret = Arrangements.Where(a => a.Finger != 0).Min(a => a.Fret);
+                document.Children.Add(GetFret(minFret));
+            }
 
             foreach (var arrangement in Arrangements) {
                 if (arrangement.Finger == 0) {
@@ -47,13 +55,12 @@ namespace Kifa.Music {
 
                 if (arrangement.Strings.Count > 1) {
                     for (var s = arrangement.Strings.Min(); s < arrangement.Strings.Max(); s++) {
-                        document.Children.Add(GetFingerBar(arrangement.Fret, s));
+                        document.Children.Add(GetFingerBar(arrangement.Fret - minFret + 1, s));
                     }
                 }
 
                 foreach (var s in arrangement.Strings) {
-                    document.Children.Add(GetFingering(arrangement.Finger, arrangement.Fret, s));
-                    maxFret = Math.Max(maxFret, arrangement.Fret);
+                    document.Children.Add(GetFingering(arrangement.Finger, arrangement.Fret - minFret + 1, s));
                     leftStrings.Remove(s);
                 }
             }
@@ -62,12 +69,23 @@ namespace Kifa.Music {
                 document.Children.Add(GetCross(s));
             }
 
-            if (maxFret <= 4) {
-                document.Children.Add(GetTopBar());
-            }
-
             return document;
         }
+
+        static SvgElement GetFret(int minFret) =>
+            new SvgText {
+                FontFamily = "sans-serif",
+                FontSize = 24,
+                TextAnchor = SvgTextAnchor.End,
+                X = new SvgUnitCollection {
+                    32
+                },
+                Y = new SvgUnitCollection {
+                    78
+                },
+                Text = $"{minFret}"
+            };
+
 
         static SvgElement GetTopBar() =>
             new SvgUse {
