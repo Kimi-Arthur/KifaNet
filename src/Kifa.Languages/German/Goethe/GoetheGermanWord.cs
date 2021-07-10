@@ -35,10 +35,14 @@ namespace Kifa.Languages.German.Goethe {
                 return null;
             }
 
-            var originalForm = Form;
-            Form = new GermanWord {
+            var word = new GermanWord {
                 Id = RootWord
-            }.KeyForm;
+            };
+
+            word.Fill();
+
+            var originalForm = Form;
+            Form = word.KeyForm;
 
             return originalForm != Form;
         }
