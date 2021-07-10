@@ -61,32 +61,4 @@
   <use xlink:href="#bar" y="191"/>
 
   <use xlink:href="#bar" y="239"/>
-
-  <use xlink:href="#fbar" x="48" y="58"/>
-
-  <use xlink:href="#fbar" x="80" y="58"/>
-
-  <use xlink:href="#fbar" x="112" y="58"/>
-
-  <use xlink:href="#fbar" x="144" y="58"/>
-
-  <use xlink:href="#fbar" x="176" y="58"/>
-
-  <use xlink:href="#f1" x="48" y="72"/>
-
-  <use xlink:href="#f1" x="176" y="72"/>
-
-  <use xlink:href="#f1" x="208" y="72"/>
-
-  <use xlink:href="#f2" x="144" y="120"/>
-
-  <use xlink:href="#f4" x="80" y="168"/>
-
-  <use xlink:href="#f3" x="112" y="168"/>
-
-  <use xlink:href="#open" x="112"/>
-
-  <use xlink:href="#open" x="208"/>
-
-  <use xlink:href="#cross" x="36"/>
 </svg>

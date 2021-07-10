@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Kifa.Service;
 using Svg;
@@ -20,8 +22,71 @@ namespace Kifa.Music {
         public SvgDocument GetPicture() {
             using var svgStream = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream($"{typeof(GuitarChord).Namespace}.chord.svg");
-            return SvgDocument.Open<SvgDocument>(svgStream);
+            var document = SvgDocument.Open<SvgDocument>(svgStream);
+
+            var leftStrings = new HashSet<int> {
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+            };
+
+            foreach (var arrangement in Arrangements) {
+                if (arrangement.Finger == 0) {
+                    foreach (var s in arrangement.Strings) {
+                        document.Children.Add(GetOpenString(s));
+                        leftStrings.Remove(s);
+                    }
+
+                    continue;
+                }
+
+                if (arrangement.Strings.Count > 1) {
+                    for (var s = arrangement.Strings.Min(); s < arrangement.Strings.Max(); s++) {
+                        document.Children.Add(GetFingerBar(arrangement.Fret, s));
+                    }
+                }
+
+                foreach (var s in arrangement.Strings) {
+                    document.Children.Add(GetFingering(arrangement.Finger, arrangement.Fret, s));
+                    leftStrings.Remove(s);
+                }
+            }
+
+            foreach (var s in leftStrings) {
+                document.Children.Add(GetCross(s));
+            }
+
+            return document;
         }
+
+        static SvgElement GetOpenString(int s) =>
+            new SvgUse {
+                ReferencedElement = new Uri("#open", UriKind.Relative),
+                X = 48 + 32 * (6 - s)
+            };
+
+        static SvgElement GetCross(int s) =>
+            new SvgUse {
+                ReferencedElement = new Uri("#cross", UriKind.Relative),
+                X = 36 + 32 * (6 - s)
+            };
+
+        static SvgElement GetFingerBar(int fret, int s) =>
+            new SvgUse {
+                ReferencedElement = new Uri("#fbar", UriKind.Relative),
+                X = 16 + 32 * (6 - s),
+                Y = 10 + 48 * fret
+            };
+
+        static SvgElement GetFingering(int finger, int fret, int s) =>
+            new SvgUse {
+                ReferencedElement = new Uri($"#f{finger}", UriKind.Relative),
+                X = 48 + 32 * (6 - s),
+                Y = 24 + 48 * fret
+            };
     }
 
     /// Finger arrangement of one finger on one string.
