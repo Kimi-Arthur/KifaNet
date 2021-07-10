@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text;
 using Kifa.Music;
 using Microsoft.AspNetCore.Mvc;
 using Svg;
@@ -8,8 +10,10 @@ namespace Kifa.Web.Api.Controllers.Music {
         protected override bool ShouldAutoRefresh => false;
 
         [HttpGet("$get_picture")]
-        [HttpPost("$get_picture")]
-        public KifaApiActionResult<string> GetPicture(string id) => Client.GetPicture(id).GetXML();
+        public FileStreamResult GetPicture(string id) =>
+            new(new MemoryStream(new UTF8Encoding(false).GetBytes(Client.GetPicture(id).GetXML())), "image/svg+xml") {
+                EnableRangeProcessing = true
+            };
     }
 
     public class GuitarChordJsonServiceClient : KifaServiceJsonClient<GuitarChord>, GuitarChordServiceClient {
