@@ -5,4 +5,7 @@ GET {{server}}/api/configs/swisscom/default
 POST {{server}}/api/configs/swisscom/$update_quota?id=default&accountId=s0000
 
 ### Get
-GET {{server}}/api/accounts/swisscom/s0000
+GET {{server}}/api/accounts/swisscom/s0001
+
+### Get Top Accounts
+GET {{server}}/api/accounts/swisscom/$get_top_accounts

@@ -20,10 +20,9 @@ namespace Kifa.Cloud.Swisscom {
 
         public static TimeSpan PageLoadWait { get; set; } = TimeSpan.FromSeconds(3);
 
-        static KifaServiceClient<SwisscomAccount> client;
+        static SwisscomAccountServiceClient client;
 
-        public static KifaServiceClient<SwisscomAccount> Client =>
-            client ??= new KifaServiceRestClient<SwisscomAccount>();
+        public static SwisscomAccountServiceClient Client => client ??= new SwisscomAccountRestServiceClient();
 
         public string Username { get; set; }
         public string Password { get; set; }
@@ -37,12 +36,6 @@ namespace Kifa.Cloud.Swisscom {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         readonly HttpClient httpClient = new();
-
-        string token;
-
-        DateTime lastRefreshed = DateTime.MinValue;
-
-        static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(7);
 
         public string AccessToken { get; set; }
 
@@ -102,5 +95,14 @@ namespace Kifa.Cloud.Swisscom {
                 UsedQuota = data.Value<long>("TotalBytes");
                 TotalQuota = data.Value<long>("StorageLimit");
             });
+    }
+
+    public interface SwisscomAccountServiceClient : KifaServiceClient<SwisscomAccount> {
+        List<SwisscomAccount> GetTopAccounts();
+    }
+
+    public class
+        SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAccount>, SwisscomAccountServiceClient {
+        public List<SwisscomAccount> GetTopAccounts() => Call<List<SwisscomAccount>>("get_top_accounts");
     }
 }
