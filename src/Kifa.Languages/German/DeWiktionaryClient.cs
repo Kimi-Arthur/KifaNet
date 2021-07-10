@@ -6,9 +6,9 @@ using HtmlAgilityPack;
 
 namespace Kifa.Languages.German {
     public class DeWiktionaryClient {
-        static HttpClient wiktionaryClient = new HttpClient();
+        static HttpClient wiktionaryClient = new();
 
-        static readonly Dictionary<string, VerbFormType> FormMapping = new Dictionary<string, VerbFormType> {
+        static readonly Dictionary<string, VerbFormType> FormMapping = new() {
             ["Imperative"] = VerbFormType.Imperative,
             ["Präsens"] = VerbFormType.IndicativePresent,
             ["Indikativ und Konjunktiv"] = VerbFormType.IndicativePresent,
@@ -16,7 +16,7 @@ namespace Kifa.Languages.German {
             ["Perfekt"] = VerbFormType.IndicativePerfect
         };
 
-        static readonly Dictionary<string, Person> PersonMapping = new Dictionary<string, Person> {
+        static readonly Dictionary<string, Person> PersonMapping = new() {
             ["1. Person Singular"] = Person.Ich,
             ["Sg. 1. Pers."] = Person.Ich,
             ["2. Person Singular"] = Person.Du,
@@ -32,7 +32,7 @@ namespace Kifa.Languages.German {
             ["Höflichkeitsform"] = Person.Sie
         };
 
-        static readonly Dictionary<Person, string> PersonPrefixes = new Dictionary<Person, string> {
+        static readonly Dictionary<Person, string> PersonPrefixes = new() {
             [Person.Ich] = "ich",
             [Person.Du] = "du",
             [Person.Er] = "<small>er/sie/es</small>",
@@ -134,7 +134,7 @@ namespace Kifa.Languages.German {
                             var audioNodes = node.SelectNodes($"(.//a[@class='internal'])");
                             if (audioNodes != null) {
                                 word.PronunciationAudioLinks[Source.Wiktionary] =
-                                    word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary, new());
+                                    word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary, new HashSet<string>());
                                 word.PronunciationAudioLinks[Source.Wiktionary].UnionWith(audioNodes
                                     .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}").ToHashSet());
                             }

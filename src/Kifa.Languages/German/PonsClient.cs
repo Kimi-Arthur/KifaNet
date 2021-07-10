@@ -10,14 +10,14 @@ namespace Kifa.Languages.German {
 
         const string SelectField = "data-pons-flection-id";
 
-        static readonly Dictionary<VerbFormType, string> verbFormIds = new Dictionary<VerbFormType, string> {
+        static readonly Dictionary<VerbFormType, string> verbFormIds = new() {
             [VerbFormType.IndicativePresent] = "INDIKATIV_PRAESENS",
             [VerbFormType.IndicativePreterite] = "INDIKATIV_PRAETERITUM",
             [VerbFormType.IndicativePerfect] = "INDIKATIV_PERFEKT",
             [VerbFormType.Imperative] = "KONJUNKTIV_PRAESENS"
         };
 
-        static readonly Dictionary<Person, string> personIds = new Dictionary<Person, string> {
+        static readonly Dictionary<Person, string> personIds = new() {
             [Person.Ich] = "1S",
             [Person.Du] = "2S",
             [Person.Er] = "3S",
@@ -52,7 +52,7 @@ namespace Kifa.Languages.German {
             var audioLinkNode = wordNode.SelectSingleNode(".//dl[1]");
             if (audioLinkNode != null) {
                 word.PronunciationAudioLinks[Source.Pons] =
-                    new() {$"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"};
+                    new HashSet<string>() {$"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"};
             }
 
             word.Meanings.Add(new Meaning {

@@ -26,10 +26,13 @@ namespace Kifa.Languages.German {
         public GermanWord GetWord(string wordId) =>
             new() {
                 Id = wordId,
-                PronunciationAudioLinks = new() {
+                PronunciationAudioLinks = new Dictionary<Source, HashSet<string>> {
                     {
-                        Source.Duden,
-                        AudioLinks.ContainsKey(wordId) ? new () {AudioLinks.GetValueOrDefault(wordId)} : null
+                        Source.Duden, AudioLinks.ContainsKey(wordId)
+                            ? new HashSet<string> {
+                                AudioLinks.GetValueOrDefault(wordId)
+                            }
+                            : null
                     }
                 }
             };

@@ -30,19 +30,55 @@ namespace Kifa.Languages.German {
         public Dictionary<Source, HashSet<string>> PronunciationAudioLinks { get; set; } = new();
 
         // Shared for any meaning.
-        public VerbForms VerbForms { get; set; } = new VerbForms();
+        public VerbForms VerbForms { get; set; } = new();
 
         [JsonIgnore]
-        public List<string> KeyVerbForms =>
-            new() {
-                VerbForms[VerbFormType.IndicativePresent][Person.Er],
-                VerbForms[VerbFormType.IndicativePreterite][Person.Er],
-                VerbForms[VerbFormType.IndicativePerfect][Person.Er]
+        public string KeyForm =>
+            Type switch {
+                WordType.Verb =>
+                    $"{VerbForms[VerbFormType.IndicativePresent][Person.Er]}, {VerbForms[VerbFormType.IndicativePreterite][Person.Er]}, {VerbForms[VerbFormType.IndicativePerfect][Person.Er]}",
+                WordType.Noun => GetSimplifiedPlural(Id, NounForms[Case.Nominative].GetValueOrDefault(Number.Plural)),
+                _ => ""
             };
+
+        static Dictionary<char, char> UmlautMapping = new() {
+            {'a', 'ä'},
+            {'o', 'ö'},
+            {'u', 'ü'},
+            {'A', 'Ä'},
+            {'O', 'Ö'},
+            {'U', 'Ü'}
+        };
+
+        static string GetSimplifiedPlural(string original, string plural) {
+            if (plural == null) {
+                return "(Sg.)";
+            }
+
+            if (plural.StartsWith(original)) {
+                // Add a suffix.
+                return $"-{plural[original.Length..]}";
+            }
+
+            // Add a suffix and umlaut.
+            var hasUmlaut = false;
+            foreach (var (ochar, pchar) in original.Zip(plural)) {
+                if (ochar != pchar) {
+                    if (UmlautMapping[ochar] != pchar || hasUmlaut) {
+                        // Only full text
+                        return plural;
+                    }
+
+                    hasUmlaut = true;
+                }
+            }
+
+            return !hasUmlaut ? plural : $"¨-{plural[original.Length..]}";
+        }
 
         public Gender Gender { get; set; }
 
-        public NounForms NounForms { get; set; } = new NounForms();
+        public NounForms NounForms { get; set; } = new();
 
         public string GetNounFormWithArticle(Case formCase, Number formNumber) =>
             NounForms.GetValueOrDefault(formCase, new Dictionary<Number, string>()).ContainsKey(formNumber)
@@ -157,7 +193,7 @@ namespace Kifa.Languages.German {
         public WordType Type { get; set; }
         public string Translation { get; set; }
         public string TranslationWithNotes { get; set; }
-        public List<Example> Examples { get; set; } = new List<Example>();
+        public List<Example> Examples { get; set; } = new();
     }
 
     public class Breakdown {

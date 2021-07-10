@@ -17,6 +17,7 @@ namespace Kifa.Service {
         public string Id { get; set; }
 
         [JsonProperty("$metadata")]
+        [YamlIgnore]
         public DataMetadata Metadata { get; set; }
 
         public virtual bool? Fill() => null;

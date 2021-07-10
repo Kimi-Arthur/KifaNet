@@ -111,7 +111,7 @@ namespace Kifa.Tools.NoteUtil.Commands {
 
             foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
                 parts[index] = columnName switch {
-                    "Konjugation" => string.Join(", ", verb.KeyVerbForms),
+                    "Konjugation" => verb.KeyForm,
                     "Pronunciation" => $"[[{verb.Pronunciation}]]({verb.PronunciationAudioLink})",
                     "Meaning" => verb.Meaning,
                     _ => parts[index]

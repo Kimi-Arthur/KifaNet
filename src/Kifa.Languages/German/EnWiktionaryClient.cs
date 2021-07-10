@@ -13,9 +13,9 @@ namespace Kifa.Languages.German {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         const string TranslationDivider = "–";
-        static readonly HashSet<string> NextLevelPrefixes = new HashSet<string> {"Etymology", "Pronunciation"};
+        static readonly HashSet<string> NextLevelPrefixes = new() {"Etymology", "Pronunciation"};
 
-        static readonly HashSet<string> SkippedSections = new HashSet<string> {
+        static readonly HashSet<string> SkippedSections = new() {
             "Further reading",
             "Alternative forms",
             "Etymology",
@@ -156,7 +156,7 @@ namespace Kifa.Languages.German {
             return Normalize(string.Join("", line.EnumChildren().Select(GetText)));
         }
 
-        static readonly Regex SpacesPattern = new Regex(" +");
+        static readonly Regex SpacesPattern = new(" +");
         static string Normalize(string text) => SpacesPattern.Replace(text.Trim(), " ");
 
         static string GetText(Node node) {
