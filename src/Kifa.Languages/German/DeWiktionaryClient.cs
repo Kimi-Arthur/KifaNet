@@ -49,7 +49,9 @@ namespace Kifa.Languages.German {
             var inSection = false;
             var inAudio = false;
             var wordType = WordType.Unknown;
-            var word = new GermanWord {Id = wordId};
+            var word = new GermanWord {
+                Id = wordId
+            };
             foreach (var node in pageContentNodes) {
                 if (inDeutsch) {
                     if (node.Name == "h2") {
@@ -100,19 +102,23 @@ namespace Kifa.Languages.German {
                             });
 
                             word.NounForms[Case.Nominative] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(1, 1), [Number.Plural] = selector(1, 2)
+                                [Number.Singular] = selector(1, 1),
+                                [Number.Plural] = selector(1, 2)
                             };
 
                             word.NounForms[Case.Genitive] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(2, 1), [Number.Plural] = selector(2, 2)
+                                [Number.Singular] = selector(2, 1),
+                                [Number.Plural] = selector(2, 2)
                             };
 
                             word.NounForms[Case.Dative] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(3, 1), [Number.Plural] = selector(3, 2)
+                                [Number.Singular] = selector(3, 1),
+                                [Number.Plural] = selector(3, 2)
                             };
 
                             word.NounForms[Case.Accusative] = new Dictionary<Number, string> {
-                                [Number.Singular] = selector(4, 1), [Number.Plural] = selector(4, 2)
+                                [Number.Singular] = selector(4, 1),
+                                [Number.Plural] = selector(4, 2)
                             };
 
                             foreach (var nounForm in word.NounForms.Values) {
@@ -134,7 +140,8 @@ namespace Kifa.Languages.German {
                             var audioNodes = node.SelectNodes($"(.//a[@class='internal'])");
                             if (audioNodes != null) {
                                 word.PronunciationAudioLinks[Source.Wiktionary] =
-                                    word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary, new HashSet<string>());
+                                    word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
+                                        new HashSet<string>());
                                 word.PronunciationAudioLinks[Source.Wiktionary].UnionWith(audioNodes
                                     .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}").ToHashSet());
                             }

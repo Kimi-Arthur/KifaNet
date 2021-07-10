@@ -37,7 +37,7 @@ namespace Kifa.Languages.German {
             Type switch {
                 WordType.Verb =>
                     $"{VerbForms[VerbFormType.IndicativePresent][Person.Er]}, {VerbForms[VerbFormType.IndicativePreterite][Person.Er]}, {VerbForms[VerbFormType.IndicativePerfect][Person.Er]}",
-                WordType.Noun => GetSimplifiedPlural(Id, NounForms[Case.Nominative].GetValueOrDefault(Number.Plural)),
+                WordType.Noun => GetSimplifiedPlural(Id, NounForms),
                 _ => ""
             };
 
@@ -50,30 +50,38 @@ namespace Kifa.Languages.German {
             {'U', 'Ü'}
         };
 
-        static string GetSimplifiedPlural(string original, string plural) {
-            if (plural == null) {
-                return "(Sg.)";
+        static string GetSimplifiedPlural(string original, NounForms nounForms) {
+            if (!nounForms.ContainsKey(Case.Nominative)) {
+                return "";
             }
 
-            if (plural.StartsWith(original)) {
-                // Add a suffix.
-                return $"-{plural[original.Length..]}";
-            }
-
-            // Add a suffix and umlaut.
-            var hasUmlaut = false;
-            foreach (var (ochar, pchar) in original.Zip(plural)) {
-                if (ochar != pchar) {
-                    if (UmlautMapping[ochar] != pchar || hasUmlaut) {
-                        // Only full text
-                        return plural;
-                    }
-
-                    hasUmlaut = true;
+            if (nounForms[Case.Nominative].TryGetValue(Number.Plural, out var plural)) {
+                if (!nounForms[Case.Nominative].ContainsKey(Number.Singular)) {
+                    return "(Pl.)";
                 }
+
+                if (plural.StartsWith(original)) {
+                    // Add a suffix.
+                    return $"-{plural[original.Length..]}";
+                }
+
+                // Add a suffix and umlaut.
+                var hasUmlaut = false;
+                foreach (var (ochar, pchar) in original.Zip(plural)) {
+                    if (ochar != pchar) {
+                        if (UmlautMapping[ochar] != pchar || hasUmlaut) {
+                            // Only full text
+                            return plural;
+                        }
+
+                        hasUmlaut = true;
+                    }
+                }
+
+                return !hasUmlaut ? plural : $"¨-{plural[original.Length..]}";
             }
 
-            return !hasUmlaut ? plural : $"¨-{plural[original.Length..]}";
+            return "(Sg.)";
         }
 
         public Gender Gender { get; set; }

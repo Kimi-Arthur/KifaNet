@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Kifa.Languages.German;
 using Xunit;
 
@@ -65,15 +66,16 @@ namespace Kifa.Languages.Tests {
         [Theory]
         [InlineData("Lernen", "Lernen", null, "Lernens", null, "Lernen", null, "Lernen", null, "(Sg.)")]
         [InlineData("Buch", "Buch", "Bücher", "Buchs", "Bücher", "Buch", "Büchern", "Buch", "Bücher", "¨-er")]
+        [InlineData("Daten", null, "Daten", null, "Daten", null, "Daten", null, "Daten", "(Pl.)")]
         public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp, string ds, string dp,
             string @as, string ap, string kf) {
             var client = new DeWiktionaryClient();
             var word = client.GetWord(id);
-            word.Meanings.Add(new Meaning() {
+            word.Meanings.Add(new Meaning {
                 Type = WordType.Noun
             });
 
-            Assert.Equal(ns, word.NounForms[Case.Nominative][Number.Singular]);
+            Assert.Equal(ns, word.NounForms[Case.Nominative].GetValueOrDefault(Number.Singular));
             Assert.Equal(kf, word.KeyForm);
         }
     }
