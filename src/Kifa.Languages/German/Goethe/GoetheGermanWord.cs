@@ -35,6 +35,10 @@ namespace Kifa.Languages.German.Goethe {
                 return null;
             }
 
+            if (Form != "¨-e") {
+                return false;
+            }
+
             var word = new GermanWord {
                 Id = RootWord
             };
