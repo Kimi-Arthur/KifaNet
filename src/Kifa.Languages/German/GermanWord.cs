@@ -35,11 +35,21 @@ namespace Kifa.Languages.German {
         [JsonIgnore]
         public string KeyForm =>
             Type switch {
-                WordType.Verb =>
-                    $"{VerbForms[VerbFormType.IndicativePresent][Person.Er]}, {VerbForms[VerbFormType.IndicativePreterite][Person.Er]}, {VerbForms[VerbFormType.IndicativePerfect][Person.Er]}",
+                WordType.Verb => GetKeyVerbForm(Id, VerbForms),
                 WordType.Noun => GetSimplifiedPlural(Id, NounForms),
-                _ => ""
+                _ => null
             };
+
+        static string GetKeyVerbForm(string id, VerbForms verbForms) {
+            if (!verbForms.ContainsKey(VerbFormType.IndicativePresent) ||
+                !verbForms.ContainsKey(VerbFormType.IndicativePreterite) ||
+                !verbForms.ContainsKey(VerbFormType.IndicativePerfect)) {
+                return $"<{id}>";
+            }
+
+            return
+                $"{verbForms[VerbFormType.IndicativePresent][Person.Er]}, {verbForms[VerbFormType.IndicativePreterite][Person.Er]}, {verbForms[VerbFormType.IndicativePerfect][Person.Er]}";
+        }
 
         static Dictionary<char, char> UmlautMapping = new() {
             {'a', 'ä'},
@@ -52,7 +62,7 @@ namespace Kifa.Languages.German {
 
         static string GetSimplifiedPlural(string original, NounForms nounForms) {
             if (!nounForms.ContainsKey(Case.Nominative)) {
-                return "";
+                return $"<{original}>";
             }
 
             if (nounForms[Case.Nominative].TryGetValue(Number.Plural, out var plural)) {

@@ -35,7 +35,7 @@ namespace Kifa.Languages.German.Goethe {
                 return null;
             }
 
-            if (Form != "¨-e") {
+            if (Form != "¨-e" && Form != "") {
                 return false;
             }
 
