@@ -9,7 +9,7 @@ namespace Kifa.Languages.German.Goethe {
         public const string ModelId = "goethe/words";
 
         static readonly Regex RootWordPattern =
-            new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen)?$");
+            new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen| werden)?$");
 
         public string Level { get; set; }
         public string Form { get; set; }
