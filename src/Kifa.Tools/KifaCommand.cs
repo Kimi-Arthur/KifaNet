@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.Configs;
+using NLog;
 
 namespace Kifa.Tools {
     public abstract class KifaCommand {
@@ -84,7 +84,9 @@ namespace Kifa.Tools {
                 Console.WriteLine($"[{i + 1}] {choiceStrings[i]}");
             }
 
-            Console.Write($"Choose one from above {choiceName} [1-{choices.Count}]: ");
+            Console.WriteLine($"\nDefault [1]: {choiceStrings[0]}\n");
+
+            Console.Write($"Choose one from above {choiceName} [1-{choices.Count}], 1 is the default: ");
             var line = Console.ReadLine();
             var choice = string.IsNullOrEmpty(line) ? 0 : int.Parse(line) - 1;
             return (choice < 0 ? negative : choices[choice], choice);
@@ -123,13 +125,12 @@ namespace Kifa.Tools {
                 $"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
             var reply = Console.ReadLine() ?? "";
             var chosen = reply == "" ? choices :
-                reply == "." ? new List<TChoice>() : reply.Split(',').SelectMany(i
-                    => i.Contains('-')
-                        ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
-                            .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
-                        : new List<TChoice> {
-                            choices[int.Parse(i)]
-                        }).ToList();
+                reply == "." ? new List<TChoice>() : reply.Split(',').SelectMany(i => i.Contains('-')
+                    ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
+                        .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
+                    : new List<TChoice> {
+                        choices[int.Parse(i)]
+                    }).ToList();
             logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
             return chosen;
         }
