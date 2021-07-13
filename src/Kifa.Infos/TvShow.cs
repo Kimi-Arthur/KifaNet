@@ -10,14 +10,13 @@ namespace Kifa.Infos {
 
         const string Part1Suffix = " - Part 1";
 
-        static Dictionary<Language, Func<int, string>> StandardSeasonNames =
-            new Dictionary<Language, Func<int, string>> {
-                [Language.German] = s => $"Staffel {s}",
-                [Language.English] = s => $"Season {s}",
-                [Language.Japanese] = s => $"シーズン{s}",
-                [Language.Chinese] = s => $"第{GetChineseNumber(s)}季",
-                [Language.Italian] = s => $"Stagione {s}"
-            };
+        static Dictionary<Language, Func<int, string>> StandardSeasonNames = new() {
+            [Language.German] = s => $"Staffel {s}",
+            [Language.English] = s => $"Season {s}",
+            [Language.Japanese] = s => $"シーズン{s}",
+            [Language.Chinese] = s => $"第{GetChineseNumber(s)}季",
+            [Language.Italian] = s => $"Stagione {s}"
+        };
 
         static TvShowServiceClient client;
 
@@ -90,7 +89,9 @@ namespace Kifa.Infos {
         }
 
         public string Format(Season season, Episode episode) {
-            return Format(season, new List<Episode> {episode});
+            return Format(season, new List<Episode> {
+                episode
+            });
         }
 
         public string Format(Season season, List<Episode> episodes) {
@@ -170,7 +171,9 @@ namespace Kifa.Infos {
 
     public class TvShowRestServiceClient : KifaServiceRestClient<TvShow>, TvShowServiceClient {
         public string Format(string id, int seasonId, int episodeId) {
-            return Format(id, seasonId, new List<int> {episodeId});
+            return Format(id, seasonId, new List<int> {
+                episodeId
+            });
         }
 
         public string Format(string id, int seasonId, List<int> episodeIds) {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa.Infos;
 using Kifa.Languages.German.Goethe;
 using Kifa.Music;
 using Kifa.Service;
@@ -14,6 +15,8 @@ namespace Kifa.Tools.DataUtil {
                 GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
                 GoetheWordList.ModelId => new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
                 GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
+                TvShow.ModelId => new DataChef<TvShow, TvShowRestServiceClient>(),
+                Anime.ModelId => new DataChef<Anime, AnimeRestServiceClient>(),
                 _ => null
             };
         }
