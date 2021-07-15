@@ -79,7 +79,7 @@ namespace Kifa.Languages.German {
                 var hasUmlaut = false;
                 foreach (var (ochar, pchar) in original.Zip(plural)) {
                     if (ochar != pchar) {
-                        if (UmlautMapping[ochar] != pchar || hasUmlaut) {
+                        if (UmlautMapping.GetValueOrDefault(ochar) != pchar || hasUmlaut) {
                             // Only full text
                             return plural;
                         }
