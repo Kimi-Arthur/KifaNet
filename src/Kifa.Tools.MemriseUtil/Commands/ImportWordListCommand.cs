@@ -16,14 +16,15 @@ namespace Kifa.Tools.MemriseUtil.Commands {
         public string Course { get; set; } = "test-course";
 
         public override int Execute() {
+            var memriseCourseClient = new MemriseCourseRestServiceClient();
+            var course = memriseCourseClient.Get(Course);
+
+            using var memriseClient = new MemriseClient {
+                Course = course
+            };
+
             foreach (var wordListId in WordListIds) {
                 var wordList = new GoetheWordListRestServiceClient().Get(wordListId);
-
-                var memriseCourseClient = new MemriseCourseRestServiceClient();
-                var course = memriseCourseClient.Get(Course);
-                using var memriseClient = new MemriseClient {
-                    Course = course
-                };
                 memriseClient.AddWordList(wordList);
             }
 

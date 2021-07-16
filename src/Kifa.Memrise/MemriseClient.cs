@@ -69,7 +69,8 @@ namespace Kifa.Memrise {
 
         GoetheGermanWordRestServiceClient GoetheClient = new();
 
-        private GermanWordRestServiceClient WordClient = new();
+        GermanWordRestServiceClient WordClient = new();
+        List<MemriseWord> allExistingRows;
 
         public KifaActionResult AddWordList(GoetheWordList wordList) {
             AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
@@ -101,10 +102,10 @@ namespace Kifa.Memrise {
         }
 
         public IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
-            var allExistingRows = GetAllExistingRows();
+            allExistingRows ??= GetAllExistingRows();
 
             foreach (var word in words) {
-                var addedWord = AddWord(word, allExistingRows);
+                var addedWord = AddWord(word);
                 logger.LogResult(addedWord, $"Upload word {word}");
                 if (addedWord.Status == KifaActionStatus.OK) {
                     allExistingRows.Add(addedWord.Response);
@@ -134,8 +135,7 @@ namespace Kifa.Memrise {
                 $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds).Success}");
         }
 
-        public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, List<MemriseWord> allExistingRows = null,
-            bool alwaysCheckAudio = false) {
+        public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, bool alwaysCheckAudio = false) {
             var rootWord = WordClient.Get(word.RootWord);
             logger.Info($"{word.Id} => {rootWord?.Id}");
 
