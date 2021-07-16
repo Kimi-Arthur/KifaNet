@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+using System.Collections.Generic;
 using CommandLine;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise;
@@ -9,19 +9,23 @@ namespace Kifa.Tools.MemriseUtil.Commands {
     public class ImportWordListCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true, HelpText = "Word list ID.")]
-        public string WordListId { get; set; }
+        [Value(0, Min = 1, HelpText = "Word list IDs.")]
+        public IEnumerable<string> WordListIds { get; set; }
 
         [Option('c', "course", HelpText = "Course to add the word list to.")]
         public string Course { get; set; } = "test-course";
 
         public override int Execute() {
-            var wordList = new GoetheWordListRestServiceClient().Get(WordListId);
+            foreach (var wordListId in WordListIds) {
+                var wordList = new GoetheWordListRestServiceClient().Get(wordListId);
 
-            var memriseCourseClient = new MemriseCourseRestServiceClient();
-            var course = memriseCourseClient.Get(Course);
-            using var memriseClient = new MemriseClient {Course = course};
-            memriseClient.AddWordList(wordList);
+                var memriseCourseClient = new MemriseCourseRestServiceClient();
+                var course = memriseCourseClient.Get(Course);
+                using var memriseClient = new MemriseClient {
+                    Course = course
+                };
+                memriseClient.AddWordList(wordList);
+            }
 
             return 0;
         }
