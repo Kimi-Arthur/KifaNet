@@ -161,7 +161,7 @@ namespace Kifa.Memrise {
                 existingRow = GetExistingRow(word);
                 if (existingRow == null) {
                     logger.Error($"Failed to add word: {word.Id}.");
-                    return new KifaActionResult<string>(KifaActionStatus.Error, $"failed to add word {word.Id}");
+                    return new KifaActionResult<MemriseWord>(KifaActionStatus.Error, $"failed to add word {word.Id}");
                 }
             }
 
