@@ -107,7 +107,8 @@ namespace Kifa.Memrise {
                 var addedWord = AddWord(word, allExistingRows);
                 logger.LogResult(addedWord, $"Upload word {word}");
                 if (addedWord.Status == KifaActionStatus.OK) {
-                    yield return addedWord.Response;
+                    allExistingRows.Add(addedWord.Response);
+                    yield return addedWord.Response.ThingId;
                 }
             }
         }
@@ -133,7 +134,7 @@ namespace Kifa.Memrise {
                 $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds).Success}");
         }
 
-        public KifaActionResult<string> AddWord(GoetheGermanWord word, List<MemriseWord> allExistingRows = null,
+        public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, List<MemriseWord> allExistingRows = null,
             bool alwaysCheckAudio = false) {
             var rootWord = WordClient.Get(word.RootWord);
             logger.Info($"{word.Id} => {rootWord?.Id}");
@@ -152,7 +153,7 @@ namespace Kifa.Memrise {
 
             var newData = GetDataFromWord(word, rootWord);
 
-            var existingRow = allExistingRows.FirstOrDefault(row => sameWord(row, word)) ?? GetExistingRow(word);
+            var existingRow = allExistingRows.FirstOrDefault(row => SameWord(row, word)) ?? GetExistingRow(word);
 
             if (existingRow == null) {
                 FillBasicWord(newData);
@@ -170,7 +171,7 @@ namespace Kifa.Memrise {
                 UploadAudios(existingRow, rootWord);
             }
 
-            return new KifaActionResult<string>(existingRow.ThingId);
+            return new KifaActionResult<MemriseWord>(existingRow);
         }
 
         KifaActionResult CheckHeaders(Dictionary<string, string> headers) {
@@ -227,9 +228,8 @@ namespace Kifa.Memrise {
             WebDriver.FindElement(By.CssSelector("thead.columns")).FindElements(By.CssSelector("th.column"))
                 .ToDictionary(th => th.Text.Trim(), th => th.GetAttribute("data-key"));
 
-        MemriseWord GetExistingRow(GoetheGermanWord word) {
-            return GetExistingRow(word, word.Id) ?? GetExistingRow(word, word.Meaning);
-        }
+        MemriseWord GetExistingRow(GoetheGermanWord word) =>
+            GetExistingRow(word, TrimBracket(word.Id)) ?? GetExistingRow(word, TrimBracket(word.Meaning));
 
         MemriseWord GetExistingRow(GoetheGermanWord word, string searchQuery) {
             var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
@@ -237,13 +237,12 @@ namespace Kifa.Memrise {
             searchBar.SendKeys(searchQuery);
             searchBar.Submit();
 
-            return GetWordsInPage().FirstOrDefault(w => sameWord(w, word));
+            return GetWordsInPage().FirstOrDefault(w => SameWord(w, word));
         }
 
-        bool sameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord) {
-            return memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id &&
-                   TrimBracket(memriseWord.Data[Course.Columns["English"]]) == TrimBracket(goetheGermanWord.Meaning);
-        }
+        bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord) =>
+            memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id &&
+            TrimBracket(memriseWord.Data[Course.Columns["English"]]) == TrimBracket(goetheGermanWord.Meaning);
 
         string TrimBracket(string content) {
             var reg = new Regex(@"^(\(.*\) )?.*( \(.*\))?$");
