@@ -72,21 +72,18 @@ namespace Kifa.Memrise {
         private GermanWordRestServiceClient WordClient = new();
 
         public KifaActionResult AddWordList(GoetheWordList wordList) {
-            var allExistingRows = GetAllExistingRows();
+            AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
 
-            var levelId = Course.Levels[wordList.Id];
+            return KifaActionResult.SuccessActionResult;
+        }
 
-            var wordIds = new List<string>();
-            foreach (var word in wordList.Words) {
+        public IEnumerable<GoetheGermanWord> ExpandWords(IEnumerable<string> words) {
+            foreach (var word in words) {
                 var expandedWords = new Queue<GoetheGermanWord>();
                 expandedWords.Enqueue(GoetheClient.Get(word));
                 while (expandedWords.Count > 0) {
                     var goetheWord = expandedWords.Dequeue();
-                    var addedWord = AddWord(goetheWord, allExistingRows);
-                    logger.LogResult(addedWord, $"Upload word {word}");
-                    if (addedWord.Status == KifaActionStatus.OK) {
-                        wordIds.Add(addedWord.Response);
-                    }
+                    yield return goetheWord;
 
                     if (goetheWord.Feminine != null) {
                         var feminineWord = goetheWord.Feminine;
@@ -101,14 +98,24 @@ namespace Kifa.Memrise {
                     }
                 }
             }
-
-            AddWordsToLevel(levelId, wordIds);
-
-            return KifaActionResult.SuccessActionResult;
         }
 
-        void AddWordsToLevel(string levelId, List<string> wordIds) {
-            var rendered = new GetLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId).Rendered;
+        public IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
+            var allExistingRows = GetAllExistingRows();
+
+            foreach (var word in words) {
+                var addedWord = AddWord(word, allExistingRows);
+                logger.LogResult(addedWord, $"Upload word {word}");
+                if (addedWord.Status == KifaActionStatus.OK) {
+                    yield return addedWord.Response;
+                }
+            }
+        }
+
+        public void AddWordsToLevel(string levelId, List<string> wordIds) {
+            var rendered = new GetLevelRpc {
+                HttpClient = HttpClient
+            }.Call(WebDriver.Url, levelId).Rendered;
             var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
             var existingThingIds = thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
 
@@ -198,8 +205,9 @@ namespace Kifa.Memrise {
                 }
 
                 logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
-                new UploadAudioRpc {HttpClient = HttpClient}.Call(WebDriver.Url, originalWord.ThingId,
-                    Course.Columns["Audios"], CsrfToken, newAudio);
+                new UploadAudioRpc {
+                    HttpClient = HttpClient
+                }.Call(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken, newAudio);
                 Thread.Sleep(TimeSpan.FromSeconds(1));
             }
         }
@@ -264,7 +272,9 @@ namespace Kifa.Memrise {
 
         // Columns order: German, English, Form, Pronunciation, Examples, Audios
         string FillBasicWord(Dictionary<string, string> newData) {
-            var response = new AddWordRpc {HttpClient = HttpClient}.Call(Course.DatabaseId, Course.BaseUrl, newData);
+            var response = new AddWordRpc {
+                HttpClient = HttpClient
+            }.Call(Course.DatabaseId, Course.BaseUrl, newData);
 
             return response.Thing.Id.ToString();
         }
@@ -273,8 +283,9 @@ namespace Kifa.Memrise {
             var updatedFields = 0;
             foreach (var (dataKey, newValue) in newData) {
                 if (originalData.Data.GetValueOrDefault(dataKey) != newValue) {
-                    new UpdateWordRpc {HttpClient = HttpClient}.Call(WebDriver.Url, originalData.ThingId, dataKey,
-                        newValue);
+                    new UpdateWordRpc {
+                        HttpClient = HttpClient
+                    }.Call(WebDriver.Url, originalData.ThingId, dataKey, newValue);
                     updatedFields++;
                 }
             }
@@ -284,7 +295,8 @@ namespace Kifa.Memrise {
 
         Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord baseWord) {
             var data = new Dictionary<string, string> {
-                {Course.Columns["German"], word.Id}, {Course.Columns["English"], word.Meaning}
+                {Course.Columns["German"], word.Id},
+                {Course.Columns["English"], word.Meaning}
             };
 
             data[Course.Columns["Form"]] = word.Form ?? "";
