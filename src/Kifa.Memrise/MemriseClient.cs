@@ -245,8 +245,8 @@ namespace Kifa.Memrise {
             TrimBracket(memriseWord.Data[Course.Columns["English"]]) == TrimBracket(goetheGermanWord.Meaning);
 
         string TrimBracket(string content) {
-            var reg = new Regex(@"^(\(.*\) )?.*( \(.*\))?$");
-            return reg.Match(content).Groups[1].Value;
+            var reg = new Regex(@"^(\(.*\) )?(.*)( \(.*\))?$");
+            return reg.Match(content).Groups[2].Value;
         }
 
         public List<MemriseWord> GetAllExistingRows() {
