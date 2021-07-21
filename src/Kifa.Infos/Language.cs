@@ -3,79 +3,85 @@ using System.Linq;
 
 namespace Kifa.Infos {
     public class Language : JsonSerializable {
-        public static readonly Language German = new Language {
+        public static readonly Language German = new() {
             Name = "German",
             NativeName = "Deutsch",
             Code = "de"
         };
 
-        public static readonly Language English = new Language {
+        public static readonly Language English = new() {
             Name = "English",
             NativeName = "English",
             Code = "en"
         };
 
-        public static readonly Language Spanish = new Language {
+        public static readonly Language Spanish = new() {
             Name = "Spanish",
             NativeName = "Español",
             Code = "es"
         };
 
-        public static readonly Language French = new Language {
+        public static readonly Language French = new() {
             Name = "French",
             NativeName = "français",
             Code = "fr"
         };
 
-        public static readonly Language Italian = new Language {
+        public static readonly Language Italian = new() {
             Name = "Italian",
             NativeName = "Italiano",
             Code = "it"
         };
 
-        public static readonly Language Japanese = new Language {
+        public static readonly Language Japanese = new() {
             Name = "Japanese",
             NativeName = "日本語",
             Code = "ja"
         };
 
-        public static readonly Language Korean = new Language {
+        public static readonly Language Korean = new() {
             Name = "Korean",
             NativeName = "한국어",
             Code = "ko"
         };
 
-        public static readonly Language Hungarian = new Language {
+        public static readonly Language Hungarian = new() {
             Name = "Hungarian",
             NativeName = "magyar",
             Code = "hu"
         };
 
-        public static readonly Language Portuguese = new Language {
+        public static readonly Language Portuguese = new() {
             Name = "Portuguese",
             NativeName = "Português",
             Code = "pt"
         };
 
-        public static readonly Language Russian = new Language {
+        public static readonly Language Russian = new() {
             Name = "Russian",
             NativeName = "русский",
             Code = "ru"
         };
 
-        public static readonly Language Turkish = new Language {
+        public static readonly Language Turkish = new() {
             Name = "Turkish",
             NativeName = "Türkçe",
             Code = "tr"
         };
 
-        public static readonly Language Chinese = new Language {
+        public static readonly Language Chinese = new() {
             Name = "Chinese",
             NativeName = "中文",
             Code = "zh"
         };
 
-        public static readonly Language Unknown = new Language {
+        public static readonly Language TraditionalChinese = new() {
+            Name = "Traditional Chinese",
+            NativeName = "繁体中文",
+            Code = "zht"
+        };
+
+        public static readonly Language Unknown = new() {
             Name = "Unknown",
             NativeName = "Unknown",
             Code = ""
@@ -94,6 +100,7 @@ namespace Kifa.Infos {
             Russian,
             Turkish,
             Chinese,
+            TraditionalChinese,
             Unknown
         }.SelectMany(r => new List<(string key, Language value)> {
             (r.Code, r),
