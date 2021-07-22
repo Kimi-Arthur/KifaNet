@@ -58,4 +58,10 @@ namespace Kifa.Service {
 
         public override string ToString() => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
     }
+
+    public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {
+        [YamlIgnore]
+        [JsonProperty("$translations")]
+        public TranslationData<TDataModel> Translations { get; set; }
+    }
 }
