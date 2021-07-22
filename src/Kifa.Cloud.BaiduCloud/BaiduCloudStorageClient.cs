@@ -333,7 +333,7 @@ namespace Kifa.Cloud.BaiduCloud {
                 (buffer, bufferOffset, offset, count)
                     => Download(buffer, path, bufferOffset, offset, count));
 
-        HttpRequestMessage GetRequest(API api, Dictionary<string, string> parameters = null) =>
+        HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null) =>
             api.GetRequest(new Dictionary<string, string> {
                 ["access_token"] = Account.AccessToken,
                 ["remote_path_prefix"] = Config.RemotePathPrefix

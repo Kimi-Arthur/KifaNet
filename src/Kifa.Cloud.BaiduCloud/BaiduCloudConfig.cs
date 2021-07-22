@@ -23,26 +23,26 @@ namespace Kifa.Cloud.BaiduCloud {
     }
 
     public class APIList {
-        public API CopyFile { get; set; }
+        public Api CopyFile { get; set; }
 
-        public API MoveFile { get; set; }
+        public Api MoveFile { get; set; }
 
-        public API DownloadFile { get; set; }
+        public Api DownloadFile { get; set; }
 
-        public API UploadFileRapid { get; set; }
+        public Api UploadFileRapid { get; set; }
 
-        public API UploadFileDirect { get; set; }
+        public Api UploadFileDirect { get; set; }
 
-        public API RemovePath { get; set; }
+        public Api RemovePath { get; set; }
 
-        public API UploadBlock { get; set; }
+        public Api UploadBlock { get; set; }
 
-        public API MergeBlocks { get; set; }
+        public Api MergeBlocks { get; set; }
 
-        public API GetFileInfo { get; set; }
+        public Api GetFileInfo { get; set; }
 
-        public API DiffFileList { get; set; }
+        public Api DiffFileList { get; set; }
 
-        public API ListFiles { get; set; }
+        public Api ListFiles { get; set; }
     }
 }

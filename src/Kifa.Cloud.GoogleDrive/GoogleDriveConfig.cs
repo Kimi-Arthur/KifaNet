@@ -21,20 +21,20 @@ namespace Kifa.Cloud.GoogleDrive {
     }
 
     public class APIList {
-        public API CreateFile { get; set; }
+        public Api CreateFile { get; set; }
 
-        public API CreateFolder { get; set; }
+        public Api CreateFolder { get; set; }
 
-        public API DeleteFile { get; set; }
+        public Api DeleteFile { get; set; }
 
-        public API DownloadFile { get; set; }
+        public Api DownloadFile { get; set; }
 
-        public API FindFile { get; set; }
+        public Api FindFile { get; set; }
 
-        public API ListFiles { get; set; }
+        public Api ListFiles { get; set; }
 
-        public API GetFileInfo { get; set; }
+        public Api GetFileInfo { get; set; }
 
-        public API OauthRefresh { get; set; }
+        public Api OauthRefresh { get; set; }
     }
 }

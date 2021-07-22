@@ -35,9 +35,9 @@ namespace Kifa.Infos.Tmdb {
     }
 
     public class APIList {
-        public API Languages { get; set; }
-        public API Season { get; set; }
-        public API Series { get; set; }
+        public Api Languages { get; set; }
+        public Api Season { get; set; }
+        public Api Series { get; set; }
     }
 
     public class TmdbSeries {

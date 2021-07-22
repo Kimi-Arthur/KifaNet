@@ -250,7 +250,7 @@ namespace Kifa.Cloud.GoogleDrive {
             lastRefreshed = DateTime.Now;
         }
 
-        HttpRequestMessage GetRequest(API api, Dictionary<string, string> parameters = null,
+        HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null,
             bool needAccessToken = true) {
             parameters ??= new Dictionary<string, string>();
             if (needAccessToken) {

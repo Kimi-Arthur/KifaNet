@@ -180,13 +180,13 @@ namespace Kifa.Cloud.Swisscom {
     }
 
     public class APIList {
-        public API GetFileInfo { get; set; }
-        public API DownloadFile { get; set; }
-        public API DeleteFile { get; set; }
-        public API MoveFile { get; set; }
-        public API InitUpload { get; set; }
-        public API UploadBlock { get; set; }
-        public API FinishUpload { get; set; }
-        public API Quota { get; set; }
+        public Api GetFileInfo { get; set; }
+        public Api DownloadFile { get; set; }
+        public Api DeleteFile { get; set; }
+        public Api MoveFile { get; set; }
+        public Api InitUpload { get; set; }
+        public Api UploadBlock { get; set; }
+        public Api FinishUpload { get; set; }
+        public Api Quota { get; set; }
     }
 }
