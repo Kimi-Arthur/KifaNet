@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa.Apps.MomentCounter;
 using Kifa.Infos;
 using Kifa.Languages.German.Goethe;
 using Kifa.Music;
@@ -17,6 +18,7 @@ namespace Kifa.Tools.DataUtil {
                 GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
                 TvShow.ModelId => new DataChef<TvShow, TvShowRestServiceClient>(),
                 Anime.ModelId => new DataChef<Anime, AnimeRestServiceClient>(),
+                Unit.ModelId => new DataChef<Unit, UnitRestServiceClient>(),
                 _ => null
             };
         }

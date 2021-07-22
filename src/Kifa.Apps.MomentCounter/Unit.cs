@@ -8,4 +8,10 @@ namespace Kifa.Apps.MomentCounter {
         public double Ratio { get; set; }
         public Unit Next { get; set; }
     }
+
+    public interface UnitServiceClient : KifaServiceClient<Unit> {
+    }
+
+    public class UnitRestServiceClient : KifaServiceRestClient<Unit>, UnitServiceClient {
+    }
 }

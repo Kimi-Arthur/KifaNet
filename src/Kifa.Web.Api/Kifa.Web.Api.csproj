@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
+    <ProjectReference Include="..\Kifa.Apps.MomentCounter\Kifa.Apps.MomentCounter.csproj" />
     <ProjectReference Include="..\Kifa.Azure\Kifa.Azure.csproj" />
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.GooglePhotos\Kifa.Cloud.GooglePhotos.csproj" />
