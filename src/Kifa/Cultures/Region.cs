@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kifa.Infos {
+namespace Kifa {
     public class Region : JsonSerializable {
         public static readonly Region Canada = new() {Name = "Canada", Code = "CA"};
 

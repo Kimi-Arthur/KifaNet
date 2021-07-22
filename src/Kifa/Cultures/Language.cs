@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kifa.Infos {
+namespace Kifa {
     public class Language : JsonSerializable {
         public static readonly Language German = new() {
             Name = "German",
