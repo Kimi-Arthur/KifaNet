@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -60,8 +61,7 @@ namespace Kifa.Service {
     }
 
     public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {
-        [YamlIgnore]
         [JsonProperty("$translations")]
-        public TranslationData<TDataModel> Translations { get; set; }
+        public Dictionary<string, TDataModel> Translations { get; set; }
     }
 }

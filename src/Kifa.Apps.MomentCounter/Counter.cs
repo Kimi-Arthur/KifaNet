@@ -1,7 +1,7 @@
 using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter {
-    public class Counter : DataModel {
+    public class Counter : DataModel<Counter> {
         public string Title { get; set; }
         
         // Must have this for starting point.

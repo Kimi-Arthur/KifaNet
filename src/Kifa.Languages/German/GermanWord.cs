@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Languages.German {
-    public class GermanWord : DataModel {
+    public class GermanWord : DataModel<GermanWord> {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public const string ModelId = "languages/german/words";

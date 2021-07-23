@@ -4,7 +4,7 @@ using System.Linq;
 using Kifa.Service;
 
 namespace Kifa.Infos {
-    public class Anime : DataModel, Formattable {
+    public class Anime : DataModel<Anime>, Formattable {
         public const string ModelId = "animes";
 
         static KifaServiceClient<Anime> client;

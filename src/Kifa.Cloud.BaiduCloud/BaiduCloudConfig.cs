@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Kifa.Service;
 
 namespace Kifa.Cloud.BaiduCloud {
-    public class BaiduCloudConfig : DataModel {
+    public class BaiduCloudConfig : DataModel<BaiduCloudConfig> {
         public const string ModelId = "configs/baidu_cloud";
 
         static KifaServiceClient<BaiduCloudConfig> client;

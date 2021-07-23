@@ -4,7 +4,7 @@ using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 
 namespace Kifa.Bilibili {
-    public class BilibiliBangumi : DataModel {
+    public class BilibiliBangumi : DataModel<BilibiliBangumi> {
         public const string ModelId = "bilibili/bangumis";
 
         static KifaServiceClient<BilibiliBangumi> client;

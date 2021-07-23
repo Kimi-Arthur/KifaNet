@@ -26,7 +26,7 @@ namespace Kifa.Bilibili {
         public long ShareCount { get; set; }
     }
 
-    public class BilibiliVideo : DataModel {
+    public class BilibiliVideo : DataModel<BilibiliVideo> {
         public const string ModelId = "bilibili/videos";
 
         public static bool UseMergedSource { get; set; }

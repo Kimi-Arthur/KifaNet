@@ -5,7 +5,7 @@ using Kifa.Infos.Tmdb;
 using Kifa.Service;
 
 namespace Kifa.Infos {
-    public class TvShow : DataModel, Formattable {
+    public class TvShow : DataModel<TvShow>, Formattable {
         public const string ModelId = "tv_shows";
 
         const string Part1Suffix = " - Part 1";

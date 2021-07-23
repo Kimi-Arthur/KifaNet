@@ -18,6 +18,7 @@ namespace Kifa {
                     new StringEnumConverter(new SnakeCaseNamingStrategy()),
                     new GenericJsonConverter()
                 },
+                DefaultValueHandling = DefaultValueHandling.Ignore,
                 NullValueHandling = NullValueHandling.Ignore,
                 MetadataPropertyHandling = MetadataPropertyHandling.Ignore
             };
@@ -34,6 +35,7 @@ namespace Kifa {
                     new StringEnumConverter(new SnakeCaseNamingStrategy()),
                     new GenericJsonConverter()
                 },
+                DefaultValueHandling = DefaultValueHandling.Ignore,
                 NullValueHandling = NullValueHandling.Ignore,
                 MetadataPropertyHandling = MetadataPropertyHandling.Ignore
             };

@@ -11,7 +11,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 
 namespace Kifa.Cloud.Swisscom {
-    public class SwisscomAccount : DataModel {
+    public class SwisscomAccount : DataModel<SwisscomAccount> {
         public const string ModelId = "accounts/swisscom";
 
         public static string WebDriverUrl { get; set; }

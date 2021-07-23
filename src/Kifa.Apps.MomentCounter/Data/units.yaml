@@ -2,40 +2,35 @@
 - Id: kilometer
   Name: km
   Translations:
-    Data:
-      zh:
-        Name: 公里
+    zh:
+      Name: 公里
 
 - Id: meter
   Name: m
   Next: kilometer
   Ratio: 1000
   Translations:
-    Data:
-      zh:
-        Name: 米
+    zh:
+      Name: 米
 
 - Id: hour
   Name: h
   Translations:
-    Data:
-      zh:
-        Name: 小时
+    zh:
+      Name: 小时
 
 - Id: minute
   Name: min
   Next: hour
   Ratio: 60
   Translations:
-    Data:
-      zh:
-        Name: 分
+    zh:
+      Name: 分
 
 - Id: second
   Name: s
   Next: minute
   Ratio: 60
   Translations:
-    Data:
-      zh:
-        Name: 秒
+    zh:
+      Name: 秒

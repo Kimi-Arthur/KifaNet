@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Kifa.Service;
 
 namespace Kifa.Cloud.Swisscom {
-    public class SwisscomConfig : DataModel {
+    public class SwisscomConfig : DataModel<SwisscomConfig> {
         public const string ModelId = "configs/swisscom";
 
         static KifaServiceClient<SwisscomConfig> client;

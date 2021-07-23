@@ -26,6 +26,26 @@ namespace Kifa.Infos {
         public int? EpisodeIdWidth { get; set; }
     }
 
+    // Special episode.
+    //
+    // There are multiple ways to put a special episode. Some examples:
+    //   Season + Episode
+    //     半沢直樹 (2013)/Season 2 2020年版 (2020)/半沢直樹 S02E00 狙われた半沢直樹のパスワード
+    //   Season + Collection + (Episode)
+    //     Friends (1993)/Season 1 (1993)/Extras/Uncut
+    //   Collection?
+    //     关于我转生变成史莱姆这档事 (2019)/转生史莱姆日记 (2020)/转生史莱姆日记 S01E01 xx
+    public class SpecialEpisode : Episode {
+        // Alternative season for the special episode.
+        public string Season { get; set; }
+
+        // The special collection this belongs to. Like Extras.
+        public string Collection { get; set; }
+
+        // Alternative episode for the special episode. It can also be like 13.5 or 13.1.
+        public string Episode { get; set; }
+    }
+
     public interface Formattable : WithFormatInfo {
         string Format(Season season, Episode episode);
     }

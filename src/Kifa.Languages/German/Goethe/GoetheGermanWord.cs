@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German.Goethe {
-    public class GoetheGermanWord : DataModel {
+    public class GoetheGermanWord : DataModel<GoetheGermanWord> {
         public const string ModelId = "goethe/words";
 
         static readonly Regex RootWordPattern =

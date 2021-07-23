@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Kifa.Service;
 
 namespace Kifa.Games.BreathOfTheWild {
-    public class Game : DataModel {
+    public class Game : DataModel<Game> {
         public const string ModelId = "games/botw";
 
         public string Name { get; set; }

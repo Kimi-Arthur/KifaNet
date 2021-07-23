@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Kifa.Service;
 
 namespace Kifa.Cloud.GoogleDrive {
-    public class GoogleDriveConfig : DataModel {
+    public class GoogleDriveConfig : DataModel<GoogleDriveConfig> {
         public const string ModelId = "configs/google";
 
         static KifaServiceClient<GoogleDriveConfig> client;

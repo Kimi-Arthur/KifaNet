@@ -3,7 +3,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 
 namespace Kifa.Memrise {
-    public class MemriseCourse : DataModel {
+    public class MemriseCourse : DataModel<MemriseCourse> {
         public const string ModelId = "memrise/courses";
 
         public string CourseName { get; set; }

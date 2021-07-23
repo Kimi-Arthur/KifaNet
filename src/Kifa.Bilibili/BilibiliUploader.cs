@@ -4,7 +4,7 @@ using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 
 namespace Kifa.Bilibili {
-    public class BilibiliUploader : DataModel {
+    public class BilibiliUploader : DataModel<BilibiliUploader> {
         public const string ModelId = "bilibili/uploaders";
 
         static KifaServiceClient<BilibiliUploader> client;

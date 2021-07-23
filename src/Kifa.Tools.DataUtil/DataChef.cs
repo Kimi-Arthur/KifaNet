@@ -34,7 +34,7 @@ namespace Kifa.Tools.DataUtil {
         KifaActionResult Link(string target, string link);
     }
 
-    public class DataChef<TDataModel, TClient> : DataChef where TDataModel : DataModel
+    public class DataChef<TDataModel, TClient> : DataChef where TDataModel : DataModel<TDataModel>, new()
         where TClient : KifaServiceClient<TDataModel>, new() {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

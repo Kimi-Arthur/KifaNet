@@ -17,14 +17,11 @@ namespace Kifa.Service.Tests {
             var x = new FakeDataModel {
                 StrProp = "A",
                 IntPROP = 123,
-                Translations = new() {
-                    Data = new Dictionary<string, FakeDataModel> {
+                Translations = new Dictionary<string, FakeDataModel> {
                         ["zh"] = new() {
                             StrProp = "中"
                         }
-                    },
-                    _ = "en"
-                }
+                    }
             };
 
             Assert.Equal("中", x.GetTranslated("zh").StrProp);
