@@ -19,6 +19,14 @@ namespace Kifa.Service {
             return SuccessActionResult;
         }
 
+        public static KifaActionResult FromAction(Func<KifaActionResult> action) {
+            try {
+                return action.Invoke();
+            } catch (Exception ex) {
+                return new KifaActionResult {Status = KifaActionStatus.Error, Message = ex.ToString()};
+            }
+        }
+
         public KifaActionResult And(KifaActionResult nextResult) => Status == KifaActionStatus.OK ? nextResult : this;
 
         public KifaActionResult And(Action nextAction) => Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
