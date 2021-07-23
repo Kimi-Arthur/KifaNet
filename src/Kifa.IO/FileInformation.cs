@@ -60,7 +60,7 @@ namespace Kifa.IO {
 
         [JsonIgnore]
         public bool Exists => Size > 0;
-        
+
         public static string GetId(string location) {
             var linkMatch = linkIdPattern.Match(location);
             if (linkMatch.Success) {
@@ -204,7 +204,9 @@ namespace Kifa.IO {
             GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
 
         static string GenerateEncryptionKey() {
-            using var aes = new AesCryptoServiceProvider {KeySize = 256};
+            using var aes = new AesCryptoServiceProvider {
+                KeySize = 256
+            };
             return aes.Key.ToHexString();
         }
     }
@@ -222,19 +224,31 @@ namespace Kifa.IO {
     public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
         FileInformationServiceClient {
         public List<string> ListFolder(string folder, bool recursive = false) =>
-            Call<List<string>>("list_folder",
-                parameters: new Dictionary<string, object> {["folder"] = folder, ["recursive"] = recursive ? "1" : ""});
+            Call<List<string>>("list_folder", parameters: new Dictionary<string, object> {
+                ["folder"] = folder,
+                ["recursive"] = recursive ? "1" : ""
+            });
 
         public void AddLocation(string id, string location, bool verified = false) =>
-            Call("add_location", id, new Dictionary<string, object> {["location"] = location, ["verified"] = verified});
+            Call("add_location", id, new Dictionary<string, object> {
+                ["location"] = location,
+                ["verified"] = verified
+            });
 
         public void RemoveLocation(string id, string location) =>
-            Call("remove_location", id, new Dictionary<string, object> {["location"] = location});
+            Call("remove_location", id, new Dictionary<string, object> {
+                ["location"] = location
+            });
 
         public string CreateLocation(string id, string type = null, string format = null) =>
-            Call<string>("create_location", id, new Dictionary<string, object> {["type"] = type, ["format"] = format});
+            Call<string>("create_location", id, new Dictionary<string, object> {
+                ["type"] = type,
+                ["format"] = format
+            });
 
         public string GetLocation(string id, List<string> types = null) =>
-            Call<string>("get_location", id, new Dictionary<string, object> {["types"] = types});
+            Call<string>("get_location", id, new Dictionary<string, object> {
+                ["types"] = types
+            });
     }
 }
