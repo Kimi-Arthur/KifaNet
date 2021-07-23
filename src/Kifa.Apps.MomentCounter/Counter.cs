@@ -12,8 +12,8 @@ namespace Kifa.Apps.MomentCounter {
 
         public Unit Unit { get; set; }
         
-        public double TotalTarget { get; set; }
+        public int TotalTarget { get; set; }
 
-        public double AverageTarget { get; set; }
+        public int AverageTarget { get; set; }
     }
 }

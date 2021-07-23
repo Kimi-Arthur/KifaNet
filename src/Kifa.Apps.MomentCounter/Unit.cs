@@ -5,7 +5,7 @@ namespace Kifa.Apps.MomentCounter {
         public const string ModelId = "moment_counter/units";
 
         public string Name { get; set; }
-        public double Ratio { get; set; }
+        public int Ratio { get; set; }
         public Link<Unit> Next { get; set; }
     }
 
