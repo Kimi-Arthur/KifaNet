@@ -13,7 +13,7 @@
 - Id: Kimi/2
   Title: 间歇跑
   Units:
-    - meter
+    - kilometer
     - second
   Events:
     - Kimi/7
