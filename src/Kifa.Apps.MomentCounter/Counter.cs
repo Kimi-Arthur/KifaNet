@@ -3,6 +3,8 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter {
     public class Counter : DataModel<Counter> {
+        public const string ModelId = "moment_counter/counters";
+
         public string Title { get; set; }
 
         // Must have this for starting point.
@@ -19,5 +21,11 @@ namespace Kifa.Apps.MomentCounter {
         public int AverageTarget { get; set; }
 
         public List<Link<Event>> Events { get; set; }
+    }
+
+    public interface CounterServiceClient : KifaServiceClient<Counter> {
+    }
+
+    public class CounterRestServiceClient : KifaServiceRestClient<Counter>, CounterServiceClient {
     }
 }

@@ -4,9 +4,17 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter {
     public class Event : DataModel<Event> {
+        public const string ModelId = "moment_counter/events";
+
         public DateTime DateTime { get; set; }
 
         // Should match Counter's units.
         public List<int> Values { get; set; }
+    }
+
+    public interface EventServiceClient : KifaServiceClient<Event> {
+    }
+
+    public class EventRestServiceClient : KifaServiceRestClient<Event>, EventServiceClient {
     }
 }
