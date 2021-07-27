@@ -1,0 +1,15 @@
+### Add counter
+POST {{server}}/api/moment_counter/users/$add_counter
+Content-Type: application/x-yaml
+
+UserId: Kimi
+Counter:
+  Title: 吉他练习
+  Units:
+    - minutes
+
+### Get Users
+GET {{server}}/api/moment_counter/users/Kimi
+
+### Get Counters
+GET {{server}}/api/moment_counter/counters/
