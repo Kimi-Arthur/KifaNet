@@ -4,6 +4,7 @@ using Kifa.Service;
 namespace Kifa.Apps.MomentCounter {
     public class Counter : DataModel<Counter> {
         public const string ModelId = "moment_counter/counters";
+        public static CounterServiceClient Client { get; set; } = new CounterRestServiceClient();
 
         public string Title { get; set; }
 
