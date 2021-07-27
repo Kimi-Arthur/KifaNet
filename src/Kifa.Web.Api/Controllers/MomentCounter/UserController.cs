@@ -1,15 +1,25 @@
 using System;
 using Kifa.Apps.MomentCounter;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 
 namespace Kifa.Web.Api.Controllers.MomentCounter {
     [Route("api/" + Apps.MomentCounter.User.ModelId)]
     public class UserController : KifaDataController<User, UserJsonServiceClient> {
+        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         protected override bool ShouldAutoRefresh => false;
 
         [HttpPost("$add_counter")]
-        public KifaApiActionResult<string> AddCounter(string userId, Counter counter) =>
-            Client.AddCounter(Client.Get(userId), counter);
+        public KifaApiActionResult<string> AddCounter([FromBody] AddCounterRequest request) {
+            logger.Trace(request);
+            return Client.AddCounter(Client.Get(request.UserId), request.Counter);
+        }
+    }
+
+    public class AddCounterRequest : KifaRequest {
+        public string UserId { get; set; }
+        public Counter Counter { get; set; }
     }
 
     public class UserJsonServiceClient : KifaServiceJsonClient<User>, UserServiceClient {
