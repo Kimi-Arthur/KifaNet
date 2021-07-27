@@ -4,6 +4,7 @@ using Kifa.Configs;
 using Kifa.Web.Api.Controllers.MomentCounter;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using NLog;
 
 namespace Kifa.Web.Api {
     public class Program {
@@ -13,8 +14,18 @@ namespace Kifa.Web.Api {
 
             KifaConfigs.LoadFromSystemConfigs();
             RegisterClients();
+            ConfigureLogger();
 
             CreateWebHostBuilder(args).Build().Run();
+        }
+
+        static void ConfigureLogger() {
+            LogManager.Configuration.LoggingRules.Clear();
+
+            LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
+            LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
+
+            LogManager.ReconfigExistingLoggers();
         }
 
         static void RegisterClients() {

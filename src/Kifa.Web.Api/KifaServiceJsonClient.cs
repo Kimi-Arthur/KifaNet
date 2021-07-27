@@ -42,6 +42,7 @@ namespace Kifa.Web.Api {
         }
 
         public override TDataModel Get(string id) {
+            logger.Trace($"Get {ModelId}/{id}");
             var data = Read(id);
             if (data.Metadata?.Id != null) {
                 data = Read(data.Metadata.Id);

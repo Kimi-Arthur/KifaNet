@@ -35,4 +35,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\resources\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>NLog.config</Link>
+    </None>
+  </ItemGroup>
 </Project>
