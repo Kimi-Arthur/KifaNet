@@ -34,3 +34,9 @@
   Translations:
     zh:
       Name: 秒
+
+- Id: repetition
+  Name: reps
+  Translations:
+    zh:
+      Name: 个
