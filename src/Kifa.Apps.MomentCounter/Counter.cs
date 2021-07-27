@@ -3,7 +3,7 @@ using Kifa.Service;
 namespace Kifa.Apps.MomentCounter {
     public class Counter : DataModel<Counter> {
         public string Title { get; set; }
-        
+
         // Must have this for starting point.
         public Date FromDate { get; set; }
 
@@ -11,7 +11,7 @@ namespace Kifa.Apps.MomentCounter {
         public Date ToDate { get; set; }
 
         public Unit Unit { get; set; }
-        
+
         public int TotalTarget { get; set; }
 
         public int AverageTarget { get; set; }
