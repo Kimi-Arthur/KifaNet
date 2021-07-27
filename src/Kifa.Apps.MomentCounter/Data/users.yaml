@@ -1,3 +1,7 @@
 # moment_counter/users
 - Id: Kimi
   Name: 晶
+  Settings:
+    Language: zh
+    NextCounter: 3
+    NextEvent: 8
