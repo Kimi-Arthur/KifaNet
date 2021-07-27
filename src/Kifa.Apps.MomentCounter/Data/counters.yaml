@@ -1,0 +1,12 @@
+# moment_counter/counters
+- Id: Kimi/1
+  Title: 集中弯举
+  Units:
+    - repetition
+  Events:
+    - Kimi/1
+    - Kimi/2
+    - Kimi/3
+    - Kimi/4
+    - Kimi/5
+    - Kimi/6

@@ -1,0 +1,25 @@
+# moment_counter/events
+- Id: Kimi/1
+  DateTime: '2021-07-27 22:00:01'
+  Values:
+    - 10
+- Id: Kimi/2
+  DateTime: '2021-07-27 22:10:01'
+  Values:
+    - 10
+- Id: Kimi/3
+  DateTime: '2021-07-27 22:20:01'
+  Values:
+    - 10
+- Id: Kimi/4
+  DateTime: '2021-07-27 22:30:01'
+  Values:
+    - 10
+- Id: Kimi/5
+  DateTime: '2021-07-27 22:40:01'
+  Values:
+    - 10
+- Id: Kimi/6
+  DateTime: '2021-07-27 22:50:01'
+  Values:
+    - 10

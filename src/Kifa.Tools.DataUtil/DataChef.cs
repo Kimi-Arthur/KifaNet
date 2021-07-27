@@ -19,6 +19,9 @@ namespace Kifa.Tools.DataUtil {
                 TvShow.ModelId => new DataChef<TvShow, TvShowRestServiceClient>(),
                 Anime.ModelId => new DataChef<Anime, AnimeRestServiceClient>(),
                 Unit.ModelId => new DataChef<Unit, UnitRestServiceClient>(),
+                User.ModelId => new DataChef<User, UserRestServiceClient>(),
+                Event.ModelId => new DataChef<Event, EventRestServiceClient>(),
+                Counter.ModelId => new DataChef<Counter, CounterRestServiceClient>(),
                 _ => null
             };
         }
