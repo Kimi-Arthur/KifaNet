@@ -9,9 +9,9 @@ namespace Kifa.Apps.MomentCounter {
         public string Name { get; set; }
 
         // This also includes things like next ids.
-        public Settings Settings { get; set; }
+        public Settings Settings { get; set; } = new();
 
-        public List<Link<Counter>> Counters { get; set; }
+        public List<Link<Counter>> Counters { get; set; } = new();
     }
 
     public interface UserServiceClient : KifaServiceClient<User> {

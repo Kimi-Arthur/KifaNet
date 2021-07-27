@@ -9,7 +9,7 @@ namespace Kifa.Apps.MomentCounter {
         public DateTime DateTime { get; set; }
 
         // Should match Counter's units.
-        public List<int> Values { get; set; }
+        public List<int> Values { get; set; } = new();
     }
 
     public interface EventServiceClient : KifaServiceClient<Event> {

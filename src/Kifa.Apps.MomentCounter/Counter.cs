@@ -6,22 +6,22 @@ namespace Kifa.Apps.MomentCounter {
         public const string ModelId = "moment_counter/counters";
         public static CounterServiceClient Client { get; set; } = new CounterRestServiceClient();
 
-        public string Title { get; set; }
+        public string? Title { get; set; }
 
         // Must have this for starting point.
-        public Date FromDate { get; set; }
+        public Date? FromDate { get; set; }
 
         // Can be null, meaning going forever. If both dates are set, total can be converted to average.
-        public Date ToDate { get; set; }
+        public Date? ToDate { get; set; }
 
         // For now, this should not be changed. Can be added maybe.
-        public List<Link<Unit>> Units { get; set; }
+        public List<Link<Unit>> Units { get; set; } = new();
 
         public int TotalTarget { get; set; }
 
         public int AverageTarget { get; set; }
 
-        public List<Link<Event>> Events { get; set; }
+        public List<Link<Event>> Events { get; set; } = new();
     }
 
     public interface CounterServiceClient : KifaServiceClient<Counter> {

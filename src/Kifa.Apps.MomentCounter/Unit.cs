@@ -6,7 +6,7 @@ namespace Kifa.Apps.MomentCounter {
 
         public string Name { get; set; }
         public int Ratio { get; set; }
-        public Link<Unit> Next { get; set; }
+        public Link<Unit>? Next { get; set; }
     }
 
     public interface UnitServiceClient : KifaServiceClient<Unit> {
