@@ -10,3 +10,10 @@
     - Kimi/4
     - Kimi/5
     - Kimi/6
+- Id: Kimi/2
+  Title: 间歇跑
+  Units:
+    - meter
+    - second
+  Events:
+    - Kimi/7
