@@ -14,7 +14,7 @@ namespace Kifa.Apps.MomentCounter {
         public Date ToDate { get; set; }
 
         // For now, this should not be changed. Can be added maybe.
-        public List<Unit> Units { get; set; }
+        public List<Link<Unit>> Units { get; set; }
 
         public int TotalTarget { get; set; }
 
