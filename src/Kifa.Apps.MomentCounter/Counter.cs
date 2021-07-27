@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter {
@@ -10,10 +11,13 @@ namespace Kifa.Apps.MomentCounter {
         // Can be null, meaning going forever. If both dates are set, total can be converted to average.
         public Date ToDate { get; set; }
 
-        public Unit Unit { get; set; }
+        // For now, this should not be changed. Can be added maybe.
+        public List<Unit> Units { get; set; }
 
         public int TotalTarget { get; set; }
 
         public int AverageTarget { get; set; }
+
+        public List<Link<Event>> Events { get; set; }
     }
 }

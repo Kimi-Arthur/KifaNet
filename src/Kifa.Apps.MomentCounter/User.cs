@@ -5,6 +5,7 @@ namespace Kifa.Apps.MomentCounter {
     public class User : DataModel<User> {
         public string Name { get; set; }
         public Settings Settings { get; set; }
-        public List<Counter> Counters { get; set; }
+
+        public List<Link<Counter>> Counters { get; set; }
     }
 }
