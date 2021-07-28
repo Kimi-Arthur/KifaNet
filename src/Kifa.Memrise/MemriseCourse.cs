@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kifa.Service;
 using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Memrise {
     public class MemriseCourse : DataModel<MemriseCourse> {
@@ -17,9 +18,11 @@ namespace Kifa.Memrise {
         public Dictionary<string, string> Levels { get; set; }
 
         [JsonIgnore]
+        [YamlIgnore]
         public string DatabaseUrl => $"{BaseUrl}database/{DatabaseId}/";
 
         [JsonIgnore]
+        [YamlIgnore]
         public string BaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/";
     }
 
