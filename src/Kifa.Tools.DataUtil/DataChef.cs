@@ -4,6 +4,7 @@ using System.Linq;
 using Kifa.Apps.MomentCounter;
 using Kifa.Infos;
 using Kifa.Languages.German.Goethe;
+using Kifa.Memrise;
 using Kifa.Music;
 using Kifa.Service;
 using NLog;
@@ -13,6 +14,7 @@ namespace Kifa.Tools.DataUtil {
     public interface DataChef {
         public static DataChef GetChef(string modelId, string content = null) {
             return (modelId ?? GetYamlType(content)) switch {
+                MemriseCourse.ModelId => new DataChef<MemriseCourse,MemriseCourseRestServiceClient>(),
                 GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
                 GoetheWordList.ModelId => new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
                 GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
