@@ -29,7 +29,8 @@ namespace Kifa.Cloud.Swisscom {
         public long TotalQuota { get; set; }
         public long UsedQuota { get; set; }
 
-        [JsonIgnore] public long LeftQuota => TotalQuota - UsedQuota;
+        [JsonIgnore]
+        public long LeftQuota => TotalQuota - UsedQuota;
 
         public long ReservedQuota { get; set; }
 
@@ -88,9 +89,10 @@ namespace Kifa.Cloud.Swisscom {
 
         KifaActionResult UpdateQuota() =>
             KifaActionResult.FromAction(() => {
-                using var response = httpClient.SendWithRetry(() =>
-                    SwisscomStorageClient.APIList.Quota.GetRequest(
-                        new Dictionary<string, string> {["access_token"] = AccessToken}));
+                using var response = httpClient.SendWithRetry(() => SwisscomStorageClient.APIList.Quota.GetRequest(
+                    new Dictionary<string, string> {
+                        ["access_token"] = AccessToken
+                    }));
                 var data = response.GetJToken();
                 UsedQuota = data.Value<long>("TotalBytes");
                 TotalQuota = data.Value<long>("StorageLimit");

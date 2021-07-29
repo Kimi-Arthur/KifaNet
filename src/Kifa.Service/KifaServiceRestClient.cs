@@ -153,19 +153,18 @@ namespace Kifa.Service {
                 return response.GetObject<KifaActionResult>();
             }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {ModelId}({string.Join(", ", ids)})")));
 
-        public void Call(string action, Dictionary<string, object>? parameters = null) =>
-            Call<object>(action, parameters);
+        public void Call(string action, object? parameters = null) => Call<object>(action, parameters);
 
-        public TResponse Call<TResponse>(string action, Dictionary<string, object>? parameters = null) {
+        public TResponse Call<TResponse>(string action, object? parameters = null) {
             return Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Post,
                     $"{KifaServiceRestClient.ServerAddress}/{ModelId}/${action}");
 
-                parameters ??= new Dictionary<string, object>();
-
-                request.Content =
-                    new StringContent(JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
-                        Encoding.UTF8, "application/json");
+                if (parameters != null) {
+                    request.Content =
+                        new StringContent(JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
+                            Encoding.UTF8, "application/json");
+                }
 
                 using var response = KifaServiceRestClient.Client.SendAsync(request).Result;
                 var result = response.GetObject<KifaActionResult<TResponse>>();
