@@ -17,7 +17,7 @@ namespace Kifa.Web.Api.Controllers.MomentCounter {
         }
 
         [HttpPost("$remove_counter")]
-        public KifaApiActionResult<string> AddCounter([FromBody] RemoveCounterRequest request) {
+        public KifaApiActionResult<string> RemoveCounter([FromBody] RemoveCounterRequest request) {
             logger.Trace($"Request: {request.ToPrettyJson()}");
             return Client.RemoveCounter(Client.Get(request.UserId), request.CounterId);
         }

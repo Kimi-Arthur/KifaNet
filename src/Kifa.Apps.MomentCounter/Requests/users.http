@@ -8,6 +8,13 @@ Counter:
   Units:
     - minutes
 
+### Remove counter
+POST {{server}}/api/moment_counter/users/$remove_counter
+Content-Type: application/x-yaml
+
+UserId: Kimi
+CounterId: Kimi/9
+
 ### Get Users
 GET {{server}}/api/moment_counter/users/Kimi
 
