@@ -81,16 +81,29 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Delete(string id) {
             var item = Get(id);
-            if (item.Metadata?.Links != null) {
-                // This is source.
-                var nextItem = Get(item.Metadata?.Links.First());
-                nextItem.Metadata.Links = item.Metadata?.Links;
-                nextItem.Metadata.Links.Remove(nextItem.Id);
-                nextItem.Metadata.Id = null;
-                Set(nextItem);
-                foreach (var link in nextItem.Metadata.Links) {
-                    var linkedItem = Get(link);
-                    linkedItem.Metadata.Id = nextItem.Id;
+            if (item.Metadata != null) {
+                var metadata = item.Metadata;
+                if (metadata.Id != null) {
+                    if (metadata.Id == item.Id) {
+                        // This is source.
+                        var nextItem = Get(item.Metadata?.Links.First());
+                        nextItem.Metadata.Links.Remove(nextItem.Id);
+                        nextItem.Metadata.Id = null;
+                        Set(nextItem);
+                        foreach (var link in nextItem.Metadata.Links) {
+                            var linkedItem = Read(link);
+                            linkedItem.Metadata.Id = nextItem.Id;
+                            Write(linkedItem);
+                        }
+                    } else {
+                        // This is link.
+                        metadata.Links.Remove(id);
+                        if (metadata.Links.Count == 0) {
+                            metadata.Links = null;
+                        }
+
+                        Set(item);
+                    }
                 }
             }
 

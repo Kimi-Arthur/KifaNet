@@ -4,7 +4,7 @@ Content-Type: application/x-yaml
 
 UserId: Kimi
 Counter:
-  Title: 吉他练习
+  Title: 阅读
   Units:
     - minutes
 
@@ -13,7 +13,7 @@ POST {{server}}/api/moment_counter/users/$remove_counter
 Content-Type: application/x-yaml
 
 UserId: Kimi
-CounterId: Kimi/9
+CounterId: Kimi/8
 
 ### Get Users
 GET {{server}}/api/moment_counter/users/Kimi
