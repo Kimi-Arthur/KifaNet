@@ -15,6 +15,12 @@ namespace Kifa.Web.Api.Controllers.MomentCounter {
             logger.Trace($"Request: {request.ToPrettyJson()}");
             return Client.AddCounter(Client.Get(request.UserId), request.Counter);
         }
+
+        [HttpPost("$remove_counter")]
+        public KifaApiActionResult<string> AddCounter([FromBody] RemoveCounterRequest request) {
+            logger.Trace($"Request: {request.ToPrettyJson()}");
+            return Client.RemoveCounter(Client.Get(request.UserId), request.CounterId);
+        }
     }
 
     public class UserJsonServiceClient : KifaServiceJsonClient<User>, UserServiceClient {
@@ -26,8 +32,11 @@ namespace Kifa.Web.Api.Controllers.MomentCounter {
             return counter.Id;
         }
 
-        public string RemoveCounter(User user, Counter counter) {
-            throw new NotImplementedException();
+        public string RemoveCounter(User user, string counterId) {
+            Counter.Client.Delete(counterId);
+            user.Counters.Remove(counterId);
+            Set(user);
+            return counterId;
         }
 
         public string AddEvent(User user, Counter counter, Event @event) {
