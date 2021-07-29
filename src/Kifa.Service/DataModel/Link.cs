@@ -22,7 +22,6 @@ namespace Kifa.Service {
 
         public void FromJson(string data) => Id = data;
 
-
         public bool Equals(Link<TDataModel>? other) {
             if (ReferenceEquals(null, other))
                 return false;
@@ -36,9 +35,7 @@ namespace Kifa.Service {
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-            if (obj.GetType() != this.GetType())
-                return false;
-            return Equals((Link<TDataModel>) obj);
+            return obj.GetType() == GetType() && Equals((Link<TDataModel>) obj);
         }
 
         public override int GetHashCode() {
