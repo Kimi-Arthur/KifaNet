@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
-using Kifa.Service;
 
 namespace Kifa.Web.Api {
     public class KifaServiceJsonClient {
@@ -81,7 +80,23 @@ namespace Kifa.Web.Api {
             });
 
         public override KifaActionResult Delete(string id) {
-            throw new NotImplementedException();
+            var item = Get(id);
+            if (item.Metadata?.Links != null) {
+                // This is source.
+                var nextItem = Get(item.Metadata?.Links.First());
+                nextItem.Metadata.Links = item.Metadata?.Links;
+                nextItem.Metadata.Links.Remove(nextItem.Id);
+                nextItem.Metadata.Id = null;
+                Set(nextItem);
+                foreach (var link in nextItem.Metadata.Links) {
+                    var linkedItem = Get(link);
+                    linkedItem.Metadata.Id = nextItem.Id;
+                }
+            }
+
+            Remove(item.Id);
+
+            return KifaActionResult.SuccessActionResult;
         }
 
         public override KifaActionResult Link(string targetId, string linkId) {
@@ -90,7 +105,8 @@ namespace Kifa.Web.Api {
 
             if (target.Id == null) {
                 return LogAndReturn(new KifaActionResult {
-                    Status = KifaActionStatus.BadRequest, Message = $"Target {targetId} doesn't exist."
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"Target {targetId} doesn't exist."
                 });
             }
 
@@ -111,7 +127,12 @@ namespace Kifa.Web.Api {
                 });
             }
 
-            Write(new TDataModel {Id = linkId, Metadata = new DataMetadata {Id = realTargetId}});
+            Write(new TDataModel {
+                Id = linkId,
+                Metadata = new DataMetadata {
+                    Id = realTargetId
+                }
+            });
 
             target.Metadata ??= new DataMetadata();
             target.Metadata.Links ??= new HashSet<string>();
@@ -141,6 +162,11 @@ namespace Kifa.Web.Api {
         string ReadRaw(string id) {
             var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{id.Trim('/')}.json";
             return !File.Exists(path) ? "{}" : File.ReadAllText(path);
+        }
+
+        void Remove(string id) {
+            var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{id.Trim('/')}.json";
+            File.Delete(path);
         }
 
         static KifaActionResult LogAndReturn(KifaActionResult actionResult) {
