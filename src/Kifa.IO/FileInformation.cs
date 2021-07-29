@@ -224,30 +224,34 @@ namespace Kifa.IO {
     public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
         FileInformationServiceClient {
         public List<string> ListFolder(string folder, bool recursive = false) =>
-            Call<List<string>>("list_folder", parameters: new Dictionary<string, object> {
+            Call<List<string>>("list_folder", new Dictionary<string, object> {
                 ["folder"] = folder,
                 ["recursive"] = recursive ? "1" : ""
             });
 
         public void AddLocation(string id, string location, bool verified = false) =>
-            Call("add_location", id, new Dictionary<string, object> {
+            Call("add_location", new Dictionary<string, object> {
+                ["id"] = id,
                 ["location"] = location,
                 ["verified"] = verified
             });
 
         public void RemoveLocation(string id, string location) =>
-            Call("remove_location", id, new Dictionary<string, object> {
+            Call("remove_location", new Dictionary<string, object> {
+                ["id"] = id,
                 ["location"] = location
             });
 
         public string CreateLocation(string id, string type = null, string format = null) =>
-            Call<string>("create_location", id, new Dictionary<string, object> {
+            Call<string>("create_location", new Dictionary<string, object> {
+                ["id"] = id,
                 ["type"] = type,
                 ["format"] = format
             });
 
         public string GetLocation(string id, List<string> types = null) =>
-            Call<string>("get_location", id, new Dictionary<string, object> {
+            Call<string>("get_location", new Dictionary<string, object> {
+                ["id"] = id,
                 ["types"] = types
             });
     }

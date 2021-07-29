@@ -137,6 +137,9 @@ namespace Kifa.Music {
     }
 
     public class GuitarChordRestServiceClient : KifaServiceRestClient<GuitarChord>, GuitarChordServiceClient {
-        public SvgDocument GetPicture(string id) => SvgDocument.FromSvg<SvgDocument>(Call<string>("get_picture", id));
+        public SvgDocument GetPicture(string id) =>
+            SvgDocument.FromSvg<SvgDocument>(Call<string>("get_picture", new Dictionary<string, object> {
+                {"id", id}
+            }));
     }
 }

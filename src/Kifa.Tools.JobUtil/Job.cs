@@ -88,41 +88,41 @@ namespace Kifa.Tools.JobUtil {
     }
 
     class JobRestServiceClient : KifaServiceRestClient<Job>, JobServiceClient {
-        public Job PullJob(string id = null, string idPrefix = null, string runner = null)
-            => Call<Job>("pull_job",
-                id,
-                new Dictionary<string, object> {
-                    ["id_prefix"] = idPrefix,
-                    ["runner"] = runner
-                });
+        public Job PullJob(string id = null, string idPrefix = null, string runner = null) =>
+            Call<Job>("pull_job", new Dictionary<string, object> {
+                ["id"] = id,
+                ["id_prefix"] = idPrefix,
+                ["runner"] = runner
+            });
 
-        public Job StartJob(string id = null, string idPrefix = null, string runner = null)
-            => Call<Job>("start_job",
-                id,
-                new Dictionary<string, object> {
-                    ["id_prefix"] = idPrefix,
-                    ["runner"] = runner
-                });
+        public Job StartJob(string id = null, string idPrefix = null, string runner = null) =>
+            Call<Job>("start_job", new Dictionary<string, object> {
+                ["id"] = id,
+                ["id_prefix"] = idPrefix,
+                ["runner"] = runner
+            });
 
-        public void ResetJob(string id)
-            => Call("reset_job",
-                id);
+        public void ResetJob(string id) =>
+            Call("reset_job", new Dictionary<string, object> {
+                {"id", id}
+            });
 
-        public void Heartbeat(string id)
-            => Call("heartbeat",
-                id);
+        public void Heartbeat(string id) =>
+            Call("heartbeat", new Dictionary<string, object> {
+                {"id", id}
+            });
 
-        public void FinishJob(string id, int exitCode = 0)
-            => Call("finish_job", id,
-                new Dictionary<string, object> {
-                    ["exit_code"] = exitCode
-                });
+        public void FinishJob(string id, int exitCode = 0) =>
+            Call("finish_job", new Dictionary<string, object> {
+                ["id"] = id,
+                ["exit_code"] = exitCode
+            });
 
-        public void Log(string id, string message, string level = "i")
-            => Call("log", id,
-                new Dictionary<string, object> {
-                    ["level"] = level,
-                    ["message"] = message
-                });
+        public void Log(string id, string message, string level = "i") =>
+            Call("log", new Dictionary<string, object> {
+                ["id"] = id,
+                ["level"] = level,
+                ["message"] = message
+            });
     }
 }
