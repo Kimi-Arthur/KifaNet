@@ -11,6 +11,7 @@ namespace Kifa.Markdown {
             new LinkConverter(),
             new ParagraphConverter(),
             new UnorderedListConverter(),
+            new InlineCodeConverter(),
 
             // Order of converters above doesn't matter.
             new SkippedConverter(),
