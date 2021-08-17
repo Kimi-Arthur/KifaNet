@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
@@ -13,7 +14,7 @@ namespace Kifa.Markdown.Converters {
                 // TODO: may need to parse HTML.
                 yield return new HeadingElement {
                     Level = int.Parse(match.Groups[1].Value),
-                    Title = node.InnerText
+                    TitleElements = ParseAllHtml(node.ChildNodes).ToList()
                 };
             }
         }

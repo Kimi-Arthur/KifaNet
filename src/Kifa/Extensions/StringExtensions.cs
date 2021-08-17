@@ -126,5 +126,8 @@ namespace Kifa {
 
             return false;
         }
+
+        public static string JoinBy(this IEnumerable<string> values, string separator = "") =>
+            string.Join(separator, values);
     }
 }
