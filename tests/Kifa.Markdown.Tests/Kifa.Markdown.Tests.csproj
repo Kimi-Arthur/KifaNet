@@ -23,4 +23,10 @@
     <ProjectReference Include="..\..\src\Kifa.Markdown\Kifa.Markdown.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="stateful_widget.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

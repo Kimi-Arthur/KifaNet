@@ -9,8 +9,8 @@ namespace Kifa.Markdown.Converters {
             new HeadingConverter(),
             new LinkConverter(),
             new ParagraphConverter(),
-            new NoopConverter(),
             new SkippedConverter(),
+            new NoopConverter(),
             new DefaultConverter()
         };
 

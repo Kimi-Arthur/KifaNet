@@ -1,23 +1,39 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using HtmlAgilityPack;
 using Kifa.Markdown.Converters;
 using Xunit;
 
 namespace Kifa.Markdown.Tests {
     public class HtmlConverterTests {
+        static HttpClient client = new();
+
         [Theory]
         [InlineData("<h1>test</h1>", "# test\n\n")]
         [InlineData("<h4>test</h4>", "#### test\n\n")]
         [InlineData(
             "<p>A graphical icon widget drawn with a glyph from a font described in an <a href=\"widgets/IconData-class.html\">IconData</a> such as material's predefined <a href=\"widgets/IconData-class.html\">IconData</a>s in <a href=\"material/Icons-class.html\">Icons</a>.</p>",
             "A graphical icon widget drawn with a glyph from a font described in an [IconData](widgets/IconData-class.html) such as material's predefined [IconData](widgets/IconData-class.html)s in [Icons](material/Icons-class.html).\n\n")]
-        public void ParsingTest(string html, string markdown) {
+        public void ParsingHtmlTest(string html, string markdown) {
             var parsed = HtmlMarkdownConverter.ParseAllHtml(new List<HtmlNode> {
                 HtmlNode.CreateNode(html)
             }).ToList();
 
             Assert.Equal(markdown, string.Join("", parsed.Select(element => element.ToText())));
+        }
+
+        [Theory]
+        [InlineData("https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html", "//div[@id=\"dartdoc-main-content\"]",
+            "stateful_widget.md")]
+        public void ParsingDocumentTest(string url, string rootXpath, string outcomeFile) {
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(client.GetStringAsync(url).Result);
+            var markdownElements = HtmlMarkdownConverter
+                .ParseAllHtml(new[] {htmlDocument.DocumentNode.SelectSingleNode(rootXpath)}).ToList();
+
+            Assert.Equal(File.ReadAllText(outcomeFile), markdownElements.Select(element => element.ToText()).JoinBy());
         }
     }
 }

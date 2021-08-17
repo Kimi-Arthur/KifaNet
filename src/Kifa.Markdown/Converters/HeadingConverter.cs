@@ -11,7 +11,6 @@ namespace Kifa.Markdown.Converters {
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) {
             var match = TagPattern.Match(node.Name);
             if (match.Success) {
-                // TODO: may need to parse HTML.
                 yield return new HeadingElement {
                     Level = int.Parse(match.Groups[1].Value),
                     TitleElements = ParseAllHtml(node.ChildNodes).ToList()

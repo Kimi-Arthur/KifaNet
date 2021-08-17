@@ -9,8 +9,12 @@ namespace Kifa.Markdown.Converters {
             "head"
         };
 
+        static HashSet<string> SkippedIds = new() {
+            "external-links"
+        };
+
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>
-            SkippedTags.Contains(node.Name)
+            SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id)
                 ? new[] {
                     new HtmlElement {
                         Html = ""

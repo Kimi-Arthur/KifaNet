@@ -12,8 +12,12 @@ namespace Kifa.Markdown.Converters {
                 logger.Warn($"Unknown html node type ({node.Name}) in:\n{node.OuterHtml}");
             }
 
+            if (string.IsNullOrWhiteSpace(node.InnerText)) {
+                yield break;
+            }
+
             yield return new HtmlElement {
-                Html = node.OuterHtml
+                Html = node.OuterHtml.Trim()
             };
         }
     }

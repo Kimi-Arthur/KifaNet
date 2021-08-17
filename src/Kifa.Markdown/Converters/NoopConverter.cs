@@ -8,7 +8,9 @@ namespace Kifa.Markdown.Converters {
         static HashSet<string> NoopTags = new() {
             "section",
             "html",
-            "body"
+            "body",
+            "div",
+            "span"
         };
 
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>
