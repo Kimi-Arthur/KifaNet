@@ -10,6 +10,9 @@ namespace Kifa.Markdown {
             new HeadingConverter(),
             new LinkConverter(),
             new ParagraphConverter(),
+            new UnorderedListConverter(),
+
+            // Order of converters above doesn't matter.
             new SkippedConverter(),
             new NoopConverter(),
             new DefaultConverter()

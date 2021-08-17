@@ -16,12 +16,13 @@ namespace Kifa.Markdown.Tests {
         [InlineData(
             "<p>A graphical icon widget drawn with a glyph from a font described in an <a href=\"widgets/IconData-class.html\">IconData</a> such as material's predefined <a href=\"widgets/IconData-class.html\">IconData</a>s in <a href=\"material/Icons-class.html\">Icons</a>.</p>",
             "A graphical icon widget drawn with a glyph from a font described in an [IconData](https://api.flutter.dev/flutter/widgets/IconData-class.html) such as material's predefined [IconData](https://api.flutter.dev/flutter/widgets/IconData-class.html)s in [Icons](https://api.flutter.dev/flutter/material/Icons-class.html).\n\n")]
+        [InlineData("<ul>\n<li>abc</li><li>the</li><li>title\n<ul>\n<li>bcd</li><li>hh</li></ul></li></ul>", "- abc\n- the\n- title\n  - bcd\n  - hh\n")]
         public void ParsingHtmlTest(string html, string markdown) {
             var parsed = HtmlMarkdownConverter.ParseAllHtml(new List<HtmlNode> {
                 HtmlNode.CreateNode(html)
             }).ToList();
 
-            Assert.Equal(markdown, string.Join("", parsed.Select(element => element.ToText())));
+            Assert.Equal(markdown, parsed.Select(element => element.ToText()).JoinBy());
         }
 
         [Theory]
