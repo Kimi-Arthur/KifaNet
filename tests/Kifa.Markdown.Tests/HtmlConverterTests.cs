@@ -15,7 +15,7 @@ namespace Kifa.Markdown.Tests {
         [InlineData("<h4>test</h4>", "#### test\n\n")]
         [InlineData(
             "<p>A graphical icon widget drawn with a glyph from a font described in an <a href=\"widgets/IconData-class.html\">IconData</a> such as material's predefined <a href=\"widgets/IconData-class.html\">IconData</a>s in <a href=\"material/Icons-class.html\">Icons</a>.</p>",
-            "A graphical icon widget drawn with a glyph from a font described in an [IconData](widgets/IconData-class.html) such as material's predefined [IconData](widgets/IconData-class.html)s in [Icons](material/Icons-class.html).\n\n")]
+            "A graphical icon widget drawn with a glyph from a font described in an [IconData](https://api.flutter.dev/flutter/widgets/IconData-class.html) such as material's predefined [IconData](https://api.flutter.dev/flutter/widgets/IconData-class.html)s in [Icons](https://api.flutter.dev/flutter/material/Icons-class.html).\n\n")]
         public void ParsingHtmlTest(string html, string markdown) {
             var parsed = HtmlMarkdownConverter.ParseAllHtml(new List<HtmlNode> {
                 HtmlNode.CreateNode(html)
@@ -25,8 +25,8 @@ namespace Kifa.Markdown.Tests {
         }
 
         [Theory]
-        [InlineData("https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html", "//div[@id=\"dartdoc-main-content\"]",
-            "stateful_widget.md")]
+        [InlineData("https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html",
+            "//div[@id=\"dartdoc-main-content\"]", "stateful_widget.md")]
         public void ParsingDocumentTest(string url, string rootXpath, string outcomeFile) {
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(client.GetStringAsync(url).Result);

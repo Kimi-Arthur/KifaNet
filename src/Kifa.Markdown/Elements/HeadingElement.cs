@@ -8,6 +8,6 @@ namespace Kifa.Markdown.Elements {
 
 
         public override string ToText() =>
-            $"{new string('#', Level)} {TitleElements.Select(title => title.ToText()).JoinBy(" ")}\n\n";
+            $"{new string('#', Level)} {TitleElements.Select(title => title.ToText()).JoinBy("")}\n\n";
     }
 }

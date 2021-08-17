@@ -9,7 +9,7 @@ namespace Kifa.Markdown.Converters {
             if (node.Name == "a") {
                 yield return new LinkElement {
                     Text = node.InnerText,
-                    Target = node.GetAttributeValue("href", "")
+                    Target = ResolveUrl(node.GetAttributeValue("href", ""))
                 };
             }
         }

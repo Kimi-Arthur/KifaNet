@@ -8,16 +8,26 @@ namespace Kifa.Markdown.Converters {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) {
+            var html = node.OuterHtml;
+
             if (node.Name != "#text") {
-                logger.Warn($"Unknown html node type ({node.Name}) in:\n{node.OuterHtml}");
+                logger.Warn($"Unknown html node type ({node.Name}) in:\n{html}");
             }
 
             if (string.IsNullOrWhiteSpace(node.InnerText)) {
                 yield break;
             }
 
+            if (char.IsWhiteSpace(html[0])) {
+                html = $" {html.TrimStart()}";
+            }
+
+            if (char.IsWhiteSpace(html[^1])) {
+                html = $"{html.TrimEnd()} ";
+            }
+
             yield return new HtmlElement {
-                Html = node.OuterHtml.Trim()
+                Html = html
             };
         }
     }
