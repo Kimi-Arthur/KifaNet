@@ -10,7 +10,8 @@ namespace Kifa.Markdown.Converters {
             "html",
             "body",
             "div",
-            "span"
+            "span",
+            "main" // From https://docs.microsoft.com/
         };
 
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>

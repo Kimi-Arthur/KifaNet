@@ -27,6 +27,8 @@ namespace Kifa.Markdown.Tests {
         [Theory]
         [InlineData("https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html",
             "//div[@id=\"dartdoc-main-content\"]", "stateful_widget.md")]
+        [InlineData("https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0",
+            "//main", "file_stream.md")]
         public void ParsingDocumentTest(string url, string rootXpath, string outcomeFile) {
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(client.GetStringAsync(url).Result);
