@@ -8,8 +8,6 @@ A stateful widget is a widget that describes part of the user interface by build
 
 Stateful widgets are useful when the part of the user interface you are describing can change dynamically, e.g. due to having an internal clock-driven state, or depending on some system state. For compositions that depend only on the configuration information in the object itself and the [BuildContext](https://api.flutter.dev/flutter/widgets/BuildContext-class.html) in which the widget is inflated, consider using [StatelessWidget](https://api.flutter.dev/flutter/widgets/StatelessWidget-class.html).
 
-
-
 [StatefulWidget](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html) instances themselves are immutable and store their mutable state either in separate [State](https://api.flutter.dev/flutter/widgets/State-class.html) objects that are created by the [createState](https://api.flutter.dev/flutter/widgets/StatefulWidget/createState.html) method, or in objects to which that [State](https://api.flutter.dev/flutter/widgets/State-class.html) subscribes, for example [Stream](https://api.flutter.dev/flutter/dart-async/Stream-class.html) or [ChangeNotifier](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html) objects, to which references are stored in final fields on the [StatefulWidget](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html) itself.
 
 The framework calls [createState](https://api.flutter.dev/flutter/widgets/StatefulWidget/createState.html) whenever it inflates a [StatefulWidget](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html), which means that multiple [State](https://api.flutter.dev/flutter/widgets/State-class.html) objects might be associated with the same [StatefulWidget](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html) if that widget has been inserted into the tree in multiple places. Similarly, if a [StatefulWidget](https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html) is removed from the tree and later inserted in to the tree again, the framework will call [createState](https://api.flutter.dev/flutter/widgets/StatefulWidget/createState.html) again to create a fresh [State](https://api.flutter.dev/flutter/widgets/State-class.html) object, simplifying the lifecycle of [State](https://api.flutter.dev/flutter/widgets/State-class.html) objects.
@@ -33,19 +31,9 @@ There are several techniques one can use to minimize the impact of rebuilding a 
 - Avoid changing the depth of any created subtrees or changing the type of any widgets in the subtree. For example, rather than returning either the child or the child wrapped in an [IgnorePointer](https://api.flutter.dev/flutter/widgets/IgnorePointer-class.html), always wrap the child widget in an [IgnorePointer](https://api.flutter.dev/flutter/widgets/IgnorePointer-class.html) and control the [IgnorePointer.ignoring](https://api.flutter.dev/flutter/widgets/IgnorePointer/ignoring.html) property. This is because changing the depth of the subtree requires rebuilding, laying out, and painting the entire subtree, whereas just changing the property will require the least possible change to the render tree (in the case of [IgnorePointer](https://api.flutter.dev/flutter/widgets/IgnorePointer-class.html), for example, no layout or repaint is necessary at all).
 - If the depth must be changed for some reason, consider wrapping the common parts of the subtrees in widgets that have a [GlobalKey](https://api.flutter.dev/flutter/widgets/GlobalKey-class.html) that remains consistent for the life of the stateful widget. (The [KeyedSubtree](https://api.flutter.dev/flutter/widgets/KeyedSubtree-class.html) widget may be useful for this purpose if no other widget can conveniently be assigned the key.)
 
-
-
-[*link*](https://api.flutter.dev/flutter/#)
-
-Sample
-
 This is a skeleton of a stateful widget subclass called `YellowBird`.
 
-
-
 In this example. the [State](https://api.flutter.dev/flutter/widgets/State-class.html) has no actual state. State is normally represented as private member fields. Also, normally widgets have more constructor arguments, each of which corresponds to a `final` property.
-
-*assignment*
 
 ```dart
 class YellowBird extends StatefulWidget {

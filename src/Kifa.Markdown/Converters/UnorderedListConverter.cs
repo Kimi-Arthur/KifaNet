@@ -5,8 +5,8 @@ using Kifa.Markdown.Elements;
 
 namespace Kifa.Markdown.Converters {
     public class UnorderedListConverter : HtmlMarkdownConverter {
-        static int CurrentLevel = 0;
-        
+        int CurrentLevel;
+
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) {
             if (node.Name == "ul") {
                 CurrentLevel++;
@@ -20,6 +20,9 @@ namespace Kifa.Markdown.Converters {
                 }
 
                 CurrentLevel--;
+                if (CurrentLevel == 0) {
+                    yield return new LineBreakElement();
+                }
             }
         }
     }

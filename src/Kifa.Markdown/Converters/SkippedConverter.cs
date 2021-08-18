@@ -13,8 +13,14 @@ namespace Kifa.Markdown.Converters {
             "external-links"
         };
 
+        static HashSet<string> SkippedClasses = new() {
+            "anchor-container",
+            "snippet-buttons",
+            "copyable-container"
+        };
+
         public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>
-            SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id)
+            SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id) || SkippedClasses.Any(c => node.HasClass(c))
                 ? new[] {
                     new HtmlElement {
                         Html = ""
