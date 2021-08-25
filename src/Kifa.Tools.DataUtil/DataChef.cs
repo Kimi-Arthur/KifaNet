@@ -71,7 +71,7 @@ namespace Kifa.Tools.DataUtil {
             }
 
             return new KifaActionResult<string>(
-                $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> {item})))}");
+                $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> { item })))}");
         }
 
         public KifaActionResult Refresh(string id) => Client.Refresh(id);
