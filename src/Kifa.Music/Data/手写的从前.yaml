@@ -1,0 +1,37 @@
+setting:
+  base_length: 1/8
+molody:
+- note: 0
+  length: 33
+- note: 5
+- note: 5
+- note: 5
+- note: 5
+- note: 4
+- note: 3
+- note: 4
+  length: 2
+- note: 2+
+  length: 2
+- note: 2+
+  length: 5
+- note: 0
+- note: 1
+- note: 2
+- note: 2
+- note: 2
+- note: 3
+- note: 4
+- note: 3
+  length: 2
+- note: 2+
+  length: 2
+- note: 1+
+  length: 5
+  prefix:
+    - note: 1+
+      length: 1/2
+    - note: 2+
+      length: 1/2
+
+0*

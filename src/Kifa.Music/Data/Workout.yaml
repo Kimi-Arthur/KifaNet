@@ -1,0 +1,48 @@
+  /workout/exercises/卷腹.json
+    {
+      "id": "卷腹"
+        "metrics": [
+            "count"
+        ]
+    }
+
+    /workout/exercises/平板支撑.json
+    {
+      "id": "平板支撑"
+        "metrics": [
+            "duration"
+        ]
+    }
+
+    /workout/users/kimi.json
+    {
+      "id": "kimi",
+      "name": "Kimi"
+    }
+
+    /workout/history/kimi/2020-11-30.json
+
+    {
+      "id": "kimi/2020-11-30",
+      "exercises": [
+        {
+          "exercise": "卷腹",
+          "count": 25,
+          "group": 2
+        },
+        {
+          "exercise": "卷腹",
+          "count": 15,
+          "group": 1
+        },
+        {
+          "exercise": "平板支撑",
+          "duration": "00:01:30",
+          "group": 1
+        },
+      ]
+    }
+
+    GET /workout/users/kimi
+
+    GET /workout/history/kimi

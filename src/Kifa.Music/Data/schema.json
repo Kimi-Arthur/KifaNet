@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/GuitarChord",
+  "definitions": {
+    "GuitarChord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "arrangements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Arrangement"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "arrangements",
+        "id",
+        "name"
+      ],
+      "title": "GuitarChord"
+    },
+    "Arrangement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "finger": {
+          "type": "integer"
+        },
+        "fret": {
+          "type": "integer"
+        },
+        "strings": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": [
+        "finger",
+        "fret",
+        "strings"
+      ],
+      "title": "Arrangement"
+    }
+  }
+}
