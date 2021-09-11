@@ -36,11 +36,17 @@ namespace Kifa.Tools.BookUtil.Commands {
 
             var firstPage = selectedPages.First();
             if (ForceAppend) {
-                selectedPages.Add(new PdfPage {Height = firstPage.Height, Width = firstPage.Width});
+                selectedPages.Add(new PdfPage {
+                    Height = firstPage.Height,
+                    Width = firstPage.Width
+                });
             }
 
             while (selectedPages.Count % 4 > 0) {
-                selectedPages.Add(new PdfPage {Height = firstPage.Height, Width = firstPage.Width});
+                selectedPages.Add(new PdfPage {
+                    Height = firstPage.Height,
+                    Width = firstPage.Width
+                });
             }
 
             var reorderedPages = ReorderPages(selectedPages);

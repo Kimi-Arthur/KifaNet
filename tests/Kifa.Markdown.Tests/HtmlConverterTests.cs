@@ -33,11 +33,13 @@ namespace Kifa.Markdown.Tests {
             "//div[@id=\"dartdoc-main-content\"]", "stateful_widget.md")]
         [InlineData("https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0", "//main",
             "file_stream.md")]
+        [InlineData("https://flutter.dev/docs/development/accessibility-and-localization/internationalization",
+            "//main", "internationalization.md")]
         public void ParsingDocumentTest(string url, string rootXpath, string outcomeFile) {
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(client.GetStringAsync(url).Result);
             var markdownElements = HtmlMarkdownConverter
-                .ParseAllHtml(new[] {htmlDocument.DocumentNode.SelectSingleNode(rootXpath)}).ToList();
+                .ParseAllHtml(new[] { htmlDocument.DocumentNode.SelectSingleNode(rootXpath) }).ToList();
 
             Assert.Equal(File.ReadAllText(outcomeFile), markdownElements.Select(element => element.ToText()).JoinBy());
         }

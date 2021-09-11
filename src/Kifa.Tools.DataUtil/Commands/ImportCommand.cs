@@ -1,5 +1,4 @@
-﻿using System;
-using CommandLine;
+﻿using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Service;
 using NLog;
