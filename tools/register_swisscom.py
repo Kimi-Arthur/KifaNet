@@ -35,7 +35,7 @@ def register(account):
     retry(lambda: driver.find_element_by_id('email').send_keys(email))
     driver.find_element_by_id('lastName').send_keys(z)
     driver.find_element_by_id('firstName').send_keys(z)
-    driver.find_element_by_id('agbDesc').click()
+    driver.find_element_by_id('agbPart1').click()
     driver.find_elements_by_css_selector('.select__button')[0].click()
     retry(lambda: driver.find_elements_by_css_selector('.dropdown-item[data-value=MR]')[0].click())
     driver.find_element_by_id('submitButton').click()
