@@ -153,6 +153,9 @@ namespace Kifa.Cloud.Swisscom.Tests {
         // }
 
         static SwisscomStorageClient GetStorageClient() {
+            AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
+                KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+
             KifaConfigs.LoadFromSystemConfigs();
 
             return new SwisscomStorageClient("test");
