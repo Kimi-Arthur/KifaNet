@@ -72,12 +72,11 @@ if __name__ == "__main__":
     base = int(spec[1:], 16) << (5 - len(spec)) * 4
     accounts = [(f'{spec[0]}{i:>04x}', get_mail(f'{spec[0]}{i:>04x}')) for i in range(base, base + pow(16, 5 - len(spec)))]
     for account in accounts:
-        print(f'    {account[0]}:')
-        print(f'        Username: {account[1]}')
-        print(f'        Password: {password}')
+        print(f'- Id: {account[0]}')
+        print(f'  Username: {account[1]}')
+        print(f'  Password: {password}')
     print()
-    for account in accounts:
-        print(f'        - {account[0]}')
+    print(','.join(f'"{account[0]}"' for account in accounts))
     print()
 
-    multiprocessing.Pool(16).map(register, accounts)
+    # multiprocessing.Pool(16).map(register, accounts)
