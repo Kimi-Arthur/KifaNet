@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kifa.Service;
 
@@ -20,8 +21,18 @@ namespace Kifa.Cloud.Swisscom {
     }
 
     public interface SwisscomConfigServiceClient : KifaServiceClient<SwisscomConfig> {
+        KifaActionResult AddAccounts(string id, string pattern, List<string> accounts);
     }
 
     public class SwisscomConfigRestServiceClient : KifaServiceRestClient<SwisscomConfig>, SwisscomConfigServiceClient {
+        public KifaActionResult AddAccounts(string id, string pattern, List<string> accounts) {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class AddAccountsRequest {
+        public string Id { get; set; }
+        public string Pattern { get; set; }
+        public List<string> Accounts { get; set; }
     }
 }
