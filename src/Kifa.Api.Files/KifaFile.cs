@@ -260,7 +260,7 @@ namespace Kifa.Api.Files {
             FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
         public Stream OpenRead() =>
-            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
+            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
 
         public void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
