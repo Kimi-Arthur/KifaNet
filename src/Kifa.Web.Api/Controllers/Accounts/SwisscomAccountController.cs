@@ -21,7 +21,7 @@ namespace Kifa.Web.Api.Controllers.Accounts {
             var allGoodAccounts = new List<SwisscomAccount>();
 
             foreach (var account in List().Values) {
-                if (account.LeftQuota < limit) {
+                if (account.TotalQuota > 0 && account.LeftQuota < limit) {
                     continue;
                 }
 
