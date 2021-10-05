@@ -519,7 +519,7 @@ namespace Kifa.Api.Files {
         public bool IsCompatible(KifaFile other) => Host == other.Host && FileFormat == other.FileFormat;
 
         public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
-            FileInfo.Sha256 == null || FileInfo.Size == null
+            FileInfo?.Sha256 == null || FileInfo?.Size == null
                 ? null
                 : FileInfo.Locations.Keys.FirstOrDefault(l =>
                     new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
