@@ -43,15 +43,18 @@ def register(account):
     driver.find_element_by_id('repeat-password').send_keys(password)
     driver.find_element_by_id('captcha-input-field').click()
     retry(lambda: driver.find_element_by_id('confirmation-btn').click())
-    # while True:
-    #     boxes = driver.find_elements_by_css_selector('label[for]')
-    #     if boxes:
-    #         for b in boxes:
-    #             b.click()
-    #         break
-    #     time.sleep(1)
-    # driver.find_element_by_tag_name('button').click()
-    # retry(lambda: driver.find_element_by_css_selector('div.mono-home2-usage-legend-amount').text == '0 B / 10 GB used')
+    retry(lambda: driver.find_elements_by_css_selector('.consent-popup .button--primary')[0].click())
+
+    driver.get('https://www.mycloud.swisscom.ch/login/?type=register')
+    retry(lambda: driver.find_elements_by_css_selector('button[data-test-id=button-use-existing-login]')[0].click())
+    retry(lambda: driver.find_element_by_id('username').send_keys(email))
+    driver.find_element_by_id('continueButton').click()
+    retry(lambda: driver.find_element_by_id('password').send_keys(password))
+    driver.find_element_by_id('submitButton').click()
+    retry(lambda: [box.click() for box in driver.find_elements_by_css_selector('.checkbox')])
+    driver.find_elements_by_css_selector('button[data-test-id=button-use-existing-login]')[0].click()
+    time.sleep(10)
+
     print(f'{account[0]} done.')
     driver.quit()
 
@@ -79,4 +82,4 @@ if __name__ == "__main__":
     print(','.join(f'"{account[0]}"' for account in accounts))
     print()
 
-    # multiprocessing.Pool(16).map(register, accounts)
+    multiprocessing.Pool(16).map(register, accounts)
