@@ -4,10 +4,10 @@
     <TargetFramework>net5.0</TargetFramework>
     <ToolCommandName>bilix</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>6.0.6</Version>
+    <Version>6.0.7</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
-    <PackageIcon>Pimix.png</PackageIcon>
+    <PackageIcon>Kifa.png</PackageIcon>
     <Description>Utility to interact with bilibili.</Description>
     <Copyright>Copyright © 2019 Kimi Arthur</Copyright>
     <PackageTags>Pimix Apps BiliUtil app</PackageTags>
@@ -28,6 +28,6 @@
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>
