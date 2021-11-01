@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
 using Kifa.Service;
+using Kifa.SkyCh.Api;
 
 namespace Kifa.SkyCh {
     public class SkyProgram : DataModel<SkyProgram> {
@@ -47,9 +48,11 @@ namespace Kifa.SkyCh {
             Duration = TimeSpan.Parse(timeStrings[2]) - TimeSpan.Parse(timeStrings[0]);
 
             Channel = root.SelectSingleNode("//img[@class='channel-logo']").Attributes["alt"].Value;
-
+=
             return true;
         }
+
+        public string GetVideoLink() => new PlayerRpc().Call(Id).Url;
     }
 
     public interface SkyProgramServiceClient : KifaServiceClient<SkyProgram> {
