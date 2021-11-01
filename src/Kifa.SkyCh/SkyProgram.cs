@@ -51,4 +51,10 @@ namespace Kifa.SkyCh {
             return true;
         }
     }
+
+    public interface SkyProgramServiceClient : KifaServiceClient<SkyProgram> {
+    }
+
+    public class SkyProgramRestServiceClient : KifaServiceRestClient<SkyProgram>, SkyProgramServiceClient {
+    }
 }

@@ -17,5 +17,4 @@ namespace Kifa.Soccer {
 
     public class TeamRestServiceClient : KifaServiceRestClient<Team>, TeamServiceClient {
     }
-    
 }
