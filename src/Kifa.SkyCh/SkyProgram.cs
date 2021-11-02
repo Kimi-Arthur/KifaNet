@@ -48,7 +48,7 @@ namespace Kifa.SkyCh {
             Duration = TimeSpan.Parse(timeStrings[2]) - TimeSpan.Parse(timeStrings[0]);
 
             Channel = root.SelectSingleNode("//img[@class='channel-logo']").Attributes["alt"].Value;
-=
+
             return true;
         }
 
