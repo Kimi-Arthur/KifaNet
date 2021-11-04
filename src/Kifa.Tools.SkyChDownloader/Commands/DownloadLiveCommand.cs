@@ -1,4 +1,5 @@
 using CommandLine;
+using Kifa.Service;
 using Kifa.SkyCh;
 using NLog;
 
@@ -11,10 +12,7 @@ namespace Kifa.Tools.SkyChDownloader.Commands {
         public string LiveId { get; set; }
 
         public override int Execute() {
-            var skyProgram = new SkyProgram {
-                Id = LiveId
-            };
-            skyProgram.Fill();
+            var skyProgram = new KifaServiceRestClient<SkyProgram>().Get(LiveId);
 
             logger.Info(skyProgram.GetVideoLink());
             return 0;
