@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Web;
 using HtmlAgilityPack;
 using Kifa.Service;
 using Kifa.SkyCh.Api;
@@ -33,8 +34,8 @@ namespace Kifa.SkyCh {
                 .Split("?")[0];
 
             Type = root.SelectSingleNode("//span[@class='type-tag']").InnerText.Trim();
-            Title = root.SelectSingleNode("//h1[@class='program-title']").InnerText.Trim();
-            Subtitle = root.SelectSingleNode("//h2[@class='program-subtitle']").InnerText.Trim();
+            Title = HttpUtility.HtmlDecode(root.SelectSingleNode("//h1[@class='program-title']").InnerText.Trim());
+            Subtitle = HttpUtility.HtmlDecode(root.SelectSingleNode("//h2[@class='program-subtitle']").InnerText.Trim());
 
             Categories = root.SelectSingleNode("//span[@class='detail'][2]").InnerText.Split(",").Select(s => s.Trim())
                 .ToList();

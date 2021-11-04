@@ -1,3 +1,4 @@
+using System.Web;
 using CommandLine;
 using Kifa.Service;
 using Kifa.SkyCh;
@@ -14,7 +15,10 @@ namespace Kifa.Tools.SkyChDownloader.Commands {
         public override int Execute() {
             var skyProgram = new KifaServiceRestClient<SkyProgram>().Get(LiveId);
 
-            logger.Info(skyProgram.GetVideoLink());
+            logger.Info(
+                $"Name: {HttpUtility.HtmlDecode(skyProgram.Title)} - {HttpUtility.HtmlDecode(skyProgram.Subtitle)}.{skyProgram.Id}.mp4");
+            logger.Info($"Cover: {skyProgram.ImageLink}");
+            logger.Info($"Link: {skyProgram.GetVideoLink()}");
             return 0;
         }
     }
