@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Kifa.Bilibili;
-using NLog;
 using Kifa.Api.Files;
+using Kifa.Bilibili;
 using Kifa.IO;
+using NLog;
 
 namespace Kifa.Tools.BiliUtil {
     public static class Helper {
@@ -37,11 +37,6 @@ namespace Kifa.Tools.BiliUtil {
         }
 
         public static void WriteIfNotFinished(this KifaFile file, Func<Stream> getStream) {
-            if (file.ExistsSomewhere()) {
-                logger.Info($"{file.FileInfo.Id} already exists in the system. Skipped.");
-                return;
-            }
-
             if (file.Exists()) {
                 logger.Info($"Target file {file} already exists. Skipped.");
                 return;
@@ -54,29 +49,18 @@ namespace Kifa.Tools.BiliUtil {
                 throw new Exception("Cannot get stream.");
             }
 
-            if (downloadFile.Exists()) {
-                if (downloadFile.Length() == stream.Length) {
-                    downloadFile.Move(file);
-                    logger.Info($"Moved {downloadFile} to {file} already exists. Skipped.");
-                    return;
-                }
-
-                logger.Info($"Target file {downloadFile} exists, " +
-                            $"but size ({downloadFile.Length()}) is different from source ({stream.Length}). " +
-                            "Will be removed.");
-            }
-
             logger.Info($"Start downloading video to {downloadFile}");
-            downloadFile.Delete();
             downloadFile.Write(stream);
-            downloadFile.Move(file);
             logger.Info($"Successfullly downloaded video to {file}");
         }
 
 
         public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
             string extraPath = null, bool prefixDate = false, BilibiliUploader uploader = null) {
-            uploader ??= new BilibiliUploader {Id = video.AuthorId, Name = video.Author};
+            uploader ??= new BilibiliUploader {
+                Id = video.AuthorId,
+                Name = video.Author
+            };
 
             var (extension, quality, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
             if (extension == null) {
@@ -171,7 +155,12 @@ namespace Kifa.Tools.BiliUtil {
             var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
             var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
             logger.Debug($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {StartInfo = {FileName = "ffmpeg", Arguments = arguments}};
+            using var proc = new Process {
+                StartInfo = {
+                    FileName = "ffmpeg",
+                    Arguments = arguments
+                }
+            };
             proc.Start();
             proc.WaitForExit();
             if (proc.ExitCode != 0) {
@@ -190,7 +179,12 @@ namespace Kifa.Tools.BiliUtil {
             var newPath = Path.GetTempPath() + path.Split("/").Last() + ".mp4";
             var arguments = $"-i \"{path}\" -c copy \"{newPath}\"";
             logger.Debug($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {StartInfo = {FileName = "ffmpeg", Arguments = arguments}};
+            using var proc = new Process {
+                StartInfo = {
+                    FileName = "ffmpeg",
+                    Arguments = arguments
+                }
+            };
             proc.Start();
             proc.WaitForExit();
             if (proc.ExitCode != 0) {

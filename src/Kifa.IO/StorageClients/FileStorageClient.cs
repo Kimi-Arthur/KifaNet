@@ -142,10 +142,14 @@ namespace Kifa.IO {
             return items.OrderBy(i => i.Name.Normalize(NormalizationForm.FormC)).Select(i => {
                 try {
                     return new FileInformation {
-                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)), Size = i.Length
+                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
+                        Size = i.Length
                     };
                 } catch (Exception) {
-                    return new FileInformation {Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)), Size = 0};
+                    return new FileInformation {
+                        Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
+                        Size = 0
+                    };
                 }
             });
         }
@@ -171,7 +175,7 @@ namespace Kifa.IO {
             var blockSize = DefaultBlockSize;
             path = GetPath(path);
             EnsureParent(path);
-            
+
             // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
             using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
