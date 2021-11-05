@@ -51,6 +51,7 @@ namespace Kifa.Tools.BiliUtil {
 
             logger.Info($"Start downloading video to {downloadFile}");
             downloadFile.Write(stream);
+            downloadFile.Move(file);
             logger.Info($"Successfullly downloaded video to {file}");
         }
 
