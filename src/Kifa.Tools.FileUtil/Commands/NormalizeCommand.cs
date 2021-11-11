@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using CommandLine;
 using NLog;
@@ -10,17 +11,20 @@ namespace Kifa.Tools.FileUtil.Commands {
     class NormalizeCommand : KifaFileCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        protected override Func<List<KifaFile>, string> KifaFileConfirmText
-            => files => $"Confirm normalizing the {files.Count} files above?";
+        protected override Func<List<KifaFile>, string> KifaFileConfirmText =>
+            files => $"Confirm normalizing the {files.Count} files above?";
 
         protected override int ExecuteOneKifaFile(KifaFile file) {
             var path = file.ToString();
-            if (path.IsNormalized(NormalizationForm.FormC)) {
+            var segments = path.Split(".");
+            if (path.IsNormalized(NormalizationForm.FormC) && segments[^1].ToLower() == segments[^1]) {
                 logger.Info($"{path} is already normalized.");
                 return 0;
             }
 
-            var newPath = path.Normalize(NormalizationForm.FormC);
+            segments[^1] = segments[^1].ToLower();
+
+            var newPath = string.Join(".", segments.Select(s => s.Normalize(NormalizationForm.FormC)));
             file.Move(new KifaFile(newPath));
             logger.Info($"Successfully normalized {path} to {newPath}.");
             return 0;
