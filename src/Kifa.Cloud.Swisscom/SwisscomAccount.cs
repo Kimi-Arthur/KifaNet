@@ -83,6 +83,8 @@ namespace Kifa.Cloud.Swisscom {
                 }
 
                 logger.Warn(ex, $"Failed to get token for {Username}...");
+                logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
+
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             });
         }

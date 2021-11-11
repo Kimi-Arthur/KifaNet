@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Kifa.Bilibili.BilibiliApi {
     public class MediaRpc : BilibiliRpc<MediaRpc.MediaResponse> {
@@ -44,6 +45,6 @@ namespace Kifa.Bilibili.BilibiliApi {
         public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/review/user?media_id={id}";
 
         public MediaResponse Call(string mediaId) =>
-            Call(new Dictionary<string, string> {{"id", mediaId.Substring(2)}});
+            Call(new Dictionary<string, string> {{"id", mediaId[2..]}});
     }
 }

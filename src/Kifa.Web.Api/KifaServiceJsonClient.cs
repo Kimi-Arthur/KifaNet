@@ -49,6 +49,7 @@ namespace Kifa.Web.Api {
                 data.Id = id;
             }
 
+            logger.Trace($"Got {data}");
             return data;
         }
 

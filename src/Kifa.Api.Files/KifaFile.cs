@@ -42,18 +42,28 @@ namespace Kifa.Api.Files {
 
             switch (specs[0]) {
                 case "baidu":
-                    return knownClients[spec] = new BaiduCloudStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new BaiduCloudStorageClient {
+                        AccountId = specs[1]
+                    };
                 case "google":
-                    return knownClients[spec] = new GoogleDriveStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new GoogleDriveStorageClient {
+                        AccountId = specs[1]
+                    };
                 case "mega":
-                    return knownClients[spec] = new MegaNzStorageClient {AccountId = specs[1]};
+                    return knownClients[spec] = new MegaNzStorageClient {
+                        AccountId = specs[1]
+                    };
                 case "swiss":
                     return knownClients[spec] = new SwisscomStorageClient(specs[1]);
                 case "http":
                 case "https":
-                    return knownClients[spec] = new WebStorageClient {Protocol = specs[0]};
+                    return knownClients[spec] = new WebStorageClient {
+                        Protocol = specs[0]
+                    };
                 case "local":
-                    var c = new FileStorageClient {ServerId = specs[1]};
+                    var c = new FileStorageClient {
+                        ServerId = specs[1]
+                    };
                     if (c.Server == null) {
                         c = null;
                     }
@@ -260,7 +270,7 @@ namespace Kifa.Api.Files {
             FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
         public Stream OpenRead() =>
-            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo.EncryptionKey), FileInfo);
+            new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
 
         public void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
@@ -519,10 +529,11 @@ namespace Kifa.Api.Files {
         public bool IsCompatible(KifaFile other) => Host == other.Host && FileFormat == other.FileFormat;
 
         public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
-            FileInfo.Sha256 == null || FileInfo.Size == null
+            FileInfo?.Sha256 == null || FileInfo?.Size == null
                 ? null
                 : FileInfo.Locations.Keys.FirstOrDefault(l =>
-                    new Regex($@"^{serviceType}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
+                    new Regex(
+                            $@"^{serviceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
                         .Match(l).Success) ?? serviceType switch {
                     CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
                     CloudServiceType.Swiss =>

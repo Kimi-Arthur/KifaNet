@@ -1,11 +1,16 @@
 ### Get
 GET {{server}}/api/configs/swisscom/default
 
-### Update quota
-POST {{server}}/api/configs/swisscom/$update_quota?id=default&accountId=s0000
+### Add accounts
+POST {{server}}/api/configs/swisscom/$add_accounts
+Content-Type: application/x-yaml
+
+Id: default
+Pattern: /
+Accounts: []
 
 ### Get
-GET {{server}}/api/accounts/swisscom/s0001
+GET {{server}}/api/accounts/swisscom/p00b0
 
 ### Get Top Accounts
 GET {{server}}/api/accounts/swisscom/$get_top_accounts

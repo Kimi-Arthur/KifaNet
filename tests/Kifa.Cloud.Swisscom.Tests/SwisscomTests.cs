@@ -126,33 +126,10 @@ namespace Kifa.Cloud.Swisscom.Tests {
             Assert.NotEqual(0, account.UsedQuota);
         }
 
-        // [Fact]
-        // public void FindAccountTest() {
-        //     KifaConfigs.LoadFromSystemConfigs();
-        //
-        //     var validAccounts = new List<(string, long)>();
-        //     var failedAccounts = new List<string>();
-        //     var invalidAccounts = new List<(string, long)>();
-        //     foreach (var account in SwisscomStorageClient.Accounts.Keys.Where(a =>
-        //         SwisscomStorageClient.StorageMappings.FirstOrDefault(s => s.Accounts.Contains(a))?.Pattern
-        //             ?.StartsWith("/") ?? false)) {
-        //         try {
-        //             var (_, _, left) = new SwisscomStorageClient(account).GetQuota();
-        //
-        //             if (left < 20 << 20) {
-        //                 invalidAccounts.Add((account, left));
-        //             } else {
-        //                 validAccounts.Add((account, left));
-        //             }
-        //         } catch (NoSuchElementException) {
-        //             failedAccounts.Add(account);
-        //         }
-        //     }
-        //
-        //     Assert.Empty(invalidAccounts);
-        // }
-
         static SwisscomStorageClient GetStorageClient() {
+            AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
+                KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+
             KifaConfigs.LoadFromSystemConfigs();
 
             return new SwisscomStorageClient("test");

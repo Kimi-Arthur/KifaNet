@@ -13,7 +13,7 @@ namespace Kifa.Configs {
         static string name => AppDomain.CurrentDomain.FriendlyName;
 
         static List<string> ConfigFilePaths =>
-            new() {$"~/.{name}.yaml", "~/.kifa.yaml", $"/etc/{name}.yaml", "/etc/kifa.yaml"};
+            new() {$"~/.{name}.yaml", "~/.kimily.yaml", $"/etc/{name}.yaml", "/etc/kimily.yaml"};
 
         static string ConfigFilePath {
             get {
