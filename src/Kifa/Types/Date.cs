@@ -39,6 +39,6 @@ namespace Kifa {
 
         public override string ToString() => ToJson();
 
-        public int CompareTo(Date other) => date.Date.CompareTo(other.date.Date);
+        public int CompareTo(Date? other) => date.Date.CompareTo(other?.date.Date);
     }
 }

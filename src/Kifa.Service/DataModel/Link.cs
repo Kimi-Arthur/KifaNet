@@ -20,7 +20,7 @@ namespace Kifa.Service {
 
         public string ToJson() => Id;
 
-        public void FromJson(string data) => Id = data;
+        public void FromJson(string? data) => Id = data;
 
         public bool Equals(Link<TDataModel>? other) {
             if (ReferenceEquals(null, other))

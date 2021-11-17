@@ -108,9 +108,9 @@ namespace Kifa {
             (r.NativeName, r)
         }).Distinct().ToDictionary(tuple => tuple.key, tuple => tuple.value);
 
-        public string Name { get; set; }
-        public string NativeName { get; set; }
-        public string Code { get; set; }
+        public string Name { get; set; } = "";
+        public string NativeName { get; set; } = "";
+        public string Code { get; set; } = "";
 
         public string ToJson() => Code;
 
@@ -125,7 +125,7 @@ namespace Kifa {
 
         public override int GetHashCode() => Code.GetHashCode();
 
-        public override bool Equals(object obj) =>
+        public override bool Equals(object? obj) =>
             obj != null && GetType() == obj.GetType() && Code == ((Language) obj).Code;
 
         public override string ToString() => Name;

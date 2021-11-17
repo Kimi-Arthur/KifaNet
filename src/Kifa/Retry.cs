@@ -8,7 +8,8 @@ namespace Kifa {
                     return action();
                 } catch (Exception ex) {
                     while (ex is AggregateException) {
-                        ex = ex.InnerException;
+                        // AggregateException should have inner exception.
+                        ex = ex.InnerException!;
                     }
 
                     handleException(ex, i);
@@ -23,7 +24,7 @@ namespace Kifa {
                     return;
                 } catch (Exception ex) {
                     while (ex is AggregateException) {
-                        ex = ex.InnerException;
+                        ex = ex.InnerException!;
                     }
 
                     handleException(ex, i);

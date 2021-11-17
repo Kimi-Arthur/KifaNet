@@ -16,13 +16,13 @@ namespace Kifa {
         public static string GetString(this HttpResponseMessage response) {
             using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result, Encoding.GetEncoding("UTF-8"));
             var data = sr.ReadToEnd();
-            logger.Trace("Response ({0:D}): {1}", response.StatusCode, data);
+            logger.Trace($"Response ({response.StatusCode:D}): {data}");
             return data;
         }
 
         public static JToken GetJToken(this HttpResponseMessage response) => JToken.Parse(GetString(response));
 
-        public static T GetObject<T>(this HttpResponseMessage response) =>
+        public static T? GetObject<T>(this HttpResponseMessage response) =>
             JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
         public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
@@ -57,7 +57,7 @@ namespace Kifa {
             });
 
         public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,
-            Func<JToken, bool> validate = null) =>
+            Func<JToken, bool>? validate = null) =>
             Retry.Run(() => {
                 var result = client.SendAsync(request()).Result.GetJToken();
 

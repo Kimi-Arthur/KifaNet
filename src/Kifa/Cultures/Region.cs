@@ -34,8 +34,8 @@ namespace Kifa {
             }.SelectMany(r => new List<(string key, Region value)> {(r.Code, r), (r.Name, r)})
             .ToDictionary(tuple => tuple.key, tuple => tuple.value);
 
-        public string Name { get; set; }
-        public string Code { get; set; }
+        public string Name { get; set; } = "";
+        public string Code { get; set; } = "";
 
         public string ToJson() => Name;
 
@@ -49,7 +49,7 @@ namespace Kifa {
 
         public override int GetHashCode() => Code.GetHashCode();
 
-        public override bool Equals(object obj) =>
+        public override bool Equals(object? obj) =>
             obj != null && GetType() == obj.GetType() && Code == ((Region) obj).Code;
 
         public override string ToString() => Name;
