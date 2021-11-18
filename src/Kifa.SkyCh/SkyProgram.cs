@@ -22,7 +22,7 @@ namespace Kifa.SkyCh {
         public TimeSpan Duration { get; set; }
         public string Type { get; set; }
 
-        static readonly HttpClient NoAuthClient = new HttpClient();
+        static readonly HttpClient NoAuthClient = new();
 
         public override bool? Fill() {
             var epgPage = NoAuthClient.GetStringAsync($"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}")
@@ -35,7 +35,8 @@ namespace Kifa.SkyCh {
 
             Type = root.SelectSingleNode("//span[@class='type-tag']").InnerText.Trim();
             Title = HttpUtility.HtmlDecode(root.SelectSingleNode("//h1[@class='program-title']").InnerText.Trim());
-            Subtitle = HttpUtility.HtmlDecode(root.SelectSingleNode("//h2[@class='program-subtitle']").InnerText.Trim());
+            Subtitle = HttpUtility.HtmlDecode(root.SelectSingleNode("//h2[@class='program-subtitle']").InnerText
+                .Trim());
 
             Categories = root.SelectSingleNode("//span[@class='detail'][2]").InnerText.Split(",").Select(s => s.Trim())
                 .ToList();
