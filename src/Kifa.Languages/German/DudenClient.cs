@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Languages.German {
     public class DudenClient {
-        static Dictionary<string, string> audioLinks;
+        static Dictionary<string, string>? audioLinks;
 
         static Dictionary<string, string> AudioLinks {
             get {
@@ -19,7 +19,7 @@ namespace Kifa.Languages.German {
                     }
                 }
 
-                return audioLinks;
+                return audioLinks!;
             }
         }
 
@@ -30,9 +30,9 @@ namespace Kifa.Languages.German {
                     {
                         Source.Duden, AudioLinks.ContainsKey(wordId)
                             ? new HashSet<string> {
-                                AudioLinks.GetValueOrDefault(wordId)
+                                AudioLinks[wordId]
                             }
-                            : null
+                            : new HashSet<string>()
                     }
                 }
             };

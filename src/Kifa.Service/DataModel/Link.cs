@@ -3,7 +3,7 @@ using System;
 namespace Kifa.Service {
     // Unlimited linking not supported now.
     public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>> where TDataModel : DataModel, new() {
-        public string Id { get; set; }
+        public string Id { get; set; } = "";
 
         TDataModel Get() =>
             new() {
@@ -20,7 +20,7 @@ namespace Kifa.Service {
 
         public string ToJson() => Id;
 
-        public void FromJson(string? data) => Id = data;
+        public void FromJson(string data) => Id = data;
 
         public bool Equals(Link<TDataModel>? other) {
             if (ReferenceEquals(null, other))

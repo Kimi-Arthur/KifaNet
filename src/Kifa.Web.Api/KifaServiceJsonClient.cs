@@ -110,7 +110,7 @@ namespace Kifa.Web.Api {
 
             Remove(item.Id);
 
-            return KifaActionResult.SuccessActionResult;
+            return KifaActionResult.Success;
         }
 
         public override KifaActionResult Link(string targetId, string linkId) {
@@ -154,7 +154,7 @@ namespace Kifa.Web.Api {
             target.Id = realTargetId;
             target.Metadata.Id = null;
             Write(target);
-            return KifaActionResult.SuccessActionResult;
+            return KifaActionResult.Success;
         }
 
         public override KifaActionResult Refresh(string id) {

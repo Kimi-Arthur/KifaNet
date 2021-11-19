@@ -20,7 +20,7 @@ namespace Kifa.Web.Api.Controllers {
                 if (mapping.Pattern == pattern) {
                     mapping.Accounts.AddRange(accounts.Where(a => !mapping.Accounts.Contains(a)));
                     Set(config);
-                    return KifaActionResult.SuccessActionResult;
+                    return KifaActionResult.Success;
                 }
             }
 

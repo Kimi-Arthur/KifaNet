@@ -6,17 +6,17 @@ using NLog;
 
 namespace Kifa.Service {
     public class Api {
-        public string Method { get; set; }
+        public string Method { get; set; } = "";
 
-        public string Url { get; set; }
+        public string Url { get; set; } = "";
 
-        public string Data { get; set; }
+        public string? Data { get; set; }
 
-        public Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Headers { get; set; } = new();
 
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public HttpRequestMessage GetRequest(Dictionary<string, string> parameters = null) {
+        public HttpRequestMessage GetRequest(Dictionary<string, string>? parameters = null) {
             parameters ??= new Dictionary<string, string>();
             var address = Url.Format(parameters);
 

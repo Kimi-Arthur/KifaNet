@@ -15,13 +15,13 @@ namespace Kifa.Languages.German {
 
         public List<Meaning> Meanings { get; set; } = new();
 
-        public string Meaning => Meanings.FirstOrDefault()?.Translation;
+        public string? Meaning => Meanings.FirstOrDefault()?.Translation;
 
-        public Breakdown Breakdown { get; set; }
+        public Breakdown? Breakdown { get; set; }
 
-        public string Pronunciation { get; set; }
+        public string? Pronunciation { get; set; }
 
-        public string PronunciationAudioLink =>
+        public string? PronunciationAudioLink =>
             (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
              PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
              PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
@@ -52,12 +52,12 @@ namespace Kifa.Languages.German {
         }
 
         static Dictionary<char, char> UmlautMapping = new() {
-            {'a', 'ä'},
-            {'o', 'ö'},
-            {'u', 'ü'},
-            {'A', 'Ä'},
-            {'O', 'Ö'},
-            {'U', 'Ü'}
+            { 'a', 'ä' },
+            { 'o', 'ö' },
+            { 'u', 'ü' },
+            { 'A', 'Ä' },
+            { 'O', 'Ö' },
+            { 'U', 'Ü' }
         };
 
         static string GetSimplifiedPlural(string original, NounForms nounForms) {
@@ -187,11 +187,14 @@ namespace Kifa.Languages.German {
             var (wiki, enWiki, pons, duden, dwds) = words;
             Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
 
-            PronunciationAudioLinks[Source.Duden] = duden.PronunciationAudioLinks.GetValueOrDefault(Source.Duden);
+            PronunciationAudioLinks[Source.Duden] =
+                duden.PronunciationAudioLinks.GetValueOrDefault(Source.Duden, new HashSet<string>());
             PronunciationAudioLinks[Source.Wiktionary] =
-                wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary);
-            PronunciationAudioLinks[Source.Pons] = pons.PronunciationAudioLinks.GetValueOrDefault(Source.Pons);
-            PronunciationAudioLinks[Source.Dwds] = dwds.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds);
+                wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary, new HashSet<string>());
+            PronunciationAudioLinks[Source.Pons] =
+                pons.PronunciationAudioLinks.GetValueOrDefault(Source.Pons, new HashSet<string>());
+            PronunciationAudioLinks[Source.Dwds] =
+                dwds.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>());
 
             Meanings = enWiki.Meanings.Any() ? enWiki.Meanings : pons.Meanings;
 
@@ -207,20 +210,19 @@ namespace Kifa.Languages.German {
     }
 
     public class Meaning {
-        public string Title { get; set; }
         public WordType Type { get; set; }
-        public string Translation { get; set; }
-        public string TranslationWithNotes { get; set; }
+        public string? Translation { get; set; }
+        public string? TranslationWithNotes { get; set; }
         public List<Example> Examples { get; set; } = new();
     }
 
     public class Breakdown {
-        public List<Example> Segments { get; set; }
+        public List<Example> Segments { get; set; } = new();
     }
 
     public class Example {
-        public string Text { get; set; }
-        public string Translation { get; set; }
+        public string Text { get; set; } = "";
+        public string Translation { get; set; } = "";
     }
 
     public interface GermanWordServiceClient : KifaServiceClient<GermanWord> {

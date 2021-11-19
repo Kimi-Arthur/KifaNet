@@ -8,7 +8,7 @@ namespace Kifa.Web.Api.Controllers {
         [HttpGet("$update_dns")]
         public KifaApiActionResult UpdateDomainName(string name, string ip) {
             new DnsClient().ReplaceIp(name, ip);
-            return KifaActionResult.SuccessActionResult;
+            return KifaActionResult.Success;
         }
     }
 }

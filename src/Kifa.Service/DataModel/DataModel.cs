@@ -10,7 +10,7 @@ namespace Kifa.Service {
     /// </summary>
     public abstract class DataModel {
         [YamlMember(Order = -1)]
-        public string? Id { get; set; }
+        public string Id { get; set; } = "";
 
         [JsonProperty("$metadata")]
         [YamlIgnore]
@@ -62,6 +62,6 @@ namespace Kifa.Service {
 
     public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {
         [JsonProperty("$translations")]
-        public Dictionary<string, TDataModel> Translations { get; set; }
+        public Dictionary<string, TDataModel>? Translations { get; set; }
     }
 }

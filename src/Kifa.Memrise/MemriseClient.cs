@@ -75,7 +75,7 @@ namespace Kifa.Memrise {
         public KifaActionResult AddWordList(GoetheWordList wordList) {
             AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
 
-            return KifaActionResult.SuccessActionResult;
+            return KifaActionResult.Success;
         }
 
         public IEnumerable<GoetheGermanWord> ExpandWords(IEnumerable<string> words) {
@@ -194,7 +194,7 @@ namespace Kifa.Memrise {
                 }
             }
 
-            return KifaActionResult.SuccessActionResult;
+            return KifaActionResult.Success;
         }
 
         void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {

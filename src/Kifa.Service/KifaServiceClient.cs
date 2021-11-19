@@ -27,7 +27,7 @@ namespace Kifa.Service {
 
         protected BaseKifaServiceClient() {
             var typeInfo = typeof(TDataModel);
-            modelId = (string) typeInfo.GetField("ModelId").GetValue(null);
+            modelId = (string) typeInfo.GetField("ModelId")?.GetValue(null)!;
         }
 
         public string ModelId => modelId;

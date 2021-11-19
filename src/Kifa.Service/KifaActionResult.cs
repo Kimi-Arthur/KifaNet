@@ -7,23 +7,36 @@ using NLog;
 
 namespace Kifa.Service {
     public class KifaActionResult {
-        public static readonly KifaActionResult SuccessActionResult = new() {Status = KifaActionStatus.OK};
+        public static readonly KifaActionResult Success = new() {
+            Status = KifaActionStatus.OK
+        };
+
+        public static readonly KifaActionResult UnknownError = new() {
+            Status = KifaActionStatus.Error,
+            Message = "Unknown Error"
+        };
 
         public static KifaActionResult FromAction(Action action) {
             try {
                 action.Invoke();
             } catch (Exception ex) {
-                return new KifaActionResult {Status = KifaActionStatus.Error, Message = ex.ToString()};
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = ex.ToString()
+                };
             }
 
-            return SuccessActionResult;
+            return Success;
         }
 
         public static KifaActionResult FromAction(Func<KifaActionResult> action) {
             try {
                 return action.Invoke();
             } catch (Exception ex) {
-                return new KifaActionResult {Status = KifaActionStatus.Error, Message = ex.ToString()};
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = ex.ToString()
+                };
             }
         }
 
@@ -45,7 +58,7 @@ namespace Kifa.Service {
         [JsonConverter(typeof(StringEnumConverter))]
         public virtual KifaActionStatus Status { get; set; }
 
-        public virtual string Message { get; set; }
+        public virtual string? Message { get; set; }
 
         public override string ToString() =>
             string.IsNullOrEmpty(Message) ? Status.ToString() : $"{Status} ({Message})";
@@ -84,13 +97,16 @@ namespace Kifa.Service {
             Message = result.Message;
         }
 
-        public TValue Response { get; set; }
+        public TValue? Response { get; set; }
 
         public static KifaActionResult<TValue> FromAction(Func<TValue> action) {
             try {
                 return new KifaActionResult<TValue>(action.Invoke());
             } catch (Exception ex) {
-                return new KifaActionResult<TValue> {Status = KifaActionStatus.Error, Message = ex.ToString()};
+                return new KifaActionResult<TValue> {
+                    Status = KifaActionStatus.Error,
+                    Message = ex.ToString()
+                };
             }
         }
     }
@@ -101,7 +117,8 @@ namespace Kifa.Service {
             return result;
         }
 
-        public static KifaActionResult<TValue> LogResult<TValue>(this Logger logger, KifaActionResult<TValue> result, string action) {
+        public static KifaActionResult<TValue> LogResult<TValue>(this Logger logger, KifaActionResult<TValue> result,
+            string action) {
             logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
             return result;
         }

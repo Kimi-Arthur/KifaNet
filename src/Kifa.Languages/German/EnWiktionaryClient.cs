@@ -13,7 +13,11 @@ namespace Kifa.Languages.German {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         const string TranslationDivider = "–";
-        static readonly HashSet<string> NextLevelPrefixes = new() {"Etymology", "Pronunciation"};
+
+        static readonly HashSet<string> NextLevelPrefixes = new() {
+            "Etymology",
+            "Pronunciation"
+        };
 
         static readonly HashSet<string> SkippedSections = new() {
             "Further reading",
@@ -29,14 +33,16 @@ namespace Kifa.Languages.German {
         };
 
         public GermanWord GetWord(string wordId) {
-            var word = new GermanWord {Id = wordId};
+            var word = new GermanWord {
+                Id = wordId
+            };
             var client = new WikiClient();
             var site = new WikiSite(client, "https://en.wiktionary.org/w/api.php");
             site.Initialization.Wait();
             var page = new WikiPage(site, wordId);
             page.RefreshAsync(PageQueryOptions.FetchContent).Wait();
-            Meaning meaning = null;
-            Example example = null;
+            Meaning? meaning = null;
+            Example? example = null;
             var parser = new WikitextParser();
             var content = parser.Parse(page.Content);
             var wordType = WordType.Unknown;
@@ -105,10 +111,13 @@ namespace Kifa.Languages.German {
                                 if (listContent.Contains(TranslationDivider)) {
                                     var segments = listContent.Split(TranslationDivider);
                                     meaning.Examples.Add(new Example {
-                                        Text = segments[0].Trim(), Translation = segments[1].Trim()
+                                        Text = segments[0].Trim(),
+                                        Translation = segments[1].Trim()
                                     });
                                 } else {
-                                    example = new Example {Text = listContent.Trim()};
+                                    example = new Example {
+                                        Text = listContent.Trim()
+                                    };
 
                                     var nodes = listItem.Inlines;
                                     foreach (var node in nodes) {
