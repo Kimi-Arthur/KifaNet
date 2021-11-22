@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using NLog;
 
 namespace Kifa.Rpc {
@@ -20,12 +19,12 @@ namespace Kifa.Rpc {
         public virtual Dictionary<string, Dictionary<string, string>> PartHeaders { get; } = new();
 
         // Different types of content
-        public virtual List<KeyValuePair<string, string>> FormContent { get; set; }
+        public virtual List<KeyValuePair<string, string>>? FormContent { get; set; }
 
-        public virtual List<(string dataKey, string name, string fileName)> ExtraMultipartContent { get; set; }
+        public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent { get; set; }
 
-        public TResponse Call(Dictionary<string, string> parameters = null,
-            Dictionary<string, byte[]> byteParameters = null) {
+        public TResponse? Call(Dictionary<string, string>? parameters = null,
+            Dictionary<string, byte[]>? byteParameters = null) {
             parameters ??= new Dictionary<string, string>();
             byteParameters ??= new Dictionary<string, byte[]>();
 
@@ -59,7 +58,7 @@ namespace Kifa.Rpc {
                 }
             } else if (FormContent != null) {
                 request.Content = new FormUrlEncodedContent(FormContent.Select(item =>
-                    new KeyValuePair<string, string>(item.Key, item.Value.Format(parameters))));
+                    new KeyValuePair<string?, string?>(item.Key, item.Value.Format(parameters))));
             }
 
             if (request.Content != null) {
