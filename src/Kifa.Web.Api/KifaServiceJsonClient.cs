@@ -55,6 +55,8 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => {
+                logger.Trace($"Write {ModelId}/{data.Id}:");
+                logger.Trace(data);
                 data = data.Clone();
                 data.Metadata ??= Get(data.Id).Metadata;
                 if (data.Metadata?.Id != null) {
