@@ -29,7 +29,7 @@ namespace Kifa.IO.FileFormats {
 
         public override string ToString() => "v0";
 
-        public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null) {
+        public override Stream GetDecodeStream(Stream encodedStream, string? encryptionKey = null) {
             if (encryptionKey == null) {
                 // We need to get the secondary id from the stream as ":SHA256".
                 encodedStream.Seek(3728, SeekOrigin.Begin);

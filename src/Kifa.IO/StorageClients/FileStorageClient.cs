@@ -11,11 +11,11 @@ using Renci.SshNet;
 namespace Kifa.IO {
     public class ServerConfig {
         public bool Removed { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
-        public string Host { get; set; }
-        public string RemotePrefix { get; set; }
-        public string Prefix { get; set; }
+        public string? Username { get; set; }
+        public string? Password { get; set; }
+        public string? Host { get; set; }
+        public string? RemotePrefix { get; set; }
+        public string? Prefix { get; set; }
     }
 
     public class FileStorageClient : StorageClient {
@@ -195,7 +195,7 @@ namespace Kifa.IO {
         public string GetPath(string path) => $"{Server.Prefix}{path}";
 
         void EnsureParent(string path) {
-            Directory.GetParent(path).Create();
+            Directory.GetParent(path)?.Create();
         }
 
         string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";

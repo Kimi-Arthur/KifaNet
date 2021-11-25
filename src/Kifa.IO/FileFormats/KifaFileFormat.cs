@@ -6,7 +6,7 @@ namespace Kifa.IO.FileFormats {
         public virtual Stream GetEncodeStream(Stream rawStream, FileInformation info)
             => throw new NotImplementedException();
 
-        public virtual Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null)
+        public virtual Stream GetDecodeStream(Stream encodedStream, string? encryptionKey = null)
             => throw new NotImplementedException();
     }
 }

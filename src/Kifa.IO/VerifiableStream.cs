@@ -18,7 +18,7 @@ namespace Kifa.IO {
 
         readonly FileInformation info;
 
-        byte[] lastBlock;
+        byte[]? lastBlock;
 
         long lastBlockStart = -1;
 

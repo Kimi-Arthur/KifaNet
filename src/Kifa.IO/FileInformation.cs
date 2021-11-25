@@ -36,27 +36,27 @@ namespace Kifa.IO {
 
         public long? Size { get; set; }
 
-        public string Md5 { get; set; }
+        public string? Md5 { get; set; }
 
-        public string Sha1 { get; set; }
+        public string? Sha1 { get; set; }
 
-        public string Sha256 { get; set; }
+        public string? Sha256 { get; set; }
 
-        public string Crc32 { get; set; }
+        public string? Crc32 { get; set; }
 
-        public string Adler32 { get; set; }
+        public string? Adler32 { get; set; }
 
-        public List<string> BlockMd5 { get; set; }
+        public List<string>? BlockMd5 { get; set; }
 
-        public List<string> BlockSha1 { get; set; }
+        public List<string>? BlockSha1 { get; set; }
 
-        public List<string> BlockSha256 { get; set; }
+        public List<string>? BlockSha256 { get; set; }
 
-        public string SliceMd5 { get; set; }
+        public string? SliceMd5 { get; set; }
 
-        public string EncryptionKey { get; set; }
+        public string? EncryptionKey { get; set; }
 
-        public Dictionary<string, DateTime?> Locations { get; set; }
+        public Dictionary<string, DateTime?> Locations { get; set; } = new();
 
         [JsonIgnore]
         public bool Exists => Size > 0;
@@ -83,7 +83,7 @@ namespace Kifa.IO {
             var readLength = 0;
             var buffer = new byte[BlockSize];
 
-            if (stream != null && stream.CanSeek) {
+            if (stream.CanSeek) {
                 stream.Seek(0, SeekOrigin.Begin);
             }
 
@@ -93,7 +93,7 @@ namespace Kifa.IO {
             }
 
             if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None) {
-                var hashers = new List<HashAlgorithm> {
+                var hashers = new List<HashAlgorithm?> {
                     requiredProperties.HasFlag(FileProperties.Md5) ? new MD5CryptoServiceProvider() : null,
                     requiredProperties.HasFlag(FileProperties.Sha1) ? new SHA1CryptoServiceProvider() : null,
                     requiredProperties.HasFlag(FileProperties.Sha256) ? new SHA256CryptoServiceProvider() : null
@@ -103,13 +103,13 @@ namespace Kifa.IO {
                 BlockSha1 = requiredProperties.HasFlag(FileProperties.BlockSha1) ? new List<string>() : BlockSha1;
                 BlockSha256 = requiredProperties.HasFlag(FileProperties.BlockSha256) ? new List<string>() : BlockSha256;
 
-                var blockHashers = new List<HashAlgorithm> {
+                var blockHashers = new List<HashAlgorithm?> {
                     requiredProperties.HasFlag(FileProperties.BlockMd5) ? new MD5CryptoServiceProvider() : null,
                     requiredProperties.HasFlag(FileProperties.BlockSha1) ? new SHA1CryptoServiceProvider() : null,
                     requiredProperties.HasFlag(FileProperties.BlockSha256) ? new SHA256CryptoServiceProvider() : null
                 };
 
-                var additionalHashers = new List<IHash> {
+                var additionalHashers = new List<IHash?> {
                     requiredProperties.HasFlag(FileProperties.Crc32) ? HashFactory.Checksum.CreateCRC32_IEEE() : null,
                     requiredProperties.HasFlag(FileProperties.Adler32) ? HashFactory.Checksum.CreateAdler32() : null
                 };
@@ -124,15 +124,15 @@ namespace Kifa.IO {
                     Parallel.ForEach(additionalHashers, hasher => { hasher?.TransformBytes(buffer, 0, readLength); });
 
                     if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
-                        BlockMd5.Add(blockHashers[0].ComputeHash(buffer, 0, readLength).ToHexString());
+                        BlockMd5.Add(blockHashers[0]!.ComputeHash(buffer, 0, readLength).ToHexString());
                     }
 
                     if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
-                        BlockSha1.Add(blockHashers[1].ComputeHash(buffer, 0, readLength).ToHexString());
+                        BlockSha1.Add(blockHashers[1]!.ComputeHash(buffer, 0, readLength).ToHexString());
                     }
 
                     if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
-                        BlockSha256.Add(blockHashers[2].ComputeHash(buffer, 0, readLength).ToHexString());
+                        BlockSha256.Add(blockHashers[2]!.ComputeHash(buffer, 0, readLength).ToHexString());
                     }
 
                     readLength = 0;
@@ -142,9 +142,9 @@ namespace Kifa.IO {
                     hasher?.TransformFinalBlock(buffer, 0, 0);
                 }
 
-                Md5 ??= hashers[0]?.Hash.ToHexString();
-                Sha1 ??= hashers[1]?.Hash.ToHexString();
-                Sha256 ??= hashers[2]?.Hash.ToHexString();
+                Md5 ??= hashers[0]?.Hash?.ToHexString();
+                Sha1 ??= hashers[1]?.Hash?.ToHexString();
+                Sha256 ??= hashers[2]?.Hash?.ToHexString();
                 Crc32 ??= additionalHashers[0]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
                 Adler32 ??= additionalHashers[1]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
             }
@@ -215,10 +215,6 @@ namespace Kifa.IO {
         List<string> ListFolder(string folder, bool recursive = false);
         void AddLocation(string id, string location, bool verified = false);
         void RemoveLocation(string id, string location);
-
-        string CreateLocation(string id, string type = null, string format = null);
-
-        string GetLocation(string id, List<string> types = null);
     }
 
     public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
@@ -240,19 +236,6 @@ namespace Kifa.IO {
             Call("remove_location", new Dictionary<string, object> {
                 ["id"] = id,
                 ["location"] = location
-            });
-
-        public string CreateLocation(string id, string type = null, string format = null) =>
-            Call<string>("create_location", new Dictionary<string, object> {
-                ["id"] = id,
-                ["type"] = type,
-                ["format"] = format
-            });
-
-        public string GetLocation(string id, List<string> types = null) =>
-            Call<string>("get_location", new Dictionary<string, object> {
-                ["id"] = id,
-                ["types"] = types
             });
     }
 }

@@ -28,7 +28,7 @@ namespace Kifa.IO.FileFormats {
 
         public override string ToString() => "v2";
 
-        public override Stream GetDecodeStream(Stream encodedStream, string encryptionKey = null) {
+        public override Stream GetDecodeStream(Stream encodedStream, string? encryptionKey = null) {
             var sha256Bytes = new byte[32];
             encodedStream.Seek(16, SeekOrigin.Begin);
             encodedStream.Read(sha256Bytes, 0, 32);
