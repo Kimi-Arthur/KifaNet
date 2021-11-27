@@ -73,10 +73,10 @@ namespace Kifa.SkyCh.Api {
                     Timeout = TimeSpan.FromMinutes(10)
                 };
                 skyClient.DefaultRequestHeaders.Add("cookie",
-                    "SkyEnvironment=SkySport; _gcl_au=1.1.1058437801.1637762047; idsession=1920960945; ASP.NET_SessionId=p3woqylbc1jkgsltotuvmjw3; _ga=GA1.3.513919764.1637762048; _gid=GA1.3.358886476.1637762048; _gat_UA-104634712-1=1; _gid=GA1.2.358886476.1637762048; _gat_UA-104634712-2=1; _fbp=fb.1.1637762048051.628363069; SkyCultureDomain=en; __RequestVerificationToken=Lzn1qqUZ5aCDeq9crdYmq8KguwTq9IbdZnNOV6PDMiwcSz55N4wGaEaXepggD4hVY_-4U290NoTYfDxxvxpoCIMxPA81; SL_C_23361dd035530_VID=4YrMnJk8cm; SL_C_23361dd035530_KEY=4490215b459669f2b9206a829d62d403a2ac6828; SL_C_23361dd035530_SID=kjOj13P6Ju; SkyCookie=ARBj0OtV/eWvS7mVBopXkYb59WpZ6Ley23QqcHTzDQw=; DesktopUUID=0c2486402e0650edb12d34f43dfc2554; SkyNotification=1; SkyPhone=ARBj0OtV/eWvS7mVBopXkYb59WpZ6Ley23QqcHTzDQw=; _ga_PE5CH2MZZP=GS1.1.1637762047.1.1.1637762075.0; _ga=GA1.1.513919764.1637762048");
+                    "ASP.NET_SessionId=yrei0l5itlcdpjlusxz42szj; SkyEnvironment=SkySport; SkyCultureDomain=de; _gcl_au=1.1.928833713.1637768629; idsession=973815413; _ga=GA1.3.289487369.1637768629; _gid=GA1.3.1771599417.1637768629; _gat_UA-104634712-1=1; _gid=GA1.2.1771599417.1637768629; _gat_UA-104634712-2=1; _fbp=fb.1.1637768629362.1227063826; __RequestVerificationToken=4B7iKsPqzL3XdGbw9K4NtsCdjN-YqRXBL-DOoritK_CT5iGe-OLJ_UZZVoVrLK0VdCPM_0bFj6JSwauSYi1p796WMxM1; SL_C_23361dd035530_VID=-LcihHcCbC; SL_C_23361dd035530_KEY=4490215b459669f2b9206a829d62d403a2ac6828; SL_C_23361dd035530_SID=UhfhrNlVr9; SkyCookie=ARBj0OtV/eWvS7mVBopXkYb59WpZ6Ley23QqcHTzDQw=; _ga_PE5CH2MZZP=GS1.1.1637768628.1.1.1637768638.0; _ga=GA1.2.289487369.1637768629; DesktopUUID=0c2486402e0650edb12d34f43dfc2554; SkyNotification=1; SkyPhone=ARBj0OtV/eWvS7mVBopXkYb59WpZ6Ley23QqcHTzDQw=");
                 skyClient.DefaultRequestHeaders.Referrer = new Uri("https://sport.sky.ch/de/live-auf-tv");
                 skyClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36");
             }
 
             return skyClient;
