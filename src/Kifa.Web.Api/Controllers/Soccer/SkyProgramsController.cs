@@ -18,11 +18,15 @@ namespace Kifa.Web.Api.Controllers.Soccer {
     public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>, SkyProgramServiceClient {
         static readonly HttpClient NoAuthClient = new();
 
-        public List<SkyProgram> AddForDay(int dayOffset) {
-            var channels = Channels;
+        public List<SkyProgram> AddForDay(int dayOffset) =>
+            AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "fr"))
+                .Concat(AddForDayAndLanguage(dayOffset, "it")).Concat(AddForDayAndLanguage(dayOffset, "de")).ToList();
+
+        public List<SkyProgram> AddForDayAndLanguage(int dayOffset, string language) {
+            var channels = Channels[language];
             var date = DateTime.UtcNow.Date.AddDays(dayOffset);
             var listPage = NoAuthClient
-                .GetStringAsync($"https://sport.sky.ch/en/SkyChannelAjax/UpdateEpg?day={dayOffset}").Result;
+                .GetStringAsync($"https://sport.sky.ch/{language}/SkyChannelAjax/UpdateEpg?day={dayOffset}").Result;
             var doc = new HtmlDocument();
             doc.LoadHtml(listPage);
             var channelNodes = doc.DocumentNode.SelectNodes("//ul");
@@ -75,19 +79,24 @@ namespace Kifa.Web.Api.Controllers.Soccer {
         static readonly Regex backgroundImageLinkRegex = new Regex(@"(https://.*)\?");
         static string ParseBackgroundImageLink(string style) => backgroundImageLinkRegex.Match(style).Groups[1].Value;
 
-        static List<string>? channels;
-        public static List<string> Channels => channels ??= FetchChannels();
+        static Dictionary<string, List<string>>? channels;
 
-        public static List<string> FetchChannels() {
-            var channelsPage = NoAuthClient.GetStringAsync("https://sport.sky.ch/en/live-of-tv").Result;
+        public static Dictionary<string, List<string>> Channels =>
+            channels ??= new() {
+                { "en", FetchChannelsForLanguage("https://sport.sky.ch/en/live-of-tv") },
+                { "de", FetchChannelsForLanguage("https://sport.sky.ch/de/live-auf-tv") },
+                { "it", FetchChannelsForLanguage("https://sport.sky.ch/it/in-diretta-sulla-TV") },
+                { "fr", FetchChannelsForLanguage("https://sport.sky.ch/fr/en-direct-a-la-tv") }
+            };
+
+        public static List<string> FetchChannelsForLanguage(string page) {
+            var channelsPage = NoAuthClient.GetStringAsync(page).Result;
             var doc = new HtmlDocument();
             doc.LoadHtml(channelsPage);
             var nodes = doc.DocumentNode.SelectNodes("//li[@class='epg-channel-list-item']");
             return nodes.Select(node => node.SelectSingleNode(".//img").Attributes["alt"].Value).ToList();
         }
 
-        static void RefreshChannels() {
-            channels = FetchChannels();
-        }
+        static void RefreshChannels() => channels = null;
     }
 }
