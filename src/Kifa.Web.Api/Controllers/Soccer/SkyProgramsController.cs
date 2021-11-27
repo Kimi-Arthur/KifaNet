@@ -30,12 +30,6 @@ namespace Kifa.Web.Api.Controllers.Soccer {
             var doc = new HtmlDocument();
             doc.LoadHtml(listPage);
             var channelNodes = doc.DocumentNode.SelectNodes("//ul");
-            if (channelNodes.Count != channels.Count) {
-                RefreshChannels();
-                if (channelNodes.Count != channels.Count) {
-                    return new List<SkyProgram>();
-                }
-            }
 
             var programs = new List<SkyProgram>();
             foreach (var (channelNode, channelName) in channelNodes.Zip(channels)) {
@@ -96,7 +90,5 @@ namespace Kifa.Web.Api.Controllers.Soccer {
             var nodes = doc.DocumentNode.SelectNodes("//li[@class='epg-channel-list-item']");
             return nodes.Select(node => node.SelectSingleNode(".//img").Attributes["alt"].Value).ToList();
         }
-
-        static void RefreshChannels() => channels = null;
     }
 }
