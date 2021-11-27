@@ -19,8 +19,7 @@ namespace Kifa.Web.Api.Controllers.Soccer {
         static readonly HttpClient NoAuthClient = new();
 
         public List<SkyProgram> AddForDay(int dayOffset) =>
-            AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "fr"))
-                .Concat(AddForDayAndLanguage(dayOffset, "it")).Concat(AddForDayAndLanguage(dayOffset, "de")).ToList();
+            AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "de")).ToList();
 
         public List<SkyProgram> AddForDayAndLanguage(int dayOffset, string language) {
             var channels = Channels[language];
@@ -50,25 +49,38 @@ namespace Kifa.Web.Api.Controllers.Soccer {
                         startTime -= TimeSpan.FromDays(1);
                     }
 
-                    var program = new SkyProgram {
-                        Id = programNode.Attributes["data-id"].Value,
-                        Title = HttpUtility.HtmlDecode(textNodes[0].InnerText.Trim()),
-                        Subtitle = HttpUtility.HtmlDecode(textNodes[1].InnerText.Trim()),
-                        ImageLink = imageNodes?.Count == 1
-                            ? ParseBackgroundImageLink(imageNodes[0].Attributes["style"].Value)
-                            : null,
-                        Channel = channelName,
-                        AirDateTime = date + startTime,
-                        Duration = duration
-                    };
+                    if (programs.Count > 0 && programNode.Attributes["data-id"].Value == programs[^1].Id) {
+                        var program = programs[^1].With(p => {
+                            p.Duration += duration;
+                            p.Title = MergeTitle(p.Title);
+                            p.Subtitle = MergeTitle(p.Subtitle);
+                        });
 
-                    Set(program);
-                    programs.Add(program);
+                        Set(program);
+                    } else {
+                        var program = new SkyProgram {
+                            Id = programNode.Attributes["data-id"].Value,
+                            Title = HttpUtility.HtmlDecode(textNodes[0].InnerText.Trim()),
+                            Subtitle = HttpUtility.HtmlDecode(textNodes[1].InnerText.Trim()),
+                            ImageLink = imageNodes?.Count == 1
+                                ? ParseBackgroundImageLink(imageNodes[0].Attributes["style"].Value)
+                                : null,
+                            Channel = channelName,
+                            AirDateTime = date + startTime,
+                            Duration = duration
+                        };
+
+                        Set(program);
+                        programs.Add(program);
+                    }
                 }
             }
 
             return programs;
         }
+
+        static readonly Regex PartRegex = new(@" \((Part|Parte|Partie|Teil) .*\)$");
+        static string MergeTitle(string title) => PartRegex.Replace(title, "");
 
         static readonly Regex backgroundImageLinkRegex = new Regex(@"(https://.*)\?");
         static string ParseBackgroundImageLink(string style) => backgroundImageLinkRegex.Match(style).Groups[1].Value;
