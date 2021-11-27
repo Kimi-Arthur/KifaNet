@@ -14,6 +14,9 @@ namespace Kifa.Tools.SkyChDownloader.Commands {
 
         public override int Execute() {
             var skyProgram = new KifaServiceRestClient<SkyProgram>().Get(LiveId);
+            if (skyProgram.Id != LiveId) {
+                skyProgram.Id = LiveId;
+            }
 
             var title = HttpUtility.HtmlDecode(skyProgram.Title);
             if (skyProgram.Subtitle?.Length > 0) {
