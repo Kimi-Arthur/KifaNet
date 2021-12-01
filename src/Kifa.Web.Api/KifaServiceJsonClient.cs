@@ -40,9 +40,13 @@ namespace Kifa.Web.Api {
             }));
         }
 
-        public override TDataModel Get(string id) {
+        public override TDataModel? Get(string id) {
             logger.Trace($"Get {ModelId}/{id}");
             var data = Read(id);
+            if (data == null) {
+                return null;
+            }
+
             if (data.Metadata?.Id != null) {
                 data = Read(data.Metadata.Id);
                 data.Metadata.Id = data.Id;
@@ -165,8 +169,11 @@ namespace Kifa.Web.Api {
             return Set(value);
         }
 
-        TDataModel Read(string id) {
-            return JsonConvert.DeserializeObject<TDataModel>(ReadRaw(id), Defaults.JsonSerializerSettings);
+        TDataModel? Read(string id) {
+            var data = ReadRaw(id);
+            return data == null
+                ? null
+                : JsonConvert.DeserializeObject<TDataModel>(data, Defaults.JsonSerializerSettings);
         }
 
         void Write(TDataModel data) {
@@ -175,9 +182,9 @@ namespace Kifa.Web.Api {
             File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
         }
 
-        string ReadRaw(string id) {
+        string? ReadRaw(string id) {
             var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{id.Trim('/')}.json";
-            return !File.Exists(path) ? "{}" : File.ReadAllText(path);
+            return !File.Exists(path) ? null : File.ReadAllText(path);
         }
 
         void Remove(string id) {

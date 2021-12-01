@@ -100,12 +100,12 @@ namespace Kifa.Service {
                        new SortedDictionary<string, TDataModel>();
             }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
-        public override TDataModel Get(string id) =>
+        public override TDataModel? Get(string id) =>
             Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get,
                     $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}");
 
-                return KifaServiceRestClient.Client.GetObject<TDataModel>(request) ?? new TDataModel();
+                return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
             }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
 
         public override List<TDataModel> Get(List<string> ids) =>
