@@ -17,8 +17,7 @@ namespace Kifa.Infos.Tmdb {
                 ["api_key"] = ApiKey
             });
 
-            using var response = client.SendAsync(request).Result;
-            return response.GetObject<TmdbSeries>();
+            return client.GetObject<TmdbSeries>(request);
         }
 
         public TmdbSeason GetSeason(string tmdbId, long seasonNumber, string language) {
@@ -29,8 +28,7 @@ namespace Kifa.Infos.Tmdb {
                 ["api_key"] = ApiKey
             });
 
-            using var response = client.SendAsync(request).Result;
-            return response.GetObject<TmdbSeason>();
+            return client.GetObject<TmdbSeason>(request);
         }
     }
 

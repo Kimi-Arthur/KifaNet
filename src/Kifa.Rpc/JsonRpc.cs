@@ -67,7 +67,7 @@ namespace Kifa.Rpc {
                 }
             }
 
-            return HttpClient.Send(request).GetObject<TResponse>();
+            return HttpClient.GetObject<TResponse>(request);
         }
     }
 }

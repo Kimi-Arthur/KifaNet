@@ -22,8 +22,14 @@ namespace Kifa {
 
         public static JToken GetJToken(this HttpResponseMessage response) => JToken.Parse(GetString(response));
 
-        public static T? GetObject<T>(this HttpResponseMessage response) =>
+        static T? GetObject<T>(this HttpResponseMessage response) =>
             JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
+
+        public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request) {
+            logger.Trace(request);
+            using var response = client.Send(request);
+            return response.GetObject<T>();
+        }
 
         public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
             logger.Trace($"Get headers for {url}...");
