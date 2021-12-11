@@ -7,7 +7,7 @@ namespace Kifa.Web.Api.Extensions {
         const string OriginalUriHeader = "X-Original-URI";
 
         public static string ForAction(this ControllerBase controller, string action,
-            RouteValueDictionary values = null) {
+            RouteValueDictionary? values = null) {
             var actionPath = values == null ? controller.Url.Action(action) : controller.Url.Action(action, values);
             var originalPath = controller.Request.Path;
             var originalFullUrl =

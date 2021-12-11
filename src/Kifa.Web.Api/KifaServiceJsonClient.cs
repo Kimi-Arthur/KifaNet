@@ -26,7 +26,7 @@ namespace Kifa.Web.Api {
             var items = directory.GetFiles("*.json", SearchOption.AllDirectories).Select(i => {
                 using var reader = i.OpenText();
                 return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(), Defaults.JsonSerializerSettings);
-            }).ToDictionary(i => i.Id, i => i);
+            }).ExceptNull().ToDictionary(i => i.Id, i => i);
 
             return new SortedDictionary<string, TDataModel>(items.ToDictionary(i => i.Key, i => {
                 if (i.Value.Metadata?.Id == null) {
@@ -34,7 +34,7 @@ namespace Kifa.Web.Api {
                 }
 
                 var value = items[i.Value.Metadata.Id].Clone();
-                value.Metadata.Id = value.Id;
+                value.Metadata!.Id = value.Id;  // source.Metadata has to exist, to contain Links at least.
                 value.Id = i.Key;
                 return value;
             }));
@@ -92,19 +92,19 @@ namespace Kifa.Web.Api {
                 var metadata = item.Metadata;
                 if (metadata.Id != null) {
                     if (metadata.Id == item.Id) {
-                        // This is source.
-                        var nextItem = Get(item.Metadata?.Links.First());
-                        nextItem.Metadata.Links.Remove(nextItem.Id);
+                        // This is source. Metadata.Links has to exist.
+                        var nextItem = Get(item.Metadata!.Links!.First());
+                        nextItem!.Metadata!.Links!.Remove(nextItem.Id);
                         nextItem.Metadata.Id = null;
                         Set(nextItem);
                         foreach (var link in nextItem.Metadata.Links) {
-                            var linkedItem = Read(link);
-                            linkedItem.Metadata.Id = nextItem.Id;
+                            var linkedItem = Read(link)!;
+                            linkedItem.Metadata!.Id = nextItem.Id;
                             Write(linkedItem);
                         }
                     } else {
                         // This is link.
-                        metadata.Links.Remove(id);
+                        metadata.Links!.Remove(id);
                         if (metadata.Links.Count == 0) {
                             metadata.Links = null;
                         }
