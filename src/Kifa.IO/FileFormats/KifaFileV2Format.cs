@@ -22,7 +22,7 @@ namespace Kifa.IO.FileFormats {
         static readonly KifaFileV2Format Instance = new KifaFileV2Format();
         const byte HeaderLength = 0x30;
 
-        public static KifaFileFormat Get(string fileUri) {
+        public static KifaFileFormat? Get(string fileUri) {
             return fileUri.EndsWith(".v2") ? Instance : null;
         }
 

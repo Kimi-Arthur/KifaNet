@@ -16,7 +16,7 @@ namespace Kifa.IO.FileFormats {
     public class KifaFileV0Format : KifaFileFormat {
         static readonly KifaFileV0Format Instance = new KifaFileV0Format();
 
-        public static KifaFileFormat Get(string fileSpec) {
+        public static KifaFileFormat? Get(string fileSpec) {
             var specs = fileSpec.Split('/').First().Split(';');
             foreach (var spec in specs) {
                 if (spec == "v0") {

@@ -20,7 +20,7 @@ namespace Kifa.IO.FileFormats {
     public class KifaFileV1Format : KifaFileFormat {
         static readonly KifaFileV1Format Instance = new KifaFileV1Format();
 
-        public static KifaFileFormat Get(string fileUri) {
+        public static KifaFileFormat? Get(string fileUri) {
             if (fileUri.EndsWith(".v1")) {
                 return Instance;
             }
