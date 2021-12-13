@@ -11,7 +11,7 @@ namespace Kifa.Service {
     /// </summary>
     public abstract class DataModel {
         [YamlMember(Order = -1)]
-        public string Id { get; set; } = "";
+        public string? Id { get; set; }
 
         [JsonProperty("$metadata")]
         [YamlIgnore]
