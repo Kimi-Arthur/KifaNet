@@ -62,7 +62,7 @@ namespace Kifa.Web.Api {
                 logger.Trace($"Write {ModelId}/{data.Id}:");
                 logger.Trace(data);
                 data = data.Clone();
-                data.Metadata ??= Get(data.Id).Metadata;
+                data.Metadata ??= Get(data.Id)?.Metadata;
                 if (data.Metadata?.Id != null) {
                     // The data is linked.
                     data.Id = data.Metadata.Id;
