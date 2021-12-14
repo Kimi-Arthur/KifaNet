@@ -57,7 +57,7 @@ namespace Kifa.Tools.BiliUtil {
 
 
         public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
-            string extraPath = null, bool prefixDate = false, BilibiliUploader uploader = null) {
+            string alternativeFolder = null, bool prefixDate = false, BilibiliUploader uploader = null) {
             uploader ??= new BilibiliUploader {
                 Id = video.AuthorId,
                 Name = video.Author
@@ -70,7 +70,7 @@ namespace Kifa.Tools.BiliUtil {
 
             if (extension != "mp4") {
                 var prefix =
-                    $"{video.GetDesiredName(pid, quality, extraPath: extraPath, prefixDate: prefixDate, uploader: uploader)}";
+                    $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate, uploader: uploader)}";
                 var canonicalPrefix = video.GetCanonicalName(pid, quality);
                 var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
                 var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
@@ -137,7 +137,7 @@ namespace Kifa.Tools.BiliUtil {
             } else {
                 var targetFile =
                     currentFolder.GetFile(
-                        $"{video.GetDesiredName(pid, quality, extraPath: extraPath, prefixDate: prefixDate)}.{extension}");
+                        $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
                 try {
                     targetFile.WriteIfNotFinished(streamGetters.First());
                 } catch (Exception e) {
