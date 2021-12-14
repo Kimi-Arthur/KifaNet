@@ -54,8 +54,7 @@ namespace Kifa.Bilibili {
 
         PartModeType partMode;
 
-        public static KifaServiceClient<BilibiliVideo> Client =>
-            client ??= new KifaServiceRestClient<BilibiliVideo>();
+        public static KifaServiceClient<BilibiliVideo> Client => client ??= new KifaServiceRestClient<BilibiliVideo>();
 
         public static string BilibiliCookies { get; set; }
 
@@ -140,7 +139,10 @@ namespace Kifa.Bilibili {
             Category = data.Tname;
             Cover = data.Pic;
             Pages = data.Pages.Select(p => new BilibiliChat {
-                Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part, Duration = TimeSpan.FromSeconds(p.Duration)
+                Id = p.Page,
+                Cid = p.Cid.ToString(),
+                Title = p.Part,
+                Duration = TimeSpan.FromSeconds(p.Duration)
             }).ToList();
             Uploaded = DateTimeOffset.FromUnixTimeSeconds(data.Pubdate);
             Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
@@ -185,7 +187,10 @@ namespace Kifa.Bilibili {
                 Category = v2.Tname;
                 Cover = v2.Pic;
                 Pages = v2.Pages.Select(p => new BilibiliChat {
-                    Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part, Duration = TimeSpan.FromSeconds(p.Duration)
+                    Id = p.Page,
+                    Cid = p.Cid.ToString(),
+                    Title = p.Part,
+                    Duration = TimeSpan.FromSeconds(p.Duration)
                 }).ToList();
                 Uploaded = DateTimeOffset.FromUnixTimeSeconds(v2.Pubdate);
                 Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
@@ -206,8 +211,11 @@ namespace Kifa.Bilibili {
                 Tags = data.Tag.Split(",").ToList();
                 Category = data.Typename;
                 Cover = data.Pic;
-                Pages = data.List.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
-                    .ToList();
+                Pages = data.List.Select(p => new BilibiliChat {
+                    Id = p.Page,
+                    Cid = p.Cid.ToString(),
+                    Title = p.Part
+                }).ToList();
                 Uploaded = DateTimeOffset.FromUnixTimeSeconds(v2.Pubdate);
                 Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
 
@@ -231,8 +239,11 @@ namespace Kifa.Bilibili {
             Tags = info.Keywords.Split(",").ToList();
             Category = info.Typename;
             Cover = info.Pic;
-            Pages = data.Parts.Select(p => new BilibiliChat {Id = p.Page, Cid = p.Cid.ToString(), Title = p.Part})
-                .ToList();
+            Pages = data.Parts.Select(p => new BilibiliChat {
+                Id = p.Page,
+                Cid = p.Cid.ToString(),
+                Title = p.Part
+            }).ToList();
             Uploaded = info.Create.ParseDateTimeOffset(TimeZones.ShanghaiTimeZone);
 
             Stats.PlayCount = info.Play;
@@ -246,8 +257,15 @@ namespace Kifa.Bilibili {
 
         public AssDocument GenerateAssDocument() {
             var result = new AssDocument();
-            result.Sections.Add(new AssScriptInfoSection {Title = Title, OriginalScript = "Bilibili"});
-            result.Sections.Add(new AssStylesSection {Styles = new List<AssStyle> {AssStyle.DefaultStyle}});
+            result.Sections.Add(new AssScriptInfoSection {
+                Title = Title,
+                OriginalScript = "Bilibili"
+            });
+            result.Sections.Add(new AssStylesSection {
+                Styles = new List<AssStyle> {
+                    AssStyle.DefaultStyle
+                }
+            });
             var events = new AssEventsSection();
             result.Sections.Add(events);
 
@@ -269,8 +287,8 @@ namespace Kifa.Bilibili {
             return $"$/{Id}p{pid}.c{p.Cid}.{quality}";
         }
 
-        public string GetDesiredName(int pid, int quality, string cid = null, string extraPath = null, bool prefixDate = false,
-            BilibiliUploader uploader = null) {
+        public string GetDesiredName(int pid, int quality, string cid = null, string alternativeFolder = null,
+            bool prefixDate = false, BilibiliUploader uploader = null) {
             var p = Pages.First(x => x.Id == pid);
 
             if (cid != null && cid != p.Cid) {
@@ -288,12 +306,16 @@ namespace Kifa.Bilibili {
             var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
             var pidText = $"P{pid.ToString("D" + Pages.Count.ToString().Length)}";
 
-            uploader ??= new BilibiliUploader {Id = AuthorId, Name = Author};
+            uploader ??= new BilibiliUploader {
+                Id = AuthorId,
+                Name = Author
+            };
 
-            return $"{$"{uploader.Name}-{uploader.Id}".NormalizeFileName()}" +
-                   (extraPath == null ? "" : $"/{extraPath}") + (Pages.Count > 1
-                       ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}.{quality}"
-                       : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}.{quality}");
+            return (alternativeFolder == null
+                ? $"{uploader.Name}-{uploader.Id}".NormalizeFileName()
+                : $"{alternativeFolder}") + (Pages.Count > 1
+                ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}.{quality}"
+                : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}.{quality}");
         }
 
         public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
@@ -328,7 +350,9 @@ namespace Kifa.Bilibili {
                         logger.Debug("Choosen source: " +
                                      $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                         var link = choices[biliplusSourceChoice].link;
-                        return ("mp4", -1, new List<Func<Stream>> {() => BuildDownloadStream(link)});
+                        return ("mp4", -1, new List<Func<Stream>> {
+                            () => BuildDownloadStream(link)
+                        });
                     } catch (Exception ex) {
                         biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
                         if (biliplusSourceChoice == initialSource) {
@@ -343,7 +367,8 @@ namespace Kifa.Bilibili {
                 var (extension, quality, links) = GetDownloadLinks(Id, cid);
                 return extension == null
                     ? (null, -1, null)
-                    : (extension, quality, links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
+                    : (extension, quality,
+                        links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
             }
         }
 
@@ -458,7 +483,8 @@ namespace Kifa.Bilibili {
         }
 
         public static string GetAid(string cid) {
-            using var response = BiliplusHttpClient.Instance.GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
+            using var response = BiliplusHttpClient.Instance.GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}")
+                .Result;
             var content = response.GetString();
             logger.Debug($"Cid info: {content}");
 
@@ -468,7 +494,9 @@ namespace Kifa.Bilibili {
 
         public static HttpClient GetBilibiliClient() {
             if (bilibiliClient == null) {
-                bilibiliClient = new HttpClient {Timeout = TimeSpan.FromMinutes(10)};
+                bilibiliClient = new HttpClient {
+                    Timeout = TimeSpan.FromMinutes(10)
+                };
                 bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
                 bilibiliClient.DefaultRequestHeaders.Referrer = new Uri("https://space.bilibili.com/");
                 bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd(
