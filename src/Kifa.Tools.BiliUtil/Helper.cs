@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Kifa.IO;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil {
@@ -38,7 +39,7 @@ namespace Kifa.Tools.BiliUtil {
 
         public static void WriteIfNotFinished(this KifaFile file, Func<Stream> getStream) {
             if (file.Exists()) {
-                logger.Info($"Target file {file} already exists. Skipped.");
+                logger.Debug($"Target file {file} already exists. Skipped.");
                 return;
             }
 
@@ -49,14 +50,14 @@ namespace Kifa.Tools.BiliUtil {
                 throw new Exception("Cannot get stream.");
             }
 
-            logger.Info($"Start downloading video to {downloadFile}");
+            logger.Debug($"Start downloading video to {downloadFile}");
             downloadFile.Write(stream);
             downloadFile.Move(file);
-            logger.Info($"Successfullly downloaded video to {file}");
+            logger.Debug($"Successfullly downloaded video to {file}");
         }
 
 
-        public static void DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
+        public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
             string alternativeFolder = null, bool prefixDate = false, BilibiliUploader uploader = null) {
             uploader ??= new BilibiliUploader {
                 Id = video.AuthorId,
@@ -65,7 +66,8 @@ namespace Kifa.Tools.BiliUtil {
 
             var (extension, quality, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
             if (extension == null) {
-                return;
+                logger.Warn("Failed to get video streams.");
+                return false;
             }
 
             if (extension != "mp4") {
@@ -81,7 +83,7 @@ namespace Kifa.Tools.BiliUtil {
                         logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
                     }
 
-                    return;
+                    return true;
                 }
 
                 if (canonicalTargetFile.ExistsSomewhere()) {
@@ -91,7 +93,7 @@ namespace Kifa.Tools.BiliUtil {
                         logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
                     }
 
-                    return;
+                    return true;
                 }
 
                 if (canonicalTargetFile.Exists()) {
@@ -101,7 +103,7 @@ namespace Kifa.Tools.BiliUtil {
                         logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
                     }
 
-                    return;
+                    return true;
                 }
 
                 if (finalTargetFile.Exists()) {
@@ -111,39 +113,52 @@ namespace Kifa.Tools.BiliUtil {
                         logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
                     }
 
-                    return;
+                    return true;
                 }
 
-                List<KifaFile> partFiles = new List<KifaFile>();
-                for (int i = 0; i < streamGetters.Count; i++) {
+                var partFiles = new List<KifaFile>();
+                for (var i = 0; i < streamGetters.Count; i++) {
                     var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
+                    logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
                     try {
                         targetFile.WriteIfNotFinished(streamGetters[i]);
+                        logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
                     } catch (Exception e) {
                         logger.Warn(e, $"Failed to download {targetFile}.");
-                        return;
+                        return false;
                     }
 
                     partFiles.Add(targetFile);
                 }
 
                 try {
+                    logger.Debug($"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
                     MergePartFiles(partFiles, canonicalTargetFile);
                     RemovePartFiles(partFiles);
+                    logger.Debug($"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
+
+                    logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
                     canonicalTargetFile.Copy(finalTargetFile);
+                    logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
                 } catch (Exception e) {
                     logger.Warn(e, $"Failed to merge files.");
+                    return false;
                 }
             } else {
                 var targetFile =
                     currentFolder.GetFile(
                         $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
+                logger.Debug($"Writing to {targetFile}...");
                 try {
                     targetFile.WriteIfNotFinished(streamGetters.First());
+                    logger.Debug($"Successfully written to {targetFile}.");
                 } catch (Exception e) {
                     logger.Warn(e, $"Failed to download {targetFile}.");
+                    return false;
                 }
             }
+
+            return true;
         }
 
         public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {

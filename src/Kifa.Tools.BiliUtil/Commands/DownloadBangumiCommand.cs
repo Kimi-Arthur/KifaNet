@@ -1,7 +1,7 @@
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Bilibili;
+using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands {
     [Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
