@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Kifa.Web.Api.Controllers {
     [ApiController]
-    public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel
-        where TServiceClient : KifaServiceClient<TDataModel>, new() {
+    public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel, new() where TServiceClient : KifaServiceClient<TDataModel>, new() {
         static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
 
         static readonly TimeSpan[] RefreshIntervals = {
@@ -46,12 +45,17 @@ namespace Kifa.Web.Api.Controllers {
             return GetValue(id, refresh);
         }
 
-        TDataModel GetValue(string id, bool refresh) {
+        TDataModel? GetValue(string id, bool refresh) {
             var value = Client.Get(id);
-            if (refresh || value.Id == null || NeedRefresh(value)) {
+            if (value?.Id == null || refresh || NeedRefresh(value)) {
+                value ??= new TDataModel();
                 value.Id ??= id;
                 var updated = value.Fill();
-                if (updated != null && ShouldAutoRefresh) {
+                if (updated == null) {
+                    return null;
+                }
+
+                if (ShouldAutoRefresh) {
                     value.Metadata ??= new DataMetadata();
                     value.Metadata.LastRefreshed = DateTimeOffset.UtcNow;
                     value.Metadata.LastUpdated ??= value.Metadata.LastRefreshed;
@@ -162,7 +166,9 @@ namespace Kifa.Web.Api.Controllers {
         KifaActionResult ActionResult { get; set; }
 
         public static implicit operator KifaApiActionResult(KifaActionResult actionResult) {
-            return new() {ActionResult = actionResult};
+            return new() {
+                ActionResult = actionResult
+            };
         }
 
         public IActionResult Convert() =>
@@ -173,7 +179,9 @@ namespace Kifa.Web.Api.Controllers {
         KifaActionResult<TValue> ActionResult { get; set; }
 
         public static implicit operator KifaApiActionResult<TValue>(TValue value) =>
-            new() {ActionResult = new KifaActionResult<TValue>(value)};
+            new() {
+                ActionResult = new KifaActionResult<TValue>(value)
+            };
 
         public IActionResult Convert() =>
             ((IConvertToActionResult) new ActionResult<KifaActionResult<TValue>>(ActionResult)).Convert();
