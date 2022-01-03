@@ -13,14 +13,20 @@ namespace Kifa.Bilibili {
             client ??= new KifaServiceRestClient<BilibiliUploader>();
 
         public string Name { get; set; }
-        public List<string> Aids { get; set; } = new List<string>();
+        public List<string> Aids { get; set; } = new();
+        public List<string> RemovedAids { get; set; } = new();
 
         public override bool? Fill() {
             var info = new UploaderInfoRpc().Call(Id).Data;
             Name = info.Name;
-            var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => v.Aid).ToHashSet();
-            list.UnionWith(Aids.Select(aid => long.Parse(aid.Substring(2))).ToHashSet());
-            Aids = list.OrderBy(v => v).Select(v => $"av{v}").ToList();
+            var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => $"av{v.Aid}").ToHashSet();
+
+            var removed = RemovedAids.ToHashSet();
+            removed.UnionWith(Aids);
+            removed.ExceptWith(list);
+
+            RemovedAids = removed.OrderBy(v => v).ToList();
+            Aids = list.OrderBy(v => v).ToList();
 
             return true;
         }

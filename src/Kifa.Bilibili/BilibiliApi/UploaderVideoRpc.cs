@@ -67,7 +67,7 @@ namespace Kifa.Bilibili.BilibiliApi {
         }
 
         public override string UrlPattern { get; } =
-            "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=100&pn={page}";
+            "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=50&pn={page}";
 
         public UploaderVideoResponse Call(string uploaderId) {
             var result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
