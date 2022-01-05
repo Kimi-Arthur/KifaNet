@@ -132,7 +132,7 @@ namespace Kifa.Web.Api {
 
             var realTargetId = target.Metadata?.Id ?? target.Id;
 
-            if (link.Id != null) {
+            if (link?.Id != null) {
                 var realLinkId = link.Metadata?.Id ?? link.Id;
                 if (realLinkId == realTargetId) {
                     return LogAndReturn(new KifaActionResult {

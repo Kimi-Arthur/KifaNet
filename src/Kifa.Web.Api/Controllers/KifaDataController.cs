@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Kifa.Web.Api.Controllers {
     [ApiController]
-    public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase where TDataModel : DataModel, new() where TServiceClient : KifaServiceClient<TDataModel>, new() {
+    public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase
+        where TDataModel : DataModel, new() where TServiceClient : KifaServiceClient<TDataModel>, new() {
         static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
 
         static readonly TimeSpan[] RefreshIntervals = {
@@ -118,11 +119,10 @@ namespace Kifa.Web.Api.Controllers {
             return Client.Set(values);
         }
 
-        // POST api/values/^+<TARGET>|<LINK>
-        // TODO: Change to ^{target}|{link}.
-        [HttpGet("^+{target}|{link}")]
-        public KifaApiActionResult Link(string target, string link) =>
-            Client.Link(Uri.UnescapeDataString(target), Uri.UnescapeDataString(link));
+        [HttpPost("^")]
+        public KifaApiActionResult Link([FromBody] List<string> ids) =>
+            ids.Skip(1).Select(id => Client.Link(Uri.UnescapeDataString(ids[0]), Uri.UnescapeDataString(id)))
+                .Aggregate(new KifaBatchActionResult(), (s, x) => s.Add(x));
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
