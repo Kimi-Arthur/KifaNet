@@ -52,7 +52,7 @@ namespace Kifa.Web.Api.Controllers {
                 value.Id ??= id;
                 var updated = value.Fill();
                 if (updated == null) {
-                    return null;
+                    return value;
                 }
 
                 if (ShouldAutoRefresh) {
