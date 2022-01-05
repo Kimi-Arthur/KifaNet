@@ -34,7 +34,7 @@ namespace Kifa.Web.Api {
                 }
 
                 var value = items[i.Value.Metadata.Id].Clone();
-                value.Metadata!.Id = value.Id;  // source.Metadata has to exist, to contain Links at least.
+                value.Metadata!.Id = value.Id; // source.Metadata has to exist, to contain Links at least.
                 value.Id = i.Key;
                 return value;
             }));
@@ -88,34 +88,31 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Delete(string id) {
             var item = Get(id);
-            if (item.Metadata != null) {
+            if (item?.Metadata != null) {
                 var metadata = item.Metadata;
-                if (metadata.Id != null) {
-                    if (metadata.Id == item.Id) {
-                        // This is source. Metadata.Links has to exist.
-                        var nextItem = Get(item.Metadata!.Links!.First());
-                        nextItem!.Metadata!.Links!.Remove(nextItem.Id);
-                        nextItem.Metadata.Id = null;
-                        Set(nextItem);
-                        foreach (var link in nextItem.Metadata.Links) {
-                            var linkedItem = Read(link)!;
-                            linkedItem.Metadata!.Id = nextItem.Id;
-                            Write(linkedItem);
-                        }
-                    } else {
-                        // This is link.
-                        metadata.Links!.Remove(id);
-                        if (metadata.Links.Count == 0) {
-                            metadata.Links = null;
-                        }
-
-                        Set(item);
+                if (metadata.Id == null) {
+                    // This is source. Metadata.Links has to exist.
+                    var nextItem = Get(item.Metadata!.Links!.First());
+                    nextItem!.Metadata!.Links!.Remove(nextItem.Id);
+                    nextItem.Metadata.Id = null;
+                    Set(nextItem);
+                    foreach (var link in nextItem.Metadata.Links) {
+                        var linkedItem = Read(link)!;
+                        linkedItem.Metadata!.Id = nextItem.Id;
+                        Write(linkedItem);
                     }
+                } else {
+                    // This is link.
+                    metadata.Links!.Remove(id);
+                    if (metadata.Links.Count == 0) {
+                        metadata.Links = null;
+                    }
+
+                    Set(item);
                 }
             }
 
             Remove(item.Id);
-
             return KifaActionResult.Success;
         }
 
