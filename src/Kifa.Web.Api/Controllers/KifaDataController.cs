@@ -72,7 +72,7 @@ namespace Kifa.Web.Api.Controllers {
                 return true;
             }
 
-            if (RefreshIntervals == null || !ShouldAutoRefresh) {
+            if (!ShouldAutoRefresh) {
                 return false;
             }
 

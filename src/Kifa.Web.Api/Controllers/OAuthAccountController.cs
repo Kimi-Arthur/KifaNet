@@ -14,7 +14,7 @@ namespace Kifa.Web.Api.Controllers {
 
         public override ActionResult<TAccount> Get(string id, bool refresh = false) {
             var account = ServiceClient.Get(id);
-            return account.Id != null ? base.Get(id, refresh) : AccountAdd(id);
+            return account?.Id != null ? base.Get(id, refresh) : AccountAdd(id);
         }
 
         public RedirectResult AccountAdd(string id) =>
