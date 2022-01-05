@@ -45,13 +45,15 @@ namespace Kifa.Tools.FileUtil.Commands {
 
         void RemoveLogicalFile(FileInformation fileInfo) {
             var id = fileInfo.Id;
-            foreach (var fileName in fileInfo.Locations.Keys) {
-                var file = new KifaFile(fileName);
-                if (file.Id == id) {
-                    logger.Info($"Removing {file}...");
-                    file.Delete();
-                    logger.Info($"Removing {file} from locations...");
-                    file.Unregister();
+            if (fileInfo.Locations != null) {
+                foreach (var fileName in fileInfo.Locations.Keys) {
+                    var file = new KifaFile(fileName);
+                    if (file.Id == id) {
+                        logger.Info($"Removing {file}...");
+                        file.Delete();
+                        logger.Info($"Removing {file} from locations...");
+                        file.Unregister();
+                    }
                 }
             }
 

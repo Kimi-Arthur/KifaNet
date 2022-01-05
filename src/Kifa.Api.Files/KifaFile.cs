@@ -187,7 +187,7 @@ namespace Kifa.Api.Files {
             string candidate = null;
             var bestScore = 0L;
             var info = FileInformation.Client.Get(id);
-            if (info.Locations != null) {
+            if (info?.Locations != null) {
                 foreach (var location in info.Locations) {
                     if (location.Value != null) {
                         var file = new KifaFile(location.Key, fileInfo: info);

@@ -41,7 +41,7 @@ namespace Kifa.Tools.FileUtil.Commands {
             logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
             var targetInfo = client.Get(target);
-            if (targetInfo.Locations != null) {
+            if (targetInfo?.Locations != null) {
                 foreach (var location in targetInfo.Locations.Keys) {
                     var instance = new KifaFile(location);
                     if (instance.Client == null) {

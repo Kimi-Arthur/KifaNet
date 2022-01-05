@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -56,7 +57,7 @@ namespace Kifa.IO {
 
         public string? EncryptionKey { get; set; }
 
-        public Dictionary<string, DateTime?> Locations { get; set; } = new();
+        public Dictionary<string, DateTime?>? Locations { get; set; }
 
         [JsonIgnore]
         public bool Exists => Size > 0;
