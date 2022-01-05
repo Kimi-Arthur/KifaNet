@@ -62,7 +62,7 @@ namespace Kifa.Api.Files {
 
                             Delete();
                             FileInformation.Client.RemoveLocation(Id, ToString());
-                            logger.Info($"$Source {this} removed since upload is successful.");
+                            logger.Info($"Source {this} removed since upload is successful.");
                         }
 
                         return 0;
