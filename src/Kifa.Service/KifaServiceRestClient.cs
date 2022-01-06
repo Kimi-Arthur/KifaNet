@@ -124,9 +124,13 @@ namespace Kifa.Service {
 
         public override KifaActionResult Link(string targetId, string linkId) =>
             KifaActionResult.FromAction(() => Retry.Run(() => {
-                var request = new HttpRequestMessage(HttpMethod.Get,
-                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/" +
-                    $"^+{Uri.EscapeDataString(targetId)}|{Uri.EscapeDataString(linkId)}");
+                var request = new HttpRequestMessage(HttpMethod.Post,
+                    $"{KifaServiceRestClient.ServerAddress}/{ModelId}/^") {
+                    Content = new StringContent(JsonConvert.SerializeObject(new List<string> {
+                        targetId,
+                        linkId
+                    }, Defaults.JsonSerializerSettings), Encoding.UTF8, "application/json")
+                };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
                        KifaActionResult.UnknownError;
@@ -168,8 +172,8 @@ namespace Kifa.Service {
 
                 var result = KifaServiceRestClient.Client.GetObject<KifaActionResult<TResponse>>(request);
                 if (result is {
-                    Status: KifaActionStatus.OK
-                }) {
+                        Status: KifaActionStatus.OK
+                    }) {
                     return result.Response!;
                 }
 
