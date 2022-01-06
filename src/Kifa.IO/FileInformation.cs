@@ -62,7 +62,7 @@ namespace Kifa.IO {
         [JsonIgnore]
         public bool Exists => Size > 0;
 
-        public static string GetId(string location) {
+        public static string? GetId(string location) {
             var linkMatch = linkIdPattern.Match(location);
             if (linkMatch.Success) {
                 return $"/Web/{linkMatch.Groups[1].Value}.{linkMatch.Groups[2].Value}";
