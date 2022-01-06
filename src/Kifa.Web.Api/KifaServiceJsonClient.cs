@@ -64,7 +64,7 @@ namespace Kifa.Web.Api {
                 data = data.Clone();
                 data.Metadata ??= Get(data.Id)?.Metadata;
                 if (data.Metadata?.Id != null) {
-                    // The data is linked.
+                    // The data is linked. Nothing to be updated for link.
                     data.Id = data.Metadata.Id;
                     data.Metadata.Id = null;
                 }
@@ -78,7 +78,7 @@ namespace Kifa.Web.Api {
                 JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                     original);
                 if (data.Metadata?.Id != null) {
-                    // The data is linked.
+                    // The data is linked. Nothing to be updated for link.
                     data.Id = data.Metadata.Id;
                     data.Metadata.Id = null;
                 }
@@ -88,7 +88,7 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Delete(string id) {
             var item = Get(id);
-            if (item?.Metadata != null) {
+            if (item?.Metadata?.Id != null || item?.Metadata?.Links != null) {
                 var metadata = item.Metadata;
                 if (metadata.Id == null) {
                     // This is source. Metadata.Links has to exist.
