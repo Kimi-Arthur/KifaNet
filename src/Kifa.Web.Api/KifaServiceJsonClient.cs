@@ -24,17 +24,20 @@ namespace Kifa.Web.Api {
 
             var directory = new DirectoryInfo(prefix);
             var items = directory.GetFiles("*.json", SearchOption.AllDirectories).Select(i => {
-                using var reader = i.OpenText();
-                return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(), Defaults.JsonSerializerSettings);
-            }).ExceptNull().ToDictionary(i => i.Id, i => i);
+                    using var reader = i.OpenText();
+                    return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
+                        Defaults.JsonSerializerSettings);
+                }).Where(i => i != null && i.Metadata?.VirtualLinking?.VirtualTarget == null)
+                .ToDictionary(i => i!.Id!, i => i!);
 
             return new SortedDictionary<string, TDataModel>(items.ToDictionary(i => i.Key, i => {
-                if (i.Value.Metadata?.Id == null) {
+                if (i.Value.Metadata?.Linking?.Target == null) {
                     return i.Value;
                 }
 
-                var value = items[i.Value.Metadata.Id].Clone();
-                value.Metadata!.Id = value.Id; // source.Metadata has to exist, to contain Links at least.
+                var value = items[i.Value.Metadata.Linking.Target].Clone();
+                // source.Metadata.Linking! has to exist, to contain Links at least.
+                value.Metadata!.Linking!.Target = value.Id;
                 value.Id = i.Key;
                 return value;
             }));
@@ -47,9 +50,15 @@ namespace Kifa.Web.Api {
                 return null;
             }
 
-            if (data.Metadata?.Id != null) {
-                data = Read(data.Metadata.Id);
-                data.Metadata.Id = data.Id;
+            if (data.Metadata?.Linking?.Target != null) {
+                data = Read(data.Metadata.Linking.Target);
+                data.Metadata.Linking.Target = data.Id;
+                data.Id = id;
+            }
+
+            if (data.Metadata?.VirtualLinking?.VirtualTarget != null) {
+                data = Read(data.Metadata.VirtualLinking.VirtualTarget);
+                data.Metadata.VirtualLinking.VirtualTarget = data.Id;
                 data.Id = id;
             }
 
@@ -62,12 +71,7 @@ namespace Kifa.Web.Api {
                 logger.Trace($"Write {ModelId}/{data.Id}:");
                 logger.Trace(data);
                 data = data.Clone();
-                data.Metadata ??= Get(data.Id)?.Metadata;
-                if (data.Metadata?.Id != null) {
-                    // The data is linked. Nothing to be updated for link.
-                    data.Id = data.Metadata.Id;
-                    data.Metadata.Id = null;
-                }
+                CleanupForWriting(data);
 
                 Write(data);
             });
@@ -77,42 +81,99 @@ namespace Kifa.Web.Api {
                 var original = Get(data.Id);
                 JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                     original);
-                if (data.Metadata?.Id != null) {
-                    // The data is linked. Nothing to be updated for link.
-                    data.Id = data.Metadata.Id;
-                    data.Metadata.Id = null;
-                }
+                data = original;
+                CleanupForWriting(data);
 
                 Write(data);
             });
 
+        void CleanupForWriting(TDataModel data) {
+            logger.Trace($"Before cleanup: {data}");
+            var metadata = Get(data.Id)?.Metadata;
+            if (metadata?.Linking?.Target != null) {
+                logger.Trace("The data is linked. Nothing to be updated for link.");
+                data.Id = metadata.Linking.Target;
+                data.Metadata!.Linking!.Target = null;
+            }
+
+            if (metadata?.VirtualLinking?.VirtualTarget != null) {
+                logger.Trace("The data is virtual-linked. Nothing to be updated for link.");
+                data.Id = metadata.VirtualLinking.VirtualTarget;
+                data.Metadata!.VirtualLinking!.VirtualTarget = null;
+            }
+
+            logger.Trace($"After cleanup: {data}");
+        }
+
         public override KifaActionResult Delete(string id) {
             var item = Get(id);
-            if (item?.Metadata?.Id != null || item?.Metadata?.Links != null) {
-                var metadata = item.Metadata;
-                if (metadata.Id == null) {
-                    // This is source. Metadata.Links has to exist.
-                    var nextItem = Get(item.Metadata!.Links!.First());
-                    nextItem!.Metadata!.Links!.Remove(nextItem.Id);
-                    nextItem.Metadata.Id = null;
-                    Set(nextItem);
-                    foreach (var link in nextItem.Metadata.Links) {
-                        var linkedItem = Read(link)!;
-                        linkedItem.Metadata!.Id = nextItem.Id;
-                        Write(linkedItem);
+            if (item?.Metadata?.Linking != null) {
+                var linking = item.Metadata.Linking;
+                if (linking.Target == null) {
+                    // This is source. Links has to exist.
+                    if (linking.Links != null) {
+                        var nextItem = Get(linking.Links!.First());
+                        nextItem!.Metadata!.Linking!.Target = null;
+
+                        var links = linking.Links;
+                        links.Remove(nextItem.Id!);
+                        if (links.Count == 0) {
+                            // No other items left. No Linking needed.
+                            nextItem.Metadata.Linking = null;
+                        }
+
+                        Set(nextItem);
+
+                        foreach (var link in links) {
+                            Write(new TDataModel {
+                                Id = link,
+                                Metadata = new DataMetadata {
+                                    Linking = new LinkingMetadata {
+                                        Target = nextItem.Id
+                                    }
+                                }
+                            });
+                        }
+
+                        if (item.Metadata.VirtualLinking?.VirtualLinks != null) {
+                            foreach (var link in item.Metadata.VirtualLinking.VirtualLinks) {
+                                Write(new TDataModel {
+                                    Id = link,
+                                    Metadata = new DataMetadata {
+                                        VirtualLinking = new VirtualLinkingMetadata {
+                                            VirtualTarget = nextItem.Id
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    } else {
+                        if (item.Metadata.VirtualLinking?.VirtualLinks != null) {
+                            // No links but virtualLinks. So to remove them.
+                            foreach (var link in item.Metadata.VirtualLinking.VirtualLinks) {
+                                Remove(link);
+                            }
+                        }
                     }
                 } else {
-                    // This is link.
-                    metadata.Links!.Remove(id);
-                    if (metadata.Links.Count == 0) {
-                        metadata.Links = null;
+                    // This is link. No VirtualLinks should be involved.
+                    linking.Links!.Remove(id);
+                    if (linking.Links.Count == 0) {
+                        linking.Links = null;
                     }
 
                     Set(item);
                 }
             }
 
-            Remove(item.Id);
+            if (item?.Metadata?.VirtualLinking?.VirtualTarget != null) {
+                return new KifaActionResult {
+                    Message = $"Cannot remove virtual item {id}.",
+                    Status = KifaActionStatus.BadRequest
+                };
+            }
+
+            Remove(id);
             return KifaActionResult.Success;
         }
 
@@ -120,17 +181,17 @@ namespace Kifa.Web.Api {
             var target = Get(targetId);
             var link = Get(linkId);
 
-            if (target.Id == null) {
+            if (target?.Id == null) {
                 return LogAndReturn(new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
                     Message = $"Target {targetId} doesn't exist."
                 });
             }
 
-            var realTargetId = target.Metadata?.Id ?? target.Id;
+            var realTargetId = target.Metadata?.Linking?.Target ?? target.Id;
 
             if (link?.Id != null) {
-                var realLinkId = link.Metadata?.Id ?? link.Id;
+                var realLinkId = link.Metadata?.Linking?.Target ?? link.Id;
                 if (realLinkId == realTargetId) {
                     return LogAndReturn(new KifaActionResult {
                         Status = KifaActionStatus.BadRequest,
@@ -147,15 +208,18 @@ namespace Kifa.Web.Api {
             Write(new TDataModel {
                 Id = linkId,
                 Metadata = new DataMetadata {
-                    Id = realTargetId
+                    Linking = new LinkingMetadata {
+                        Target = realTargetId
+                    }
                 }
             });
 
             target.Metadata ??= new DataMetadata();
-            target.Metadata.Links ??= new HashSet<string>();
-            target.Metadata.Links.Add(linkId);
+            target.Metadata.Linking ??= new LinkingMetadata();
+            target.Metadata.Linking.Links ??= new HashSet<string>();
+            target.Metadata.Linking.Links.Add(linkId);
             target.Id = realTargetId;
-            target.Metadata.Id = null;
+            target.Metadata.Linking.Target = null;
             Write(target);
             return KifaActionResult.Success;
         }
