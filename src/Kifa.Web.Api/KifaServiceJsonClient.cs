@@ -68,13 +68,38 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => {
-                logger.Trace($"Write {ModelId}/{data.Id}:");
-                logger.Trace(data);
+                logger.Trace($"Write {ModelId}/{data.Id}: {data}");
                 data = data.Clone();
+                WriteVirtualItems(data);
                 CleanupForWriting(data);
 
                 Write(data);
             });
+
+        void WriteVirtualItems(TDataModel data) {
+            var items = data.GetVirtualItems();
+            if (items.Count > 0) {
+                return;
+            }
+
+            data.Metadata ??= new DataMetadata();
+            data.Metadata.Linking ??= new LinkingMetadata();
+            data.Metadata.Linking.Links ??= new SortedSet<string>();
+            
+            foreach (var item in items) {
+                if (!data.Metadata.Linking.Links.Contains(item)) {
+                    data.Metadata.Linking.Links.Add(item);
+                    Write(new TDataModel {
+                        Id = item,
+                        Metadata = new DataMetadata {
+                            Linking = new LinkingMetadata {
+                                Target = data.Metadata.Linking.Target ?? data.Id
+                            }
+                        }
+                    });
+                }
+            }
+        }
 
         public override KifaActionResult Update(TDataModel data) =>
             KifaActionResult.FromAction(() => {
@@ -189,7 +214,7 @@ namespace Kifa.Web.Api {
 
             target.Metadata ??= new DataMetadata();
             target.Metadata.Linking ??= new LinkingMetadata();
-            target.Metadata.Linking.Links ??= new HashSet<string>();
+            target.Metadata.Linking.Links ??= new SortedSet<string>();
             target.Metadata.Linking.Links.Add(linkId);
             target.Id = realTargetId;
             target.Metadata.Linking.Target = null;

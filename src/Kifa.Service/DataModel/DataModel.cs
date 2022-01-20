@@ -11,7 +11,7 @@ namespace Kifa.Service {
     /// </summary>
     public abstract class DataModel {
         public const string VirtualItemPrefix = "/$/";
-        
+
         [YamlMember(Order = -1)]
         public string? Id { get; set; }
 
@@ -20,6 +20,8 @@ namespace Kifa.Service {
         public DataMetadata? Metadata { get; set; }
 
         public virtual bool? Fill() => null;
+
+        public virtual List<string> GetVirtualItems() => new();
 
         // Not finished
         public string Compare<TDataModel>(TDataModel other) {

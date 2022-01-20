@@ -59,6 +59,13 @@ namespace Kifa.IO {
 
         public Dictionary<string, DateTime?>? Locations { get; set; }
 
+        public override List<string> GetVirtualItems() =>
+            Sha256 != null
+                ? new List<string> {
+                    VirtualItemPrefix + Sha256
+                }
+                : new List<string>();
+
         [JsonIgnore]
         public bool Exists => Size > 0;
 

@@ -12,7 +12,7 @@ namespace Kifa.Service {
         public string? Target { get; set; }
 
         // If this one is the source, this field will be populated with all other instances with the data.
-        public HashSet<string>? Links { get; set; }
+        public SortedSet<string>? Links { get; set; }
     }
 
     public class FreshnessMetadata {
