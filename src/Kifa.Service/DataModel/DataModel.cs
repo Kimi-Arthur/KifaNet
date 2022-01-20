@@ -10,6 +10,8 @@ namespace Kifa.Service {
     /// When used, specify a public const string field named ModelId.
     /// </summary>
     public abstract class DataModel {
+        public const string VirtualItemPrefix = "/$/";
+        
         [YamlMember(Order = -1)]
         public string? Id { get; set; }
 

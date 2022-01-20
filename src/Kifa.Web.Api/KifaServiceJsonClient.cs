@@ -18,17 +18,23 @@ namespace Kifa.Web.Api {
 
         public override SortedDictionary<string, TDataModel> List() {
             var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
+            var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
             if (!Directory.Exists(prefix)) {
                 return new SortedDictionary<string, TDataModel>();
             }
 
             var directory = new DirectoryInfo(prefix);
-            var items = directory.GetFiles("*.json", SearchOption.AllDirectories).Select(i => {
-                    using var reader = i.OpenText();
-                    return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
-                        Defaults.JsonSerializerSettings);
-                }).Where(i => i != null && i.Metadata?.VirtualLinking?.VirtualTarget == null)
-                .ToDictionary(i => i!.Id!, i => i!);
+
+            // We actually exclude virtual items twice here.
+            // Supposedly only the first one is used. However, we should not rely everything on file naming.
+            var items = directory.GetFiles("*.json", SearchOption.AllDirectories)
+                .Where(p => !p.FullName.StartsWith(virtualItemPrefix)).AsParallel().Select(
+                    i => {
+                        using var reader = i.OpenText();
+                        return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
+                            Defaults.JsonSerializerSettings);
+                    }).ExceptNull().Where(i => i.Id != null && !i.Id.StartsWith(DataModel.VirtualItemPrefix))
+                .ToDictionary(i => i.Id!, i => i);
 
             return new SortedDictionary<string, TDataModel>(items.ToDictionary(i => i.Key, i => {
                 if (i.Value.Metadata?.Linking?.Target == null) {
@@ -53,12 +59,6 @@ namespace Kifa.Web.Api {
             if (data.Metadata?.Linking?.Target != null) {
                 data = Read(data.Metadata.Linking.Target);
                 data.Metadata.Linking.Target = data.Id;
-                data.Id = id;
-            }
-
-            if (data.Metadata?.VirtualLinking?.VirtualTarget != null) {
-                data = Read(data.Metadata.VirtualLinking.VirtualTarget);
-                data.Metadata.VirtualLinking.VirtualTarget = data.Id;
                 data.Id = id;
             }
 
@@ -96,12 +96,6 @@ namespace Kifa.Web.Api {
                 data.Metadata!.Linking!.Target = null;
             }
 
-            if (metadata?.VirtualLinking?.VirtualTarget != null) {
-                logger.Trace("The data is virtual-linked. Nothing to be updated for link.");
-                data.Id = metadata.VirtualLinking.VirtualTarget;
-                data.Metadata!.VirtualLinking!.VirtualTarget = null;
-            }
-
             logger.Trace($"After cleanup: {data}");
         }
 
@@ -134,29 +128,15 @@ namespace Kifa.Web.Api {
                                 }
                             });
                         }
-
-                        if (item.Metadata.VirtualLinking?.VirtualLinks != null) {
-                            foreach (var link in item.Metadata.VirtualLinking.VirtualLinks) {
-                                Write(new TDataModel {
-                                    Id = link,
-                                    Metadata = new DataMetadata {
-                                        VirtualLinking = new VirtualLinkingMetadata {
-                                            VirtualTarget = nextItem.Id
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    } else {
-                        if (item.Metadata.VirtualLinking?.VirtualLinks != null) {
-                            // No links but virtualLinks. So to remove them.
-                            foreach (var link in item.Metadata.VirtualLinking.VirtualLinks) {
-                                Remove(link);
-                            }
-                        }
                     }
                 } else {
-                    // This is link. No VirtualLinks should be involved.
+                    if (id.StartsWith(DataModel.VirtualItemPrefix)) {
+                        return new KifaActionResult {
+                            Message = $"Cannot remove virtual item {id}.",
+                            Status = KifaActionStatus.BadRequest
+                        };
+                    }
+
                     linking.Links!.Remove(id);
                     if (linking.Links.Count == 0) {
                         linking.Links = null;
@@ -164,13 +144,6 @@ namespace Kifa.Web.Api {
 
                     Set(item);
                 }
-            }
-
-            if (item?.Metadata?.VirtualLinking?.VirtualTarget != null) {
-                return new KifaActionResult {
-                    Message = $"Cannot remove virtual item {id}.",
-                    Status = KifaActionStatus.BadRequest
-                };
             }
 
             Remove(id);
