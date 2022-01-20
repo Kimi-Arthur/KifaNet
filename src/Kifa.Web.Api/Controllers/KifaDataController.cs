@@ -58,8 +58,9 @@ namespace Kifa.Web.Api.Controllers {
 
                 if (ShouldAutoRefresh) {
                     value.Metadata ??= new DataMetadata();
-                    value.Metadata.LastRefreshed = DateTimeOffset.UtcNow;
-                    value.Metadata.LastUpdated ??= value.Metadata.LastRefreshed;
+                    value.Metadata.Freshness ??= new FreshnessMetadata();
+                    value.Metadata.Freshness.LastRefreshed = DateTimeOffset.UtcNow;
+                    value.Metadata.Freshness.LastUpdated ??= value.Metadata.Freshness.LastRefreshed;
                 }
 
                 Client.Set(value);
@@ -77,12 +78,12 @@ namespace Kifa.Web.Api.Controllers {
                 return false;
             }
 
-            if (value.Metadata?.LastRefreshed == null) {
+            if (value.Metadata?.Freshness?.LastRefreshed == null) {
                 return true;
             }
 
-            var stableDuration = value.Metadata.LastRefreshed - value.Metadata.LastUpdated;
-            var newDuration = DateTimeOffset.UtcNow - value.Metadata.LastRefreshed;
+            var stableDuration = value.Metadata.Freshness.LastRefreshed - value.Metadata.Freshness.LastUpdated;
+            var newDuration = DateTimeOffset.UtcNow - value.Metadata.Freshness.LastRefreshed;
 
             return RefreshIntervals.Reverse().FirstOrDefault(interval => interval < stableDuration)
                 .Or(MinRefreshInterval) < newDuration;
