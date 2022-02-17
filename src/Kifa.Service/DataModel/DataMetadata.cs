@@ -13,6 +13,9 @@ namespace Kifa.Service {
 
         // If this one is the source, this field will be populated with all other instances with the data.
         public SortedSet<string>? Links { get; set; }
+
+        // If this one is the source, this field will be populated with all other instances with the data.
+        public SortedSet<string>? VirtualLinks { get; set; }
     }
 
     public class FreshnessMetadata {

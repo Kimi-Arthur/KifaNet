@@ -15,6 +15,10 @@ namespace Kifa.Service {
         [YamlMember(Order = -1)]
         public string? Id { get; set; }
 
+        [JsonIgnore]
+        [YamlIgnore]
+        public string? RealId => Metadata?.Linking?.Target ?? Id;
+
         [JsonProperty("$metadata")]
         [YamlIgnore]
         public DataMetadata? Metadata { get; set; }
@@ -22,6 +26,7 @@ namespace Kifa.Service {
         public virtual bool? Fill() => null;
 
         public virtual List<string> GetVirtualItems() => new();
+        public bool IsVirtualItem() => Id?.StartsWith(VirtualItemPrefix) ?? false;
 
         // Not finished
         public string Compare<TDataModel>(TDataModel other) {
