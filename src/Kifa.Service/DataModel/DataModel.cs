@@ -25,7 +25,7 @@ namespace Kifa.Service {
 
         public virtual bool? Fill() => null;
 
-        public virtual List<string> GetVirtualItems() => new();
+        public virtual SortedSet<string> GetVirtualItems() => new();
         public bool IsVirtualItem() => Id?.StartsWith(VirtualItemPrefix) ?? false;
 
         // Not finished

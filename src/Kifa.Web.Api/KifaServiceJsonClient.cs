@@ -69,7 +69,7 @@ namespace Kifa.Web.Api {
             KifaActionResult.FromAction(() => {
                 logger.Trace($"Write {ModelId}/{data.Id}: {data}");
                 data = data.Clone();
-                WriteVirtualItems(data); // TODO: Should not write every time.
+                WriteVirtualItems(data);
                 CleanupForWriting(data);
 
                 Write(data);
@@ -77,7 +77,7 @@ namespace Kifa.Web.Api {
 
         void WriteVirtualItems(TDataModel data) {
             var items = data.GetVirtualItems();
-            if (items.Count > 0) {
+            if (items.Count == 0) {
                 return;
             }
 
@@ -85,19 +85,18 @@ namespace Kifa.Web.Api {
             data.Metadata.Linking ??= new LinkingMetadata();
             data.Metadata.Linking.VirtualLinks ??= new SortedSet<string>();
 
-            foreach (var item in items) {
-                if (!data.Metadata.Linking.VirtualLinks.Contains(item)) {
-                    data.Metadata.Linking.VirtualLinks.Add(item);
-                    Write(new TDataModel {
-                        Id = item,
-                        Metadata = new DataMetadata {
-                            Linking = new LinkingMetadata {
-                                Target = data.RealId
-                            }
-                        }
-                    });
+            data.Metadata.Linking.VirtualLinks.Except(items).ForEach(Remove);
+
+            items.Except(data.Metadata.Linking.VirtualLinks).ForEach(item => Write(new TDataModel {
+                Id = item,
+                Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
+                        Target = data.RealId
+                    }
                 }
-            }
+            }));
+
+            data.Metadata.Linking.VirtualLinks = items;
         }
 
         public override KifaActionResult Update(TDataModel data) =>
@@ -106,6 +105,7 @@ namespace Kifa.Web.Api {
                 JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                     original);
                 data = original;
+                WriteVirtualItems(data);
                 CleanupForWriting(data);
 
                 Write(data);
@@ -123,6 +123,7 @@ namespace Kifa.Web.Api {
                 if (data.Metadata.Linking.Links?.Count == 0) {
                     data.Metadata.Linking.Links = null;
                 }
+
                 if (data.Metadata.Linking.VirtualLinks?.Count == 0) {
                     data.Metadata.Linking.VirtualLinks = null;
                 }
