@@ -3,7 +3,7 @@ GET {{server}}/api/animes/$refresh?id=Game of Thrones
 Accept: application/x-yaml
 
 ### Add
-POST {{server}}/api/animes/%E8%81%96%E7%97%95%E3%81%AE%E3%82%AF%E3%82%A7%E3%82%A4%E3%82%B5%E3%83%BC
+POST {{server}}/api/animes/DRAGON QUEST ダイの大冒険 (2020)
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 # pattern_id: tv_multi
@@ -13,14 +13,11 @@ Content-Type: application/x-yaml
 # pattern_id: tv_single
 # episode_id_width: 2
 
-title: "聖痕のクェイサー"
+title: "DRAGON QUEST ダイの大冒険"
 seasons:
-  - anidb_id: "6816"
+  - anidb_id: "15321"
     id: 1
-  - anidb_id: "8154"
-    id: 2
-pattern_id: multi_season
-season_id_width: 2
+pattern_id: single_season
 episode_id_width: 2
 
 ### Fix
@@ -46,7 +43,7 @@ GET {{server}}/api/animes/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/animes/DRAGON BALL
+GET {{server}}/api/animes/DRAGON QUEST ダイの大冒険 (2020)
 Accept: application/x-yaml
 
 ### List

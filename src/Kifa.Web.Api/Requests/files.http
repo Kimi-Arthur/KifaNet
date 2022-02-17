@@ -7,8 +7,16 @@ recursive: true
 
 ###
 
-GET {{server}}/api/files/%2FAnime%2FSword%20Art%20Online%20%282012%29%2FSeason%202%20%282014%29%2FSword%20Art%20Online%20S02E01%20%E9%8A%83%E3%81%AE%E4%B8%96%E7%95%8C.mkv
+GET {{server}}/api/files/%2Fwow.mkv
 Accept: application/json
+
+###
+
+POST {{server}}/api/files/%5E
+Accept: application/json
+Content-Type: application/json
+
+["/Downloads/Anime/Naruto/[SOSG&52wy][Naruto_Shippuuden][221-222][Chs_Cht_Jpn][XviD_MP3][120FPS].mkv", "/wow.mkv"]
 
 ###
 
@@ -19,3 +27,5 @@ GET http://localhost:5000/api/files/$list_folder?folder=/Fonts
 Accept: application/json
 
 ###
+
+DELETE http://{{server}}/api/files/%2Fwow.mkv

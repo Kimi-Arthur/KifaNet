@@ -10,25 +10,25 @@ Content-Type: application/x-yaml
 Id: 半沢直樹
 
 ### Add Single
-POST {{server}}/api/tv_shows/觉醒年代
+POST {{server}}/api/tv_shows/仙剑奇侠传
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-TmdbId: '117954'
+TmdbId: '8757'
 Language: zh
 PatternId: single_season
 EpisodeIdWidth: 2
 
 ### Add multi
-POST {{server}}/api/tv_shows/屌丝男士
+POST {{server}}/api/tv_shows/The Wheel of Time
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 PatternId: multi_season
 SeasonIdWidth: 2
 EpisodeIdWidth: 2
-TmdbId: '75129'
-Language: zh
+TmdbId: '71914'
+Language: en
 
 ### Manual Fix of data
 PATCH {{server}}/api/tv_shows/Westworld
@@ -42,8 +42,8 @@ GET {{server}}/api/tv_shows/?query=$.*.id
 Accept: application/x-yaml
 
 ### Get
-GET {{server}}/api/tv_shows/觉醒年代
-Accept: application/x-yaml
+GET {{server}}/api/tv_shows/仙剑奇侠传
+Accept: application/json
 
 ### Format
 GET {{server}}/api/tv_shows/$format?id=Friends&seasonId=9&episodeIds=23,24
@@ -56,3 +56,5 @@ GET https://api.themoviedb.org/3/tv/47008?api_key=781b829a0214d68e3250f10aedbbc2
 GET https://api.themoviedb.org/3/tv/60573/season/1?api_key=781b829a0214d68e3250f10aedbbc2d8&language=en
 
 ###
+
+DELETE {{server}}/api/tv_shows/LEGAL HIGH
