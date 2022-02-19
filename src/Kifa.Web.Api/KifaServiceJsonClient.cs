@@ -115,17 +115,20 @@ namespace Kifa.Web.Api {
         void CleanupForWriting(TDataModel data) {
             logger.Trace($"Before cleanup: {data}");
             data.Id = data.RealId;
-            data.Metadata!.Linking!.Target = null;
-            if (data.Metadata.Linking.Links?.Count == 0) {
-                data.Metadata.Linking.Links = null;
-            }
+            var linking = data.Metadata?.Linking;
+            if (linking != null) {
+                linking.Target = null;
+                if (linking.Links?.Count == 0) {
+                    linking.Links = null;
+                }
 
-            if (data.Metadata.Linking.VirtualLinks?.Count == 0) {
-                data.Metadata.Linking.VirtualLinks = null;
-            }
+                if (linking.VirtualLinks?.Count == 0) {
+                    linking.VirtualLinks = null;
+                }
 
-            if (data.Metadata.Linking.Links == null && data.Metadata.Linking.VirtualLinks == null) {
-                data.Metadata.Linking = null;
+                if (linking.Links == null && linking.VirtualLinks == null) {
+                    data.Metadata.Linking = null;
+                }
             }
 
             logger.Trace($"After cleanup: {data}");

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using FluentAssertions;
 using Kifa.Service;
 using Newtonsoft.Json;
 using Xunit;
@@ -14,6 +15,7 @@ public class TestDataModel : DataModel<TestDataModel> {
 
 public class BasicTests : IDisposable {
     readonly string folder = Path.GetTempPath() + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+    readonly KifaServiceJsonClient<TestDataModel> client = new();
 
     public BasicTests() {
         KifaServiceJsonClient.DataFolder = folder;
@@ -21,7 +23,6 @@ public class BasicTests : IDisposable {
 
     [Fact]
     public void GetTest() {
-        KifaServiceJsonClient<TestDataModel> client = new();
         Directory.CreateDirectory(folder + "/tests");
         File.WriteAllText(folder + "/tests/test.json", JsonConvert.SerializeObject(new TestDataModel {
             Id = "test",
@@ -39,12 +40,39 @@ public class BasicTests : IDisposable {
 
     [Fact]
     public void SetGetTest() {
-        KifaServiceJsonClient<TestDataModel> client = new();
-
         client.Set(new TestDataModel {
             Id = "test",
             Data = "very good data"
         });
+
+        var data = client.Get("test");
+        Assert.Equal("test", data.Id);
+        Assert.Equal("very good data", data.Data);
+    }
+
+    [Fact]
+    public void DeleteTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Delete("test");
+
+        var data = client.Get("test");
+        data.Should().BeNull();
+    }
+
+    [Fact]
+    public void DeleteNonExistTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        var result = client.Delete("test1");
+
+        result.Status.Should().Be(KifaActionStatus.BadRequest);
 
         var data = client.Get("test");
         Assert.Equal("test", data.Id);
