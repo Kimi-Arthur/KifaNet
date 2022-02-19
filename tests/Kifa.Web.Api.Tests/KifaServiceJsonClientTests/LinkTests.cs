@@ -4,7 +4,7 @@ using System.IO;
 using Kifa.Service;
 using Xunit;
 
-namespace Kifa.Web.Api.Tests; 
+namespace Kifa.Web.Api.Tests;
 
 public class TestDataModelWithVirtualLinks : DataModel<TestDataModelWithVirtualLinks> {
     public const string ModelId = "link_tests";
@@ -46,4 +46,5 @@ public class LinkTests {
 
     public void Dispose() {
         Directory.Delete(folder, true);
-    }}
+    }
+}
