@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using FluentAssertions;
 using Kifa.Service;
 using Xunit;
 
@@ -15,7 +16,7 @@ public class TestDataModelWithVirtualLinks : DataModel<TestDataModelWithVirtualL
         Data == null
             ? new SortedSet<string>()
             : new SortedSet<string> {
-                Data
+                VirtualItemPrefix + Data
             };
 }
 
@@ -36,12 +37,12 @@ public class LinkTests {
         });
 
         var data = client.Get("test");
-        Assert.Equal("test", data.Id);
-        Assert.Equal("very good data", data.Data);
+        data.Id.Should().Be("test");
+        data.Data.Should().Be("very good data");
 
-        var linkedData = client.Get("very good data");
-        Assert.Equal("very good data", linkedData.Id);
-        Assert.Equal("very good data", linkedData.Data);
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Id.Should().Be("/$/very good data");
+        linkedData.Data.Should().Be("very good data");
     }
 
     public void Dispose() {
