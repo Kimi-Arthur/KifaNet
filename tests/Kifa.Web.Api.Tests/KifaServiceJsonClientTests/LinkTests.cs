@@ -20,17 +20,16 @@ public class TestDataModelWithVirtualLinks : DataModel<TestDataModelWithVirtualL
             };
 }
 
-public class LinkTests {
+public class LinkTests : IDisposable {
     readonly string folder = Path.GetTempPath() + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+    readonly KifaServiceJsonClient<TestDataModelWithVirtualLinks> client = new();
 
     public LinkTests() {
         KifaServiceJsonClient.DataFolder = folder;
     }
 
     [Fact]
-    public void SetGetWithVirtualLinksTest() {
-        KifaServiceJsonClient<TestDataModelWithVirtualLinks> client = new();
-
+    public void GetTest() {
         client.Set(new TestDataModelWithVirtualLinks {
             Id = "test",
             Data = "very good data"
@@ -43,6 +42,39 @@ public class LinkTests {
         var linkedData = client.Get("/$/very good data");
         linkedData.Id.Should().Be("/$/very good data");
         linkedData.Data.Should().Be("very good data");
+    }
+
+    [Fact]
+    public void DeleteTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Delete("test");
+
+        var data = client.Get("test");
+        data.Should().BeNull();
+
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Should().BeNull();
+    }
+
+    [Fact]
+    public void DeleteVirtualTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        var actionResult = client.Delete("/$/very good data");
+        actionResult.Status.Should().Be(KifaActionStatus.BadRequest);
+
+        var data = client.Get("test");
+        data.Id.Should().NotBeNull();
+
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Id.Should().NotBeNull();
     }
 
     public void Dispose() {
