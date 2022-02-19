@@ -168,6 +168,8 @@ namespace Kifa.Web.Api {
                             }
                         }
 
+                        linking.Target = null;
+
                         Set(nextItem);
 
                         foreach (var link in links.Concat(linking.VirtualLinks ?? new())) {

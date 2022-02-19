@@ -36,10 +36,13 @@ public class LinkTests : IDisposable {
         });
 
         var data = client.Get("test");
+        data.Metadata.Linking.Target.Should().BeNull();
+        data.Metadata.Linking.VirtualLinks.Should().HaveCount(1).And.Contain("/$/very good data");
         data.Id.Should().Be("test");
         data.Data.Should().Be("very good data");
 
         var linkedData = client.Get("/$/very good data");
+        linkedData.Metadata.Linking.Target.Should().Be("test");
         linkedData.Id.Should().Be("/$/very good data");
         linkedData.Data.Should().Be("very good data");
     }
@@ -75,6 +78,50 @@ public class LinkTests : IDisposable {
 
         var linkedData = client.Get("/$/very good data");
         linkedData.Id.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void LinkTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+
+        var data = client.Get("new_test");
+
+        data.Id.Should().Be("new_test");
+        data.Data.Should().Be("very good data");
+
+        data.Metadata.Linking.Links.Should().HaveCount(1).And.Contain("new_test");
+        data.Metadata.Linking.VirtualLinks.Should().HaveCount(1).And.Contain("/$/very good data");
+
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Metadata.Linking.Target.Should().Be("test");
+    }
+
+    [Fact]
+    public void DeleteLinkTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+        client.Delete("test");
+            
+        var data = client.Get("new_test");
+
+        data.Id.Should().Be("new_test");
+        data.Data.Should().Be("very good data");
+
+        data.Metadata.Linking.Target.Should().BeNull();
+        data.Metadata.Linking.Links.Should().BeNull();
+        data.Metadata.Linking.VirtualLinks.Should().HaveCount(1).And.Contain("/$/very good data");
+
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Metadata.Linking.Target.Should().Be("new_test");
     }
 
     public void Dispose() {
