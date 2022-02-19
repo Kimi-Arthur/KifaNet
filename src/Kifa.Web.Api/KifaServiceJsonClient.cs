@@ -14,8 +14,6 @@ namespace Kifa.Web.Api {
         where TDataModel : DataModel, new() {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        Dictionary<string, List<string>> Groups { get; } = new();
-
         public override SortedDictionary<string, TDataModel> List() {
             var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
             var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
