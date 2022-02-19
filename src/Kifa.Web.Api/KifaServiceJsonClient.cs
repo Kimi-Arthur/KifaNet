@@ -114,21 +114,18 @@ namespace Kifa.Web.Api {
         // remove the parts that only make sense for the links.
         void CleanupForWriting(TDataModel data) {
             logger.Trace($"Before cleanup: {data}");
-            if (data.RealId != data.Id) {
-                logger.Trace("The data is linked. Nothing to be updated for link.");
-                data.Id = data.RealId;
-                data.Metadata!.Linking!.Target = null;
-                if (data.Metadata.Linking.Links?.Count == 0) {
-                    data.Metadata.Linking.Links = null;
-                }
+            data.Id = data.RealId;
+            data.Metadata!.Linking!.Target = null;
+            if (data.Metadata.Linking.Links?.Count == 0) {
+                data.Metadata.Linking.Links = null;
+            }
 
-                if (data.Metadata.Linking.VirtualLinks?.Count == 0) {
-                    data.Metadata.Linking.VirtualLinks = null;
-                }
+            if (data.Metadata.Linking.VirtualLinks?.Count == 0) {
+                data.Metadata.Linking.VirtualLinks = null;
+            }
 
-                if (data.Metadata.Linking.Links == null && data.Metadata.Linking.VirtualLinks == null) {
-                    data.Metadata.Linking = null;
-                }
+            if (data.Metadata.Linking.Links == null && data.Metadata.Linking.VirtualLinks == null) {
+                data.Metadata.Linking = null;
             }
 
             logger.Trace($"After cleanup: {data}");
@@ -160,14 +157,6 @@ namespace Kifa.Web.Api {
 
                         var links = linking.Links!;
                         links.Remove(nextItem.Id!);
-                        if (links.Count == 0) {
-                            linking.Links = null;
-                            if (linking.VirtualLinks == null) {
-                                // No other items left. No Linking needed.
-                                nextItem.Metadata.Linking = null;
-                            }
-                        }
-
                         linking.Target = null;
 
                         Set(nextItem);
@@ -189,9 +178,7 @@ namespace Kifa.Web.Api {
                         }
                     }
                 } else {
-                    linking.Target = null;
                     linking.Links!.Remove(id);
-                    item.Id = item.RealId;
 
                     Set(item);
                 }
