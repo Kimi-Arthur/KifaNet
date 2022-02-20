@@ -98,12 +98,17 @@ namespace Kifa.Web.Api.Controllers {
         [HttpPatch("{id}")]
         public KifaApiActionResult Patch(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
+            value.Metadata = null;
             return Client.Update(value);
         }
 
         // PATCH api/values/$
         [HttpPatch("$")]
         public KifaApiActionResult Patch([FromBody] List<TDataModel> values) {
+            foreach (var value in values) {
+                value.Metadata = null;
+            }
+
             return Client.Update(values);
         }
 
@@ -111,6 +116,7 @@ namespace Kifa.Web.Api.Controllers {
         [HttpPost("{id}")]
         public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
             value.Id ??= Uri.UnescapeDataString(id);
+            value.Metadata = null;
             value.Fill();
             return Client.Set(value);
         }
@@ -119,6 +125,7 @@ namespace Kifa.Web.Api.Controllers {
         [HttpPost("$")]
         public KifaApiActionResult Post([FromBody] List<TDataModel> values) {
             foreach (var value in values) {
+                value.Metadata = null;
                 value.Fill();
             }
 
