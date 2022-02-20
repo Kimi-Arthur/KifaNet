@@ -13,7 +13,7 @@ namespace Kifa {
             .ToDictionary(item => item.value, item => item.factor);
 
         static readonly Dictionary<string, string> SafeCharacterMapping = new() {
-            ["/"] = "／",
+            ["/"] = "／", // Must come first fot NormalizeFilePath.
             ["\\"] = "＼",
             [":"] = "：",
             ["|"] = "｜",
@@ -107,14 +107,14 @@ namespace Kifa {
                 ? path
                 : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D5}");
 
-        public static string NormalizeFileName(this string fileName) {
-            var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).Trim();
-            foreach (var mapping in SafeCharacterMapping) {
-                normalizedFileName = normalizedFileName.Replace(mapping.Key, mapping.Value);
-            }
+        public static string NormalizeFileName(this string fileName) =>
+            SafeCharacterMapping.Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
+                (current, mapping) => current.Replace(mapping.Key, mapping.Value));
 
-            return normalizedFileName;
-        }
+        public static string NormalizeFilePath(this string fileName) =>
+            SafeCharacterMapping.Skip(1)
+                .Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
+                    (current, mapping) => current.Replace(mapping.Key, mapping.Value));
 
         public static string FromBase64(this string text) =>
             Encoding.UTF8.GetString(Convert.FromBase64String(text));
