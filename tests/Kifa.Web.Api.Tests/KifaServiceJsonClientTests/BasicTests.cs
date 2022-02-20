@@ -68,6 +68,83 @@ public class BasicTests : IDisposable {
     }
 
     [Fact]
+    public void LinkToNonExistTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        var result = client.Link("test1", "new_test");
+
+        result.Status.Should().Be(KifaActionStatus.BadRequest);
+
+        client.Get("new_test").Should().BeNull();
+        client.Get("test1").Should().BeNull();
+        client.Get("test").Metadata?.Linking.Should().BeNull();
+    }
+
+    [Fact]
+    public void LinkFromExistTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Set(new TestDataModel {
+            Id = "test1",
+            Data = "ok data"
+        });
+
+        var result = client.Link("test1", "test");
+
+        result.Status.Should().Be(KifaActionStatus.BadRequest);
+
+        client.Get("test1").Metadata?.Linking.Should().BeNull();
+        client.Get("test").Metadata?.Linking.Should().BeNull();
+    }
+
+    [Fact]
+    public void LinkToLinkTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "test1");
+        client.Link("test1", "test2");
+
+        client.Get("test").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
+        client.Get("test1").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
+
+        var data = client.Get("test2");
+        data.Id.Should().Be("test2");
+        data.Data.Should().Be("very good data");
+        data.Metadata.Linking.Target.Should().Be("test");
+    }
+
+    [Fact]
+    public void LinkToSameLinkTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "test1");
+        client.Link("test1", "test2");
+        var result = client.Link("test", "test2");
+
+        result.Status.Should().Be(KifaActionStatus.OK);
+
+        client.Get("test").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
+        client.Get("test1").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
+
+        var data = client.Get("test2");
+        data.Id.Should().Be("test2");
+        data.Data.Should().Be("very good data");
+        data.Metadata.Linking.Target.Should().Be("test");
+    }
+
+    [Fact]
     public void DeleteTest() {
         client.Set(new TestDataModel {
             Id = "test",

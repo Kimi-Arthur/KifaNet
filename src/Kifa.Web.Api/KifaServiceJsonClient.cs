@@ -190,7 +190,7 @@ namespace Kifa.Web.Api {
             var target = Get(targetId);
             var link = Get(linkId);
 
-            if (target?.Id == null) {
+            if (target == null) {
                 return LogAndReturn(new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
                     Message = $"Target {targetId} doesn't exist."
@@ -199,11 +199,11 @@ namespace Kifa.Web.Api {
 
             var realTargetId = target.RealId;
 
-            if (link?.Id != null) {
+            if (link != null) {
                 var realLinkId = link.RealId;
                 if (realLinkId == realTargetId) {
                     return LogAndReturn(new KifaActionResult {
-                        Status = KifaActionStatus.BadRequest,
+                        Status = KifaActionStatus.OK,
                         Message = $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
                     });
                 }
