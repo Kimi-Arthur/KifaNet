@@ -151,6 +151,24 @@ public class LinkTests : IDisposable {
         linkedData.Metadata.Linking.Target.Should().Be("test");
     }
 
+    [Fact]
+    public void VirtualItemDisappear() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test"
+        });
+
+        var data = client.Get("test");
+        data.Metadata?.Linking.Should().BeNull();
+
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Should().BeNull();
+    }
+
     public void Dispose() {
         Directory.Delete(folder, true);
     }

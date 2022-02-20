@@ -67,25 +67,18 @@ namespace Kifa.Web.Api {
             KifaActionResult.FromAction(() => {
                 logger.Trace($"Write {ModelId}/{data.Id}: {data}");
                 data = data.Clone();
-                WriteVirtualItems(data);
-                CleanupForWriting(data);
-
-                Write(data);
+                WriteTarget(data, Get(data.Id)?.Metadata?.Linking?.VirtualLinks);
             });
 
-        void WriteVirtualItems(TDataModel data) {
-            var items = data.GetVirtualItems();
-            if (items.Count == 0) {
+        void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks) {
+            var virtualLinks = data.GetVirtualItems();
+            if (virtualLinks.Count == 0 && originalVirtualLinks.Count == 0) {
                 return;
             }
 
-            data.Metadata ??= new DataMetadata();
-            data.Metadata.Linking ??= new LinkingMetadata();
-            data.Metadata.Linking.VirtualLinks ??= new SortedSet<string>();
+            originalVirtualLinks.Except(virtualLinks).ForEach(Remove);
 
-            data.Metadata.Linking.VirtualLinks.Except(items).ForEach(Remove);
-
-            items.Except(data.Metadata.Linking.VirtualLinks).ForEach(item => Write(new TDataModel {
+            virtualLinks.Except(originalVirtualLinks).ForEach(item => Write(new TDataModel {
                 Id = item,
                 Metadata = new DataMetadata {
                     Linking = new LinkingMetadata {
@@ -94,7 +87,11 @@ namespace Kifa.Web.Api {
                 }
             }));
 
-            data.Metadata.Linking.VirtualLinks = items;
+            if (virtualLinks.Count > 0) {
+                data.Metadata ??= new DataMetadata();
+                data.Metadata.Linking ??= new LinkingMetadata();
+                data.Metadata.Linking.VirtualLinks = virtualLinks;
+            }
         }
 
         public override KifaActionResult Update(TDataModel data) =>
@@ -103,10 +100,7 @@ namespace Kifa.Web.Api {
                 JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
                     original);
                 data = original;
-                WriteVirtualItems(data);
-                CleanupForWriting(data);
-
-                Write(data);
+                WriteTarget(data);
             });
 
         // Cleans up data for writing.
@@ -162,7 +156,7 @@ namespace Kifa.Web.Api {
                         links.Remove(nextItem.Id!);
                         linking.Target = null;
 
-                        Set(nextItem);
+                        WriteTarget(nextItem);
 
                         foreach (var link in links.Concat(linking.VirtualLinks ?? new())) {
                             Write(new TDataModel {
@@ -183,7 +177,7 @@ namespace Kifa.Web.Api {
                 } else {
                     linking.Links!.Remove(id);
 
-                    Set(item);
+                    WriteTarget(item);
                 }
             }
 
@@ -255,6 +249,13 @@ namespace Kifa.Web.Api {
             var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{data.Id.Trim('/')}.json";
             MakeParent(path);
             File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
+        }
+
+        void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null) {
+            WriteVirtualItems(data,
+                originalVirtualLinks ?? data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>());
+            CleanupForWriting(data);
+            Write(data);
         }
 
         string? ReadRaw(string id) {
