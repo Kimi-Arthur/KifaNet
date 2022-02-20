@@ -30,7 +30,8 @@ namespace Kifa.Web.Api {
                     using var reader = i.OpenText();
                     return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
                         Defaults.JsonSerializerSettings);
-                }).ExceptNull().Where(i => i.Id != null && !i.Id.StartsWith(DataModel.VirtualItemPrefix))
+                }).ExceptNull()
+                .Where(i => i.Id != null && !i.Id.StartsWith(DataModel.VirtualItemPrefix))
                 .ToDictionary(i => i.Id!, i => i);
 
             return new SortedDictionary<string, TDataModel>(items.ToDictionary(i => i.Key, i => {
@@ -97,8 +98,8 @@ namespace Kifa.Web.Api {
         public override KifaActionResult Update(TDataModel data) =>
             KifaActionResult.FromAction(() => {
                 var original = Get(data.Id);
-                JsonConvert.PopulateObject(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
-                    original);
+                JsonConvert.PopulateObject(
+                    JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
                 data = original;
                 WriteTarget(data);
             });
@@ -204,13 +205,15 @@ namespace Kifa.Web.Api {
                 if (realLinkId == realTargetId) {
                     return LogAndReturn(new KifaActionResult {
                         Status = KifaActionStatus.OK,
-                        Message = $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
+                        Message =
+                            $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
                     });
                 }
 
                 return LogAndReturn(new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
-                    Message = $"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated."
+                    Message =
+                        $"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated."
                 });
             }
 
@@ -249,12 +252,14 @@ namespace Kifa.Web.Api {
         void Write(TDataModel data) {
             var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{data.Id.Trim('/')}.json";
             MakeParent(path);
-            File.WriteAllText(path, JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings) + "\n");
+            File.WriteAllText(path,
+                $"{JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings)}\n");
         }
 
         void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null) {
             WriteVirtualItems(data,
-                originalVirtualLinks ?? data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>());
+                originalVirtualLinks ??
+                data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>());
             CleanupForWriting(data);
             Write(data);
         }

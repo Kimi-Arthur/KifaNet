@@ -25,10 +25,11 @@ public class BasicTests : IDisposable {
     [Fact]
     public void GetTest() {
         Directory.CreateDirectory(folder + "/tests");
-        File.WriteAllText(folder + "/tests/test.json", JsonConvert.SerializeObject(new TestDataModel {
-            Id = "test",
-            Data = "good data"
-        }, Defaults.PrettyJsonSerializerSettings));
+        File.WriteAllText(folder + "/tests/test.json", JsonConvert.SerializeObject(
+            new TestDataModel {
+                Id = "test",
+                Data = "good data"
+            }, Defaults.PrettyJsonSerializerSettings));
 
         var data = client.Get("test");
 
@@ -114,8 +115,10 @@ public class BasicTests : IDisposable {
         client.Link("test", "test1");
         client.Link("test1", "test2");
 
-        client.Get("test").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
-        client.Get("test1").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
+        client.Get("test").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And
+            .Contain("test2");
+        client.Get("test1").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And
+            .Contain("test2");
 
         var data = client.Get("test2");
         data.Id.Should().Be("test2");
@@ -136,8 +139,10 @@ public class BasicTests : IDisposable {
 
         result.Status.Should().Be(KifaActionStatus.OK);
 
-        client.Get("test").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
-        client.Get("test1").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And.Contain("test2");
+        client.Get("test").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And
+            .Contain("test2");
+        client.Get("test1").Metadata.Linking.Links.Should().HaveCount(2).And.Contain("test1").And
+            .Contain("test2");
 
         var data = client.Get("test2");
         data.Id.Should().Be("test2");

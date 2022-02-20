@@ -210,48 +210,49 @@ public class LinkTests : IDisposable {
         client.Link("test", "new_test");
 
         var items = client.List();
-        items.Should().HaveCount(3).And.Contain(new KeyValuePair<string, TestDataModelWithVirtualLinks>[] {
-            new("test", new() {
-                Id = "test",
-                Data = "very good data",
-                Metadata = new() {
-                    Linking = new() {
-                        Links = new() {
-                            "new_test"
-                        },
-                        VirtualLinks = new() {
-                            "/$/very good data"
+        items.Should().HaveCount(3).And.Contain(
+            new KeyValuePair<string, TestDataModelWithVirtualLinks>[] {
+                new("test", new() {
+                    Id = "test",
+                    Data = "very good data",
+                    Metadata = new() {
+                        Linking = new() {
+                            Links = new() {
+                                "new_test"
+                            },
+                            VirtualLinks = new() {
+                                "/$/very good data"
+                            }
                         }
                     }
-                }
-            }),
-            new("new_test", new() {
-                Id = "new_test",
-                Data = "very good data",
-                Metadata = new() {
-                    Linking = new() {
-                        Target = "test",
-                        Links = new() {
-                            "new_test"
-                        },
-                        VirtualLinks = new() {
-                            "/$/very good data"
+                }),
+                new("new_test", new() {
+                    Id = "new_test",
+                    Data = "very good data",
+                    Metadata = new() {
+                        Linking = new() {
+                            Target = "test",
+                            Links = new() {
+                                "new_test"
+                            },
+                            VirtualLinks = new() {
+                                "/$/very good data"
+                            }
                         }
                     }
-                }
-            }),
-            new("test1", new() {
-                Id = "test1",
-                Data = "ok data",
-                Metadata = new() {
-                    Linking = new() {
-                        VirtualLinks = new() {
-                            "/$/ok data"
+                }),
+                new("test1", new() {
+                    Id = "test1",
+                    Data = "ok data",
+                    Metadata = new() {
+                        Linking = new() {
+                            VirtualLinks = new() {
+                                "/$/ok data"
+                            }
                         }
                     }
-                }
-            })
-        });
+                })
+            });
     }
 
     public void Dispose() {

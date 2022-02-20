@@ -8,11 +8,15 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Kifa.Web.Api.Controllers {
     [ApiController]
     public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase
-        where TDataModel : DataModel, new() where TServiceClient : KifaServiceClient<TDataModel>, new() {
+        where TDataModel : DataModel, new()
+        where TServiceClient : KifaServiceClient<TDataModel>, new() {
         static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
 
         static readonly TimeSpan[] RefreshIntervals = {
-            TimeSpan.FromDays(1), TimeSpan.FromDays(10), TimeSpan.FromDays(40), TimeSpan.FromDays(400)
+            TimeSpan.FromDays(1),
+            TimeSpan.FromDays(10),
+            TimeSpan.FromDays(40),
+            TimeSpan.FromDays(400)
         };
 
         protected readonly TServiceClient Client = new();
@@ -82,7 +86,8 @@ namespace Kifa.Web.Api.Controllers {
                 return true;
             }
 
-            var stableDuration = value.Metadata.Freshness.LastRefreshed - value.Metadata.Freshness.LastUpdated;
+            var stableDuration = value.Metadata.Freshness.LastRefreshed -
+                                 value.Metadata.Freshness.LastUpdated;
             var newDuration = DateTimeOffset.UtcNow - value.Metadata.Freshness.LastRefreshed;
 
             return RefreshIntervals.Reverse().FirstOrDefault(interval => interval < stableDuration)
@@ -122,7 +127,9 @@ namespace Kifa.Web.Api.Controllers {
 
         [HttpPost("^")]
         public KifaApiActionResult Link([FromBody] List<string> ids) =>
-            ids.Skip(1).Select(id => Client.Link(Uri.UnescapeDataString(ids[0]), Uri.UnescapeDataString(id)))
+            ids.Skip(1)
+                .Select(id =>
+                    Client.Link(Uri.UnescapeDataString(ids[0]), Uri.UnescapeDataString(id)))
                 .Aggregate(new KifaBatchActionResult(), (s, x) => s.Add(x));
 
         // DELETE api/values/5
@@ -136,12 +143,14 @@ namespace Kifa.Web.Api.Controllers {
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpGet("$refresh")]
-        public KifaApiActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
+        public KifaApiActionResult RefreshGet([FromQuery] RefreshRequest request) =>
+            Refresh(request);
 
         // POST api/values/$refresh?id={id}
         // TODO: should be generated.
         [HttpPost("$refresh")]
-        public KifaApiActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
+        public KifaApiActionResult RefreshPost([FromBody] RefreshRequest request) =>
+            Refresh(request);
 
         public class RefreshRequest {
             public string Id { get; set; }
@@ -185,6 +194,7 @@ namespace Kifa.Web.Api.Controllers {
             };
 
         public IActionResult Convert() =>
-            ((IConvertToActionResult) new ActionResult<KifaActionResult<TValue>>(ActionResult)).Convert();
+            ((IConvertToActionResult) new ActionResult<KifaActionResult<TValue>>(ActionResult))
+            .Convert();
     }
 }

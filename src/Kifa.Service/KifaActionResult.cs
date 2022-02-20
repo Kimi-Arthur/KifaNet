@@ -40,9 +40,11 @@ namespace Kifa.Service {
             }
         }
 
-        public KifaActionResult And(KifaActionResult nextResult) => Status == KifaActionStatus.OK ? nextResult : this;
+        public KifaActionResult And(KifaActionResult nextResult) =>
+            Status == KifaActionStatus.OK ? nextResult : this;
 
-        public KifaActionResult And(Action nextAction) => Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
+        public KifaActionResult And(Action nextAction) =>
+            Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
 
         public KifaActionResult And(Func<KifaActionResult> nextAction) =>
             Status == KifaActionStatus.OK ? nextAction() : this;
@@ -112,14 +114,17 @@ namespace Kifa.Service {
     }
 
     public static class KifaActionResultLogger {
-        public static KifaActionResult LogResult(this Logger logger, KifaActionResult result, string action) {
-            logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
+        public static KifaActionResult LogResult(this Logger logger, KifaActionResult result,
+            string action) {
+            logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn,
+                $"{action}: {result}");
             return result;
         }
 
-        public static KifaActionResult<TValue> LogResult<TValue>(this Logger logger, KifaActionResult<TValue> result,
-            string action) {
-            logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn, $"{action}: {result}");
+        public static KifaActionResult<TValue> LogResult<TValue>(this Logger logger,
+            KifaActionResult<TValue> result, string action) {
+            logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn,
+                $"{action}: {result}");
             return result;
         }
     }

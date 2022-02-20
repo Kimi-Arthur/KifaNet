@@ -15,9 +15,12 @@ namespace Kifa.Tools.DataUtil {
     public interface DataChef {
         public static DataChef GetChef(string modelId, string content = null) {
             return (modelId ?? GetYamlType(content)) switch {
-                MemriseCourse.ModelId => new DataChef<MemriseCourse, MemriseCourseRestServiceClient>(),
-                GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
-                GoetheWordList.ModelId => new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
+                MemriseCourse.ModelId =>
+                    new DataChef<MemriseCourse, MemriseCourseRestServiceClient>(),
+                GoetheGermanWord.ModelId =>
+                    new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
+                GoetheWordList.ModelId =>
+                    new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
                 GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
                 TvShow.ModelId => new DataChef<TvShow, TvShowRestServiceClient>(),
                 Anime.ModelId => new DataChef<Anime, AnimeRestServiceClient>(),
@@ -25,13 +28,16 @@ namespace Kifa.Tools.DataUtil {
                 User.ModelId => new DataChef<User, UserRestServiceClient>(),
                 Event.ModelId => new DataChef<Event, EventRestServiceClient>(),
                 Counter.ModelId => new DataChef<Counter, CounterRestServiceClient>(),
-                SwisscomAccount.ModelId => new DataChef<SwisscomAccount, SwisscomAccountRestServiceClient>(),
+                SwisscomAccount.ModelId =>
+                    new DataChef<SwisscomAccount, SwisscomAccountRestServiceClient>(),
                 _ => null
             };
         }
 
         static string GetYamlType(string s) {
-            return s == null || !s.StartsWith("#") ? null : s[1..s.IndexOf("\n", StringComparison.Ordinal)].Trim();
+            return s == null || !s.StartsWith("#")
+                ? null
+                : s[1..s.IndexOf("\n", StringComparison.Ordinal)].Trim();
         }
 
         string ModelId { get; }
@@ -41,7 +47,8 @@ namespace Kifa.Tools.DataUtil {
         KifaActionResult Link(string target, string link);
     }
 
-    public class DataChef<TDataModel, TClient> : DataChef where TDataModel : DataModel<TDataModel>, new()
+    public class DataChef<TDataModel, TClient> : DataChef
+        where TDataModel : DataModel<TDataModel>, new()
         where TClient : KifaServiceClient<TDataModel>, new() {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -59,15 +66,18 @@ namespace Kifa.Tools.DataUtil {
         }
 
         public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
-            var items = new Deserializer().Deserialize<List<TDataModel>>(data).Select(item => item.Id).ToList();
+            var items = new Deserializer().Deserialize<List<TDataModel>>(data)
+                .Select(item => item.Id).ToList();
 
-            var updatedItems = getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
+            var updatedItems =
+                getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
 
             var serializerBuilder = new SerializerBuilder().WithIndentedSequences()
                 .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
             if (compact) {
                 serializerBuilder =
-                    serializerBuilder.WithEventEmitter(next => new FlowStyleScalarSequenceEmitter(next));
+                    serializerBuilder.WithEventEmitter(next =>
+                        new FlowStyleScalarSequenceEmitter(next));
             }
 
             return new KifaActionResult<string>(

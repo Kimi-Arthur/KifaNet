@@ -3,7 +3,8 @@ using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.DataUtil.Commands {
-    [Verb("refresh", HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]
+    [Verb("refresh",
+        HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]
     class RefreshCommand : KifaCommand {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 

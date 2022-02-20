@@ -35,12 +35,14 @@ namespace Kifa.Service {
         public abstract SortedDictionary<string, TDataModel> List();
         public abstract TDataModel? Get(string id);
 
-        public virtual List<TDataModel> Get(List<string> ids) => ids.Select(Get).ExceptNull().ToList();
+        public virtual List<TDataModel> Get(List<string> ids) =>
+            ids.Select(Get).ExceptNull().ToList();
 
         public abstract KifaActionResult Set(TDataModel data);
 
         public virtual KifaActionResult Set(List<TDataModel> data) =>
-            data.Select(Set).Aggregate(new KifaBatchActionResult(), (result, actionResult) => result.Add(actionResult));
+            data.Select(Set).Aggregate(new KifaBatchActionResult(),
+                (result, actionResult) => result.Add(actionResult));
 
         public abstract KifaActionResult Update(TDataModel data);
 
