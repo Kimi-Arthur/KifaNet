@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using FluentAssertions;
 using Kifa.Service;
@@ -272,7 +273,60 @@ public class BasicTests : IDisposable {
         linkedData.Data.Should().Be("ok data");
     }
 
+    [Fact]
+    public void ListTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Set(new TestDataModel {
+            Id = "test1",
+            Data = "ok data"
+        });
+
+        client.Link("test", "new_test");
+
+        var items = client.List();
+        items.Should().HaveCount(3).And.Contain(new KeyValuePair<string, TestDataModel>[] {
+            new("test", new() {
+                Id = "test",
+                Data = "very good data",
+                Metadata = new() {
+                    Linking = new() {
+                        Links = new() {
+                            "new_test"
+                        }
+                    }
+                }
+            }),
+            new("new_test", new() {
+                Id = "new_test",
+                Data = "very good data",
+                Metadata = new() {
+                    Linking = new() {
+                        Target = "test",
+                        Links = new() {
+                            "new_test"
+                        }
+                    }
+                }
+            }),
+            new("test1", new() {
+                Id = "test1",
+                Data = "ok data"
+            })
+        });
+    }
+
+    [Fact]
+    public void ListEmptyTest() {
+        client.List().Should().BeEmpty();
+    }
+
     public void Dispose() {
-        Directory.Delete(folder, true);
+        if (Directory.Exists(folder)) {
+            Directory.Delete(folder, true);
+        }
     }
 }

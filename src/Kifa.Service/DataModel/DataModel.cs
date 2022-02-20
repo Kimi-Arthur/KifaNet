@@ -68,6 +68,10 @@ namespace Kifa.Service {
         }
 
         public override string ToString() => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
+
+        public override int GetHashCode() => ToString().GetHashCode();
+
+        public override bool Equals(object? obj) => GetType().IsInstanceOfType(obj) && ToString() == obj?.ToString();
     }
 
     public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {

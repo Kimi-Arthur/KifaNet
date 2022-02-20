@@ -195,7 +195,68 @@ public class LinkTests : IDisposable {
         linkedData.Data.Should().Be("ok data");
     }
 
+    [Fact]
+    public void ListTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test1",
+            Data = "ok data"
+        });
+
+        client.Link("test", "new_test");
+
+        var items = client.List();
+        items.Should().HaveCount(3).And.Contain(new KeyValuePair<string, TestDataModelWithVirtualLinks>[] {
+            new("test", new() {
+                Id = "test",
+                Data = "very good data",
+                Metadata = new() {
+                    Linking = new() {
+                        Links = new() {
+                            "new_test"
+                        },
+                        VirtualLinks = new() {
+                            "/$/very good data"
+                        }
+                    }
+                }
+            }),
+            new("new_test", new() {
+                Id = "new_test",
+                Data = "very good data",
+                Metadata = new() {
+                    Linking = new() {
+                        Target = "test",
+                        Links = new() {
+                            "new_test"
+                        },
+                        VirtualLinks = new() {
+                            "/$/very good data"
+                        }
+                    }
+                }
+            }),
+            new("test1", new() {
+                Id = "test1",
+                Data = "ok data",
+                Metadata = new() {
+                    Linking = new() {
+                        VirtualLinks = new() {
+                            "/$/ok data"
+                        }
+                    }
+                }
+            })
+        });
+    }
+
     public void Dispose() {
-        Directory.Delete(folder, true);
+        if (Directory.Exists(folder)) {
+            Directory.Delete(folder, true);
+        }
     }
 }
