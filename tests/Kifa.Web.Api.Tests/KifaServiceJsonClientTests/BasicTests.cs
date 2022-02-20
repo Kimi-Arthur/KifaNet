@@ -51,6 +51,23 @@ public class BasicTests : IDisposable {
     }
 
     [Fact]
+    public void LinkTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+
+        var data = client.Get("new_test");
+
+        data.Id.Should().Be("new_test");
+        data.Data.Should().Be("very good data");
+
+        data.Metadata.Linking.Links.Should().HaveCount(1).And.Contain("new_test");
+    }
+
+    [Fact]
     public void DeleteTest() {
         client.Set(new TestDataModel {
             Id = "test",
@@ -77,6 +94,46 @@ public class BasicTests : IDisposable {
         var data = client.Get("test");
         Assert.Equal("test", data.Id);
         Assert.Equal("very good data", data.Data);
+    }
+
+    [Fact]
+    public void DeleteTargetTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+        client.Delete("test");
+
+        client.Get("test").Should().BeNull();
+
+        var data = client.Get("new_test");
+
+        data.Id.Should().Be("new_test");
+        data.Data.Should().Be("very good data");
+
+        data.Metadata.Linking.Should().BeNull();
+    }
+
+    [Fact]
+    public void DeleteLinkTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+        client.Delete("new_test");
+
+        client.Get("new_test").Should().BeNull();
+
+        var data = client.Get("test");
+
+        data.Id.Should().Be("test");
+        data.Data.Should().Be("very good data");
+
+        data.Metadata.Linking.Should().BeNull();
     }
 
     public void Dispose() {
