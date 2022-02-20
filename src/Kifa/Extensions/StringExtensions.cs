@@ -8,11 +8,11 @@ namespace Kifa {
     public static class StringExtensions {
         static readonly Regex NumberPattern = new Regex(@"\d+");
 
-        static readonly Dictionary<string, long> SymbolMap = "KMGTPEZY".Select(x => x.ToString()).Prepend("")
-            .Select((value, index) => (value, factor: 1L << 10 * index))
+        static readonly Dictionary<string, long> SymbolMap = "KMGTPEZY".Select(x => x.ToString())
+            .Prepend("").Select((value, index) => (value, factor: 1L << 10 * index))
             .ToDictionary(item => item.value, item => item.factor);
 
-        static readonly Dictionary<string, string> CharacterMapping = new Dictionary<string, string> {
+        static readonly Dictionary<string, string> SafeCharacterMapping = new() {
             ["/"] = "／",
             ["\\"] = "＼",
             [":"] = "：",
@@ -56,7 +56,8 @@ namespace Kifa {
 
             var match = new Regex(@"^(\d+)([^B])B?$").Match(data.ToUpper());
 
-            return long.Parse(match.Groups[1].Value) * SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
+            return long.Parse(match.Groups[1].Value) *
+                   SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
         }
 
         public static byte[] ParseHexString(this string hexString) {
@@ -78,21 +79,25 @@ namespace Kifa {
             }
 
             if (timeSpanString.EndsWith("hr")) {
-                return TimeSpan.FromHours(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 2)));
+                return TimeSpan.FromHours(
+                    double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 2)));
             }
 
             if (timeSpanString.EndsWith("min")) {
-                return TimeSpan.FromMinutes(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 3)));
+                return TimeSpan.FromMinutes(
+                    double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 3)));
             }
 
             if (timeSpanString.EndsWith("s")) {
-                return TimeSpan.FromSeconds(double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 1)));
+                return TimeSpan.FromSeconds(
+                    double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 1)));
             }
 
             return TimeSpan.FromSeconds(double.Parse(timeSpanString));
         }
 
-        public static DateTimeOffset ParseDateTimeOffset(this string dateTimeOffsetString, TimeZoneInfo timeZone) {
+        public static DateTimeOffset ParseDateTimeOffset(this string dateTimeOffsetString,
+            TimeZoneInfo timeZone) {
             var dateTime = DateTime.Parse(dateTimeOffsetString);
             return new DateTimeOffset(dateTime, timeZone.GetUtcOffset(dateTime));
         }
@@ -104,16 +109,18 @@ namespace Kifa {
 
         public static string NormalizeFileName(this string fileName) {
             var normalizedFileName = fileName.Normalize(NormalizationForm.FormC).Trim();
-            foreach (var mapping in CharacterMapping) {
+            foreach (var mapping in SafeCharacterMapping) {
                 normalizedFileName = normalizedFileName.Replace(mapping.Key, mapping.Value);
             }
 
             return normalizedFileName;
         }
 
-        public static string FromBase64(this string text) => Encoding.UTF8.GetString(Convert.FromBase64String(text));
+        public static string FromBase64(this string text) =>
+            Encoding.UTF8.GetString(Convert.FromBase64String(text));
 
-        public static string ToBase64(this string text) => Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
+        public static string ToBase64(this string text) =>
+            Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
 
         public static bool ContainsSequence(this string text, string search) {
             var index = 0;

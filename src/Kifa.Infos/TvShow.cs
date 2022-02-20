@@ -40,7 +40,8 @@ namespace Kifa.Infos {
         public int? EpisodeIdWidth { get; set; }
 
         public override bool? Fill() {
-            var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ?? 0 + Specials?.Count ?? 0;
+            var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
+                                  0 + Specials?.Count ?? 0;
 
             var tmdb = new TmdbClient();
             var series = tmdb.GetSeries(TmdbId, Language.Code);
@@ -70,7 +71,9 @@ namespace Kifa.Infos {
                     Seasons.Add(new Season {
                         AirDate = seasonInfo.AirDate,
                         Id = seasonInfo.SeasonNumber,
-                        Title = IsStandardSeasonName(seasonName, seasonInfo.SeasonNumber, Language) ? null : seasonName,
+                        Title = IsStandardSeasonName(seasonName, seasonInfo.SeasonNumber, Language)
+                            ? null
+                            : seasonName,
                         Overview = seasonInfo.Overview,
                         Episodes = episodes
                     });
@@ -79,13 +82,15 @@ namespace Kifa.Infos {
                 }
             }
 
-            var newEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ?? 0 + Specials?.Count ?? 0;
+            var newEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
+                                  0 + Specials?.Count ?? 0;
 
             return newEpisodeCount != oldEpisodeCount;
         }
 
         static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {
-            return seasonName == StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
+            return seasonName ==
+                   StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
         }
 
         public string Format(Season season, Episode episode) {
@@ -98,13 +103,13 @@ namespace Kifa.Infos {
             var episode = episodes.First();
             var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
             var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
-            var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
+            var episodeIdWidth =
+                episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
-            var sid = season.Id.ToString();
-            sid = new string('0', Math.Max(seasonIdWidth - sid.Length, 0)) + sid;
+            var sid = season.Id.ToString().PadLeft(seasonIdWidth, '0');
 
             var eids = episodes.Select(e => e.Id.ToString())
-                .Select(eid => new string('0', Math.Max(episodeIdWidth - eid.Length, 0)) + eid);
+                .Select(eid => eid.PadLeft(episodeIdWidth, '0'));
 
             var episodeTitle = GetTitle(episodes.Select(e => e.Title).ToList());
 
@@ -112,17 +117,21 @@ namespace Kifa.Infos {
             switch (patternId) {
                 case "multi_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/Season {season.Id} {season.Title}".TrimEnd() + $" ({season.AirDate.Year})" +
-                           $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}".TrimEnd();
+                           $"/Season {season.Id} {season.Title}".TrimEnd() +
+                           $" ({season.AirDate.Year})" +
+                           $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}"
+                               .TrimEnd();
                 case "single_season":
                     return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                           $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}".TrimEnd();
+                           $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}"
+                               .TrimEnd();
                 default:
                     return "Unexpected!";
             }
         }
 
-        static string GetTitle(IReadOnlyList<string> titles) => GetSharedTitle(titles) ?? string.Join(" ", titles);
+        static string GetTitle(IReadOnlyList<string> titles) =>
+            GetSharedTitle(titles) ?? string.Join(" ", titles);
 
         static string GetSharedTitle(IReadOnlyList<string> titles) {
             if (titles.Count < 2) {
@@ -179,7 +188,8 @@ namespace Kifa.Infos {
         public string Format(string id, int seasonId, List<int> episodeIds) {
             var show = Get(id);
             var season = show.Seasons.First(s => s.Id == seasonId);
-            var episodes = episodeIds.Select(episodeId => season.Episodes.First(e => e.Id == episodeId)).ToList();
+            var episodes = episodeIds
+                .Select(episodeId => season.Episodes.First(e => e.Id == episodeId)).ToList();
             return show.Format(season, episodes);
         }
     }
