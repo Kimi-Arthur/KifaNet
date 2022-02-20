@@ -136,6 +136,65 @@ public class BasicTests : IDisposable {
         data.Metadata.Linking.Should().BeNull();
     }
 
+    [Fact]
+    public void UpdateTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Update(new TestDataModel {
+            Id = "test",
+            Data = "ok data"
+        });
+
+        var data = client.Get("test");
+        data.Id.Should().Be("test");
+        data.Data.Should().Be("ok data");
+    }
+
+    [Fact]
+    public void UpdateViaTargetTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+
+        client.Update(new TestDataModel {
+            Id = "test",
+            Data = "ok data"
+        });
+
+        var data = client.Get("new_test");
+        data.Id.Should().Be("new_test");
+        data.Data.Should().Be("ok data");
+    }
+
+    [Fact]
+    public void UpdateViaLinkTest() {
+        client.Set(new TestDataModel {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Link("test", "new_test");
+
+        client.Update(new TestDataModel {
+            Id = "new_test",
+            Data = "ok data"
+        });
+
+        var data = client.Get("test");
+        data.Id.Should().Be("test");
+        data.Data.Should().Be("ok data");
+
+        var linkedData = client.Get("new_test");
+        linkedData.Id.Should().Be("new_test");
+        linkedData.Data.Should().Be("ok data");
+    }
+
     public void Dispose() {
         Directory.Delete(folder, true);
     }

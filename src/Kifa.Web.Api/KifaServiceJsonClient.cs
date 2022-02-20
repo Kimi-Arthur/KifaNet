@@ -116,6 +116,7 @@ namespace Kifa.Web.Api {
                     linking.Links = null;
                 }
 
+                // This won't be empty due to upstream calling. But will keep for consistency.
                 if (linking.VirtualLinks?.Count == 0) {
                     linking.VirtualLinks = null;
                 }

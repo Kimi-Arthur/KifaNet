@@ -152,7 +152,7 @@ public class LinkTests : IDisposable {
     }
 
     [Fact]
-    public void VirtualItemDisappear() {
+    public void VirtualItemDisappearTest() {
         client.Set(new TestDataModelWithVirtualLinks {
             Id = "test",
             Data = "very good data"
@@ -167,6 +167,32 @@ public class LinkTests : IDisposable {
 
         var linkedData = client.Get("/$/very good data");
         linkedData.Should().BeNull();
+    }
+
+    [Fact]
+    public void VirtualItemUpdateTest() {
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "very good data"
+        });
+
+        client.Update(new TestDataModelWithVirtualLinks {
+            Id = "test",
+            Data = "ok data"
+        });
+
+        var data = client.Get("test");
+        data.Metadata.Linking.Target.Should().BeNull();
+        data.Metadata.Linking.Links.Should().BeNull();
+        data.Metadata.Linking.VirtualLinks.Should().HaveCount(1).And.Contain("/$/ok data");
+
+        var linkedData = client.Get("/$/very good data");
+        linkedData.Should().BeNull();
+
+        linkedData = client.Get("/$/ok data");
+        linkedData.Metadata.Linking.Target.Should().Be("test");
+        linkedData.Id.Should().Be("/$/ok data");
+        linkedData.Data.Should().Be("ok data");
     }
 
     public void Dispose() {
