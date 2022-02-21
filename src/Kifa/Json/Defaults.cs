@@ -8,7 +8,7 @@ using Newtonsoft.Json.Serialization;
 namespace Kifa {
     public static class Defaults {
         public static readonly JsonSerializerSettings JsonSerializerSettings = new() {
-            DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffffzzz",
+            DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             ContractResolver = new OrderedContractResolver {
                 NamingStrategy = new SnakeCaseNamingStrategy()
@@ -24,7 +24,7 @@ namespace Kifa {
         };
 
         public static readonly JsonSerializerSettings PrettyJsonSerializerSettings = new() {
-            DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffffzzz",
+            DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             Formatting = Formatting.Indented,
             ContractResolver = new OrderedContractResolver {
