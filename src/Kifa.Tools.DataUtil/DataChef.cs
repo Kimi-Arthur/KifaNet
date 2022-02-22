@@ -56,13 +56,14 @@ namespace Kifa.Tools.DataUtil {
 
         static KifaServiceClient<TDataModel> Client => client ??= new TClient();
 
+        // TODO: Should not rely implementation detail. 
         public string ModelId => Client.ModelId;
 
         public KifaActionResult Import(string data) {
             var items = new Deserializer().Deserialize<List<TDataModel>>(data);
 
             return logger.LogResult(Client.Update(items),
-                $"Update {Client.ModelId}({string.Join(", ", items.Select(item => item.Id))})");
+                $"Update {ModelId}({string.Join(", ", items.Select(item => item.Id))})");
         }
 
         public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
