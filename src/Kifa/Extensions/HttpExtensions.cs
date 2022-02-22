@@ -14,19 +14,25 @@ namespace Kifa {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         public static string GetString(this HttpResponseMessage response) {
-            using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result, Encoding.GetEncoding("UTF-8"));
+            using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
+                Encoding.GetEncoding("UTF-8"));
             var data = sr.ReadToEnd();
             logger.Trace($"Response ({response.StatusCode:D}): {data}");
             return data;
         }
 
-        public static JToken GetJToken(this HttpResponseMessage response) => JToken.Parse(GetString(response));
+        public static JToken GetJToken(this HttpResponseMessage response) =>
+            JToken.Parse(GetString(response));
 
         static T? GetObject<T>(this HttpResponseMessage response) =>
             JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
         public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request) {
             logger.Trace(request);
+            if (request.Content != null) {
+                logger.Trace($"Content: {request.Content.ReadAsStringAsync().Result}");
+            }
+
             using var response = client.Send(request);
             return response.GetObject<T>();
         }
@@ -43,7 +49,8 @@ namespace Kifa {
             return GetHeaders(client, url).Content.Headers.ContentRange?.Length;
         }
 
-        public static HttpResponseMessage SendWithRetry(this HttpClient client, Func<HttpRequestMessage> request) =>
+        public static HttpResponseMessage SendWithRetry(this HttpClient client,
+            Func<HttpRequestMessage> request) =>
             Retry.Run(() => {
                 var task = client.SendAsync(request());
                 task.Wait();
@@ -53,7 +60,8 @@ namespace Kifa {
 
                 throw new Exception($"Unexpected task status {task.Status}");
             }, (ex, index) => {
-                if (index >= 5 || ex is HttpRequestException && ex.InnerException is SocketException socketException &&
+                if (index >= 5 || ex is HttpRequestException &&
+                    ex.InnerException is SocketException socketException &&
                     socketException.Message == "Device not configured") {
                     throw ex;
                 }
@@ -68,12 +76,14 @@ namespace Kifa {
                 var result = client.SendAsync(request()).Result.GetJToken();
 
                 if (validate != null && !validate(result)) {
-                    throw new InvalidResponseException("Response body does not indicate successful status.");
+                    throw new InvalidResponseException(
+                        "Response body does not indicate successful status.");
                 }
 
                 return result;
             }, (ex, index) => {
-                if (index >= 5 || ex is HttpRequestException && ex.InnerException is SocketException socketException &&
+                if (index >= 5 || ex is HttpRequestException &&
+                    ex.InnerException is SocketException socketException &&
                     socketException.Message == "Device not configured") {
                     throw ex;
                 }
