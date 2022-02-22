@@ -171,8 +171,8 @@ namespace Kifa.Service {
                     HandleException(ex, i,
                         $"Failure in DELETE {ModelId}({string.Join(", ", ids)})")));
 
-        public void Call(string action, object? parameters = null) =>
-            Call<object>(action, parameters);
+        public KifaActionResult Call(string action, object? parameters = null) =>
+            KifaActionResult.FromAction(() => Call<object>(action, parameters));
 
         public TResponse Call<TResponse>(string action, object? parameters = null) {
             return Retry.Run(() => {

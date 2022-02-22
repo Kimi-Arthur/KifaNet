@@ -220,8 +220,8 @@ namespace Kifa.IO {
 
     public interface FileInformationServiceClient : KifaServiceClient<FileInformation> {
         List<string> ListFolder(string folder, bool recursive = false);
-        void AddLocation(string id, string location, bool verified = false);
-        void RemoveLocation(string id, string location);
+        KifaActionResult AddLocation(string id, string location, bool verified = false);
+        KifaActionResult RemoveLocation(string id, string location);
     }
 
     public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
@@ -229,17 +229,17 @@ namespace Kifa.IO {
         public List<string> ListFolder(string folder, bool recursive = false) =>
             Call<List<string>>("list_folder", new Dictionary<string, object> {
                 ["folder"] = folder,
-                ["recursive"] = recursive ? "1" : ""
+                ["recursive"] = recursive
             });
 
-        public void AddLocation(string id, string location, bool verified = false) =>
+        public KifaActionResult AddLocation(string id, string location, bool verified = false) =>
             Call("add_location", new Dictionary<string, object> {
                 ["id"] = id,
                 ["location"] = location,
                 ["verified"] = verified
             });
 
-        public void RemoveLocation(string id, string location) =>
+        public KifaActionResult RemoveLocation(string id, string location) =>
             Call("remove_location", new Dictionary<string, object> {
                 ["id"] = id,
                 ["location"] = location
