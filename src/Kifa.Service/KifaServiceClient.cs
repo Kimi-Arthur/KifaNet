@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using NLog;
 
 namespace Kifa.Service {
@@ -23,14 +24,15 @@ namespace Kifa.Service {
         where TDataModel : DataModel {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        readonly string modelId;
-
         protected BaseKifaServiceClient() {
             var typeInfo = typeof(TDataModel);
-            modelId = (string) typeInfo.GetField("ModelId")?.GetValue(null)!;
+            ModelId = (string) typeInfo.GetField("ModelId")?.GetValue(null)!;
+            Properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(property => property.CanRead && property.CanWrite).ToList();
         }
 
-        public string ModelId => modelId;
+        public string ModelId { get; }
+        protected List<PropertyInfo> Properties { get; }
 
         public abstract SortedDictionary<string, TDataModel> List();
         public abstract TDataModel? Get(string id);

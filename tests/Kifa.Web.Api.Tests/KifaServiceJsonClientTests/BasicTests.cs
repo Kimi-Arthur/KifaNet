@@ -12,6 +12,8 @@ public class TestDataModel : DataModel<TestDataModel> {
     public const string ModelId = "tests";
 
     public string? Data { get; set; }
+
+    public List<string>? ListData { get; set; }
 }
 
 public class BasicTests : IDisposable {
@@ -223,17 +225,26 @@ public class BasicTests : IDisposable {
     public void UpdateTest() {
         client.Set(new TestDataModel {
             Id = "test",
-            Data = "very good data"
+            Data = "very good data",
+            ListData = new List<string> {
+                "abc",
+                "bcd"
+            }
         });
 
         client.Update(new TestDataModel {
             Id = "test",
-            Data = "ok data"
+            Data = "ok data",
+            ListData = new List<string> {
+                "bcd",
+                "efg"
+            }
         });
 
         var data = client.Get("test");
         data.Id.Should().Be("test");
         data.Data.Should().Be("ok data");
+        data.ListData.Should().HaveCount(2).And.ContainInOrder(new[] { "bcd", "efg" });
     }
 
     [Fact]

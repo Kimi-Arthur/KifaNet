@@ -66,7 +66,7 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Set(TDataModel data) =>
             KifaActionResult.FromAction(() => {
-                logger.Trace($"Write {ModelId}/{data.Id}: {data}");
+                logger.Trace($"Set {ModelId}/{data.Id}: {data}");
                 data = data.Clone();
                 WriteTarget(data, Get(data.Id)?.Metadata?.Linking?.VirtualLinks);
             });
@@ -97,9 +97,14 @@ namespace Kifa.Web.Api {
 
         public override KifaActionResult Update(TDataModel data) =>
             KifaActionResult.FromAction(() => {
-                var original = Get(data.Id);
-                JsonConvert.PopulateObject(
-                    JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings), original);
+                logger.Trace($"Update {ModelId}/{data.Id}: {data}");
+                var original = Get(data.Id) ?? new TDataModel();
+                foreach (var property in Properties) {
+                    if (property.GetValue(data) != null) {
+                        property.SetValue(original, property.GetValue(data));
+                    }
+                }
+
                 data = original;
                 WriteTarget(data);
             });
