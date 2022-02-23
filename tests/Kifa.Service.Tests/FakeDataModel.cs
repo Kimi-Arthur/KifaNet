@@ -7,7 +7,8 @@ namespace Kifa.Service.Tests {
 
         static FakeDataModelServiceClient client;
 
-        public static FakeDataModelServiceClient Client => client ??= new FakeDataModelRestServiceClient();
+        public static FakeDataModelServiceClient Client =>
+            client ??= new FakeDataModelRestServiceClient();
 
         public int? IntPROP { get; set; }
 
@@ -23,14 +24,16 @@ namespace Kifa.Service.Tests {
     class FakeSubDataModel {
         public string SubProp1 { get; set; }
 
-        [JsonProperty("sub_prop2")] public List<string> Sub2 { get; set; }
+        [JsonProperty("sub_prop2")]
+        public List<string> Sub2 { get; set; }
     }
 
     interface FakeDataModelServiceClient : KifaServiceClient<FakeDataModel> {
         void Reset();
     }
 
-    class FakeDataModelRestServiceClient : KifaServiceRestClient<FakeDataModel>, FakeDataModelServiceClient {
+    class FakeDataModelRestServiceClient : KifaServiceRestClient<FakeDataModel>,
+        FakeDataModelServiceClient {
         public void Reset() => Call<FakeDataModel>("reset");
     }
 }
