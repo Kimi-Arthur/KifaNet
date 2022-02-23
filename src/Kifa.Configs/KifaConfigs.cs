@@ -9,11 +9,18 @@ namespace Kifa.Configs {
     public static class KifaConfigs {
         static string configFilePath;
 
-        static readonly Deserializer deserializer = new Deserializer();
+        static readonly IDeserializer deserializer = new DeserializerBuilder()
+            .IgnoreUnmatchedProperties().Build();
+
         static string name => AppDomain.CurrentDomain.FriendlyName;
 
         static List<string> ConfigFilePaths =>
-            new() {$"~/.{name}.yaml", "~/.kimily.yaml", $"/etc/{name}.yaml", "/etc/kimily.yaml"};
+            new() {
+                $"~/.{name}.yaml",
+                "~/.kimily.yaml",
+                $"/etc/{name}.yaml",
+                "/etc/kimily.yaml"
+            };
 
         static string ConfigFilePath {
             get {
@@ -46,7 +53,8 @@ namespace Kifa.Configs {
             }
         }
 
-        public static void LoadFromStream(Stream stream, Dictionary<string, PropertyInfo> properties) {
+        public static void LoadFromStream(Stream stream,
+            Dictionary<string, PropertyInfo> properties) {
             var yaml = new YamlStream();
             using (var sr = new StreamReader(stream)) {
                 yaml.Load(sr);
@@ -81,7 +89,8 @@ namespace Kifa.Configs {
             return properties;
         }
 
-        static void Apply(YamlMappingNode node, string prefix, IReadOnlyDictionary<string, PropertyInfo> properties) {
+        static void Apply(YamlMappingNode node, string prefix,
+            IReadOnlyDictionary<string, PropertyInfo> properties) {
             foreach (var p in node) {
                 if (p.Value == null) {
                     continue;
@@ -90,7 +99,8 @@ namespace Kifa.Configs {
                 var id = $"{prefix}{((YamlScalarNode) p.Key).Value}";
                 if (properties.TryGetValue(id, out var prop)) {
                     var value = deserializer.Deserialize(
-                        new YamlNodeParser(YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
+                        new YamlNodeParser(
+                            YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
                         prop.PropertyType);
                     if (value == null) {
                         Console.WriteLine($"Cannot parse for {id}");
