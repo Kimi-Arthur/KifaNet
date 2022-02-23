@@ -1,9 +1,8 @@
 using System;
 using System.IO;
 using System.Threading;
-using Kifa.Cloud.GoogleDrive;
+using Kifa.Configs;
 using Kifa.IO;
-using Kifa.Service;
 using Xunit;
 
 namespace Kifa.Cloud.GoogleDrive.Tests {
@@ -18,10 +17,15 @@ namespace Kifa.Cloud.GoogleDrive.Tests {
         const string BigFileSHA256 =
             "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
-        static GoogleDriveStorageClient GetStorageClient()
-            => new GoogleDriveStorageClient {
+        static GoogleDriveStorageClient GetStorageClient() {
+            AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
+                KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+            KifaConfigs.LoadFromSystemConfigs();
+
+            return new GoogleDriveStorageClient {
                 AccountId = "good"
             };
+        }
 
         [Fact]
         public void DownloadTest() {

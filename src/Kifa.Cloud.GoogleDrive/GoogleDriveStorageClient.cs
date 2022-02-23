@@ -18,7 +18,13 @@ namespace Kifa.Cloud.GoogleDrive {
 
         static readonly TimeSpan RefreshAccountInterval = TimeSpan.FromMinutes(50);
 
-        static GoogleDriveConfig config;
+        public static string RootFolder { get; set; }
+
+        public static string ClientId { get; set; }
+
+        public static string ClientSecret { get; set; }
+
+        public static APIList APIList { get; set; }
 
         readonly HttpClient client = new HttpClient(new HttpClientHandler {
             AllowAutoRedirect = false
@@ -26,14 +32,11 @@ namespace Kifa.Cloud.GoogleDrive {
             Timeout = TimeSpan.FromMinutes(30)
         };
 
-        GoogleAccount account;
+        GoogleAccount? account;
 
-        string accountId;
+        string? accountId;
 
         DateTime lastRefreshed = DateTime.MinValue;
-
-        static GoogleDriveConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => GoogleDriveConfig.Client.Get("default"));
 
         public string AccountId {
             get => accountId;
@@ -58,7 +61,7 @@ namespace Kifa.Cloud.GoogleDrive {
             var pageToken = "";
 
             while (pageToken != null) {
-                using var response = client.SendWithRetry(() => GetRequest(Config.APIList.ListFiles,
+                using var response = client.SendWithRetry(() => GetRequest(APIList.ListFiles,
                     new Dictionary<string, string> {
                         ["parent_id"] = fileId,
                         ["page_token"] = pageToken
@@ -85,7 +88,7 @@ namespace Kifa.Cloud.GoogleDrive {
         public override void Delete(string path) {
             var fileId = GetFileId(path);
             if (fileId != null) {
-                using var response = client.SendWithRetry(() => GetRequest(Config.APIList.DeleteFile,
+                using var response = client.SendWithRetry(() => GetRequest(APIList.DeleteFile,
                     new Dictionary<string, string> {
                         ["file_id"] = fileId
                     }));
@@ -110,7 +113,7 @@ namespace Kifa.Cloud.GoogleDrive {
             var folderId = GetFileId(path.Substring(0, path.LastIndexOf('/')), true);
 
             Uri uploadUri;
-            using var uriResponse = client.SendWithRetry(() => GetRequest(Config.APIList.CreateFile,
+            using var uriResponse = client.SendWithRetry(() => GetRequest(APIList.CreateFile,
                 new Dictionary<string, string> {
                     ["parent_id"] = folderId,
                     ["name"] = path.Substring(path.LastIndexOf('/') + 1)
@@ -177,7 +180,7 @@ namespace Kifa.Cloud.GoogleDrive {
             }
 
             using var response = client.SendWithRetry(() => {
-                var request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string> {
+                var request = GetRequest(APIList.DownloadFile, new Dictionary<string, string> {
                     ["file_id"] = fileId
                 });
 
@@ -194,7 +197,7 @@ namespace Kifa.Cloud.GoogleDrive {
                 return -1;
             }
 
-            using var response = client.SendWithRetry(() => GetRequest(Config.APIList.GetFileInfo,
+            using var response = client.SendWithRetry(() => GetRequest(APIList.GetFileInfo,
                 new Dictionary<string, string> {
                     ["file_id"] = fileId
                 }));
@@ -206,7 +209,7 @@ namespace Kifa.Cloud.GoogleDrive {
 
         string GetFileId(string path, bool createParents = false) {
             var fileId = "root";
-            foreach (var segment in $"{Config.RootFolder}{path}".Split('/', StringSplitOptions.RemoveEmptyEntries)) {
+            foreach (var segment in $"{RootFolder}{path}".Split('/', StringSplitOptions.RemoveEmptyEntries)) {
                 if (KnownFileIdCache.ContainsKey((segment, fileId))) {
                     fileId = KnownFileIdCache[(segment, fileId)];
                     continue;
@@ -229,7 +232,7 @@ namespace Kifa.Cloud.GoogleDrive {
         }
 
         string? FetchFileId(string segment, string fileId) {
-            var token = client.FetchJToken(() => GetRequest(Config.APIList.FindFile, new Dictionary<string, string> {
+            var token = client.FetchJToken(() => GetRequest(APIList.FindFile, new Dictionary<string, string> {
                 ["name"] = segment,
                 ["parent_id"] = fileId
             }), t => t["error"] == null);
@@ -248,7 +251,7 @@ namespace Kifa.Cloud.GoogleDrive {
         }
 
         string CreateFolder(string parentId, string name) {
-            using var response = client.SendWithRetry(() => GetRequest(Config.APIList.CreateFolder,
+            using var response = client.SendWithRetry(() => GetRequest(APIList.CreateFolder,
                 new Dictionary<string, string> {
                     ["parent_id"] = parentId,
                     ["name"] = name
@@ -262,7 +265,7 @@ namespace Kifa.Cloud.GoogleDrive {
                 return;
             }
 
-            using var response = client.SendWithRetry(() => GetRequest(Config.APIList.OauthRefresh,
+            using var response = client.SendWithRetry(() => GetRequest(APIList.OauthRefresh,
                 new Dictionary<string, string> {
                     ["refresh_token"] = Account.RefreshToken,
                     ["client_id"] = GoogleCloudConfigs.ClientId,
@@ -288,5 +291,16 @@ namespace Kifa.Cloud.GoogleDrive {
         public override void Dispose() {
             client?.Dispose();
         }
+    }
+    
+    public class APIList {
+        public Api ListFiles { get; set; }
+        public Api DeleteFile { get; set; }
+        public Api CreateFile { get; set; }
+        public Api DownloadFile { get; set; }
+        public Api GetFileInfo { get; set; }
+        public Api FindFile { get; set; }
+        public Api CreateFolder { get; set; }
+        public Api OauthRefresh { get; set; }
     }
 }
