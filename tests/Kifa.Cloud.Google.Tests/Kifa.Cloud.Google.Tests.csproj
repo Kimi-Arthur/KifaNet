@@ -15,7 +15,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Kifa.Cloud.GoogleDrive\Kifa.Cloud.GoogleDrive.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
   </ItemGroup>
 </Project>

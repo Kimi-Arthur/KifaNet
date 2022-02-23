@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Cloud.BaiduCloud;
-using Kifa.Cloud.GoogleDrive;
+using Kifa.Cloud.Google;
 using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
 using Kifa.IO;

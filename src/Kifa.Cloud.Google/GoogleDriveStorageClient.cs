@@ -11,7 +11,7 @@ using Kifa.IO;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Cloud.GoogleDrive {
+namespace Kifa.Cloud.Google {
     public class GoogleDriveStorageClient : StorageClient {
         const int BlockSize = 32 << 20;
         static readonly Logger logger = LogManager.GetCurrentClassLogger();

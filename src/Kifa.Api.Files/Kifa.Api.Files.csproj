@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj" />
-    <ProjectReference Include="..\Kifa.Cloud.GoogleDrive\Kifa.Cloud.GoogleDrive.csproj" />
+    <ProjectReference Include="..\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj" />
     <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />

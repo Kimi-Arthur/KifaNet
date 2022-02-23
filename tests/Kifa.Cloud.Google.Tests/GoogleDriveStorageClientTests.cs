@@ -5,7 +5,7 @@ using Kifa.Configs;
 using Kifa.IO;
 using Xunit;
 
-namespace Kifa.Cloud.GoogleDrive.Tests {
+namespace Kifa.Cloud.Google.Tests {
     public class GoogleDriveStorageClientTests {
         public GoogleDriveStorageClientTests() {
             GetStorageClient().Delete("/Test/big.bin");

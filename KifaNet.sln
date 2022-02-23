@@ -27,9 +27,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Tools.FileUtil", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kifa.Api.Files", "src\Kifa.Api.Files\Kifa.Api.Files.csproj", "{A1FCD94B-1107-4404-8A66-109537B2D6DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.GoogleDrive", "src\Kifa.Cloud.GoogleDrive\Kifa.Cloud.GoogleDrive.csproj", "{4BBA747F-6EEC-47BB-9A88-EDFFE88E00AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Google", "src\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj", "{4BBA747F-6EEC-47BB-9A88-EDFFE88E00AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.GoogleDrive.Tests", "tests\Kifa.Cloud.GoogleDrive.Tests\Kifa.Cloud.GoogleDrive.Tests.csproj", "{359007A6-3F48-456A-AF9C-75F51B3A4F3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Google.Tests", "tests\Kifa.Cloud.Google.Tests\Kifa.Cloud.Google.Tests.csproj", "{359007A6-3F48-456A-AF9C-75F51B3A4F3D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Subtitle", "src\Kifa.Subtitle\Kifa.Subtitle.csproj", "{3968EDD4-8D7D-4D19-BA91-2CF51D89E21F}"
 EndProject
