@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="PhotosApi" />
+  </ItemGroup>
+
 </Project>
