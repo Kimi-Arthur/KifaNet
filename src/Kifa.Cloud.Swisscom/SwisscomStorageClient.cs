@@ -19,10 +19,7 @@ namespace Kifa.Cloud.Swisscom {
 
         public static APIList APIList { get; set; }
 
-        static SwisscomConfig config;
-
-        static SwisscomConfig Config =>
-            LazyInitializer.EnsureInitialized(ref config, () => SwisscomConfig.Client.Get("default"));
+        public static List<StorageMapping> StorageMappings { get; set; }
 
         public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId);
 
@@ -155,7 +152,7 @@ namespace Kifa.Cloud.Swisscom {
         }
 
         public static string FindAccounts(string path, long length) {
-            var accounts = Config.StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
+            var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
             var selectedAccounts = new List<string>();
             for (var i = 0L; i < length; i += ShardSize) {
                 selectedAccounts.Add(FindAccount(accounts, Math.Min(ShardSize, length - i)));
@@ -189,4 +186,9 @@ namespace Kifa.Cloud.Swisscom {
         public Api FinishUpload { get; set; }
         public Api Quota { get; set; }
     }
+
+public class StorageMapping {
+    public string Pattern { get; set; }
+    public List<string> Accounts { get; set; }
+}
 }
