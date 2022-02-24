@@ -3,7 +3,7 @@ using CommandLine;
 using Kifa.Bilibili;
 using NLog;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
 public class DownloadBangumiCommand : KifaCommand {
@@ -26,7 +26,8 @@ public class DownloadBangumiCommand : KifaCommand {
             });
             var video = BilibiliVideo.Client.Get(videoId);
             foreach (var page in video.Pages) {
-                video.DownloadPart(page.Id, SourceChoice, CurrentFolder, $"{bangumi.Title}-{bangumi.Id}");
+                video.DownloadPart(page.Id, SourceChoice, CurrentFolder,
+                    $"{bangumi.Title}-{bangumi.Id}");
             }
         }
 

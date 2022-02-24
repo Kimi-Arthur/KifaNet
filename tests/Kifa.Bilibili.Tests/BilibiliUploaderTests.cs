@@ -2,7 +2,7 @@ using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Xunit;
 
-namespace Kifa.Bilibili.Tests; 
+namespace Kifa.Bilibili.Tests;
 
 public class BilibiliUploaderTests {
     [Fact]
@@ -17,7 +17,9 @@ public class BilibiliUploaderTests {
 
     [Fact]
     public void FillTest() {
-        var uploader = new BilibiliUploader {Id = "43536"};
+        var uploader = new BilibiliUploader {
+            Id = "43536"
+        };
         uploader.Fill();
         Assert.Equal("黑桐谷歌", uploader.Name);
         Assert.True(uploader.Aids.Count > 200);

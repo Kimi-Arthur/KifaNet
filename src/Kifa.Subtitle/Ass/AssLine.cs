@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssLine {
     public const string Separator = ":";
@@ -18,8 +18,7 @@ public class AssLine {
     public virtual string Key { get; protected set; }
     public virtual IEnumerable<string> Values { get; protected set; }
 
-    public override string ToString()
-        => $"{Key}: {string.Join(",", Values.Select(FormatValue))}";
+    public override string ToString() => $"{Key}: {string.Join(",", Values.Select(FormatValue))}";
 
     static string FormatValue(string value) => new Regex("[\n\r]+").Replace(value, @"\n");
 }

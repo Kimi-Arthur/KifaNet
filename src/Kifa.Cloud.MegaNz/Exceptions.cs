@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 public class ApiException : Exception {
     internal ApiException(ApiResultCode apiResultCode) {
@@ -13,14 +13,12 @@ public class ApiException : Exception {
 }
 
 public class DownloadException : Exception {
-    public DownloadException()
-        : base("Invalid file checksum") {
+    public DownloadException() : base("Invalid file checksum") {
     }
 }
 
 public class UploadException : Exception {
-    public UploadException(string error)
-        : base("Upload error: " + error) {
+    public UploadException(string error) : base("Upload error: " + error) {
     }
 }
 

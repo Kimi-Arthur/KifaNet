@@ -2,12 +2,15 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Kifa.Bilibili.Tests; 
+namespace Kifa.Bilibili.Tests;
 
 public class BilibiliChatTests {
     [Fact]
     public void BasicTest() {
-        var chat = new BilibiliChat {Cid = "2862733", Title = "测试标题"};
+        var chat = new BilibiliChat {
+            Cid = "2862733",
+            Title = "测试标题"
+        };
         Assert.Equal("2862733", chat.Cid);
         Assert.Equal(TimeSpan.Zero, chat.ChatOffset);
         Assert.Equal("测试标题", chat.Title);
@@ -17,7 +20,10 @@ public class BilibiliChatTests {
 
     [Fact]
     public void WithOffsetTest() {
-        var chat = new BilibiliChat {Cid = "2862733", Title = "测试标题"};
+        var chat = new BilibiliChat {
+            Cid = "2862733",
+            Title = "测试标题"
+        };
 
         var time = chat.Comments.ElementAt(1).VideoTime;
 

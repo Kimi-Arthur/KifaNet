@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace Kifa.Bilibili.BilibiliApi; 
+namespace Kifa.Bilibili.BilibiliApi;
 
 public class MediaSeasonRpc : BilibiliRpc<MediaSeasonRpc.MediaSeasonResponse> {
     public class MediaSeasonResponse {
@@ -46,8 +46,11 @@ public class MediaSeasonRpc : BilibiliRpc<MediaSeasonRpc.MediaSeasonResponse> {
         public string Text { get; set; }
     }
 
-    public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
+    public override string UrlPattern { get; } =
+        "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
 
-    public MediaSeasonResponse Call(string seasonId) =>
-        Call(new Dictionary<string, string> {{"id", seasonId.Substring(2)}});
+    public MediaSeasonResponse Call(string seasonId)
+        => Call(new Dictionary<string, string> {
+            { "id", seasonId.Substring(2) }
+        });
 }

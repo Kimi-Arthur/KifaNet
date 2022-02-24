@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using NLog;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class VerifiableStream : Stream {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -74,7 +74,8 @@ public class VerifiableStream : Stream {
                         bytesRead = stream.Read(lastBlock, 0, bytesToRead);
                         if (bytesRead != bytesToRead) {
                             logger.Warn("Didn't get expected amount of data.");
-                            logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead, bytesToRead);
+                            logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead,
+                                bytesToRead);
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                             continue;
                         }
@@ -84,7 +85,8 @@ public class VerifiableStream : Stream {
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                         continue;
                     } catch (Exception ex) {
-                        logger.Warn(ex, "Failed to read from {0} to {1}:", Position, Position + count);
+                        logger.Warn(ex, "Failed to read from {0} to {1}:", Position,
+                            Position + count);
                         successful = false;
                         break;
                     }
@@ -97,11 +99,13 @@ public class VerifiableStream : Stream {
                         break;
                     }
 
-                    candidates[(md5, sha1, sha256)] = candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
+                    candidates[(md5, sha1, sha256)] =
+                        candidates.GetValueOrDefault((md5, sha1, sha256), 0) + 1;
 
                     if (HasMajority(candidates)) {
                         if (result == false) {
-                            logger.Warn("Block {0} is consistently wrong.", pos / FileInformation.BlockSize);
+                            logger.Warn("Block {0} is consistently wrong.",
+                                pos / FileInformation.BlockSize);
                             successful = false;
                             break;
                         }
@@ -134,7 +138,8 @@ public class VerifiableStream : Stream {
                         logger.Error($"Block {pos / FileInformation.BlockSize} is invalid.");
                     } else {
                         if (candidates.Count > 1) {
-                            logger.Warn("Block {0} is too inconsistent:", pos / FileInformation.BlockSize);
+                            logger.Warn("Block {0} is too inconsistent:",
+                                pos / FileInformation.BlockSize);
                             foreach (var candidate in candidates) {
                                 logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
                             }
@@ -169,8 +174,8 @@ public class VerifiableStream : Stream {
         return candidates.Values.Any(i => i > totalCount / 2);
     }
 
-    (bool? result, string md5, string sha1, string sha256) IsBlockValid(byte[] buffer, int offset, int count,
-        int blockId) {
+    (bool? result, string md5, string sha1, string sha256) IsBlockValid(byte[] buffer, int offset,
+        int count, int blockId) {
         bool? result = null;
 
         var md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();

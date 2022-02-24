@@ -11,13 +11,12 @@ using Kifa.Service;
 using NLog;
 using YamlDotNet.Serialization;
 
-namespace Kifa.Tools.DataUtil; 
+namespace Kifa.Tools.DataUtil;
 
 public interface DataChef {
     public static DataChef GetChef(string modelId, string content = null) {
         return (modelId ?? GetYamlType(content)) switch {
-            MemriseCourse.ModelId =>
-                new DataChef<MemriseCourse, MemriseCourseRestServiceClient>(),
+            MemriseCourse.ModelId => new DataChef<MemriseCourse, MemriseCourseRestServiceClient>(),
             GoetheGermanWord.ModelId =>
                 new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
             GoetheWordList.ModelId =>
@@ -35,11 +34,10 @@ public interface DataChef {
         };
     }
 
-    static string GetYamlType(string s) {
-        return s == null || !s.StartsWith("#")
+    static string GetYamlType(string s)
+        => s == null || !s.StartsWith("#")
             ? null
             : s[1..s.IndexOf("\n", StringComparison.Ordinal)].Trim();
-    }
 
     string ModelId { get; }
     KifaActionResult Import(string data);
@@ -68,8 +66,8 @@ public class DataChef<TDataModel, TClient> : DataChef
     }
 
     public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
-        var items = new Deserializer().Deserialize<List<TDataModel>>(data)
-            .Select(item => item.Id).ToList();
+        var items = new Deserializer().Deserialize<List<TDataModel>>(data).Select(item => item.Id)
+            .ToList();
 
         var updatedItems =
             getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
@@ -78,8 +76,8 @@ public class DataChef<TDataModel, TClient> : DataChef
             .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
         if (compact) {
             serializerBuilder =
-                serializerBuilder.WithEventEmitter(next =>
-                    new FlowStyleScalarSequenceEmitter(next));
+                serializerBuilder.WithEventEmitter(next
+                    => new FlowStyleScalarSequenceEmitter(next));
         }
 
         return new KifaActionResult<string>(
@@ -91,6 +89,6 @@ public class DataChef<TDataModel, TClient> : DataChef
     public KifaActionResult Link(string target, string link) => Client.Link(target, link);
 
     static List<TDataModel> GetItemsWithExistingOrder(IEnumerable<string> items,
-        SortedDictionary<string, TDataModel> list) =>
-        items.Select(list.Pop).Concat(list.Values).ToList();
+        SortedDictionary<string, TDataModel> list)
+        => items.Select(list.Pop).Concat(list.Values).ToList();
 }

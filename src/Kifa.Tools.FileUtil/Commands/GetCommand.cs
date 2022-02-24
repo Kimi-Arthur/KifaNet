@@ -5,7 +5,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("get", HelpText = "Get files.")]
 class GetCommand : KifaFileCommand {
@@ -16,8 +16,8 @@ class GetCommand : KifaFileCommand {
 
     public override bool Recursive { get; set; } = true;
 
-    protected override Func<List<KifaFile>, string> KifaFileConfirmText =>
-        files => $"Confirm getting the {files.Count} files above?";
+    protected override Func<List<KifaFile>, string> KifaFileConfirmText
+        => files => $"Confirm getting the {files.Count} files above?";
 
     protected override bool IterateOverLogicalFiles => true;
 

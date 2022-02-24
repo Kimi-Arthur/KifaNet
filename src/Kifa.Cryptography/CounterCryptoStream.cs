@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace Kifa.Cryptography; 
+namespace Kifa.Cryptography;
 
 public class CounterCryptoStream : Stream {
     readonly byte[] initialCounter;
@@ -65,12 +65,13 @@ public class CounterCryptoStream : Stream {
         var counter = initialCounter.ToArray();
         counter.Add(Position / blockSize);
 
-        var counterCount = (stream.Position.RoundDown(blockSize) - Position.RoundUp(blockSize)) / blockSize;
-        counterCount += (stream.Position % blockSize > 0) ? 1 : 0;
-        counterCount += (Position % blockSize > 0) ? 1 : 0;
+        var counterCount = (stream.Position.RoundDown(blockSize) - Position.RoundUp(blockSize)) /
+                           blockSize;
+        counterCount += stream.Position % blockSize > 0 ? 1 : 0;
+        counterCount += Position % blockSize > 0 ? 1 : 0;
 
         var counters = new byte[counterCount * blockSize];
-        for (int i = 0; i < counterCount; i++) {
+        for (var i = 0; i < counterCount; i++) {
             Buffer.BlockCopy(counter, 0, counters, i * blockSize, counter.Length);
             counter.Add(1);
         }
@@ -80,8 +81,9 @@ public class CounterCryptoStream : Stream {
         var originalPosition = Position;
         var transformedOffset = Position % blockSize;
         var streamPosition = stream.Position;
-        Parallel.For(0, streamPosition - Position, new ParallelOptions {MaxDegreeOfParallelism = 8},
-            i => { buffer[offset + i] ^= transformed[i + transformedOffset]; });
+        Parallel.For(0, streamPosition - Position, new ParallelOptions {
+            MaxDegreeOfParallelism = 8
+        }, i => { buffer[offset + i] ^= transformed[i + transformedOffset]; });
         Position = streamPosition;
 
         return readCount;

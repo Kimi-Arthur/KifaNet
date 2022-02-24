@@ -5,7 +5,7 @@ using Kifa.Api.Files;
 using Kifa.GameHacking.Files;
 using Newtonsoft.Json;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("decode", HelpText = "Decode file.")]
 class DecodeCommand : KifaCommand {
@@ -25,7 +25,8 @@ class DecodeCommand : KifaCommand {
                 var messages = MsgBinFile.GetMessages(file.OpenRead());
                 var target = file.Parent.GetFile(file.BaseName + ".json");
                 target.Delete();
-                target.Write(JsonConvert.SerializeObject(messages, Defaults.PrettyJsonSerializerSettings));
+                target.Write(JsonConvert.SerializeObject(messages,
+                    Defaults.PrettyJsonSerializerSettings));
             }
         }
 

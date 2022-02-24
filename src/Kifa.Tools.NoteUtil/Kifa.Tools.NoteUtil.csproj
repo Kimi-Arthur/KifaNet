@@ -6,14 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj"/>
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
+    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath=""/>
   </ItemGroup>
 </Project>

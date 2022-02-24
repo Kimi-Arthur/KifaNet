@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using CommandLine;
 
-namespace Kifa.Tools.JobUtil; 
+namespace Kifa.Tools.JobUtil;
 
 [Verb("run", HelpText = "Run a specific job.")]
 class RunJobCommand : JobUtilCommand {

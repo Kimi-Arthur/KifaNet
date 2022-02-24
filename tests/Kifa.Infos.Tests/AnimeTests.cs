@@ -3,7 +3,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Kifa.Infos.Tests; 
+namespace Kifa.Infos.Tests;
 
 public class AnimeTests {
     public AnimeTests() {
@@ -19,24 +19,24 @@ public class AnimeTests {
             AirDate = Date.Parse("2009-04-06"),
             PatternId = "multi_season",
             Seasons = new List<AnimeSeason> {
-                new AnimeSeason {
+                new() {
                     Id = 1,
                     AirDate = Date.Parse("2009-04-06"),
                     SeasonIdWidth = 1,
                     Episodes = new List<Episode> {
-                        new Episode {
+                        new() {
                             Id = 4
                         }
                     }
                 },
-                new AnimeSeason {
+                new() {
                     Id = 3,
                     Title = "全国編",
                     SeasonIdWidth = 4,
                     EpisodeIdWidth = 1,
                     AirDate = Date.Parse("2014-01-06"),
                     Episodes = new List<Episode> {
-                        new Episode {
+                        new() {
                             SeasonIdWidth = 3,
                             Id = 12,
                             Title = "真実"
@@ -59,10 +59,10 @@ public class AnimeTests {
             AirDate = Date.Parse("2009-04-06"),
             PatternId = "single_season",
             Seasons = new List<AnimeSeason> {
-                new AnimeSeason {
+                new() {
                     Id = 1,
                     Episodes = new List<Episode> {
-                        new Episode {
+                        new() {
                             Id = 1,
                             Title = "出会い"
                         }

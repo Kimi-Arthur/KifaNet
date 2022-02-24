@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using NLog;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssDialogueEffect {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();

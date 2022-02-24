@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Kifa.Bilibili.BilibiliApi; 
+namespace Kifa.Bilibili.BilibiliApi;
 
 public class UploaderInfoRpc : BilibiliRpc<UploaderInfoRpc.UploaderInfoResponse> {
     public class UploaderInfoResponse {
@@ -69,8 +69,11 @@ public class UploaderInfoRpc : BilibiliRpc<UploaderInfoRpc.UploaderInfoResponse>
         public string ImageEnhance { get; set; }
     }
 
-    public override string UrlPattern { get; } = "https://api.bilibili.com/x/space/acc/info?mid={id}";
+    public override string UrlPattern { get; } =
+        "https://api.bilibili.com/x/space/acc/info?mid={id}";
 
-    public UploaderInfoResponse Call(string uploaderId) =>
-        Call(new Dictionary<string, string> {{"id", uploaderId}});
+    public UploaderInfoResponse Call(string uploaderId)
+        => Call(new Dictionary<string, string> {
+            { "id", uploaderId }
+        });
 }

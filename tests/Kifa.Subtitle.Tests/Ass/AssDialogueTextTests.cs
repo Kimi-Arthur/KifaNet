@@ -2,7 +2,7 @@
 using Kifa.Subtitle.Ass;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Ass; 
+namespace Kifa.Subtitle.Tests.Ass;
 
 public class AssDialogueTextTests {
     [Fact]
@@ -41,10 +41,9 @@ public class AssDialogueTextTests {
 
         Assert.Equal(@"{\b0\i1\u1}two2", text.ToString());
 
-        controlElement.Elements.Insert(0,
-            new AlignmentStyle {
-                Value = AssAlignment.BottomCenter
-            });
+        controlElement.Elements.Insert(0, new AlignmentStyle {
+            Value = AssAlignment.BottomCenter
+        });
         Assert.Equal(@"{\an2\b0\i1\u1}two2", text.ToString());
 
         controlElement.Elements.RemoveAt(0);

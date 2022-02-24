@@ -40,7 +40,6 @@ public class UserJsonServiceClient : KifaServiceJsonClient<User>, UserServiceCli
         return counterId;
     }
 
-    public string AddEvent(User user, Counter counter, Event @event) {
-        throw new NotImplementedException();
-    }
+    public string AddEvent(User user, Counter counter, Event @event)
+        => throw new NotImplementedException();
 }

@@ -9,7 +9,7 @@ using Kifa.IO;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Cloud.Google; 
+namespace Kifa.Cloud.Google;
 
 public class GoogleDriveStorageClient : StorageClient {
     const int BlockSize = 32 << 20;
@@ -21,7 +21,7 @@ public class GoogleDriveStorageClient : StorageClient {
 
     public static APIList APIList { get; set; }
 
-    readonly HttpClient client = new HttpClient(new HttpClientHandler {
+    readonly HttpClient client = new(new HttpClientHandler {
         AllowAutoRedirect = false
     }) {
         Timeout = TimeSpan.FromMinutes(30)
@@ -101,7 +101,8 @@ public class GoogleDriveStorageClient : StorageClient {
         var fileId = GetFileId(path);
         var fileSize = GetFileSize(fileId);
         return new SeekableReadStream(fileSize,
-            (buffer, bufferOffset, offset, count) => Download(buffer, fileId, bufferOffset, offset, count));
+            (buffer, bufferOffset, offset, count)
+                => Download(buffer, fileId, bufferOffset, offset, count));
     }
 
     public override void Write(string path, Stream input) {
@@ -123,15 +124,16 @@ public class GoogleDriveStorageClient : StorageClient {
             var blockLength = input.Read(buffer, 0, BlockSize);
             var targetEndByte = position + blockLength - 1;
             var content = new ByteArrayContent(buffer, 0, blockLength);
-            content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
+            content.Headers.ContentRange =
+                new ContentRangeHeaderValue(position, targetEndByte, size);
             content.Headers.ContentLength = blockLength;
 
             var done = false;
 
             while (!done) {
                 try {
-                    using var response = client.SendWithRetry(() =>
-                        new HttpRequestMessage(HttpMethod.Put, uploadUri) {
+                    using var response = client.SendWithRetry(()
+                        => new HttpRequestMessage(HttpMethod.Put, uploadUri) {
                             Content = content
                         });
                     if (targetEndByte + 1 == size) {
@@ -139,8 +141,8 @@ public class GoogleDriveStorageClient : StorageClient {
                             throw new Exception("Last request should have success code");
                         }
                     } else {
-                        var range = RangeHeaderValue.Parse(response.Headers.First(h => h.Key == "Range").Value
-                            .First());
+                        var range = RangeHeaderValue.Parse(response.Headers
+                            .First(h => h.Key == "Range").Value.First());
                         var fromByte = range.Ranges.First().From;
                         var toByte = range.Ranges.First().To;
                         if (fromByte != 0) {
@@ -157,7 +159,8 @@ public class GoogleDriveStorageClient : StorageClient {
                 } catch (AggregateException ae) {
                     ae.Handle(x => {
                         if (x is HttpRequestException) {
-                            logger.Warn(x, "Temporary upload failure [{0}, {1})", position, position + blockLength);
+                            logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
+                                position + blockLength);
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                             return true;
                         }
@@ -169,7 +172,8 @@ public class GoogleDriveStorageClient : StorageClient {
         }
     }
 
-    int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0, int count = -1) {
+    int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
+        int count = -1) {
         if (count < 0) {
             count = buffer.Length - bufferOffset;
         }
@@ -204,7 +208,8 @@ public class GoogleDriveStorageClient : StorageClient {
 
     string GetFileId(string path, bool createParents = false) {
         var fileId = "root";
-        foreach (var segment in $"{RootFolder}{path}".Split('/', StringSplitOptions.RemoveEmptyEntries)) {
+        foreach (var segment in $"{RootFolder}{path}".Split('/',
+                     StringSplitOptions.RemoveEmptyEntries)) {
             if (KnownFileIdCache.ContainsKey((segment, fileId))) {
                 fileId = KnownFileIdCache[(segment, fileId)];
                 continue;
@@ -227,10 +232,11 @@ public class GoogleDriveStorageClient : StorageClient {
     }
 
     string? FetchFileId(string segment, string fileId) {
-        var token = client.FetchJToken(() => GetRequest(APIList.FindFile, new Dictionary<string, string> {
-            ["name"] = segment,
-            ["parent_id"] = fileId
-        }), t => t["error"] == null);
+        var token = client.FetchJToken(() => GetRequest(APIList.FindFile,
+            new Dictionary<string, string> {
+                ["name"] = segment,
+                ["parent_id"] = fileId
+            }), t => t["error"] == null);
         var files = token["files"];
         if (files == null) {
             return null;
@@ -287,7 +293,7 @@ public class GoogleDriveStorageClient : StorageClient {
         client?.Dispose();
     }
 }
-    
+
 public class APIList {
     public Api ListFiles { get; set; }
     public Api DeleteFile { get; set; }

@@ -26,9 +26,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     // GET api/values
     [HttpGet]
-    public ActionResult<SortedDictionary<string, TDataModel>> List() {
-        return Client.List();
-    }
+    public ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
 
     // GET api/values/$
     [HttpGet("$")]
@@ -131,8 +129,8 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
     }
 
     [HttpPost("^")]
-    public KifaApiActionResult Link([FromBody] List<string> ids) =>
-        ids.Skip(1)
+    public KifaApiActionResult Link([FromBody] List<string> ids)
+        => ids.Skip(1)
             .Select(id => Client.Link(Uri.UnescapeDataString(ids[0]), Uri.UnescapeDataString(id)))
             .Aggregate(new KifaBatchActionResult(), (s, x) => s.Add(x));
 
@@ -177,25 +175,24 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 public class KifaApiActionResult : IConvertToActionResult {
     KifaActionResult ActionResult { get; set; }
 
-    public static implicit operator KifaApiActionResult(KifaActionResult actionResult) {
-        return new() {
+    public static implicit operator KifaApiActionResult(KifaActionResult actionResult)
+        => new() {
             ActionResult = actionResult
         };
-    }
 
-    public IActionResult Convert() =>
-        ((IConvertToActionResult) new ActionResult<KifaActionResult>(ActionResult)).Convert();
+    public IActionResult Convert()
+        => ((IConvertToActionResult) new ActionResult<KifaActionResult>(ActionResult)).Convert();
 }
 
 public class KifaApiActionResult<TValue> : IConvertToActionResult {
     KifaActionResult<TValue> ActionResult { get; set; }
 
-    public static implicit operator KifaApiActionResult<TValue>(TValue value) =>
-        new() {
+    public static implicit operator KifaApiActionResult<TValue>(TValue value)
+        => new() {
             ActionResult = new KifaActionResult<TValue>(value)
         };
 
-    public IActionResult Convert() =>
-        ((IConvertToActionResult) new ActionResult<KifaActionResult<TValue>>(ActionResult))
-        .Convert();
+    public IActionResult Convert()
+        => ((IConvertToActionResult) new ActionResult<KifaActionResult<TValue>>(ActionResult))
+            .Convert();
 }

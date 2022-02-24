@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kifa.Bilibili.BilibiliApi; 
+namespace Kifa.Bilibili.BilibiliApi;
 
 public class VideoTagRpc : BilibiliRpc<VideoTagRpc.VideoTagResponse> {
     public class VideoTagResponse {
@@ -36,7 +36,11 @@ public class VideoTagRpc : BilibiliRpc<VideoTagRpc.VideoTagResponse> {
         public long Atten { get; set; }
     }
 
-    public override string UrlPattern { get; } = "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
+    public override string UrlPattern { get; } =
+        "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
 
-    public VideoTagResponse Call(string aid) => Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
+    public VideoTagResponse Call(string aid)
+        => Call(new Dictionary<string, string> {
+            { "aid", aid.Substring(2) }
+        });
 }

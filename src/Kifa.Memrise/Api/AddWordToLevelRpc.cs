@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
 
-namespace Kifa.Memrise.Api; 
+namespace Kifa.Memrise.Api;
 
 public class AddWordToLevelRpc : JsonRpc<AddWordToLevelRpc.AddWordToLevelResponse> {
     public class AddWordToLevelResponse {
@@ -11,16 +11,21 @@ public class AddWordToLevelRpc : JsonRpc<AddWordToLevelRpc.AddWordToLevelRespons
 
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
-    public override Dictionary<string, string> Headers { get; } = new() {{"referer", "{referer}"}};
+    public override Dictionary<string, string> Headers { get; } = new() {
+        { "referer", "{referer}" }
+    };
 
     public override string UrlPattern { get; } = "https://app.memrise.com/ajax/level/thing/add/";
 
-    public override List<KeyValuePair<string, string>> FormContent { get; set; } =
-        new() {new("level_id", "{level_id}"), new("copy_thing_id", "{thing_id}")};
+    public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
+        new KeyValuePair<string, string>("level_id", "{level_id}"),
+        new KeyValuePair<string, string>("copy_thing_id", "{thing_id}")
+    };
 
-    public AddWordToLevelResponse Call(string referer, string levelId, string thingId) {
-        return Call(new Dictionary<string, string> {
-            {"referer", referer}, {"level_id", levelId}, {"thing_id", thingId}
+    public AddWordToLevelResponse Call(string referer, string levelId, string thingId)
+        => Call(new Dictionary<string, string> {
+            { "referer", referer },
+            { "level_id", levelId },
+            { "thing_id", thingId }
         });
-    }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using NLog;
 
-namespace Kifa.Azure; 
+namespace Kifa.Azure;
 
 public class DnsClient {
     public static string ResourceGroup { get; set; }
@@ -31,19 +31,20 @@ public class DnsClient {
         logger.Debug("IP set successfully.");
     }
 
-    List<string> GetIps(string record) {
-        return Run($"network dns record-set a show -z {Zone} -g {ResourceGroup} -n {record}")["arecords"]
-            .Select(ip => ip["ipv4Address"].Value<string>()).ToList();
-    }
+    List<string> GetIps(string record)
+        => Run($"network dns record-set a show -z {Zone} -g {ResourceGroup} -n {record}")
+            ["arecords"].Select(ip => ip["ipv4Address"].Value<string>()).ToList();
 
     void RemoveIps(string record, List<string> ips) {
         foreach (var ip in ips) {
-            Run($"network dns record-set a remove-record -z {Zone} -g {ResourceGroup} -n {record} -a {ip}");
+            Run(
+                $"network dns record-set a remove-record -z {Zone} -g {ResourceGroup} -n {record} -a {ip}");
         }
     }
 
     void AddIp(string record, string ip) {
-        Run($"network dns record-set a add-record -z {Zone} -g {ResourceGroup} -n {record} -a {ip}");
+        Run(
+            $"network dns record-set a add-record -z {Zone} -g {ResourceGroup} -n {record} -a {ip}");
     }
 
     static JToken Run(string arguments) {

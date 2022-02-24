@@ -3,14 +3,14 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj" />
-    <ProjectReference Include="..\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj" />
-    <ProjectReference Include="..\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj" />
-    <ProjectReference Include="..\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj" />
-    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
+    <ProjectReference Include="..\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj"/>
+    <ProjectReference Include="..\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj"/>
+    <ProjectReference Include="..\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj"/>
+    <ProjectReference Include="..\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj"/>
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.0.0"/>
   </ItemGroup>
 </Project>

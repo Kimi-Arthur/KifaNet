@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Kifa.SkyCh.Tests; 
+namespace Kifa.SkyCh.Tests;
 
 public class SkyProgramTests {
-    public static IEnumerable<object[]> Data =>
-        new List<object[]> {
+    public static IEnumerable<object[]> Data
+        => new List<object[]> {
             new object[] {
                 "1",
                 new SkyProgram {
@@ -54,7 +54,7 @@ public class SkyProgramTests {
                         "Soccer"
                     }
                 }
-            },
+            }
         };
 
     [Theory]

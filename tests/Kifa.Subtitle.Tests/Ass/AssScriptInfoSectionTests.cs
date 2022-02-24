@@ -1,7 +1,7 @@
 ﻿using Kifa.Subtitle.Ass;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Ass; 
+namespace Kifa.Subtitle.Tests.Ass;
 
 public class AssScriptInfoSectionTests {
     [Fact]
@@ -17,7 +17,8 @@ public class AssScriptInfoSectionTests {
             Title = "Great!",
             ScriptType = "Special type"
         };
-        Assert.StartsWith("[Script Info]\nTitle: Great!\nOriginal Script: Kimi\nScript Type: Special type\n",
+        Assert.StartsWith(
+            "[Script Info]\nTitle: Great!\nOriginal Script: Kimi\nScript Type: Special type\n",
             section.ToString());
     }
 }

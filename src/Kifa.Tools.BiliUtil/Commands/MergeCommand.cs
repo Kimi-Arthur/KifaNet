@@ -4,7 +4,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("merge", HelpText = "Merge flv to mp4.")]
 public class MergeCommand : KifaCommand {
@@ -25,8 +25,8 @@ public class MergeCommand : KifaCommand {
         return 0;
     }
 
-    string GetTargetFileName(IEnumerable<KifaFile> files) =>
-        string.IsNullOrEmpty(OutputFile)
+    string GetTargetFileName(IEnumerable<KifaFile> files)
+        => string.IsNullOrEmpty(OutputFile)
             ? string.Join(".", files.First().ToString().Split(".")[..^1]) + ".mp4"
             : new KifaFile(OutputFile).ToString();
 }

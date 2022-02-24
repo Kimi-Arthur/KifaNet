@@ -1,6 +1,6 @@
 using Kifa.Service;
 
-namespace Kifa.Soccer; 
+namespace Kifa.Soccer;
 
 public class Match : DataModel<Match> {
     public Competition Competition { get; set; }
@@ -9,6 +9,4 @@ public class Match : DataModel<Match> {
     public Date Date { get; set; }
     public Team Home { get; set; }
     public Team Away { get; set; }
-        
-        
 }

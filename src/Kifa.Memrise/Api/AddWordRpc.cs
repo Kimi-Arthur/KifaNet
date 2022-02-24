@@ -3,7 +3,7 @@ using System.Net.Http;
 using Kifa.Rpc;
 using Newtonsoft.Json;
 
-namespace Kifa.Memrise.Api; 
+namespace Kifa.Memrise.Api;
 
 public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
     public class AddWordResponse {
@@ -42,16 +42,21 @@ public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
 
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
-    public override Dictionary<string, string> Headers { get; } = new() {{"referer", "{referer}"}};
+    public override Dictionary<string, string> Headers { get; } = new() {
+        { "referer", "{referer}" }
+    };
 
     public override string UrlPattern { get; } = "https://app.memrise.com/ajax/thing/add/";
 
-    public override List<KeyValuePair<string, string>> FormContent { get; set; } =
-        new() {new("columns", "{data}"), new("pool_id", "{databaseId}")};
+    public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
+        new KeyValuePair<string, string>("columns", "{data}"),
+        new KeyValuePair<string, string>("pool_id", "{databaseId}")
+    };
 
-    public AddWordResponse Call(string databaseId, string referer, Dictionary<string, string> data) {
-        return Call(new Dictionary<string, string> {
-            {"databaseId", databaseId}, {"referer", referer}, {"data", JsonConvert.SerializeObject(data)}
+    public AddWordResponse Call(string databaseId, string referer, Dictionary<string, string> data)
+        => Call(new Dictionary<string, string> {
+            { "databaseId", databaseId },
+            { "referer", referer },
+            { "data", JsonConvert.SerializeObject(data) }
         });
-    }
 }

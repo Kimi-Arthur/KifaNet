@@ -22,12 +22,12 @@ public class
     }
 
     [HttpGet("$list_folder")]
-    public KifaApiActionResult<List<string>> ListFolderGet([FromQuery] ListFolderRequest request) =>
-        Client.ListFolder(request.Folder, request.Recursive);
+    public KifaApiActionResult<List<string>> ListFolderGet([FromQuery] ListFolderRequest request)
+        => Client.ListFolder(request.Folder, request.Recursive);
 
     [HttpPost("$list_folder")]
-    public KifaApiActionResult<List<string>> ListFolderPost([FromBody] ListFolderRequest request) =>
-        Client.ListFolder(request.Folder, request.Recursive);
+    public KifaApiActionResult<List<string>> ListFolderPost([FromBody] ListFolderRequest request)
+        => Client.ListFolder(request.Folder, request.Recursive);
 
     public class AddLocationRequest {
         public string Id { get; set; }
@@ -36,8 +36,8 @@ public class
     }
 
     [HttpPost("$add_location")]
-    public KifaApiActionResult AddLocation([FromBody] AddLocationRequest request) =>
-        Client.AddLocation(request.Id, request.Location, request.Verified);
+    public KifaApiActionResult AddLocation([FromBody] AddLocationRequest request)
+        => Client.AddLocation(request.Id, request.Location, request.Verified);
 
     public class RemoveLocationRequest {
         public string Id { get; set; }
@@ -45,8 +45,8 @@ public class
     }
 
     [HttpPost("$remove_location")]
-    public KifaApiActionResult RemoveLocation([FromBody] RemoveLocationRequest request) =>
-        Client.RemoveLocation(request.Id, request.Location);
+    public KifaApiActionResult RemoveLocation([FromBody] RemoveLocationRequest request)
+        => Client.RemoveLocation(request.Id, request.Location);
 
     [HttpGet("$stream")]
     public FileStreamResult Stream(string id) {
@@ -68,7 +68,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
     FileInformationServiceClient {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    static readonly Dictionary<string, long> ShardSizes = new Dictionary<string, long> {
+    static readonly Dictionary<string, long> ShardSizes = new() {
         ["swiss"] = 1 << 30
     };
 
@@ -86,8 +86,8 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         var directory = new DirectoryInfo(folder);
         var items = directory.GetFiles("*.json",
             recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        return items.Select(i =>
-            i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5)).ToList();
+        return items.Select(i
+            => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5)).ToList();
     }
 
     public KifaActionResult AddLocation(string id, string location, bool verified = false) {
@@ -135,14 +135,14 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
         var path = $"/$/{file.Sha256}.{format}";
 
-        return file.Locations.Keys.FirstOrDefault(location =>
-            location.StartsWith($"{type}:") && location.EndsWith(path)) ?? type switch {
+        return file.Locations.Keys.FirstOrDefault(location
+            => location.StartsWith($"{type}:") && location.EndsWith(path)) ?? type switch {
             "google" => $"google:good{path}",
             "swiss" => $"swiss:s0000{path}",
             _ => null
         };
     }
 
-    public string GetLocation(string id, List<string> types = null) =>
-        throw new NotImplementedException();
+    public string GetLocation(string id, List<string> types = null)
+        => throw new NotImplementedException();
 }

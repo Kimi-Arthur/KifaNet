@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Kifa.IO.FileFormats; 
+namespace Kifa.IO.FileFormats;
 
 public class KifaFileFormat {
     public virtual Stream GetEncodeStream(Stream rawStream, FileInformation info)

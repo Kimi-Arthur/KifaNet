@@ -3,7 +3,7 @@ using System.Linq;
 using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
 
-namespace Kifa.Markdown.Converters; 
+namespace Kifa.Markdown.Converters;
 
 public class UnorderedListConverter : HtmlMarkdownConverter {
     int CurrentLevel;

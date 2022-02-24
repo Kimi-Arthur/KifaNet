@@ -6,7 +6,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("trash", HelpText = "Move the file to trash.")]
 class TrashCommand : KifaFileCommand {
@@ -22,7 +22,9 @@ class TrashCommand : KifaFileCommand {
 
     protected override int ExecuteOneFileInformation(string file) {
         var segments = file.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var options = new List<string> {"/"};
+        var options = new List<string> {
+            "/"
+        };
         foreach (var segment in segments) {
             options.Add($"{options.Last()}{segment}/");
         }

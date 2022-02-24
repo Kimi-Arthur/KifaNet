@@ -15,7 +15,7 @@ using Kifa.IO.StorageClients;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Api.Files; 
+namespace Kifa.Api.Files;
 
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -79,8 +79,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public bool SimpleMode { get; set; }
 
-    public KifaFile(string uri = null, string id = null, FileInformation fileInfo = null, bool simpleMode = false,
-        bool useCache = false) {
+    public KifaFile(string uri = null, string id = null, FileInformation fileInfo = null,
+        bool simpleMode = false, bool useCache = false) {
         SimpleMode = simpleMode;
         if (uri == null) {
             // Infer uri from id.
@@ -96,7 +96,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         //   C:/files/a.txt
         //   ~/a.txt
         //   ../a.txt
-        if (!uri.Contains(":") || uri.Contains(":/") && !uri.StartsWith("http://") && !uri.StartsWith("https://") ||
+        if (!uri.Contains(":") ||
+            uri.Contains(":/") && !uri.StartsWith("http://") && !uri.StartsWith("https://") ||
             uri.Contains(":\\")) {
             // Local path, convert to canonical one.
             var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
@@ -144,12 +145,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static string FullPathIgnorePattern { get; set; } = "$^";
 
-    static Regex SubPathIgnoredFiles =>
-        LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
+    static Regex SubPathIgnoredFiles
+        => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
             () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
 
-    static Regex FullPathIgnoredFiles =>
-        LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
+    static Regex FullPathIgnoredFiles
+        => LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
             () => new Regex(FullPathIgnorePattern, RegexOptions.Compiled));
 
     public string Id { get; set; }
@@ -175,14 +176,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     KifaFileFormat FileFormat { get; }
 
-    public FileInformation FileInfo =>
-        fileInfo ??= SimpleMode ? new FileInformation() : FileInformation.Client.Get(Id);
+    public FileInformation FileInfo
+        => fileInfo ??= SimpleMode ? new FileInformation() : FileInformation.Client.Get(Id);
 
     public bool UseCache { get; set; }
 
-    public bool IsCloud =>
-        (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
-         Client is MegaNzStorageClient) && FileFormat is KifaFileV1Format;
+    public bool IsCloud
+        => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
+            Client is MegaNzStorageClient) && FileFormat is KifaFileV1Format;
 
     static string GetUri(string id) {
         string candidate = null;
@@ -249,11 +250,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         return candidate;
     }
 
-    public KifaFile GetFile(string name) => new KifaFile($"{Host}{Path}/{name}");
+    public KifaFile GetFile(string name) => new($"{Host}{Path}/{name}");
 
-    public KifaFile GetFileSuffixed(string suffix) => new KifaFile($"{Host}{Path}{suffix}");
+    public KifaFile GetFileSuffixed(string suffix) => new($"{Host}{Path}{suffix}");
 
-    public KifaFile GetFilePrefixed(string prefix) => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
+    public KifaFile GetFilePrefixed(string prefix)
+        => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
 
     public override string ToString() => $"{Host}{Path}";
 
@@ -267,13 +269,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public bool HasEntry => FileInfo.Locations?.ContainsKey(ToString()) == true;
 
-    public FileInformation QuickInfo() =>
-        FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
+    public FileInformation QuickInfo()
+        => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
 
-    public Stream OpenRead() =>
-        new VerifiableStream(FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
+    public Stream OpenRead()
+        => new VerifiableStream(
+            FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
 
-    public void Write(Stream stream) => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
+    public void Write(Stream stream)
+        => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
     public void Write(byte[] data) => Write(new MemoryStream(data));
 
@@ -283,14 +287,16 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public void Touch() => Client.Touch(Path);
 
-    public IEnumerable<KifaFile> List(bool recursive = false, bool ignoreFiles = true, string pattern = "*") =>
-        Exists()
+    public IEnumerable<KifaFile>
+        List(bool recursive = false, bool ignoreFiles = true, string pattern = "*")
+        => Exists()
             ? Enumerable.Repeat(this, 1)
             : Client.List(Path, recursive)
                 .Where(f => IsMatch(f.Id, pattern) && (!ignoreFiles ||
-                                                       !SubPathIgnoredFiles.IsMatch(f.Id.Substring(Path.Length)) &&
-                                                       !FullPathIgnoredFiles.IsMatch(f.Id))).Select(info =>
-                    new KifaFile(Host + info.Id, fileInfo: info));
+                                                       !SubPathIgnoredFiles.IsMatch(
+                                                           f.Id.Substring(Path.Length)) &&
+                                                       !FullPathIgnoredFiles.IsMatch(f.Id)))
+                .Select(info => new KifaFile(Host + info.Id, fileInfo: info));
 
     public static (bool isMultiple, List<KifaFile> files) ExpandFiles(IEnumerable<string> sources,
         string prefix = null, bool recursive = true, bool fullFile = false) {
@@ -319,11 +325,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         files.Sort();
 
-        return (multi > 1, files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
+        return (multi > 1,
+            files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
     }
 
-    public static (bool isMultiple, List<KifaFile> files) ExpandLogicalFiles(IEnumerable<string> sources,
-        string prefix = null, bool recursive = true, bool fullFile = false) {
+    public static (bool isMultiple, List<KifaFile> files) ExpandLogicalFiles(
+        IEnumerable<string> sources, string prefix = null, bool recursive = true,
+        bool fullFile = false) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
@@ -338,7 +346,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             var thisFolder = FileInformation.Client.ListFolder(path, recursive);
             if (thisFolder.Count > 0) {
                 multi = 2;
-                files.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), new KifaFile(host + f))));
+                files.AddRange(thisFolder.Select(f
+                    => (f.GetNaturalSortKey(), new KifaFile(host + f))));
             } else {
                 multi++;
                 files.Add((fileInfo.ToString().GetNaturalSortKey(), new KifaFile(host + path)));
@@ -347,7 +356,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         files.Sort();
 
-        return (multi > 1, files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
+        return (multi > 1,
+            files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
     }
 
     static bool IsMatch(string path, string pattern) {
@@ -413,7 +423,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public FileInformation CalculateInfo(FileProperties properties) {
         var info = FileInfo.Clone();
-        info.RemoveProperties((FileProperties.AllVerifiable & properties) | FileProperties.Locations);
+        info.RemoveProperties(
+            (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
         using (var stream = OpenRead()) {
             info.AddProperties(stream, properties);
@@ -444,13 +455,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         if (UseCache) {
             var cacheQuickInfo = LocalFile.QuickInfo();
-            if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) == FileProperties.None) {
+            if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) ==
+                FileProperties.None) {
                 file = LocalFile;
                 logger.Debug($"Use local file {file} instead.");
             }
         }
 
-        if (shouldCheckKnown != true && (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
+        if (shouldCheckKnown != true &&
+            (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
             file.Registered) {
             if (shouldCheckKnown == false) {
                 logger.Info($"Quick check skipped for {file}.");
@@ -458,7 +471,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             }
 
             var partialInfo = file.CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
-            var compareResults = partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            var compareResults =
+                partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
                 logger.Error($"Quick check failed for {file} ({compareResults}).");
                 throw new Exception($"Quick check failed ({compareResults}).");
@@ -482,15 +496,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
 
         if (quickCompareResult != FileProperties.None) {
-            logger.Warn($"Quick data:\n{quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
-            logger.Warn($"Actual data:\n{info.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
+            logger.Warn(
+                $"Quick data:\n{quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
+            logger.Warn(
+                $"Actual data:\n{info.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
             return quickCompareResult;
         }
 
         var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
         if (compareResultWithOld != FileProperties.None) {
-            logger.Warn($"Expected data:\n{oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
-            logger.Warn($"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
+            logger.Warn(
+                $"Expected data:\n{oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
+            logger.Warn(
+                $"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
             return compareResultWithOld;
         }
 
@@ -505,13 +523,16 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
         if (compareResult == FileProperties.None) {
             info.EncryptionKey =
-                sha256Info.EncryptionKey ?? info.EncryptionKey; // Only happens for unencrypted file.
+                sha256Info.EncryptionKey ??
+                info.EncryptionKey; // Only happens for unencrypted file.
 
             client.Update(info);
             Register(true);
         } else {
-            logger.Warn($"Expected data:\n{sha256Info.RemoveProperties(FileProperties.All ^ compareResult)}");
-            logger.Warn($"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResult)}");
+            logger.Warn(
+                $"Expected data:\n{sha256Info.RemoveProperties(FileProperties.All ^ compareResult)}");
+            logger.Warn(
+                $"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResult)}");
         }
 
         return compareResult;
@@ -527,16 +548,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         fileInfo = null;
     }
 
-    public bool IsCompatible(KifaFile other) => Host == other.Host && FileFormat == other.FileFormat;
+    public bool IsCompatible(KifaFile other)
+        => Host == other.Host && FileFormat == other.FileFormat;
 
-    public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType) =>
-        FileInfo?.Sha256 == null || FileInfo?.Size == null
+    public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType)
+        => FileInfo?.Sha256 == null || FileInfo?.Size == null
             ? null
-            : FileInfo.Locations.Keys.FirstOrDefault(l =>
-                new Regex(
+            : FileInfo.Locations.Keys.FirstOrDefault(l
+                => new Regex(
                         $@"^{serviceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
                     .Match(l).Success) ?? serviceType switch {
-                CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
+                CloudServiceType.Google =>
+                    $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
                 CloudServiceType.Swiss =>
                     // TODO: Use format specific header size.
                     $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",

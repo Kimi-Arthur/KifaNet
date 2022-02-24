@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
   </ItemGroup>
 
 </Project>

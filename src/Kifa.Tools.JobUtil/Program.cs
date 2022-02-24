@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using CommandLine;
 using Kifa.Configs;
 
-namespace Kifa.Tools.JobUtil; 
+namespace Kifa.Tools.JobUtil;
 
 class Program {
     static int Main(string[] args) {
-        AppDomain.CurrentDomain.AssemblyLoad +=
-            (sender, eventArgs) => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
         KifaConfigs.LoadFromSystemConfigs();
 

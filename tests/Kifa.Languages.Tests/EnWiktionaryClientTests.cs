@@ -1,7 +1,7 @@
 using Kifa.Languages.German;
 using Xunit;
 
-namespace Kifa.Languages.Tests; 
+namespace Kifa.Languages.Tests;
 
 public class EnWiktionaryClientTests {
     [Fact]

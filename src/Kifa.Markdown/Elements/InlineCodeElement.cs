@@ -1,4 +1,4 @@
-namespace Kifa.Markdown.Elements; 
+namespace Kifa.Markdown.Elements;
 
 public class InlineCodeElement : MarkdownElement {
     public string Code { get; set; }

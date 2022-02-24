@@ -1,4 +1,4 @@
-namespace Kifa.Api.Files; 
+namespace Kifa.Api.Files;
 
 public enum CloudFormatType {
     V1,

@@ -5,22 +5,20 @@ using Kifa.Configs;
 using Kifa.IO;
 using Xunit;
 
-namespace Kifa.Cloud.Google.Tests; 
+namespace Kifa.Cloud.Google.Tests;
 
 public class GoogleDriveStorageClientTests {
     public GoogleDriveStorageClientTests() {
         GetStorageClient().Delete("/Test/big.bin");
     }
 
-    const string FileSHA256 =
-        "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+    const string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
-    const string BigFileSHA256 =
-        "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
+    const string BigFileSHA256 = "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
     static GoogleDriveStorageClient GetStorageClient() {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
-            KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
         KifaConfigs.LoadFromSystemConfigs();
 
         return new GoogleDriveStorageClient {
@@ -33,12 +31,10 @@ public class GoogleDriveStorageClientTests {
         var client = GetStorageClient();
 
         using var s = client.OpenRead("/Test/2010-11-25.bin");
-        Assert.Equal(FileSHA256,
-            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+        Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
 
         // Test again for seekness.
-        Assert.Equal(FileSHA256,
-            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+        Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
     }
 
     [Fact]

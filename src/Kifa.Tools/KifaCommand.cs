@@ -6,14 +6,14 @@ using Kifa.Api.Files;
 using Kifa.Configs;
 using NLog;
 
-namespace Kifa.Tools; 
+namespace Kifa.Tools;
 
 public abstract class KifaCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     public static HashSet<string> LoggingTargets { get; set; }
 
-    public static KifaFile CurrentFolder => new KifaFile(".");
+    public static KifaFile CurrentFolder => new(".");
 
     [Option('v', "verbose", HelpText = "Show most detailed log.")]
     public virtual bool Verbose { get; set; } = false;
@@ -44,8 +44,8 @@ public abstract class KifaCommand {
     static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
     public static void Initialize() {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
-            KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
         KifaConfigs.LoadFromSystemConfigs();
 
@@ -74,7 +74,7 @@ public abstract class KifaCommand {
 
     public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceToString = null, string choiceName = null,
-        TChoice negative = default(TChoice)) {
+        TChoice negative = default) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
@@ -87,7 +87,8 @@ public abstract class KifaCommand {
 
         Console.WriteLine($"\nDefault [1]: {choiceStrings[0]}\n");
 
-        Console.Write($"Choose one from above {choiceName} [1-{choices.Count}], 1 is the default: ");
+        Console.Write(
+            $"Choose one from above {choiceName} [1-{choices.Count}], 1 is the default: ");
         var line = Console.ReadLine();
         var choice = string.IsNullOrEmpty(line) ? 0 : int.Parse(line) - 1;
         return (choice < 0 ? negative : choices[choice], choice);

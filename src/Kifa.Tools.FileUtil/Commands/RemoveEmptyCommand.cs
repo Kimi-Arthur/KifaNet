@@ -5,7 +5,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("rm-empty", HelpText = "Remove empty folders recursively.")]
 public class RemoveEmptyCommand : KifaCommand {
@@ -22,12 +22,13 @@ public class RemoveEmptyCommand : KifaCommand {
         return 0;
     }
 
-    private static bool RecursivelyRemoveEmptyFolders(string fileName) {
+    static bool RecursivelyRemoveEmptyFolders(string fileName) {
         if (!Directory.Exists(fileName)) {
             return File.Exists(fileName);
         }
 
-        if (Directory.EnumerateDirectories(fileName).Select(RecursivelyRemoveEmptyFolders).ToList().Any()) {
+        if (Directory.EnumerateDirectories(fileName).Select(RecursivelyRemoveEmptyFolders).ToList()
+            .Any()) {
             return true;
         }
 

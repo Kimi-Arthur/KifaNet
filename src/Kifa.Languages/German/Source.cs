@@ -1,4 +1,4 @@
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public enum Source {
     Dwds,

@@ -7,5 +7,6 @@ Assembly Name
 
 APIs
 ---
+
 - `Kifa.Configs.KifaConfigs`
-  - `KifaConfigs.LoadFromSystemConfigs(assemby = null)`
+    - `KifaConfigs.LoadFromSystemConfigs(assemby = null)`

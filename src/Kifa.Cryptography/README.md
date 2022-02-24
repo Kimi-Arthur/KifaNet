@@ -7,5 +7,6 @@ Assembly Name
 
 APIs
 ---
+
 - `Kifa.Cryptography.KifaCryptoStream`
-  - A `Stream` wrapping other stream with Cryptographic processing.
+    - A `Stream` wrapping other stream with Cryptographic processing.

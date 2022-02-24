@@ -4,7 +4,7 @@ using System.IO;
 using CommandLine;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.SubUtil.Commands; 
+namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("clean", HelpText = "Clean subtitle file.")]
 class CleanCommand : KifaFileCommand {

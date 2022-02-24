@@ -3,7 +3,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Kifa.Infos.Tests; 
+namespace Kifa.Infos.Tests;
 
 public class TvShowTests {
     public TvShowTests() {
@@ -21,20 +21,28 @@ public class TvShowTests {
             Region = Region.UnitedStates,
             PatternId = "multi_season",
             Seasons = new List<Season> {
-                new Season {
+                new() {
                     Id = 1,
                     AirDate = Date.Parse("2016-10-02"),
                     SeasonIdWidth = 1,
-                    Episodes = new List<Episode> {new Episode {Id = 4}}
+                    Episodes = new List<Episode> {
+                        new() {
+                            Id = 4
+                        }
+                    }
                 },
-                new Season {
+                new() {
                     Id = 2,
                     Title = "The Door",
                     SeasonIdWidth = 4,
                     EpisodeIdWidth = 1,
                     AirDate = Date.Parse("2018-04-22"),
                     Episodes = new List<Episode> {
-                        new Episode {SeasonIdWidth = 3, Id = 1, Title = "Journey Into Night"}
+                        new() {
+                            SeasonIdWidth = 3,
+                            Id = 1,
+                            Title = "Journey Into Night"
+                        }
                     }
                 }
             }
@@ -55,7 +63,15 @@ public class TvShowTests {
             Region = Region.Japan,
             PatternId = "single_season",
             Seasons = new List<Season> {
-                new Season {Id = 1, Episodes = new List<Episode> {new Episode {Id = 1, Title = "高校生"}}}
+                new() {
+                    Id = 1,
+                    Episodes = new List<Episode> {
+                        new() {
+                            Id = 1,
+                            Title = "高校生"
+                        }
+                    }
+                }
             }
         };
 

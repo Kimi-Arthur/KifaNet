@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class PatchedStream : Stream {
     Stream stream;

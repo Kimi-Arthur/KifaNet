@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NLog;
 
-namespace Kifa.Service; 
+namespace Kifa.Service;
 
 public class KifaActionResult {
     public static readonly KifaActionResult Success = new() {
@@ -41,20 +41,20 @@ public class KifaActionResult {
         }
     }
 
-    public KifaActionResult And(KifaActionResult nextResult) =>
-        Status == KifaActionStatus.OK ? nextResult : this;
+    public KifaActionResult And(KifaActionResult nextResult)
+        => Status == KifaActionStatus.OK ? nextResult : this;
 
-    public KifaActionResult And(Action nextAction) =>
-        Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
+    public KifaActionResult And(Action nextAction)
+        => Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
 
-    public KifaActionResult And(Func<KifaActionResult> nextAction) =>
-        Status == KifaActionStatus.OK ? nextAction() : this;
+    public KifaActionResult And(Func<KifaActionResult> nextAction)
+        => Status == KifaActionStatus.OK ? nextAction() : this;
 
-    public KifaActionResult<TValue> And<TValue>(KifaActionResult<TValue> nextResult) =>
-        Status == KifaActionStatus.OK ? nextResult : new KifaActionResult<TValue>(this);
+    public KifaActionResult<TValue> And<TValue>(KifaActionResult<TValue> nextResult)
+        => Status == KifaActionStatus.OK ? nextResult : new KifaActionResult<TValue>(this);
 
-    public KifaActionResult<TValue> And<TValue>(Func<TValue> nextAction) =>
-        Status == KifaActionStatus.OK
+    public KifaActionResult<TValue> And<TValue>(Func<TValue> nextAction)
+        => Status == KifaActionStatus.OK
             ? KifaActionResult<TValue>.FromAction(nextAction)
             : new KifaActionResult<TValue>(this);
 
@@ -63,12 +63,12 @@ public class KifaActionResult {
 
     public virtual string? Message { get; set; }
 
-    public override string ToString() =>
-        string.IsNullOrEmpty(Message) ? Status.ToString() : $"{Status} ({Message})";
+    public override string ToString()
+        => string.IsNullOrEmpty(Message) ? Status.ToString() : $"{Status} ({Message})";
 }
 
 public class KifaBatchActionResult : KifaActionResult {
-    public List<KifaActionResult> Results { get; set; } = new List<KifaActionResult>();
+    public List<KifaActionResult> Results { get; set; } = new();
 
     public KifaBatchActionResult Add(KifaActionResult moreResult) {
         Results.Add(moreResult);

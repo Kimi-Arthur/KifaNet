@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Globalization;
 using Kifa.Subtitle.Ass;
 
-namespace Kifa.Bilibili; 
+namespace Kifa.Bilibili;
 
 public struct BilibiliComment {
     public static bool UseBannerEffect { get; set; } = false;
@@ -27,7 +27,8 @@ public struct BilibiliComment {
 
     static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(8);
 
-    static readonly int DefaultColor = Color.FromArgb(AssStyle.DefaultSemiAlpha, Color.White).ToArgb();
+    static readonly int DefaultColor =
+        Color.FromArgb(AssStyle.DefaultSemiAlpha, Color.White).ToArgb();
 
     public string Text { get; set; }
 
@@ -54,7 +55,9 @@ public struct BilibiliComment {
         VideoTime = TimeSpan.FromSeconds(double.Parse(values[0]));
         Mode = (ModeType) int.Parse(values[1]);
         FontSize = int.Parse(values[2]);
-        var alpha = Mode == ModeType.Bottom || Mode == ModeType.Top ? 255 : AssStyle.DefaultSemiAlpha;
+        var alpha = Mode == ModeType.Bottom || Mode == ModeType.Top
+            ? 255
+            : AssStyle.DefaultSemiAlpha;
 
         TextColor = Color.FromArgb(alpha, Color.FromArgb(int.Parse(values[3])));
         if (TextColor.Value.ToArgb() == DefaultColor) {
@@ -77,26 +80,38 @@ public struct BilibiliComment {
         var textElements = new List<AssDialogueTextElement>();
         if (TextColor.HasValue) {
             textElements.Add(new AssDialogueControlTextElement {
-                Elements = new List<AssControlElement> {new PrimaryColourStyle {Value = TextColor.Value}}
+                Elements = new List<AssControlElement> {
+                    new PrimaryColourStyle {
+                        Value = TextColor.Value
+                    }
+                }
             });
         }
 
-        textElements.Add(new AssDialogueRawTextElement {Content = Text.Trim()});
+        textElements.Add(new AssDialogueRawTextElement {
+            Content = Text.Trim()
+        });
 
         return UseBannerEffect
             ? new AssDialogue {
                 Start = VideoTime,
                 End = VideoTime + DefaultDuration,
                 Layer = GetLayer(Mode),
-                Text = new AssDialogueText {TextElements = textElements},
-                Effect = new AssDialogueBannerEffect {Delay = 1500 / (100 + Text.Length)},
+                Text = new AssDialogueText {
+                    TextElements = textElements
+                },
+                Effect = new AssDialogueBannerEffect {
+                    Delay = 1500 / (100 + Text.Length)
+                },
                 Style = GetStyle(Mode)
             }
             : new AssDialogue {
                 Start = VideoTime,
                 End = VideoTime + DefaultDuration,
                 Layer = GetLayer(Mode),
-                Text = new AssDialogueText {TextElements = textElements},
+                Text = new AssDialogueText {
+                    TextElements = textElements
+                },
                 Style = GetStyle(Mode)
             };
     }

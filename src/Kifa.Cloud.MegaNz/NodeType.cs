@@ -1,4 +1,4 @@
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 public enum NodeType {
     File = 0,

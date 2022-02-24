@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssStyle : AssLine {
     public enum BorderStyleType {
@@ -16,70 +16,63 @@ public class AssStyle : AssLine {
 
     int shadow = 1;
 
-    public static AssStyle DefaultStyle { get; set; }
-        = new AssStyle {
-            Name = "Default",
-            Alignment = AssAlignment.BottomCenter
-        };
+    public static AssStyle DefaultStyle { get; set; } = new() {
+        Name = "Default",
+        Alignment = AssAlignment.BottomCenter
+    };
 
-    public static AssStyle SubtitleStyle { get; set; }
-        = new AssStyle {
-            Name = "Subtitle",
-            Alignment = AssAlignment.BottomCenter,
-            FontSize = 80,
-            MarginV = 20
-        };
+    public static AssStyle SubtitleStyle { get; set; } = new() {
+        Name = "Subtitle",
+        Alignment = AssAlignment.BottomCenter,
+        FontSize = 80,
+        MarginV = 20
+    };
 
-    public static AssStyle ToptitleStyle { get; set; }
-        = new AssStyle {
-            Name = "Toptitle",
-            Alignment = AssAlignment.TopCenter,
-            FontSize = 80,
-            MarginV = 20
-        };
+    public static AssStyle ToptitleStyle { get; set; } = new() {
+        Name = "Toptitle",
+        Alignment = AssAlignment.TopCenter,
+        FontSize = 80,
+        MarginV = 20
+    };
 
-    public static AssStyle NormalCommentStyle { get; set; }
-        = new AssStyle {
-            Name = "NormalComment",
-            Alignment = AssAlignment.TopCenter,
-            PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-            SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-            OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
-            BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
-        };
+    public static AssStyle NormalCommentStyle { get; set; } = new() {
+        Name = "NormalComment",
+        Alignment = AssAlignment.TopCenter,
+        PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+        SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+        OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+        BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
+    };
 
-    public static AssStyle RtlCommentStyle { get; set; }
-        = new AssStyle {
-            Name = "RtlComment",
-            Alignment = AssAlignment.TopCenter,
-            PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-            SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
-            OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
-            BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
-        };
+    public static AssStyle RtlCommentStyle { get; set; } = new() {
+        Name = "RtlComment",
+        Alignment = AssAlignment.TopCenter,
+        PrimaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+        SecondaryColour = Color.FromArgb(DefaultSemiAlpha, Color.White),
+        OutlineColour = Color.FromArgb(DefaultSemiAlpha, Color.Black),
+        BackColour = Color.FromArgb(DefaultSemiAlpha, Color.Black)
+    };
 
-    public static AssStyle TopCommentStyle { get; set; }
-        = new AssStyle {
-            Name = "TopComment",
-            Alignment = AssAlignment.TopCenter,
-            PrimaryColour = Color.White,
-            SecondaryColour = Color.White,
-            OutlineColour = Color.Black,
-            BackColour = Color.Black
-        };
+    public static AssStyle TopCommentStyle { get; set; } = new() {
+        Name = "TopComment",
+        Alignment = AssAlignment.TopCenter,
+        PrimaryColour = Color.White,
+        SecondaryColour = Color.White,
+        OutlineColour = Color.Black,
+        BackColour = Color.Black
+    };
 
-    public static AssStyle BottomCommentStyle { get; set; }
-        = new AssStyle {
-            Name = "BottomComment",
-            Alignment = AssAlignment.BottomCenter,
-            PrimaryColour = Color.White,
-            SecondaryColour = Color.White,
-            OutlineColour = Color.Black,
-            BackColour = Color.Black
-        };
+    public static AssStyle BottomCommentStyle { get; set; } = new() {
+        Name = "BottomComment",
+        Alignment = AssAlignment.BottomCenter,
+        PrimaryColour = Color.White,
+        SecondaryColour = Color.White,
+        OutlineColour = Color.Black,
+        BackColour = Color.Black
+    };
 
     public static List<AssStyle> Styles
-        => new List<AssStyle> {
+        => new() {
             DefaultStyle,
             SubtitleStyle,
             ToptitleStyle,

@@ -4,10 +4,10 @@ using HtmlAgilityPack;
 using Kifa.Markdown.Converters;
 using Kifa.Markdown.Elements;
 
-namespace Kifa.Markdown; 
+namespace Kifa.Markdown;
 
 public abstract class HtmlMarkdownConverter {
-    public static List<HtmlMarkdownConverter> Converters { get; set; } = new List<HtmlMarkdownConverter> {
+    public static List<HtmlMarkdownConverter> Converters { get; set; } = new() {
         new HeadingConverter(),
         new LinkConverter(),
         new ParagraphConverter(),

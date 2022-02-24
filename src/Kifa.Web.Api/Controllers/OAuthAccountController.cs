@@ -18,8 +18,8 @@ public abstract class
         return account?.Id != null ? base.Get(id, refresh) : AccountAdd(id);
     }
 
-    public RedirectResult AccountAdd(string id) =>
-        Redirect(new TAccount().GetAuthUrl(this.ForAction(nameof(AccountRedirect)), id));
+    public RedirectResult AccountAdd(string id)
+        => Redirect(new TAccount().GetAuthUrl(this.ForAction(nameof(AccountRedirect)), id));
 
     [HttpGet("$redirect")]
     public IActionResult AccountRedirect([FromQuery] string code, [FromQuery] string state) {

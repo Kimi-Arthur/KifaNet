@@ -1,4 +1,3 @@
-
 POST {{server}}/api/tv_shows/LEGAL HIGH
 Content-Type: text/json
 

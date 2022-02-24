@@ -9,7 +9,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 public class MegaApiClient {
     const int ApiRequestAttempts = 10;
@@ -17,8 +17,8 @@ public class MegaApiClient {
 
     public static int BufferSize = 8192;
 
-    static readonly Uri BaseApiUri = new Uri("https://g.api.mega.co.nz/cs");
-    static readonly Uri BaseUri = new Uri("https://mega.nz");
+    static readonly Uri BaseApiUri = new("https://g.api.mega.co.nz/cs");
+    static readonly Uri BaseUri = new("https://mega.nz");
 
     readonly WebClient webClient;
     byte[] masterKey;
@@ -466,9 +466,7 @@ public class MegaApiClient {
 
     TResponse Request<TResponse>(RequestBase request, object context = null)
         where TResponse : class {
-        var dataRequest = JsonConvert.SerializeObject(new object[] {
-            request
-        });
+        var dataRequest = JsonConvert.SerializeObject(new object[] { request });
         var uri = GenerateUrl();
         object jsonData = null;
         var currentAttempt = 0;

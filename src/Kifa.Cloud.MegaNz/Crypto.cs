@@ -29,7 +29,7 @@ using System;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 class Crypto {
     static readonly byte[] DefaultIv = new byte[16];
@@ -119,8 +119,8 @@ class Crypto {
             return JsonConvert.DeserializeObject<Attributes>(decryptedAttributes.ToUTF8String()
                 .Substring(4));
         } catch (Exception ex) {
-            return new Attributes(string.Format("Attribute deserialization failed: {0}",
-                ex.Message));
+            return new Attributes(
+                string.Format("Attribute deserialization failed: {0}", ex.Message));
         }
     }
 
@@ -131,9 +131,9 @@ class Crypto {
     public static BigInteger[] GetRsaPrivateKeyComponents(byte[] encodedRsaPrivateKey,
         byte[] masterKey) {
         // We need to add padding to obtain multiple of 16
-        encodedRsaPrivateKey =
-            encodedRsaPrivateKey.CopySubArray(encodedRsaPrivateKey.Length +
-                                              (16 - encodedRsaPrivateKey.Length % 16));
+        encodedRsaPrivateKey = encodedRsaPrivateKey.CopySubArray(encodedRsaPrivateKey.Length +
+                                                                 (16 - encodedRsaPrivateKey.Length %
+                                                                     16));
         var rsaPrivateKey = DecryptKey(encodedRsaPrivateKey, masterKey);
 
         // rsaPrivateKeyComponents[0] => First factor p

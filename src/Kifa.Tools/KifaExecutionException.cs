@@ -1,6 +1,6 @@
 using System;
 
-namespace Kifa.Tools; 
+namespace Kifa.Tools;
 
 public class KifaExecutionException : Exception {
     public KifaExecutionException() {
@@ -9,6 +9,7 @@ public class KifaExecutionException : Exception {
     public KifaExecutionException(string? message) : base(message) {
     }
 
-    public KifaExecutionException(string? message, Exception? innerException) : base(message, innerException) {
+    public KifaExecutionException(string? message, Exception? innerException) : base(message,
+        innerException) {
     }
 }

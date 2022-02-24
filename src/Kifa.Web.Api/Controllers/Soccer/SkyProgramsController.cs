@@ -13,16 +13,16 @@ namespace Kifa.Web.Api.Controllers.Soccer;
 [Route("api/" + SkyProgram.ModelId)]
 public class SkyProgramsController : KifaDataController<SkyProgram, SkyProgramJsonServiceClient> {
     [HttpGet("$add_for_day")]
-    public KifaApiActionResult<List<SkyProgram>> AddForDay(int dayOffset) =>
-        Client.AddForDay(dayOffset);
+    public KifaApiActionResult<List<SkyProgram>> AddForDay(int dayOffset)
+        => Client.AddForDay(dayOffset);
 }
 
 public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
     SkyProgramServiceClient {
     static readonly HttpClient NoAuthClient = new();
 
-    public List<SkyProgram> AddForDay(int dayOffset) =>
-        AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "de"))
+    public List<SkyProgram> AddForDay(int dayOffset)
+        => AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "de"))
             .ToList();
 
     public List<SkyProgram> AddForDayAndLanguage(int dayOffset, string language) {
@@ -89,15 +89,15 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
     static readonly Regex PartRegex = new(@" \((Part|Parte|Partie|Teil) .*\)$");
     static string MergeTitle(string title) => PartRegex.Replace(title, "");
 
-    static readonly Regex backgroundImageLinkRegex = new Regex(@"(https://.*)\?");
+    static readonly Regex backgroundImageLinkRegex = new(@"(https://.*)\?");
 
-    static string ParseBackgroundImageLink(string style) =>
-        backgroundImageLinkRegex.Match(style).Groups[1].Value;
+    static string ParseBackgroundImageLink(string style)
+        => backgroundImageLinkRegex.Match(style).Groups[1].Value;
 
     static Dictionary<string, List<string>>? channels;
 
-    public static Dictionary<string, List<string>> Channels =>
-        channels ??= new() {
+    public static Dictionary<string, List<string>> Channels
+        => channels ??= new Dictionary<string, List<string>> {
             { "en", FetchChannelsForLanguage("https://sport.sky.ch/en/live-of-tv") },
             { "de", FetchChannelsForLanguage("https://sport.sky.ch/de/live-auf-tv") },
             { "it", FetchChannelsForLanguage("https://sport.sky.ch/it/in-diretta-sulla-TV") },

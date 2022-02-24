@@ -6,12 +6,11 @@ using Kifa.Cloud.MegaNz;
 using Kifa.IO;
 using Kifa.Service;
 
-namespace Kifa.Cloud.MegaNz.Tests; 
+namespace Kifa.Cloud.MegaNz.Tests;
 
 [TestClass]
 public class MegaNzStorageClientTests {
-    readonly string FileSHA256 =
-        "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+    readonly string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
     [TestMethod]
     public void ExistsTest() {
@@ -93,7 +92,10 @@ public class MegaNzStorageClientTests {
         var client = GetStorageClient();
 
         var files = new[] {
-            "/Test/2010-11-25.bin_bak", "/Test/2010-11-25.bin_1", "/Test/2010-11-25.bin_2", "/Test/new/upload.bin",
+            "/Test/2010-11-25.bin_bak",
+            "/Test/2010-11-25.bin_1",
+            "/Test/2010-11-25.bin_2",
+            "/Test/new/upload.bin",
             "/Test/new/"
         };
 
@@ -106,7 +108,7 @@ public class MegaNzStorageClientTests {
     }
 
     static MegaNzStorageClient GetStorageClient()
-        => new MegaNzStorageClient {
+        => new() {
             AccountId = "test"
         };
 }

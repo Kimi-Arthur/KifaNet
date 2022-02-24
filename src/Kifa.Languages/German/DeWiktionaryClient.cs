@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class DeWiktionaryClient {
     static HttpClient wiktionaryClient = new();
@@ -44,8 +44,10 @@ public class DeWiktionaryClient {
 
     public GermanWord GetWord(string wordId) {
         var doc = new HtmlDocument();
-        doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/{wordId}").Result);
-        var pageContentNodes = doc.DocumentNode.SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
+        doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/{wordId}")
+            .Result);
+        var pageContentNodes = doc.DocumentNode
+            .SelectSingleNode(".//div[@class='mw-parser-output']").ChildNodes;
         var inDeutsch = false;
         var inSection = false;
         var inAudio = false;
@@ -94,11 +96,11 @@ public class DeWiktionaryClient {
                         }
                     }
 
-                    if (word.NounForms.Count == 0 && node.Name == "table" && node.HasClass("wikitable") &&
-                        wordType == WordType.Noun) {
+                    if (word.NounForms.Count == 0 && node.Name == "table" &&
+                        node.HasClass("wikitable") && wordType == WordType.Noun) {
                         var selector = new Func<int, int, string>((row, column) => {
-                            var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]").InnerText.Split("\n")
-                                .First().Split(" ").Last();
+                            var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]")
+                                .InnerText.Split("\n").First().Split(" ").Last();
                             return form == "—" ? null : form;
                         });
 
@@ -123,8 +125,8 @@ public class DeWiktionaryClient {
                         };
 
                         foreach (var nounForm in word.NounForms.Values) {
-                            foreach (var number in nounForm.Where(e => e.Value == null).Select(e => e.Key)
-                                         .ToList()) {
+                            foreach (var number in nounForm.Where(e => e.Value == null)
+                                         .Select(e => e.Key).ToList()) {
                                 nounForm.Remove(number);
                             }
                         }
@@ -144,11 +146,13 @@ public class DeWiktionaryClient {
                                 word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
                                     new HashSet<string>());
                             word.PronunciationAudioLinks[Source.Wiktionary].UnionWith(audioNodes
-                                .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}").ToHashSet());
+                                .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}")
+                                .ToHashSet());
                         }
                     }
                 }
-            } else if (node.Name == "h2" && node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {
+            } else if (node.Name == "h2" &&
+                       node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {
                 inDeutsch = true;
             }
         }
@@ -159,10 +163,11 @@ public class DeWiktionaryClient {
     void FillVerbForms(GermanWord word) {
         // TODO(improve): use some state machine lib.
         var doc = new HtmlDocument();
-        doc.LoadHtml(wiktionaryClient.GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);
-        var rows = doc.DocumentNode.SelectNodes(".//tr|.//h2")
-            .SkipWhile(node => node.Name != "h2" || !(node.InnerText.StartsWith($"{word.Id} (Konjugation)") &&
-                                                      node.InnerText.EndsWith(" (Deutsch)"))).Skip(1)
+        doc.LoadHtml(wiktionaryClient
+            .GetStringAsync($"https://de.wiktionary.org/wiki/Flexion:{word.Id}").Result);
+        var rows = doc.DocumentNode.SelectNodes(".//tr|.//h2").SkipWhile(node
+                => node.Name != "h2" || !(node.InnerText.StartsWith($"{word.Id} (Konjugation)") &&
+                                          node.InnerText.EndsWith(" (Deutsch)"))).Skip(1)
             .TakeWhile(node => node.Name != "h2").ToList();
 
         VerbFormType? state = null;
@@ -176,14 +181,15 @@ public class DeWiktionaryClient {
                 state = FormMapping[form];
                 word.VerbForms[state.Value] = new Dictionary<Person, string>();
             } else if (state != null) {
-                var cells = row.SelectNodes("./td")?.SkipWhile(c => c.InnerTextTrimmed() == "").ToList();
+                var cells = row.SelectNodes("./td")?.SkipWhile(c => c.InnerTextTrimmed() == "")
+                    .ToList();
                 if (cells?.Count > 1) {
                     var person = cells[0].InnerTextTrimmed();
                     if (PersonMapping.ContainsKey(person)) {
                         var p = PersonMapping[cells[0].InnerTextTrimmed()];
                         word.VerbForms[state.Value][p] = Normalize(
-                            (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed().Split("<br>")[0],
-                            state.Value, p);
+                            (cells[1].SelectSingleNode("p") ?? cells[1]).InnerHtmlTrimmed()
+                            .Split("<br>")[0], state.Value, p);
                     }
                 }
             }
@@ -191,13 +197,14 @@ public class DeWiktionaryClient {
     }
 
     static string Normalize(string s, VerbFormType v, Person p) {
-        var value = (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s)
+        var value =
+            (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s)
             .Trim(' ', ',');
         return v == VerbFormType.Imperative && !value.EndsWith("!") ? value + "!" : value;
     }
 
-    static WordType ParseWordType(string id) =>
-        id.Split(",").First() switch {
+    static WordType ParseWordType(string id)
+        => id.Split(",").First() switch {
             "Adjektiv" => WordType.Adjective,
             "Postposition" => WordType.Postposition,
             "Präposition" => WordType.Preposition,

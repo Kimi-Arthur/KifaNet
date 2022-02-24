@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kifa.Service; 
+namespace Kifa.Service;
 
 public static class TranslatableExtension {
     public static TDataModel GetTranslated<TDataModel>(this TDataModel data, string language)

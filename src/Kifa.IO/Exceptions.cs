@@ -1,10 +1,9 @@
 using System;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class StorageException : Exception {
 }
 
 public class InsufficientStorageException : StorageException {
-        
 }

@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using NLog;
 
-namespace Kifa.Tools; 
+namespace Kifa.Tools;
 
 public class KifaExecutionHandler<TArgument> {
     readonly Logger logger;
 
     public List<(TArgument argument, KifaExecutionException exception)> Errors { get; set; } =
-        new List<(TArgument argument, KifaExecutionException exception)>();
+        new();
 
     public KifaExecutionHandler(Logger logger) {
         this.logger = logger;

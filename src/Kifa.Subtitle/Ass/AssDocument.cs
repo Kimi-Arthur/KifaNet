@@ -3,16 +3,15 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssDocument {
-    static readonly Regex sectionHeaderPattern = new Regex(@"^\[.*\]$");
-    static readonly Regex separator = new Regex("(\r)?\n");
+    static readonly Regex sectionHeaderPattern = new(@"^\[.*\]$");
+    static readonly Regex separator = new("(\r)?\n");
 
-    public List<AssSection> Sections { get; set; } = new List<AssSection>();
+    public List<AssSection> Sections { get; set; } = new();
 
-    public override string ToString()
-        => string.Join("\n", Sections.Select(s => s.ToString()));
+    public override string ToString() => string.Join("\n", Sections.Select(s => s.ToString()));
 
     public static AssDocument Parse(Stream stream) {
         using var sr = new StreamReader(stream);

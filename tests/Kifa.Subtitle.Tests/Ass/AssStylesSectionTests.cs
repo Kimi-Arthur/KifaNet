@@ -3,14 +3,14 @@ using System.Drawing;
 using Kifa.Subtitle.Ass;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Ass; 
+namespace Kifa.Subtitle.Tests.Ass;
 
 public class AssStylesSectionTests {
     [Fact]
     public void BasicTest() {
         var stylesSection = new AssStylesSection {
             Styles = new List<AssStyle> {
-                new AssStyle {
+                new() {
                     Name = "Default",
                     FontName = "simhei",
                     FontSize = 28,
@@ -35,7 +35,7 @@ public class AssStylesSectionTests {
                     MarginV = 10,
                     Encoding = 1
                 },
-                new AssStyle {
+                new() {
                     Name = "staff",
                     FontName = "youyuan",
                     FontSize = 26,
@@ -63,10 +63,11 @@ public class AssStylesSectionTests {
             }
         };
 
-        Assert.Equal("[V4+ Styles]\n"
-                     + "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding\n"
-                     + "Style: Default,simhei,28,&HFFFFFFFF,&HFF000000,&HFF111111,&HFF0D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1\n"
-                     + "Style: staff,youyuan,26,&HFFEBEBEB,&HFF000000,&HD7000000,&HFF000000,-1,0,0,0,100,100,0,0.00,1,0,2,2,15,15,10,1\n",
+        Assert.Equal(
+            "[V4+ Styles]\n" +
+            "Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding\n" +
+            "Style: Default,simhei,28,&HFFFFFFFF,&HFF000000,&HFF111111,&HFF0D0D0D,-1,0,0,0,100,100,1,0.00,1,2,0,2,30,30,10,1\n" +
+            "Style: staff,youyuan,26,&HFFEBEBEB,&HFF000000,&HD7000000,&HFF000000,-1,0,0,0,100,100,0,0.00,1,0,2,2,15,15,10,1\n",
             stylesSection.ToString());
     }
 }

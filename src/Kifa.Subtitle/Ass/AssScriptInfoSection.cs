@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssScriptInfoSection : AssSection {
     public const int DefaultPlayResX = 384;

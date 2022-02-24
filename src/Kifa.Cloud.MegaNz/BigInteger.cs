@@ -284,8 +284,8 @@ public class BigInteger {
         data = new uint[maxLength];
 
         for (int i = inData.Length - 1, j = 0; i >= 3; i -= 4, j++) {
-            data[j] = (uint) ((inData[i - 3] << 24) + (inData[i - 2] << 16) +
-                              (inData[i - 1] << 8) + inData[i]);
+            data[j] = (uint) ((inData[i - 3] << 24) + (inData[i - 2] << 16) + (inData[i - 1] << 8) +
+                              inData[i]);
         }
 
         if (leftOver == 1) {
@@ -334,13 +334,13 @@ public class BigInteger {
     // For BigInteger bi = 10;
     //***********************************************************************
 
-    public static implicit operator BigInteger(long value) => new BigInteger(value);
+    public static implicit operator BigInteger(long value) => new(value);
 
-    public static implicit operator BigInteger(ulong value) => new BigInteger(value);
+    public static implicit operator BigInteger(ulong value) => new(value);
 
-    public static implicit operator BigInteger(int value) => new BigInteger(value);
+    public static implicit operator BigInteger(int value) => new(value);
 
-    public static implicit operator BigInteger(uint value) => new BigInteger((ulong) value);
+    public static implicit operator BigInteger(uint value) => new((ulong) value);
 
 
     //***********************************************************************
@@ -463,8 +463,7 @@ public class BigInteger {
                 ulong mcarry = 0;
                 for (int j = 0, k = i; j < bi2.dataLength; j++, k++) {
                     // k = i + j
-                    var val = bi1.data[i] * (ulong) bi2.data[j] +
-                              result.data[k] + mcarry;
+                    var val = bi1.data[i] * (ulong) bi2.data[j] + result.data[k] + mcarry;
 
                     result.data[k] = (uint) (val & 0xFFFFFFFF);
                     mcarry = val >> 32;
@@ -579,7 +578,7 @@ public class BigInteger {
     // Overloading of unary >> operators
     //***********************************************************************
 
-    public static BigInteger operator >>(BigInteger bi1, int shiftVal) {
+    public static BigInteger operator >> (BigInteger bi1, int shiftVal) {
         var result = new BigInteger(bi1);
         result.dataLength = shiftRight(result.data, shiftVal);
 
@@ -802,8 +801,8 @@ public class BigInteger {
     // Algorithm taken from [1]
     //***********************************************************************
 
-    static void multiByteDivide(BigInteger bi1, BigInteger bi2,
-        BigInteger outQuotient, BigInteger outRemainder) {
+    static void multiByteDivide(BigInteger bi1, BigInteger bi2, BigInteger outQuotient,
+        BigInteger outRemainder) {
         var result = new uint[maxLength];
 
         var remainderLen = bi1.dataLength + 1;
@@ -941,8 +940,8 @@ public class BigInteger {
     // a divisor that has only 1 digit.
     //***********************************************************************
 
-    static void singleByteDivide(BigInteger bi1, BigInteger bi2,
-        BigInteger outQuotient, BigInteger outRemainder) {
+    static void singleByteDivide(BigInteger bi1, BigInteger bi2, BigInteger outQuotient,
+        BigInteger outRemainder) {
         var result = new uint[maxLength];
         var resultPos = 0;
 
@@ -1377,9 +1376,7 @@ public class BigInteger {
     //***********************************************************************
 
     BigInteger BarrettReduction(BigInteger x, BigInteger n, BigInteger constant) {
-        int k = n.dataLength,
-            kPlusOne = k + 1,
-            kMinusOne = k - 1;
+        int k = n.dataLength, kPlusOne = k + 1, kMinusOne = k - 1;
 
         var q1 = new BigInteger();
 
@@ -1432,8 +1429,7 @@ public class BigInteger {
             var t = i;
             for (var j = 0; j < n.dataLength && t < kPlusOne; j++, t++) {
                 // t = i + j
-                var val = q3.data[i] * (ulong) n.data[j] +
-                          r2.data[t] + mcarry;
+                var val = q3.data[i] * (ulong) n.data[j] + r2.data[t] + mcarry;
 
                 r2.data[t] = (uint) (val & 0xFFFFFFFF);
                 mcarry = val >> 32;
@@ -1970,8 +1966,7 @@ public class BigInteger {
     // k must be odd.  i.e LSB == 1
     //***********************************************************************
 
-    static BigInteger[] LucasSequenceHelper(BigInteger P, BigInteger Q,
-        BigInteger k, BigInteger n,
+    static BigInteger[] LucasSequenceHelper(BigInteger P, BigInteger Q, BigInteger k, BigInteger n,
         BigInteger constant, int s) {
         var result = new BigInteger[3];
 
@@ -1984,10 +1979,7 @@ public class BigInteger {
 
         // v = v0, v1 = v1, u1 = u1, Q_k = Q^0
 
-        BigInteger v = 2 % n,
-            Q_k = 1 % n,
-            v1 = P % n,
-            u1 = Q_k;
+        BigInteger v = 2 % n, Q_k = 1 % n, v1 = P % n, u1 = Q_k;
         var flag = true;
 
         for (var i = k.dataLength - 1; i >= 0; i--) // iterate on the binary expansion of k

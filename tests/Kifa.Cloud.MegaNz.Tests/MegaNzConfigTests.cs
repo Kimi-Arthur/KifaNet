@@ -2,7 +2,7 @@
 using Kifa.Cloud.MegaNz;
 using Kifa.Service;
 
-namespace Kifa.Cloud.MegaNz.Tests; 
+namespace Kifa.Cloud.MegaNz.Tests;
 
 [TestClass]
 public class MegaNzConfigTests {

@@ -12,8 +12,8 @@ public class TestDataModelWithVirtualLinks : DataModel<TestDataModelWithVirtualL
 
     public string? Data { get; set; }
 
-    public override SortedSet<string> GetVirtualItems() =>
-        Data == null
+    public override SortedSet<string> GetVirtualItems()
+        => Data == null
             ? new SortedSet<string>()
             : new SortedSet<string> {
                 VirtualItemPrefix + Data
@@ -212,41 +212,41 @@ public class LinkTests : IDisposable {
         var items = client.List();
         items.Should().HaveCount(3).And.Contain(
             new KeyValuePair<string, TestDataModelWithVirtualLinks>[] {
-                new("test", new() {
+                new("test", new TestDataModelWithVirtualLinks {
                     Id = "test",
                     Data = "very good data",
-                    Metadata = new() {
-                        Linking = new() {
-                            Links = new() {
+                    Metadata = new DataMetadata {
+                        Linking = new LinkingMetadata {
+                            Links = new SortedSet<string> {
                                 "new_test"
                             },
-                            VirtualLinks = new() {
+                            VirtualLinks = new SortedSet<string> {
                                 "/$/very good data"
                             }
                         }
                     }
                 }),
-                new("new_test", new() {
+                new("new_test", new TestDataModelWithVirtualLinks {
                     Id = "new_test",
                     Data = "very good data",
-                    Metadata = new() {
-                        Linking = new() {
+                    Metadata = new DataMetadata {
+                        Linking = new LinkingMetadata {
                             Target = "test",
-                            Links = new() {
+                            Links = new SortedSet<string> {
                                 "new_test"
                             },
-                            VirtualLinks = new() {
+                            VirtualLinks = new SortedSet<string> {
                                 "/$/very good data"
                             }
                         }
                     }
                 }),
-                new("test1", new() {
+                new("test1", new TestDataModelWithVirtualLinks {
                     Id = "test1",
                     Data = "ok data",
-                    Metadata = new() {
-                        Linking = new() {
-                            VirtualLinks = new() {
+                    Metadata = new DataMetadata {
+                        Linking = new LinkingMetadata {
+                            VirtualLinks = new SortedSet<string> {
                                 "/$/ok data"
                             }
                         }

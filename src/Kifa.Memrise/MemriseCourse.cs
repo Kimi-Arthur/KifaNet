@@ -3,7 +3,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
-namespace Kifa.Memrise; 
+namespace Kifa.Memrise;
 
 public class MemriseCourse : DataModel<MemriseCourse> {
     public const string ModelId = "memrise/courses";
@@ -14,7 +14,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
 
     // Map from column name to data-key.
     public Dictionary<string, string> Columns { get; set; }
-        
+
     // Map from level name to its id. The name doesn't have to comply with the actual level name.
     public Dictionary<string, string> Levels { get; set; }
 
@@ -30,5 +30,6 @@ public class MemriseCourse : DataModel<MemriseCourse> {
 public interface MemriseCourseServiceClient : KifaServiceClient<MemriseCourse> {
 }
 
-public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>, MemriseCourseServiceClient {
+public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>,
+    MemriseCourseServiceClient {
 }

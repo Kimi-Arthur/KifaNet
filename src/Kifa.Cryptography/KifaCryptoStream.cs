@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Kifa.Cryptography; 
+namespace Kifa.Cryptography;
 
 public class KifaCryptoStream : Stream {
     readonly bool needBlockAhead;
@@ -12,7 +12,8 @@ public class KifaCryptoStream : Stream {
     Stream stream;
     ICryptoTransform transform;
 
-    public KifaCryptoStream(Stream stream, ICryptoTransform transform, long outputLength, bool needBlockAhead) {
+    public KifaCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
+        bool needBlockAhead) {
         this.stream = stream;
         Length = outputLength;
         this.needBlockAhead = needBlockAhead;
@@ -70,7 +71,8 @@ public class KifaCryptoStream : Stream {
 
         if (padBuffer != null) {
             var leftOverCount = (int) Math.Min(Position.RoundUp(BlockSize) - Position, count);
-            Buffer.BlockCopy(padBuffer, (int) (Position % BlockSize), buffer, offset, leftOverCount);
+            Buffer.BlockCopy(padBuffer, (int) (Position % BlockSize), buffer, offset,
+                leftOverCount);
 
             Position += leftOverCount;
             readCount += leftOverCount;
@@ -95,8 +97,8 @@ public class KifaCryptoStream : Stream {
             }
         } else {
             var internalToRead =
-                (int) ((Position + count - readCount).RoundUp(BlockSize) - Position.RoundDown(BlockSize)) +
-                (needBlockAhead ? BlockSize : 0);
+                (int) ((Position + count - readCount).RoundUp(BlockSize) -
+                       Position.RoundDown(BlockSize)) + (needBlockAhead ? BlockSize : 0);
             var internalBuffer = new byte[internalToRead];
 
             if (stream.CanSeek) {
@@ -119,7 +121,8 @@ public class KifaCryptoStream : Stream {
             }
         }
 
-        Buffer.BlockCopy(tmp, (int) (Position % BlockSize), buffer, offset + readCount, count - readCount);
+        Buffer.BlockCopy(tmp, (int) (Position % BlockSize), buffer, offset + readCount,
+            count - readCount);
 
         Position += count - readCount;
         var padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;

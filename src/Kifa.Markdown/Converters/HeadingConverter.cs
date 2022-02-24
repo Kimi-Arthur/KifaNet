@@ -4,10 +4,10 @@ using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
 
-namespace Kifa.Markdown.Converters; 
+namespace Kifa.Markdown.Converters;
 
 public class HeadingConverter : HtmlMarkdownConverter {
-    static readonly Regex TagPattern = new Regex(@"h(\d+)");
+    static readonly Regex TagPattern = new(@"h(\d+)");
 
     public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) {
         var match = TagPattern.Match(node.Name);

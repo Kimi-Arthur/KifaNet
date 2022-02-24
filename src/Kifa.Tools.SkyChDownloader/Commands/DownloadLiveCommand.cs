@@ -4,7 +4,7 @@ using Kifa.Service;
 using Kifa.SkyCh;
 using NLog;
 
-namespace Kifa.Tools.SkyChDownloader.Commands; 
+namespace Kifa.Tools.SkyChDownloader.Commands;
 
 [Verb("live", HelpText = "Download program with id from Live TV page.")]
 public class DownloadLiveCommand : KifaCommand {

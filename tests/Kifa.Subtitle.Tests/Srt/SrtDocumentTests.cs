@@ -1,15 +1,12 @@
 using Kifa.Subtitle.Srt;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Srt; 
+namespace Kifa.Subtitle.Tests.Srt;
 
 public class SrtDocumentTests {
-    const string Content = "168\n" + "00:20:41,150 --> 00:20:45,109\n" +
-                           "- How did he do that?\n" +
-                           "- Made him an offer he couldn't refuse.\n\n" +
-                           "169\n" +
-                           "00:19:50,150 --> 00:19:55,109\n" +
-                           "- How did he do that?\n" +
+    const string Content = "168\n" + "00:20:41,150 --> 00:20:45,109\n" + "- How did he do that?\n" +
+                           "- Made him an offer he couldn't refuse.\n\n" + "169\n" +
+                           "00:19:50,150 --> 00:19:55,109\n" + "- How did he do that?\n" +
                            "- Made him an offer he refused.";
 
     [Theory]

@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using Kifa.IO;
 using Xunit;
 
-namespace Kifa.Cryptography.Tests; 
+namespace Kifa.Cryptography.Tests;
 
 public class CounterCryptoStreamTests {
     readonly Aes aesAlgorithm = new AesCryptoServiceProvider {
@@ -15,24 +15,29 @@ public class CounterCryptoStreamTests {
 
     readonly byte[] initialCounter = "E1223699AFBDFBB5252D7CCEA23A40BF".ParseHexString();
 
-    readonly
-        List<(string rawFile, long rawSize, string rawHash, string encryptedFile, long encryptedSize, string
-            encryptedHash)> data = new() {
-            ("data-1.raw.bin", 65536, "0A43E6858977A39B861420FA31877030A0E683F1E25FFCF6A42098E6CB4C4948",
-                "data-1.ctr.bin", 65536, "BB1DC1539DE7930FCD11D720A471C58EDCB074B54372209F199CEC12C56B83EB"),
-            ("data-2.raw.bin", 13659, "8FFB7A1DFF0EDF9A670AAD939828357FB017D9C6526648BF2D31292DA983DFDF",
-                "data-2.ctr.bin", 13659, "787EE39879AB57FBEA5A9999C67FBF7FC1FB0AD0E2E3100AF8C3AD115014BF0C")
-        };
+    readonly List<(string rawFile, long rawSize, string rawHash, string encryptedFile, long
+        encryptedSize, string encryptedHash)> data = new() {
+        ("data-1.raw.bin", 65536,
+            "0A43E6858977A39B861420FA31877030A0E683F1E25FFCF6A42098E6CB4C4948", "data-1.ctr.bin",
+            65536, "BB1DC1539DE7930FCD11D720A471C58EDCB074B54372209F199CEC12C56B83EB"),
+        ("data-2.raw.bin", 13659,
+            "8FFB7A1DFF0EDF9A670AAD939828357FB017D9C6526648BF2D31292DA983DFDF", "data-2.ctr.bin",
+            13659, "787EE39879AB57FBEA5A9999C67FBF7FC1FB0AD0E2E3100AF8C3AD115014BF0C")
+    };
 
     [Fact]
     public void CounterCryptoStreamRoundTripTest() {
-        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
+        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
+                 data) {
             var transform = aesAlgorithm.CreateEncryptor();
 
             var baseStream = File.OpenRead(rawFile);
-            var baseInfo = FileInformation.GetInformation(baseStream, FileProperties.Sha256 | FileProperties.Size);
-            using var stream = new CounterCryptoStream(baseStream, transform, encryptedSize, initialCounter);
-            using var roundTripStream = new CounterCryptoStream(stream, transform, rawSize, initialCounter);
+            var baseInfo = FileInformation.GetInformation(baseStream,
+                FileProperties.Sha256 | FileProperties.Size);
+            using var stream =
+                new CounterCryptoStream(baseStream, transform, encryptedSize, initialCounter);
+            using var roundTripStream =
+                new CounterCryptoStream(stream, transform, rawSize, initialCounter);
             var roundTripInfo = FileInformation.GetInformation(roundTripStream,
                 FileProperties.Sha256 | FileProperties.Size);
 
@@ -43,7 +48,8 @@ public class CounterCryptoStreamTests {
 
     [Fact]
     public void CounterCryptoStreamDecryptionReadBasicTest() {
-        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
+        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
+                 data) {
             var transform = aesAlgorithm.CreateEncryptor();
 
             using var stream = new CounterCryptoStream(File.OpenRead(encryptedFile), transform,
@@ -75,7 +81,8 @@ public class CounterCryptoStreamTests {
 
     [Fact]
     public void CounterCryptoStreamDecryptionReadIncompleteEndTest() {
-        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
+        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
+                 data) {
             var transform = aesAlgorithm.CreateEncryptor();
 
             using var stream = new CounterCryptoStream(File.OpenRead(encryptedFile), transform,
@@ -103,7 +110,8 @@ public class CounterCryptoStreamTests {
 
     [Fact]
     public void CounterCryptoStreamEncryptionReadBasicTest() {
-        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in data) {
+        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
+                 data) {
             var transform = aesAlgorithm.CreateEncryptor();
 
             using var stream = new CounterCryptoStream(File.OpenRead(rawFile), transform,

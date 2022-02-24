@@ -3,31 +3,31 @@
   Ticks:
     - Id: guitar_main
       Total: 8
-      Ticks: [3, 1, 2, 2]
+      Ticks: [ 3, 1, 2, 2 ]
     - Id: guitar_stop
       Total: 16
-      Ticks: [16]
+      Ticks: [ 16 ]
     - Id: stop_1
       Total: 12
-      Ticks: [12]
+      Ticks: [ 12 ]
     - Id: stop_2
       Total: 24
-      Ticks: [24]
+      Ticks: [ 24 ]
     - Id: 1
       Total: 32
-      Ticks: [2, 2, 8, 2, 1, 1, 2, 2, 12]
+      Ticks: [ 2, 2, 8, 2, 1, 1, 2, 2, 12 ]
     - Id: 2
       Total: 16
-      Ticks: [3, 1, 1, 1, 1, 1, 8]
+      Ticks: [ 3, 1, 1, 1, 1, 1, 8 ]
     - Id: 3
       Total: 18
-      Ticks: [2, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2]
+      Ticks: [ 2, 1, 1, 2, 2, 2, 1, 1, 2, 2, 2 ]
     - Id: 4
       Total: 30
-      Ticks: [1, 1, 2, 2, 8, 3, 1, 2, 2, 8]
+      Ticks: [ 1, 1, 2, 2, 8, 3, 1, 2, 2, 8 ]
     - Id: 5
       Total: 32
-      Ticks: [3, 1, 2, 2, 4, 4, 2, 1, 1, 2, 2, 8]
+      Ticks: [ 3, 1, 2, 2, 4, 4, 2, 1, 1, 2, 2, 8 ]
   Lyrics:
     - Text: _我要_你在我身旁
       Ticks: 1
@@ -64,42 +64,42 @@
   Guitar:
     - Id: G
       Chord: G
-      Strings: [6, 4, 23, 4]
+      Strings: [ 6, 4, 23, 4 ]
       Ticks: guitar_main
     - Id: D
       Chord: D
-      Strings: [4, 3, 12, 3]
+      Strings: [ 4, 3, 12, 3 ]
       Ticks: guitar_main
     - Id: D7
       Chord: D7
-      Strings: [4, 3, 12, 3]
+      Strings: [ 4, 3, 12, 3 ]
       Ticks: guitar_main
     - Id: C
       Chord: C
-      Strings: [5, 3, 12, 3]
+      Strings: [ 5, 3, 12, 3 ]
       Ticks: guitar_main
     - Id: Bm
       Chord: Bm
-      Strings: [5, 3, 12, 3]
+      Strings: [ 5, 3, 12, 3 ]
       Ticks: guitar_main
     - Id: Em
       Chord: Em
-      Strings: [1]
+      Strings: [ 1 ]
       Ticks: guitar_short
     - Id: Am
       Chord: Am
-      Strings: [1]
+      Strings: [ 1 ]
       Ticks: guitar_main
     - Id: D_s
       Chord: D
-      Strings: [1]
+      Strings: [ 1 ]
       Ticks: guitar_short
     - Id: _
-      Strings: [_]
+      Strings: [ _ ]
       Ticks: guitar_stop
   Tracks:
     - Id: Guitar
-      Pieces: [_, G, G, D, D, D7, D7, G, G, C, D, Bm, Em, Am, D_s, G, C, D, G, G, C, D, G, G, C, D_s, Bm, Em, Am, D_s, G,
-               C, D, G, G, C, D, G, G, C, D, Bm, Em, Am, D, G, G]
+      Pieces: [ _, G, G, D, D, D7, D7, G, G, C, D, Bm, Em, Am, D_s, G, C, D, G, G, C, D, G, G, C, D_s, Bm, Em, Am, D_s, G,
+                C, D, G, G, C, D, G, G, C, D, Bm, Em, Am, D, G, G ]
     - Id: Lyrics
-      Pieces: [1, 2, 3, 4, 5]
+      Pieces: [ 1, 2, 3, 4, 5 ]

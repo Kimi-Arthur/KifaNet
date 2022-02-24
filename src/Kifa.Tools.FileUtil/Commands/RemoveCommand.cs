@@ -5,10 +5,11 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
-[Verb("rm", HelpText =
-    "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
+[Verb("rm",
+    HelpText =
+        "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
 class RemoveCommand : KifaCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -21,8 +22,9 @@ class RemoveCommand : KifaCommand {
     [Option('l', "link", HelpText = "Remove link only.")]
     public bool RemoveLinkOnly { get; set; }
 
-    [Option('f', "force", HelpText =
-        "Remove all instances of the file, including file with different name and in cloud.")]
+    [Option('f', "force",
+        HelpText =
+            "Remove all instances of the file, including file with different name and in cloud.")]
     public bool ForceRemove { get; set; }
 
     public override int Execute() {
@@ -55,9 +57,11 @@ class RemoveCommand : KifaCommand {
                 Console.WriteLine(file);
             }
 
-            var potentialFiles = FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
-            var potentialFileInstances = potentialFiles.Select(f =>
-                    f.Locations.Keys.Select(l => new KifaFile(l)).FirstOrDefault(l => l.Host == source.Host))
+            var potentialFiles =
+                FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
+            var potentialFileInstances = potentialFiles
+                .Select(f => f.Locations.Keys.Select(l => new KifaFile(l))
+                    .FirstOrDefault(l => l.Host == source.Host))
                 .Where(f => f != null && !localFiles.Contains(f)).ToList();
 
             if (potentialFileInstances.Any()) {
@@ -84,7 +88,8 @@ class RemoveCommand : KifaCommand {
 
                 var toRemove = file.Id == info.Id;
                 if (!toRemove && ForceRemove) {
-                    Console.Write($"Confirm removing instance {file}, not matching file name? [Y/n] ");
+                    Console.Write(
+                        $"Confirm removing instance {file}, not matching file name? [Y/n] ");
                     toRemove = !Console.ReadLine().ToLower().StartsWith("n");
                 }
 

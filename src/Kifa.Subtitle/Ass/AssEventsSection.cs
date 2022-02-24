@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssEventsSection : AssSection {
     public const string SectionHeader = "[Events]";
@@ -11,7 +11,7 @@ public class AssEventsSection : AssSection {
     public override string SectionTitle => SectionHeader;
 
     public List<string> Format
-        => new List<string> {
+        => new() {
             "Layer",
             "Start",
             "End",
@@ -24,7 +24,7 @@ public class AssEventsSection : AssSection {
             "Text"
         };
 
-    public List<AssEvent> Events { get; set; } = new List<AssEvent>();
+    public List<AssEvent> Events { get; set; } = new();
 
     public override IEnumerable<AssLine> AssLines {
         get {
@@ -51,7 +51,8 @@ public class AssEventsSection : AssSection {
                         break;
                     case "Dialogue":
                         if (headers == null) {
-                            logger.Warn("Should see header line before event line in events section.");
+                            logger.Warn(
+                                "Should see header line before event line in events section.");
                             break;
                         }
 

@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Rpc\Kifa.Rpc.csproj" />
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Rpc\Kifa.Rpc.csproj"/>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.30" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.30"/>
   </ItemGroup>
 
 </Project>

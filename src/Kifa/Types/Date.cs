@@ -1,44 +1,48 @@
 using System;
 using System.Globalization;
 
-namespace Kifa {
-    public class Date : JsonSerializable, IComparable<Date> {
-        DateTime date;
+namespace Kifa;
 
-        public int Year => date.Year;
-        public int Month => date.Month;
-        public int Day => date.Day;
+public class Date : JsonSerializable, IComparable<Date> {
+    DateTime date;
 
-        public static Date Parse(string data) => new Date {date = ParseDateTime(data)};
+    public int Year => date.Year;
+    public int Month => date.Month;
+    public int Day => date.Day;
 
-        public string ToJson() => date.ToString("yyyy-MM-dd");
+    public static Date Parse(string data)
+        => new() {
+            date = ParseDateTime(data)
+        };
 
-        public void FromJson(string data) {
-            date = ParseDateTime(data);
-        }
+    public string ToJson() => date.ToString("yyyy-MM-dd");
 
-        static DateTime ParseDateTime(string data) {
-            if (string.IsNullOrEmpty(data)) {
-                return DateTime.MinValue;
-            }
-
-            FormatException exception;
-            try {
-                return DateTime.Parse(data);
-            } catch (FormatException ex) {
-                exception = ex;
-            }
-
-            DateTime date;
-            if (DateTime.TryParseExact(data, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date)) {
-                return date;
-            }
-
-            throw exception;
-        }
-
-        public override string ToString() => ToJson();
-
-        public int CompareTo(Date? other) => date.Date.CompareTo(other?.date.Date);
+    public void FromJson(string data) {
+        date = ParseDateTime(data);
     }
+
+    static DateTime ParseDateTime(string data) {
+        if (string.IsNullOrEmpty(data)) {
+            return DateTime.MinValue;
+        }
+
+        FormatException exception;
+        try {
+            return DateTime.Parse(data);
+        } catch (FormatException ex) {
+            exception = ex;
+        }
+
+        DateTime date;
+        if (DateTime.TryParseExact(data, "yyyyMMdd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out date)) {
+            return date;
+        }
+
+        throw exception;
+    }
+
+    public override string ToString() => ToJson();
+
+    public int CompareTo(Date? other) => date.Date.CompareTo(other?.date.Date);
 }

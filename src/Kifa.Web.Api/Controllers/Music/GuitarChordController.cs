@@ -11,8 +11,8 @@ public class GuitarChordController : KifaDataController<GuitarChord, GuitarChord
     protected override bool ShouldAutoRefresh => false;
 
     [HttpGet("$get_picture")]
-    public FileStreamResult GetPicture(string id) =>
-        new(new MemoryStream(new UTF8Encoding(false).GetBytes(Client.GetPicture(id).GetXML())),
+    public FileStreamResult GetPicture(string id)
+        => new(new MemoryStream(new UTF8Encoding(false).GetBytes(Client.GetPicture(id).GetXML())),
             "image/svg+xml") {
             EnableRangeProcessing = true
         };

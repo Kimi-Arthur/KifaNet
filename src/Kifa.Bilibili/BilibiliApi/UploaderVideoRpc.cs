@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Kifa.Service;
 
-namespace Kifa.Bilibili.BilibiliApi; 
+namespace Kifa.Bilibili.BilibiliApi;
 
 public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoResponse> {
     public class UploaderVideoResponse {
@@ -71,12 +71,18 @@ public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoRespon
         "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=50&pn={page}";
 
     public UploaderVideoResponse Call(string uploaderId) {
-        var result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", "1"}});
+        var result = Call(new Dictionary<string, string> {
+            { "id", uploaderId },
+            { "page", "1" }
+        });
         var allResult = result.Clone();
         var page = 1;
         while (result.Data?.Page?.Count > allResult.Data?.List?.Vlist?.Count) {
             Thread.Sleep(TimeSpan.FromSeconds(1));
-            result = Call(new Dictionary<string, string> {{"id", uploaderId}, {"page", (++page).ToString()}});
+            result = Call(new Dictionary<string, string> {
+                { "id", uploaderId },
+                { "page", (++page).ToString() }
+            });
             allResult.Data.List.Vlist.AddRange(result.Data.List.Vlist);
         }
 

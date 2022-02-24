@@ -1,4 +1,4 @@
-﻿namespace Kifa.Languages; 
+﻿namespace Kifa.Languages;
 
 public enum WordType {
     Unknown,
@@ -15,5 +15,5 @@ public enum WordType {
     Verb,
     Particle,
     Interjection,
-    Special, // Like country, city etc.
+    Special // Like country, city etc.
 }

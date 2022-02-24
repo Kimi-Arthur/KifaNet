@@ -6,7 +6,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("add", HelpText = "Add file entry.")]
 class AddCommand : KifaCommand {
@@ -15,12 +15,10 @@ class AddCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    [Option('f', "force-check", HelpText =
-        "Check file integrity even if it is already recorded.")]
+    [Option('f', "force-check", HelpText = "Check file integrity even if it is already recorded.")]
     public bool ForceRecheck { get; set; } = false;
 
-    [Option('o', "overwrite", HelpText =
-        "Overwrite existing data if asked (with confirmation).")]
+    [Option('o', "overwrite", HelpText = "Overwrite existing data if asked (with confirmation).")]
     public bool Overwrite { get; set; } = false;
 
     public override int Execute() {
@@ -41,7 +39,8 @@ class AddCommand : KifaCommand {
         }
 
         (_, files) = KifaFile.ExpandLogicalFiles(FileNames);
-        var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists()).ToList();
+        var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists())
+            .ToList();
 
         if (filesToRemove.Count > 0) {
             Console.Write(
@@ -66,7 +65,8 @@ class AddCommand : KifaCommand {
         }
 
         if (!Overwrite) {
-            throw new KifaExecutionException($"Conflict with recorded file info! Please check: {result}");
+            throw new KifaExecutionException(
+                $"Conflict with recorded file info! Please check: {result}");
         }
 
         var info = file.CalculateInfo(FileProperties.AllVerifiable);

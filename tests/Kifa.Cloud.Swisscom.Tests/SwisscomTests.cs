@@ -5,7 +5,7 @@ using Kifa.Configs;
 using Kifa.IO;
 using Xunit;
 
-namespace Kifa.Cloud.Swisscom.Tests; 
+namespace Kifa.Cloud.Swisscom.Tests;
 
 public class SwisscomTests {
     const string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
@@ -59,7 +59,8 @@ public class SwisscomTests {
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
         using (var s = client.OpenRead("/Test/small.bin")) {
-            Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            Assert.Equal(FileSHA256,
+                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
         client.Delete("/Test/small.bin");
@@ -81,7 +82,8 @@ public class SwisscomTests {
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
         using (var s = client.OpenRead("/Test/big.bin")) {
-            Assert.Equal(BigFileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            Assert.Equal(BigFileSHA256,
+                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
         client.Delete("/Test/big.bin");
@@ -93,7 +95,8 @@ public class SwisscomTests {
 
         client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
         using (var s = client.OpenRead("/Test/2010-11-25.bin_bak")) {
-            Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            Assert.Equal(FileSHA256,
+                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
         client.Delete("/Test/2010-11-25.bin_bak");
@@ -112,7 +115,8 @@ public class SwisscomTests {
         Assert.True(client.Exists("/Test/2010-11-25.bin_2"));
 
         using (var s = client.OpenRead("/Test/2010-11-25.bin_2")) {
-            Assert.Equal(FileSHA256, FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            Assert.Equal(FileSHA256,
+                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
         client.Delete("/Test/2010-11-25.bin_2");
@@ -128,8 +132,8 @@ public class SwisscomTests {
     }
 
     static SwisscomStorageClient GetStorageClient() {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
-            KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
         KifaConfigs.LoadFromSystemConfigs();
 

@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssDialogueText {
-    static readonly Regex textElementPattern = new Regex("{[^}]*}|[^{]*");
+    static readonly Regex textElementPattern = new("{[^}]*}|[^{]*");
 
-    public List<AssDialogueTextElement> TextElements { get; set; } =
-        new List<AssDialogueTextElement>();
+    public List<AssDialogueTextElement> TextElements { get; set; } = new();
 
     public override string ToString() => string.Concat(TextElements.Select(x => x.ToString()));
 

@@ -1,6 +1,7 @@
 # myCloud API
 
 ## Auth
+
 Login and requests will have a `Authorization` header, which contains the access_token.
 
 Example: `eyfL694sQruQqjOJ8L3G8g==`
@@ -27,4 +28,5 @@ Authorization: Bearer eyfL694sQruQqjOJ8L3G8g==
 ```
 
 ## References
+
 https://github.com/thomasgassmann/mycloud-cli

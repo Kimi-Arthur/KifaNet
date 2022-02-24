@@ -3,7 +3,7 @@ using Kifa.Api.Files;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.DataUtil.Commands; 
+namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("import", HelpText = "Import data from a specific file.")]
 public class ImportCommand : KifaCommand {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssEvent : AssLine {
     public int Layer { get; set; }
@@ -21,7 +21,7 @@ public class AssEvent : AssLine {
 
     public int MarginV { get; set; }
 
-    public AssDialogueEffect Effect { get; set; } = new AssDialogueEffect();
+    public AssDialogueEffect Effect { get; set; } = new();
 
     public AssDialogueText Text { get; set; }
 
@@ -39,8 +39,8 @@ public class AssEvent : AssLine {
             Text.ToString()
         };
 
-    public static AssEvent Parse(Dictionary<string, AssStyle> styles, string eventType, IEnumerable<string> content,
-        IEnumerable<string> headers) {
+    public static AssEvent Parse(Dictionary<string, AssStyle> styles, string eventType,
+        IEnumerable<string> content, IEnumerable<string> headers) {
         AssEvent assEvent = null;
         switch (eventType) {
             case AssDialogue.EventType:
@@ -64,7 +64,8 @@ public class AssEvent : AssLine {
                     assEvent.End = TimeSpan.Parse(p.Item1);
                     break;
                 case "Style":
-                    assEvent.Style = styles.GetValueOrDefault(p.Item1) ?? styles.GetValueOrDefault("Default");
+                    assEvent.Style = styles.GetValueOrDefault(p.Item1) ??
+                                     styles.GetValueOrDefault("Default");
                     break;
                 case "Actor":
                 case "Name":

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Kifa.Bilibili.BiliplusApi; 
+namespace Kifa.Bilibili.BiliplusApi;
 
 public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoResponse> {
     public class BiliplusVideoResponse {
@@ -187,6 +187,8 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
 
     public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
 
-    public BiliplusVideoResponse Call(string aid) =>
-        Call(new Dictionary<string, string> {{"aid", aid.Substring(2)}});
+    public BiliplusVideoResponse Call(string aid)
+        => Call(new Dictionary<string, string> {
+            { "aid", aid.Substring(2) }
+        });
 }

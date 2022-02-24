@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="87.0.4280.8800" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0"/>
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="87.0.4280.8800"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
   </ItemGroup>
 
 </Project>

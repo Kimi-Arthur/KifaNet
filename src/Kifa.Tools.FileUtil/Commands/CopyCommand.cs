@@ -5,16 +5,18 @@ using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Service;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("cp", HelpText = "Copy FILE1 to FILE2. The files will be linked.")]
 class CopyCommand : KifaCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true, HelpText = "File to copy from.")]
+    [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true,
+        HelpText = "File to copy from.")]
     public string Target { get; set; }
 
-    [Value(1, MetaName = "FILE2", MetaValue = "STRING", Required = true, HelpText = "File to copy to.")]
+    [Value(1, MetaName = "FILE2", MetaValue = "STRING", Required = true,
+        HelpText = "File to copy to.")]
     public string LinkName { get; set; }
 
     [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
@@ -53,7 +55,8 @@ class CopyCommand : KifaCommand {
                 return 1;
             }
 
-            logger.LogResult(FileInformation.Client.Link(target, linkName), $"Linked {linkName} => {target}!");
+            logger.LogResult(FileInformation.Client.Link(target, linkName),
+                $"Linked {linkName} => {target}!");
         } else {
             foreach (var file in files) {
                 var linkFile = linkName + file.Substring(target.Length);
@@ -75,7 +78,8 @@ class CopyCommand : KifaCommand {
                     continue;
                 }
 
-                logger.LogResult(FileInformation.Client.Link(file, linkFile), $"Linked {linkFile} => {file}!");
+                logger.LogResult(FileInformation.Client.Link(file, linkFile),
+                    $"Linked {linkFile} => {file}!");
             }
         }
 

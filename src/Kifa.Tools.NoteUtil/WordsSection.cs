@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kifa.Tools.NoteUtil; 
+namespace Kifa.Tools.NoteUtil;
 
 public class WordsSection {
     public string Type { get; set; }

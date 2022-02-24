@@ -6,7 +6,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools; 
+namespace Kifa.Tools;
 
 public abstract partial class KifaFileCommand : KifaCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();

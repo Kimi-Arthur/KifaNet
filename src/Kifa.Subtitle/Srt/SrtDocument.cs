@@ -2,17 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Subtitle.Srt; 
+namespace Kifa.Subtitle.Srt;
 
 public class SrtDocument {
-    static readonly Regex linePattern = new Regex(@"\d+([^\n]*\n){2}([^\n]+\n)*(\n|$)");
+    static readonly Regex linePattern = new(@"\d+([^\n]*\n){2}([^\n]+\n)*(\n|$)");
 
     public List<SrtLine> Lines { get; set; }
 
     public static SrtDocument Parse(string s)
-        => new SrtDocument {
-            Lines = linePattern.Matches(s)
-                .Select(m => SrtLine.Parse(m.Value)).ToList()
+        => new() {
+            Lines = linePattern.Matches(s).Select(m => SrtLine.Parse(m.Value)).ToList()
         };
 
     public void Sort() {

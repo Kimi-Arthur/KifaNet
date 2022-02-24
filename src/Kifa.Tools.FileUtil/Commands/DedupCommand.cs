@@ -5,7 +5,7 @@ using Kifa.Api.Files;
 using Kifa.IO;
 using NLog;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("dedup", HelpText = "Deduplicate file entries.")]
 class DedupCommand : KifaCommand {
@@ -15,11 +15,13 @@ class DedupCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     [Option('u', "Unsafe",
-        HelpText = "Files to be deleted don't need to have a name sequence containing the base file.")]
+        HelpText =
+            "Files to be deleted don't need to have a name sequence containing the base file.")]
     public bool Unsafe { get; set; } = false;
 
     public override int Execute() {
-        var files = KifaFile.ExpandLogicalFiles(FileNames, fullFile: true).files.Select(f => f.FileInfo);
+        var files = KifaFile.ExpandLogicalFiles(FileNames, fullFile: true).files
+            .Select(f => f.FileInfo);
         var filesToDelete = new List<(string truth, FileInformation toDelete)>();
         foreach (var sameFiles in files.GroupBy(f => f.Sha256)) {
             var target = sameFiles.Select(f => (f.Id.Length, f.Id, f)).Min().f;
@@ -35,8 +37,8 @@ class DedupCommand : KifaCommand {
             return 0;
         }
 
-        var confirmedDeletion = SelectMany(filesToDelete, tuple => $"{tuple.toDelete.Id} ({tuple.truth})",
-            "files to delete");
+        var confirmedDeletion = SelectMany(filesToDelete,
+            tuple => $"{tuple.toDelete.Id} ({tuple.truth})", "files to delete");
         foreach (var file in confirmedDeletion.Select(d => d.toDelete)) {
             RemoveLogicalFile(file);
         }

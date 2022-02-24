@@ -1,11 +1,8 @@
 # Items
 
-
 There are a large number of items in DSP, that fall into two primary categories: Components, and Buildings.
 
 ## Contents
-
-
 
 - [1Components](https://dsp-wiki.com/Items#Components)
 - [2Buildings](https://dsp-wiki.com/Items#Buildings)
@@ -15,7 +12,8 @@ There are a large number of items in DSP, that fall into two primary categories:
 
 ## Components
 
-This category contains items that are primarily used in other recipes, but also contains some outliers such as Logistics Vessels, and the various fuel types
+This category contains items that are primarily used in other recipes, but also contains some outliers such as Logistics
+Vessels, and the various fuel types
 
 | [![Icon Iron Ore.png](https://dsp-wiki.com/images/thumb/f/fc/Icon_Iron_Ore.png/42px-Icon_Iron_Ore.png)](https://dsp-wiki.com/Iron_Ore) | [![Icon Copper Ore.png](https://dsp-wiki.com/images/thumb/9/90/Icon_Copper_Ore.png/45px-Icon_Copper_Ore.png)](https://dsp-wiki.com/Copper_Ore) | [![Icon Stone.png](https://dsp-wiki.com/images/thumb/5/5a/Icon_Stone.png/45px-Icon_Stone.png)](https://dsp-wiki.com/Stone) | [![Icon Coal.png](https://dsp-wiki.com/images/thumb/a/a2/Icon_Coal.png/45px-Icon_Coal.png)](https://dsp-wiki.com/Coal) | [![Icon Silicon Ore.png](https://dsp-wiki.com/images/thumb/d/d4/Icon_Silicon_Ore.png/44px-Icon_Silicon_Ore.png)](https://dsp-wiki.com/Silicon_Ore) | [![Icon Titanium Ore.png](https://dsp-wiki.com/images/thumb/9/91/Icon_Titanium_Ore.png/44px-Icon_Titanium_Ore.png)](https://dsp-wiki.com/Titanium_Ore) | [![Icon Water.png](https://dsp-wiki.com/images/thumb/6/65/Icon_Water.png/25px-Icon_Water.png)](https://dsp-wiki.com/Water) | [![Icon Crude Oil.png](https://dsp-wiki.com/images/thumb/8/8f/Icon_Crude_Oil.png/27px-Icon_Crude_Oil.png)](https://dsp-wiki.com/Crude_Oil) | [![Icon Hydrogen.png](https://dsp-wiki.com/images/thumb/4/42/Icon_Hydrogen.png/45px-Icon_Hydrogen.png)](https://dsp-wiki.com/Hydrogen) | [![Icon Deuterium.png](https://dsp-wiki.com/images/thumb/4/4d/Icon_Deuterium.png/45px-Icon_Deuterium.png)](https://dsp-wiki.com/Deuterium) | [![Icon Antimatter.png](https://dsp-wiki.com/images/thumb/7/78/Icon_Antimatter.png/45px-Icon_Antimatter.png)](https://dsp-wiki.com/Antimatter) | [![Icon Kimberlite Ore.png](https://dsp-wiki.com/images/thumb/5/55/Icon_Kimberlite_Ore.png/44px-Icon_Kimberlite_Ore.png)](https://dsp-wiki.com/Kimberlite_Ore) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -28,7 +26,8 @@ This category contains items that are primarily used in other recipes, but also 
 
 ## Buildings
 
-Buildings are all objects that can be directly placed on land in the game world, including for Logistics, Manufacturing, Resource Extraction and Energy Creation.
+Buildings are all objects that can be directly placed on land in the game world, including for Logistics, Manufacturing,
+Resource Extraction and Energy Creation.
 
 | [![Icon Tesla Tower.png](https://dsp-wiki.com/images/thumb/f/f1/Icon_Tesla_Tower.png/45px-Icon_Tesla_Tower.png)](https://dsp-wiki.com/Tesla_Tower) | [![Icon Wireless Power Tower.png](https://dsp-wiki.com/images/thumb/c/c7/Icon_Wireless_Power_Tower.png/45px-Icon_Wireless_Power_Tower.png)](https://dsp-wiki.com/Wireless_Power_Tower) | [![Icon Satellite Substation.png](https://dsp-wiki.com/images/thumb/d/d7/Icon_Satellite_Substation.png/45px-Icon_Satellite_Substation.png)](https://dsp-wiki.com/Satellite_Substation) | [![Icon Wind Turbine.png](https://dsp-wiki.com/images/thumb/1/14/Icon_Wind_Turbine.png/25px-Icon_Wind_Turbine.png)](https://dsp-wiki.com/Wind_Turbine) | [![Icon Thermal Power Plant.png](https://dsp-wiki.com/images/thumb/c/c5/Icon_Thermal_Power_Plant.png/45px-Icon_Thermal_Power_Plant.png)](https://dsp-wiki.com/Thermal_Power_Plant) | [![Icon Solar Panel.png](https://dsp-wiki.com/images/thumb/7/77/Icon_Solar_Panel.png/45px-Icon_Solar_Panel.png)](https://dsp-wiki.com/Solar_Panel) | [![Icon Accumulator.png](https://dsp-wiki.com/images/thumb/7/71/Icon_Accumulator.png/33px-Icon_Accumulator.png)](https://dsp-wiki.com/Accumulator) | [![Icon Full Accumulator.png](https://dsp-wiki.com/images/thumb/6/67/Icon_Full_Accumulator.png/45px-Icon_Full_Accumulator.png)](https://dsp-wiki.com/Full_Accumulator) | [![Icon Ray Receiver.png](https://dsp-wiki.com/images/thumb/7/7b/Icon_Ray_Receiver.png/45px-Icon_Ray_Receiver.png)](https://dsp-wiki.com/Ray_Receiver) | [![Icon Mini Fusion Power Plant.png](https://dsp-wiki.com/images/thumb/0/03/Icon_Mini_Fusion_Power_Plant.png/45px-Icon_Mini_Fusion_Power_Plant.png)](https://dsp-wiki.com/Mini_Fusion_Power_Plant) | [![Icon Energy Exchanger.png](https://dsp-wiki.com/images/thumb/6/64/Icon_Energy_Exchanger.png/45px-Icon_Energy_Exchanger.png)](https://dsp-wiki.com/Energy_Exchanger) | [![Icon Artificial Star.png](https://dsp-wiki.com/images/thumb/b/b6/Icon_Artificial_Star.png/45px-Icon_Artificial_Star.png)](https://dsp-wiki.com/Artificial_Star) |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -38,13 +37,19 @@ Buildings are all objects that can be directly placed on land in the game world,
 
 ## Components Quick Reference Sheet
 
-Below is a quick reference sheet that displays all of the component recipes according to their "per minute" production values. Recipes are grouped by production building. Created by Reddit user [u/oldshavingfoam](https://www.reddit.com/user/oldshavingfoam) ([original post](https://www.reddit.com/r/Dyson_Sphere_Program/comments/lbt0d2/a_lot_of_people_loved_my_early_game_recipe_sheet/)).
+Below is a quick reference sheet that displays all of the component recipes according to their "per minute" production
+values. Recipes are grouped by production building. Created by Reddit
+user [u/oldshavingfoam](https://www.reddit.com/user/oldshavingfoam) ([original post](https://www.reddit.com/r/Dyson_Sphere_Program/comments/lbt0d2/a_lot_of_people_loved_my_early_game_recipe_sheet/))
+.
 
 [![Recipe Quick Reference.jpg](https://dsp-wiki.com/images/thumb/d/d9/Recipe_Quick_Reference.jpg/100px-Recipe_Quick_Reference.jpg)](https://dsp-wiki.com/File:Recipe_Quick_Reference.jpg)
 
 ## Building Quick Reference Sheet
 
-Below is a quick reference sheet that displays all of the building recipes, along with their power consumption/production values. Created by Reddit user [u/oldshavingfoam](https://www.reddit.com/user/oldshavingfoam) ([original post](https://www.reddit.com/r/Dyson_Sphere_Program/comments/o6ocpc/as_requested_building_quick_reference_guide/)).
+Below is a quick reference sheet that displays all of the building recipes, along with their power
+consumption/production values. Created by Reddit
+user [u/oldshavingfoam](https://www.reddit.com/user/oldshavingfoam) ([original post](https://www.reddit.com/r/Dyson_Sphere_Program/comments/o6ocpc/as_requested_building_quick_reference_guide/))
+.
 
 [![Building Quick Reference.jpg](https://dsp-wiki.com/images/thumb/8/88/Building_Quick_Reference.jpg/100px-Building_Quick_Reference.jpg)](https://dsp-wiki.com/File:Building_Quick_Reference.jpg)
 

@@ -1,4 +1,4 @@
-namespace Kifa.Tools.NoteUtil; 
+namespace Kifa.Tools.NoteUtil;
 
 public class Heading {
     public int Level { get; set; }
@@ -8,6 +8,7 @@ public class Heading {
         if (!markdownLine.StartsWith("#")) {
             return null;
         }
+
         var parts = markdownLine.Split(" ", 2);
         return new Heading {
             Level = parts[0].Length,

@@ -6,7 +6,7 @@ using Kifa.Bilibili.BiliplusApi;
 using Kifa.Service;
 using Xunit;
 
-namespace Kifa.Bilibili.Tests; 
+namespace Kifa.Bilibili.Tests;
 
 public class BilibiliVideoTests {
     [Fact]
@@ -42,7 +42,9 @@ public class BilibiliVideoTests {
     [InlineData("av1757900", "【李狗嗨】可爱的雅人叔", "2014-11-29 18:19:00.000000+08:00", "LEGAL")]
     [InlineData("av27001", null, "av27001", null)]
     public void FillTest(string id, string title, string dateString, string firstTag) {
-        var video = new BilibiliVideo {Id = id};
+        var video = new BilibiliVideo {
+            Id = id
+        };
         video.Fill();
         Assert.Equal(title, video.Title);
         Assert.Contains(dateString, video.ToString());
@@ -57,7 +59,7 @@ public class BilibiliVideoTests {
         Assert.Equal("av26361000", video.Id);
         Assert.Equal("【7月】工作细胞 01【独家正版】", video.Title);
         Assert.Equal("#01", video.Description);
-        Assert.True(video.Tags.SequenceEqual(new[] {"BILIBILI正版", "TV动画"}), "Keywords differ");
+        Assert.True(video.Tags.SequenceEqual(new[] { "BILIBILI正版", "TV动画" }), "Keywords differ");
         Assert.Single(video.Pages);
         Assert.Equal("49053680", video.Pages.ElementAt(0).Cid);
         Assert.Equal("[1]肺炎链球菌", video.Pages.ElementAt(0).Title);
@@ -76,7 +78,8 @@ public class BilibiliVideoTests {
         Assert.Equal("av2044037", video.Id);
         Assert.Equal("【日语学习】发音入门基础：50音图", video.Title);
         Assert.Equal("【封面爸爸去哪儿】\r\n日语发音基础详解，查漏补缺。", video.Description);
-        Assert.True(video.Tags.SequenceEqual(new[] {"日语教程", "日语学习", "日语五十音图", "学习日语的过程"}), "Keywords differ");
+        Assert.True(video.Tags.SequenceEqual(new[] { "日语教程", "日语学习", "日语五十音图", "学习日语的过程" }),
+            "Keywords differ");
         Assert.Equal(6, video.Pages.Count());
         var data = new List<Tuple<string, string>> {
             Tuple.Create("3164090", "基础发音1：50音图あかさ"),

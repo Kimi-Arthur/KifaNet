@@ -65,8 +65,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         return data;
     }
 
-    public override KifaActionResult Set(TDataModel data) =>
-        KifaActionResult.FromAction(() => {
+    public override KifaActionResult Set(TDataModel data)
+        => KifaActionResult.FromAction(() => {
             logger.Trace($"Set {ModelId}/{data.Id}: {data}");
             data = data.Clone();
             WriteTarget(data, Get(data.Id)?.Metadata?.Linking?.VirtualLinks);
@@ -96,8 +96,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         }
     }
 
-    public override KifaActionResult Update(TDataModel data) =>
-        KifaActionResult.FromAction(() => {
+    public override KifaActionResult Update(TDataModel data)
+        => KifaActionResult.FromAction(() => {
             logger.Trace($"Update {ModelId}/{data.Id}: {data}");
             var original = Get(data.Id) ?? new TDataModel();
             foreach (var property in Properties) {
@@ -166,7 +166,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
                     WriteTarget(nextItem);
 
-                    foreach (var link in links.Concat(linking.VirtualLinks ?? new())) {
+                    foreach (var link in links.Concat(linking.VirtualLinks ??
+                                                      new SortedSet<string>())) {
                         Write(new TDataModel {
                             Id = link,
                             Metadata = new DataMetadata {

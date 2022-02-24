@@ -8,14 +8,14 @@ using System.Text;
 using System.Xml;
 using Newtonsoft.Json;
 
-namespace Kifa.Bilibili; 
+namespace Kifa.Bilibili;
 
 public class BilibiliChat {
-    readonly HttpClient client = new HttpClient(new HttpClientHandler {
+    readonly HttpClient client = new(new HttpClientHandler {
         AutomaticDecompression = DecompressionMethods.Deflate
     });
 
-    readonly List<BilibiliComment> comments = new List<BilibiliComment>();
+    readonly List<BilibiliComment> comments = new();
 
     XmlDocument rawDocument;
 
@@ -31,9 +31,9 @@ public class BilibiliChat {
     public XmlDocument RawDocument {
         get {
             if (rawDocument == null) {
-                using var s = client.GetAsync($"http://comment.bilibili.com/{Cid}.xml")
-                    .Result;
-                var content = string.Concat(s.Content.ReadAsStringAsync().Result.Where(XmlConvert.IsXmlChar));
+                using var s = client.GetAsync($"http://comment.bilibili.com/{Cid}.xml").Result;
+                var content = string.Concat(s.Content.ReadAsStringAsync().Result
+                    .Where(XmlConvert.IsXmlChar));
                 Load(new MemoryStream(Encoding.UTF8.GetBytes(content)));
             }
 

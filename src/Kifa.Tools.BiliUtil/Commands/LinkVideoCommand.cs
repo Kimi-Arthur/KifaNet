@@ -5,7 +5,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("link", HelpText = "Link video file to proper location.")]
 class LinkVideoCommand : KifaCommand {

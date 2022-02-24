@@ -16,7 +16,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 
-namespace Kifa.Memrise; 
+namespace Kifa.Memrise;
 
 public class MemriseClient : IDisposable {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -43,8 +43,8 @@ public class MemriseClient : IDisposable {
 
                 foreach (var cookie in Cookies.Split("; ")) {
                     var cookiePair = cookie.Split("=", 2);
-                    webDriver.Manage().Cookies.AddCookie(new Cookie(cookiePair[0], cookiePair[1], "app.memrise.com",
-                        "/", DateTime.Now + TimeSpan.FromDays(365)));
+                    webDriver.Manage().Cookies.AddCookie(new Cookie(cookiePair[0], cookiePair[1],
+                        "app.memrise.com", "/", DateTime.Now + TimeSpan.FromDays(365)));
                 }
             }
 
@@ -120,23 +120,25 @@ public class MemriseClient : IDisposable {
             HttpClient = HttpClient
         }.Call(WebDriver.Url, levelId).Rendered;
         var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
-        var existingThingIds = thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
+        var existingThingIds =
+            thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
             logger.Debug(
-                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId).Success}");
+                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Call(WebDriver.Url, levelId, wordId).Success}");
         }
 
         foreach (var wordId in existingThingIds.Except(wordIds)) {
             logger.Debug(
-                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordId).Success}");
+                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Call(WebDriver.Url, levelId, wordId).Success}");
         }
 
         logger.Debug(
-            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc {HttpClient = HttpClient}.Call(WebDriver.Url, levelId, wordIds).Success}");
+            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Call(WebDriver.Url, levelId, wordIds).Success}");
     }
 
-    public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, bool alwaysCheckAudio = false) {
+    public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,
+        bool alwaysCheckAudio = false) {
         var rootWord = WordClient.Get(word.RootWord);
         logger.Info($"{word.Id} => {rootWord?.Id}");
 
@@ -165,7 +167,8 @@ public class MemriseClient : IDisposable {
             existingRow = GetExistingRow(word);
             if (existingRow == null) {
                 logger.Error($"Failed to add word: {word.Id}.");
-                return new KifaActionResult<MemriseWord>(KifaActionStatus.Error, $"failed to add word {word.Id}");
+                return new KifaActionResult<MemriseWord>(KifaActionStatus.Error,
+                    $"failed to add word {word.Id}");
             }
 
             allExistingRows.Add(existingRow.Data[Course.Columns["German"]], existingRow);
@@ -214,7 +217,8 @@ public class MemriseClient : IDisposable {
             logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
-            }.Call(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken, newAudio);
+            }.Call(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken,
+                newAudio);
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
     }
@@ -230,12 +234,14 @@ public class MemriseClient : IDisposable {
         return result;
     }
 
-    Dictionary<string, string> GetHeaders() =>
-        WebDriver.FindElement(By.CssSelector("thead.columns")).FindElements(By.CssSelector("th.column"))
-            .ToDictionary(th => th.Text.Trim(), th => th.GetAttribute("data-key"));
+    Dictionary<string, string> GetHeaders()
+        => WebDriver.FindElement(By.CssSelector("thead.columns"))
+            .FindElements(By.CssSelector("th.column")).ToDictionary(th => th.Text.Trim(),
+                th => th.GetAttribute("data-key"));
 
-    MemriseWord GetExistingRow(GoetheGermanWord word) =>
-        GetExistingRow(word, TrimBracket(word.Id)) ?? GetExistingRow(word, TrimBracket(word.Meaning));
+    MemriseWord GetExistingRow(GoetheGermanWord word)
+        => GetExistingRow(word, TrimBracket(word.Id)) ??
+           GetExistingRow(word, TrimBracket(word.Meaning));
 
     MemriseWord GetExistingRow(GoetheGermanWord word, string searchQuery) {
         var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
@@ -246,9 +252,11 @@ public class MemriseClient : IDisposable {
         return GetWordsInPage().FirstOrDefault(w => SameWord(w, word));
     }
 
-    bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord) =>
-        memriseWord != null && memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id &&
-        TrimBracket(memriseWord.Data[Course.Columns["English"]]) == TrimBracket(goetheGermanWord.Meaning);
+    bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord)
+        => memriseWord != null &&
+           memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id &&
+           TrimBracket(memriseWord.Data[Course.Columns["English"]]) ==
+           TrimBracket(goetheGermanWord.Meaning);
 
     static string TrimBracket(string content) {
         var reg = new Regex(@"^(\(.*\) )?(.*)( \(.*\))?$");
@@ -258,7 +266,8 @@ public class MemriseClient : IDisposable {
     public Dictionary<string, MemriseWord> GetAllExistingRows() {
         WebDriver.Url = Course.DatabaseUrl;
 
-        var totalPageNumber = int.Parse(WebDriver.FindElements(By.CssSelector("ul.pagination > li"))[^2].Text);
+        var totalPageNumber =
+            int.Parse(WebDriver.FindElements(By.CssSelector("ul.pagination > li"))[^2].Text);
 
         var words = new Dictionary<string, MemriseWord>();
         for (var i = 0; i < totalPageNumber; i++) {
@@ -300,17 +309,19 @@ public class MemriseClient : IDisposable {
 
     Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord baseWord) {
         var data = new Dictionary<string, string> {
-            {Course.Columns["German"], word.Id},
-            {Course.Columns["English"], word.Meaning}
+            { Course.Columns["German"], word.Id },
+            { Course.Columns["English"], word.Meaning }
         };
 
         data[Course.Columns["Form"]] = word.Form ?? "";
 
-        data[Course.Columns["Pronunciation"]] = baseWord.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
+        data[Course.Columns["Pronunciation"]] =
+            baseWord.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
 
-        data[Course.Columns["Examples"]] = (word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example"))
-            ? string.Join(lineBreak, word.Examples)
-            : "";
+        data[Course.Columns["Examples"]] =
+            word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
+                ? string.Join(lineBreak, word.Examples)
+                : "";
 
         return data;
     }
@@ -325,7 +336,7 @@ public class MemriseClient : IDisposable {
 
         var audioLinks = existingRow.FindElements(By.CssSelector("td[data-key='6'] a"));
 
-        return new() {
+        return new MemriseWord {
             ThingId = existingRow.GetAttribute("data-thing-id"),
             Data = data,
             AudioLinks = audioLinks.Select(link => link.GetAttribute("data-url")).ToList()

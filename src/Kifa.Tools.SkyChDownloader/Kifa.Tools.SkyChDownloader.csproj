@@ -6,12 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+    <PackageReference Include="CommandLineParser" Version="2.6.0"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj" />
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj"/>
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
   </ItemGroup>
 
   <ItemGroup>

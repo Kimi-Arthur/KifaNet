@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 [DebuggerDisplay("Type: {Type} - Name: {Name} - Id: {Id}")]
 public class Node {
-    static readonly DateTime OriginalDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+    static readonly DateTime OriginalDateTime = new(1970, 1, 1, 0, 0, 0, 0);
 
     Node() {
     }
@@ -74,8 +74,7 @@ public class Node {
                 // This can occur when a folder is shared and the parent is shared too.
                 // Both keys are working so we use the first one
                 var serializedKey = SerializedKey.Split('/')[0];
-                var splitPosition =
-                    serializedKey.IndexOf(":", StringComparison.InvariantCulture);
+                var splitPosition = serializedKey.IndexOf(":", StringComparison.InvariantCulture);
                 var encryptedKey = serializedKey.Substring(splitPosition + 1).FromBase64();
 
                 FullKey = Crypto.DecryptKey(encryptedKey, masterKey);
@@ -86,8 +85,7 @@ public class Node {
                     Key = FullKey;
                 }
 
-                var attributes =
-                    Crypto.DecryptAttributes(SerializedAttributes.FromBase64(), Key);
+                var attributes = Crypto.DecryptAttributes(SerializedAttributes.FromBase64(), Key);
                 Name = attributes.Name;
             }
         }

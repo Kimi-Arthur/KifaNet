@@ -9,7 +9,7 @@ using Kifa.Infos;
 using Kifa.IO;
 using Season = Kifa.Infos.Season;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
 class ImportCommand : KifaCommand {
@@ -41,23 +41,21 @@ class ImportCommand : KifaCommand {
             case "tv_shows":
                 var tvShow = TvShow.Client.Get(id);
                 series = tvShow;
-                episodes = tvShow.Seasons
-                    .Where(season => seasonId <= 0 || season.Id == seasonId)
-                    .SelectMany(season => season.Episodes,
-                        (season, episode) => (season, episode)).Where(item =>
-                        episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                episodes = tvShow.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
+                    .SelectMany(season => season.Episodes, (season, episode) => (season, episode))
+                    .Where(item => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             case "animes":
                 var anime = Anime.Client.Get(id);
                 series = anime;
                 episodes = anime.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
                     .SelectMany(season => season.Episodes,
-                        (season, episode) => ((Season) season, episode)).Where(item =>
-                        episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                        (season, episode) => ((Season) season, episode)).Where(item
+                        => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             case "soccer":
-                foreach (var file in FileNames.SelectMany(path =>
-                             FileInformation.Client
+                foreach (var file in FileNames.SelectMany(path
+                             => FileInformation.Client
                                  .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
                                  .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
                     var ext = file.Substring(file.LastIndexOf(".") + 1);
@@ -73,8 +71,8 @@ class ImportCommand : KifaCommand {
                 return 1;
         }
 
-        foreach (var file in FileNames.SelectMany(path =>
-                     FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
+        foreach (var file in FileNames.SelectMany(path
+                     => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
                          Recursive))) {
             var suffix = file[file.LastIndexOf('.')..];
             var ((season, episode), index) = SelectOne(episodes,

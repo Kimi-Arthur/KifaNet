@@ -14,7 +14,7 @@ using NLog;
 using Kifa.IO;
 using Kifa.Service;
 
-namespace Kifa.Cloud.BaiduCloud; 
+namespace Kifa.Cloud.BaiduCloud;
 
 public class BaiduCloudStorageClient : StorageClient {
     const long MaxBlockCount = 1L << 10;
@@ -24,7 +24,7 @@ public class BaiduCloudStorageClient : StorageClient {
 
     static BaiduCloudConfig config;
 
-    readonly HttpClient client = new HttpClient {
+    readonly HttpClient client = new() {
         Timeout = TimeSpan.FromMinutes(30)
     };
 
@@ -52,46 +52,40 @@ public class BaiduCloudStorageClient : StorageClient {
 
         // The thread limit will help prevent errors with code 31326 and message like
         // "user is not authorized, hitcode:120".
-        Parallel.For(0, (count - 1) / maxChunkSize + 1,
-            new ParallelOptions {
-                MaxDegreeOfParallelism = DownloadThreadCount
-            },
-            i => {
-                Thread.Sleep(TimeSpan.FromSeconds(i * 4));
-                var chunkOffset = i * maxChunkSize;
-                var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
-                var readCount = 0;
+        Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {
+            MaxDegreeOfParallelism = DownloadThreadCount
+        }, i => {
+            Thread.Sleep(TimeSpan.FromSeconds(i * 4));
+            var chunkOffset = i * maxChunkSize;
+            var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
+            var readCount = 0;
 
-                while (readCount != chunkSize) {
-                    try {
-                        readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset,
-                            offset + chunkOffset,
-                            chunkSize);
-                        if (readCount != chunkSize) {
-                            logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
-                                chunkSize, offset + chunkOffset, readCount);
-                            Thread.Sleep(TimeSpan.FromSeconds(5));
-                        }
-                    } catch (Exception ex) {
-                        logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:",
-                            chunkSize,
-                            offset + chunkOffset);
+            while (readCount != chunkSize) {
+                try {
+                    readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset,
+                        offset + chunkOffset, chunkSize);
+                    if (readCount != chunkSize) {
+                        logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                            chunkSize, offset + chunkOffset, readCount);
                         Thread.Sleep(TimeSpan.FromSeconds(5));
                     }
+                } catch (Exception ex) {
+                    logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
+                        offset + chunkOffset);
+                    Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
-            });
+            }
+        });
 
         return count;
     }
 
-    int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset,
-        int count) {
+    int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset, int count) {
         logger.Trace($"Download chunk: [{offset}, {offset + count})");
 
-        var request = GetRequest(Config.APIList.DownloadFile,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+        var request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+        });
 
         while (true) {
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
@@ -114,12 +108,12 @@ public class BaiduCloudStorageClient : StorageClient {
                 request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
                 response.Dispose();
             } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
-                logger.Warn($"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
+                logger.Warn(
+                    $"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
                 config = null;
-                request = GetRequest(Config.APIList.DownloadFile,
-                    new Dictionary<string, string> {
-                        ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                    });
+                request = GetRequest(Config.APIList.DownloadFile, new Dictionary<string, string> {
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                });
                 Thread.Sleep(TimeSpan.FromSeconds(10));
             } else {
                 logger.Fatal(response.Content.ReadAsStringAsync().Result);
@@ -138,10 +132,9 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override void Delete(string path) {
-        var request = GetRequest(Config.APIList.RemovePath,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+        var request = GetRequest(Config.APIList.RemovePath, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+        });
 
         using var response = client.SendAsync(request).Result;
         if (response.GetJToken() == null) {
@@ -224,25 +217,24 @@ public class BaiduCloudStorageClient : StorageClient {
             }
         }
 
-        Retry.Run(() => { MergeBlocks(path, blockIds); },
-            (ex, i) => {
-                logger.Warn(ex, "Failed when merging");
-                Thread.Sleep(TimeSpan.FromSeconds(5));
-            });
+        Retry.Run(() => { MergeBlocks(path, blockIds); }, (ex, i) => {
+            logger.Warn(ex, "Failed when merging");
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        });
     }
 
     void UploadDirect(string path, byte[] buffer, int offset, int count) {
-        var request = GetRequest(Config.APIList.UploadFileDirect,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+        var request = GetRequest(Config.APIList.UploadFileDirect, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+        });
 
         request.Content = new ByteArrayContent(buffer, offset, count);
 
         using var response = client.SendAsync(request).Result;
         var realPath = (string) response.GetJToken()["path"];
         if (realPath != Config.RemotePathPrefix + path) {
-            throw new Exception($"Direct upload may fail: {Config.RemotePathPrefix + path}, real path: {realPath}");
+            throw new Exception(
+                $"Direct upload may fail: {Config.RemotePathPrefix + path}, real path: {realPath}");
         }
     }
 
@@ -266,10 +258,9 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     void MergeBlocks(string path, List<string> blockList) {
-        var request = GetRequest(Config.APIList.MergeBlocks,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+        var request = GetRequest(Config.APIList.MergeBlocks, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+        });
 
         request.Content = new FormUrlEncodedContent(new[] {
             new KeyValuePair<string, string>("param", JsonConvert.SerializeObject(
@@ -290,14 +281,13 @@ public class BaiduCloudStorageClient : StorageClient {
         Stream input = null) {
         fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
-        var request = GetRequest(Config.APIList.UploadFileRapid,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/')),
-                ["content_length"] = fileInformation.Size.ToString(),
-                ["content_md5"] = fileInformation.Md5,
-                ["slice_md5"] = fileInformation.SliceMd5,
-                ["content_crc32"] = fileInformation.Adler32
-            });
+        var request = GetRequest(Config.APIList.UploadFileRapid, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/')),
+            ["content_length"] = fileInformation.Size.ToString(),
+            ["content_md5"] = fileInformation.Md5,
+            ["slice_md5"] = fileInformation.SliceMd5,
+            ["content_crc32"] = fileInformation.Adler32
+        });
 
         using var response = client.SendAsync(request).Result;
         if ((string) response.GetJToken()["md5"] != fileInformation.Md5) {
@@ -307,10 +297,9 @@ public class BaiduCloudStorageClient : StorageClient {
 
     public long GetDownloadLength(string path) {
         while (true) {
-            var request = GetRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string> {
-                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                });
+            var request = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string> {
+                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+            });
 
             try {
                 using var response = client.SendAsync(request).Result;
@@ -334,17 +323,17 @@ public class BaiduCloudStorageClient : StorageClient {
             (buffer, bufferOffset, offset, count)
                 => Download(buffer, path, bufferOffset, offset, count));
 
-    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null) =>
-        api.GetRequest(new Dictionary<string, string> {
-            ["access_token"] = Account.AccessToken,
-            ["remote_path_prefix"] = Config.RemotePathPrefix
-        }.Union(parameters ?? new Dictionary<string, string>()).ToDictionary(i => i.Key, i => i.Value));
+    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null)
+        => api.GetRequest(new Dictionary<string, string> {
+                ["access_token"] = Account.AccessToken,
+                ["remote_path_prefix"] = Config.RemotePathPrefix
+            }.Union(parameters ?? new Dictionary<string, string>())
+            .ToDictionary(i => i.Key, i => i.Value));
 
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
-        var infoRequest = GetRequest(Config.APIList.GetFileInfo,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+        var infoRequest = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+        });
 
         bool needWalk;
         using (var response = client.SendAsync(infoRequest).Result) {
@@ -388,10 +377,9 @@ public class BaiduCloudStorageClient : StorageClient {
 
             fileList = entries.Values.ToList();
         } else {
-            var request = GetRequest(Config.APIList.ListFiles,
-                new Dictionary<string, string> {
-                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                });
+            var request = GetRequest(Config.APIList.ListFiles, new Dictionary<string, string> {
+                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+            });
             using var response = client.SendAsync(request).Result;
             var result = response.GetJToken();
             fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
@@ -437,10 +425,9 @@ public class BaiduCloudStorageClient : StorageClient {
 
     public override long Length(string path) {
         while (true) {
-            var request = GetRequest(Config.APIList.GetFileInfo,
-                new Dictionary<string, string> {
-                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                });
+            var request = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string> {
+                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+            });
 
             try {
                 using var response = client.SendAsync(request).Result;
@@ -459,10 +446,9 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override FileInformation QuickInfo(string path) {
-        var request = GetRequest(Config.APIList.GetFileInfo,
-            new Dictionary<string, string> {
-                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-            });
+        var request = GetRequest(Config.APIList.GetFileInfo, new Dictionary<string, string> {
+            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+        });
 
         try {
             using var response = client.SendAsync(request).Result;
@@ -477,11 +463,10 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
-        var request = GetRequest(Config.APIList.CopyFile,
-            new Dictionary<string, string> {
-                ["from_remote_path"] = sourcePath.TrimStart('/'),
-                ["to_remote_path"] = destinationPath.TrimStart('/')
-            });
+        var request = GetRequest(Config.APIList.CopyFile, new Dictionary<string, string> {
+            ["from_remote_path"] = sourcePath.TrimStart('/'),
+            ["to_remote_path"] = destinationPath.TrimStart('/')
+        });
         try {
             using var response = client.SendAsync(request).Result;
             var value = response.GetJToken();
@@ -499,11 +484,10 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override void Move(string sourcePath, string destinationPath) {
-        var request = GetRequest(Config.APIList.MoveFile,
-            new Dictionary<string, string> {
-                ["from_remote_path"] = sourcePath.TrimStart('/'),
-                ["to_remote_path"] = destinationPath.TrimStart('/')
-            });
+        var request = GetRequest(Config.APIList.MoveFile, new Dictionary<string, string> {
+            ["from_remote_path"] = sourcePath.TrimStart('/'),
+            ["to_remote_path"] = destinationPath.TrimStart('/')
+        });
         try {
             using var response = client.SendAsync(request).Result;
             var value = response.GetJToken();

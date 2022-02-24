@@ -4,7 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Infos;
 
-namespace Kifa.Tools.SubUtil.Commands; 
+namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Subtitles/Sources folder with resource id.")]
 class ImportCommand : KifaFileCommand {
@@ -14,13 +14,16 @@ class ImportCommand : KifaFileCommand {
     public override bool ById => false;
     protected override bool NaturalSorting => true;
 
-    [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1.", Required = true)]
+    [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1.",
+        Required = true)]
     public string SourceId { get; set; }
 
-    [Option('l', "language", HelpText = "Language code for the source, like en, ja, zh_en etc.", Required = true)]
+    [Option('l', "language", HelpText = "Language code for the source, like en, ja, zh_en etc.",
+        Required = true)]
     public string LanguageCode { get; set; }
 
-    [Option('g', "group", HelpText = "Group name for the source, like 华盟字幕社, 人人影视.", Required = true)]
+    [Option('g', "group", HelpText = "Group name for the source, like 华盟字幕社, 人人影视.",
+        Required = true)]
     public string ReleaseGroup { get; set; }
 
     public override int Execute() {
@@ -79,12 +82,12 @@ class ImportCommand : KifaFileCommand {
     protected override int ExecuteOneKifaFile(KifaFile file) {
         var suffix = file.Path.Substring(file.Path.LastIndexOf('.'));
         var ((season, episode), index) = SelectOne(episodes,
-            e => $"{file} => {series.Format(e.season, e.episode)}{suffix}",
-            "mapping", (null, null));
+            e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping",
+            (null, null));
         if (index >= 0) {
-            file.Copy(new KifaFile($"{file.Host}/Subtitles{series.Format(season, episode)}" +
-                                   $".{LanguageCode}-{ReleaseGroup}{suffix}"),
-                true);
+            file.Copy(
+                new KifaFile($"{file.Host}/Subtitles{series.Format(season, episode)}" +
+                             $".{LanguageCode}-{ReleaseGroup}{suffix}"), true);
             episodes.RemoveAt(index);
         }
 

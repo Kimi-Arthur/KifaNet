@@ -6,10 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa\Kifa.csproj" />
+    <ProjectReference Include="..\Kifa\Kifa.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.6.7" />
+    <PackageReference Include="NLog" Version="4.6.7"/>
   </ItemGroup>
 
 </Project>

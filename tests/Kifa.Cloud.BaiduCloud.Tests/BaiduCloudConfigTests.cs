@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Kifa.Cloud.BaiduCloud.Tests; 
+namespace Kifa.Cloud.BaiduCloud.Tests;
 
 [TestClass]
 public class BaiduCloudConfigTests {

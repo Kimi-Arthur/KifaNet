@@ -7,28 +7,29 @@ Assembly Name
 
 APIs
 ---
+
 - `Kifa.Retry`
-  - `Retry.Run(action, handleException)`
+    - `Retry.Run(action, handleException)`
 - `Kifa.ByteArrayExtensions`
-  - `byte[].ToHexString()`
-  - `long.ToByteArray()`
-  - `byte[].ToInt64()`
+    - `byte[].ToHexString()`
+    - `long.ToByteArray()`
+    - `byte[].ToInt64()`
 - `Kifa.DictionaryExtensions`
-  - `IDictionary.GetValueOrDefault(key, defaultValue)`
+    - `IDictionary.GetValueOrDefault(key, defaultValue)`
 - `Kifa.MathExtensions`
-  - `long.RoundUp(period)`
-  - `int.RoundUp(period)`
-  - `long.RoundDown(period)`
-  - `int.RoundDown(period)`
+    - `long.RoundUp(period)`
+    - `int.RoundUp(period)`
+    - `long.RoundDown(period)`
+    - `int.RoundDown(period)`
 - `Kifa.StringExtensions`
-  - `string.Format(parameters)`
-  - `string.Format(args)`
-  - `string.ParseSizeString()`
-  - `string.ParseHexString()`
-  - `string.ParseTimeSpanString()`
+    - `string.Format(parameters)`
+    - `string.Format(args)`
+    - `string.ParseSizeString()`
+    - `string.ParseHexString()`
+    - `string.ParseTimeSpanString()`
 - `Kifa.WebResponseExtensions`
-  - `WebResponse.GetJToken()`
-  - `WebResponse.GetObject()`
-  - `WebResponse.GetDictionary()`
-  - `HttpResponseMessage.GetJToken()`
-  - `HttpResponseMessage.GetObject()`
+    - `WebResponse.GetJToken()`
+    - `WebResponse.GetObject()`
+    - `WebResponse.GetDictionary()`
+    - `HttpResponseMessage.GetJToken()`
+    - `HttpResponseMessage.GetObject()`

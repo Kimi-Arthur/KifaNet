@@ -4,7 +4,7 @@ using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.EventEmitters;
 
-namespace Kifa.Tools.DataUtil; 
+namespace Kifa.Tools.DataUtil;
 
 public class FlowStyleScalarSequenceEmitter : ChainedEventEmitter {
     public FlowStyleScalarSequenceEmitter(IEventEmitter nextEmitter) : base(nextEmitter) {

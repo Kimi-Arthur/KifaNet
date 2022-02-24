@@ -1,9 +1,9 @@
 using System.IO;
 
-namespace Kifa.IO.FileFormats; 
+namespace Kifa.IO.FileFormats;
 
 public class RawFileFormat : KifaFileFormat {
-    public static readonly RawFileFormat Instance = new RawFileFormat();
+    public static readonly RawFileFormat Instance = new();
 
     public override string ToString() => "";
 

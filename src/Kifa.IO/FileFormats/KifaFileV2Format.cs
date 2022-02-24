@@ -4,7 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Kifa.Cryptography;
 
-namespace Kifa.IO.FileFormats; 
+namespace Kifa.IO.FileFormats;
 
 /// <summary>
 ///     V2 file format.
@@ -20,12 +20,10 @@ namespace Kifa.IO.FileFormats;
 ///     B16~47: SHA256 (256bit)
 /// </summary>
 public class KifaFileV2Format : KifaFileFormat {
-    static readonly KifaFileV2Format Instance = new KifaFileV2Format();
+    static readonly KifaFileV2Format Instance = new();
     const byte HeaderLength = 0x30;
 
-    public static KifaFileFormat? Get(string fileUri) {
-        return fileUri.EndsWith(".v2") ? Instance : null;
-    }
+    public static KifaFileFormat? Get(string fileUri) => fileUri.EndsWith(".v2") ? Instance : null;
 
     public override string ToString() => "v2";
 
@@ -55,9 +53,9 @@ public class KifaFileV2Format : KifaFileFormat {
         }
 
         var counter = GetCounter(sha256Bytes);
-        return new CounterCryptoStream(new PatchedStream(encodedStream) {IgnoreBefore = HeaderLength}, encoder,
-            size,
-            counter);
+        return new CounterCryptoStream(new PatchedStream(encodedStream) {
+            IgnoreBefore = HeaderLength
+        }, encoder, size, counter);
     }
 
     public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
@@ -73,9 +71,7 @@ public class KifaFileV2Format : KifaFileFormat {
 
         var length = info.Size.Value;
         var header = new byte[HeaderLength];
-        new byte[] {
-            0x01, 0x23, 0x12, 0x25, 0x00, 0x02, 0x00, HeaderLength
-        }.CopyTo(header, 0);
+        new byte[] { 0x01, 0x23, 0x12, 0x25, 0x00, 0x02, 0x00, HeaderLength }.CopyTo(header, 0);
         length.ToByteArray().CopyTo(header, 8);
         var sha256 = info.Sha256.ParseHexString();
         sha256.CopyTo(header, 16);
@@ -89,15 +85,14 @@ public class KifaFileV2Format : KifaFileFormat {
         }
 
         var counter = GetCounter(sha256);
-        return new PatchedStream(new CounterCryptoStream(rawStream, encoder,
-            length, counter)) {
+        return new PatchedStream(new CounterCryptoStream(rawStream, encoder, length, counter)) {
             BufferBefore = header.ToArray()
         };
     }
 
     static byte[] GetCounter(byte[] infoSha256) {
         var result = new byte[16];
-        for (int i = 0; i < 16; i++) {
+        for (var i = 0; i < 16; i++) {
             result[i] = (byte) (infoSha256[i] ^ infoSha256[i + 16]);
         }
 

@@ -3,15 +3,15 @@ using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 
-namespace Kifa.Bilibili; 
+namespace Kifa.Bilibili;
 
 public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
     public const string ModelId = "bilibili/playlists";
 
     static KifaServiceClient<BilibiliUploader> client;
 
-    public static KifaServiceClient<BilibiliUploader> Client =>
-        client ??= new KifaServiceRestClient<BilibiliUploader>();
+    public static KifaServiceClient<BilibiliUploader> Client
+        => client ??= new KifaServiceRestClient<BilibiliUploader>();
 
     public string Title { get; set; }
     public string Uploader { get; set; }

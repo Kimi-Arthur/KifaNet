@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
 
-namespace Kifa.Markdown.Converters; 
+namespace Kifa.Markdown.Converters;
 
 public class InlineCodeConverter : HtmlMarkdownConverter {
     public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) {

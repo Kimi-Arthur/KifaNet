@@ -2,15 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
 
-namespace Kifa.Infos; 
+namespace Kifa.Infos;
 
 public class Anime : DataModel<Anime>, Formattable {
     public const string ModelId = "animes";
 
     static KifaServiceClient<Anime> client;
 
-    public static KifaServiceClient<Anime> Client =>
-        client ??= new KifaServiceRestClient<Anime>();
+    public static KifaServiceClient<Anime> Client => client ??= new KifaServiceRestClient<Anime>();
 
     public string Title { get; set; }
     public Date AirDate { get; set; }
@@ -25,8 +24,7 @@ public class Anime : DataModel<Anime>, Formattable {
     public string Format(Season season, Episode episode) {
         var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
-        var episodeIdWidth =
-            episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
+        var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
         var sid = season.Id.ToString().PadLeft(seasonIdWidth, '0');
 

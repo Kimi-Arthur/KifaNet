@@ -4,10 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class SeekableReadStream : Stream {
-    public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0, int count = -1);
+    public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0,
+        int count = -1);
 
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -15,7 +16,8 @@ public class SeekableReadStream : Stream {
     readonly int maxChunkSize;
     readonly int threadCount;
 
-    public SeekableReadStream(long length, Reader reader, int maxChunkSize = int.MaxValue, int threadCount = 1) {
+    public SeekableReadStream(long length, Reader reader, int maxChunkSize = int.MaxValue,
+        int threadCount = 1) {
         Length = length;
         this.reader = reader;
         this.maxChunkSize = maxChunkSize;
@@ -56,8 +58,8 @@ public class SeekableReadStream : Stream {
         return Position;
     }
 
-    public override void SetLength(long value) =>
-        throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+    public override void SetLength(long value)
+        => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
 
     public override int Read(byte[] buffer, int offset, int count) {
         if (buffer == null) {
@@ -78,31 +80,34 @@ public class SeekableReadStream : Stream {
             return 0;
         }
 
-        Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {MaxDegreeOfParallelism = threadCount},
-            i => {
-                Thread.Sleep(TimeSpan.FromSeconds(i * 4));
+        Parallel.For(0, (count - 1) / maxChunkSize + 1, new ParallelOptions {
+            MaxDegreeOfParallelism = threadCount
+        }, i => {
+            Thread.Sleep(TimeSpan.FromSeconds(i * 4));
 
-                var chunkOffset = i * maxChunkSize;
-                var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
-                Retry.Run(() => {
-                    var readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset, chunkSize);
-                    if (readCount != chunkSize) {
-                        throw new Exception($"Expected {chunkSize}, only got {readCount}");
-                    }
-                }, (ex, index) => {
-                    if (index >= 5) {
-                        throw ex;
-                    }
+            var chunkOffset = i * maxChunkSize;
+            var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
+            Retry.Run(() => {
+                var readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset,
+                    chunkSize);
+                if (readCount != chunkSize) {
+                    throw new Exception($"Expected {chunkSize}, only got {readCount}");
+                }
+            }, (ex, index) => {
+                if (index >= 5) {
+                    throw ex;
+                }
 
-                    logger.Warn(ex, $"Internal failure getting {chunkSize} bytes from {Position + chunkOffset}.");
-                    Thread.Sleep(TimeSpan.FromSeconds(5 * index));
-                });
+                logger.Warn(ex,
+                    $"Internal failure getting {chunkSize} bytes from {Position + chunkOffset}.");
+                Thread.Sleep(TimeSpan.FromSeconds(5 * index));
             });
+        });
 
         Position += count;
         return count;
     }
 
-    public override void Write(byte[] buffer, int offset, int count) =>
-        throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+    public override void Write(byte[] buffer, int offset, int count)
+        => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
 }

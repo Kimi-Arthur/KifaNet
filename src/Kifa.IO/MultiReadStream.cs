@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class MultiReadStream : Stream {
     public MultiReadStream(List<Stream> streams) {
         this.streams = streams;
         streamCount = streams.Count;
         lengths = this.streams.Select(s => s.Length).ToList();
-        offsets = new List<long> {0};
-            
+        offsets = new List<long> {
+            0
+        };
+
         foreach (var t in lengths) {
             offsets.Add(offsets.Last() + t);
         }
@@ -42,7 +44,7 @@ public class MultiReadStream : Stream {
         UpdateCurrentPosition();
 
         var toRead = count;
-        for (int s = currentStream; s < streams.Count; s++) {
+        for (var s = currentStream; s < streams.Count; s++) {
             streams[s].Seek(positionInCurrentStream, SeekOrigin.Begin);
             var read = streams[s].Read(buffer, offset, toRead);
             toRead -= read;
@@ -119,9 +121,9 @@ public class MultiReadStream : Stream {
         return Position;
     }
 
-    public override void SetLength(long value) =>
-        throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+    public override void SetLength(long value)
+        => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
 
-    public override void Write(byte[] buffer, int offset, int count) =>
-        throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+    public override void Write(byte[] buffer, int offset, int count)
+        => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
 }

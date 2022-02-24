@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Kifa.Service;
 
-namespace Kifa.Soccer; 
+namespace Kifa.Soccer;
 
 public class SoccerShow : DataModel<SoccerShow> {
     public Program Program { get; set; }
@@ -12,7 +12,7 @@ public class SoccerShow : DataModel<SoccerShow> {
 
     // GaLaTaMaN HD Football - https://galatamanhdfb.blogspot.com
     static readonly Regex GalatamanPattern =
-        new Regex(@"/(?<date>\d+)-(?<program>\w+)-M(?<round>\d+)-(?<competition>\w+)-F-1080\.\w+$");
+        new(@"/(?<date>\d+)-(?<program>\w+)-M(?<round>\d+)-(?<competition>\w+)-F-1080\.\w+$");
 
     public static SoccerShow FromFileName(string fileName) => ParseGalataman(fileName);
 
@@ -37,11 +37,12 @@ public class SoccerShow : DataModel<SoccerShow> {
         };
 
         // TODO: Season should be based on competition and date.
-        show.Season = Season.Regular(show.AirDate.Month > 6 ? show.AirDate.Year : show.AirDate.Year - 1);
+        show.Season =
+            Season.Regular(show.AirDate.Month > 6 ? show.AirDate.Year : show.AirDate.Year - 1);
 
         return show;
     }
 
-    public override string ToString() =>
-        $"/Soccer/{Program.CommonName}/{Season}/{AirDate} {Program.Name} {Competition.Name} {Round}";
+    public override string ToString()
+        => $"/Soccer/{Program.CommonName}/{Season}/{AirDate} {Program.Name} {Competition.Name} {Round}";
 }

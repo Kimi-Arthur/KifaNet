@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 [Flags]
 public enum FileProperties {

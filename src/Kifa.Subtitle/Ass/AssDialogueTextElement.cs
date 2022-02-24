@@ -1,4 +1,4 @@
-﻿namespace Kifa.Subtitle.Ass; 
+﻿namespace Kifa.Subtitle.Ass;
 
 public abstract class AssDialogueTextElement {
     public static AssDialogueTextElement Parse(string content)

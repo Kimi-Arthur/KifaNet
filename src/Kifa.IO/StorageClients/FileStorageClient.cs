@@ -8,7 +8,7 @@ using System.Text;
 using NLog;
 using Renci.SshNet;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class ServerConfig {
     public bool Removed { get; set; }
@@ -38,8 +38,9 @@ public class FileStorageClient : StorageClient {
 
     public ServerConfig Server { get; set; }
 
-    static bool IsUnixLike =>
-        RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+    static bool IsUnixLike
+        => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+           RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         logger.Trace($"Copying {sourcePath} to {destinationPath}...");
@@ -159,10 +160,12 @@ public class FileStorageClient : StorageClient {
         var localPath = GetPath(path);
         var fileSize = new FileInfo(localPath).Length;
         return new SeekableReadStream(fileSize,
-            (buffer, bufferOffset, offset, count) => Read(buffer, localPath, bufferOffset, offset, count));
+            (buffer, bufferOffset, offset, count)
+                => Read(buffer, localPath, bufferOffset, offset, count));
     }
 
-    int Read(byte[] buffer, string localPath, int bufferOffset = 0, long offset = 0, int count = -1) {
+    int Read(byte[] buffer, string localPath, int bufferOffset = 0, long offset = 0,
+        int count = -1) {
         if (count < 0) {
             count = buffer.Length - bufferOffset;
         }
@@ -178,7 +181,8 @@ public class FileStorageClient : StorageClient {
         EnsureParent(path);
 
         // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
-        using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite,
+            FileShare.None);
         fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
         if (fs.Position != 0) {
             stream.Seek(fs.Position, SeekOrigin.Begin);

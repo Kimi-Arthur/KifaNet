@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Kifa.Bilibili.BilibiliApi; 
+namespace Kifa.Bilibili.BilibiliApi;
 
 public class PlaylistRpc : BilibiliRpc<PlaylistRpc.PlaylistResponse> {
     public class PlaylistResponse {
@@ -89,11 +89,17 @@ public class PlaylistRpc : BilibiliRpc<PlaylistRpc.PlaylistResponse> {
         "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
 
     public PlaylistResponse Call(string playlistId) {
-        var result = Call(new Dictionary<string, string> {{"id", playlistId}, {"page", "1"}});
+        var result = Call(new Dictionary<string, string> {
+            { "id", playlistId },
+            { "page", "1" }
+        });
         var allResult = result.Clone();
         var page = 1;
         while (result.Data.HasMore) {
-            result = Call(new Dictionary<string, string> {{"id", playlistId}, {"page", (++page).ToString()}});
+            result = Call(new Dictionary<string, string> {
+                { "id", playlistId },
+                { "page", (++page).ToString() }
+            });
             allResult.Data.Medias.AddRange(result.Data.Medias);
         }
 

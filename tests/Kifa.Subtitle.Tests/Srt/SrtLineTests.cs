@@ -2,11 +2,10 @@ using System;
 using Kifa.Subtitle.Srt;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Srt; 
+namespace Kifa.Subtitle.Tests.Srt;
 
 public class SrtLineTests {
-    const string SrtLineText = "168\n" +
-                               "00:20:41,150 --> 00:20:45,109\n" +
+    const string SrtLineText = "168\n" + "00:20:41,150 --> 00:20:45,109\n" +
                                "- How did he do that?\n" +
                                "- Made him an offer he couldn't refuse.";
 

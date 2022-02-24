@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Kifa.GameHacking.Files; 
+namespace Kifa.GameHacking.Files;
 
 public class MsgBinFile {
     public static IEnumerable<string> GetMessages(Stream data) {
@@ -16,7 +16,7 @@ public class MsgBinFile {
 
         indexes.Add((int) data.Length);
 
-        for (int i = 0; i < indexes.Count - 1; i++) {
+        for (var i = 0; i < indexes.Count - 1; i++) {
             var textBytes = new byte[indexes[i + 1] - indexes[i]];
             reader.Read(textBytes);
             yield return new string(Encoding.Unicode.GetString(textBytes)).Trim('\0');

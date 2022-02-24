@@ -1,4 +1,4 @@
-namespace Kifa.Apps.MomentCounter; 
+namespace Kifa.Apps.MomentCounter;
 
 public class Settings {
     public Language Language { get; set; } = Language.English;

@@ -10,7 +10,7 @@ using Kifa.Bilibili;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
 
-namespace Kifa.Tools.SubUtil.Commands; 
+namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("generate", HelpText = "Generate subtitle.")]
 class GenerateCommand : KifaFileCommand {
@@ -61,14 +61,11 @@ class GenerateCommand : KifaFileCommand {
                 file.BaseName);
             var comments = SelectBilibiliChats(chats);
             PositionNormalComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.NormalCommentStyle)
-                .OrderBy(c => c.Start).ToList());
-            PositionTopComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.TopCommentStyle)
+                .Where(c => c.Style == AssStyle.NormalCommentStyle).OrderBy(c => c.Start).ToList());
+            PositionTopComments(comments.dialogs.Where(c => c.Style == AssStyle.TopCommentStyle)
                 .OrderBy(c => c.Start).ToList());
             PositionBottomComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.BottomCommentStyle)
-                .OrderBy(c => c.Start).ToList());
+                .Where(c => c.Style == AssStyle.BottomCommentStyle).OrderBy(c => c.Start).ToList());
             events.Events.AddRange(comments.dialogs);
 
             document.Sections.Add(events);
@@ -105,10 +102,8 @@ class GenerateCommand : KifaFileCommand {
         if (selectedBilibiliChatIndexes == null) {
             Console.Write("Choose Bilibili chats: ");
             var chosen = Console.ReadLine() ?? "";
-            chosenIndexes = chosen.Trim('a')
-                .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                .Select(int.Parse)
-                .ToList();
+            chosenIndexes = chosen.Trim('a').Split(",", StringSplitOptions.RemoveEmptyEntries)
+                .Select(int.Parse).ToList();
 
             if (chosen.EndsWith('a')) {
                 selectedBilibiliChatIndexes = chosenIndexes;
@@ -130,17 +125,16 @@ class GenerateCommand : KifaFileCommand {
     (List<string> ids, List<AssDialogue> dialogs, List<AssStyle> styles) SelectSubtitles(
         List<(string id, List<AssDialogue> content, List<AssStyle> styles)> rawSubtitles) {
         for (var i = 0; i < rawSubtitles.Count; i++) {
-            Console.WriteLine($"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
+            Console.WriteLine(
+                $"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
         }
 
         List<int> chosenIndexes;
         if (selectedSubtitleIndexes == null) {
             Console.Write("Choose subtitles: ");
             var chosen = Console.ReadLine() ?? "";
-            chosenIndexes = chosen.Trim('a')
-                .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                .Select(int.Parse)
-                .ToList();
+            chosenIndexes = chosen.Trim('a').Split(",", StringSplitOptions.RemoveEmptyEntries)
+                .Select(int.Parse).ToList();
 
             if (chosen.EndsWith('a')) {
                 selectedSubtitleIndexes = chosenIndexes;
@@ -164,20 +158,17 @@ class GenerateCommand : KifaFileCommand {
     static void PositionNormalComments(List<AssDialogue> comments) {
         var screenWidth = 1920;
 
-        var sizes = comments
-            .Select(x => x.Text.TextElements.Where(e => e is AssDialogueRawTextElement)
-                .Sum(e => ((AssDialogueRawTextElement) e).Content.Length) * 50F)
-            .ToList();
+        var sizes = comments.Select(x
+            => x.Text.TextElements.Where(e => e is AssDialogueRawTextElement)
+                .Sum(e => ((AssDialogueRawTextElement) e).Content.Length) * 50F).ToList();
 
         var speeds = sizes.Zip(comments,
-                (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds)
-            .ToList();
+            (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds).ToList();
 
         AddFunction(comments,
-            (a, b) =>
-                Math.Max(sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
-                    (comments[a].End - comments[b].Start).TotalSeconds -
-                    screenWidth / speeds[b]),
+            (a, b) => Math.Max(
+                sizes[a] / speeds[a] - (comments[b].Start - comments[a].Start).TotalSeconds,
+                (comments[a].End - comments[b].Start).TotalSeconds - screenWidth / speeds[b]),
             (c, row) => new AssDialogueControlTextElement {
                 Elements = new List<AssControlElement> {
                     new MoveFunction {
@@ -189,9 +180,8 @@ class GenerateCommand : KifaFileCommand {
     }
 
     static void PositionTopComments(List<AssDialogue> comments) {
-        AddFunction(comments,
-            (a, b) => (comments[a].End - comments[b].Start).Seconds,
-            (c, row) => new AssDialogueControlTextElement {
+        AddFunction(comments, (a, b) => (comments[a].End - comments[b].Start).Seconds, (c, row)
+            => new AssDialogueControlTextElement {
                 Elements = new List<AssControlElement> {
                     new PositionFunction {
                         Position = new PointF(960, row * 50)
@@ -201,9 +191,8 @@ class GenerateCommand : KifaFileCommand {
     }
 
     static void PositionBottomComments(List<AssDialogue> comments) {
-        AddFunction(comments,
-            (a, b) => (comments[a].End - comments[b].Start).Seconds,
-            (c, row) => new AssDialogueControlTextElement {
+        AddFunction(comments, (a, b) => (comments[a].End - comments[b].Start).Seconds, (c, row)
+            => new AssDialogueControlTextElement {
                 Elements = new List<AssControlElement> {
                     new PositionFunction {
                         Position = new PointF(960, 1080 - 200 - row * 50)
@@ -268,8 +257,8 @@ class GenerateCommand : KifaFileCommand {
         }
     }
 
-    static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetSrtSubtitles(KifaFile parent,
-        string baseName)
+    static List<(string id, List<AssDialogue> content, List<AssStyle> styles)>
+        GetSrtSubtitles(KifaFile parent, string baseName)
         => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.srt").Select(file => {
             using var sr = new StreamReader(file.OpenRead());
             return (file.BaseName.Substring(baseName.Length + 1),
@@ -277,18 +266,17 @@ class GenerateCommand : KifaFileCommand {
                 new List<AssStyle>());
         }).ToList();
 
-    static List<(string id, List<AssDialogue> content, List<AssStyle> styles)> GetAssSubtitles(KifaFile parent,
-        string baseName)
+    static List<(string id, List<AssDialogue> content, List<AssStyle> styles)>
+        GetAssSubtitles(KifaFile parent, string baseName)
         => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
             var document = AssDocument.Parse(file.OpenRead());
             return (file.BaseName.Substring(baseName.Length + 1),
-                document.Sections.OfType<AssEventsSection>().First().Events
-                    .OfType<AssDialogue>().ToList(),
-                document.Sections.OfType<AssStylesSection>().First().Styles);
+                document.Sections.OfType<AssEventsSection>().First().Events.OfType<AssDialogue>()
+                    .ToList(), document.Sections.OfType<AssStylesSection>().First().Styles);
         }).ToList();
 
-    static List<(string id, List<AssDialogue> content)>
-        GetBilibiliChats(KifaFile parent, string baseName) {
+    static List<(string id, List<AssDialogue> content)> GetBilibiliChats(KifaFile parent,
+        string baseName) {
         var result = new List<(string id, List<AssDialogue> content)>();
         foreach (var file in parent.List(ignoreFiles: false, pattern: $"{baseName}*.xml")) {
             var chat = new BilibiliChat();

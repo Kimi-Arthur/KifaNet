@@ -31,7 +31,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 public class WebClient {
     const uint BufferSize = 8192;
@@ -39,8 +39,7 @@ public class WebClient {
 
     static WebClient() {
         var assemblyName = Assembly.GetExecutingAssembly().GetName();
-        UserAgent = string.Format("{0} v{1}", assemblyName.Name,
-            assemblyName.Version.ToString(2));
+        UserAgent = string.Format("{0} v{1}", assemblyName.Name, assemblyName.Version.ToString(2));
     }
 
     public string PostRequestJson(Uri url, string jsonData) {

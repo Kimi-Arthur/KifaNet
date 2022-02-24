@@ -4,7 +4,7 @@ using System.Linq;
 using Kifa.Infos.Tmdb;
 using Kifa.Service;
 
-namespace Kifa.Infos; 
+namespace Kifa.Infos;
 
 public class TvShow : DataModel<TvShow>, Formattable {
     public const string ModelId = "tv_shows";
@@ -90,22 +90,19 @@ public class TvShow : DataModel<TvShow>, Formattable {
     }
 
     static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {
-        return seasonName ==
-               StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
+        return seasonName == StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
     }
 
-    public string Format(Season season, Episode episode) {
-        return Format(season, new List<Episode> {
+    public string Format(Season season, Episode episode)
+        => Format(season, new List<Episode> {
             episode
         });
-    }
 
     public string Format(Season season, List<Episode> episodes) {
         var episode = episodes.First();
         var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
-        var episodeIdWidth =
-            episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
+        var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
         var sid = season.Id.ToString().PadLeft(seasonIdWidth, '0');
 
@@ -131,8 +128,8 @@ public class TvShow : DataModel<TvShow>, Formattable {
         }
     }
 
-    static string GetTitle(IReadOnlyList<string> titles) =>
-        GetSharedTitle(titles) ?? string.Join(" ", titles);
+    static string GetTitle(IReadOnlyList<string> titles)
+        => GetSharedTitle(titles) ?? string.Join(" ", titles);
 
     static string GetSharedTitle(IReadOnlyList<string> titles) {
         if (titles.Count < 2) {
@@ -155,7 +152,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
         return sharedTitle;
     }
 
-    static List<string> ChineseNumbers = new List<string> {
+    static List<string> ChineseNumbers = new() {
         "零",
         "一",
         "二",
@@ -166,12 +163,10 @@ public class TvShow : DataModel<TvShow>, Formattable {
         "七",
         "八",
         "九",
-        "十",
+        "十"
     };
 
-    static string GetChineseNumber(int number) {
-        return ChineseNumbers[number];
-    }
+    static string GetChineseNumber(int number) => ChineseNumbers[number];
 }
 
 public interface TvShowServiceClient : KifaServiceClient<TvShow> {
@@ -180,17 +175,16 @@ public interface TvShowServiceClient : KifaServiceClient<TvShow> {
 }
 
 public class TvShowRestServiceClient : KifaServiceRestClient<TvShow>, TvShowServiceClient {
-    public string Format(string id, int seasonId, int episodeId) {
-        return Format(id, seasonId, new List<int> {
+    public string Format(string id, int seasonId, int episodeId)
+        => Format(id, seasonId, new List<int> {
             episodeId
         });
-    }
 
     public string Format(string id, int seasonId, List<int> episodeIds) {
         var show = Get(id);
         var season = show.Seasons.First(s => s.Id == seasonId);
-        var episodes = episodeIds
-            .Select(episodeId => season.Episodes.First(e => e.Id == episodeId)).ToList();
+        var episodes = episodeIds.Select(episodeId => season.Episodes.First(e => e.Id == episodeId))
+            .ToList();
         return show.Format(season, episodes);
     }
 }

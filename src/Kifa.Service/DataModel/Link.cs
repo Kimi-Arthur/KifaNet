@@ -1,13 +1,14 @@
 using System;
 
-namespace Kifa.Service; 
+namespace Kifa.Service;
 
 // Unlimited linking not supported now.
-public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>> where TDataModel : DataModel, new() {
+public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
+    where TDataModel : DataModel, new() {
     public string Id { get; set; } = "";
 
-    TDataModel Get() =>
-        new() {
+    TDataModel Get()
+        => new() {
             Id = Id
         };
 
@@ -24,22 +25,28 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>> w
     public void FromJson(string data) => Id = data;
 
     public bool Equals(Link<TDataModel>? other) {
-        if (ReferenceEquals(null, other))
+        if (ReferenceEquals(null, other)) {
             return false;
-        if (ReferenceEquals(this, other))
+        }
+
+        if (ReferenceEquals(this, other)) {
             return true;
+        }
+
         return Id == other.Id;
     }
 
     public override bool Equals(object? obj) {
-        if (ReferenceEquals(null, obj))
+        if (ReferenceEquals(null, obj)) {
             return false;
-        if (ReferenceEquals(this, obj))
+        }
+
+        if (ReferenceEquals(this, obj)) {
             return true;
+        }
+
         return obj.GetType() == GetType() && Equals((Link<TDataModel>) obj);
     }
 
-    public override int GetHashCode() {
-        return Id.GetHashCode();
-    }
+    public override int GetHashCode() => Id.GetHashCode();
 }

@@ -7,7 +7,7 @@ using Kifa.Api.Files;
 using Kifa.Languages.German;
 using NLog;
 
-namespace Kifa.Tools.NoteUtil.Commands; 
+namespace Kifa.Tools.NoteUtil.Commands;
 
 [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]
 public class FillCommand : KifaCommand {
@@ -28,7 +28,8 @@ public class FillCommand : KifaCommand {
             var heading = Heading.Get(line);
             switch (state) {
                 case ParsingState.New:
-                    if (heading?.Level == startHeadingLevel && heading.Title == MarkdownHelpers.VocabularyTitle) {
+                    if (heading?.Level == startHeadingLevel &&
+                        heading.Title == MarkdownHelpers.VocabularyTitle) {
                         state = ParsingState.Vocabulary;
                     }
 
@@ -57,7 +58,7 @@ public class FillCommand : KifaCommand {
                     } else if (columnNames.Count == 0) {
                         var definition = MarkdownHelpers.GetColumnsDefinition(line);
                         if (definition != null) {
-                            for (int i = 0; i < definition.Length; i++) {
+                            for (var i = 0; i < definition.Length; i++) {
                                 columnNames[definition[i]] = i;
                             }
                         }
@@ -105,12 +106,15 @@ public class FillCommand : KifaCommand {
     }
 
     static void FillVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
-        var verb = new GermanWord {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+        var verb = new GermanWord {
+            Id = MarkdownHelpers.GetWordId(parts, columnNames)
+        };
         logger.Info($"Processing verb: {verb.Id}");
 
         verb.Fill();
 
-        foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
+        foreach (var (columnName, index) in columnNames.Where(column
+                     => parts[column.Value].Length == 0)) {
             parts[index] = columnName switch {
                 "Konjugation" => verb.KeyForm,
                 "Pronunciation" => $"[[{verb.Pronunciation}]]({verb.PronunciationAudioLink})",
@@ -121,12 +125,15 @@ public class FillCommand : KifaCommand {
     }
 
     static void FillNounRow(List<string> parts, Dictionary<string, int> columnNames) {
-        var noun = new GermanWord {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+        var noun = new GermanWord {
+            Id = MarkdownHelpers.GetWordId(parts, columnNames)
+        };
         logger.Info($"Processing noun: {noun.Id}");
 
         noun.Fill();
 
-        foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
+        foreach (var (columnName, index) in columnNames.Where(column
+                     => parts[column.Value].Length == 0)) {
             parts[index] = columnName switch {
                 "Plural" => noun.GetNounFormWithArticle(Case.Nominative, Number.Plural),
                 "Pronunciation" => $"[[{noun.Pronunciation}]]({noun.PronunciationAudioLink})",
@@ -137,12 +144,15 @@ public class FillCommand : KifaCommand {
     }
 
     static void FillWordRow(List<string> parts, Dictionary<string, int> columnNames) {
-        var word = new GermanWord {Id = MarkdownHelpers.GetWordId(parts, columnNames)};
+        var word = new GermanWord {
+            Id = MarkdownHelpers.GetWordId(parts, columnNames)
+        };
         logger.Info($"Processing word: {word.Id}");
 
         word.Fill();
 
-        foreach (var (columnName, index) in columnNames.Where(column => parts[column.Value].Length == 0)) {
+        foreach (var (columnName, index) in columnNames.Where(column
+                     => parts[column.Value].Length == 0)) {
             parts[index] = columnName switch {
                 "Pronunciation" => $"[[{word.Pronunciation}]]({word.PronunciationAudioLink})",
                 "Meaning" => word.Meaning,

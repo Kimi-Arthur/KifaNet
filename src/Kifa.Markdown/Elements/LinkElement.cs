@@ -1,4 +1,4 @@
-namespace Kifa.Markdown.Elements; 
+namespace Kifa.Markdown.Elements;
 
 public class LinkElement : MarkdownElement {
     public string Text { get; set; }

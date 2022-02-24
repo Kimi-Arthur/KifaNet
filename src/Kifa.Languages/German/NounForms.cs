@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class NounForms : Dictionary<Case, Dictionary<Number, string>> {
 }

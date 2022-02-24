@@ -16,7 +16,10 @@ POST {{server}}/api/files/%5E
 Accept: application/json
 Content-Type: application/json
 
-["/Downloads/Anime/Naruto/[SOSG&52wy][Naruto_Shippuuden][221-222][Chs_Cht_Jpn][XviD_MP3][120FPS].mkv", "/wow.mkv"]
+[
+  "/Downloads/Anime/Naruto/[SOSG&52wy][Naruto_Shippuuden][221-222][Chs_Cht_Jpn][XviD_MP3][120FPS].mkv",
+  "/wow.mkv"
+]
 
 ###
 

@@ -1,4 +1,4 @@
-﻿namespace Kifa.Subtitle.Ass; 
+﻿namespace Kifa.Subtitle.Ass;
 
 public class AssDialogueRawTextElement : AssDialogueTextElement {
     public string Content { get; set; }

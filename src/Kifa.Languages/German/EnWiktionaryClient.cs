@@ -8,7 +8,7 @@ using WikiClientLibrary.Client;
 using WikiClientLibrary.Pages;
 using WikiClientLibrary.Sites;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class EnWiktionaryClient {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -60,7 +60,8 @@ public class EnWiktionaryClient {
                 } else if (inGerman) {
                     if (heading.Level == 3) {
                         var title = heading.GetTitle();
-                        if (title.Contains(" ") && NextLevelPrefixes.Contains(title.Split(" ").First())) {
+                        if (title.Contains(" ") &&
+                            NextLevelPrefixes.Contains(title.Split(" ").First())) {
                             targetLevel = 4;
                         }
                     }
@@ -122,12 +123,14 @@ public class EnWiktionaryClient {
 
                                 var nodes = listItem.Inlines;
                                 foreach (var node in nodes) {
-                                    if (node is Template template && template.Name.ToPlainText() == "ux") {
+                                    if (node is Template template &&
+                                        template.Name.ToPlainText() == "ux") {
                                         meaning.Examples.Add(new Example {
                                             Text = template.Arguments[2].Value.ToPlainText(),
                                             Translation =
                                                 (template.Arguments[3] ?? template.Arguments["t"] ??
-                                                    template.Arguments["translation"]).Value.ToPlainText()
+                                                    template.Arguments["translation"]).Value
+                                                .ToPlainText()
                                         });
 
                                         example = null;
@@ -137,7 +140,8 @@ public class EnWiktionaryClient {
 
                             break;
                         case "#::" when example == null:
-                            logger.Warn($"Encountered translation line without example line: {listItem}");
+                            logger.Warn(
+                                $"Encountered translation line without example line: {listItem}");
                             break;
                         case "#::":
                             example.Translation = listContent.Trim();
@@ -158,13 +162,14 @@ public class EnWiktionaryClient {
 
     static string GetLineWithoutNotes(Node line) {
         return Normalize(string.Join("",
-            line.EnumChildren().Select(c =>
-                c is Template template && template.Name.ToPlainText() == "l" ? GetText(c) : c.ToPlainText())));
+            line.EnumChildren().Select(c
+                => c is Template template && template.Name.ToPlainText() == "l"
+                    ? GetText(c)
+                    : c.ToPlainText())));
     }
 
-    static string GetLineWithNotes(Node line) {
-        return Normalize(string.Join("", line.EnumChildren().Select(GetText)));
-    }
+    static string GetLineWithNotes(Node line)
+        => Normalize(string.Join("", line.EnumChildren().Select(GetText)));
 
     static readonly Regex SpacesPattern = new(" +");
     static string Normalize(string text) => SpacesPattern.Replace(text.Trim(), " ");
@@ -176,10 +181,12 @@ public class EnWiktionaryClient {
                 case "l":
                     return template.Arguments.Last().Value.ToPlainText();
                 case "lb":
-                    return $"({string.Join(", ", template.Arguments.Skip(1).Select(a => a.Value.ToPlainText()))})";
+                    return
+                        $"({string.Join(", ", template.Arguments.Skip(1).Select(a => a.Value.ToPlainText()))})";
                 case "gloss":
                 case "q":
-                    return $"({string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))})";
+                    return
+                        $"({string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))})";
                 default:
                     logger.Warn($"Unknown template: {template}");
                     break;
@@ -189,8 +196,8 @@ public class EnWiktionaryClient {
         return node.ToPlainText();
     }
 
-    static WordType ParseWordType(string id) =>
-        id.Split(",").First() switch {
+    static WordType ParseWordType(string id)
+        => id.Split(",").First() switch {
             "Adjective" => WordType.Adjective,
             "Postposition" => WordType.Postposition,
             "Preposition" => WordType.Preposition,

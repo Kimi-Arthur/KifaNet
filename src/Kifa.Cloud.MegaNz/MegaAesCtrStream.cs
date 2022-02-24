@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 class StreamWithLength : Stream {
     readonly Stream stream;
@@ -42,8 +42,7 @@ class StreamWithLength : Stream {
         throw new NotSupportedException();
     }
 
-    public override long Seek(long offset, SeekOrigin origin)
-        => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
 
     public override void SetLength(long value) {
         throw new NotSupportedException();

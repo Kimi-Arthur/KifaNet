@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Text;
 using NLog;
 
-namespace Kifa.Service; 
+namespace Kifa.Service;
 
 public class Api {
     public string Method { get; set; } = "";

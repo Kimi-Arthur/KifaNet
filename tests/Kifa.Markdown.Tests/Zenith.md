@@ -2,11 +2,13 @@
 
 [VIEW SOURCE](https://terraria.fandom.com/wiki/Zenith?action=edit)
 
+[![Desktop version](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/72/Desktop_only.png/revision/latest/scale-to-width-down/16?cb=20180323033502)](https://terraria.fandom.com/wiki/Desktop_version_history) [![Mobile version](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b2/Mobile_only.png/revision/latest/scale-to-width-down/11?cb=20180323033433)](https://terraria.fandom.com/wiki/Mobile_version)
 
-
-[![Desktop version](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/72/Desktop_only.png/revision/latest/scale-to-width-down/16?cb=20180323033502)](https://terraria.fandom.com/wiki/Desktop_version_history) [![Mobile version](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b2/Mobile_only.png/revision/latest/scale-to-width-down/11?cb=20180323033433)](https://terraria.fandom.com/wiki/Mobile_version)
-
-**[Desktop](https://terraria.fandom.com/wiki/Category:Desktop_content)/[Mobile](https://terraria.fandom.com/wiki/Category:Mobile_content)-Only Content**: This information applies *only* to the **[Desktop](https://terraria.fandom.com/wiki/Desktop_version_history)** and **[Mobile](https://terraria.fandom.com/wiki/Mobile_version)** versions of *[Terraria](https://terraria.fandom.com/wiki/Terraria)*.
+**[Desktop](https://terraria.fandom.com/wiki/Category:Desktop_content)/[Mobile](https://terraria.fandom.com/wiki/Category:Mobile_content)-Only
+Content**: This information applies *only* to
+the **[Desktop](https://terraria.fandom.com/wiki/Desktop_version_history)**
+and **[Mobile](https://terraria.fandom.com/wiki/Mobile_version)** versions
+of *[Terraria](https://terraria.fandom.com/wiki/Terraria)*.
 
 Zenith
 
@@ -20,10 +22,13 @@ Statistics
 
 |                                                         Type | [Weapon](https://terraria.fandom.com/wiki/Weapon)            |
 | -----------------------------------------------------------: | ------------------------------------------------------------ |
-|                                                       Damage | 190 **(Melee)**                                              |
-|      [Knockback](https://terraria.fandom.com/wiki/Knockback) | 6.5 **(Strong)**                                             |
+|                                                       Damage | 190 **(
+Melee)**                                              |
+|      [Knockback](https://terraria.fandom.com/wiki/Knockback) | 6.5 **(
+Strong)**                                             |
 | [Critical chance](https://terraria.fandom.com/wiki/Critical_hit) | 14%                                                          |
-|        [Use time](https://terraria.fandom.com/wiki/Use_time) | 30 **(Average)**                                             |
+|        [Use time](https://terraria.fandom.com/wiki/Use_time) | 30 **(
+Average)**                                             |
 |        [Velocity](https://terraria.fandom.com/wiki/Velocity) | 32 ([effective](https://terraria.fandom.com/wiki/Velocity#extraUpdates)) |
 |            [Rarity](https://terraria.fandom.com/wiki/Rarity) | [![Rarity level: 10](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/8f/Rarity_color_10.png/revision/latest/scale-to-width-down/32?cb=20150630184410)](https://terraria.fandom.com/wiki/Category:Items_of_rarity_10) |
 |               [Sell](https://terraria.fandom.com/wiki/Value) | 20                                                           |
@@ -44,13 +49,21 @@ Sounds
 - Internal [Item ID](https://terraria.fandom.com/wiki/Item_IDs): **4956** Desktop, and Mobile versions
 - Internal [Projectile ID](https://terraria.fandom.com/wiki/Projectile_IDs): **933**
 
-For an extensive guide to crafting this item, see [Guide:Crafting a Zenith](https://terraria.fandom.com/wiki/Guide:Crafting_a_Zenith).
+For an extensive guide to crafting this item,
+see [Guide:Crafting a Zenith](https://terraria.fandom.com/wiki/Guide:Crafting_a_Zenith).
 
 [![img](https://static.wikia.nocookie.net/terraria_gamepedia/images/0/0f/Zenith_%28demo%29.gif/revision/latest/scale-to-width-down/800?cb=20200617200919)](https://static.wikia.nocookie.net/terraria_gamepedia/images/0/0f/Zenith_(demo).gif/revision/latest?cb=20200617200919)
 
 A player attacking target dummies with the Zenith.
 
-The **Zenith** is a [Hardmode](https://terraria.fandom.com/wiki/Hardmode), post-[Moon Lord](https://terraria.fandom.com/wiki/Moon_Lord) [melee weapon](https://terraria.fandom.com/wiki/Melee_weapon) crafted using a variety of [swords](https://terraria.fandom.com/wiki/Swords) obtained throughout the [game's progression](https://terraria.fandom.com/wiki/Guide:Game_progression). When swung, the sword sprites of its component swords fly towards enemies within a 20-tile radius of the cursor (regardless of where the cursor is on the screen), and circle back in quick, frenzied arcs. They pass through solid [blocks](https://terraria.fandom.com/wiki/Blocks), and three swords will appear per use (at base melee speed). Each sword sprite deals the weapon's full damage.
+The **Zenith** is a [Hardmode](https://terraria.fandom.com/wiki/Hardmode),
+post-[Moon Lord](https://terraria.fandom.com/wiki/Moon_Lord) [melee weapon](https://terraria.fandom.com/wiki/Melee_weapon)
+crafted using a variety of [swords](https://terraria.fandom.com/wiki/Swords) obtained throughout
+the [game's progression](https://terraria.fandom.com/wiki/Guide:Game_progression). When swung, the sword sprites of its
+component swords fly towards enemies within a 20-tile radius of the cursor (regardless of where the cursor is on the
+screen), and circle back in quick, frenzied arcs. They pass through
+solid [blocks](https://terraria.fandom.com/wiki/Blocks), and three swords will appear per use (at base melee speed).
+Each sword sprite deals the weapon's full damage.
 
 The Zenith is capable of [autoswing](https://terraria.fandom.com/wiki/Autoswing).
 
@@ -58,11 +71,9 @@ Its best [modifier](https://terraria.fandom.com/wiki/Modifiers) is **Legendary**
 
 ## Contents
 
-
-
 - 1 Crafting
-  - [1.1 Recipes](https://terraria.fandom.com/wiki/Zenith#Recipes)
-  - [1.2 Crafting tree](https://terraria.fandom.com/wiki/Zenith#Crafting_tree)
+    - [1.1 Recipes](https://terraria.fandom.com/wiki/Zenith#Recipes)
+    - [1.2 Crafting tree](https://terraria.fandom.com/wiki/Zenith#Crafting_tree)
 - [2 Notes](https://terraria.fandom.com/wiki/Zenith#Notes)
 - [3 Achievements](https://terraria.fandom.com/wiki/Zenith#Achievements)
 - [4 Tips](https://terraria.fandom.com/wiki/Zenith#Tips)
@@ -80,7 +91,30 @@ Its best [modifier](https://terraria.fandom.com/wiki/Modifiers) is **Legendary**
 
 ### Recipes
 
-ResultIngredients[Crafting station](https://terraria.fandom.com/wiki/Crafting_station)[![Zenith](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/66/Zenith.png/revision/latest/scale-to-width-down/56?cb=20200516223829)](https://terraria.fandom.com/wiki/Zenith)ZenithDesktop, and Mobile versions[![Terra Blade](https://static.wikia.nocookie.net/terraria_gamepedia/images/4/4d/Terra_Blade.png/revision/latest/scale-to-width-down/46?cb=20200516222805)](https://terraria.fandom.com/wiki/Terra_Blade)[Terra Blade](https://terraria.fandom.com/wiki/Terra_Blade)[![Meowmere](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/63/Meowmere.png/revision/latest/scale-to-width-down/50?cb=20200516215244)](https://terraria.fandom.com/wiki/Meowmere)[Meowmere](https://terraria.fandom.com/wiki/Meowmere)Desktop, Console, and Mobile versions[![Star Wrath](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/83/Star_Wrath.png/revision/latest/scale-to-width-down/46?cb=20200516222455)](https://terraria.fandom.com/wiki/Star_Wrath)[Star Wrath](https://terraria.fandom.com/wiki/Star_Wrath)Desktop, Console, and Mobile versions[![Influx Waver](https://static.wikia.nocookie.net/terraria_gamepedia/images/d/d2/Influx_Waver.png/revision/latest/scale-to-width-down/50?cb=20200516214244)](https://terraria.fandom.com/wiki/Influx_Waver)[Influx Waver](https://terraria.fandom.com/wiki/Influx_Waver)Desktop, Console, and Mobile versions[![The Horseman's Blade](https://static.wikia.nocookie.net/terraria_gamepedia/images/9/93/The_Horseman%27s_Blade.png/revision/latest/scale-to-width-down/54?cb=20200516222845)](https://terraria.fandom.com/wiki/The_Horseman's_Blade)[The Horseman's Blade](https://terraria.fandom.com/wiki/The_Horseman's_Blade)[![Seedler](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/a0/Seedler.png/revision/latest/scale-to-width-down/44?cb=20200516221550)](https://terraria.fandom.com/wiki/Seedler)[Seedler](https://terraria.fandom.com/wiki/Seedler)Desktop, Console, and Mobile versions[![Starfury](https://static.wikia.nocookie.net/terraria_gamepedia/images/2/2d/Starfury.png/revision/latest/scale-to-width-down/34?cb=20200516222518)](https://terraria.fandom.com/wiki/Starfury)[Starfury](https://terraria.fandom.com/wiki/Starfury)[![Bee Keeper](https://static.wikia.nocookie.net/terraria_gamepedia/images/4/42/Bee_Keeper.png/revision/latest/scale-to-width-down/40?cb=20200516191202)](https://terraria.fandom.com/wiki/Bee_Keeper)[Bee Keeper](https://terraria.fandom.com/wiki/Bee_Keeper)[![Enchanted Sword](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b3/Enchanted_Sword_%28item%29.png/revision/latest/scale-to-width-down/34?cb=20201004152143)](https://terraria.fandom.com/wiki/Enchanted_Sword)[Enchanted Sword](https://terraria.fandom.com/wiki/Enchanted_Sword)[![Copper Shortsword](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/8b/Copper_Shortsword.png/revision/latest/scale-to-width-down/32?cb=20200516210051)](https://terraria.fandom.com/wiki/Copper_Shortsword)[Copper Shortsword](https://terraria.fandom.com/wiki/Copper_Shortsword)[![Mythril Anvil](https://static.wikia.nocookie.net/terraria_gamepedia/images/3/3d/Mythril_Anvil.png/revision/latest/scale-to-width-down/30?cb=20200516215710)](https://terraria.fandom.com/wiki/Mythril_Anvil)[Mythril Anvil](https://terraria.fandom.com/wiki/Mythril_Anvil) ***or*** [![Orichalcum Anvil](https://static.wikia.nocookie.net/terraria_gamepedia/images/d/dc/Orichalcum_Anvil.png/revision/latest/scale-to-width-down/30?cb=20200516220030)](https://terraria.fandom.com/wiki/Orichalcum_Anvil)[Orichalcum Anvil](https://terraria.fandom.com/wiki/Orichalcum_Anvil)
+ResultIngredients[Crafting station](https://terraria.fandom.com/wiki/Crafting_station)[![Zenith](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/66/Zenith.png/revision/latest/scale-to-width-down/56?cb=20200516223829)](https://terraria.fandom.com/wiki/Zenith)ZenithDesktop
+, and Mobile
+versions[![Terra Blade](https://static.wikia.nocookie.net/terraria_gamepedia/images/4/4d/Terra_Blade.png/revision/latest/scale-to-width-down/46?cb=20200516222805)](https://terraria.fandom.com/wiki/Terra_Blade)[Terra
+Blade](https://terraria.fandom.com/wiki/Terra_Blade)[![Meowmere](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/63/Meowmere.png/revision/latest/scale-to-width-down/50?cb=20200516215244)](https://terraria.fandom.com/wiki/Meowmere)[Meowmere](https://terraria.fandom.com/wiki/Meowmere)Desktop
+, Console, and Mobile
+versions[![Star Wrath](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/83/Star_Wrath.png/revision/latest/scale-to-width-down/46?cb=20200516222455)](https://terraria.fandom.com/wiki/Star_Wrath)[Star
+Wrath](https://terraria.fandom.com/wiki/Star_Wrath)Desktop, Console, and Mobile
+versions[![Influx Waver](https://static.wikia.nocookie.net/terraria_gamepedia/images/d/d2/Influx_Waver.png/revision/latest/scale-to-width-down/50?cb=20200516214244)](https://terraria.fandom.com/wiki/Influx_Waver)[Influx
+Waver](https://terraria.fandom.com/wiki/Influx_Waver)Desktop, Console, and Mobile
+versions[![The Horseman's Blade](https://static.wikia.nocookie.net/terraria_gamepedia/images/9/93/The_Horseman%27s_Blade.png/revision/latest/scale-to-width-down/54?cb=20200516222845)](https://terraria.fandom.com/wiki/The_Horseman's_Blade)[The
+Horseman's
+Blade](https://terraria.fandom.com/wiki/The_Horseman's_Blade)[![Seedler](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/a0/Seedler.png/revision/latest/scale-to-width-down/44?cb=20200516221550)](https://terraria.fandom.com/wiki/Seedler)[Seedler](https://terraria.fandom.com/wiki/Seedler)Desktop
+, Console, and Mobile
+versions[![Starfury](https://static.wikia.nocookie.net/terraria_gamepedia/images/2/2d/Starfury.png/revision/latest/scale-to-width-down/34?cb=20200516222518)](https://terraria.fandom.com/wiki/Starfury)[Starfury](https://terraria.fandom.com/wiki/Starfury)[![Bee
+Keeper](https://static.wikia.nocookie.net/terraria_gamepedia/images/4/42/Bee_Keeper.png/revision/latest/scale-to-width-down/40?cb=20200516191202)](https://terraria.fandom.com/wiki/Bee_Keeper)[Bee
+Keeper](https://terraria.fandom.com/wiki/Bee_Keeper)[![Enchanted
+Sword](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b3/Enchanted_Sword_%28item%29.png/revision/latest/scale-to-width-down/34?cb=20201004152143)](https://terraria.fandom.com/wiki/Enchanted_Sword)[Enchanted
+Sword](https://terraria.fandom.com/wiki/Enchanted_Sword)[![Copper
+Shortsword](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/8b/Copper_Shortsword.png/revision/latest/scale-to-width-down/32?cb=20200516210051)](https://terraria.fandom.com/wiki/Copper_Shortsword)[Copper
+Shortsword](https://terraria.fandom.com/wiki/Copper_Shortsword)[![Mythril
+Anvil](https://static.wikia.nocookie.net/terraria_gamepedia/images/3/3d/Mythril_Anvil.png/revision/latest/scale-to-width-down/30?cb=20200516215710)](https://terraria.fandom.com/wiki/Mythril_Anvil)[Mythril
+Anvil](https://terraria.fandom.com/wiki/Mythril_Anvil) ***
+or*** [![Orichalcum Anvil](https://static.wikia.nocookie.net/terraria_gamepedia/images/d/dc/Orichalcum_Anvil.png/revision/latest/scale-to-width-down/30?cb=20200516220030)](https://terraria.fandom.com/wiki/Orichalcum_Anvil)[Orichalcum
+Anvil](https://terraria.fandom.com/wiki/Orichalcum_Anvil)
 
 ### Crafting tree
 
@@ -130,37 +164,62 @@ ResultIngredients[Crafting station](https://terraria.fandom.com/wiki/Crafting_st
 
 ## Notes
 
-- The first sword generated on each swing will always be a Zenith projectile, which generates a mint green trail. Each sword generated will have a unique swing color, which generates a large amount of light. This can be used to reveal parts of the [minimap](https://terraria.fandom.com/wiki/Minimap).
+- The first sword generated on each swing will always be a Zenith projectile, which generates a mint green trail. Each
+  sword generated will have a unique swing color, which generates a large amount of light. This can be used to reveal
+  parts of the [minimap](https://terraria.fandom.com/wiki/Minimap).
 
 - The Zenith ignores enemy invincibility frames.
 
-- The Zenith can attack anywhere that the mouse cursor can reach. Its range can be increased simply by using higher resolutions, larger monitors, or even multiple monitors.
+- The Zenith can attack anywhere that the mouse cursor can reach. Its range can be increased simply by using higher
+  resolutions, larger monitors, or even multiple monitors.
 
-  - This is limited in [![Desktop version](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/72/Desktop_only.png/revision/latest/scale-to-width-down/16?cb=20180323033502)](https://terraria.fandom.com/wiki/Desktop_version_history)[ Desktop version](https://terraria.fandom.com/wiki/Desktop_version_history) as Zenith can only go up to 600 pixels vertically and 960 pixels horizontally.
+    - This is limited
+      in [![Desktop version](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/72/Desktop_only.png/revision/latest/scale-to-width-down/16?cb=20180323033502)](https://terraria.fandom.com/wiki/Desktop_version_history)[
+      Desktop version](https://terraria.fandom.com/wiki/Desktop_version_history) as Zenith can only go up to 600 pixels
+      vertically and 960 pixels horizontally.
 
-- Equipment and [modifiers](https://terraria.fandom.com/wiki/Modifiers) that increase melee speed change the number of swords that appear per use, but have no effect on the number of swords thrown per second, nor the swords' velocity.
+- Equipment and [modifiers](https://terraria.fandom.com/wiki/Modifiers) that increase melee speed change the number of
+  swords that appear per use, but have no effect on the number of swords thrown per second, nor the swords' velocity.
 
 - Each individual sword sprite may register multiple hits on an enemy, depending on size and positioning.
 
 - Swords also deal damage behind the player on their return trip.
 
-- Despite being nearly identical to its copper counterpart, the [Tin Shortsword](https://terraria.fandom.com/wiki/Tin_Shortsword) cannot be used to craft the Zenith. This is presumably due to the Copper Shortsword's role as the very first sword every player will encounter (with the exception of [Journey Mode](https://terraria.fandom.com/wiki/Journey_Mode) characters).
+- Despite being nearly identical to its copper counterpart,
+  the [Tin Shortsword](https://terraria.fandom.com/wiki/Tin_Shortsword) cannot be used to craft the Zenith. This is
+  presumably due to the Copper Shortsword's role as the very first sword every player will encounter (with the exception
+  of [Journey Mode](https://terraria.fandom.com/wiki/Journey_Mode) characters).
 
-- The Zenith appears to have semi-homing capabilities. When the sword is dragged near an enemy, but not enough for the natural arch to reach it, one sword sprite will come out of the loop and hit the enemy.
+- The Zenith appears to have semi-homing capabilities. When the sword is dragged near an enemy, but not enough for the
+  natural arch to reach it, one sword sprite will come out of the loop and hit the enemy.
 
   [[1\]](https://terraria.fandom.com/wiki/Zenith#cite_note-1)
 
-  - This is especially useful in the [![Mobile version](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b2/Mobile_only.png/revision/latest/scale-to-width-down/11?cb=20180323033433)](https://terraria.fandom.com/wiki/Mobile_version)[ Mobile version](https://terraria.fandom.com/wiki/Mobile_version), for players who are keen on using *Aim and Use*, as such toggle restricts the Zenith's range considerably.
+    - This is especially useful in
+      the [![Mobile version](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b2/Mobile_only.png/revision/latest/scale-to-width-down/11?cb=20180323033433)](https://terraria.fandom.com/wiki/Mobile_version)[
+      Mobile version](https://terraria.fandom.com/wiki/Mobile_version), for players who are keen on using *Aim and Use*,
+      as such toggle restricts the Zenith's range considerably.
 
-- If the player has made a Journey Mode character or has lost their Copper Shortsword, and has no [Copper Ore](https://terraria.fandom.com/wiki/Copper_Ore) in the world, Copper can be obtained by [Fishing](https://terraria.fandom.com/wiki/Fishing), using an [Extractinator](https://terraria.fandom.com/wiki/Extractinator), killing [Slimes](https://terraria.fandom.com/wiki/Slime), going to another world with copper, or simply making a new character and placing the Shortsword into a chest (However, this will not work for Journey Mode as the character would spawn with an Iron Shortsword).
+- If the player has made a Journey Mode character or has lost their Copper Shortsword, and has
+  no [Copper Ore](https://terraria.fandom.com/wiki/Copper_Ore) in the world, Copper can be obtained
+  by [Fishing](https://terraria.fandom.com/wiki/Fishing), using
+  an [Extractinator](https://terraria.fandom.com/wiki/Extractinator),
+  killing [Slimes](https://terraria.fandom.com/wiki/Slime), going to another world with copper, or simply making a new
+  character and placing the Shortsword into a chest (However, this will not work for Journey Mode as the character would
+  spawn with an Iron Shortsword).
 
-- Increasing attack speed does not increase the speed at which the Zenith fires swords, only the time between each three-sword cycle. Thus, a higher attack speed will cause less swords besides the Zenith to appear, and lower attack speed will cause more to appear. With high enough attack speed, it is possible for only the Zenith itself to appear. However, the Zenith will in turn lose the ability to home in on enemies; since the Zenith itself never homes in because it is always thrown first.
+- Increasing attack speed does not increase the speed at which the Zenith fires swords, only the time between each
+  three-sword cycle. Thus, a higher attack speed will cause less swords besides the Zenith to appear, and lower attack
+  speed will cause more to appear. With high enough attack speed, it is possible for only the Zenith itself to appear.
+  However, the Zenith will in turn lose the ability to home in on enemies; since the Zenith itself never homes in
+  because it is always thrown first.
 
 ## Achievements
 
 [![Achievement Infinity +1 Sword.png](https://static.wikia.nocookie.net/terraria_gamepedia/images/d/dd/Achievement_Infinity_%2B1_Sword.png/revision/latest/scale-to-width-down/64?cb=20201013173840)](https://terraria.fandom.com/wiki/Achievements)
 
-**[Infinity +1 Sword](https://terraria.fandom.com/wiki/Achievements)** • *“Obtain the Zenith, the culmination of a journey forged into the ultimate sword.”*
+**[Infinity +1 Sword](https://terraria.fandom.com/wiki/Achievements)** • *“Obtain the Zenith, the culmination of a
+journey forged into the ultimate sword.”*
 
 Obtain the Zenith. Desktop version
 
@@ -180,19 +239,17 @@ The Zenith passing 7,000,000 DPS against multiple targets
 
 - The Zenith has the potential to reach more than 70,000
 
-   
+DPS
 
-  DPS
+on a single target with the right armor, accessories, modifiers, buffs and correct positioning.
 
-   
+- Against segmented [worm enemies](https://terraria.fandom.com/wiki/Worms)
+  like [The Destroyer](https://terraria.fandom.com/wiki/The_Destroyer), it can even surpass 1,000,000 DPS.
+- In an optimized environment, The Zenith can do more than 7,000,000 DPS
+- In a regular combat situation, most players will see the Zenith dealing around 20,000 to 30,000 DPS.
 
-  on a single target with the right armor, accessories, modifiers, buffs and correct positioning.
-
-  - Against segmented [worm enemies](https://terraria.fandom.com/wiki/Worms) like [The Destroyer](https://terraria.fandom.com/wiki/The_Destroyer), it can even surpass 1,000,000 DPS.
-  - In an optimized environment, The Zenith can do more than 7,000,000 DPS
-  - In a regular combat situation, most players will see the Zenith dealing around 20,000 to 30,000 DPS.
-
-- The Zenith can defeat the [Moon Lord](https://terraria.fandom.com/wiki/Moon_Lord) on [Master Mode](https://terraria.fandom.com/wiki/Master_Mode) (277,311 combined HP) in about 11 seconds.
+- The Zenith can defeat the [Moon Lord](https://terraria.fandom.com/wiki/Moon_Lord)
+  on [Master Mode](https://terraria.fandom.com/wiki/Master_Mode) (277,311 combined HP) in about 11 seconds.
 
 - The Zenith is generally agreed to be the game's strongest weapon, making it ideal for any type of fight.
 
@@ -202,17 +259,34 @@ The Zenith passing 7,000,000 DPS against multiple targets
 
 Terragrim seen in the Zenith's attack animation.
 
-- *[Zenith](http://www.wiktionary.org/wiki/en:zenith)* is an Arabic word defined as "the time at which something is most powerful or successful".[[2\]](https://terraria.fandom.com/wiki/Zenith#cite_note-2) This is a reference to the fact that the Zenith is often considered the final and best weapon in the game.
-- Before the release of 1.4, the sword had various placeholders and scrapped names, including *Final Fractal* and *Summit*.[[3\]](https://terraria.fandom.com/wiki/Zenith#cite_note-discord_0-3)[[4\]](https://terraria.fandom.com/wiki/Zenith#cite_note-discord_1-4) The precursor design of the Zenith exists as an unobtainable weapon, the [First Fractal](https://terraria.fandom.com/wiki/First_Fractal), which resembles an upgraded [Terra Blade](https://terraria.fandom.com/wiki/Terra_Blade).
-- The Zenith projectiles will always include both the [Light's Bane](https://terraria.fandom.com/wiki/Light's_Bane) and [Blood Butcherer](https://terraria.fandom.com/wiki/Blood_Butcherer), no matter which one was used.
-- The Zenith's projectiles include the [Terragrim](https://terraria.fandom.com/wiki/Terragrim), despite not being in its crafting tree. In the [1.4.0.3](https://terraria.fandom.com/wiki/1.4.0.3) hotfix, the [Bee Keeper](https://terraria.fandom.com/wiki/Bee_Keeper) was added to the crafting recipe for the Zenith, after being in its animation since the release in 1.4.0.1.
+- *[Zenith](http://www.wiktionary.org/wiki/en:zenith)* is an Arabic word defined as "the time at which something is most
+  powerful or successful".[[2\]](https://terraria.fandom.com/wiki/Zenith#cite_note-2) This is a reference to the fact
+  that the Zenith is often considered the final and best weapon in the game.
+- Before the release of 1.4, the sword had various placeholders and scrapped names, including *Final Fractal* and *
+  Summit*
+  .[[3\]](https://terraria.fandom.com/wiki/Zenith#cite_note-discord_0-3)[[4\]](https://terraria.fandom.com/wiki/Zenith#cite_note-discord_1-4)
+  The precursor design of the Zenith exists as an unobtainable weapon,
+  the [First Fractal](https://terraria.fandom.com/wiki/First_Fractal), which resembles an
+  upgraded [Terra Blade](https://terraria.fandom.com/wiki/Terra_Blade).
+- The Zenith projectiles will always include both the [Light's Bane](https://terraria.fandom.com/wiki/Light's_Bane)
+  and [Blood Butcherer](https://terraria.fandom.com/wiki/Blood_Butcherer), no matter which one was used.
+- The Zenith's projectiles include the [Terragrim](https://terraria.fandom.com/wiki/Terragrim), despite not being in its
+  crafting tree. In the [1.4.0.3](https://terraria.fandom.com/wiki/1.4.0.3) hotfix,
+  the [Bee Keeper](https://terraria.fandom.com/wiki/Bee_Keeper) was added to the crafting recipe for the Zenith, after
+  being in its animation since the release in 1.4.0.1.
 - The following is a list of all swords displayed in the Zenith's attack animation:
 
 
-
-- The Zenith entails the most complex crafting tree in *[Terraria](https://terraria.fandom.com/wiki/Terraria),* consisting of 14 different base items (over the course of 10 crafting operations), surpassing both the [Cell Phone](https://terraria.fandom.com/wiki/Cell_Phone) (13 items) and [Ankh Shield](https://terraria.fandom.com/wiki/Ankh_Shield) (11 items).
-- The Zenith is the only sword that appears in the use animation if the player happens to have maximum [attack speed](https://terraria.fandom.com/wiki/Attack_speed), this however is merely a cosmetic detail as it does not improve the overall DPS.
-- Using [Teleporters](https://terraria.fandom.com/wiki/Teleporter) and [portals](https://terraria.fandom.com/wiki/Portal_Gun) while using the Zenith causes each sword to move in sharp angles and strange directions.
+- The Zenith entails the most complex crafting tree in *[Terraria](https://terraria.fandom.com/wiki/Terraria),*
+  consisting of 14 different base items (over the course of 10 crafting operations), surpassing both
+  the [Cell Phone](https://terraria.fandom.com/wiki/Cell_Phone) (13 items)
+  and [Ankh Shield](https://terraria.fandom.com/wiki/Ankh_Shield) (11 items).
+- The Zenith is the only sword that appears in the use animation if the player happens to have
+  maximum [attack speed](https://terraria.fandom.com/wiki/Attack_speed), this however is merely a cosmetic detail as it
+  does not improve the overall DPS.
+- Using [Teleporters](https://terraria.fandom.com/wiki/Teleporter)
+  and [portals](https://terraria.fandom.com/wiki/Portal_Gun) while using the Zenith causes each sword to move in sharp
+  angles and strange directions.
 
 [![img](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/8a/Dropped_Zenith_glowing_the_the_dark.png/revision/latest/scale-to-width-down/180?cb=20210725031539)](https://static.wikia.nocookie.net/terraria_gamepedia/images/8/8a/Dropped_Zenith_glowing_the_the_dark.png/revision/latest?cb=20210725031539)
 
@@ -223,28 +297,36 @@ A dropped Zenith clearly seen glowing in complete darkness compared to a well-li
 
 ## History
 
-[![Desktop version](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/72/Desktop_only.png/revision/latest/scale-to-width-down/20?cb=20180323033502)](https://terraria.fandom.com/wiki/Desktop_version_history)[ Desktop version](https://terraria.fandom.com/wiki/Desktop_version_history)
+[![Desktop version](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/72/Desktop_only.png/revision/latest/scale-to-width-down/20?cb=20180323033502)](https://terraria.fandom.com/wiki/Desktop_version_history)[
+Desktop version](https://terraria.fandom.com/wiki/Desktop_version_history)
 
 - **[Desktop 1.4.1](https://terraria.fandom.com/wiki/Desktop_1.4.1)**: Added an achievement for crafting the sword.
 
-- **[Desktop 1.4.0.3](https://terraria.fandom.com/wiki/Desktop_1.4.0.3)**: Now also requires [Bee Keeper](https://terraria.fandom.com/wiki/Bee_Keeper) to craft.
+- **[Desktop 1.4.0.3](https://terraria.fandom.com/wiki/Desktop_1.4.0.3)**: Now also
+  requires [Bee Keeper](https://terraria.fandom.com/wiki/Bee_Keeper) to craft.
 
 - **[Desktop 1.4.0.1](https://terraria.fandom.com/wiki/Desktop_1.4.0.1)**: Introduced.
 
-[![Mobile version](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b2/Mobile_only.png/revision/latest/scale-to-width-down/14?cb=20180323033433)](https://terraria.fandom.com/wiki/Mobile_version)[ Mobile version](https://terraria.fandom.com/wiki/Mobile_version)
+[![Mobile version](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b2/Mobile_only.png/revision/latest/scale-to-width-down/14?cb=20180323033433)](https://terraria.fandom.com/wiki/Mobile_version)[
+Mobile version](https://terraria.fandom.com/wiki/Mobile_version)
 
-- **[Mobile 1.4.0.5.0](https://terraria.fandom.com/wiki/Mobile_1.4.0.5.0)**: Introduced with changes from Desktop 1.4.0.3.
+- **[Mobile 1.4.0.5.0](https://terraria.fandom.com/wiki/Mobile_1.4.0.5.0)**: Introduced with changes from Desktop
+  1.4.0.3.
 
 ## References
 
 1. [↑](https://terraria.fandom.com/wiki/Zenith#cite_ref-1) https://youtu.be/TMcWx-nwUD0
 2. [↑](https://terraria.fandom.com/wiki/Zenith#cite_ref-2) ["zenith" in the Oxford English Dictionary](https://www.lexico.com/en/definition/zenith)
-3. [↑](https://terraria.fandom.com/wiki/Zenith#cite_ref-discord_0_3-0) [Cenx' message](https://i.imgur.com/Ev6IvIo.png) on the [official Terraria Discord server](https://www.discord.gg/terraria) Apr 13, 2020
-4. [↑](https://terraria.fandom.com/wiki/Zenith#cite_ref-discord_1_4-0) [Red's message](https://i.imgur.com/rCYAqX8.png) on the [official Terraria Discord server](https://www.discord.gg/terraria) May 13, 2020
+3. [↑](https://terraria.fandom.com/wiki/Zenith#cite_ref-discord_0_3-0) [Cenx' message](https://i.imgur.com/Ev6IvIo.png)
+   on the [official Terraria Discord server](https://www.discord.gg/terraria) Apr 13, 2020
+4. [↑](https://terraria.fandom.com/wiki/Zenith#cite_ref-discord_1_4-0) [Red's message](https://i.imgur.com/rCYAqX8.png)
+   on the [official Terraria Discord server](https://www.discord.gg/terraria) May 13, 2020
 
 Collapse
 
-[V](https://terraria.fandom.com/wiki/Template:Projectile_melee_weapons/content) • [D](https://terraria.fandom.com/wiki/Template_talk:Projectile_melee_weapons/content) • [E](https://terraria.fandom.com/wiki/Template:Projectile_melee_weapons/content?action=edit)
+[V](https://terraria.fandom.com/wiki/Template:Projectile_melee_weapons/content)
+• [D](https://terraria.fandom.com/wiki/Template_talk:Projectile_melee_weapons/content)
+• [E](https://terraria.fandom.com/wiki/Template:Projectile_melee_weapons/content?action=edit)
 
 [Projectile Melee Weapons](https://terraria.fandom.com/wiki/Projectile_melee_weapons)
 
@@ -289,21 +371,30 @@ Projectile Only
 - [![Arkhalis](https://static.wikia.nocookie.net/terraria_gamepedia/images/7/79/Arkhalis.gif/revision/latest/scale-to-width-down/64?cb=20180612101240)](https://terraria.fandom.com/wiki/Arkhalis)
 - [![Shadowflame Knife](https://static.wikia.nocookie.net/terraria_gamepedia/images/d/d2/Shadowflame_Knife.png/revision/latest/scale-to-width-down/14?cb=20200516221657)](https://terraria.fandom.com/wiki/Shadowflame_Knife)
 - [![Vampire Knives](https://static.wikia.nocookie.net/terraria_gamepedia/images/1/1d/Vampire_Knife_%28projectile%29.png/revision/latest/scale-to-width-down/14?cb=20150224232832)](https://terraria.fandom.com/wiki/Vampire_Knives)
-- [![Scourge of the Corruptor](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b9/Eater%27s_Bite_%28projectile%29.png/revision/latest/scale-to-width-down/34?cb=20210715052912)](https://terraria.fandom.com/wiki/Scourge_of_the_Corruptor)[![Scourge of the Corruptor](https://static.wikia.nocookie.net/terraria_gamepedia/images/e/ec/Tiny_Eater.gif/revision/latest/scale-to-width-down/14?cb=20171214024752)](https://terraria.fandom.com/wiki/Scourge_of_the_Corruptor)
+- [![Scourge of the Corruptor](https://static.wikia.nocookie.net/terraria_gamepedia/images/b/b9/Eater%27s_Bite_%28projectile%29.png/revision/latest/scale-to-width-down/34?cb=20210715052912)](https://terraria.fandom.com/wiki/Scourge_of_the_Corruptor)[![Scourge
+  of the
+  Corruptor](https://static.wikia.nocookie.net/terraria_gamepedia/images/e/ec/Tiny_Eater.gif/revision/latest/scale-to-width-down/14?cb=20171214024752)](https://terraria.fandom.com/wiki/Scourge_of_the_Corruptor)
 - [![Daybreak](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/ad/Daybreak_%28projectile%29.png/revision/latest/scale-to-width-down/30?cb=20171125025055)](https://terraria.fandom.com/wiki/Daybreak)
 - [![Zenith](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/66/Zenith.png/revision/latest/scale-to-width-down/56?cb=20200516223829)](https://terraria.fandom.com/wiki/Zenith)
 
 Collapse
 
-[V](https://terraria.fandom.com/wiki/Template:Master_Template_Weapons/content) • [D](https://terraria.fandom.com/wiki/Template_talk:Master_Template_Weapons/content) • [E](https://terraria.fandom.com/wiki/Template:Master_Template_Weapons/content?action=edit)
+[V](https://terraria.fandom.com/wiki/Template:Master_Template_Weapons/content)
+• [D](https://terraria.fandom.com/wiki/Template_talk:Master_Template_Weapons/content)
+• [E](https://terraria.fandom.com/wiki/Template:Master_Template_Weapons/content?action=edit)
 
 **[Weapons](https://terraria.fandom.com/wiki/Weapons) [(List)](https://terraria.fandom.com/wiki/List_of_weapons):**
 
-- [![Melee weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/66/Zenith.png/revision/latest/scale-to-width-down/25?cb=20200516223829)](https://terraria.fandom.com/wiki/Melee_weapons)[Melee weapons](https://terraria.fandom.com/wiki/Melee_weapons)
-- [![Ranged weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/a7/Phantasm.png/revision/latest/scale-to-width-down/15?cb=20200516220403)](https://terraria.fandom.com/wiki/Ranged_weapons)[Ranged weapons](https://terraria.fandom.com/wiki/Ranged_weapons)
-- [![Magic weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/0/0e/Last_Prism.png/revision/latest/scale-to-width-down/20?cb=20200516214536)](https://terraria.fandom.com/wiki/Magic_weapons)[Magic weapons](https://terraria.fandom.com/wiki/Magic_weapons)
-- [![Summoning weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/a9/Stardust_Dragon_Staff.png/revision/latest/scale-to-width-down/25?cb=20200516222502)](https://terraria.fandom.com/wiki/Summoning_weapons)[Summoning weapons](https://terraria.fandom.com/wiki/Summoning_weapons)
-- [![Throwing weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/6a/Bone_Javelin.png/revision/latest/scale-to-width-down/25?cb=20200516195735)](https://terraria.fandom.com/wiki/Throwing_weapons)[Throwing weapons](https://terraria.fandom.com/wiki/Throwing_weapons)
+- [![Melee weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/66/Zenith.png/revision/latest/scale-to-width-down/25?cb=20200516223829)](https://terraria.fandom.com/wiki/Melee_weapons)[Melee
+  weapons](https://terraria.fandom.com/wiki/Melee_weapons)
+- [![Ranged weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/a7/Phantasm.png/revision/latest/scale-to-width-down/15?cb=20200516220403)](https://terraria.fandom.com/wiki/Ranged_weapons)[Ranged
+  weapons](https://terraria.fandom.com/wiki/Ranged_weapons)
+- [![Magic weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/0/0e/Last_Prism.png/revision/latest/scale-to-width-down/20?cb=20200516214536)](https://terraria.fandom.com/wiki/Magic_weapons)[Magic
+  weapons](https://terraria.fandom.com/wiki/Magic_weapons)
+- [![Summoning weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/a/a9/Stardust_Dragon_Staff.png/revision/latest/scale-to-width-down/25?cb=20200516222502)](https://terraria.fandom.com/wiki/Summoning_weapons)[Summoning
+  weapons](https://terraria.fandom.com/wiki/Summoning_weapons)
+- [![Throwing weapons](https://static.wikia.nocookie.net/terraria_gamepedia/images/6/6a/Bone_Javelin.png/revision/latest/scale-to-width-down/25?cb=20200516195735)](https://terraria.fandom.com/wiki/Throwing_weapons)[Throwing
+  weapons](https://terraria.fandom.com/wiki/Throwing_weapons)
 
 Expand
 
@@ -346,7 +437,8 @@ Other Melee Weapons
 - [Enchanted](https://terraria.fandom.com/wiki/Enchanted_Boomerang)
 - [Ice](https://terraria.fandom.com/wiki/Ice_Boomerang)
 - [Shroomerang](https://terraria.fandom.com/wiki/Shroomerang)Desktop, and Mobile versions
-- [Fruitcake Chakram](https://terraria.fandom.com/wiki/Fruitcake_Chakram)Desktop, Console, Old-gen console, and Mobile versions
+- [Fruitcake Chakram](https://terraria.fandom.com/wiki/Fruitcake_Chakram)Desktop, Console, Old-gen console, and Mobile
+  versions
 - [Bloody Machete](https://terraria.fandom.com/wiki/Bloody_Machete)
 - [Thorn Chakram](https://terraria.fandom.com/wiki/Thorn_Chakram)
 - [Combat Wrench](https://terraria.fandom.com/wiki/Combat_Wrench)Desktop, and Mobile versions
@@ -407,18 +499,16 @@ Other
 
 - [Shadowflame Knife](https://terraria.fandom.com/wiki/Shadowflame_Knife)Desktop, Console, and Mobile versions
 
-- 
+-
 
-  [Jousting Lance](https://terraria.fandom.com/wiki/Jousting_Lance)Desktop, and Mobile versions
+[Jousting Lance](https://terraria.fandom.com/wiki/Jousting_Lance)Desktop, and Mobile versions
 
-   
+(
 
-  (
+- [Hallowed](https://terraria.fandom.com/wiki/Hallowed_Jousting_Lance)Desktop, and Mobile versions
+- [Shadow](https://terraria.fandom.com/wiki/Shadow_Jousting_Lance)Desktop, and Mobile versions
 
-  - [Hallowed](https://terraria.fandom.com/wiki/Hallowed_Jousting_Lance)Desktop, and Mobile versions
-  - [Shadow](https://terraria.fandom.com/wiki/Shadow_Jousting_Lance)Desktop, and Mobile versions
-
-  )
+)
 
 - [Sleepy Octopod](https://terraria.fandom.com/wiki/Sleepy_Octopod)Desktop, Console, and Mobile versions
 
@@ -475,8 +565,6 @@ Throwing and Other Weapons
 - [Achievement-related elements](https://terraria.fandom.com/wiki/Category:Achievement-related_elements)
 
 Languages
-
- 
 
 [Deutsch](https://terraria.fandom.com/de/wiki/Zenith)[Français](https://terraria.fandom.com/fr/wiki/Zénith)[日本語](https://terraria.fandom.com/wiki/Zenith)[Nederlands](https://terraria.fandom.com/wiki/Zenith/nl)[Polski](https://terraria.fandom.com/pl/wiki/Zenit)[Português](https://terraria.fandom.com/pt/wiki/Zênite)[中文](https://terraria.fandom.com/zh/wiki/天顶剑)
 

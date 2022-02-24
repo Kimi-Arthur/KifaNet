@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Kifa.Apps.MomentCounter; 
+namespace Kifa.Apps.MomentCounter;
 
 public class User : DataModel<User> {
     public const string ModelId = "moment_counter/users";
@@ -32,19 +32,18 @@ public class RemoveCounterRequest {
 }
 
 public class UserRestServiceClient : KifaServiceRestClient<User>, UserServiceClient {
-    public string AddCounter(User user, Counter counter) =>
-        Call<string>("add_counter", new AddCounterRequest {
+    public string AddCounter(User user, Counter counter)
+        => Call<string>("add_counter", new AddCounterRequest {
             UserId = user.Id,
             Counter = counter
         });
 
-    public string RemoveCounter(User user, string counterId) =>
-        Call<string>("remove_counter", new RemoveCounterRequest {
+    public string RemoveCounter(User user, string counterId)
+        => Call<string>("remove_counter", new RemoveCounterRequest {
             UserId = user.Id,
             CounterId = counterId
         });
 
-    public string AddEvent(User user, Counter counter, Event @event) {
-        throw new NotImplementedException();
-    }
+    public string AddEvent(User user, Counter counter, Event @event)
+        => throw new NotImplementedException();
 }

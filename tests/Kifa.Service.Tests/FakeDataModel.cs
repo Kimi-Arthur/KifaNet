@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Kifa.Service.Tests; 
+namespace Kifa.Service.Tests;
 
 class FakeDataModel : DataModel<FakeDataModel> {
     public const string ModelId = "api_test";
 
     static FakeDataModelServiceClient client;
 
-    public static FakeDataModelServiceClient Client =>
-        client ??= new FakeDataModelRestServiceClient();
+    public static FakeDataModelServiceClient Client
+        => client ??= new FakeDataModelRestServiceClient();
 
     public int? IntPROP { get; set; }
 

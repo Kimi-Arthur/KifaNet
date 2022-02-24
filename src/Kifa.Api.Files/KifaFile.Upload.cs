@@ -2,11 +2,12 @@ using System;
 using System.IO;
 using Kifa.IO;
 
-namespace Kifa.Api.Files; 
+namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    public int Upload(CloudServiceType serviceType, CloudFormatType formatType, bool deleteSource = false,
-        bool useCache = false, bool downloadLocal = false, bool skipVerify = false, bool skipRegistered = false) {
+    public int Upload(CloudServiceType serviceType, CloudFormatType formatType,
+        bool deleteSource = false, bool useCache = false, bool downloadLocal = false,
+        bool skipVerify = false, bool skipRegistered = false) {
         UseCache = useCache | downloadLocal;
         // TODO: Better catching.
         try {
@@ -30,7 +31,8 @@ public partial class KifaFile {
                 var sourceCheckResult = Add();
 
                 if (sourceCheckResult != FileProperties.None) {
-                    logger.Error($"Source is wrong! The following fields differ: {sourceCheckResult}");
+                    logger.Error(
+                        $"Source is wrong! The following fields differ: {sourceCheckResult}");
                     return 1;
                 }
             } catch (FileNotFoundException ex) {
@@ -113,7 +115,8 @@ public partial class KifaFile {
                 }
 
                 destination.Delete();
-                logger.Fatal("Upload failed! The following fields differ (removed): {0}", destinationCheckResult);
+                logger.Fatal("Upload failed! The following fields differ (removed): {0}",
+                    destinationCheckResult);
                 return 2;
             }
 

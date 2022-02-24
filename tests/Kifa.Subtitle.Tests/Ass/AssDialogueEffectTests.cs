@@ -2,7 +2,7 @@
 using Kifa.Subtitle.Ass;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Ass; 
+namespace Kifa.Subtitle.Tests.Ass;
 
 public class AssDialogueEffectTests {
     [Fact]
@@ -21,12 +21,9 @@ public class AssDialogueEffectTests {
     public void BannerEffectRangeTest() {
         var effect = new AssDialogueBannerEffect();
 
-        foreach (var d in new[] {
-                     -1, 101, 1024
-                 }) {
-            Assert.Equal("Delay", Assert
-                .Throws<ArgumentOutOfRangeException>(() => effect.Delay = d)
-                .ParamName);
+        foreach (var d in new[] { -1, 101, 1024 }) {
+            Assert.Equal("Delay",
+                Assert.Throws<ArgumentOutOfRangeException>(() => effect.Delay = d).ParamName);
         }
     }
 }

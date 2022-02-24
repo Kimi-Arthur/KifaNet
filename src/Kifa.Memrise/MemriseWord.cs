@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kifa.Memrise; 
+namespace Kifa.Memrise;
 
 public class MemriseWord {
     public string ThingId { get; set; }

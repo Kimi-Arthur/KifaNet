@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NLog;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssStylesSection : AssSection {
     public const string SectionHeader = "[V4+ Styles]";
@@ -11,7 +11,7 @@ public class AssStylesSection : AssSection {
     public override string SectionTitle => SectionHeader;
 
     public List<string> Format
-        => new List<string> {
+        => new() {
             "Name",
             "Fontname",
             "Fontsize",
@@ -38,10 +38,9 @@ public class AssStylesSection : AssSection {
         };
 
     // TODO: solve sync problem between these two.
-    public List<AssStyle> Styles { get; set; } = new List<AssStyle>();
+    public List<AssStyle> Styles { get; set; } = new();
 
-    public Dictionary<string, AssStyle> NamedStyles { get; set; } =
-        new Dictionary<string, AssStyle>();
+    public Dictionary<string, AssStyle> NamedStyles { get; set; } = new();
 
     public override IEnumerable<AssLine> AssLines {
         get {
@@ -67,7 +66,8 @@ public class AssStylesSection : AssSection {
                         break;
                     case "Style":
                         if (headers == null) {
-                            logger.Warn("Should see header line before style line in style section.");
+                            logger.Warn(
+                                "Should see header line before style line in style section.");
                             break;
                         }
 

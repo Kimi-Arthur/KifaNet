@@ -6,7 +6,8 @@
 
 - Assembly: System.Runtime.dll
 
-Provides a [Stream](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0) for a file, supporting both synchronous and asynchronous read and write operations.
+Provides a [Stream](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0) for a file, supporting
+both synchronous and asynchronous read and write operations.
 
 C#Copy
 
@@ -14,13 +15,18 @@ C#Copy
 public class FileStream : System.IO.Stream
 ```
 
-- Inheritance: [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object?view=net-5.0)[MarshalByRefObject](https://docs.microsoft.com/en-us/dotnet/api/system.marshalbyrefobject?view=net-5.0)[Stream](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0)FileStream
+-
 
-- Derived: [System.IO.IsolatedStorage.IsolatedStorageFileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.isolatedstorage.isolatedstoragefilestream?view=net-5.0)
+Inheritance: [Object](https://docs.microsoft.com/en-us/dotnet/api/system.object?view=net-5.0)[MarshalByRefObject](https://docs.microsoft.com/en-us/dotnet/api/system.marshalbyrefobject?view=net-5.0)[Stream](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0)FileStream
+
+-
+
+Derived: [System.IO.IsolatedStorage.IsolatedStorageFileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.isolatedstorage.isolatedstoragefilestream?view=net-5.0)
 
 ## Examples
 
-The following example demonstrates some of the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) constructors.
+The following example demonstrates some of
+the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) constructors.
 
 C#Copy
 
@@ -76,7 +82,9 @@ class Test
 }
 ```
 
-The following example shows how to write to a file asynchronously. This code runs in a WPF app that has a TextBlock named UserInput and a button hooked up to a Click event handler that is named Button_Click. The file path needs to be changed to a file that exists on the computer.
+The following example shows how to write to a file asynchronously. This code runs in a WPF app that has a TextBlock
+named UserInput and a button hooked up to a Click event handler that is named Button_Click. The file path needs to be
+changed to a file that exists on the computer.
 
 C#Copy
 
@@ -116,7 +124,23 @@ namespace WpfApplication1
 
 ## Remarks
 
-Use the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) class to read from, write to, open, and close files on a file system, and to manipulate other file-related operating system handles, including pipes, standard input, and standard output. You can use the [Read](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.read?view=net-5.0), [Write](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.write?view=net-5.0), [CopyTo](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream.copyto?view=net-5.0), and [Flush](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.flush?view=net-5.0) methods to perform synchronous operations, or the [ReadAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.readasync?view=net-5.0), [WriteAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.writeasync?view=net-5.0), [CopyToAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream.copytoasync?view=net-5.0), and [FlushAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.flushasync?view=net-5.0) methods to perform asynchronous operations. Use the asynchronous methods to perform resource-intensive file operations without blocking the main thread. This performance consideration is particularly important in a Windows 8.x Store app or desktop app where a time-consuming stream operation can block the UI thread and make your app appear as if it is not working. [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) buffers input and output for better performance.
+Use the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) class to read from,
+write to, open, and close files on a file system, and to manipulate other file-related operating system handles,
+including pipes, standard input, and standard output. You can use
+the [Read](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.read?view=net-5.0)
+, [Write](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.write?view=net-5.0)
+, [CopyTo](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream.copyto?view=net-5.0),
+and [Flush](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.flush?view=net-5.0) methods to perform
+synchronous operations, or
+the [ReadAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.readasync?view=net-5.0)
+, [WriteAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.writeasync?view=net-5.0)
+, [CopyToAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.stream.copytoasync?view=net-5.0),
+and [FlushAsync](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.flushasync?view=net-5.0) methods to
+perform asynchronous operations. Use the asynchronous methods to perform resource-intensive file operations without
+blocking the main thread. This performance consideration is particularly important in a Windows 8.x Store app or desktop
+app where a time-consuming stream operation can block the UI thread and make your app appear as if it is not
+working. [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) buffers input and
+output for better performance.
 
 > [!IMPORTANT]
 >
@@ -138,13 +162,33 @@ Use the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.files
 
 ### Detection of Stream Position Changes
 
-When a [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object does not have an exclusive hold on its handle, another thread could access the file handle concurrently and change the position of the operating system's file pointer that is associated with the file handle. In this case, the cached position in the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object and the cached data in the buffer could be compromised. The [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object routinely performs checks on methods that access the cached buffer to ensure that the operating system's handle position is the same as the cached position used by the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object.
+When a [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object does not have
+an exclusive hold on its handle, another thread could access the file handle concurrently and change the position of the
+operating system's file pointer that is associated with the file handle. In this case, the cached position in
+the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object and the cached
+data in the buffer could be compromised.
+The [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object routinely
+performs checks on methods that access the cached buffer to ensure that the operating system's handle position is the
+same as the cached position used by
+the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object.
 
-If an unexpected change in the handle position is detected in a call to the [Read](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.read?view=net-5.0) method, the .NET Framework discards the contents of the buffer and reads the stream from the file again. This can affect performance, depending on the size of the file and any other processes that could affect the position of the file stream.
+If an unexpected change in the handle position is detected in a call to
+the [Read](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.read?view=net-5.0) method, the .NET
+Framework discards the contents of the buffer and reads the stream from the file again. This can affect performance,
+depending on the size of the file and any other processes that could affect the position of the file stream.
 
-If an unexpected change in the handle position is detected in a call to the [Write](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.write?view=net-5.0) method, the contents of the buffer are discarded and an [IOException](https://docs.microsoft.com/en-us/dotnet/api/system.io.ioexception?view=net-5.0) exception is thrown.
+If an unexpected change in the handle position is detected in a call to
+the [Write](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.write?view=net-5.0) method, the contents of
+the buffer are discarded and
+an [IOException](https://docs.microsoft.com/en-us/dotnet/api/system.io.ioexception?view=net-5.0) exception is thrown.
 
-A [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object will not have an exclusive hold on its handle when either the [SafeFileHandle](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.safefilehandle?view=net-5.0) property is accessed to expose the handle or the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object is given the [SafeFileHandle](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.safefilehandle?view=net-5.0) property in its constructor.
+A [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object will not have an
+exclusive hold on its handle when either
+the [SafeFileHandle](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.safefilehandle?view=net-5.0)
+property is accessed to expose the handle or
+the [FileStream](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0) object is given
+the [SafeFileHandle](https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream.safefilehandle?view=net-5.0)
+property in its constructor.
 
 ## Constructors
 

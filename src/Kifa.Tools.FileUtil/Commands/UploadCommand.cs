@@ -7,7 +7,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("upload", HelpText = "Upload file to a cloud location.")]
 class UploadCommand : KifaCommand {
@@ -24,10 +24,12 @@ class UploadCommand : KifaCommand {
     public bool QuickMode { get; set; } = false;
 
     [Option('s', "service",
-        HelpText = "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega, swiss]")]
+        HelpText =
+            "Type of service to upload to. Default is google. Allowed values: [google, baidu, mega, swiss]")]
     public CloudServiceType ServiceType { get; set; } = CloudServiceType.Google;
 
-    [Option('f', "format", HelpText = "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
+    [Option('f', "format",
+        HelpText = "Format used to upload file. Default is v1. Allowed values: [v1, v2]")]
     public CloudFormatType FormatType { get; set; } = CloudFormatType.V1;
 
     [Option('c', "use-cache", HelpText = "Use cache to help upload.")]
@@ -45,16 +47,16 @@ class UploadCommand : KifaCommand {
 
             var downloadText = DownloadLocal ? " and download to local" : "";
             var removalText = DeleteSource ? " and remove source afterwards" : "";
-            Console.Write($"Confirm uploading the {files.Count} files above{downloadText}{removalText}?");
+            Console.Write(
+                $"Confirm uploading the {files.Count} files above{downloadText}{removalText}?");
             Console.ReadLine();
         }
 
         var results = files.Select(f => (f.ToString(),
-                new KifaFile(f.ToString()).Upload(ServiceType, FormatType, deleteSource: DeleteSource,
-                    useCache: UseCache, downloadLocal: DownloadLocal, skipVerify: QuickMode, skipRegistered: true)))
-            .ToList();
-        return results.Select(r => r.Item2).Concat(results.Where(r => r.Item2 == -1).Select(r =>
-            new KifaFile(r.Item1).Upload(ServiceType, FormatType, deleteSource: DeleteSource, useCache: UseCache,
-                downloadLocal: DownloadLocal, skipVerify: QuickMode, skipRegistered: false))).Max();
+            new KifaFile(f.ToString()).Upload(ServiceType, FormatType, DeleteSource, UseCache,
+                DownloadLocal, QuickMode, true))).ToList();
+        return results.Select(r => r.Item2).Concat(results.Where(r => r.Item2 == -1).Select(r
+            => new KifaFile(r.Item1).Upload(ServiceType, FormatType, DeleteSource, UseCache,
+                DownloadLocal, QuickMode, false))).Max();
     }
 }

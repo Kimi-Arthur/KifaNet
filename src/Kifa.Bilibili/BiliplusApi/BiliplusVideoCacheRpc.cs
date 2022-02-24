@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Bilibili.BiliplusApi; 
+namespace Kifa.Bilibili.BiliplusApi;
 
 public class BiliplusVideoCacheRpc : BiliplusRpc<BiliplusVideoCacheRpc.BiliplusVideoCache> {
     public class BiliplusVideoCache {
@@ -44,13 +44,19 @@ public class BiliplusVideoCacheRpc : BiliplusRpc<BiliplusVideoCacheRpc.BiliplusV
 
     const string CachePagePattern = "https://www.biliplus.com/all/video/{aid}/";
 
-    static readonly Regex ApiRegex = new Regex(@".'(/api/view_all.*)'.*");
+    static readonly Regex ApiRegex = new(@".'(/api/view_all.*)'.*");
 
     public override string UrlPattern { get; } = "https://www.biliplus.com{api_path}";
 
     public BiliplusVideoCache Call(string aid) {
-        var url = CachePagePattern.Format(new Dictionary<string, string> {{"aid", aid}});
+        var url = CachePagePattern.Format(new Dictionary<string, string> {
+            { "aid", aid }
+        });
         var match = ApiRegex.Match(HttpClient.GetAsync(url).Result.GetString());
-        return match.Success ? Call(new Dictionary<string, string> {{"api_path", match.Groups[1].Value}}) : null;
+        return match.Success
+            ? Call(new Dictionary<string, string> {
+                { "api_path", match.Groups[1].Value }
+            })
+            : null;
     }
 }

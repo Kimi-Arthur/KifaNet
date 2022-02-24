@@ -3,7 +3,7 @@ using System.Linq;
 using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
 
-namespace Kifa.Markdown.Converters; 
+namespace Kifa.Markdown.Converters;
 
 public class SkippedConverter : HtmlMarkdownConverter {
     static HashSet<string> SkippedTags = new() {
@@ -20,8 +20,9 @@ public class SkippedConverter : HtmlMarkdownConverter {
         "copyable-container"
     };
 
-    public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>
-        SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id) || SkippedClasses.Any(c => node.HasClass(c))
+    public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node)
+        => SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id) ||
+           SkippedClasses.Any(c => node.HasClass(c))
             ? new[] {
                 new HtmlElement {
                     Html = ""

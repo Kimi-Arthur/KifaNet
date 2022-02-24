@@ -4,22 +4,19 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("check", HelpText = "Check file integrity.")]
 class CheckCommand : KifaFileCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    [Option('q', "quick", HelpText =
-        "Quick check by only verifying the first block.")]
+    [Option('q', "quick", HelpText = "Quick check by only verifying the first block.")]
     public bool QuickCheck { get; set; } = false;
 
-    [Option('s', "skip-known", HelpText =
-        "Skip check of file if it's already known.")]
+    [Option('s', "skip-known", HelpText = "Skip check of file if it's already known.")]
     public bool SkipKnown { get; set; } = false;
 
-    [Option('o', "overwrite", HelpText =
-        "Overwrite existing data if asked (with confirmation).")]
+    [Option('o', "overwrite", HelpText = "Overwrite existing data if asked (with confirmation).")]
     public bool Overwrite { get; set; } = false;
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
@@ -43,8 +40,9 @@ class CheckCommand : KifaFileCommand {
                 logger.Error(e, $"Quick check failed for {file}.");
                 throw new Exception($"Quick check failed for {file}.", e);
             }
- 
-            var compareResults = info.CompareProperties(file.FileInfo, FileProperties.AllVerifiable);
+
+            var compareResults =
+                info.CompareProperties(file.FileInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
                 logger.Error($"Quick check failed for {file} ({compareResults}).");
                 throw new Exception($"Quick check failed ({compareResults}).");
@@ -72,6 +70,7 @@ class CheckCommand : KifaFileCommand {
                         logger.Error(e, $"Full check failed for {file}.");
                         throw new Exception($"Full check failed for {file}.", e);
                     }
+
                     Console.WriteLine($"{info}\nConfirm overwriting with new data?");
                     Console.ReadLine();
                     FileInformation.Client.Update(info);

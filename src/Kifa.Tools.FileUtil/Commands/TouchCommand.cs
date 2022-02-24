@@ -5,7 +5,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("touch", HelpText = "Touch file.")]
 class TouchCommand : KifaCommand {

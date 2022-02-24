@@ -10,7 +10,7 @@ using HashLib;
 using Kifa.Service;
 using Newtonsoft.Json;
 
-namespace Kifa.IO; 
+namespace Kifa.IO;
 
 public class FileInformation : DataModel<FileInformation> {
     public const string ModelId = "files";
@@ -19,21 +19,23 @@ public class FileInformation : DataModel<FileInformation> {
 
     public const int BlockSize = 32 << 20;
     static FileInformationServiceClient client;
-    static readonly Regex linkIdPattern = new Regex(@"^(http|https|ftp)://([^:#?]*)([#?].*)?$");
-    static readonly Regex fileIdPattern = new Regex(@"^[^/]*(/.*?)(\.v\d)?$");
+    static readonly Regex linkIdPattern = new(@"^(http|https|ftp)://([^:#?]*)([#?].*)?$");
+    static readonly Regex fileIdPattern = new(@"^[^/]*(/.*?)(\.v\d)?$");
 
     static readonly Dictionary<FileProperties, PropertyInfo> properties;
 
     static FileInformation() {
         properties = new Dictionary<FileProperties, PropertyInfo>();
-        foreach (var prop in typeof(FileInformation).GetProperties(BindingFlags.Instance | BindingFlags.Public)) {
+        foreach (var prop in typeof(FileInformation).GetProperties(BindingFlags.Instance |
+                     BindingFlags.Public)) {
             if (Enum.TryParse(typeof(FileProperties), prop.Name, out var propKey)) {
                 properties[(FileProperties) propKey] = prop;
             }
         }
     }
 
-    public static FileInformationServiceClient Client => client ??= new FileInformationRestServiceClient();
+    public static FileInformationServiceClient Client
+        => client ??= new FileInformationRestServiceClient();
 
     public long? Size { get; set; }
 
@@ -59,8 +61,8 @@ public class FileInformation : DataModel<FileInformation> {
 
     public Dictionary<string, DateTime?>? Locations { get; set; }
 
-    public override SortedSet<string> GetVirtualItems() =>
-        Sha256 != null
+    public override SortedSet<string> GetVirtualItems()
+        => Sha256 != null
             ? new SortedSet<string> {
                 VirtualItemPrefix + Sha256
             }
@@ -83,8 +85,10 @@ public class FileInformation : DataModel<FileInformation> {
         requiredProperties -= requiredProperties & GetProperties();
 
         if (Size == null && (requiredProperties.HasFlag(FileProperties.Size) ||
-                             (requiredProperties & FileProperties.AllBlockHashes) != FileProperties.None ||
-                             (requiredProperties & FileProperties.AllHashes) != FileProperties.None)) {
+                             (requiredProperties & FileProperties.AllBlockHashes) !=
+                             FileProperties.None ||
+                             (requiredProperties & FileProperties.AllHashes) !=
+                             FileProperties.None)) {
             Size = stream.Length;
         }
 
@@ -97,29 +101,52 @@ public class FileInformation : DataModel<FileInformation> {
 
         if (requiredProperties.HasFlag(FileProperties.SliceMd5)) {
             readLength = stream.Read(buffer, 0, SliceLength);
-            SliceMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength).ToHexString();
+            SliceMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength)
+                .ToHexString();
         }
 
         if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None) {
             var hashers = new List<HashAlgorithm?> {
-                requiredProperties.HasFlag(FileProperties.Md5) ? new MD5CryptoServiceProvider() : null,
-                requiredProperties.HasFlag(FileProperties.Sha1) ? new SHA1CryptoServiceProvider() : null,
-                requiredProperties.HasFlag(FileProperties.Sha256) ? new SHA256CryptoServiceProvider() : null
+                requiredProperties.HasFlag(FileProperties.Md5)
+                    ? new MD5CryptoServiceProvider()
+                    : null,
+                requiredProperties.HasFlag(FileProperties.Sha1)
+                    ? new SHA1CryptoServiceProvider()
+                    : null,
+                requiredProperties.HasFlag(FileProperties.Sha256)
+                    ? new SHA256CryptoServiceProvider()
+                    : null
             };
 
-            BlockMd5 = requiredProperties.HasFlag(FileProperties.BlockMd5) ? new List<string>() : BlockMd5;
-            BlockSha1 = requiredProperties.HasFlag(FileProperties.BlockSha1) ? new List<string>() : BlockSha1;
-            BlockSha256 = requiredProperties.HasFlag(FileProperties.BlockSha256) ? new List<string>() : BlockSha256;
+            BlockMd5 = requiredProperties.HasFlag(FileProperties.BlockMd5)
+                ? new List<string>()
+                : BlockMd5;
+            BlockSha1 = requiredProperties.HasFlag(FileProperties.BlockSha1)
+                ? new List<string>()
+                : BlockSha1;
+            BlockSha256 = requiredProperties.HasFlag(FileProperties.BlockSha256)
+                ? new List<string>()
+                : BlockSha256;
 
             var blockHashers = new List<HashAlgorithm?> {
-                requiredProperties.HasFlag(FileProperties.BlockMd5) ? new MD5CryptoServiceProvider() : null,
-                requiredProperties.HasFlag(FileProperties.BlockSha1) ? new SHA1CryptoServiceProvider() : null,
-                requiredProperties.HasFlag(FileProperties.BlockSha256) ? new SHA256CryptoServiceProvider() : null
+                requiredProperties.HasFlag(FileProperties.BlockMd5)
+                    ? new MD5CryptoServiceProvider()
+                    : null,
+                requiredProperties.HasFlag(FileProperties.BlockSha1)
+                    ? new SHA1CryptoServiceProvider()
+                    : null,
+                requiredProperties.HasFlag(FileProperties.BlockSha256)
+                    ? new SHA256CryptoServiceProvider()
+                    : null
             };
 
             var additionalHashers = new List<IHash?> {
-                requiredProperties.HasFlag(FileProperties.Crc32) ? HashFactory.Checksum.CreateCRC32_IEEE() : null,
-                requiredProperties.HasFlag(FileProperties.Adler32) ? HashFactory.Checksum.CreateAdler32() : null
+                requiredProperties.HasFlag(FileProperties.Crc32)
+                    ? HashFactory.Checksum.CreateCRC32_IEEE()
+                    : null,
+                requiredProperties.HasFlag(FileProperties.Adler32)
+                    ? HashFactory.Checksum.CreateAdler32()
+                    : null
             };
 
             foreach (var hasher in additionalHashers) {
@@ -127,20 +154,24 @@ public class FileInformation : DataModel<FileInformation> {
             }
 
             while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) != 0) {
-                Parallel.ForEach(hashers, hasher => { hasher?.TransformBlock(buffer, 0, readLength, buffer, 0); });
+                Parallel.ForEach(hashers,
+                    hasher => { hasher?.TransformBlock(buffer, 0, readLength, buffer, 0); });
 
-                Parallel.ForEach(additionalHashers, hasher => { hasher?.TransformBytes(buffer, 0, readLength); });
+                Parallel.ForEach(additionalHashers,
+                    hasher => { hasher?.TransformBytes(buffer, 0, readLength); });
 
                 if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
                     BlockMd5.Add(blockHashers[0]!.ComputeHash(buffer, 0, readLength).ToHexString());
                 }
 
                 if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
-                    BlockSha1.Add(blockHashers[1]!.ComputeHash(buffer, 0, readLength).ToHexString());
+                    BlockSha1.Add(blockHashers[1]!.ComputeHash(buffer, 0, readLength)
+                        .ToHexString());
                 }
 
                 if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
-                    BlockSha256.Add(blockHashers[2]!.ComputeHash(buffer, 0, readLength).ToHexString());
+                    BlockSha256.Add(blockHashers[2]!.ComputeHash(buffer, 0, readLength)
+                        .ToHexString());
                 }
 
                 readLength = 0;
@@ -153,8 +184,10 @@ public class FileInformation : DataModel<FileInformation> {
             Md5 ??= hashers[0]?.Hash?.ToHexString();
             Sha1 ??= hashers[1]?.Hash?.ToHexString();
             Sha256 ??= hashers[2]?.Hash?.ToHexString();
-            Crc32 ??= additionalHashers[0]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
-            Adler32 ??= additionalHashers[1]?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+            Crc32 ??= additionalHashers[0]?.TransformFinal().GetBytes().Reverse().ToArray()
+                .ToHexString();
+            Adler32 ??= additionalHashers[1]?.TransformFinal().GetBytes().Reverse().ToArray()
+                .ToHexString();
         }
 
         if (requiredProperties.HasFlag(FileProperties.EncryptionKey)) {
@@ -174,14 +207,15 @@ public class FileInformation : DataModel<FileInformation> {
         return this;
     }
 
-    IEnumerable<KeyValuePair<FileProperties, PropertyInfo>> ValidProperties =>
-        properties.Where(x => x.Value.GetValue(this) != null);
+    IEnumerable<KeyValuePair<FileProperties, PropertyInfo>> ValidProperties
+        => properties.Where(x => x.Value.GetValue(this) != null);
 
-    public FileProperties GetProperties() =>
-        properties.Where(x => x.Value.GetValue(this) != null).Select(x => x.Key)
+    public FileProperties GetProperties()
+        => properties.Where(x => x.Value.GetValue(this) != null).Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
-    public FileProperties CompareProperties(FileInformation other, FileProperties propertiesToCompare) {
+    public FileProperties CompareProperties(FileInformation other,
+        FileProperties propertiesToCompare) {
         var result = FileProperties.None;
         foreach (var p in ValidProperties) {
             if (propertiesToCompare.HasFlag(p.Key)) {
@@ -202,14 +236,15 @@ public class FileInformation : DataModel<FileInformation> {
         return result;
     }
 
-    public static FileInformation GetInformation(Stream stream, FileProperties requiredProperties) =>
-        new FileInformation().AddProperties(stream, requiredProperties);
+    public static FileInformation GetInformation(Stream stream, FileProperties requiredProperties)
+        => new FileInformation().AddProperties(stream, requiredProperties);
 
-    public static FileInformation GetInformation(string path, FileProperties requiredProperties) =>
-        GetInformation(File.OpenRead(path), requiredProperties);
+    public static FileInformation GetInformation(string path, FileProperties requiredProperties)
+        => GetInformation(File.OpenRead(path), requiredProperties);
 
-    public static FileInformation GetInformation(string basePath, string path, FileProperties requiredProperties) =>
-        GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
+    public static FileInformation GetInformation(string basePath, string path,
+        FileProperties requiredProperties)
+        => GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
 
     static string GenerateEncryptionKey() {
         using var aes = new AesCryptoServiceProvider {
@@ -227,21 +262,21 @@ public interface FileInformationServiceClient : KifaServiceClient<FileInformatio
 
 public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
     FileInformationServiceClient {
-    public List<string> ListFolder(string folder, bool recursive = false) =>
-        Call<List<string>>("list_folder", new Dictionary<string, object> {
+    public List<string> ListFolder(string folder, bool recursive = false)
+        => Call<List<string>>("list_folder", new Dictionary<string, object> {
             ["folder"] = folder,
             ["recursive"] = recursive
         });
 
-    public KifaActionResult AddLocation(string id, string location, bool verified = false) =>
-        Call("add_location", new Dictionary<string, object> {
+    public KifaActionResult AddLocation(string id, string location, bool verified = false)
+        => Call("add_location", new Dictionary<string, object> {
             ["id"] = id,
             ["location"] = location,
             ["verified"] = verified
         });
 
-    public KifaActionResult RemoveLocation(string id, string location) =>
-        Call("remove_location", new Dictionary<string, object> {
+    public KifaActionResult RemoveLocation(string id, string location)
+        => Call("remove_location", new Dictionary<string, object> {
             ["id"] = id,
             ["location"] = location
         });

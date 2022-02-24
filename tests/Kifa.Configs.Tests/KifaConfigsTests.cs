@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Xunit;
 
-namespace Kifa.Configs.Tests; 
+namespace Kifa.Configs.Tests;
 
 public class KifaConfigsTests {
     public static int IntConfig { get; set; }
@@ -49,7 +49,11 @@ public class KifaConfigsTests {
   - 344";
         KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
-        Assert.Equal(new List<int> {123, 233, 344}, IntListConfig);
+        Assert.Equal(new List<int> {
+            123,
+            233,
+            344
+        }, IntListConfig);
     }
 
     [Fact]
@@ -84,7 +88,11 @@ public class KifaConfigsTests {
     d: ""e""";
         KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
-        Assert.Equal(new Dictionary<string, string> {["a"] = "b", ["c"] = "d", ["d"] = "e"}, StringDictConfig);
+        Assert.Equal(new Dictionary<string, string> {
+            ["a"] = "b",
+            ["c"] = "d",
+            ["d"] = "e"
+        }, StringDictConfig);
     }
 
     [Fact]
@@ -98,7 +106,12 @@ public class KifaConfigsTests {
   - abc";
         KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
 
-        Assert.Equal(new List<string> {"123", "233", "344", "abc"}, StringListConfig);
+        Assert.Equal(new List<string> {
+            "123",
+            "233",
+            "344",
+            "abc"
+        }, StringListConfig);
     }
 
     [Fact]

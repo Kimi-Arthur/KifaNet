@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Xunit;
 
-namespace Kifa.Service.Tests; 
+namespace Kifa.Service.Tests;
 
 public class DataModelTests {
     public DataModelTests() {

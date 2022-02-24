@@ -305,30 +305,30 @@ public class BasicTests : IDisposable {
 
         var items = client.List();
         items.Should().HaveCount(3).And.Contain(new KeyValuePair<string, TestDataModel>[] {
-            new("test", new() {
+            new("test", new TestDataModel {
                 Id = "test",
                 Data = "very good data",
-                Metadata = new() {
-                    Linking = new() {
-                        Links = new() {
+                Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
+                        Links = new SortedSet<string> {
                             "new_test"
                         }
                     }
                 }
             }),
-            new("new_test", new() {
+            new("new_test", new TestDataModel {
                 Id = "new_test",
                 Data = "very good data",
-                Metadata = new() {
-                    Linking = new() {
+                Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
                         Target = "test",
-                        Links = new() {
+                        Links = new SortedSet<string> {
                             "new_test"
                         }
                     }
                 }
             }),
-            new("test1", new() {
+            new("test1", new TestDataModel {
                 Id = "test1",
                 Data = "ok data"
             })

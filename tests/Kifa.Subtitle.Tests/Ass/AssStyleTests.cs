@@ -3,7 +3,7 @@ using System.Drawing;
 using Kifa.Subtitle.Ass;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Ass; 
+namespace Kifa.Subtitle.Tests.Ass;
 
 public class AssStyleTests {
     [Fact]
@@ -46,9 +46,7 @@ public class AssStyleTests {
             style.Outline = i;
         }
 
-        foreach (var o in new[] {
-                     -1, 5, 123
-                 }) {
+        foreach (var o in new[] { -1, 5, 123 }) {
             style.Outline = o;
         }
     }
@@ -60,12 +58,9 @@ public class AssStyleTests {
             style.Shadow = i;
         }
 
-        foreach (var s in new[] {
-                     -1, 5, 123
-                 }) {
-            Assert.Equal("Shadow", Assert
-                .Throws<ArgumentOutOfRangeException>(() => style.Shadow = s)
-                .ParamName);
+        foreach (var s in new[] { -1, 5, 123 }) {
+            Assert.Equal("Shadow",
+                Assert.Throws<ArgumentOutOfRangeException>(() => style.Shadow = s).ParamName);
         }
     }
 

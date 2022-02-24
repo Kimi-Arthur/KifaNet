@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Infos; 
+namespace Kifa.Infos;
 
 public class Season : WithFormatInfo {
     public int Id { get; set; }
@@ -58,11 +58,12 @@ public interface WithFormatInfo {
 }
 
 public static class Helper {
-    static List<(Regex pattern, MatchEvaluator replacer)> BasePatterns =
-        new List<(Regex pattern, MatchEvaluator replacer)> {(new Regex(@"/"), match => "／")};
+    static List<(Regex pattern, MatchEvaluator replacer)> BasePatterns = new() {
+        (new Regex(@"/"), match => "／")
+    };
 
     static Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>> LanguagePatterns =
-        new Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>> {
+        new() {
             [Language.Japanese] = new List<(Regex pattern, MatchEvaluator replacer)> {
                 (new Regex(@" *\([ぁ-ヿ]+\) *"), match => ""),
                 (new Regex(@" *\[[ぁ-ヿ]+\] *"), match => ""),
@@ -88,7 +89,9 @@ public static class Helper {
         title = BasePatterns.Aggregate(title,
             (current, pattern) => pattern.pattern.Replace(current, pattern.replacer));
 
-        return LanguagePatterns.GetValueOrDefault(language, new List<(Regex pattern, MatchEvaluator replacer)>())
-            .Aggregate(title, (current, pattern) => pattern.pattern.Replace(current, pattern.replacer));
+        return LanguagePatterns
+            .GetValueOrDefault(language, new List<(Regex pattern, MatchEvaluator replacer)>())
+            .Aggregate(title,
+                (current, pattern) => pattern.pattern.Replace(current, pattern.replacer));
     }
 }

@@ -11,18 +11,21 @@ Current Version:
 
 Dependencies:
 ---
- - **CommandLineParser**: 2.3.0
- - **Kifa.Configs**
- - **Kifa.Service**
+
+- **CommandLineParser**: 2.3.0
+- **Kifa.Configs**
+- **Kifa.Service**
 
 Updates:
 ---
 
 ### 2.0
+
 - Package as a dotnet global tool.
 
 ### 1.0
+
 - Support running job.
 - 1.1
-  - Added retry logic for uploading logs.
-  - Incorporated Kifa.Service's retry logic.
+    - Added retry logic for uploading logs.
+    - Incorporated Kifa.Service's retry logic.

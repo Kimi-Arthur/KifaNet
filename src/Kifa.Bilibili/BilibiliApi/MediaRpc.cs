@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 
-namespace Kifa.Bilibili.BilibiliApi; 
+namespace Kifa.Bilibili.BilibiliApi;
 
 public class MediaRpc : BilibiliRpc<MediaRpc.MediaResponse> {
     public class MediaResponse {
@@ -43,8 +42,11 @@ public class MediaRpc : BilibiliRpc<MediaRpc.MediaResponse> {
         public double Score { get; set; }
     }
 
-    public override string UrlPattern { get; } = "https://api.bilibili.com/pgc/review/user?media_id={id}";
+    public override string UrlPattern { get; } =
+        "https://api.bilibili.com/pgc/review/user?media_id={id}";
 
-    public MediaResponse Call(string mediaId) =>
-        Call(new Dictionary<string, string> {{"id", mediaId[2..]}});
+    public MediaResponse Call(string mediaId)
+        => Call(new Dictionary<string, string> {
+            { "id", mediaId[2..] }
+        });
 }

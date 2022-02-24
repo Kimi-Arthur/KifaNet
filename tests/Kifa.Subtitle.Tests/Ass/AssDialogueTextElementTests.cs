@@ -2,7 +2,7 @@
 using Kifa.Subtitle.Ass;
 using Xunit;
 
-namespace Kifa.Subtitle.Tests.Ass; 
+namespace Kifa.Subtitle.Tests.Ass;
 
 public class AssDialogueTextElementTests {
     [Fact]

@@ -7,8 +7,8 @@ namespace Kifa.Web.Api.Controllers;
 [Route("api/" + Anime.ModelId)]
 public class AnimesController : KifaDataController<Anime, AnimeJsonServiceClient> {
     [HttpGet("$format")]
-    public KifaApiActionResult<string> Format(string id, int seasonId, int episodeId) =>
-        Client.Format(id, seasonId, episodeId);
+    public KifaApiActionResult<string> Format(string id, int seasonId, int episodeId)
+        => Client.Format(id, seasonId, episodeId);
 }
 
 public class AnimeJsonServiceClient : KifaServiceJsonClient<Anime>, AnimeServiceClient {

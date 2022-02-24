@@ -2,34 +2,37 @@ using System.Collections.Generic;
 using Kifa.Languages.German;
 using Xunit;
 
-namespace Kifa.Languages.Tests; 
+namespace Kifa.Languages.Tests;
 
 public class DeWiktionaryClientTests {
     [Theory]
-    [InlineData("kommen", "komm!", "kommt!", "kommen Sie!", "komme", "kommst", "kommt", "kommen", "kommt", "kommen",
-        "kam", "kamst", "kam", "kamen", "kamt", "kamen", "bin gekommen", "bist gekommen", "ist gekommen",
-        "sind gekommen", "seid gekommen", "sind gekommen", "kommt, kam, ist gekommen")]
-    [InlineData("abholen", "hol ab!", "holt ab!", "holen Sie ab!", "hole ab", "holst ab", "holt ab", "holen ab",
-        "holt ab", "holen ab", "holte ab", "holtest ab", "holte ab", "holten ab", "holtet ab", "holten ab",
-        "habe abgeholt", "hast abgeholt", "hat abgeholt", "haben abgeholt", "habt abgeholt", "haben abgeholt",
-        "holt ab, holte ab, hat abgeholt")]
-    [InlineData("bedienen", "bedien!", "bedient!", "bedienen Sie!", "bedien", "bedienst", "bedient", "bedienen",
-        "bedient", "bedienen", "bediente", "bedientest", "bediente", "bedienten", "bedientet", "bedienten",
-        "habe bedient", "hast bedient", "hat bedient", "haben bedient", "habt bedient", "haben bedient",
-        "bedient, bediente, hat bedient")]
+    [InlineData("kommen", "komm!", "kommt!", "kommen Sie!", "komme", "kommst", "kommt", "kommen",
+        "kommt", "kommen", "kam", "kamst", "kam", "kamen", "kamt", "kamen", "bin gekommen",
+        "bist gekommen", "ist gekommen", "sind gekommen", "seid gekommen", "sind gekommen",
+        "kommt, kam, ist gekommen")]
+    [InlineData("abholen", "hol ab!", "holt ab!", "holen Sie ab!", "hole ab", "holst ab", "holt ab",
+        "holen ab", "holt ab", "holen ab", "holte ab", "holtest ab", "holte ab", "holten ab",
+        "holtet ab", "holten ab", "habe abgeholt", "hast abgeholt", "hat abgeholt",
+        "haben abgeholt", "habt abgeholt", "haben abgeholt", "holt ab, holte ab, hat abgeholt")]
+    [InlineData("bedienen", "bedien!", "bedient!", "bedienen Sie!", "bedien", "bedienst", "bedient",
+        "bedienen", "bedient", "bedienen", "bediente", "bedientest", "bediente", "bedienten",
+        "bedientet", "bedienten", "habe bedient", "hast bedient", "hat bedient", "haben bedient",
+        "habt bedient", "haben bedient", "bedient, bediente, hat bedient")]
     [InlineData("unterrichten", "unterrichte!", "unterrichtet!", "unterrichten Sie!", "unterrichte",
-        "unterrichtest", "unterrichtet", "unterrichten", "unterrichtet", "unterrichten", "unterrichtete",
-        "unterrichtetest", "unterrichtete", "unterrichteten", "unterrichtetet", "unterrichteten",
-        "habe unterrichtet", "hast unterrichtet", "hat unterrichtet", "haben unterrichtet", "habt unterrichtet",
-        "haben unterrichtet", "unterrichtet, unterrichtete, hat unterrichtet")]
-    [InlineData("unternehmen", "unternimm!", "unternehmt!", "unternehmen Sie!", "unternehme", "unternimmst",
-        "unternimmt", "unternehmen", "unternehmt", "unternehmen", "unternahm", "unternahmst", "unternahm",
-        "unternahmen", "unternahmt", "unternahmen", "habe unternommen", "hast unternommen", "hat unternommen",
-        "haben unternommen", "habt unternommen", "haben unternommen", "unternimmt, unternahm, hat unternommen")]
-    public void ExtractVerbFormsTest(string id, string imp2s, string imp2p, string impsie, string p1s, string p2s,
-        string p3s, string p1p, string p2p, string p3p, string pa1s, string pa2s, string pa3s, string pa1p,
-        string pa2p, string pa3p, string pe1s, string pe2s, string pe3s, string pe1p, string pe2p, string pe3p,
-        string kf) {
+        "unterrichtest", "unterrichtet", "unterrichten", "unterrichtet", "unterrichten",
+        "unterrichtete", "unterrichtetest", "unterrichtete", "unterrichteten", "unterrichtetet",
+        "unterrichteten", "habe unterrichtet", "hast unterrichtet", "hat unterrichtet",
+        "haben unterrichtet", "habt unterrichtet", "haben unterrichtet",
+        "unterrichtet, unterrichtete, hat unterrichtet")]
+    [InlineData("unternehmen", "unternimm!", "unternehmt!", "unternehmen Sie!", "unternehme",
+        "unternimmst", "unternimmt", "unternehmen", "unternehmt", "unternehmen", "unternahm",
+        "unternahmst", "unternahm", "unternahmen", "unternahmt", "unternahmen", "habe unternommen",
+        "hast unternommen", "hat unternommen", "haben unternommen", "habt unternommen",
+        "haben unternommen", "unternimmt, unternahm, hat unternommen")]
+    public void ExtractVerbFormsTest(string id, string imp2s, string imp2p, string impsie,
+        string p1s, string p2s, string p3s, string p1p, string p2p, string p3p, string pa1s,
+        string pa2s, string pa3s, string pa1p, string pa2p, string pa3p, string pe1s, string pe2s,
+        string pe3s, string pe1p, string pe2p, string pe3p, string kf) {
         var client = new DeWiktionaryClient();
         var word = client.GetWord(id);
         word.Meanings.Add(new Meaning() {
@@ -66,10 +69,11 @@ public class DeWiktionaryClientTests {
 
     [Theory]
     [InlineData("Lernen", "Lernen", null, "Lernens", null, "Lernen", null, "Lernen", null, "(Sg.)")]
-    [InlineData("Buch", "Buch", "Bücher", "Buchs", "Bücher", "Buch", "Büchern", "Buch", "Bücher", "¨-er")]
+    [InlineData("Buch", "Buch", "Bücher", "Buchs", "Bücher", "Buch", "Büchern", "Buch", "Bücher",
+        "¨-er")]
     [InlineData("Daten", null, "Daten", null, "Daten", null, "Daten", null, "Daten", "(Pl.)")]
-    public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp, string ds, string dp,
-        string @as, string ap, string kf) {
+    public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp,
+        string ds, string dp, string @as, string ap, string kf) {
         var client = new DeWiktionaryClient();
         var word = client.GetWord(id);
         word.Meanings.Add(new Meaning {

@@ -16,17 +16,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PDFSharp.Standard" Version="1.51.12" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1" />
-    <PackageReference Include="NLog.Schema" Version="4.6.7" />
+    <PackageReference Include="PDFSharp.Standard" Version="1.51.12"/>
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1"/>
+    <PackageReference Include="NLog.Schema" Version="4.6.7"/>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
+    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath=""/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
   </ItemGroup>
 </Project>

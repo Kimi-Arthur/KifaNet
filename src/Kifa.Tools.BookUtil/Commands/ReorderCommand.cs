@@ -5,17 +5,19 @@ using CommandLine;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
-namespace Kifa.Tools.BookUtil.Commands; 
+namespace Kifa.Tools.BookUtil.Commands;
 
 [Verb("reorder", HelpText = "Reorder page orders to make it easy to print two paged like a book.")]
 public class ReorderCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target PDF file(s) to reorder the pages.")]
     public string FileName { get; set; }
 
-    [Option('p', "page-range", HelpText = "Select intended pages to reorder, in the format of '1,2,10-12,99-'.")]
+    [Option('p', "page-range",
+        HelpText = "Select intended pages to reorder, in the format of '1,2,10-12,99-'.")]
     public string PageRanges { get; set; } = "-";
 
-    [Option('a', "force-append", HelpText = "Force appending blank pages even if it's multiple of 4.")]
+    [Option('a', "force-append",
+        HelpText = "Force appending blank pages even if it's multiple of 4.")]
     public bool ForceAppend { get; set; } = false;
 
     public override int Execute() {

@@ -3,14 +3,15 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-namespace Kifa.IO.StorageClients; 
+namespace Kifa.IO.StorageClients;
 
 public class WebStorageClient : StorageClient {
     HttpClient httpClient = new();
 
     public string Protocol { get; set; }
 
-    public override long Length(string path) => httpClient.GetContentLength(GetUrl(path)).GetValueOrDefault(0);
+    public override long Length(string path)
+        => httpClient.GetContentLength(GetUrl(path)).GetValueOrDefault(0);
 
     public override void Delete(string path) {
         throw new NotImplementedException();

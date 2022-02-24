@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Kifa.Service;
 
-namespace Kifa.Cloud.OAuth; 
+namespace Kifa.Cloud.OAuth;
 
 public abstract class OAuthAccount : DataModel {
     public string AccessToken { get; set; }

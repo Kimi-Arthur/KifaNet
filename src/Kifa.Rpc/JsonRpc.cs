@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net.Http;
 using NLog;
 
-namespace Kifa.Rpc; 
+namespace Kifa.Rpc;
 
 public abstract class JsonRpc<TResponse> {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -22,7 +22,10 @@ public abstract class JsonRpc<TResponse> {
     // Different types of content
     public virtual List<KeyValuePair<string, string>>? FormContent { get; set; }
 
-    public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent { get; set; }
+    public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent {
+        get;
+        set;
+    }
 
     public TResponse? Call(Dictionary<string, string>? parameters = null,
         Dictionary<string, byte[]>? byteParameters = null) {
@@ -43,7 +46,8 @@ public abstract class JsonRpc<TResponse> {
             request.Content = multipartContent;
             if (FormContent != null) {
                 foreach (var (name, value) in FormContent) {
-                    multipartContent.Add(new StringContent(value.Format(parameters)), name.Format(parameters));
+                    multipartContent.Add(new StringContent(value.Format(parameters)),
+                        name.Format(parameters));
                 }
             }
 
@@ -51,15 +55,16 @@ public abstract class JsonRpc<TResponse> {
                 var content = new ByteArrayContent(byteParameters[dataKey]);
                 if (PartHeaders[dataKey] != null) {
                     foreach (var (headerName, value) in PartHeaders[dataKey]) {
-                        content.Headers.Add(headerName.Format(parameters), value.Format(parameters));
+                        content.Headers.Add(headerName.Format(parameters),
+                            value.Format(parameters));
                     }
                 }
 
                 multipartContent.Add(content, name.Format(parameters), fileName.Format(parameters));
             }
         } else if (FormContent != null) {
-            request.Content = new FormUrlEncodedContent(FormContent.Select(item =>
-                new KeyValuePair<string?, string?>(item.Key, item.Value.Format(parameters))));
+            request.Content = new FormUrlEncodedContent(FormContent.Select(item
+                => new KeyValuePair<string?, string?>(item.Key, item.Value.Format(parameters))));
         }
 
         if (request.Content != null) {

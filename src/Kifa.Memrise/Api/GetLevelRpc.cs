@@ -3,7 +3,7 @@ using System.Net.Http;
 using Kifa.Rpc;
 using Newtonsoft.Json;
 
-namespace Kifa.Memrise.Api; 
+namespace Kifa.Memrise.Api;
 
 public class GetLevelRpc : JsonRpc<GetLevelRpc.GetLevelResponse> {
     public class GetLevelResponse {
@@ -13,13 +13,16 @@ public class GetLevelRpc : JsonRpc<GetLevelRpc.GetLevelResponse> {
 
     public override HttpMethod Method { get; } = HttpMethod.Get;
 
-    public override Dictionary<string, string> Headers { get; } = new() {{"referer", "{referer}"}};
+    public override Dictionary<string, string> Headers { get; } = new() {
+        { "referer", "{referer}" }
+    };
 
-    public override string UrlPattern { get; } = "https://app.memrise.com/ajax/level/editing_html/?level_id={level_id}";
+    public override string UrlPattern { get; } =
+        "https://app.memrise.com/ajax/level/editing_html/?level_id={level_id}";
 
-    public GetLevelResponse Call(string referer, string levelId) {
-        return Call(new Dictionary<string, string> {
-            {"referer", referer}, {"level_id", levelId}
+    public GetLevelResponse Call(string referer, string levelId)
+        => Call(new Dictionary<string, string> {
+            { "referer", referer },
+            { "level_id", levelId }
         });
-    }
 }

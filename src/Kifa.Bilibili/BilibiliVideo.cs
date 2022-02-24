@@ -15,7 +15,7 @@ using Kifa.IO;
 using Kifa.Service;
 using Kifa.Subtitle.Ass;
 
-namespace Kifa.Bilibili; 
+namespace Kifa.Bilibili;
 
 public class BilibiliVideoStats {
     public long PlayCount { get; set; }
@@ -55,7 +55,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     PartModeType partMode;
 
-    public static KifaServiceClient<BilibiliVideo> Client => client ??= new KifaServiceRestClient<BilibiliVideo>();
+    public static KifaServiceClient<BilibiliVideo> Client
+        => client ??= new KifaServiceRestClient<BilibiliVideo>();
 
     public static string BilibiliCookies { get; set; }
 
@@ -71,12 +72,12 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     public string Description { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
-    public List<string> Tags { get; set; } = new List<string>();
+    public List<string> Tags { get; set; } = new();
     public string Category { get; set; }
     public Uri Cover { get; set; }
     public DateTimeOffset? Uploaded { get; set; }
     public List<BilibiliChat> Pages { get; set; }
-    public BilibiliVideoStats Stats { get; set; } = new BilibiliVideoStats();
+    public BilibiliVideoStats Stats { get; set; } = new();
 
     [JsonIgnore]
     public PartModeType PartMode {
@@ -194,7 +195,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 Duration = TimeSpan.FromSeconds(p.Duration)
             }).ToList();
             Uploaded = DateTimeOffset.FromUnixTimeSeconds(v2.Pubdate);
-            Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
+            Uploaded =
+                Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
 
             var stat = v2.Stat;
             Stats.PlayCount = stat.View;
@@ -218,7 +220,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 Title = p.Part
             }).ToList();
             Uploaded = DateTimeOffset.FromUnixTimeSeconds(v2.Pubdate);
-            Uploaded = Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
+            Uploaded =
+                Uploaded.Value.ToOffset(TimeZones.ShanghaiTimeZone.GetUtcOffset(Uploaded.Value));
 
             Stats.PlayCount = data.Play;
             Stats.DanmakuCount = data.VideoReview;
@@ -288,8 +291,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return $"$/{Id}p{pid}.c{p.Cid}.{quality}";
     }
 
-    public string GetDesiredName(int pid, int quality, string cid = null, string alternativeFolder = null,
-        bool prefixDate = false, BilibiliUploader uploader = null) {
+    public string GetDesiredName(int pid, int quality, string cid = null,
+        string alternativeFolder = null, bool prefixDate = false,
+        BilibiliUploader uploader = null) {
         var p = Pages.First(x => x.Id == pid);
 
         if (cid != null && cid != p.Cid) {
@@ -319,8 +323,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}.{quality}");
     }
 
-    public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(int pid,
-        int biliplusSourceChoice = 0) {
+    public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(
+        int pid, int biliplusSourceChoice = 0) {
         firstDownload = false;
 
         var cid = Pages[pid - 1].Cid;
@@ -337,8 +341,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             var doc = new HtmlDocument();
             doc.LoadHtml(GetDownloadPage(cid));
 
-            var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode =>
-                (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
+            var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
+                => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
 
             if (choices == null) {
                 logger.Warn("No sources found. Job not successful?");
@@ -408,7 +412,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     static void AddDownloadJob(string aid) {
         using var response = BiliplusHttpClient.Instance
-            .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall").Result;
+            .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
+            .Result;
         var content = response.GetString();
         logger.Debug($"Add download request result: {content}");
     }
@@ -422,7 +427,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     static DownloadStatus GetDownloadStatus(string aid, int pid) {
         using var response = BiliplusHttpClient.Instance
-            .GetAsync($"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}").Result;
+            .GetAsync(
+                $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
+            .Result;
         var content = response.GetString();
         logger.Debug($"Get download result: {content}");
         var storage = JToken.Parse(content)["storage"];
@@ -441,7 +448,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
     }
 
-    static (string extension, int quality, List<string> links) GetDownloadLinks(string aid, string cid) {
+    static (string extension, int quality, List<string> links) GetDownloadLinks(string aid,
+        string cid) {
         var quality = 120;
         while (true) {
             using var response = GetBilibiliClient()
@@ -484,8 +492,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     public static string GetAid(string cid) {
-        using var response = BiliplusHttpClient.Instance.GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}")
-            .Result;
+        using var response = BiliplusHttpClient.Instance
+            .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
         var content = response.GetString();
         logger.Debug($"Cid info: {content}");
 

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Kifa.Tests; 
+namespace Kifa.Tests;
 
 public enum MyEnum {
     Value1,
@@ -14,8 +14,11 @@ public class DataClass {
 }
 
 public class JsonTests {
-    static readonly DataClass Decoded = new DataClass {
-        Dict = new Dictionary<MyEnum, string> {{MyEnum.Value1, "a"}, {MyEnum.TextValue, "b"}}
+    static readonly DataClass Decoded = new() {
+        Dict = new Dictionary<MyEnum, string> {
+            { MyEnum.Value1, "a" },
+            { MyEnum.TextValue, "b" }
+        }
     };
 
     const string Encoded = "{\"dict\":{\"value1\":\"a\",\"text_value\":\"b\"}}";

@@ -1,7 +1,7 @@
 using Kifa.Bilibili.BilibiliApi;
 using Xunit;
 
-namespace Kifa.Bilibili.Tests; 
+namespace Kifa.Bilibili.Tests;
 
 public class BilibiliPlaylistTests {
     [Fact]
@@ -11,7 +11,9 @@ public class BilibiliPlaylistTests {
 
     [Fact]
     public void FillTest() {
-        var playlist = new BilibiliPlaylist {Id = "743911266"};
+        var playlist = new BilibiliPlaylist {
+            Id = "743911266"
+        };
         playlist.Fill();
         Assert.Equal("🎸", playlist.Title);
         Assert.Equal("斗勇猫晶晶", playlist.Uploader);

@@ -16,20 +16,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Apps.MomentCounter\Kifa.Apps.MomentCounter.csproj" />
-    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
-    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
-    <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj" />
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\Kifa.Apps.MomentCounter\Kifa.Apps.MomentCounter.csproj"/>
+    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj"/>
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj"/>
+    <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj"/>
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog.Schema" Version="4.6.7" />
+    <PackageReference Include="NLog.Schema" Version="4.6.7"/>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 </Project>

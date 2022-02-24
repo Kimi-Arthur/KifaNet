@@ -3,7 +3,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("rename", HelpText = "Rename video file to comply.")]
 class RenameVideoCommand : KifaCommand {

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Xunit;
 
-namespace Kifa.IO.Tests; 
+namespace Kifa.IO.Tests;
 
 public class PatchedStreamTests {
     [Fact]
@@ -15,8 +15,8 @@ public class PatchedStreamTests {
         var ps = new PatchedStream(ms) {
             IgnoreBefore = 12,
             IgnoreAfter = 24,
-            BufferBefore = new byte[] {0x12, 0x25},
-            BufferAfter = new byte[] {0x01, 0x23}
+            BufferBefore = new byte[] { 0x12, 0x25 },
+            BufferAfter = new byte[] { 0x01, 0x23 }
         };
         ps.Seek(25, SeekOrigin.Begin);
         Assert.Equal(35, ps.ReadByte());

@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssDrawingCommand {
     public string Name { get; set; }
-    public List<PointF> Points { get; set; } = new List<PointF>();
+    public List<PointF> Points { get; set; } = new();
 
 
     public void Scale(double scaleX, double scaleY) {
@@ -14,5 +14,6 @@ public class AssDrawingCommand {
             (p.Y * scaleY).RoundUp(10))).ToList();
     }
 
-    public override string ToString() => $"{Name} {string.Join(' ', Points.Select(p => $"{p.X} {p.Y}"))}";
+    public override string ToString()
+        => $"{Name} {string.Join(' ', Points.Select(p => $"{p.X} {p.Y}"))}";
 }

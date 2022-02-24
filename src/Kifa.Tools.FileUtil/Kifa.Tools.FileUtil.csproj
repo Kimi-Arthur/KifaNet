@@ -1,35 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
-        <ToolCommandName>filex</ToolCommandName>
-        <PackAsTool>true</PackAsTool>
-        <Version>1.0.16</Version>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
-        <PackageIcon>Kifa.png</PackageIcon>
-        <Description>Utility to manage files.</Description>
-        <Copyright>Copyright © 2021 Kimi Arthur</Copyright>
-        <PackageTags>Kifa</PackageTags>
-        <Authors>KimiArthur</Authors>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="CommandLineParser" Version="2.6.0" />
-        <PackageReference Include="NLog.Schema" Version="4.6.7" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
-        <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
-        <ProjectReference Include="..\Kifa.GameHacking\Kifa.GameHacking.csproj" />
-        <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
-        <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
-        <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
-        <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="..\..\resources\NLog.config">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\" />
-    </ItemGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ToolCommandName>filex</ToolCommandName>
+    <PackAsTool>true</PackAsTool>
+    <Version>1.0.16</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
+    <PackageIcon>Kifa.png</PackageIcon>
+    <Description>Utility to manage files.</Description>
+    <Copyright>Copyright © 2021 Kimi Arthur</Copyright>
+    <PackageTags>Kifa</PackageTags>
+    <Authors>KimiArthur</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.6.0"/>
+    <PackageReference Include="NLog.Schema" Version="4.6.7"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
+    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
+    <ProjectReference Include="..\Kifa.GameHacking\Kifa.GameHacking.csproj"/>
+    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj"/>
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
+    <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj"/>
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\resources\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 </Project>

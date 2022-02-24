@@ -5,7 +5,7 @@ using System.Threading;
 using CG.Web.MegaApiClient;
 using Kifa.IO;
 
-namespace Kifa.Cloud.MegaNz; 
+namespace Kifa.Cloud.MegaNz;
 
 public class MegaNzStorageClient : StorageClient {
     static MegaNzConfig config;
@@ -28,8 +28,8 @@ public class MegaNzStorageClient : StorageClient {
 
     public MegaApiClient Client { get; private set; }
 
-    static MegaNzConfig Config =>
-        LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
+    static MegaNzConfig Config
+        => LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
 
 
     public override string Type => "mega";

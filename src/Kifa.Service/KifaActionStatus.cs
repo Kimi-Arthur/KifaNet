@@ -1,4 +1,4 @@
-﻿namespace Kifa.Service; 
+﻿namespace Kifa.Service;
 
 public enum KifaActionStatus {
     OK,

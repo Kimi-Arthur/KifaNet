@@ -1,4 +1,4 @@
-namespace Kifa.Games.BreathOfTheWild; 
+namespace Kifa.Games.BreathOfTheWild;
 
 public class Location {
     public int X { get; set; }

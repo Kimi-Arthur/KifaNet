@@ -2,7 +2,7 @@
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.DataUtil.Commands; 
+namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("refresh",
     HelpText = "Refresh Data for an entity. Currently tv_shows and animes are supported.")]

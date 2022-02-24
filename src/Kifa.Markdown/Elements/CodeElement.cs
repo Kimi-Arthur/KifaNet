@@ -1,4 +1,4 @@
-namespace Kifa.Markdown.Elements; 
+namespace Kifa.Markdown.Elements;
 
 public class CodeElement : MarkdownElement {
     // Empty means no defined language.

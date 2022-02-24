@@ -3,7 +3,7 @@ using CommandLine;
 using Kifa.Bilibili;
 using NLog;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("up", HelpText = "Download all high quality Bilibili videos for one uploader.")]
 public class DownloadUploaderCommand : KifaCommand {

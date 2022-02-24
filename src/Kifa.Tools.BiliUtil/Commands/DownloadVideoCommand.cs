@@ -2,7 +2,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("video", HelpText = "Download high quality Bilibili videos from biliplus.")]
 public class DownloadVideoCommand : KifaCommand {

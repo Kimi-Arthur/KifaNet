@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Kifa.Service; 
+namespace Kifa.Service;
 
 public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }

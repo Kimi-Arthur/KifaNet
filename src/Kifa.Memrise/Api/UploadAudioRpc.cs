@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
 
-namespace Kifa.Memrise.Api; 
+namespace Kifa.Memrise.Api;
 
 public class UploadAudioRpc : JsonRpc<UploadAudioRpc.UpdateAudioResponse> {
     public class UpdateAudioResponse {
@@ -12,28 +12,43 @@ public class UploadAudioRpc : JsonRpc<UploadAudioRpc.UpdateAudioResponse> {
 
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
-    public override Dictionary<string, string> Headers { get; } = new() {{"referer", "{referer}"}};
+    public override Dictionary<string, string> Headers { get; } = new() {
+        { "referer", "{referer}" }
+    };
 
     public override Dictionary<string, Dictionary<string, string>> PartHeaders { get; } = new() {
-        {"audio", new Dictionary<string, string> {{"Content-Type", "audio/mpeg"}}}
+        {
+            "audio", new Dictionary<string, string> {
+                { "Content-Type", "audio/mpeg" }
+            }
+        }
     };
 
-    public override string UrlPattern { get; } = "https://app.memrise.com/ajax/thing/cell/upload_file/";
+    public override string UrlPattern { get; } =
+        "https://app.memrise.com/ajax/thing/cell/upload_file/";
 
     public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
-        new("thing_id", "{thing_id}"),
-        new("cell_id", "{cell_id}"),
-        new("cell_type", "column"),
-        new("csrfmiddlewaretoken", "{csrf_token}")
+        new KeyValuePair<string, string>("thing_id", "{thing_id}"),
+        new KeyValuePair<string, string>("cell_id", "{cell_id}"),
+        new KeyValuePair<string, string>("cell_type", "column"),
+        new KeyValuePair<string, string>("csrfmiddlewaretoken", "{csrf_token}")
     };
 
-    public override List<(string dataKey, string name, string fileName)> ExtraMultipartContent { get; set; } =
-        new() {("audio", "f", "f.mp3")};
+    public override List<(string dataKey, string name, string fileName)> ExtraMultipartContent {
+        get;
+        set;
+    } = new() {
+        ("audio", "f", "f.mp3")
+    };
 
-    public UpdateAudioResponse Call(string referer, string thingId, string cellId, string csrfToken, byte[] audio) {
-        return Call(
-            new Dictionary<string, string> {
-                {"referer", referer}, {"thing_id", thingId}, {"cell_id", cellId}, {"csrf_token", csrfToken}
-            }, new Dictionary<string, byte[]> {{"audio", audio}});
-    }
+    public UpdateAudioResponse Call(string referer, string thingId, string cellId, string csrfToken,
+        byte[] audio)
+        => Call(new Dictionary<string, string> {
+            { "referer", referer },
+            { "thing_id", thingId },
+            { "cell_id", cellId },
+            { "csrf_token", csrfToken }
+        }, new Dictionary<string, byte[]> {
+            { "audio", audio }
+        });
 }

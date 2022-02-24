@@ -10,12 +10,12 @@ using Kifa.IO;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.BiliUtil; 
+namespace Kifa.Tools.BiliUtil;
 
 public static class Helper {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    static readonly Regex fileNamePattern = new Regex(@"^AV(\d+) P(\d+) .* cid (\d+)$");
+    static readonly Regex fileNamePattern = new(@"^AV(\d+) P(\d+) .* cid (\d+)$");
 
     public static (string aid, int pid, string cid) GetIds(string name) {
         var match = fileNamePattern.Match(name);
@@ -23,7 +23,8 @@ public static class Helper {
             return (null, 0, null);
         }
 
-        return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value), match.Groups[3].Value);
+        return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value),
+            match.Groups[3].Value);
     }
 
     public static string GetDesiredFileName(BilibiliVideo video, int pid, string cid = null) {
@@ -58,8 +59,9 @@ public static class Helper {
     }
 
 
-    public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
-        string alternativeFolder = null, bool prefixDate = false, BilibiliUploader uploader = null) {
+    public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice,
+        KifaFile currentFolder, string alternativeFolder = null, bool prefixDate = false,
+        BilibiliUploader uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
             Name = video.Author
@@ -78,7 +80,8 @@ public static class Helper {
             var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
             var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
             if (finalTargetFile.ExistsSomewhere()) {
-                logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                logger.Info(
+                    $"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
                 if (!canonicalTargetFile.ExistsSomewhere()) {
                     FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
                     logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
@@ -88,7 +91,8 @@ public static class Helper {
             }
 
             if (canonicalTargetFile.ExistsSomewhere()) {
-                logger.Info($"{canonicalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                logger.Info(
+                    $"{canonicalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
                 if (!finalTargetFile.ExistsSomewhere()) {
                     FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
                     logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
@@ -133,10 +137,12 @@ public static class Helper {
             }
 
             try {
-                logger.Debug($"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
+                logger.Debug(
+                    $"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
                 MergePartFiles(partFiles, canonicalTargetFile);
                 RemovePartFiles(partFiles);
-                logger.Debug($"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
+                logger.Debug(
+                    $"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
 
                 logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
                 canonicalTargetFile.Copy(finalTargetFile);
@@ -146,9 +152,8 @@ public static class Helper {
                 return false;
             }
         } else {
-            var targetFile =
-                currentFolder.GetFile(
-                    $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
+            var targetFile = currentFolder.GetFile(
+                $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
             logger.Debug($"Writing to {targetFile}...");
             try {
                 targetFile.WriteIfNotFinished(streamGetters.First());
@@ -164,7 +169,8 @@ public static class Helper {
 
     public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
         // Convert parts first
-        var partPaths = parts.Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
+        var partPaths = parts
+            .Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
 
         var fileListPath = Path.GetTempFileName();
         File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GeFfmpegTargetPath(p)}"));

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Kifa.Apps.MomentCounter; 
+namespace Kifa.Apps.MomentCounter;
 
 public class Counter : DataModel<Counter> {
     public const string ModelId = "moment_counter/counters";

@@ -3,7 +3,7 @@ using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
 using NLog;
 
-namespace Kifa.Markdown.Converters; 
+namespace Kifa.Markdown.Converters;
 
 public class DefaultConverter : HtmlMarkdownConverter {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();

@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace Kifa.Api.Files; 
+namespace Kifa.Api.Files;
 
 public class KifaFileProvider : IFileProvider {
     public IFileInfo GetFileInfo(string path) => new KifaFileInfo(new KifaFile(id: path));

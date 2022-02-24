@@ -5,14 +5,15 @@ using System.Reflection;
 using Kifa.Service;
 using Svg;
 
-namespace Kifa.Music; 
+namespace Kifa.Music;
 
 public class GuitarChord : DataModel<GuitarChord> {
     public const string ModelId = "guitar/chords";
 
     static KifaServiceClient<GuitarChord> client;
 
-    public static KifaServiceClient<GuitarChord> Client => client ??= new KifaServiceRestClient<GuitarChord>();
+    public static KifaServiceClient<GuitarChord> Client
+        => client ??= new KifaServiceRestClient<GuitarChord>();
 
     /// Name of the chord. Can be like, `C`, `Cmaj7`, `Em` etc.
     public string Name { get; set; }
@@ -61,7 +62,8 @@ public class GuitarChord : DataModel<GuitarChord> {
             }
 
             foreach (var s in arrangement.Strings) {
-                document.Children.Add(GetFingering(arrangement.Finger, arrangement.Fret - minFret + 1, s));
+                document.Children.Add(GetFingering(arrangement.Finger,
+                    arrangement.Fret - minFret + 1, s));
                 leftStrings.Remove(s);
             }
         }
@@ -73,8 +75,8 @@ public class GuitarChord : DataModel<GuitarChord> {
         return document;
     }
 
-    static SvgElement GetFret(int minFret) =>
-        new SvgText {
+    static SvgElement GetFret(int minFret)
+        => new SvgText {
             FontFamily = "sans-serif",
             FontSize = 24,
             TextAnchor = SvgTextAnchor.End,
@@ -88,32 +90,32 @@ public class GuitarChord : DataModel<GuitarChord> {
         };
 
 
-    static SvgElement GetTopBar() =>
-        new SvgUse {
+    static SvgElement GetTopBar()
+        => new SvgUse {
             ReferencedElement = new Uri("#top_bar", UriKind.Relative)
         };
 
-    static SvgElement GetOpenString(int s) =>
-        new SvgUse {
+    static SvgElement GetOpenString(int s)
+        => new SvgUse {
             ReferencedElement = new Uri("#open", UriKind.Relative),
             X = 48 + 32 * (6 - s)
         };
 
-    static SvgElement GetCross(int s) =>
-        new SvgUse {
+    static SvgElement GetCross(int s)
+        => new SvgUse {
             ReferencedElement = new Uri("#cross", UriKind.Relative),
             X = 36 + 32 * (6 - s)
         };
 
-    static SvgElement GetFingerBar(int fret, int s) =>
-        new SvgUse {
+    static SvgElement GetFingerBar(int fret, int s)
+        => new SvgUse {
             ReferencedElement = new Uri("#fbar", UriKind.Relative),
             X = 16 + 32 * (6 - s),
             Y = 10 + 48 * fret
         };
 
-    static SvgElement GetFingering(int finger, int fret, int s) =>
-        new SvgUse {
+    static SvgElement GetFingering(int finger, int fret, int s)
+        => new SvgUse {
             ReferencedElement = new Uri($"#f{finger}", UriKind.Relative),
             X = 48 + 32 * (6 - s),
             Y = 24 + 48 * fret
@@ -137,9 +139,11 @@ public interface GuitarChordServiceClient : KifaServiceClient<GuitarChord> {
     SvgDocument GetPicture(string id);
 }
 
-public class GuitarChordRestServiceClient : KifaServiceRestClient<GuitarChord>, GuitarChordServiceClient {
-    public SvgDocument GetPicture(string id) =>
-        SvgDocument.FromSvg<SvgDocument>(Call<string>("get_picture", new Dictionary<string, object> {
-            {"id", id}
-        }));
+public class GuitarChordRestServiceClient : KifaServiceRestClient<GuitarChord>,
+    GuitarChordServiceClient {
+    public SvgDocument GetPicture(string id)
+        => SvgDocument.FromSvg<SvgDocument>(Call<string>("get_picture",
+            new Dictionary<string, object> {
+                { "id", id }
+            }));
 }

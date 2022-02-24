@@ -5,14 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
-    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
-    <ProjectReference Include="..\Kifa.Rpc\Kifa.Rpc.csproj" />
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj"/>
+    <ProjectReference Include="..\Kifa.Rpc\Kifa.Rpc.csproj"/>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
   </ItemGroup>
 
 </Project>

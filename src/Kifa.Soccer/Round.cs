@@ -1,13 +1,22 @@
-namespace Kifa.Soccer; 
+namespace Kifa.Soccer;
 
 public class Round {
     public string Name { get; set; }
 
-    public static Round Regular(int round) => new Round {Name = $"Round {round}"};
+    public static Round Regular(int round)
+        => new() {
+            Name = $"Round {round}"
+        };
 
-    public static Round Group(int round) => new Round {Name = $"Group Stage Round {round}"};
+    public static Round Group(int round)
+        => new() {
+            Name = $"Group Stage Round {round}"
+        };
 
-    public static Round RoundOf(string roundName, int? leg) => new Round {Name = $"{roundName}{GetLeg(leg)}"};
+    public static Round RoundOf(string roundName, int? leg)
+        => new() {
+            Name = $"{roundName}{GetLeg(leg)}"
+        };
 
     public static Round RoundOf(int totalTeams, int? leg) => RoundOf($"Round of {totalTeams}", leg);
 

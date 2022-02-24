@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using Kifa.Cryptography;
 
-namespace Kifa.IO.FileFormats; 
+namespace Kifa.IO.FileFormats;
 
 /// <summary>
 ///     V1 file format.
@@ -19,7 +19,7 @@ namespace Kifa.IO.FileFormats;
 ///     B16~47: SHA256 (256bit)
 /// </summary>
 public class KifaFileV1Format : KifaFileFormat {
-    static readonly KifaFileV1Format Instance = new KifaFileV1Format();
+    static readonly KifaFileV1Format Instance = new();
 
     public static KifaFileFormat? Get(string fileUri) {
         if (fileUri.EndsWith(".v1")) {
@@ -56,9 +56,8 @@ public class KifaFileV1Format : KifaFileFormat {
         }
 
         return new KifaCryptoStream(new PatchedStream(encodedStream) {
-                IgnoreBefore = 0x30
-            },
-            decoder, size, true);
+            IgnoreBefore = 0x30
+        }, decoder, size, true);
     }
 
     public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
@@ -69,9 +68,7 @@ public class KifaFileV1Format : KifaFileFormat {
         }
 
         var header = new byte[48];
-        new byte[] {
-            0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30
-        }.CopyTo(header, 0);
+        new byte[] { 0x01, 0x23, 0x12, 0x25, 0x00, 0x01, 0x00, 0x30 }.CopyTo(header, 0);
         info.Size.Value.ToByteArray().CopyTo(header, 8);
         info.Sha256.ParseHexString().CopyTo(header, 16);
 

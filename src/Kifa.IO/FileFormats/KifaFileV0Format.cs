@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Kifa.Cryptography;
 
-namespace Kifa.IO.FileFormats; 
+namespace Kifa.IO.FileFormats;
 
 /// <summary>
 ///     Legacy file format with encryption and information header.
@@ -15,7 +15,7 @@ namespace Kifa.IO.FileFormats;
 ///     We only provide decoder for this format.
 /// </summary>
 public class KifaFileV0Format : KifaFileFormat {
-    static readonly KifaFileV0Format Instance = new KifaFileV0Format();
+    static readonly KifaFileV0Format Instance = new();
 
     public static KifaFileFormat? Get(string fileSpec) {
         var specs = fileSpec.Split('/').First().Split(';');
@@ -55,8 +55,7 @@ public class KifaFileV0Format : KifaFileFormat {
         }
 
         return new KifaCryptoStream(new PatchedStream(encodedStream) {
-                IgnoreBefore = 0x1225
-            },
-            decoder, size, true);
+            IgnoreBefore = 0x1225
+        }, decoder, size, true);
     }
 }

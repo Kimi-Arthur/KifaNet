@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class PonsClient {
     static HttpClient ponsClient = new();
@@ -29,8 +29,11 @@ public class PonsClient {
 
     public GermanWord GetWord(string wordId) {
         var doc = new HtmlDocument();
-        doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
-        var wordNode = doc.DocumentNode.SelectSingleNode("(.//div[@class='entry' or @class='entry first'])[1]");
+        doc.LoadHtml(ponsClient
+            .GetStringAsync($"https://en.pons.com/translate/german-english/{wordId}").Result);
+        var wordNode =
+            doc.DocumentNode.SelectSingleNode(
+                "(.//div[@class='entry' or @class='entry first'])[1]");
         if (wordNode == null) {
             return new GermanWord();
         }
@@ -52,18 +55,21 @@ public class PonsClient {
 
         var audioLinkNode = wordNode.SelectSingleNode(".//dl[1]");
         if (audioLinkNode != null) {
-            word.PronunciationAudioLinks[Source.Pons] =
-                new HashSet<string>() {$"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"};
+            word.PronunciationAudioLinks[Source.Pons] = new HashSet<string>() {
+                $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"
+            };
         }
 
         word.Meanings.Add(new Meaning {
-            Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText?.Trim(), Type = type
+            Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText
+                ?.Trim(),
+            Type = type
         });
         return word;
     }
 
-    static WordType GetWordType(string value) =>
-        value switch {
+    static WordType GetWordType(string value)
+        => value switch {
             "verb" => WordType.Verb,
             "noun" => WordType.Noun,
             "pronoun" => WordType.Pronoun,
@@ -76,11 +82,13 @@ public class PonsClient {
     public VerbForms GetVerbForms(string wordId) {
         var forms = new VerbForms();
         var doc = new HtmlDocument();
-        doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/verb-tables/german/{wordId}").Result);
+        doc.LoadHtml(ponsClient.GetStringAsync($"https://en.pons.com/verb-tables/german/{wordId}")
+            .Result);
         foreach (VerbFormType form in Enum.GetValues(typeof(VerbFormType))) {
             var x = Enum.GetValues(typeof(Person)).Cast<Person>().ToDictionary(p => p,
                 p => doc.DocumentNode
-                    .SelectSingleNode($"(//span[@{SelectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
+                    .SelectSingleNode(
+                        $"(//span[@{SelectField}='{verbFormIds[form]}_{personIds[p]}'])[2]")
                     ?.InnerText);
             forms[form] = x;
         }

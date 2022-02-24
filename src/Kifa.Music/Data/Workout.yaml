@@ -1,24 +1,24 @@
   /workout/exercises/卷腹.json
     {
-      "id": "卷腹"
-        "metrics": [
-            "count"
-        ]
-    }
+  "id": "卷腹"
+    "metrics": [
+        "count"
+    ]
+  }
 
     /workout/exercises/平板支撑.json
     {
-      "id": "平板支撑"
-        "metrics": [
-            "duration"
-        ]
-    }
+  "id": "平板支撑"
+    "metrics": [
+        "duration"
+    ]
+  }
 
     /workout/users/kimi.json
     {
-      "id": "kimi",
-      "name": "Kimi"
-    }
+  "id": "kimi",
+  "name": "Kimi"
+  }
 
     /workout/history/kimi/2020-11-30.json
 

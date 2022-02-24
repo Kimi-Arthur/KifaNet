@@ -10,8 +10,8 @@ namespace Kifa.Web.Api;
 
 public class Program {
     public static void Main(string[] args) {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
-            KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
         KifaConfigs.LoadFromSystemConfigs();
         RegisterClients();
@@ -33,6 +33,6 @@ public class Program {
         Counter.Client = new CounterJsonServiceClient();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        => WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
 }

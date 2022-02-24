@@ -5,7 +5,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using NLog;
 
-namespace Kifa.Tools.NoteUtil.Commands; 
+namespace Kifa.Tools.NoteUtil.Commands;
 
 [Verb("collect", HelpText = "Collect all vocabulary into vocabulary files.")]
 public class CollectCommand : KifaCommand {
@@ -34,7 +34,8 @@ public class CollectCommand : KifaCommand {
             var heading = Heading.Get(line);
             switch (state) {
                 case ParsingState.New:
-                    if (heading?.Level == startHeadingLevel && heading.Title == MarkdownHelpers.VocabularyTitle) {
+                    if (heading?.Level == startHeadingLevel &&
+                        heading.Title == MarkdownHelpers.VocabularyTitle) {
                         state = ParsingState.Vocabulary;
                     }
 
@@ -56,15 +57,15 @@ public class CollectCommand : KifaCommand {
                     } else if (columnNames.Count == 0) {
                         var definition = MarkdownHelpers.GetColumnsDefinition(line);
                         if (definition != null) {
-                            if (wordsSections.ContainsKey(section) && (wordsSections[section].Type != section ||
-                                    !wordsSections[section].ColumnNames
-                                        .SequenceEqual(definition))) {
+                            if (wordsSections.ContainsKey(section) &&
+                                (wordsSections[section].Type != section || !wordsSections[section]
+                                    .ColumnNames.SequenceEqual(definition))) {
                                 logger.Error("Different definitions.");
                             }
 
                             wordsSections[section] ??= new WordsSection();
 
-                            for (int i = 0; i < definition.Length; i++) {
+                            for (var i = 0; i < definition.Length; i++) {
                                 columnNames[definition[i]] = i;
                             }
                         }

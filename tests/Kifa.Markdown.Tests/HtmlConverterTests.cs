@@ -5,7 +5,7 @@ using System.Net.Http;
 using HtmlAgilityPack;
 using Xunit;
 
-namespace Kifa.Markdown.Tests; 
+namespace Kifa.Markdown.Tests;
 
 public class HtmlConverterTests {
     static HttpClient client = new();
@@ -16,7 +16,8 @@ public class HtmlConverterTests {
     [InlineData(
         "<p>A graphical icon widget drawn with a glyph from a font described in an <a href=\"widgets/IconData-class.html\">IconData</a> such as material's predefined <a href=\"widgets/IconData-class.html\">IconData</a>s in <a href=\"material/Icons-class.html\">Icons</a>.</p>",
         "A graphical icon widget drawn with a glyph from a font described in an [IconData](https://api.flutter.dev/flutter/widgets/IconData-class.html) such as material's predefined [IconData](https://api.flutter.dev/flutter/widgets/IconData-class.html)s in [Icons](https://api.flutter.dev/flutter/material/Icons-class.html).\n\n")]
-    [InlineData("<ul>\n<li>abc</li><li>the</li><li>title\n<ul>\n<li>bcd</li><li>hh</li></ul></li></ul>",
+    [InlineData(
+        "<ul>\n<li>abc</li><li>the</li><li>title\n<ul>\n<li>bcd</li><li>hh</li></ul></li></ul>",
         "- abc\n- the\n- title\n  - bcd\n  - hh\n")]
     [InlineData(
         "<p>For example, the level in <code>Debug.LogLevel.Default</code> overrides the level in <code>LogLevel.Default</code>.</p>",
@@ -32,9 +33,10 @@ public class HtmlConverterTests {
     [Theory]
     [InlineData("https://api.flutter.dev/flutter/widgets/StatefulWidget-class.html",
         "//div[@id=\"dartdoc-main-content\"]", "stateful_widget.md")]
-    [InlineData("https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0", "//main",
-        "file_stream.md")]
-    [InlineData("https://flutter.dev/docs/development/accessibility-and-localization/internationalization",
+    [InlineData("https://docs.microsoft.com/en-us/dotnet/api/system.io.filestream?view=net-5.0",
+        "//main", "file_stream.md")]
+    [InlineData(
+        "https://flutter.dev/docs/development/accessibility-and-localization/internationalization",
         "//main", "internationalization.md")]
     public void ParsingDocumentTest(string url, string rootXpath, string outcomeFile) {
         var htmlDocument = new HtmlDocument();
@@ -42,6 +44,7 @@ public class HtmlConverterTests {
         var markdownElements = HtmlMarkdownConverter
             .ParseAllHtml(new[] { htmlDocument.DocumentNode.SelectSingleNode(rootXpath) }).ToList();
 
-        Assert.Equal(File.ReadAllText(outcomeFile), markdownElements.Select(element => element.ToText()).JoinBy());
+        Assert.Equal(File.ReadAllText(outcomeFile),
+            markdownElements.Select(element => element.ToText()).JoinBy());
     }
 }

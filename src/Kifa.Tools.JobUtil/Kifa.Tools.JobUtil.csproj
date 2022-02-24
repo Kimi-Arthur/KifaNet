@@ -14,10 +14,10 @@
     <Authors>Kimi Arthur</Authors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.6.0" />
+    <PackageReference Include="CommandLineParser" Version="2.6.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
   </ItemGroup>
 </Project>

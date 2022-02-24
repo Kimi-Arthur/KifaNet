@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class DudenClient {
     static Dictionary<string, string>? audioLinks;
@@ -24,8 +24,8 @@ public class DudenClient {
         }
     }
 
-    public GermanWord GetWord(string wordId) =>
-        new() {
+    public GermanWord GetWord(string wordId)
+        => new() {
             Id = wordId,
             PronunciationAudioLinks = new Dictionary<Source, HashSet<string>> {
                 {

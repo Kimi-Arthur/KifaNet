@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace CG.Web.MegaApiClient; 
+namespace CG.Web.MegaApiClient;
 
 #region Base
 
@@ -18,12 +18,10 @@ abstract class RequestBase {
 
 #endregion
 
-
 #region Login
 
 class LoginRequest : RequestBase {
-    public LoginRequest(string userHandle, string passwordHash)
-        : base("us") {
+    public LoginRequest(string userHandle, string passwordHash) : base("us") {
         UserHandle = userHandle;
         PasswordHash = passwordHash;
     }
@@ -50,8 +48,7 @@ class LoginResponse {
 }
 
 class AnonymousLoginRequest : RequestBase {
-    public AnonymousLoginRequest(string masterKey, string temporarySession)
-        : base("up") {
+    public AnonymousLoginRequest(string masterKey, string temporarySession) : base("up") {
         MasterKey = masterKey;
         TemporarySession = temporarySession;
     }
@@ -68,8 +65,7 @@ class AnonymousLoginRequest : RequestBase {
 #region AccountInformation
 
 class AccountInformationRequest : RequestBase {
-    public AccountInformationRequest()
-        : base("uq") {
+    public AccountInformationRequest() : base("uq") {
     }
 
     [JsonProperty("strg")]
@@ -92,12 +88,10 @@ public class AccountInformationResponse {
 
 #endregion
 
-
 #region Nodes
 
 class GetNodesRequest : RequestBase {
-    public GetNodesRequest()
-        : base("f") {
+    public GetNodesRequest() : base("f") {
         c = 1;
     }
 
@@ -118,16 +112,12 @@ class GetNodesResponse {
         var settings = new JsonSerializerSettings();
 
         // First Nodes deserialization to retrieve all shared keys
-        settings.Context = new StreamingContext(StreamingContextStates.All, new[] {
-            this
-        });
+        settings.Context = new StreamingContext(StreamingContextStates.All, new[] { this });
         JsonConvert.DeserializeObject<Node[]>(NodesSerialized.ToString(), settings);
 
         // Deserialize nodes
         settings.Context =
-            new StreamingContext(StreamingContextStates.All, new[] {
-                this, ctx.Context
-            });
+            new StreamingContext(StreamingContextStates.All, new[] { this, ctx.Context });
         Nodes = JsonConvert.DeserializeObject<Node[]>(NodesSerialized.ToString(), settings);
     }
 
@@ -147,12 +137,10 @@ class GetNodesResponse {
 
 #endregion
 
-
 #region Delete
 
 class DeleteRequest : RequestBase {
-    public DeleteRequest(Node node)
-        : base("d") {
+    public DeleteRequest(Node node) : base("d") {
         Node = node.Id;
     }
 
@@ -162,12 +150,10 @@ class DeleteRequest : RequestBase {
 
 #endregion
 
-
 #region Link
 
 class GetDownloadLinkRequest : RequestBase {
-    public GetDownloadLinkRequest(Node node)
-        : base("l") {
+    public GetDownloadLinkRequest(Node node) : base("l") {
         Id = node.Id;
     }
 
@@ -177,13 +163,11 @@ class GetDownloadLinkRequest : RequestBase {
 
 #endregion
 
-
 #region Create node
 
 class CreateNodeRequest : RequestBase {
     CreateNodeRequest(Node parentNode, NodeType type, string attributes, string encryptedKey,
-        string completionHandle)
-        : base("p") {
+        string completionHandle) : base("p") {
         ParentId = parentNode.Id;
         Nodes = new[] {
             new CreateNodeRequestData {
@@ -203,13 +187,11 @@ class CreateNodeRequest : RequestBase {
 
     public static CreateNodeRequest CreateFileNodeRequest(Node parentNode, string attributes,
         string encryptedkey, string completionHandle)
-        => new CreateNodeRequest(parentNode, NodeType.File, attributes, encryptedkey,
-            completionHandle);
+        => new(parentNode, NodeType.File, attributes, encryptedkey, completionHandle);
 
     public static CreateNodeRequest CreateFolderNodeRequest(Node parentNode, string attributes,
         string encryptedkey)
-        => new CreateNodeRequest(parentNode, NodeType.Directory, attributes, encryptedkey,
-            "xxxxxxxx");
+        => new(parentNode, NodeType.Directory, attributes, encryptedkey, "xxxxxxxx");
 
     internal class CreateNodeRequestData {
         [JsonProperty("h")]
@@ -228,12 +210,10 @@ class CreateNodeRequest : RequestBase {
 
 #endregion
 
-
 #region UploadRequest
 
 class UploadUrlRequest : RequestBase {
-    public UploadUrlRequest(long fileSize)
-        : base("u") {
+    public UploadUrlRequest(long fileSize) : base("u") {
         Size = fileSize;
     }
 
@@ -248,12 +228,10 @@ class UploadUrlResponse {
 
 #endregion
 
-
 #region DownloadRequest
 
 class DownloadUrlRequest : RequestBase {
-    public DownloadUrlRequest(Node node)
-        : base("g") {
+    public DownloadUrlRequest(Node node) : base("g") {
         Id = node.Id;
     }
 
@@ -264,8 +242,7 @@ class DownloadUrlRequest : RequestBase {
 }
 
 class DownloadUrlRequestFromId : RequestBase {
-    public DownloadUrlRequestFromId(string id)
-        : base("g") {
+    public DownloadUrlRequestFromId(string id) : base("g") {
         Id = id;
     }
 
@@ -288,12 +265,10 @@ class DownloadUrlResponse {
 
 #endregion
 
-
 #region Move
 
 class MoveRequest : RequestBase {
-    public MoveRequest(Node node, Node destinationParentNode)
-        : base("m") {
+    public MoveRequest(Node node, Node destinationParentNode) : base("m") {
         Id = node.Id;
         DestinationParentId = destinationParentNode.Id;
     }
@@ -306,7 +281,6 @@ class MoveRequest : RequestBase {
 }
 
 #endregion
-
 
 #region Attributes
 

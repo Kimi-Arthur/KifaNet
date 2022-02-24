@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using CommandLine;
 
-namespace Kifa.Tools.JobUtil; 
+namespace Kifa.Tools.JobUtil;
 
 [Verb("reset", HelpText = "Reset jobs.")]
 class ResetJobCommand : JobUtilCommand {

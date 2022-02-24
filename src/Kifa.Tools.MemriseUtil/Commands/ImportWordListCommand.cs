@@ -4,7 +4,7 @@ using Kifa.Languages.German.Goethe;
 using Kifa.Memrise;
 using NLog;
 
-namespace Kifa.Tools.MemriseUtil.Commands; 
+namespace Kifa.Tools.MemriseUtil.Commands;
 
 [Verb("import", HelpText = "Import word list for the given course.")]
 public class ImportWordListCommand : KifaCommand {

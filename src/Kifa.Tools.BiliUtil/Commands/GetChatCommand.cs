@@ -9,7 +9,7 @@ using NLog;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 
-namespace Kifa.Tools.BiliUtil.Commands; 
+namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
 class GetChatCommand : KifaFileCommand {
@@ -18,15 +18,15 @@ class GetChatCommand : KifaFileCommand {
     [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
     public string Cid { get; set; }
 
-    [Option('a', "aid", HelpText =
-        "Bilibili aid for the video. It can contain one segment or multiple." +
-        "Example: av2044037, av2044037p4")]
+    [Option('a', "aid",
+        HelpText = "Bilibili aid for the video. It can contain one segment or multiple." +
+                   "Example: av2044037, av2044037p4")]
     public string Aid { get; set; }
 
     [Option('g', "group", HelpText = "Group name.")]
     public string Group { get; set; }
 
-    List<(BilibiliVideo video, BilibiliChat chat)> chats = new List<(BilibiliVideo video, BilibiliChat chat)>();
+    List<(BilibiliVideo video, BilibiliChat chat)> chats = new();
 
     public override int Execute() {
         if (Cid != null) {
@@ -61,7 +61,7 @@ class GetChatCommand : KifaFileCommand {
         var ((video, chat), index) = SelectOne(chats,
             c => $"{file} => {c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
             "danmaku", (null, null));
-            
+
         chats.RemoveAt(index);
 
         return index >= 0 ? GetChat(chat, file) : 0;
@@ -75,9 +75,7 @@ class GetChatCommand : KifaFileCommand {
         chat.RawDocument.Save(writer);
 
         // Append a line break to be consist with other files.
-        memoryStream.Write(new[] {
-            Convert.ToByte('\n')
-        });
+        memoryStream.Write(new[] { Convert.ToByte('\n') });
 
         memoryStream.Seek(0, SeekOrigin.Begin);
 

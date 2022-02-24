@@ -5,17 +5,17 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using NLog;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 public class AssDialogueControlTextElement : AssDialogueTextElement {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     static readonly Regex subElementPattern =
-        new Regex(@"\\([^\\(]*(\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!)))?)");
+        new(@"\\([^\\(]*(\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!)))?)");
 
-    static readonly Regex valuePattern = new Regex(@"\(|\d|-");
+    static readonly Regex valuePattern = new(@"\(|\d|-");
 
-    public List<AssControlElement> Elements { get; set; } = new List<AssControlElement>();
+    public List<AssControlElement> Elements { get; set; } = new();
 
     public override string ToString()
         => Elements.Count == 0
@@ -139,7 +139,8 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
                     } else if (commaCount == 3) {
                         s = new TwoPointsClipFunction();
                     } else {
-                        throw new ArgumentException("\\clip() function should have 1, 2, or 4 arguments.");
+                        throw new ArgumentException(
+                            "\\clip() function should have 1, 2, or 4 arguments.");
                     }
 
                     break;
@@ -401,8 +402,7 @@ public abstract class OnePointFunction : AssControlElement {
     }
 
     public override void Scale(double scaleX, double scaleY) {
-        Position = new PointF((Position.X * scaleX).RoundUp(10),
-            (Position.Y * scaleY).RoundUp(10));
+        Position = new PointF((Position.X * scaleX).RoundUp(10), (Position.Y * scaleY).RoundUp(10));
     }
 
     public override string ToString() => $"\\{Name}({Position.X},{Position.Y})";
@@ -570,7 +570,7 @@ public class TwoPointsClipFunction : ClipFunction {
 public class DrawingClipFunction : ClipFunction {
     const int DefaultScaleDownLevel = 1;
     public int ScaleDownLevel { get; set; } = DefaultScaleDownLevel;
-    public List<AssDrawingCommand> DrawingCommands { get; set; } = new List<AssDrawingCommand>();
+    public List<AssDrawingCommand> DrawingCommands { get; set; } = new();
 
     public override AssControlElement ParseValue(string content) {
         var segments = content.Substring(1, content.Length - 2).Split(',').Select(s => s.Trim())

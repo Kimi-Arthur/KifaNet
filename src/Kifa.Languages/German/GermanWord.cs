@@ -5,7 +5,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class GermanWord : DataModel<GermanWord> {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -22,11 +22,11 @@ public class GermanWord : DataModel<GermanWord> {
 
     public string? Pronunciation { get; set; }
 
-    public string? PronunciationAudioLink =>
-        (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
-         PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
-         PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
-         PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
+    public string? PronunciationAudioLink
+        => (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
 
     public Dictionary<Source, HashSet<string>> PronunciationAudioLinks { get; set; } = new();
 
@@ -34,8 +34,8 @@ public class GermanWord : DataModel<GermanWord> {
     public VerbForms VerbForms { get; set; } = new();
 
     [JsonIgnore]
-    public string KeyForm =>
-        Type switch {
+    public string KeyForm
+        => Type switch {
             WordType.Verb => GetKeyVerbForm(Id, VerbForms),
             WordType.Noun => GetSimplifiedPlural(Id, NounForms),
             _ => null
@@ -99,13 +99,14 @@ public class GermanWord : DataModel<GermanWord> {
 
     public NounForms NounForms { get; set; } = new();
 
-    public string GetNounFormWithArticle(Case formCase, Number formNumber) =>
-        NounForms.GetValueOrDefault(formCase, new Dictionary<Number, string>()).ContainsKey(formNumber)
+    public string GetNounFormWithArticle(Case formCase, Number formNumber)
+        => NounForms.GetValueOrDefault(formCase, new Dictionary<Number, string>())
+            .ContainsKey(formNumber)
             ? $"{GetArticle(Gender, formCase, formNumber)} {NounForms[formCase][formNumber]}"
             : "-";
 
-    public static string GetArticle(Gender gender, Case formCase, Number formNumber) =>
-        formCase switch {
+    public static string GetArticle(Gender gender, Case formCase, Number formNumber)
+        => formCase switch {
             Case.Nominative => formNumber switch {
                 Number.Singular => gender switch {
                     Gender.Masculine => "der",
@@ -149,7 +150,8 @@ public class GermanWord : DataModel<GermanWord> {
             _ => null
         };
 
-    protected (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds) GetWords() {
+    protected (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord
+        dwds) GetWords() {
         var wiki = new GermanWord();
         try {
             wiki = new DeWiktionaryClient().GetWord(Id);
@@ -184,14 +186,16 @@ public class GermanWord : DataModel<GermanWord> {
     }
 
     protected void FillWithData(
-        (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds) words) {
+        (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds)
+            words) {
         var (wiki, enWiki, pons, duden, dwds) = words;
         Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
 
         PronunciationAudioLinks[Source.Duden] =
             duden.PronunciationAudioLinks.GetValueOrDefault(Source.Duden, new HashSet<string>());
         PronunciationAudioLinks[Source.Wiktionary] =
-            wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary, new HashSet<string>());
+            wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
+                new HashSet<string>());
         PronunciationAudioLinks[Source.Pons] =
             pons.PronunciationAudioLinks.GetValueOrDefault(Source.Pons, new HashSet<string>());
         PronunciationAudioLinks[Source.Dwds] =
@@ -229,5 +233,6 @@ public class Example {
 public interface GermanWordServiceClient : KifaServiceClient<GermanWord> {
 }
 
-public class GermanWordRestServiceClient : KifaServiceRestClient<GermanWord>, GermanWordServiceClient {
+public class GermanWordRestServiceClient : KifaServiceRestClient<GermanWord>,
+    GermanWordServiceClient {
 }

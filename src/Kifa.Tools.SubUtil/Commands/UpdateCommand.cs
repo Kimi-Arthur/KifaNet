@@ -6,7 +6,7 @@ using Kifa.Api.Files;
 using Kifa.Subtitle.Ass;
 using NLog;
 
-namespace Kifa.Tools.SubUtil.Commands; 
+namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("update", HelpText = "Update subtitle with given modification.")]
 class UpdateCommand : KifaCommand {
@@ -24,7 +24,9 @@ class UpdateCommand : KifaCommand {
 
         var sub = AssDocument.Parse(target.OpenRead());
 
-        SelectOne(new List<Action> {new TimeShiftAction()}, choiceName: "actions").choice.Update(sub);
+        SelectOne(new List<Action> {
+            new TimeShiftAction()
+        }, choiceName: "actions").choice.Update(sub);
 
         logger.Info(sub.ToString());
         target.Delete();

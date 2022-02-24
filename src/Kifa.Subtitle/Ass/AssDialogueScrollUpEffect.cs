@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kifa.Subtitle.Ass; 
+namespace Kifa.Subtitle.Ass;
 
 class AssDialogueScrollUpEffect : AssDialogueEffect {
     public override IEnumerable<string> EffectParameters

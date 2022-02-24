@@ -2,7 +2,7 @@
 using CommandLine;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
 class ListCommand : KifaFileCommand {

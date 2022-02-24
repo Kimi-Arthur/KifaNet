@@ -10,7 +10,7 @@ using Kifa.IO;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Cloud.Swisscom; 
+namespace Kifa.Cloud.Swisscom;
 
 public class SwisscomStorageClient : StorageClient {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -28,7 +28,7 @@ public class SwisscomStorageClient : StorageClient {
 
     public override string Id => AccountId;
 
-    readonly HttpClient client = new HttpClient();
+    readonly HttpClient client = new();
 
     public SwisscomStorageClient(string accountId = null) {
         AccountId = accountId;
@@ -38,7 +38,10 @@ public class SwisscomStorageClient : StorageClient {
 
     public override long Length(string path) {
         using var response = client.SendWithRetry(() => APIList.GetFileInfo.GetRequest(
-            new Dictionary<string, string> {["file_id"] = GetFileId(path), ["access_token"] = Account.AccessToken}));
+            new Dictionary<string, string> {
+                ["file_id"] = GetFileId(path),
+                ["access_token"] = Account.AccessToken
+            }));
         if (response.IsSuccessStatusCode) {
             return response.GetJToken().Value<long>("Length");
         }
@@ -51,9 +54,10 @@ public class SwisscomStorageClient : StorageClient {
     }
 
     public override void Delete(string path) {
-        using var response = client.SendWithRetry(() =>
-            APIList.DeleteFile.GetRequest(new Dictionary<string, string> {
-                ["file_id"] = GetFileId(path), ["access_token"] = Account.AccessToken
+        using var response = client.SendWithRetry(() => APIList.DeleteFile.GetRequest(
+            new Dictionary<string, string> {
+                ["file_id"] = GetFileId(path),
+                ["access_token"] = Account.AccessToken
             }));
         if (!response.IsSuccessStatusCode) {
             logger.Debug($"Delete of {path} is not successful, but is ignored.");
@@ -61,9 +65,12 @@ public class SwisscomStorageClient : StorageClient {
     }
 
     public override void Move(string sourcePath, string destinationPath) {
-        using var response = client.SendWithRetry(() => APIList.MoveFile.GetRequest(new Dictionary<string, string> {
-            ["from_file_path"] = sourcePath, ["to_file_path"] = destinationPath, ["access_token"] = Account.AccessToken
-        }));
+        using var response = client.SendWithRetry(() => APIList.MoveFile.GetRequest(
+            new Dictionary<string, string> {
+                ["from_file_path"] = sourcePath,
+                ["to_file_path"] = destinationPath,
+                ["access_token"] = Account.AccessToken
+            }));
 
         if (!response.IsSuccessStatusCode) {
             logger.Error($"Move from {sourcePath} to {destinationPath} failed: {response}");
@@ -74,10 +81,10 @@ public class SwisscomStorageClient : StorageClient {
         throw new NotImplementedException();
     }
 
-    public override Stream OpenRead(string path) =>
-        new SeekableReadStream(Length(path),
-            (buffer, bufferOffset, offset, count) =>
-                Download(buffer, GetFileId(path), bufferOffset, offset, count));
+    public override Stream OpenRead(string path)
+        => new SeekableReadStream(Length(path),
+            (buffer, bufferOffset, offset, count)
+                => Download(buffer, GetFileId(path), bufferOffset, offset, count));
 
     public override void Write(string path, Stream stream) {
         if (Exists(path)) {
@@ -90,16 +97,23 @@ public class SwisscomStorageClient : StorageClient {
         var uploadId = InitUpload(path, size);
 
         var blockIds = new List<(string etag, int length)>();
-        for (long position = 0, blockIndex = 0; position < size; position += BlockSize, blockIndex++) {
+        for (long position = 0, blockIndex = 0;
+             position < size;
+             position += BlockSize, blockIndex++) {
             var blockLength = stream.Read(buffer, 0, BlockSize);
             var targetEndByte = position + blockLength - 1;
             var content = new ByteArrayContent(buffer, 0, blockLength);
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
             var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
-                ["access_token"] = Account.AccessToken, ["upload_id"] = uploadId, ["block_index"] = blockIndex.ToString(),
+                ["access_token"] = Account.AccessToken,
+                ["upload_id"] = uploadId,
+                ["block_index"] = blockIndex.ToString()
             });
-            uploadRequest.Content = new MultipartFormDataContent {{content, "files[]", path.Split("/").Last()}};
-            uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(position, targetEndByte, size);
+            uploadRequest.Content = new MultipartFormDataContent {
+                { content, "files[]", path.Split("/").Last() }
+            };
+            uploadRequest.Content.Headers.ContentRange =
+                new ContentRangeHeaderValue(position, targetEndByte, size);
             using var response = client.SendAsync(uploadRequest).Result;
             blockIds.Add((response.GetJToken().Value<string>("ETag")[1..^1], blockLength));
         }
@@ -127,22 +141,27 @@ public class SwisscomStorageClient : StorageClient {
                 ["access_token"] = Account.AccessToken,
                 ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
                 ["file_path"] = path,
-                ["parts"] = "[" + string.Join(",",
-                    blockIds.Select((item, index) => partTemplate.Format(new Dictionary<string, string> {
-                        ["index"] = index.ToString(), ["length"] = item.length.ToString(), ["etag"] = item.etag
+                ["parts"] = "[" + string.Join(",", blockIds.Select((item, index)
+                    => partTemplate.Format(new Dictionary<string, string> {
+                        ["index"] = index.ToString(),
+                        ["length"] = item.length.ToString(),
+                        ["etag"] = item.etag
                     }))) + "]"
             }));
         return response.GetJToken().Value<string>("Path").EndsWith(path);
     }
 
-    int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0, int count = -1) {
+    int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
+        int count = -1) {
         if (count < 0) {
             count = buffer.Length - bufferOffset;
         }
 
         using var response = client.SendWithRetry(() => {
-            var request = APIList.DownloadFile.GetRequest(
-                new Dictionary<string, string> {["file_id"] = fileId, ["access_token"] = Account.AccessToken});
+            var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string> {
+                ["file_id"] = fileId,
+                ["access_token"] = Account.AccessToken
+            });
 
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
             return request;
@@ -163,8 +182,8 @@ public class SwisscomStorageClient : StorageClient {
     }
 
     public static string FindAccount(List<string> accounts, long length) {
-        var accountIndex = accounts.FindIndex(s =>
-            SwisscomAccount.Client.Get(s).LeftQuota >= length + GraceSize);
+        var accountIndex = accounts.FindIndex(s
+            => SwisscomAccount.Client.Get(s).LeftQuota >= length + GraceSize);
         if (accountIndex < 0) {
             throw new InsufficientStorageException();
         }

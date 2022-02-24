@@ -5,7 +5,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.FileUtil.Commands; 
+namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("clean", HelpText = "Clean file entries.")]
 class CleanCommand : KifaCommand {

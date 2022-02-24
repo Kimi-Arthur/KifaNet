@@ -4,7 +4,7 @@ using System.Net.Http;
 using HtmlAgilityPack;
 using NLog;
 
-namespace Kifa.Languages.German; 
+namespace Kifa.Languages.German;
 
 public class DwdsClient {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();

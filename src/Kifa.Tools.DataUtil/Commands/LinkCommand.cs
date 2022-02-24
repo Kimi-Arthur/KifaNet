@@ -2,7 +2,7 @@ using CommandLine;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.DataUtil.Commands; 
+namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("link", HelpText = "Link two items.")]
 public class LinkCommand : KifaCommand {

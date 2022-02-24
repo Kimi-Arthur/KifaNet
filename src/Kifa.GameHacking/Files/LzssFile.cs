@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace Kifa.GameHacking.Files; 
+namespace Kifa.GameHacking.Files;
 
 public class LzssFile {
     const int BufferSize = 4096;
@@ -13,7 +13,7 @@ public class LzssFile {
         int fileCount = reader.ReadUInt16();
         reader.ReadUInt16();
         var fileInfos = new (string name, uint offset, int length)[fileCount];
-        for (int i = 0; i < fileCount; i++) {
+        for (var i = 0; i < fileCount; i++) {
             decodedStream.Seek(0x40 * i + 4, SeekOrigin.Begin);
             var offset = reader.ReadUInt32();
             var length = reader.ReadInt32();
@@ -28,7 +28,7 @@ public class LzssFile {
         }
 
         var data = new byte[fileCount][];
-        for (int i = 0; i < fileCount; i++) {
+        for (var i = 0; i < fileCount; i++) {
             decodedStream.Seek(fileInfos[i].offset, SeekOrigin.Begin);
             data[i] = new byte[fileInfos[i].length];
             decodedStream.Read(data[i], 0, fileInfos[i].length);
@@ -49,19 +49,19 @@ public class LzssFile {
         var bufferWriteIndex = 0xFEE;
         while (rawStream.Position < rawStream.Length) {
             var flag = reader.ReadByte();
-            for (int i = 0; i < 8; i++) {
+            for (var i = 0; i < 8; i++) {
                 if (rawStream.Position == rawStream.Length) {
                     break;
                 }
 
-                if ((flag & 1 << i) != 0) {
+                if ((flag & (1 << i)) != 0) {
                     buffer[bufferWriteIndex++] = data[dataIndex++] = reader.ReadByte();
                     bufferWriteIndex %= BufferSize;
                 } else {
                     int bufferReadIndex = reader.ReadByte();
                     int b = reader.ReadByte();
                     bufferReadIndex |= (b & 0xF0) << 4;
-                    for (int j = 0; j < (b & 0x0F) + 3; j++) {
+                    for (var j = 0; j < (b & 0x0F) + 3; j++) {
                         buffer[bufferWriteIndex++] = data[dataIndex++] = buffer[bufferReadIndex++];
                         bufferReadIndex %= BufferSize;
                         bufferWriteIndex %= BufferSize;

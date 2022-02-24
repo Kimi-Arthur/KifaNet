@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using Kifa.Subtitle.Ass;
 
-namespace Kifa.Subtitle.Srt; 
+namespace Kifa.Subtitle.Srt;
 
 public class SrtTextElement {
     public string Content { get; set; }
@@ -42,10 +42,7 @@ public class SrtTextElement {
                 controlElement,
                 new AssDialogueRawTextElement {
                     Content = string.Join("\\N",
-                        Content.Split(new[] {
-                                "\n", "\n"
-                            },
-                            StringSplitOptions.RemoveEmptyEntries))
+                        Content.Split(new[] { "\n", "\n" }, StringSplitOptions.RemoveEmptyEntries))
                 }
             }
         };
@@ -66,8 +63,7 @@ public class SrtTextElement {
         }
 
         if (FontColor.HasValue) {
-            s = $"<font color=\"{FontColor.Value.R:X2}" +
-                $"{FontColor.Value.G:X2}" +
+            s = $"<font color=\"{FontColor.Value.R:X2}" + $"{FontColor.Value.G:X2}" +
                 $"{FontColor.Value.B:X2}\">{s}</font>";
         }
 

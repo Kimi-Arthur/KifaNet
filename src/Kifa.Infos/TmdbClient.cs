@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Service;
 
-namespace Kifa.Infos.Tmdb; 
+namespace Kifa.Infos.Tmdb;
 
 public class TmdbClient {
     public static string ApiKey { get; set; }
     public static APIList Apis { get; set; }
 
-    static HttpClient client = new HttpClient();
+    static HttpClient client = new();
 
     public TmdbSeries GetSeries(string tmdbId, string language) {
         var request = Apis.Series.GetRequest(new Dictionary<string, string> {

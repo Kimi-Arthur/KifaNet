@@ -5,7 +5,7 @@ using System.Reflection;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
-namespace Kifa.Configs; 
+namespace Kifa.Configs;
 
 public static class KifaConfigs {
     static string configFilePath;
@@ -15,8 +15,8 @@ public static class KifaConfigs {
 
     static string name => AppDomain.CurrentDomain.FriendlyName;
 
-    static List<string> ConfigFilePaths =>
-        new() {
+    static List<string> ConfigFilePaths
+        => new() {
             $"~/.{name}.yaml",
             "~/.kimily.yaml",
             $"/etc/{name}.yaml",
@@ -54,8 +54,7 @@ public static class KifaConfigs {
         }
     }
 
-    public static void LoadFromStream(Stream stream,
-        Dictionary<string, PropertyInfo> properties) {
+    public static void LoadFromStream(Stream stream, Dictionary<string, PropertyInfo> properties) {
         var yaml = new YamlStream();
         using (var sr = new StreamReader(stream)) {
             yaml.Load(sr);

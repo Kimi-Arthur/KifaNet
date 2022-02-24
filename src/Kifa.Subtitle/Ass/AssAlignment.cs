@@ -1,4 +1,4 @@
-﻿namespace Kifa.Subtitle.Ass; 
+﻿namespace Kifa.Subtitle.Ass;
 
 public enum AssAlignment {
     BottomLeft = 1,
