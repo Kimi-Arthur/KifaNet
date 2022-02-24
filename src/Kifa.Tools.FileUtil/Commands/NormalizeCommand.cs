@@ -6,28 +6,28 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.FileUtil.Commands {
-    [Verb("normalize", HelpText = "Rename the file with proper normalization.")]
-    class NormalizeCommand : KifaFileCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.FileUtil.Commands; 
 
-        protected override Func<List<KifaFile>, string> KifaFileConfirmText =>
-            files => $"Confirm normalizing the {files.Count} files above?";
+[Verb("normalize", HelpText = "Rename the file with proper normalization.")]
+class NormalizeCommand : KifaFileCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        protected override int ExecuteOneKifaFile(KifaFile file) {
-            var path = file.ToString();
-            var segments = path.Split(".");
-            if (path.IsNormalized(NormalizationForm.FormC) && segments[^1].ToLower() == segments[^1]) {
-                logger.Info($"{path} is already normalized.");
-                return 0;
-            }
+    protected override Func<List<KifaFile>, string> KifaFileConfirmText =>
+        files => $"Confirm normalizing the {files.Count} files above?";
 
-            segments[^1] = segments[^1].ToLower();
-
-            var newPath = string.Join(".", segments.Select(s => s.Normalize(NormalizationForm.FormC)));
-            file.Move(new KifaFile(newPath));
-            logger.Info($"Successfully normalized {path} to {newPath}.");
+    protected override int ExecuteOneKifaFile(KifaFile file) {
+        var path = file.ToString();
+        var segments = path.Split(".");
+        if (path.IsNormalized(NormalizationForm.FormC) && segments[^1].ToLower() == segments[^1]) {
+            logger.Info($"{path} is already normalized.");
             return 0;
         }
+
+        segments[^1] = segments[^1].ToLower();
+
+        var newPath = string.Join(".", segments.Select(s => s.Normalize(NormalizationForm.FormC)));
+        file.Move(new KifaFile(newPath));
+        logger.Info($"Successfully normalized {path} to {newPath}.");
+        return 0;
     }
 }

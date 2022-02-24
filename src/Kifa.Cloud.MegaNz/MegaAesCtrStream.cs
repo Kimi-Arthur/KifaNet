@@ -1,55 +1,55 @@
 ﻿using System;
 using System.IO;
 
-namespace CG.Web.MegaApiClient {
-    class StreamWithLength : Stream {
-        readonly Stream stream;
-        protected readonly long streamLength;
+namespace CG.Web.MegaApiClient; 
 
-        public StreamWithLength(Stream stream, long streamLength) {
-            if (stream == null) {
-                throw new ArgumentNullException("stream");
-            }
+class StreamWithLength : Stream {
+    readonly Stream stream;
+    protected readonly long streamLength;
 
-            this.stream = stream;
-            this.streamLength = streamLength;
+    public StreamWithLength(Stream stream, long streamLength) {
+        if (stream == null) {
+            throw new ArgumentNullException("stream");
         }
 
-        public override bool CanRead => true;
+        this.stream = stream;
+        this.streamLength = streamLength;
+    }
 
-        public override bool CanSeek => false;
+    public override bool CanRead => true;
 
-        public override bool CanWrite => false;
+    public override bool CanSeek => false;
 
-        public override long Length => streamLength;
+    public override bool CanWrite => false;
 
-        public override long Position { get; set; }
+    public override long Length => streamLength;
 
-        public override int Read(byte[] buffer, int offset, int count) {
-            count = (int) Math.Min(count, Length - Position);
-            var readLength = stream.Read(buffer, offset, count);
-            while (readLength < count) {
-                readLength += stream.Read(buffer, offset + readLength, count - readLength);
-            }
+    public override long Position { get; set; }
 
-            Position += readLength;
-
-            return readLength;
+    public override int Read(byte[] buffer, int offset, int count) {
+        count = (int) Math.Min(count, Length - Position);
+        var readLength = stream.Read(buffer, offset, count);
+        while (readLength < count) {
+            readLength += stream.Read(buffer, offset + readLength, count - readLength);
         }
 
-        public override void Flush() {
-            throw new NotSupportedException();
-        }
+        Position += readLength;
 
-        public override long Seek(long offset, SeekOrigin origin)
-            => throw new NotSupportedException();
+        return readLength;
+    }
 
-        public override void SetLength(long value) {
-            throw new NotSupportedException();
-        }
+    public override void Flush() {
+        throw new NotSupportedException();
+    }
 
-        public override void Write(byte[] buffer, int offset, int count) {
-            throw new NotSupportedException();
-        }
+    public override long Seek(long offset, SeekOrigin origin)
+        => throw new NotSupportedException();
+
+    public override void SetLength(long value) {
+        throw new NotSupportedException();
+    }
+
+    public override void Write(byte[] buffer, int offset, int count) {
+        throw new NotSupportedException();
     }
 }

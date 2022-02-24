@@ -3,28 +3,28 @@ using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 
-namespace Kifa.Bilibili {
-    public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
-        public const string ModelId = "bilibili/playlists";
+namespace Kifa.Bilibili; 
 
-        static KifaServiceClient<BilibiliUploader> client;
+public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
+    public const string ModelId = "bilibili/playlists";
 
-        public static KifaServiceClient<BilibiliUploader> Client =>
-            client ??= new KifaServiceRestClient<BilibiliUploader>();
+    static KifaServiceClient<BilibiliUploader> client;
 
-        public string Title { get; set; }
-        public string Uploader { get; set; }
+    public static KifaServiceClient<BilibiliUploader> Client =>
+        client ??= new KifaServiceRestClient<BilibiliUploader>();
 
-        public List<string> Videos { get; set; }
+    public string Title { get; set; }
+    public string Uploader { get; set; }
 
-        public override bool? Fill() {
-            var data = new PlaylistRpc().Call(Id).Data;
-            Title = data.Info.Title;
-            Uploader = data.Info.Upper.Name;
-            Videos = data.Medias.Select(m => $"av{m.Id}").ToList();
-            Videos.Reverse();
+    public List<string> Videos { get; set; }
 
-            return true;
-        }
+    public override bool? Fill() {
+        var data = new PlaylistRpc().Call(Id).Data;
+        Title = data.Info.Title;
+        Uploader = data.Info.Upper.Name;
+        Videos = data.Medias.Select(m => $"av{m.Id}").ToList();
+        Videos.Reverse();
+
+        return true;
     }
 }

@@ -4,31 +4,31 @@ using Kifa.Languages.German.Goethe;
 using Kifa.Memrise;
 using NLog;
 
-namespace Kifa.Tools.MemriseUtil.Commands {
-    [Verb("import", HelpText = "Import word list for the given course.")]
-    public class ImportWordListCommand : KifaCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.MemriseUtil.Commands; 
 
-        [Value(0, Min = 1, HelpText = "Word list IDs.")]
-        public IEnumerable<string> WordListIds { get; set; }
+[Verb("import", HelpText = "Import word list for the given course.")]
+public class ImportWordListCommand : KifaCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Option('c', "course", HelpText = "Course to add the word list to.")]
-        public string Course { get; set; } = "test-course";
+    [Value(0, Min = 1, HelpText = "Word list IDs.")]
+    public IEnumerable<string> WordListIds { get; set; }
 
-        public override int Execute() {
-            var memriseCourseClient = new MemriseCourseRestServiceClient();
-            var course = memriseCourseClient.Get(Course);
+    [Option('c', "course", HelpText = "Course to add the word list to.")]
+    public string Course { get; set; } = "test-course";
 
-            using var memriseClient = new MemriseClient {
-                Course = course
-            };
+    public override int Execute() {
+        var memriseCourseClient = new MemriseCourseRestServiceClient();
+        var course = memriseCourseClient.Get(Course);
 
-            foreach (var wordListId in WordListIds) {
-                var wordList = new GoetheWordListRestServiceClient().Get(wordListId);
-                memriseClient.AddWordList(wordList);
-            }
+        using var memriseClient = new MemriseClient {
+            Course = course
+        };
 
-            return 0;
+        foreach (var wordListId in WordListIds) {
+            var wordList = new GoetheWordListRestServiceClient().Get(wordListId);
+            memriseClient.AddWordList(wordList);
         }
+
+        return 0;
     }
 }

@@ -2,30 +2,30 @@ using CommandLine;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.DataUtil.Commands {
-    [Verb("link", HelpText = "Link two items.")]
-    public class LinkCommand : KifaCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.DataUtil.Commands; 
 
-        [Value(0, Required = true, HelpText = "Target this link should point.")]
-        public string Target { get; set; }
+[Verb("link", HelpText = "Link two items.")]
+public class LinkCommand : KifaCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(1, Required = true, HelpText = "New link name.")]
-        public string Link { get; set; }
+    [Value(0, Required = true, HelpText = "Target this link should point.")]
+    public string Target { get; set; }
 
-        [Option('t', "type", HelpText = "Type of data. For supported types, type `datax help`.")]
-        public string Type { get; set; }
+    [Value(1, Required = true, HelpText = "New link name.")]
+    public string Link { get; set; }
 
-        public override int Execute() {
-            var chef = DataChef.GetChef(Type);
+    [Option('t', "type", HelpText = "Type of data. For supported types, type `datax help`.")]
+    public string Type { get; set; }
 
-            if (chef == null) {
-                logger.Error($"Unknown type name: {Type}.");
-                return 1;
-            }
+    public override int Execute() {
+        var chef = DataChef.GetChef(Type);
 
-            return (int) logger.LogResult(chef.Link(Target, Link), "Summary").Status;
-            ;
+        if (chef == null) {
+            logger.Error($"Unknown type name: {Type}.");
+            return 1;
         }
+
+        return (int) logger.LogResult(chef.Link(Target, Link), "Summary").Status;
+        ;
     }
 }

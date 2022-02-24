@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Subtitle.Ass {
-    public class AssDialogueText {
-        static readonly Regex textElementPattern = new Regex("{[^}]*}|[^{]*");
+namespace Kifa.Subtitle.Ass; 
 
-        public List<AssDialogueTextElement> TextElements { get; set; } =
-            new List<AssDialogueTextElement>();
+public class AssDialogueText {
+    static readonly Regex textElementPattern = new Regex("{[^}]*}|[^{]*");
 
-        public override string ToString() => string.Concat(TextElements.Select(x => x.ToString()));
+    public List<AssDialogueTextElement> TextElements { get; set; } =
+        new List<AssDialogueTextElement>();
 
-        static string GenerateAssTextForAttribute(string name, Enum value)
-            => value != null ? $"\\{name}{value:d}" : "";
+    public override string ToString() => string.Concat(TextElements.Select(x => x.ToString()));
 
-        public static AssDialogueText Parse(string content) {
-            return new AssDialogueText {
-                TextElements = textElementPattern.Matches(content)
-                    .Select(m => AssDialogueTextElement.Parse(m.Value)).ToList()
-            };
-        }
+    static string GenerateAssTextForAttribute(string name, Enum value)
+        => value != null ? $"\\{name}{value:d}" : "";
+
+    public static AssDialogueText Parse(string content) {
+        return new AssDialogueText {
+            TextElements = textElementPattern.Matches(content)
+                .Select(m => AssDialogueTextElement.Parse(m.Value)).ToList()
+        };
     }
 }

@@ -1,7 +1,7 @@
-﻿namespace Kifa.Service {
-    public enum KifaActionStatus {
-        OK,
-        BadRequest,
-        Error
-    }
+﻿namespace Kifa.Service; 
+
+public enum KifaActionStatus {
+    OK,
+    BadRequest,
+    Error
 }

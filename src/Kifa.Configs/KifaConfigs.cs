@@ -5,115 +5,115 @@ using System.Reflection;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
-namespace Kifa.Configs {
-    public static class KifaConfigs {
-        static string configFilePath;
+namespace Kifa.Configs; 
 
-        static readonly IDeserializer deserializer = new DeserializerBuilder()
-            .IgnoreUnmatchedProperties().Build();
+public static class KifaConfigs {
+    static string configFilePath;
 
-        static string name => AppDomain.CurrentDomain.FriendlyName;
+    static readonly IDeserializer deserializer = new DeserializerBuilder()
+        .IgnoreUnmatchedProperties().Build();
 
-        static List<string> ConfigFilePaths =>
-            new() {
-                $"~/.{name}.yaml",
-                "~/.kimily.yaml",
-                $"/etc/{name}.yaml",
-                "/etc/kimily.yaml"
-            };
+    static string name => AppDomain.CurrentDomain.FriendlyName;
 
-        static string ConfigFilePath {
-            get {
+    static List<string> ConfigFilePaths =>
+        new() {
+            $"~/.{name}.yaml",
+            "~/.kimily.yaml",
+            $"/etc/{name}.yaml",
+            "/etc/kimily.yaml"
+        };
+
+    static string ConfigFilePath {
+        get {
+            if (configFilePath == null) {
+                configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
                 if (configFilePath == null) {
-                    configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
-                    if (configFilePath == null) {
-                        foreach (var path in ConfigFilePaths) {
-                            if (File.Exists(path)) {
-                                configFilePath = path;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                return configFilePath;
-            }
-        }
-
-        public static void LoadFromSystemConfigs(Assembly assembly = null) {
-            var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
-            if (ConfigFilePath != null) {
-                var localConfig = ConfigFilePath;
-                var remoteConfig = localConfig.Replace(".yaml", ".remote.yaml");
-                if (File.Exists(remoteConfig)) {
-                    LoadFromStream(File.OpenRead(remoteConfig), properties);
-                }
-
-                LoadFromStream(File.OpenRead(localConfig), properties);
-            }
-        }
-
-        public static void LoadFromStream(Stream stream,
-            Dictionary<string, PropertyInfo> properties) {
-            var yaml = new YamlStream();
-            using (var sr = new StreamReader(stream)) {
-                yaml.Load(sr);
-            }
-
-            Apply((YamlMappingNode) yaml.Documents[0].RootNode, "", properties);
-        }
-
-        public static Dictionary<string, PropertyInfo> GetAllProperties() {
-            var properties = new Dictionary<string, PropertyInfo>();
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                foreach (var property in GetProperties(assembly)) {
-                    properties[property.Key] = property.Value;
-                }
-            }
-
-            return properties;
-        }
-
-        static Dictionary<string, PropertyInfo> GetProperties(Assembly assembly) {
-            var properties = new Dictionary<string, PropertyInfo>();
-            foreach (var t in assembly.GetTypes()) {
-                if (t.Namespace?.StartsWith("Kifa") ?? false) {
-                    foreach (var p in t.GetProperties()) {
-                        if (p.GetSetMethod()?.IsStatic == true) {
-                            properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
+                    foreach (var path in ConfigFilePaths) {
+                        if (File.Exists(path)) {
+                            configFilePath = path;
+                            break;
                         }
                     }
                 }
             }
 
-            return properties;
+            return configFilePath;
+        }
+    }
+
+    public static void LoadFromSystemConfigs(Assembly assembly = null) {
+        var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
+        if (ConfigFilePath != null) {
+            var localConfig = ConfigFilePath;
+            var remoteConfig = localConfig.Replace(".yaml", ".remote.yaml");
+            if (File.Exists(remoteConfig)) {
+                LoadFromStream(File.OpenRead(remoteConfig), properties);
+            }
+
+            LoadFromStream(File.OpenRead(localConfig), properties);
+        }
+    }
+
+    public static void LoadFromStream(Stream stream,
+        Dictionary<string, PropertyInfo> properties) {
+        var yaml = new YamlStream();
+        using (var sr = new StreamReader(stream)) {
+            yaml.Load(sr);
         }
 
-        static void Apply(YamlMappingNode node, string prefix,
-            IReadOnlyDictionary<string, PropertyInfo> properties) {
-            foreach (var p in node) {
-                if (p.Value == null) {
-                    continue;
-                }
+        Apply((YamlMappingNode) yaml.Documents[0].RootNode, "", properties);
+    }
 
-                var id = $"{prefix}{((YamlScalarNode) p.Key).Value}";
-                if (properties.TryGetValue(id, out var prop)) {
-                    var value = deserializer.Deserialize(
-                        new YamlNodeParser(
-                            YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
-                        prop.PropertyType);
-                    if (value == null) {
-                        Console.WriteLine($"Cannot parse for {id}");
-                        continue;
+    public static Dictionary<string, PropertyInfo> GetAllProperties() {
+        var properties = new Dictionary<string, PropertyInfo>();
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+            foreach (var property in GetProperties(assembly)) {
+                properties[property.Key] = property.Value;
+            }
+        }
+
+        return properties;
+    }
+
+    static Dictionary<string, PropertyInfo> GetProperties(Assembly assembly) {
+        var properties = new Dictionary<string, PropertyInfo>();
+        foreach (var t in assembly.GetTypes()) {
+            if (t.Namespace?.StartsWith("Kifa") ?? false) {
+                foreach (var p in t.GetProperties()) {
+                    if (p.GetSetMethod()?.IsStatic == true) {
+                        properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
                     }
+                }
+            }
+        }
 
-                    prop.SetValue(null, value);
+        return properties;
+    }
+
+    static void Apply(YamlMappingNode node, string prefix,
+        IReadOnlyDictionary<string, PropertyInfo> properties) {
+        foreach (var p in node) {
+            if (p.Value == null) {
+                continue;
+            }
+
+            var id = $"{prefix}{((YamlScalarNode) p.Key).Value}";
+            if (properties.TryGetValue(id, out var prop)) {
+                var value = deserializer.Deserialize(
+                    new YamlNodeParser(
+                        YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
+                    prop.PropertyType);
+                if (value == null) {
+                    Console.WriteLine($"Cannot parse for {id}");
                     continue;
                 }
 
-                if (p.Value.NodeType == YamlNodeType.Mapping) {
-                    Apply((YamlMappingNode) p.Value, $"{id}.", properties);
-                }
+                prop.SetValue(null, value);
+                continue;
+            }
+
+            if (p.Value.NodeType == YamlNodeType.Mapping) {
+                Apply((YamlMappingNode) p.Value, $"{id}.", properties);
             }
         }
     }

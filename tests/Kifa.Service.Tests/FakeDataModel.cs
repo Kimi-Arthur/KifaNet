@@ -1,39 +1,39 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Kifa.Service.Tests {
-    class FakeDataModel : DataModel<FakeDataModel> {
-        public const string ModelId = "api_test";
+namespace Kifa.Service.Tests; 
 
-        static FakeDataModelServiceClient client;
+class FakeDataModel : DataModel<FakeDataModel> {
+    public const string ModelId = "api_test";
 
-        public static FakeDataModelServiceClient Client =>
-            client ??= new FakeDataModelRestServiceClient();
+    static FakeDataModelServiceClient client;
 
-        public int? IntPROP { get; set; }
+    public static FakeDataModelServiceClient Client =>
+        client ??= new FakeDataModelRestServiceClient();
 
-        public string StrProp { get; set; }
+    public int? IntPROP { get; set; }
 
-        public List<string> ListProp { get; set; }
+    public string StrProp { get; set; }
 
-        public Dictionary<string, string> DictProp { get; set; }
+    public List<string> ListProp { get; set; }
 
-        public FakeSubDataModel SubProp { get; set; }
-    }
+    public Dictionary<string, string> DictProp { get; set; }
 
-    class FakeSubDataModel {
-        public string SubProp1 { get; set; }
+    public FakeSubDataModel SubProp { get; set; }
+}
 
-        [JsonProperty("sub_prop2")]
-        public List<string> Sub2 { get; set; }
-    }
+class FakeSubDataModel {
+    public string SubProp1 { get; set; }
 
-    interface FakeDataModelServiceClient : KifaServiceClient<FakeDataModel> {
-        void Reset();
-    }
+    [JsonProperty("sub_prop2")]
+    public List<string> Sub2 { get; set; }
+}
 
-    class FakeDataModelRestServiceClient : KifaServiceRestClient<FakeDataModel>,
-        FakeDataModelServiceClient {
-        public void Reset() => Call<FakeDataModel>("reset");
-    }
+interface FakeDataModelServiceClient : KifaServiceClient<FakeDataModel> {
+    void Reset();
+}
+
+class FakeDataModelRestServiceClient : KifaServiceRestClient<FakeDataModel>,
+    FakeDataModelServiceClient {
+    public void Reset() => Call<FakeDataModel>("reset");
 }

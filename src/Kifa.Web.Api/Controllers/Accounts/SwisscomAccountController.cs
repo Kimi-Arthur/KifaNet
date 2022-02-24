@@ -3,36 +3,36 @@ using System.Linq;
 using Kifa.Cloud.Swisscom;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Kifa.Web.Api.Controllers.Accounts {
-    [Route("api/" + SwisscomAccount.ModelId)]
-    public class SwisscomAccountController : KifaDataController<SwisscomAccount, SwisscomAccountJsonServiceClient> {
-        protected override bool AlwaysAutoRefresh => true;
+namespace Kifa.Web.Api.Controllers.Accounts; 
 
-        [HttpGet("$get_top_accounts")]
-        [HttpPost("$get_top_accounts")]
-        public KifaApiActionResult<List<SwisscomAccount>> GetTopAccounts() => Client.GetTopAccounts();
-    }
+[Route("api/" + SwisscomAccount.ModelId)]
+public class SwisscomAccountController : KifaDataController<SwisscomAccount, SwisscomAccountJsonServiceClient> {
+    protected override bool AlwaysAutoRefresh => true;
 
-    public class
-        SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAccount>, SwisscomAccountServiceClient {
-        public List<SwisscomAccount> GetTopAccounts() {
-            // 10 MB
-            const int limit = 100 << 20;
-            var allGoodAccounts = new List<SwisscomAccount>();
+    [HttpGet("$get_top_accounts")]
+    [HttpPost("$get_top_accounts")]
+    public KifaApiActionResult<List<SwisscomAccount>> GetTopAccounts() => Client.GetTopAccounts();
+}
 
-            foreach (var account in List().Values) {
-                if (account.TotalQuota > 0 && account.LeftQuota < limit) {
-                    continue;
-                }
+public class
+    SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAccount>, SwisscomAccountServiceClient {
+    public List<SwisscomAccount> GetTopAccounts() {
+        // 10 MB
+        const int limit = 100 << 20;
+        var allGoodAccounts = new List<SwisscomAccount>();
 
-                account.Fill();
-                Set(account);
-                if (account.LeftQuota >= limit) {
-                    allGoodAccounts.Add(account);
-                }
+        foreach (var account in List().Values) {
+            if (account.TotalQuota > 0 && account.LeftQuota < limit) {
+                continue;
             }
 
-            return allGoodAccounts.OrderBy(a => -a.LeftQuota).ToList();
+            account.Fill();
+            Set(account);
+            if (account.LeftQuota >= limit) {
+                allGoodAccounts.Add(account);
+            }
         }
+
+        return allGoodAccounts.OrderBy(a => -a.LeftQuota).ToList();
     }
 }

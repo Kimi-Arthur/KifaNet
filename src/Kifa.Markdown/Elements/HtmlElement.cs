@@ -1,7 +1,7 @@
-namespace Kifa.Markdown.Elements {
-    public class HtmlElement : MarkdownElement {
-        public string Html { get; set; }
+namespace Kifa.Markdown.Elements; 
 
-        public override string ToText() => Html.Replace("\n", " ");
-    }
+public class HtmlElement : MarkdownElement {
+    public string Html { get; set; }
+
+    public override string ToText() => Html.Replace("\n", " ");
 }

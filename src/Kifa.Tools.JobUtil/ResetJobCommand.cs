@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using CommandLine;
 
-namespace Kifa.Tools.JobUtil {
-    [Verb("reset", HelpText = "Reset jobs.")]
-    class ResetJobCommand : JobUtilCommand {
-        [Value(0)]
-        public IEnumerable<string> Jobs { get; set; }
+namespace Kifa.Tools.JobUtil; 
 
-        public override int Execute() {
-            foreach (var job in Jobs) {
-                Job.Client.ResetJob(job);
-            }
+[Verb("reset", HelpText = "Reset jobs.")]
+class ResetJobCommand : JobUtilCommand {
+    [Value(0)]
+    public IEnumerable<string> Jobs { get; set; }
 
-            return 0;
+    public override int Execute() {
+        foreach (var job in Jobs) {
+            Job.Client.ResetJob(job);
         }
+
+        return 0;
     }
 }

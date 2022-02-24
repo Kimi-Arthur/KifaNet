@@ -3,31 +3,31 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace Kifa.Api.Files {
-    public class KifaFileProvider : IFileProvider {
-        public IFileInfo GetFileInfo(string path) => new KifaFileInfo(new KifaFile(id: path));
+namespace Kifa.Api.Files; 
 
-        public IDirectoryContents GetDirectoryContents(string path) => new NotFoundDirectoryContents();
+public class KifaFileProvider : IFileProvider {
+    public IFileInfo GetFileInfo(string path) => new KifaFileInfo(new KifaFile(id: path));
 
-        public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
+    public IDirectoryContents GetDirectoryContents(string path) => new NotFoundDirectoryContents();
+
+    public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
+}
+
+class KifaFileInfo : IFileInfo {
+    readonly KifaFile file;
+
+    public KifaFileInfo(KifaFile file) {
+        this.file = file;
     }
 
-    class KifaFileInfo : IFileInfo {
-        readonly KifaFile file;
+    public Stream CreateReadStream() => file.OpenRead();
 
-        public KifaFileInfo(KifaFile file) {
-            this.file = file;
-        }
+    public bool Exists => file.Exists();
+    public long Length => file.Length();
+    public string PhysicalPath => null;
+    public string Name => file.BaseName;
 
-        public Stream CreateReadStream() => file.OpenRead();
+    public DateTimeOffset LastModified { get; } = DateTimeOffset.Parse("2010-11-25 00:00:00Z");
 
-        public bool Exists => file.Exists();
-        public long Length => file.Length();
-        public string PhysicalPath => null;
-        public string Name => file.BaseName;
-
-        public DateTimeOffset LastModified { get; } = DateTimeOffset.Parse("2010-11-25 00:00:00Z");
-
-        public bool IsDirectory => file.Exists();
-    }
+    public bool IsDirectory => file.Exists();
 }

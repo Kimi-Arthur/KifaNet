@@ -3,71 +3,71 @@ using System.Linq;
 using System.Net.Http;
 using NLog;
 
-namespace Kifa.Rpc {
-    public abstract class JsonRpc<TResponse> {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Rpc; 
 
-        public virtual HttpClient HttpClient { get; set; } = new();
+public abstract class JsonRpc<TResponse> {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public abstract string UrlPattern { get; }
+    public virtual HttpClient HttpClient { get; set; } = new();
 
-        public virtual HttpMethod Method { get; } = HttpMethod.Get;
+    public abstract string UrlPattern { get; }
 
-        public virtual Dictionary<string, string> Headers { get; } = new();
+    public virtual HttpMethod Method { get; } = HttpMethod.Get;
 
-        // Headers for multi part content's parts. Key'ed by dataKey.
-        public virtual Dictionary<string, Dictionary<string, string>> PartHeaders { get; } = new();
+    public virtual Dictionary<string, string> Headers { get; } = new();
 
-        // Different types of content
-        public virtual List<KeyValuePair<string, string>>? FormContent { get; set; }
+    // Headers for multi part content's parts. Key'ed by dataKey.
+    public virtual Dictionary<string, Dictionary<string, string>> PartHeaders { get; } = new();
 
-        public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent { get; set; }
+    // Different types of content
+    public virtual List<KeyValuePair<string, string>>? FormContent { get; set; }
 
-        public TResponse? Call(Dictionary<string, string>? parameters = null,
-            Dictionary<string, byte[]>? byteParameters = null) {
-            parameters ??= new Dictionary<string, string>();
-            byteParameters ??= new Dictionary<string, byte[]>();
+    public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent { get; set; }
 
-            var address = UrlPattern.Format(parameters);
-            logger.Trace($"{Method} {address}");
+    public TResponse? Call(Dictionary<string, string>? parameters = null,
+        Dictionary<string, byte[]>? byteParameters = null) {
+        parameters ??= new Dictionary<string, string>();
+        byteParameters ??= new Dictionary<string, byte[]>();
 
-            var request = new HttpRequestMessage(Method, address);
+        var address = UrlPattern.Format(parameters);
+        logger.Trace($"{Method} {address}");
 
-            foreach (var (headerName, value) in Headers.Where(h => !h.Key.StartsWith("Content-"))) {
-                request.Headers.Add(headerName, value.Format(parameters));
-            }
+        var request = new HttpRequestMessage(Method, address);
 
-            if (ExtraMultipartContent != null) {
-                var multipartContent = new MultipartFormDataContent();
-                request.Content = multipartContent;
-                if (FormContent != null) {
-                    foreach (var (name, value) in FormContent) {
-                        multipartContent.Add(new StringContent(value.Format(parameters)), name.Format(parameters));
-                    }
-                }
-
-                foreach (var (dataKey, name, fileName) in ExtraMultipartContent) {
-                    var content = new ByteArrayContent(byteParameters[dataKey]);
-                    if (PartHeaders[dataKey] != null) {
-                        foreach (var (headerName, value) in PartHeaders[dataKey]) {
-                            content.Headers.Add(headerName.Format(parameters), value.Format(parameters));
-                        }
-                    }
-
-                    multipartContent.Add(content, name.Format(parameters), fileName.Format(parameters));
-                }
-            } else if (FormContent != null) {
-                request.Content = new FormUrlEncodedContent(FormContent.Select(item =>
-                    new KeyValuePair<string?, string?>(item.Key, item.Value.Format(parameters))));
-            }
-
-            if (request.Content != null) {
-                foreach (var (headerName, value) in Headers.Where(h => h.Key.StartsWith("Content-"))) {
-                    request.Content.Headers.Add(headerName, value.Format(parameters));
-                }
-            }
-
-            return HttpClient.GetObject<TResponse>(request);
+        foreach (var (headerName, value) in Headers.Where(h => !h.Key.StartsWith("Content-"))) {
+            request.Headers.Add(headerName, value.Format(parameters));
         }
+
+        if (ExtraMultipartContent != null) {
+            var multipartContent = new MultipartFormDataContent();
+            request.Content = multipartContent;
+            if (FormContent != null) {
+                foreach (var (name, value) in FormContent) {
+                    multipartContent.Add(new StringContent(value.Format(parameters)), name.Format(parameters));
+                }
+            }
+
+            foreach (var (dataKey, name, fileName) in ExtraMultipartContent) {
+                var content = new ByteArrayContent(byteParameters[dataKey]);
+                if (PartHeaders[dataKey] != null) {
+                    foreach (var (headerName, value) in PartHeaders[dataKey]) {
+                        content.Headers.Add(headerName.Format(parameters), value.Format(parameters));
+                    }
+                }
+
+                multipartContent.Add(content, name.Format(parameters), fileName.Format(parameters));
+            }
+        } else if (FormContent != null) {
+            request.Content = new FormUrlEncodedContent(FormContent.Select(item =>
+                new KeyValuePair<string?, string?>(item.Key, item.Value.Format(parameters))));
+        }
+
+        if (request.Content != null) {
+            foreach (var (headerName, value) in Headers.Where(h => h.Key.StartsWith("Content-"))) {
+                request.Content.Headers.Add(headerName, value.Format(parameters));
+            }
+        }
+
+        return HttpClient.GetObject<TResponse>(request);
     }
 }

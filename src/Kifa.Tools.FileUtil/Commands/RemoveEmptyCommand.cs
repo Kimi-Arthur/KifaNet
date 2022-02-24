@@ -5,39 +5,39 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 
-namespace Kifa.Tools.FileUtil.Commands {
-    [Verb("rm-empty", HelpText = "Remove empty folders recursively.")]
-    public class RemoveEmptyCommand : KifaCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.FileUtil.Commands; 
 
-        [Value(0, Required = true, HelpText = "Folders to be removed.")]
-        public IEnumerable<string> FileNames { get; set; }
+[Verb("rm-empty", HelpText = "Remove empty folders recursively.")]
+public class RemoveEmptyCommand : KifaCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override int Execute() {
-            foreach (var fileName in FileNames) {
-                RecursivelyRemoveEmptyFolders(fileName);
-            }
+    [Value(0, Required = true, HelpText = "Folders to be removed.")]
+    public IEnumerable<string> FileNames { get; set; }
 
-            return 0;
+    public override int Execute() {
+        foreach (var fileName in FileNames) {
+            RecursivelyRemoveEmptyFolders(fileName);
         }
 
-        private static bool RecursivelyRemoveEmptyFolders(string fileName) {
-            if (!Directory.Exists(fileName)) {
-                return File.Exists(fileName);
-            }
+        return 0;
+    }
 
-            if (Directory.EnumerateDirectories(fileName).Select(RecursivelyRemoveEmptyFolders).ToList().Any()) {
-                return true;
-            }
-
-            if (Directory.EnumerateFiles(fileName).Any()) {
-                return true;
-            }
-
-            logger.Info($"Removing empty folder {fileName}...");
-            Directory.Delete(fileName);
-            logger.Info($"Removed empty folder {fileName}...");
-            return false;
+    private static bool RecursivelyRemoveEmptyFolders(string fileName) {
+        if (!Directory.Exists(fileName)) {
+            return File.Exists(fileName);
         }
+
+        if (Directory.EnumerateDirectories(fileName).Select(RecursivelyRemoveEmptyFolders).ToList().Any()) {
+            return true;
+        }
+
+        if (Directory.EnumerateFiles(fileName).Any()) {
+            return true;
+        }
+
+        logger.Info($"Removing empty folder {fileName}...");
+        Directory.Delete(fileName);
+        logger.Info($"Removed empty folder {fileName}...");
+        return false;
     }
 }

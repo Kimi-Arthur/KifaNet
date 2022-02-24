@@ -10,212 +10,212 @@ using Kifa.IO;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.BiliUtil {
-    public static class Helper {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.BiliUtil; 
 
-        static readonly Regex fileNamePattern = new Regex(@"^AV(\d+) P(\d+) .* cid (\d+)$");
+public static class Helper {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static (string aid, int pid, string cid) GetIds(string name) {
-            var match = fileNamePattern.Match(name);
-            if (!match.Success) {
-                return (null, 0, null);
-            }
+    static readonly Regex fileNamePattern = new Regex(@"^AV(\d+) P(\d+) .* cid (\d+)$");
 
-            return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value), match.Groups[3].Value);
+    public static (string aid, int pid, string cid) GetIds(string name) {
+        var match = fileNamePattern.Match(name);
+        if (!match.Success) {
+            return (null, 0, null);
         }
 
-        public static string GetDesiredFileName(BilibiliVideo video, int pid, string cid = null) {
-            var p = video.Pages.First(x => x.Id == pid);
+        return ($"av{match.Groups[1].Value}", int.Parse(match.Groups[2].Value), match.Groups[3].Value);
+    }
 
-            if (cid != null && cid != p.Cid) {
-                return null;
-            }
+    public static string GetDesiredFileName(BilibiliVideo video, int pid, string cid = null) {
+        var p = video.Pages.First(x => x.Id == pid);
 
-            return video.Pages.Count > 1
-                ? $"{video.Author}-{video.AuthorId}/{video.Title} P{pid} {p.Title}-{video.Id}p{pid}.c{cid}"
-                : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
+        if (cid != null && cid != p.Cid) {
+            return null;
         }
 
-        public static void WriteIfNotFinished(this KifaFile file, Func<Stream> getStream) {
-            if (file.Exists()) {
-                logger.Debug($"Target file {file} already exists. Skipped.");
-                return;
-            }
+        return video.Pages.Count > 1
+            ? $"{video.Author}-{video.AuthorId}/{video.Title} P{pid} {p.Title}-{video.Id}p{pid}.c{cid}"
+            : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
+    }
 
-            var downloadFile = file.GetFileSuffixed(".downloading");
-
-            var stream = getStream();
-            if (stream == null || stream.Length <= 0) {
-                throw new Exception("Cannot get stream.");
-            }
-
-            logger.Debug($"Start downloading video to {downloadFile}");
-            downloadFile.Write(stream);
-            downloadFile.Move(file);
-            logger.Debug($"Successfullly downloaded video to {file}");
+    public static void WriteIfNotFinished(this KifaFile file, Func<Stream> getStream) {
+        if (file.Exists()) {
+            logger.Debug($"Target file {file} already exists. Skipped.");
+            return;
         }
 
+        var downloadFile = file.GetFileSuffixed(".downloading");
 
-        public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
-            string alternativeFolder = null, bool prefixDate = false, BilibiliUploader uploader = null) {
-            uploader ??= new BilibiliUploader {
-                Id = video.AuthorId,
-                Name = video.Author
-            };
+        var stream = getStream();
+        if (stream == null || stream.Length <= 0) {
+            throw new Exception("Cannot get stream.");
+        }
 
-            var (extension, quality, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
-            if (extension == null) {
-                logger.Warn("Failed to get video streams.");
-                return false;
+        logger.Debug($"Start downloading video to {downloadFile}");
+        downloadFile.Write(stream);
+        downloadFile.Move(file);
+        logger.Debug($"Successfullly downloaded video to {file}");
+    }
+
+
+    public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice, KifaFile currentFolder,
+        string alternativeFolder = null, bool prefixDate = false, BilibiliUploader uploader = null) {
+        uploader ??= new BilibiliUploader {
+            Id = video.AuthorId,
+            Name = video.Author
+        };
+
+        var (extension, quality, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
+        if (extension == null) {
+            logger.Warn("Failed to get video streams.");
+            return false;
+        }
+
+        if (extension != "mp4") {
+            var prefix =
+                $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate, uploader: uploader)}";
+            var canonicalPrefix = video.GetCanonicalName(pid, quality);
+            var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
+            var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
+            if (finalTargetFile.ExistsSomewhere()) {
+                logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                if (!canonicalTargetFile.ExistsSomewhere()) {
+                    FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
+                    logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
+                }
+
+                return true;
             }
 
-            if (extension != "mp4") {
-                var prefix =
-                    $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate, uploader: uploader)}";
-                var canonicalPrefix = video.GetCanonicalName(pid, quality);
-                var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
-                var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
-                if (finalTargetFile.ExistsSomewhere()) {
-                    logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
-                    if (!canonicalTargetFile.ExistsSomewhere()) {
-                        FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
-                        logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
-                    }
-
-                    return true;
+            if (canonicalTargetFile.ExistsSomewhere()) {
+                logger.Info($"{canonicalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                if (!finalTargetFile.ExistsSomewhere()) {
+                    FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
+                    logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
                 }
 
-                if (canonicalTargetFile.ExistsSomewhere()) {
-                    logger.Info($"{canonicalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
-                    if (!finalTargetFile.ExistsSomewhere()) {
-                        FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
-                        logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
-                    }
+                return true;
+            }
 
-                    return true;
-                }
-
-                if (canonicalTargetFile.Exists()) {
-                    logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
-                    if (!finalTargetFile.Exists()) {
-                        canonicalTargetFile.Copy(finalTargetFile);
-                        logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
-                    }
-
-                    return true;
-                }
-
-                if (finalTargetFile.Exists()) {
-                    logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
-                    if (!canonicalTargetFile.Exists()) {
-                        finalTargetFile.Copy(canonicalTargetFile);
-                        logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
-                    }
-
-                    return true;
-                }
-
-                var partFiles = new List<KifaFile>();
-                for (var i = 0; i < streamGetters.Count; i++) {
-                    var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
-                    logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
-                    try {
-                        targetFile.WriteIfNotFinished(streamGetters[i]);
-                        logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
-                    } catch (Exception e) {
-                        logger.Warn(e, $"Failed to download {targetFile}.");
-                        return false;
-                    }
-
-                    partFiles.Add(targetFile);
-                }
-
-                try {
-                    logger.Debug($"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
-                    MergePartFiles(partFiles, canonicalTargetFile);
-                    RemovePartFiles(partFiles);
-                    logger.Debug($"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
-
-                    logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
+            if (canonicalTargetFile.Exists()) {
+                logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
+                if (!finalTargetFile.Exists()) {
                     canonicalTargetFile.Copy(finalTargetFile);
-                    logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
-                } catch (Exception e) {
-                    logger.Warn(e, $"Failed to merge files.");
-                    return false;
+                    logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
                 }
-            } else {
-                var targetFile =
-                    currentFolder.GetFile(
-                        $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
-                logger.Debug($"Writing to {targetFile}...");
+
+                return true;
+            }
+
+            if (finalTargetFile.Exists()) {
+                logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
+                if (!canonicalTargetFile.Exists()) {
+                    finalTargetFile.Copy(canonicalTargetFile);
+                    logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
+                }
+
+                return true;
+            }
+
+            var partFiles = new List<KifaFile>();
+            for (var i = 0; i < streamGetters.Count; i++) {
+                var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
+                logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
                 try {
-                    targetFile.WriteIfNotFinished(streamGetters.First());
-                    logger.Debug($"Successfully written to {targetFile}.");
+                    targetFile.WriteIfNotFinished(streamGetters[i]);
+                    logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
                 } catch (Exception e) {
                     logger.Warn(e, $"Failed to download {targetFile}.");
                     return false;
                 }
+
+                partFiles.Add(targetFile);
             }
 
-            return true;
-        }
+            try {
+                logger.Debug($"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
+                MergePartFiles(partFiles, canonicalTargetFile);
+                RemovePartFiles(partFiles);
+                logger.Debug($"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
 
-        public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
-            // Convert parts first
-            var partPaths = parts.Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
-
-            var fileListPath = Path.GetTempFileName();
-            File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GeFfmpegTargetPath(p)}"));
-
-            var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
-            var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
-            logger.Debug($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {
-                StartInfo = {
-                    FileName = "ffmpeg",
-                    Arguments = arguments
-                }
-            };
-            proc.Start();
-            proc.WaitForExit();
-            if (proc.ExitCode != 0) {
-                throw new Exception("Merging files failed.");
+                logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
+                canonicalTargetFile.Copy(finalTargetFile);
+                logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
+            } catch (Exception e) {
+                logger.Warn(e, $"Failed to merge files.");
+                return false;
             }
-
-            File.Delete(fileListPath);
-
-            // Delete part files
-            foreach (var partPath in partPaths) {
-                File.Delete(partPath);
+        } else {
+            var targetFile =
+                currentFolder.GetFile(
+                    $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
+            logger.Debug($"Writing to {targetFile}...");
+            try {
+                targetFile.WriteIfNotFinished(streamGetters.First());
+                logger.Debug($"Successfully written to {targetFile}.");
+            } catch (Exception e) {
+                logger.Warn(e, $"Failed to download {targetFile}.");
+                return false;
             }
         }
 
-        static string ConvertPartFile(string path) {
-            var newPath = Path.GetTempPath() + path.Split("/").Last() + ".mp4";
-            var arguments = $"-i \"{path}\" -c copy \"{newPath}\"";
-            logger.Debug($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {
-                StartInfo = {
-                    FileName = "ffmpeg",
-                    Arguments = arguments
-                }
-            };
-            proc.Start();
-            proc.WaitForExit();
-            if (proc.ExitCode != 0) {
-                throw new Exception("Converting part files failed.");
+        return true;
+    }
+
+    public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
+        // Convert parts first
+        var partPaths = parts.Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
+
+        var fileListPath = Path.GetTempFileName();
+        File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GeFfmpegTargetPath(p)}"));
+
+        var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
+        var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
+        logger.Debug($"Executing: ffmpeg {arguments}");
+        using var proc = new Process {
+            StartInfo = {
+                FileName = "ffmpeg",
+                Arguments = arguments
             }
-
-            return newPath;
+        };
+        proc.Start();
+        proc.WaitForExit();
+        if (proc.ExitCode != 0) {
+            throw new Exception("Merging files failed.");
         }
 
-        static string GeFfmpegTargetPath(string targetPath) {
-            return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
+        File.Delete(fileListPath);
+
+        // Delete part files
+        foreach (var partPath in partPaths) {
+            File.Delete(partPath);
+        }
+    }
+
+    static string ConvertPartFile(string path) {
+        var newPath = Path.GetTempPath() + path.Split("/").Last() + ".mp4";
+        var arguments = $"-i \"{path}\" -c copy \"{newPath}\"";
+        logger.Debug($"Executing: ffmpeg {arguments}");
+        using var proc = new Process {
+            StartInfo = {
+                FileName = "ffmpeg",
+                Arguments = arguments
+            }
+        };
+        proc.Start();
+        proc.WaitForExit();
+        if (proc.ExitCode != 0) {
+            throw new Exception("Converting part files failed.");
         }
 
-        static void RemovePartFiles(List<KifaFile> partFiles) {
-            partFiles.ForEach(p => p.Delete());
-        }
+        return newPath;
+    }
+
+    static string GeFfmpegTargetPath(string targetPath) {
+        return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
+    }
+
+    static void RemovePartFiles(List<KifaFile> partFiles) {
+        partFiles.ForEach(p => p.Delete());
     }
 }

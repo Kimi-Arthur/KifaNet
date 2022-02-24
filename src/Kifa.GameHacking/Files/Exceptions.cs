@@ -1,16 +1,16 @@
 using System;
 
-namespace Kifa.GameHacking.Files {
-    public class DecodeException : Exception {
-        public DecodeException() {
-        }
+namespace Kifa.GameHacking.Files; 
 
-        public DecodeException(string message)
-            : base(message) {
-        }
+public class DecodeException : Exception {
+    public DecodeException() {
+    }
 
-        public DecodeException(string message, Exception inner)
-            : base(message, inner) {
-        }
+    public DecodeException(string message)
+        : base(message) {
+    }
+
+    public DecodeException(string message, Exception inner)
+        : base(message, inner) {
     }
 }

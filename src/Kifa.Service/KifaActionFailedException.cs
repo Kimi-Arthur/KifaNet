@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace Kifa.Service {
-    class KifaActionFailedException : Exception {
-        public KifaActionResult ActionResult { get; set; }
+namespace Kifa.Service; 
 
-        public KifaActionFailedException(KifaActionResult actionResult) {
-            ActionResult = actionResult;
-        }
+class KifaActionFailedException : Exception {
+    public KifaActionResult ActionResult { get; set; }
 
-        public override string ToString() => $"Action failed with {ActionResult}.";
+    public KifaActionFailedException(KifaActionResult actionResult) {
+        ActionResult = actionResult;
     }
+
+    public override string ToString() => $"Action failed with {ActionResult}.";
 }

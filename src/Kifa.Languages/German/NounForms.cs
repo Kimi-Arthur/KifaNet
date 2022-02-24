@@ -1,25 +1,25 @@
 using System.Collections.Generic;
 
-namespace Kifa.Languages.German {
-    public class NounForms : Dictionary<Case, Dictionary<Number, string>> {
-    }
+namespace Kifa.Languages.German; 
 
-    public enum Gender {
-        Masculine,
-        Feminine,
-        Neuter,
-        Error
-    }
+public class NounForms : Dictionary<Case, Dictionary<Number, string>> {
+}
 
-    public enum Case {
-        Nominative,
-        Genitive,
-        Dative,
-        Accusative
-    }
+public enum Gender {
+    Masculine,
+    Feminine,
+    Neuter,
+    Error
+}
 
-    public enum Number {
-        Singular,
-        Plural
-    }
+public enum Case {
+    Nominative,
+    Genitive,
+    Dative,
+    Accusative
+}
+
+public enum Number {
+    Singular,
+    Plural
 }

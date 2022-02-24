@@ -31,58 +31,58 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 
-namespace CG.Web.MegaApiClient {
-    public class WebClient {
-        const uint BufferSize = 8192;
-        static readonly string UserAgent;
+namespace CG.Web.MegaApiClient; 
 
-        static WebClient() {
-            var assemblyName = Assembly.GetExecutingAssembly().GetName();
-            UserAgent = string.Format("{0} v{1}", assemblyName.Name,
-                assemblyName.Version.ToString(2));
-        }
+public class WebClient {
+    const uint BufferSize = 8192;
+    static readonly string UserAgent;
 
-        public string PostRequestJson(Uri url, string jsonData) {
-            using var jsonStream = new MemoryStream(jsonData.ToBytes());
-            return PostRequest(url, jsonStream, "application/json");
-        }
+    static WebClient() {
+        var assemblyName = Assembly.GetExecutingAssembly().GetName();
+        UserAgent = string.Format("{0} v{1}", assemblyName.Name,
+            assemblyName.Version.ToString(2));
+    }
 
-        public string PostRequestRaw(Uri url, Stream dataStream)
-            => PostRequest(url, dataStream, "application/octet-stream");
+    public string PostRequestJson(Uri url, string jsonData) {
+        using var jsonStream = new MemoryStream(jsonData.ToBytes());
+        return PostRequest(url, jsonStream, "application/json");
+    }
 
-        public Stream GetRequestRaw(Uri url) {
-            var request = (HttpWebRequest) WebRequest.Create(url);
-            request.Method = "GET";
-            request.Timeout = -1;
-            request.UserAgent = UserAgent;
+    public string PostRequestRaw(Uri url, Stream dataStream)
+        => PostRequest(url, dataStream, "application/octet-stream");
 
-            return request.GetResponse().GetResponseStream();
-        }
+    public Stream GetRequestRaw(Uri url) {
+        var request = (HttpWebRequest) WebRequest.Create(url);
+        request.Method = "GET";
+        request.Timeout = -1;
+        request.UserAgent = UserAgent;
 
-        string PostRequest(Uri url, Stream dataStream, string contentType) {
-            var request = (HttpWebRequest) WebRequest.Create(url);
-            request.ContentLength = dataStream.Length;
-            request.Method = "POST";
-            request.Timeout = -1;
-            request.UserAgent = UserAgent;
-            request.ContentType = contentType;
+        return request.GetResponse().GetResponseStream();
+    }
 
-            using (var requestStream = request.GetRequestStream()) {
-                dataStream.Position = 0;
+    string PostRequest(Uri url, Stream dataStream, string contentType) {
+        var request = (HttpWebRequest) WebRequest.Create(url);
+        request.ContentLength = dataStream.Length;
+        request.Method = "POST";
+        request.Timeout = -1;
+        request.UserAgent = UserAgent;
+        request.ContentType = contentType;
 
-                var length = (int) Math.Min(BufferSize, dataStream.Length);
-                var buffer = new byte[length];
-                int bytesRead;
+        using (var requestStream = request.GetRequestStream()) {
+            dataStream.Position = 0;
 
-                while ((bytesRead = dataStream.Read(buffer, 0, length)) > 0) {
-                    requestStream.Write(buffer, 0, bytesRead);
-                }
+            var length = (int) Math.Min(BufferSize, dataStream.Length);
+            var buffer = new byte[length];
+            int bytesRead;
+
+            while ((bytesRead = dataStream.Read(buffer, 0, length)) > 0) {
+                requestStream.Write(buffer, 0, bytesRead);
             }
-
-            using var response = (HttpWebResponse) request.GetResponse();
-            using var responseStream = response.GetResponseStream();
-            using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
-            return streamReader.ReadToEnd();
         }
+
+        using var response = (HttpWebResponse) request.GetResponse();
+        using var responseStream = response.GetResponseStream();
+        using var streamReader = new StreamReader(responseStream, Encoding.UTF8);
+        return streamReader.ReadToEnd();
     }
 }

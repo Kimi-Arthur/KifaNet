@@ -3,32 +3,32 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
-namespace Kifa.Memrise {
-    public class MemriseCourse : DataModel<MemriseCourse> {
-        public const string ModelId = "memrise/courses";
+namespace Kifa.Memrise; 
 
-        public string CourseName { get; set; }
-        public string CourseId { get; set; }
-        public string DatabaseId { get; set; }
+public class MemriseCourse : DataModel<MemriseCourse> {
+    public const string ModelId = "memrise/courses";
 
-        // Map from column name to data-key.
-        public Dictionary<string, string> Columns { get; set; }
+    public string CourseName { get; set; }
+    public string CourseId { get; set; }
+    public string DatabaseId { get; set; }
+
+    // Map from column name to data-key.
+    public Dictionary<string, string> Columns { get; set; }
         
-        // Map from level name to its id. The name doesn't have to comply with the actual level name.
-        public Dictionary<string, string> Levels { get; set; }
+    // Map from level name to its id. The name doesn't have to comply with the actual level name.
+    public Dictionary<string, string> Levels { get; set; }
 
-        [JsonIgnore]
-        [YamlIgnore]
-        public string DatabaseUrl => $"{BaseUrl}database/{DatabaseId}/";
+    [JsonIgnore]
+    [YamlIgnore]
+    public string DatabaseUrl => $"{BaseUrl}database/{DatabaseId}/";
 
-        [JsonIgnore]
-        [YamlIgnore]
-        public string BaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/";
-    }
+    [JsonIgnore]
+    [YamlIgnore]
+    public string BaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/";
+}
 
-    public interface MemriseCourseServiceClient : KifaServiceClient<MemriseCourse> {
-    }
+public interface MemriseCourseServiceClient : KifaServiceClient<MemriseCourse> {
+}
 
-    public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>, MemriseCourseServiceClient {
-    }
+public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>, MemriseCourseServiceClient {
 }

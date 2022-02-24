@@ -3,29 +3,29 @@ using System.Linq;
 using HtmlAgilityPack;
 using Kifa.Markdown.Elements;
 
-namespace Kifa.Markdown.Converters {
-    public class SkippedConverter : HtmlMarkdownConverter {
-        static HashSet<string> SkippedTags = new() {
-            "head"
-        };
+namespace Kifa.Markdown.Converters; 
 
-        static HashSet<string> SkippedIds = new() {
-            "external-links"
-        };
+public class SkippedConverter : HtmlMarkdownConverter {
+    static HashSet<string> SkippedTags = new() {
+        "head"
+    };
 
-        static HashSet<string> SkippedClasses = new() {
-            "anchor-container",
-            "snippet-buttons",
-            "copyable-container"
-        };
+    static HashSet<string> SkippedIds = new() {
+        "external-links"
+    };
 
-        public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>
-            SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id) || SkippedClasses.Any(c => node.HasClass(c))
-                ? new[] {
-                    new HtmlElement {
-                        Html = ""
-                    }
+    static HashSet<string> SkippedClasses = new() {
+        "anchor-container",
+        "snippet-buttons",
+        "copyable-container"
+    };
+
+    public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) =>
+        SkippedTags.Contains(node.Name) || SkippedIds.Contains(node.Id) || SkippedClasses.Any(c => node.HasClass(c))
+            ? new[] {
+                new HtmlElement {
+                    Html = ""
                 }
-                : Enumerable.Empty<MarkdownElement>();
-    }
+            }
+            : Enumerable.Empty<MarkdownElement>();
 }

@@ -3,33 +3,33 @@ using CommandLine;
 using Kifa.Bilibili;
 using NLog;
 
-namespace Kifa.Tools.BiliUtil.Commands {
-    [Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
-    public class DownloadBangumiCommand : KifaCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.BiliUtil.Commands; 
 
-        [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]
-        public string BangumiId { get; set; }
+[Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
+public class DownloadBangumiCommand : KifaCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Option('s', "source", HelpText = "Override default source choice.")]
-        public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
+    [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]
+    public string BangumiId { get; set; }
 
-        public override int Execute() {
-            BilibiliBangumi.Client.Set(new BilibiliBangumi {
-                Id = BangumiId
+    [Option('s', "source", HelpText = "Override default source choice.")]
+    public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
+
+    public override int Execute() {
+        BilibiliBangumi.Client.Set(new BilibiliBangumi {
+            Id = BangumiId
+        });
+        var bangumi = BilibiliBangumi.Client.Get(BangumiId);
+        foreach (var videoId in bangumi.Aids.Distinct()) {
+            BilibiliVideo.Client.Set(new BilibiliVideo {
+                Id = videoId
             });
-            var bangumi = BilibiliBangumi.Client.Get(BangumiId);
-            foreach (var videoId in bangumi.Aids.Distinct()) {
-                BilibiliVideo.Client.Set(new BilibiliVideo {
-                    Id = videoId
-                });
-                var video = BilibiliVideo.Client.Get(videoId);
-                foreach (var page in video.Pages) {
-                    video.DownloadPart(page.Id, SourceChoice, CurrentFolder, $"{bangumi.Title}-{bangumi.Id}");
-                }
+            var video = BilibiliVideo.Client.Get(videoId);
+            foreach (var page in video.Pages) {
+                video.DownloadPart(page.Id, SourceChoice, CurrentFolder, $"{bangumi.Title}-{bangumi.Id}");
             }
-
-            return 0;
         }
+
+        return 0;
     }
 }

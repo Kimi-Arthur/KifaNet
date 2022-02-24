@@ -1,16 +1,16 @@
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Kifa.Languages.German.Goethe {
-    public class GoetheWordList : DataModel<GoetheWordList> {
-        public const string ModelId = "goethe/lists";
+namespace Kifa.Languages.German.Goethe; 
 
-        public List<string> Words { get; set; } = new();
-    }
+public class GoetheWordList : DataModel<GoetheWordList> {
+    public const string ModelId = "goethe/lists";
 
-    public interface GoetheWordListServiceClient : KifaServiceClient<GoetheWordList> {
-    }
+    public List<string> Words { get; set; } = new();
+}
 
-    public class GoetheWordListRestServiceClient : KifaServiceRestClient<GoetheWordList>, GoetheWordListServiceClient {
-    }
+public interface GoetheWordListServiceClient : KifaServiceClient<GoetheWordList> {
+}
+
+public class GoetheWordListRestServiceClient : KifaServiceRestClient<GoetheWordList>, GoetheWordListServiceClient {
 }

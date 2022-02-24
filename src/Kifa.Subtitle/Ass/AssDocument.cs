@@ -3,51 +3,51 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Kifa.Subtitle.Ass {
-    public class AssDocument {
-        static readonly Regex sectionHeaderPattern = new Regex(@"^\[.*\]$");
-        static readonly Regex separator = new Regex("(\r)?\n");
+namespace Kifa.Subtitle.Ass; 
 
-        public List<AssSection> Sections { get; set; } = new List<AssSection>();
+public class AssDocument {
+    static readonly Regex sectionHeaderPattern = new Regex(@"^\[.*\]$");
+    static readonly Regex separator = new Regex("(\r)?\n");
 
-        public override string ToString()
-            => string.Join("\n", Sections.Select(s => s.ToString()));
+    public List<AssSection> Sections { get; set; } = new List<AssSection>();
 
-        public static AssDocument Parse(Stream stream) {
-            using var sr = new StreamReader(stream);
-            return Parse(sr.ReadToEnd());
-        }
+    public override string ToString()
+        => string.Join("\n", Sections.Select(s => s.ToString()));
 
-        static AssDocument Parse(string content) {
-            var document = new AssDocument();
+    public static AssDocument Parse(Stream stream) {
+        using var sr = new StreamReader(stream);
+        return Parse(sr.ReadToEnd());
+    }
 
-            AssStylesSection stylesSection = null;
-            var lines = separator.Split(content);
-            var startLine = -1;
-            for (var i = 0; i < lines.Length; i++) {
-                if (sectionHeaderPattern.Match(lines[i]).Success) {
-                    if (startLine >= 0) {
-                        var section = AssSection.Parse(stylesSection, lines[startLine],
-                            lines.Take(i).Skip(startLine + 1));
-                        if (section != null) {
-                            document.Sections.Add(section);
-                            if (section is AssStylesSection assStylesSection) {
-                                stylesSection = assStylesSection;
-                            }
+    static AssDocument Parse(string content) {
+        var document = new AssDocument();
+
+        AssStylesSection stylesSection = null;
+        var lines = separator.Split(content);
+        var startLine = -1;
+        for (var i = 0; i < lines.Length; i++) {
+            if (sectionHeaderPattern.Match(lines[i]).Success) {
+                if (startLine >= 0) {
+                    var section = AssSection.Parse(stylesSection, lines[startLine],
+                        lines.Take(i).Skip(startLine + 1));
+                    if (section != null) {
+                        document.Sections.Add(section);
+                        if (section is AssStylesSection assStylesSection) {
+                            stylesSection = assStylesSection;
                         }
                     }
-
-                    startLine = i;
                 }
-            }
 
-            if (startLine >= 0) {
-                // No need to check styles section as this is the last one.
-                document.Sections.Add(AssSection.Parse(stylesSection, lines[startLine],
-                    lines.Skip(startLine + 1)));
+                startLine = i;
             }
-
-            return document;
         }
+
+        if (startLine >= 0) {
+            // No need to check styles section as this is the last one.
+            document.Sections.Add(AssSection.Parse(stylesSection, lines[startLine],
+                lines.Skip(startLine + 1)));
+        }
+
+        return document;
     }
 }

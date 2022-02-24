@@ -1,12 +1,12 @@
-﻿namespace Kifa.Subtitle.Ass {
-    public class AssDialogueRawTextElement : AssDialogueTextElement {
-        public string Content { get; set; }
+﻿namespace Kifa.Subtitle.Ass; 
 
-        public override string ToString() => Content;
+public class AssDialogueRawTextElement : AssDialogueTextElement {
+    public string Content { get; set; }
 
-        public new static AssDialogueTextElement Parse(string content)
-            => new AssDialogueRawTextElement {
-                Content = content
-            };
-    }
+    public override string ToString() => Content;
+
+    public new static AssDialogueTextElement Parse(string content)
+        => new AssDialogueRawTextElement {
+            Content = content
+        };
 }

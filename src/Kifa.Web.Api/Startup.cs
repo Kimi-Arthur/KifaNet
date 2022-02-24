@@ -14,58 +14,58 @@ using Newtonsoft.Json.Serialization;
 using Kifa.Api.Files;
 using WebApiContrib.Core.Formatter.Yaml;
 
-namespace Kifa.Web.Api {
-    public class Startup {
-        static readonly TimeSpan CacheDuration = TimeSpan.FromDays(1);
+namespace Kifa.Web.Api; 
 
-        public Startup(IConfiguration configuration) {
-            Configuration = configuration;
-        }
+public class Startup {
+    static readonly TimeSpan CacheDuration = TimeSpan.FromDays(1);
 
-        public IConfiguration Configuration { get; }
+    public Startup(IConfiguration configuration) {
+        Configuration = configuration;
+    }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services) {
-            services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
+    public IConfiguration Configuration { get; }
 
-            services.AddMvc(options => {
-                    options.EnableEndpointRouting = false;
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services) {
+        services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
 
-                    options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
-                    options.OutputFormatters.Add(new YamlOutputFormatter(new YamlFormatterOptions()));
+        services.AddMvc(options => {
+                options.EnableEndpointRouting = false;
 
-                    var prettyJsonFormatter = new NewtonsoftJsonOutputFormatter(Defaults.PrettyJsonSerializerSettings,
-                        ArrayPool<char>.Shared, options);
-                    prettyJsonFormatter.SupportedMediaTypes.Clear();
-                    prettyJsonFormatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));
+                options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
+                options.OutputFormatters.Add(new YamlOutputFormatter(new YamlFormatterOptions()));
 
-                    options.OutputFormatters.Insert(0, prettyJsonFormatter);
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
-                .AddNewtonsoftJson(options => {
-                    options.SerializerSettings.ContractResolver = new DefaultContractResolver {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    };
-                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                    options.SerializerSettings.MetadataPropertyHandling =
-                        MetadataPropertyHandling.Ignore;
-                });
-        }
+                var prettyJsonFormatter = new NewtonsoftJsonOutputFormatter(Defaults.PrettyJsonSerializerSettings,
+                    ArrayPool<char>.Shared, options);
+                prettyJsonFormatter.SupportedMediaTypes.Clear();
+                prettyJsonFormatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));
 
-        // This method gets called by the runtime.
-        // Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
-            if (env.IsDevelopment()) {
-                app.UseDeveloperExceptionPage();
-            } else {
-                app.UseHsts();
-            }
-
-            app.UseMvc();
-            app.UseStaticFiles(new StaticFileOptions {
-                FileProvider = new KifaFileProvider(),
-                RequestPath = "/resources"
+                options.OutputFormatters.Insert(0, prettyJsonFormatter);
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+            .AddNewtonsoftJson(options => {
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                };
+                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                options.SerializerSettings.MetadataPropertyHandling =
+                    MetadataPropertyHandling.Ignore;
             });
+    }
+
+    // This method gets called by the runtime.
+    // Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+        if (env.IsDevelopment()) {
+            app.UseDeveloperExceptionPage();
+        } else {
+            app.UseHsts();
         }
+
+        app.UseMvc();
+        app.UseStaticFiles(new StaticFileOptions {
+            FileProvider = new KifaFileProvider(),
+            RequestPath = "/resources"
+        });
     }
 }

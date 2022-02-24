@@ -3,32 +3,32 @@ using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 
-namespace Kifa.Bilibili {
-    public class BilibiliUploader : DataModel<BilibiliUploader> {
-        public const string ModelId = "bilibili/uploaders";
+namespace Kifa.Bilibili; 
 
-        static KifaServiceClient<BilibiliUploader> client;
+public class BilibiliUploader : DataModel<BilibiliUploader> {
+    public const string ModelId = "bilibili/uploaders";
 
-        public static KifaServiceClient<BilibiliUploader> Client =>
-            client ??= new KifaServiceRestClient<BilibiliUploader>();
+    static KifaServiceClient<BilibiliUploader> client;
 
-        public string Name { get; set; }
-        public List<string> Aids { get; set; } = new();
-        public List<string> RemovedAids { get; set; } = new();
+    public static KifaServiceClient<BilibiliUploader> Client =>
+        client ??= new KifaServiceRestClient<BilibiliUploader>();
 
-        public override bool? Fill() {
-            var info = new UploaderInfoRpc().Call(Id).Data;
-            Name = info.Name;
-            var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => $"av{v.Aid}").ToHashSet();
+    public string Name { get; set; }
+    public List<string> Aids { get; set; } = new();
+    public List<string> RemovedAids { get; set; } = new();
 
-            var removed = RemovedAids.ToHashSet();
-            removed.UnionWith(Aids);
-            removed.ExceptWith(list);
+    public override bool? Fill() {
+        var info = new UploaderInfoRpc().Call(Id).Data;
+        Name = info.Name;
+        var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => $"av{v.Aid}").ToHashSet();
 
-            RemovedAids = removed.OrderBy(v => v).ToList();
-            Aids = list.OrderBy(v => v).ToList();
+        var removed = RemovedAids.ToHashSet();
+        removed.UnionWith(Aids);
+        removed.ExceptWith(list);
 
-            return true;
-        }
+        RemovedAids = removed.OrderBy(v => v).ToList();
+        Aids = list.OrderBy(v => v).ToList();
+
+        return true;
     }
 }

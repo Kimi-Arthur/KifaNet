@@ -4,58 +4,58 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
-namespace Kifa.Languages.German.Goethe {
-    public class GoetheGermanWord : DataModel<GoetheGermanWord> {
-        public const string ModelId = "goethe/words";
+namespace Kifa.Languages.German.Goethe; 
 
-        static readonly Regex RootWordPattern =
-            new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen| werden)?$");
+public class GoetheGermanWord : DataModel<GoetheGermanWord> {
+    public const string ModelId = "goethe/words";
 
-        public string Level { get; set; }
-        public string Form { get; set; }
+    static readonly Regex RootWordPattern =
+        new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen| werden)?$");
 
-        // A synonym text like: (CH) = (D, A) Hausmeister
-        public string Synonym { get; set; }
+    public string Level { get; set; }
+    public string Form { get; set; }
 
-        // Only Word, Form are included.
-        public GoetheGermanWord Feminine { get; set; }
+    // A synonym text like: (CH) = (D, A) Hausmeister
+    public string Synonym { get; set; }
 
-        // Only Word, Form, Feminine are included.
-        public GoetheGermanWord Abbreviation { get; set; }
+    // Only Word, Form are included.
+    public GoetheGermanWord Feminine { get; set; }
 
-        public string Meaning { get; set; }
-        public List<string> Examples { get; set; }
+    // Only Word, Form, Feminine are included.
+    public GoetheGermanWord Abbreviation { get; set; }
 
-        [JsonIgnore]
-        [YamlIgnore]
-        public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
+    public string Meaning { get; set; }
+    public List<string> Examples { get; set; }
 
-        public override bool? Fill() {
-            if (!Examples[0].StartsWith("example")) {
-                return null;
-            }
+    [JsonIgnore]
+    [YamlIgnore]
+    public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
 
-            if (Form != "¨-e" && Form != "") {
-                return false;
-            }
-
-            var word = new GermanWord {
-                Id = RootWord
-            };
-
-            word.Fill();
-
-            var originalForm = Form;
-            Form = word.KeyForm;
-
-            return originalForm != Form;
+    public override bool? Fill() {
+        if (!Examples[0].StartsWith("example")) {
+            return null;
         }
-    }
 
-    public interface GoetheGermanWordServiceClient : KifaServiceClient<GoetheGermanWord> {
-    }
+        if (Form != "¨-e" && Form != "") {
+            return false;
+        }
 
-    public class GoetheGermanWordRestServiceClient : KifaServiceRestClient<GoetheGermanWord>,
-        GoetheGermanWordServiceClient {
+        var word = new GermanWord {
+            Id = RootWord
+        };
+
+        word.Fill();
+
+        var originalForm = Form;
+        Form = word.KeyForm;
+
+        return originalForm != Form;
     }
+}
+
+public interface GoetheGermanWordServiceClient : KifaServiceClient<GoetheGermanWord> {
+}
+
+public class GoetheGermanWordRestServiceClient : KifaServiceRestClient<GoetheGermanWord>,
+    GoetheGermanWordServiceClient {
 }

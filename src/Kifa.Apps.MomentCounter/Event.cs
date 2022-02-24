@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using Kifa.Service;
 
-namespace Kifa.Apps.MomentCounter {
-    public class Event : DataModel<Event> {
-        public const string ModelId = "moment_counter/events";
+namespace Kifa.Apps.MomentCounter; 
 
-        public DateTime DateTime { get; set; }
+public class Event : DataModel<Event> {
+    public const string ModelId = "moment_counter/events";
 
-        // Should match Counter's units.
-        public List<int> Values { get; set; } = new();
-    }
+    public DateTime DateTime { get; set; }
 
-    public interface EventServiceClient : KifaServiceClient<Event> {
-    }
+    // Should match Counter's units.
+    public List<int> Values { get; set; } = new();
+}
 
-    public class EventRestServiceClient : KifaServiceRestClient<Event>, EventServiceClient {
-    }
+public interface EventServiceClient : KifaServiceClient<Event> {
+}
+
+public class EventRestServiceClient : KifaServiceRestClient<Event>, EventServiceClient {
 }

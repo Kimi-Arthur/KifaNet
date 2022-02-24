@@ -1,5 +1,5 @@
-namespace Kifa.Markdown.Elements {
-    public abstract class MarkdownElement {
-        public abstract string ToText();
-    }
+namespace Kifa.Markdown.Elements; 
+
+public abstract class MarkdownElement {
+    public abstract string ToText();
 }

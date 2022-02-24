@@ -5,70 +5,70 @@ using Kifa.Api.Files;
 using Kifa.Subtitle.Ass;
 using NLog;
 
-namespace Kifa.Tools.SubUtil.Commands {
-    [Verb("fix", HelpText = "Fix subtitle.")]
-    class FixCommand : KifaFileCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.SubUtil.Commands; 
 
-        protected override string Prefix => "/Subtitles";
+[Verb("fix", HelpText = "Fix subtitle.")]
+class FixCommand : KifaFileCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        protected override int ExecuteOneKifaFile(KifaFile file) {
-            if (!file.Path.EndsWith(".ass")) {
-                return 0;
-            }
+    protected override string Prefix => "/Subtitles";
 
-            var sub = AssDocument.Parse(file.OpenRead());
-            sub = FixSubtitleResolution(sub);
-            Console.WriteLine(sub.ToString());
-            file.Delete();
-            file.Write(sub.ToString());
+    protected override int ExecuteOneKifaFile(KifaFile file) {
+        if (!file.Path.EndsWith(".ass")) {
             return 0;
         }
 
-        static AssDocument FixSubtitleResolution(AssDocument sub) {
-            if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header)) {
-                return sub;
-            }
+        var sub = AssDocument.Parse(file.OpenRead());
+        sub = FixSubtitleResolution(sub);
+        Console.WriteLine(sub.ToString());
+        file.Delete();
+        file.Write(sub.ToString());
+        return 0;
+    }
 
-            var scriptHeight = header.PlayResY > 0 ? header.PlayResY : AssScriptInfoSection.DefaultPlayResY;
+    static AssDocument FixSubtitleResolution(AssDocument sub) {
+        if (!(sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header)) {
+            return sub;
+        }
 
-            var scriptWidth = header.PlayResX > 0 ? header.PlayResX : AssScriptInfoSection.DefaultPlayResX;
+        var scriptHeight = header.PlayResY > 0 ? header.PlayResY : AssScriptInfoSection.DefaultPlayResY;
 
-            if (scriptWidth == AssScriptInfoSection.PreferredPlayResX &&
-                scriptHeight == AssScriptInfoSection.PreferredPlayResY) {
-                return sub;
-            }
+        var scriptWidth = header.PlayResX > 0 ? header.PlayResX : AssScriptInfoSection.DefaultPlayResX;
 
-            header.PlayResX = AssScriptInfoSection.PreferredPlayResX;
-            header.PlayResY = AssScriptInfoSection.PreferredPlayResY;
+        if (scriptWidth == AssScriptInfoSection.PreferredPlayResX &&
+            scriptHeight == AssScriptInfoSection.PreferredPlayResY) {
+            return sub;
+        }
 
-            var scaleX = AssScriptInfoSection.PreferredPlayResX * 1.0 / scriptWidth;
-            var scaleY = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
-            logger.Info("Scale by {0}", scaleY);
+        header.PlayResX = AssScriptInfoSection.PreferredPlayResX;
+        header.PlayResY = AssScriptInfoSection.PreferredPlayResY;
 
-            foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
-                foreach (var line in styleSection.AssLines) {
-                    if (line is AssStyle styleLine) {
-                        styleLine.Scale(scaleY);
-                    }
+        var scaleX = AssScriptInfoSection.PreferredPlayResX * 1.0 / scriptWidth;
+        var scaleY = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
+        logger.Info("Scale by {0}", scaleY);
+
+        foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
+            foreach (var line in styleSection.AssLines) {
+                if (line is AssStyle styleLine) {
+                    styleLine.Scale(scaleY);
                 }
             }
+        }
 
-            foreach (var eventsSection in sub.Sections.Where(s => s is AssEventsSection)) {
-                foreach (var line in eventsSection.AssLines) {
-                    if (line is AssDialogue dialogue) {
-                        foreach (var element in dialogue.Text.TextElements) {
-                            if (element is AssDialogueControlTextElement controlTextElement) {
-                                foreach (var e in controlTextElement.Elements) {
-                                    e.Scale(scaleX, scaleY);
-                                }
+        foreach (var eventsSection in sub.Sections.Where(s => s is AssEventsSection)) {
+            foreach (var line in eventsSection.AssLines) {
+                if (line is AssDialogue dialogue) {
+                    foreach (var element in dialogue.Text.TextElements) {
+                        if (element is AssDialogueControlTextElement controlTextElement) {
+                            foreach (var e in controlTextElement.Elements) {
+                                e.Scale(scaleX, scaleY);
                             }
                         }
                     }
                 }
             }
-
-            return sub;
         }
+
+        return sub;
     }
 }

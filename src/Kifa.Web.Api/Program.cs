@@ -6,33 +6,33 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using NLog;
 
-namespace Kifa.Web.Api {
-    public class Program {
-        public static void Main(string[] args) {
-            AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
-                KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+namespace Kifa.Web.Api; 
 
-            KifaConfigs.LoadFromSystemConfigs();
-            RegisterClients();
-            ConfigureLogger();
+public class Program {
+    public static void Main(string[] args) {
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs) =>
+            KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
 
-            CreateWebHostBuilder(args).Build().Run();
-        }
+        KifaConfigs.LoadFromSystemConfigs();
+        RegisterClients();
+        ConfigureLogger();
 
-        static void ConfigureLogger() {
-            LogManager.Configuration.LoggingRules.Clear();
-
-            LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
-            LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
-
-            LogManager.ReconfigExistingLoggers();
-        }
-
-        static void RegisterClients() {
-            Counter.Client = new CounterJsonServiceClient();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
+        CreateWebHostBuilder(args).Build().Run();
     }
+
+    static void ConfigureLogger() {
+        LogManager.Configuration.LoggingRules.Clear();
+
+        LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
+        LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
+
+        LogManager.ReconfigExistingLoggers();
+    }
+
+    static void RegisterClients() {
+        Counter.Client = new CounterJsonServiceClient();
+    }
+
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+        WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
 }

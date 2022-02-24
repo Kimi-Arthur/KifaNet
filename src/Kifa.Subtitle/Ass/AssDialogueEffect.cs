@@ -1,29 +1,29 @@
 ﻿using System.Collections.Generic;
 using NLog;
 
-namespace Kifa.Subtitle.Ass {
-    public class AssDialogueEffect {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Subtitle.Ass; 
 
-        public virtual string EffectType => null;
-        public virtual IEnumerable<string> EffectParameters => null;
+public class AssDialogueEffect {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static AssDialogueEffect Parse(string content) {
-            if (content.Length == 0) {
-                return new AssDialogueEffect();
-            }
+    public virtual string EffectType => null;
+    public virtual IEnumerable<string> EffectParameters => null;
 
-            var segments = content.Split(';');
-            switch (segments[0]) {
-                case AssDialogueBannerEffect.EffectTypeName:
-                    return new AssDialogueBannerEffect();
-                default:
-                    logger.Warn("Unexpected dialogue effect type: {0}", content);
-                    return null;
-            }
+    public static AssDialogueEffect Parse(string content) {
+        if (content.Length == 0) {
+            return new AssDialogueEffect();
         }
 
-        public override string ToString()
-            => EffectType == null ? "" : $"{EffectType};{string.Join(";", EffectParameters)}";
+        var segments = content.Split(';');
+        switch (segments[0]) {
+            case AssDialogueBannerEffect.EffectTypeName:
+                return new AssDialogueBannerEffect();
+            default:
+                logger.Warn("Unexpected dialogue effect type: {0}", content);
+                return null;
+        }
     }
+
+    public override string ToString()
+        => EffectType == null ? "" : $"{EffectType};{string.Join(";", EffectParameters)}";
 }

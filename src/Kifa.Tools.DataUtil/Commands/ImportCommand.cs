@@ -3,28 +3,28 @@ using Kifa.Api.Files;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.DataUtil.Commands {
-    [Verb("import", HelpText = "Import data from a specific file.")]
-    public class ImportCommand : KifaCommand {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
+namespace Kifa.Tools.DataUtil.Commands; 
 
-        [Option('t', "type", HelpText = "Type of data. Allowed values: goethe/words, goethe/lists")]
-        public string Type { get; set; }
+[Verb("import", HelpText = "Import data from a specific file.")]
+public class ImportCommand : KifaCommand {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        [Value(0, Required = true, HelpText = "File to import data from.")]
-        public string File { get; set; }
+    [Option('t', "type", HelpText = "Type of data. Allowed values: goethe/words, goethe/lists")]
+    public string Type { get; set; }
 
-        public override int Execute() {
-            var content = new KifaFile(File).ReadAsString();
+    [Value(0, Required = true, HelpText = "File to import data from.")]
+    public string File { get; set; }
 
-            var chef = DataChef.GetChef(Type, content);
+    public override int Execute() {
+        var content = new KifaFile(File).ReadAsString();
 
-            if (chef == null) {
-                logger.Error($"Unknown type name: {Type}.\n{content}");
-                return 1;
-            }
+        var chef = DataChef.GetChef(Type, content);
 
-            return (int) logger.LogResult(chef.Import(content), "Summary").Status;
+        if (chef == null) {
+            logger.Error($"Unknown type name: {Type}.\n{content}");
+            return 1;
         }
+
+        return (int) logger.LogResult(chef.Import(content), "Summary").Status;
     }
 }
