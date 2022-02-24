@@ -6,7 +6,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using NLog;
 
-namespace Kifa.Web.Api; 
+namespace Kifa.Web.Api;
 
 public class Program {
     public static void Main(string[] args) {

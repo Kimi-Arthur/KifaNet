@@ -8,25 +8,29 @@ using HtmlAgilityPack;
 using Kifa.SkyCh;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Kifa.Web.Api.Controllers.Soccer; 
+namespace Kifa.Web.Api.Controllers.Soccer;
 
 [Route("api/" + SkyProgram.ModelId)]
 public class SkyProgramsController : KifaDataController<SkyProgram, SkyProgramJsonServiceClient> {
     [HttpGet("$add_for_day")]
-    public KifaApiActionResult<List<SkyProgram>> AddForDay(int dayOffset) => Client.AddForDay(dayOffset);
+    public KifaApiActionResult<List<SkyProgram>> AddForDay(int dayOffset) =>
+        Client.AddForDay(dayOffset);
 }
 
-public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>, SkyProgramServiceClient {
+public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
+    SkyProgramServiceClient {
     static readonly HttpClient NoAuthClient = new();
 
     public List<SkyProgram> AddForDay(int dayOffset) =>
-        AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "de")).ToList();
+        AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "de"))
+            .ToList();
 
     public List<SkyProgram> AddForDayAndLanguage(int dayOffset, string language) {
         var channels = Channels[language];
         var date = DateTime.UtcNow.Date.AddDays(dayOffset);
         var listPage = NoAuthClient
-            .GetStringAsync($"https://sport.sky.ch/{language}/SkyChannelAjax/UpdateEpg?day={dayOffset}").Result;
+            .GetStringAsync(
+                $"https://sport.sky.ch/{language}/SkyChannelAjax/UpdateEpg?day={dayOffset}").Result;
         var doc = new HtmlDocument();
         doc.LoadHtml(listPage);
         var channelNodes = doc.DocumentNode.SelectNodes("//ul");
@@ -46,11 +50,13 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>, Sk
                 }
 
                 var startTime = TimeSpan.Parse(timeStrings[0]);
-                if (programNode.Attributes["data-previous"].Value == "-1" && startTime > TimeSpan.FromHours(12)) {
+                if (programNode.Attributes["data-previous"].Value == "-1" &&
+                    startTime > TimeSpan.FromHours(12)) {
                     startTime -= TimeSpan.FromDays(1);
                 }
 
-                if (programs.Count > 0 && programNode.Attributes["data-id"].Value == programs[^1].Id) {
+                if (programs.Count > 0 &&
+                    programNode.Attributes["data-id"].Value == programs[^1].Id) {
                     var program = programs[^1].With(p => {
                         p.Duration += duration;
                         p.Title = MergeTitle(p.Title);
@@ -84,7 +90,9 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>, Sk
     static string MergeTitle(string title) => PartRegex.Replace(title, "");
 
     static readonly Regex backgroundImageLinkRegex = new Regex(@"(https://.*)\?");
-    static string ParseBackgroundImageLink(string style) => backgroundImageLinkRegex.Match(style).Groups[1].Value;
+
+    static string ParseBackgroundImageLink(string style) =>
+        backgroundImageLinkRegex.Match(style).Groups[1].Value;
 
     static Dictionary<string, List<string>>? channels;
 
@@ -101,6 +109,7 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>, Sk
         var doc = new HtmlDocument();
         doc.LoadHtml(channelsPage);
         var nodes = doc.DocumentNode.SelectNodes("//li[@class='epg-channel-list-item']");
-        return nodes.Select(node => node.SelectSingleNode(".//img").Attributes["alt"].Value).ToList();
+        return nodes.Select(node => node.SelectSingleNode(".//img").Attributes["alt"].Value)
+            .ToList();
     }
 }

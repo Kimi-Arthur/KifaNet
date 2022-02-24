@@ -5,7 +5,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
 
-namespace Kifa.Web.Api; 
+namespace Kifa.Web.Api;
 
 public class KifaServiceJsonClient {
     public static string DataFolder { get; set; }

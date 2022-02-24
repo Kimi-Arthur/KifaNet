@@ -3,10 +3,11 @@ using System.Linq;
 using Kifa.Cloud.Swisscom;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Kifa.Web.Api.Controllers.Accounts; 
+namespace Kifa.Web.Api.Controllers.Accounts;
 
 [Route("api/" + SwisscomAccount.ModelId)]
-public class SwisscomAccountController : KifaDataController<SwisscomAccount, SwisscomAccountJsonServiceClient> {
+public class SwisscomAccountController : KifaDataController<SwisscomAccount,
+    SwisscomAccountJsonServiceClient> {
     protected override bool AlwaysAutoRefresh => true;
 
     [HttpGet("$get_top_accounts")]
@@ -14,8 +15,8 @@ public class SwisscomAccountController : KifaDataController<SwisscomAccount, Swi
     public KifaApiActionResult<List<SwisscomAccount>> GetTopAccounts() => Client.GetTopAccounts();
 }
 
-public class
-    SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAccount>, SwisscomAccountServiceClient {
+public class SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAccount>,
+    SwisscomAccountServiceClient {
     public List<SwisscomAccount> GetTopAccounts() {
         // 10 MB
         const int limit = 100 << 20;

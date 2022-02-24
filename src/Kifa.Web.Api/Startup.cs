@@ -14,7 +14,7 @@ using Newtonsoft.Json.Serialization;
 using Kifa.Api.Files;
 using WebApiContrib.Core.Formatter.Yaml;
 
-namespace Kifa.Web.Api; 
+namespace Kifa.Web.Api;
 
 public class Startup {
     static readonly TimeSpan CacheDuration = TimeSpan.FromDays(1);
@@ -30,27 +30,25 @@ public class Startup {
         services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
 
         services.AddMvc(options => {
-                options.EnableEndpointRouting = false;
+            options.EnableEndpointRouting = false;
 
-                options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
-                options.OutputFormatters.Add(new YamlOutputFormatter(new YamlFormatterOptions()));
+            options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
+            options.OutputFormatters.Add(new YamlOutputFormatter(new YamlFormatterOptions()));
 
-                var prettyJsonFormatter = new NewtonsoftJsonOutputFormatter(Defaults.PrettyJsonSerializerSettings,
+            var prettyJsonFormatter =
+                new NewtonsoftJsonOutputFormatter(Defaults.PrettyJsonSerializerSettings,
                     ArrayPool<char>.Shared, options);
-                prettyJsonFormatter.SupportedMediaTypes.Clear();
-                prettyJsonFormatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));
+            prettyJsonFormatter.SupportedMediaTypes.Clear();
+            prettyJsonFormatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));
 
-                options.OutputFormatters.Insert(0, prettyJsonFormatter);
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
-            .AddNewtonsoftJson(options => {
-                options.SerializerSettings.ContractResolver = new DefaultContractResolver {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                };
-                options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                options.SerializerSettings.MetadataPropertyHandling =
-                    MetadataPropertyHandling.Ignore;
-            });
+            options.OutputFormatters.Insert(0, prettyJsonFormatter);
+        }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddNewtonsoftJson(options => {
+            options.SerializerSettings.ContractResolver = new DefaultContractResolver {
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            };
+            options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+            options.SerializerSettings.MetadataPropertyHandling = MetadataPropertyHandling.Ignore;
+        });
     }
 
     // This method gets called by the runtime.

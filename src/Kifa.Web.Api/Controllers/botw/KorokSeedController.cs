@@ -1,7 +1,7 @@
 using Kifa.Games.BreathOfTheWild;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Kifa.Web.Api.Controllers.botw; 
+namespace Kifa.Web.Api.Controllers.botw;
 
 [Route("api/" + KorokSeed.ModelId)]
 public class KorokSeedController : KifaDataController<KorokSeed, KifaServiceJsonClient<KorokSeed>> {

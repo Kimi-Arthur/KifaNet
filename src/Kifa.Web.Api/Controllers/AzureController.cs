@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using Kifa.Azure;
 using Kifa.Service;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Kifa.Web.Api.Controllers; 
+namespace Kifa.Web.Api.Controllers;
 
 [Route("api/azure")]
 public class AzureController : ControllerBase {

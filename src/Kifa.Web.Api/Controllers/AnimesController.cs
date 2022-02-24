@@ -1,8 +1,8 @@
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using Kifa.Infos;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Kifa.Web.Api.Controllers; 
+namespace Kifa.Web.Api.Controllers;
 
 [Route("api/" + Anime.ModelId)]
 public class AnimesController : KifaDataController<Anime, AnimeJsonServiceClient> {

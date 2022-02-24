@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using NLog;
 
-namespace Kifa.Web.Api.Controllers; 
+namespace Kifa.Web.Api.Controllers;
 
 [Route("api/" + FileInformation.ModelId)]
 public class
@@ -22,13 +22,11 @@ public class
     }
 
     [HttpGet("$list_folder")]
-    public KifaApiActionResult<List<string>>
-        ListFolderGet([FromQuery] ListFolderRequest request) =>
+    public KifaApiActionResult<List<string>> ListFolderGet([FromQuery] ListFolderRequest request) =>
         Client.ListFolder(request.Folder, request.Recursive);
 
     [HttpPost("$list_folder")]
-    public KifaApiActionResult<List<string>>
-        ListFolderPost([FromBody] ListFolderRequest request) =>
+    public KifaApiActionResult<List<string>> ListFolderPost([FromBody] ListFolderRequest request) =>
         Client.ListFolder(request.Folder, request.Recursive);
 
     public class AddLocationRequest {
@@ -89,8 +87,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         var items = directory.GetFiles("*.json",
             recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         return items.Select(i =>
-                i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
-            .ToList();
+            i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5)).ToList();
     }
 
     public KifaActionResult AddLocation(string id, string location, bool verified = false) {

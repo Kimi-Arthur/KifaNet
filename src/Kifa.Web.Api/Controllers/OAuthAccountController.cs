@@ -4,7 +4,7 @@ using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
-namespace Kifa.Web.Api.Controllers; 
+namespace Kifa.Web.Api.Controllers;
 
 public abstract class
     OAuthAccountController<TAccount> : KifaDataController<TAccount, KifaServiceJsonClient<TAccount>>
@@ -33,8 +33,10 @@ public abstract class
             Scope = (string) response["scope"]
         };
 
-        return account.FillUserInfo().And(() => ServiceClient.Set(account))
-            .And(Redirect(this.ForAction(nameof(Get), new RouteValueDictionary {{"id", state}})));
+        return account.FillUserInfo().And(() => ServiceClient.Set(account)).And(Redirect(
+            this.ForAction(nameof(Get), new RouteValueDictionary {
+                { "id", state }
+            })));
     }
 
     public override KifaApiActionResult Refresh(RefreshRequest request) {
