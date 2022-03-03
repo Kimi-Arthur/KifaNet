@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
-using Kifa.Cloud.Google;
 using Kifa.Cloud.OAuth;
 using Kifa.Service;
 
@@ -10,7 +9,7 @@ namespace Kifa.Cloud.Google;
 public class GoogleAccount : OAuthAccount {
     public const string ModelId = "accounts/google";
 
-    static KifaServiceClient<GoogleAccount> client;
+    static KifaServiceClient<GoogleAccount>? client;
 
     public static KifaServiceClient<GoogleAccount> Client
         => client ??= new KifaServiceRestClient<GoogleAccount>();
@@ -58,8 +57,8 @@ public class GoogleAccount : OAuthAccount {
             UserId = (string) info["id"];
         });
 
-    public override KifaActionResult RefreshAccount() {
-        return KifaActionResult.FromAction(() => {
+    public override KifaActionResult RefreshAccount()
+        => KifaActionResult.FromAction(() => {
             var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
                 { "client_id", GoogleCloudConfig.ClientId },
                 { "client_secret", GoogleCloudConfig.ClientSecret },
@@ -69,5 +68,4 @@ public class GoogleAccount : OAuthAccount {
             var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
             AccessToken = (string) response["access_token"];
         });
-    }
 }
