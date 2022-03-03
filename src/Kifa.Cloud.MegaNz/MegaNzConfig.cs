@@ -4,6 +4,7 @@ using Kifa.Service;
 namespace Kifa.Cloud.MegaNz;
 
 public class MegaNzConfig : DataModel<MegaNzConfig> {
+    // TODO(#1): Implement service or remove.
     public const string ModelId = "configs/mega_nz";
 
     static KifaServiceClient<MegaNzConfig> client;

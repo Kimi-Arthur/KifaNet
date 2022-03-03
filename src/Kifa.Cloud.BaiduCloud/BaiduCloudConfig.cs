@@ -5,6 +5,7 @@ using Kifa.Service;
 namespace Kifa.Cloud.BaiduCloud;
 
 public class BaiduCloudConfig : DataModel<BaiduCloudConfig> {
+    // TODO(#1): Implement service or remove.
     public const string ModelId = "configs/baidu_cloud";
 
     static KifaServiceClient<BaiduCloudConfig> client;

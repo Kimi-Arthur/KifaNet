@@ -7,6 +7,7 @@ using Kifa.Service;
 namespace Kifa.Tools.JobUtil;
 
 class Job : DataModel {
+    // TODO(#1): Implement service or remove.
     public const string ModelId = "jobs";
 
     static JobServiceClient client;

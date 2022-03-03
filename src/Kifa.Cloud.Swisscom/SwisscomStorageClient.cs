@@ -171,6 +171,7 @@ public class SwisscomStorageClient : StorageClient {
         return (int) memoryStream.Position;
     }
 
+    // TODO(#2): Should implement in server side.
     public static string FindAccounts(string path, long length) {
         var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
         var selectedAccounts = new List<string>();
