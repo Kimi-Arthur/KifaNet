@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.6.7"/>
+    <PackageReference Include="NLog" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
+    <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 </Project>
