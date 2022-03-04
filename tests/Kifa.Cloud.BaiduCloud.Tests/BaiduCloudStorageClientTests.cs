@@ -1,62 +1,66 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Kifa.Cloud.BaiduCloud;
+using FluentAssertions;
+using Kifa.Configs;
 using Kifa.IO;
-using Kifa.Service;
+using Xunit;
 
 namespace Kifa.Cloud.BaiduCloud.Tests;
 
-[TestClass]
-public class BaiduCloudStorageClientTests {
+public class BaiduCloudStorageClientTests : IDisposable {
     const string FileSha256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
     const string BigFileSha256 = "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
-    [TestMethod]
+    public BaiduCloudStorageClientTests() {
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        KifaConfigs.LoadFromSystemConfigs();
+
+        DataCleanup();
+    }
+
+    [Fact]
     public void DownloadTest() {
         var client = GetStorageClient();
 
         using var s = client.OpenRead("/Test/2010-11-25.bin");
-        Assert.AreEqual(FileSha256,
-            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+        FileInformation.GetInformation(s, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
     }
 
-    [TestMethod]
+    [Fact]
     public void CopyTest() {
         var client = GetStorageClient();
 
         client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
         using (var s = client.OpenRead("/Test/2010-11-25.bin_bak")) {
-            Assert.AreEqual(FileSha256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
         }
 
         client.Delete("/Test/2010-11-25.bin_bak");
     }
 
-    [TestMethod]
+    [Fact]
     public void MoveTest() {
         var client = GetStorageClient();
 
         client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_1");
-        Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_1"));
-        Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_2"));
+        client.Exists("/Test/2010-11-25.bin_1").Should().BeTrue();
+        client.Exists("/Test/2010-11-25.bin_2").Should().BeFalse();
 
         client.Move("/Test/2010-11-25.bin_1", "/Test/2010-11-25.bin_2");
-        Assert.IsFalse(client.Exists("/Test/2010-11-25.bin_1"));
-        Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_2"));
+        client.Exists("/Test/2010-11-25.bin_1").Should().BeFalse();
+        client.Exists("/Test/2010-11-25.bin_2").Should().BeTrue();
 
         using (var s = client.OpenRead("/Test/2010-11-25.bin_2")) {
-            Assert.AreEqual(FileSha256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
         }
 
         client.Delete("/Test/2010-11-25.bin_2");
     }
 
-    [TestMethod]
+    [Fact]
     public void UploadRapidAndRemoveTest() {
         var client = GetStorageClient();
 
@@ -70,14 +74,13 @@ public class BaiduCloudStorageClientTests {
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
         using (var s = client.OpenRead("/Test/rapid.bin")) {
-            Assert.AreEqual(FileSha256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
         }
 
         client.Delete("/Test/rapid.bin");
     }
 
-    [TestMethod]
+    [Fact]
     public void UploadByBlockTest() {
         var client = GetStorageClient();
         var data = new byte[34 << 20];
@@ -93,14 +96,14 @@ public class BaiduCloudStorageClientTests {
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
         using (var s = client.OpenRead("/Test/block.bin")) {
-            Assert.AreEqual(BigFileSha256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256.Should()
+                .Be(BigFileSha256);
         }
 
         client.Delete("/Test/block.bin");
     }
 
-    [TestMethod]
+    [Fact]
     public void UploadDirectTest() {
         var client = GetStorageClient();
 
@@ -109,27 +112,20 @@ public class BaiduCloudStorageClientTests {
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
         using (var s = client.OpenRead("/Test/direct.bin")) {
-            Assert.AreEqual(FileSha256,
-                FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
         }
 
         client.Delete("/Test/direct.bin");
     }
 
-    [TestMethod]
+    [Fact]
     public void ExistsTest() {
         var client = GetStorageClient();
 
-        Assert.IsTrue(client.Exists("/Test/2010-11-25.bin"));
-        Assert.IsFalse(client.Exists("/Test/2015-11-25.bin"));
+        client.Exists("/Test/2010-11-25.bin").Should().BeTrue();
+        client.Exists("/Test/2015-11-25.bin").Should().BeFalse();
     }
 
-    [ClassInitialize]
-    public static void ClassInitialize(TestContext ctx) {
-        DataCleanup();
-    }
-
-    [ClassCleanup]
     public static void ClassClenaup() => DataCleanup();
 
     static void DataCleanup() {
@@ -156,4 +152,8 @@ public class BaiduCloudStorageClientTests {
         => new() {
             AccountId = "PimixT"
         };
+
+    public void Dispose() {
+        DataCleanup();
+    }
 }
