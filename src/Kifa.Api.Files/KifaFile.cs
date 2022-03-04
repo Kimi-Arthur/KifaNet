@@ -406,7 +406,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     }
 
     public void CacheFileToLocal() {
-        if (!LocalFile.Registered) {
+        if (!LocalFile.Registered || !LocalFile.Exists()) {
             logger.Info($"Caching {this} to {LocalFile}...");
             LocalFile.Write(OpenRead());
             LocalFile.Add();

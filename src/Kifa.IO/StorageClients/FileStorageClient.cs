@@ -176,19 +176,35 @@ public class FileStorageClient : StorageClient {
     }
 
     public override void Write(string path, Stream stream) {
+        if (Exists(path)) {
+            logger.Debug($"Target file {path} already exists. Skipped.");
+            return;
+        }
+
+        var actualPath = GetPath(path);
+
+        var downloadFile = $"{path}.tmp";
+
+        logger.Debug($"Started copying to {downloadFile}.");
+
         var blockSize = DefaultBlockSize;
-        path = GetPath(path);
-        EnsureParent(path);
+        var actualDownloadFile = GetPath(downloadFile);
+        EnsureParent(actualDownloadFile);
 
         // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
-        using var fs = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite,
-            FileShare.None);
+        using var fs = new FileStream(actualDownloadFile, FileMode.OpenOrCreate,
+            FileAccess.ReadWrite, FileShare.None);
         fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
         if (fs.Position != 0) {
             stream.Seek(fs.Position, SeekOrigin.Begin);
         }
 
         stream.CopyTo(fs, blockSize);
+
+        logger.Debug($"Finished copying to {downloadFile}.");
+
+        File.Move(actualDownloadFile, actualPath);
+        logger.Debug($"Moved to final destination {path}.");
     }
 
     public override string Type => "local";
