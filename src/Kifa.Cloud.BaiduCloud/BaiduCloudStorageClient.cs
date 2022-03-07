@@ -8,11 +8,11 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Kifa.IO;
+using Kifa.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
-using Kifa.IO;
-using Kifa.Service;
 
 namespace Kifa.Cloud.BaiduCloud;
 
@@ -328,12 +328,14 @@ public class BaiduCloudStorageClient : StorageClient {
             .ToDictionary(i => i.Key, i => i.Value));
 
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
-        var infoRequest = GetRequest(APIList.GetFileInfo, new Dictionary<string, string> {
-            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-        });
+        var needWalk = path.StartsWith("/$/");
 
-        bool needWalk;
-        using (var response = client.SendAsync(infoRequest).Result) {
+        if (!needWalk && recursive) {
+            var infoRequest = GetRequest(APIList.GetFileInfo, new Dictionary<string, string> {
+                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+            });
+
+            using var response = client.SendAsync(infoRequest).Result;
             var result = response.GetJToken();
             if (result["list"] == null) {
                 yield break;
@@ -349,7 +351,7 @@ public class BaiduCloudStorageClient : StorageClient {
 
         List<JToken> fileList;
 
-        if (recursive && needWalk) {
+        if (needWalk) {
             var request = GetRequest(APIList.DiffFileList, new Dictionary<string, string> {
                 ["cursor"] = "null"
             });
@@ -365,9 +367,8 @@ public class BaiduCloudStorageClient : StorageClient {
                 request = GetRequest(APIList.DiffFileList, new Dictionary<string, string> {
                     ["cursor"] = (string) result["cursor"]
                 });
-                using (var response = client.SendAsync(request).Result) {
-                    result = response.GetJToken();
-                }
+                using var response = client.SendAsync(request).Result;
+                result = response.GetJToken();
 
                 ProcessDiffResponse(result, entries);
             }
