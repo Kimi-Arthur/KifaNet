@@ -158,7 +158,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     // Action [HttpAction("$refresh")]
     // TODO: Should use the attribute above.
-    public virtual KifaApiActionResult Refresh(RefreshRequest request) {
+    public KifaApiActionResult Refresh(RefreshRequest request) {
         if (request.Id == "$") {
             var result = new KifaBatchActionResult();
             foreach (var id in Client.List().Keys) {
