@@ -182,8 +182,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public bool UseCache { get; set; }
 
     public bool IsCloud
-        => (Client is BaiduCloudStorageClient || Client is GoogleDriveStorageClient ||
-            Client is MegaNzStorageClient) && FileFormat is KifaFileV1Format;
+        => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
+           FileFormat is KifaFileV1Format or KifaFileV2Format;
 
     static string GetUri(string id) {
         string candidate = null;
