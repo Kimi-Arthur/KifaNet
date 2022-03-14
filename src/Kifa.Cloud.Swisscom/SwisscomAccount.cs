@@ -7,6 +7,7 @@ using Kifa.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 
@@ -79,6 +80,13 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
             driver.FindElementById("password").SendKeys(Password);
             driver.FindElementById("submitButton").Click();
             Thread.Sleep(PageLoadWait);
+            var tcBoxes = driver.FindElementsById("tc-checkbox");
+            if (tcBoxes.Count > 0) {
+                tcBoxes[0].FindElement(By.TagName("span")).Click();
+                driver.FindElementByTagName("sdx-button").Click();
+                Thread.Sleep(PageLoadWait);
+            }
+
             return JToken.Parse(
                 HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token")
                     .Value)).Value<string>("access_token");
