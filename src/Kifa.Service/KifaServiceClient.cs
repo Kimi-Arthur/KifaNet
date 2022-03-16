@@ -9,8 +9,8 @@ public interface KifaServiceClient<TDataModel> where TDataModel : DataModel {
     string ModelId { get; }
 
     SortedDictionary<string, TDataModel> List();
-    TDataModel? Get(string id);
-    List<TDataModel> Get(List<string> ids);
+    TDataModel? Get(string id, bool? refresh = null);
+    List<TDataModel> Get(List<string> ids, bool? refresh = null);
     KifaActionResult Set(TDataModel data);
     KifaActionResult Set(List<TDataModel> data);
     KifaActionResult Update(TDataModel data);
@@ -36,9 +36,10 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     protected List<PropertyInfo> Properties { get; }
 
     public abstract SortedDictionary<string, TDataModel> List();
-    public abstract TDataModel? Get(string id);
+    public abstract TDataModel? Get(string id, bool? refresh = null);
 
-    public virtual List<TDataModel> Get(List<string> ids) => ids.Select(Get).ExceptNull().ToList();
+    public virtual List<TDataModel> Get(List<string> ids, bool? refresh = null)
+        => ids.Select(id => Get(id, refresh)).ExceptNull().ToList();
 
     public abstract KifaActionResult Set(TDataModel data);
 

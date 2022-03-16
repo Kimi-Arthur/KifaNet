@@ -48,7 +48,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         }));
     }
 
-    public override TDataModel? Get(string id) {
+    public override TDataModel? Get(string id, bool? refresh = null) {
         logger.Trace($"Get {ModelId}/{id}");
         var data = Read(id);
         if (data == null) {
@@ -61,7 +61,14 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             data.Id = id;
         }
 
+        if (refresh == true || refresh != false && ShouldRefresh(data)) {
+            data.Fill();
+            Set(data);
+            logger.Trace($"Refreshed {data}");
+        }
+
         logger.Trace($"Got {data}");
+
         return data;
     }
 
@@ -249,8 +256,11 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         return Set(value);
     }
 
+    public virtual bool ShouldRefresh(TDataModel data) => false;
+
     TDataModel? Read(string id) {
         var data = ReadRaw(id);
+        logger.Trace($"Read: {data}");
         return data == null
             ? null
             : JsonConvert.DeserializeObject<TDataModel>(data, Defaults.JsonSerializerSettings);

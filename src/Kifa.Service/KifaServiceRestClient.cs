@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -105,19 +106,27 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                    new SortedDictionary<string, TDataModel>();
         }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
-    public override TDataModel? Get(string id)
+    public override TDataModel? Get(string id, bool? refresh = null)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}");
+                $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}") {
+                Headers = {
+                    CacheControl = GetCacheHeaderValue(refresh)
+                },
+            };
 
             return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
 
-    public override List<TDataModel> Get(List<string> ids)
+    public override List<TDataModel> Get(List<string> ids, bool? refresh = null)
         => ids.Any()
             ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
                         $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
+                        Headers = {
+                            CacheControl = GetCacheHeaderValue(refresh)
+                        },
+                        // Not supported by HTTP spec.
                         Content = new StringContent(
                             JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
                             Encoding.UTF8, "application/json")
@@ -211,4 +220,8 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         KifaServiceRestClient.logger.Warn(ex, $"{message} ({index})");
         Thread.Sleep(TimeSpan.FromSeconds(5));
     }
+
+    static CacheControlHeaderValue GetCacheHeaderValue(bool? refresh)
+        => CacheControlHeaderValue.Parse(refresh == true ? "no-cache" :
+            refresh == false ? "only-if-cached" : "");
 }
