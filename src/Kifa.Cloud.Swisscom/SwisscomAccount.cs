@@ -33,9 +33,11 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
     public long UsedQuota { get; set; }
 
     [JsonIgnore]
-    public long LeftQuota => TotalQuota - UsedQuota;
+    public long LeftQuota => TotalQuota - Math.Max(ExpectedQuota, UsedQuota);
 
-    public long ReservedQuota { get; set; }
+    // This value will be filled when reserved.
+    // When it is the same as UsedQuota, it can be safely discarded or ignored.
+    public long ExpectedQuota { get; set; }
 
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -116,10 +118,23 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
 
 public interface SwisscomAccountServiceClient : KifaServiceClient<SwisscomAccount> {
     List<SwisscomAccount> GetTopAccounts();
+    KifaActionResult ReserveQuota(string id, long length);
+    KifaActionResult ClearAllReserves(string id);
 }
 
 public class SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAccount>,
     SwisscomAccountServiceClient {
     public List<SwisscomAccount> GetTopAccounts()
         => Call<List<SwisscomAccount>>("get_top_accounts");
+
+    public KifaActionResult ReserveQuota(string id, long length)
+        => Call("reserve_quota", new Dictionary<string, object> {
+            { "id", id },
+            { "length", length }
+        });
+
+    public KifaActionResult ClearAllReserves(string id)
+        => Call("clear_all_reserves", new Dictionary<string, object> {
+            { "id", id }
+        });
 }

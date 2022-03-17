@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
 using Kifa.IO;
 using Kifa.Service;
 using NLog;
@@ -22,7 +21,7 @@ public class SwisscomStorageClient : StorageClient {
 
     public static List<StorageMapping> StorageMappings { get; set; }
 
-    public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId);
+    public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId, true);
 
     public override string Type => "swiss";
 
@@ -173,25 +172,32 @@ public class SwisscomStorageClient : StorageClient {
 
     // TODO(#2): Should implement in server side.
     public static string FindAccounts(string path, long length) {
-        var accounts = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
+        var candidateAccountIds = StorageMappings
+            .First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
         var selectedAccounts = new List<string>();
         for (var i = 0L; i < length; i += ShardSize) {
-            selectedAccounts.Add(FindAccount(accounts, Math.Min(ShardSize, length - i)));
+            selectedAccounts.Add(FindAccount(candidateAccountIds, Math.Min(ShardSize, length - i)));
         }
 
         return string.Join("+", selectedAccounts);
     }
 
-    public static string FindAccount(List<string> accounts, long length) {
-        var accountIndex = accounts.FindIndex(s
-            => SwisscomAccount.Client.Get(s).LeftQuota >= length + GraceSize);
-        if (accountIndex < 0) {
+    public static string FindAccount(List<string> accountIds, long length) {
+        var account = SwisscomAccount.Client.Get(accountIds, false).OrderBy(a => a.LeftQuota)
+            .FirstOrDefault(s => s.LeftQuota >= length + GraceSize);
+        if (account == null) {
             throw new InsufficientStorageException();
         }
 
-        accounts.AddRange(accounts.Take(accountIndex + 1));
-        accounts.RemoveRange(0, accountIndex + 1);
-        return accounts.Last();
+        // We will assume the quota is up to date here.
+        account = SwisscomAccount.Client.Get(account.Id, true);
+        if (account.LeftQuota < length + GraceSize) {
+            logger.Fatal("Unexpectedly, the account doesn't have enough quota.");
+            throw new InsufficientStorageException();
+        }
+
+        SwisscomAccount.Client.ReserveQuota(account.Id, length);
+        return account.Id;
     }
 
     static string GetFileId(string path) => $"/Drive{path}".ToBase64();

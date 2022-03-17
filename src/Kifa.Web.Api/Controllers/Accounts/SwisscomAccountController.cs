@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Cloud.Swisscom;
+using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Accounts;
@@ -27,13 +29,23 @@ public class SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAc
                 continue;
             }
 
-            account.Fill();
-            Set(account);
             if (account.LeftQuota >= limit) {
                 allGoodAccounts.Add(account);
             }
         }
 
         return allGoodAccounts.OrderBy(a => -a.LeftQuota).ToList();
+    }
+
+    public KifaActionResult ReserveQuota(string id, long length) {
+        var data = Get(id, true);
+        data.ExpectedQuota = Math.Max(data.ExpectedQuota, data.UsedQuota) + length;
+        return Set(data);
+    }
+
+    public KifaActionResult ClearAllReserves(string id) {
+        var data = Get(id, true);
+        data.ExpectedQuota = 0;
+        return Set(data);
     }
 }
