@@ -11,18 +11,12 @@ namespace Kifa.Web.Api.Controllers;
 public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     where TDataModel : DataModel, new()
     where TServiceClient : KifaServiceClient<TDataModel>, new() {
-    static readonly TimeSpan MinRefreshInterval = TimeSpan.FromHours(1);
-
-    static readonly TimeSpan[] RefreshIntervals = {
-        TimeSpan.FromDays(1), TimeSpan.FromDays(10), TimeSpan.FromDays(40), TimeSpan.FromDays(400)
-    };
 
     protected readonly TServiceClient Client = new();
 
-    // Only need to override this if the DataModel can be fill()ed but should not be.
-    protected virtual bool ShouldAutoRefresh => true;
-
-    protected virtual bool AlwaysAutoRefresh => false;
+    protected bool? RefreshRequested
+        => Request.Headers.CacheControl.Contains("no-cache") ? true :
+            Request.Headers.CacheControl.Contains("only-if-cached") ? false : null;
 
     // GET api/values
     [HttpGet]
@@ -30,64 +24,19 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     // GET api/values/$
     [HttpGet("$")]
-    public virtual ActionResult<List<TDataModel>> Get([FromBody] List<string> ids,
-        [FromQuery] bool refresh = false) {
-        return ids.Select(id => GetValue(id, refresh)).ToList();
+    public virtual ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids) {
+        return ids.Select(id => Client.Get(id, RefreshRequested)).ToList();
     }
 
     // GET api/values/5
     [HttpGet("{id}")]
-    public virtual ActionResult<TDataModel> Get(string id, [FromQuery] bool refresh = false) {
+    public virtual ActionResult<TDataModel?> Get(string id) {
         id = Uri.UnescapeDataString(id);
         if (id.StartsWith("$")) {
             return new NotFoundResult();
         }
 
-        return GetValue(id, refresh);
-    }
-
-    TDataModel? GetValue(string id, bool refresh) {
-        var value = Client.Get(id);
-        if (value?.Id == null || refresh || NeedRefresh(value)) {
-            value ??= new TDataModel();
-            value.Id ??= id;
-            var updated = value.Fill();
-            if (updated == null) {
-                return value;
-            }
-
-            if (ShouldAutoRefresh) {
-                value.Metadata ??= new DataMetadata();
-                value.Metadata.Freshness ??= new FreshnessMetadata();
-                value.Metadata.Freshness.LastRefreshed = DateTimeOffset.UtcNow;
-                value.Metadata.Freshness.LastUpdated ??= value.Metadata.Freshness.LastRefreshed;
-            }
-
-            Client.Set(value);
-        }
-
-        return value;
-    }
-
-    bool NeedRefresh(TDataModel value) {
-        if (AlwaysAutoRefresh) {
-            return true;
-        }
-
-        if (!ShouldAutoRefresh) {
-            return false;
-        }
-
-        if (value.Metadata?.Freshness?.LastRefreshed == null) {
-            return true;
-        }
-
-        var stableDuration = value.Metadata.Freshness.LastRefreshed -
-                             value.Metadata.Freshness.LastUpdated;
-        var newDuration = DateTimeOffset.UtcNow - value.Metadata.Freshness.LastRefreshed;
-
-        return RefreshIntervals.Reverse().FirstOrDefault(interval => interval < stableDuration)
-            .Or(MinRefreshInterval) < newDuration;
+        return Client.Get(id, RefreshRequested);
     }
 
     // PATCH api/values/5

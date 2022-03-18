@@ -5,5 +5,4 @@ namespace Kifa.Web.Api.Controllers.Accounts;
 
 [Route("api/" + GoogleAccount.ModelId)]
 public class GoogleAccountController : OAuthAccountController<GoogleAccount> {
-    protected override bool ShouldAutoRefresh => false;
 }

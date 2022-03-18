@@ -8,8 +8,6 @@ namespace Kifa.Web.Api.Controllers.Music;
 
 [Route("api/" + GuitarChord.ModelId)]
 public class GuitarChordController : KifaDataController<GuitarChord, GuitarChordJsonServiceClient> {
-    protected override bool ShouldAutoRefresh => false;
-
     [HttpGet("$get_picture")]
     public FileStreamResult GetPicture(string id)
         => new(new MemoryStream(new UTF8Encoding(false).GetBytes(Client.GetPicture(id).GetXML())),

@@ -10,8 +10,6 @@ namespace Kifa.Web.Api.Controllers.Accounts;
 [Route("api/" + SwisscomAccount.ModelId)]
 public class SwisscomAccountController : KifaDataController<SwisscomAccount,
     SwisscomAccountJsonServiceClient> {
-    protected override bool AlwaysAutoRefresh => true;
-
     [HttpGet("$get_top_accounts")]
     [HttpPost("$get_top_accounts")]
     public KifaApiActionResult<List<SwisscomAccount>> GetTopAccounts() => Client.GetTopAccounts();

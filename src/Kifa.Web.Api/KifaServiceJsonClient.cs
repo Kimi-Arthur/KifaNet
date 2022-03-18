@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -61,10 +62,21 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             data.Id = id;
         }
 
-        if (refresh == true || refresh != false && ShouldRefresh(data)) {
-            data.Fill();
+        if (refresh == true || refresh != false && ShouldAutoRefresh(data)) {
+            logger.Trace($"Refreshing {ModelId}/{data.Id}.");
+            var result = data.Fill();
+            if (result != null) {
+                logger.Trace($"Refreshed {ModelId}/{data.Id}.");
+                data.Metadata ??= new DataMetadata();
+                data.Metadata.Freshness ??= new FreshnessMetadata();
+                data.Metadata.Freshness.LastRefreshed = DateTimeOffset.UtcNow;
+                if (result.Value) {
+                    logger.Trace($"Updated {ModelId}/{data.Id}.");
+                    data.Metadata.Freshness.LastUpdated = data.Metadata.Freshness.LastRefreshed;
+                }
+            }
+
             Set(data);
-            logger.Trace($"Refreshed {data}");
         }
 
         logger.Trace($"Got {data}");
@@ -256,7 +268,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         return Set(value);
     }
 
-    public virtual bool ShouldRefresh(TDataModel data) => false;
+    public virtual bool ShouldAutoRefresh(TDataModel data) => false;
 
     TDataModel? Read(string id) {
         var data = ReadRaw(id);

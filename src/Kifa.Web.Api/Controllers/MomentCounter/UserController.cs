@@ -9,8 +9,6 @@ namespace Kifa.Web.Api.Controllers.MomentCounter;
 public class UserController : KifaDataController<User, UserJsonServiceClient> {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    protected override bool ShouldAutoRefresh => false;
-
     [HttpPost("$add_counter")]
     public KifaApiActionResult<string> AddCounter([FromBody] AddCounterRequest request) {
         logger.Trace($"Request: {request.ToPrettyJson()}");
