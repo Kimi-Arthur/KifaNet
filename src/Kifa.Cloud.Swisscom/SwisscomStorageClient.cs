@@ -196,7 +196,12 @@ public class SwisscomStorageClient : StorageClient {
             throw new InsufficientStorageException();
         }
 
-        SwisscomAccount.Client.ReserveQuota(account.Id, length);
+        var result = SwisscomAccount.Client.ReserveQuota(account.Id, length);
+        if (result.Status != KifaActionStatus.OK) {
+            logger.Fatal($"Failed to reserve quota {length}B in {account.Id}.");
+            throw new InsufficientStorageException();
+        }
+
         return account.Id;
     }
 

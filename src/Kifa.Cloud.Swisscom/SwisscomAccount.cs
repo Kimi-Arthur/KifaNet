@@ -119,7 +119,7 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
 public interface SwisscomAccountServiceClient : KifaServiceClient<SwisscomAccount> {
     List<SwisscomAccount> GetTopAccounts();
     KifaActionResult ReserveQuota(string id, long length);
-    KifaActionResult ClearAllReserves(string id);
+    KifaActionResult ClearReserve(string id);
 }
 
 public class SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAccount>,
@@ -133,7 +133,7 @@ public class SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAc
             { "length", length }
         });
 
-    public KifaActionResult ClearAllReserves(string id)
+    public KifaActionResult ClearReserve(string id)
         => Call("clear_all_reserves", new Dictionary<string, object> {
             { "id", id }
         });

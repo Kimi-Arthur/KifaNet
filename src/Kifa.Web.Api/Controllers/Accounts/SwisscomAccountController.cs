@@ -15,6 +15,15 @@ public class SwisscomAccountController : KifaDataController<SwisscomAccount,
     [HttpGet("$get_top_accounts")]
     [HttpPost("$get_top_accounts")]
     public KifaApiActionResult<List<SwisscomAccount>> GetTopAccounts() => Client.GetTopAccounts();
+
+    [HttpPost("$reserve_quota")]
+    public KifaApiActionResult ReserveQuota([FromBody] ReserveQuotaRequest request)
+        => Client.ReserveQuota(request.Id, request.Length);
+}
+
+public class ReserveQuotaRequest {
+    public string Id { get; set; }
+    public long Length { get; set; }
 }
 
 public class SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAccount>,
@@ -43,7 +52,7 @@ public class SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAc
         return Set(data);
     }
 
-    public KifaActionResult ClearAllReserves(string id) {
+    public KifaActionResult ClearReserve(string id) {
         var data = Get(id, true);
         data.ExpectedQuota = 0;
         return Set(data);
