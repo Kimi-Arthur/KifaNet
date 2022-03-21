@@ -75,7 +75,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         return knownClients[spec];
     }
 
-    FileInformation fileInfo;
+    FileInformation? fileInfo;
 
     public bool SimpleMode { get; set; }
 
@@ -176,7 +176,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     KifaFileFormat FileFormat { get; }
 
-    public FileInformation FileInfo
+    public FileInformation? FileInfo
         => fileInfo ??= SimpleMode ? new FileInformation() : FileInformation.Client.Get(Id);
 
     public bool UseCache { get; set; }
@@ -261,13 +261,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public bool Exists() => Client.Exists(Path);
 
-    public bool ExistsSomewhere() => FileInfo.Locations?.Values.Any(v => v != null) == true;
+    public bool ExistsSomewhere() => FileInfo?.Locations?.Values.Any(v => v != null) == true;
 
     public long Length() => Client.Length(Path);
 
-    public bool Registered => FileInfo.Locations?.GetValueOrDefault(ToString(), null) != null;
+    public bool Registered => FileInfo?.Locations?.GetValueOrDefault(ToString(), null) != null;
 
-    public bool HasEntry => FileInfo.Locations?.ContainsKey(ToString()) == true;
+    public bool HasEntry => FileInfo?.Locations?.ContainsKey(ToString()) == true;
 
     public FileInformation QuickInfo()
         => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
@@ -422,7 +422,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     }
 
     public FileInformation CalculateInfo(FileProperties properties) {
-        var info = FileInfo.Clone();
+        var info = FileInfo.Clone() ?? new FileInformation {
+            Id = Id
+        };
         info.RemoveProperties(
             (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
@@ -463,7 +465,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         }
 
         if (shouldCheckKnown != true &&
-            (FileInfo.GetProperties() & FileProperties.All) == FileProperties.All &&
+            (FileInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
             file.Registered) {
             if (shouldCheckKnown == false) {
                 logger.Info($"Quick check skipped for {file}.");
@@ -516,15 +518,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         var sha256Info = client.Get($"/$/{info.Sha256}");
 
-        if (oldInfo.Sha256 == null && sha256Info.Sha256 == info.Sha256) {
+        if (sha256Info != null && sha256Info.Sha256 == info.Sha256) {
             client.Link(sha256Info.Id, info.Id);
         }
 
         var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
         if (compareResult == FileProperties.None) {
             info.EncryptionKey =
-                sha256Info.EncryptionKey ??
-                info.EncryptionKey; // Only happens for unencrypted file.
+                sha256Info?.EncryptionKey ??
+                info.EncryptionKey; // Respects original encryption key.
 
             client.Update(info);
             Register(true);

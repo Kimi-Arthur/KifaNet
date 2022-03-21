@@ -214,9 +214,13 @@ public class FileInformation : DataModel<FileInformation> {
         => properties.Where(x => x.Value.GetValue(this) != null).Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
-    public FileProperties CompareProperties(FileInformation other,
+    public FileProperties CompareProperties(FileInformation? other,
         FileProperties propertiesToCompare) {
         var result = FileProperties.None;
+        if (other == null) {
+            return result;
+        }
+
         foreach (var p in ValidProperties) {
             if (propertiesToCompare.HasFlag(p.Key)) {
                 if (p.Value.GetValue(other) != null) {
