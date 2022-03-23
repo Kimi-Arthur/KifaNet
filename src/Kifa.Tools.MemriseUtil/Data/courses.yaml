@@ -1,6 +1,6 @@
 # memrise/courses
 - Id: german
-  CourseName: goethe-zertifikat-wortliste
+  CourseName: german-words
   CourseId: 5941264
   DatabaseId: 7001191
   Columns:
@@ -14,6 +14,7 @@
     A1: 13403229
     A2: 13403230
     B1: 13403231
+    20min-2022: 14238177
     M: 13403232
     L41: 13592850
     L42: 13592851

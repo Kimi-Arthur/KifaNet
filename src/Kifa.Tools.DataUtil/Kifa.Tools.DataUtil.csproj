@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>datax</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>3.2.2</Version>
+    <Version>3.2.3</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
