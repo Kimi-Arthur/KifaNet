@@ -14,6 +14,8 @@ public class TestDataModel : DataModel<TestDataModel> {
     public string? Data { get; set; }
 
     public List<string>? ListData { get; set; }
+
+    public TestDataModel Self { get; set; }
 }
 
 public class BasicTests : IDisposable {
@@ -30,7 +32,11 @@ public class BasicTests : IDisposable {
         File.WriteAllText(folder + "/tests/test.json", JsonConvert.SerializeObject(
             new TestDataModel {
                 Id = "test",
-                Data = "good data"
+                Data = "good data",
+                Self = new TestDataModel {
+                    Id = "what",
+                    Data = "good what"
+                }
             }, Defaults.PrettyJsonSerializerSettings));
 
         var data = client.Get("test");
@@ -46,7 +52,11 @@ public class BasicTests : IDisposable {
     public void SetGetTest() {
         client.Set(new TestDataModel {
             Id = "test",
-            Data = "very good data"
+            Data = "very good data",
+            Self = new TestDataModel {
+                Id = "what",
+                Data = "good what"
+            }
         });
 
         var data = client.Get("test");
