@@ -32,11 +32,11 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
 
     public override bool? Fill() {
-        if (!Examples[0].StartsWith("example")) {
+        if (Examples != null && !Examples[0].StartsWith("example")) {
             return null;
         }
 
-        if (Form != "¨-e" && Form != "") {
+        if (Form != null && Form != "¨-e" && Form != "") {
             return false;
         }
 
