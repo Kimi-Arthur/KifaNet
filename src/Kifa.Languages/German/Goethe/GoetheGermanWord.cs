@@ -12,20 +12,20 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     static readonly Regex RootWordPattern =
         new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen| werden)?$");
 
-    public string Level { get; set; }
-    public string Form { get; set; }
+    public string? Level { get; set; }
+    public string? Form { get; set; }
 
     // A synonym text like: (CH) = (D, A) Hausmeister
-    public string Synonym { get; set; }
+    public string? Synonym { get; set; }
 
     // Only Word, Form are included.
-    public GoetheGermanWord Feminine { get; set; }
+    public GoetheGermanWord? Feminine { get; set; }
 
     // Only Word, Form, Feminine are included.
-    public GoetheGermanWord Abbreviation { get; set; }
+    public GoetheGermanWord? Abbreviation { get; set; }
 
-    public string Meaning { get; set; }
-    public List<string> Examples { get; set; }
+    public string? Meaning { get; set; }
+    public List<string>? Examples { get; set; }
 
     [JsonIgnore]
     [YamlIgnore]
