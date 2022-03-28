@@ -21,7 +21,7 @@ public class DwdsClient {
 
         if (audioNodes?.Count > 0) {
             word.PronunciationAudioLinks[Source.Dwds] = audioNodes
-                .Select(audioNode => $"https:{audioNode.Attributes["src"].Value}").ToHashSet();
+                .Select(audioNode => $"{audioNode.Attributes["src"].Value}").ToHashSet();
         }
 
         return word;
