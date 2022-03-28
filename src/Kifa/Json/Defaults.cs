@@ -9,6 +9,7 @@ namespace Kifa;
 
 public static class Defaults {
     public static readonly JsonSerializerSettings JsonSerializerSettings = new() {
+        EqualityComparer = ReferenceEqualityComparer.Instance,
         DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
         DateTimeZoneHandling = DateTimeZoneHandling.Utc,
         ContractResolver = new OrderedContractResolver {
@@ -25,6 +26,7 @@ public static class Defaults {
     };
 
     public static readonly JsonSerializerSettings PrettyJsonSerializerSettings = new() {
+        EqualityComparer = ReferenceEqualityComparer.Instance,
         DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
         DateTimeZoneHandling = DateTimeZoneHandling.Utc,
         Formatting = Formatting.Indented,
