@@ -48,6 +48,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
 
         var originalForm = Form;
         Form = word.KeyForm;
+        Meaning ??= word.Meaning;
 
         return originalForm != Form;
     }
