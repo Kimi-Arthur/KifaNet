@@ -130,8 +130,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         });
 
     // Cleans up data for writing.
-    // It will convert to the target object to write as the links don't need to be updated anyway. It will also
-    // remove the parts that only make sense for the links.
+    // It will convert to the target object to write as the links don't need to be updated anyway.
+    // It will also remove the parts that only make sense for the links.
     void CleanupForWriting(TDataModel data) {
         logger.Trace($"Before cleanup: {data}");
         data.Id = data.RealId;
@@ -150,6 +150,10 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             if (linking.Links == null && linking.VirtualLinks == null) {
                 data.Metadata.Linking = null;
             }
+        }
+
+        if (data.Metadata?.IsEmpty == true) {
+            data.Metadata = null;
         }
 
         logger.Trace($"After cleanup: {data}");

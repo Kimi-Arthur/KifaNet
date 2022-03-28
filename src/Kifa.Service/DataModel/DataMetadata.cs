@@ -1,11 +1,17 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
 
 public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }
     public FreshnessMetadata? Freshness { get; set; }
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public bool IsEmpty => Linking == null && Freshness == null;
 }
 
 public class LinkingMetadata {
