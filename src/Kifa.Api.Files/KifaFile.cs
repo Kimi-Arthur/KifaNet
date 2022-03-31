@@ -279,8 +279,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public void Write(Stream stream)
         => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
-    public void Write(Func<Stream> getStream)
-        => Client.Write(Path, () => FileFormat.GetEncodeStream(getStream(), FileInfo));
+    public void Write(Func<Stream> getStream) {
+        if (Exists()) {
+            logger.Debug($"Target file {this} already exists. Skipped.");
+            return;
+        }
+
+        Write(getStream());
+    }
 
     public void Write(byte[] data) => Write(new MemoryStream(data));
 

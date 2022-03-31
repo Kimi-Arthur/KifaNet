@@ -41,15 +41,6 @@ public abstract class StorageClient : IDisposable {
 
     public abstract void Write(string path, Stream stream);
 
-    public void Write(string path, Func<Stream> getStream) {
-        if (Exists(path)) {
-            logger.Debug($"Target file {path} already exists. Skipped.");
-            return;
-        }
-
-        Write(path, getStream());
-    }
-
     public abstract string Type { get; }
 
     public abstract string Id { get; }
