@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Kifa.IO;
-using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil;
@@ -38,26 +37,6 @@ public static class Helper {
             ? $"{video.Author}-{video.AuthorId}/{video.Title} P{pid} {p.Title}-{video.Id}p{pid}.c{cid}"
             : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
     }
-
-    public static void WriteIfNotFinished(this KifaFile file, Func<Stream> getStream) {
-        if (file.Exists()) {
-            logger.Debug($"Target file {file} already exists. Skipped.");
-            return;
-        }
-
-        var downloadFile = file.GetFileSuffixed(".downloading");
-
-        var stream = getStream();
-        if (stream == null || stream.Length <= 0) {
-            throw new Exception("Cannot get stream.");
-        }
-
-        logger.Debug($"Start downloading video to {downloadFile}");
-        downloadFile.Write(stream);
-        downloadFile.Move(file);
-        logger.Debug($"Successfullly downloaded video to {file}");
-    }
-
 
     public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice,
         KifaFile currentFolder, string alternativeFolder = null, bool prefixDate = false,
@@ -126,7 +105,7 @@ public static class Helper {
                 var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
                 logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
                 try {
-                    targetFile.WriteIfNotFinished(streamGetters[i]);
+                    targetFile.Write(streamGetters[i]);
                     logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
                 } catch (Exception e) {
                     logger.Warn(e, $"Failed to download {targetFile}.");
@@ -156,7 +135,7 @@ public static class Helper {
                 $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
             logger.Debug($"Writing to {targetFile}...");
             try {
-                targetFile.WriteIfNotFinished(streamGetters.First());
+                targetFile.Write(streamGetters.First());
                 logger.Debug($"Successfully written to {targetFile}.");
             } catch (Exception e) {
                 logger.Warn(e, $"Failed to download {targetFile}.");

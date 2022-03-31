@@ -183,12 +183,11 @@ public class FileStorageClient : StorageClient {
 
         var actualPath = GetPath(path);
 
-        var downloadFile = $"{path}.tmp";
+        var actualDownloadFile = $"{actualPath}.tmp";
 
-        logger.Debug($"Started copying to {downloadFile}.");
+        logger.Debug($"Started copying to {actualDownloadFile}.");
 
         var blockSize = DefaultBlockSize;
-        var actualDownloadFile = GetPath(downloadFile);
         EnsureParent(actualDownloadFile);
 
         // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
@@ -201,7 +200,7 @@ public class FileStorageClient : StorageClient {
 
         stream.CopyTo(fs, blockSize);
 
-        logger.Debug($"Finished copying to {downloadFile}.");
+        logger.Debug($"Finished copying to {actualDownloadFile}.");
 
         File.Move(actualDownloadFile, actualPath);
         logger.Debug($"Moved to final destination {path}.");

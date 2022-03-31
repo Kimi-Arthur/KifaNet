@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml.Schema;
+using NLog;
 
 namespace Kifa.IO;
 
 public abstract class StorageClient : IDisposable {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
     public virtual void Dispose() {
     }
 
@@ -38,6 +40,15 @@ public abstract class StorageClient : IDisposable {
     public abstract Stream OpenRead(string path);
 
     public abstract void Write(string path, Stream stream);
+
+    public void Write(string path, Func<Stream> getStream) {
+        if (Exists(path)) {
+            logger.Debug($"Target file {path} already exists. Skipped.");
+            return;
+        }
+
+        Write(path, getStream());
+    }
 
     public abstract string Type { get; }
 

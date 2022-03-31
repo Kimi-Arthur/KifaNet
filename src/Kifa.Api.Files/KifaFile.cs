@@ -279,6 +279,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public void Write(Stream stream)
         => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
 
+    public void Write(Func<Stream> getStream)
+        => Client.Write(Path, () => FileFormat.GetEncodeStream(getStream(), FileInfo));
+
     public void Write(byte[] data) => Write(new MemoryStream(data));
 
     public void Write(string text) => Write(new UTF8Encoding(false).GetBytes(text));
