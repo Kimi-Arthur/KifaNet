@@ -68,12 +68,12 @@ class CopyCommand : KifaCommand {
 
             foreach (var file in files) {
                 var linkFile = linkName + file.Substring(target.Length);
-                if (!FileInformation.Client.Get(file).Exists) {
+                if (FileInformation.Client.Get(file) == null) {
                     logger.Warn($"Target {file} not found.");
                     continue;
                 }
 
-                if (FileInformation.Client.Get(linkFile).Exists) {
+                if (FileInformation.Client.Get(linkFile) != null) {
                     logger.Warn($"Link name {linkFile} already exists. Ignored.");
                     continue;
                 }
