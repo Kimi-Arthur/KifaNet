@@ -79,12 +79,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public bool SimpleMode { get; set; }
 
-    public KifaFile(string uri = null, string id = null, FileInformation fileInfo = null,
+    public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool simpleMode = false, bool useCache = false) {
         SimpleMode = simpleMode;
+        uri ??= GetUri(id ?? fileInfo!.Id!);
         if (uri == null) {
-            // Infer uri from id.
-            uri = GetUri(id ?? fileInfo?.Id);
+            throw new FileNotFoundException();
         }
 
         // Example uri:
@@ -96,7 +96,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         //   C:/files/a.txt
         //   ~/a.txt
         //   ../a.txt
-        if (!uri.Contains(":") ||
+        if (!uri.Contains(':') ||
             uri.Contains(":/") && !uri.StartsWith("http://") && !uri.StartsWith("https://") ||
             uri.Contains(":\\")) {
             // Local path, convert to canonical one.
@@ -108,7 +108,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 }
             }
 
-            if (!uri.Contains(":")) {
+            if (!uri.Contains(':')) {
                 throw new Exception($"Path {uri} not in registered path.");
             }
         }
@@ -129,7 +129,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             Extension = name.Substring(lastDot + 1);
         }
 
-        Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri);
+        Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
         this.fileInfo = fileInfo;
 
         Client = GetClient(segments[0]);
@@ -185,50 +185,34 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
            FileFormat is KifaFileV1Format or KifaFileV2Format;
 
-    static string GetUri(string id) {
-        string candidate = null;
+    static string? GetUri(string id) {
+        string? candidate = null;
         var bestScore = 0L;
         var info = FileInformation.Client.Get(id);
         if (info?.Locations != null) {
-            foreach (var location in info.Locations) {
-                if (location.Value != null) {
-                    var file = new KifaFile(location.Key, fileInfo: info);
+            foreach (var (location, verifyTime) in info.Locations) {
+                if (verifyTime != null) {
+                    var file = new KifaFile(location, fileInfo: info);
                     if (file.Client is FileStorageClient && file.Exists()) {
-                        return location.Key;
+                        return location;
                     }
 
-                    var score = 0;
-                    if (file.Client is GoogleDriveStorageClient) {
-                        score = 32;
-                    }
-
-                    if (file.Client is WebStorageClient) {
-                        score = 24;
-                    }
-
-                    if (file.Client is SwisscomStorageClient) {
-                        score = 16;
-                    }
-
-                    if (file.Client is BaiduCloudStorageClient) {
-                        score = 8;
-                    }
-
-                    if (file.FileFormat is KifaFileV2Format) {
-                        score += 4;
-                    }
-
-                    if (file.FileFormat is KifaFileV1Format) {
-                        score += 2;
-                    }
-
-                    if (file.FileFormat is KifaFileV0Format) {
-                        score += 1;
-                    }
+                    var score = file.Client switch {
+                        GoogleDriveStorageClient => 32,
+                        WebStorageClient => 24,
+                        SwisscomStorageClient => 16,
+                        BaiduCloudStorageClient => 8,
+                        _ => 0
+                    } + file.FileFormat switch {
+                        KifaFileV2Format => 4,
+                        KifaFileV1Format => 2,
+                        KifaFileV0Format => 1,
+                        _ => 0
+                    };
 
                     if (score > bestScore) {
                         bestScore = score;
-                        candidate = location.Key;
+                        candidate = location;
                     }
                 }
             }
@@ -251,8 +235,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     }
 
     public KifaFile GetFile(string name) => new($"{Host}{Path}/{name}");
-
-    public KifaFile GetFileSuffixed(string suffix) => new($"{Host}{Path}{suffix}");
 
     public KifaFile GetFilePrefixed(string prefix)
         => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");

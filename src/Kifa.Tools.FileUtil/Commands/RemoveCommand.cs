@@ -119,7 +119,7 @@ class RemoveCommand : KifaCommand {
     }
 
     int RemoveFileInstance(KifaFile file) {
-        if (file.FileInfo.Locations?.ContainsKey(file.ToString()) != true) {
+        if (file.FileInfo?.Locations?.ContainsKey(file.ToString()) != true) {
             if (file.Exists()) {
                 file.Delete();
                 logger.Warn($"File {file} deleted, no entry found though.");
