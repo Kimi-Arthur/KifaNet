@@ -68,14 +68,14 @@ class RemoveCommand : KifaCommand {
                 foreach (var file in potentialFileInstances) {
                     Console.WriteLine($"{file} (link only)");
                 }
-
-                var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
-                Console.Write($"Confirm deleting the {localFiles.Count} files above{removalText}?");
-                Console.ReadLine();
-
-                return localFiles.Concat(potentialFileInstances)
-                    .Select(f => RemoveFileInstance(new KifaFile(f.ToString()))).Max();
             }
+
+            var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
+            Console.Write($"Confirm deleting the {localFiles.Count} files above{removalText}?");
+            Console.ReadLine();
+
+            return localFiles.Concat(potentialFileInstances)
+                .Select(f => RemoveFileInstance(new KifaFile(f.ToString()))).Max();
         }
 
         return RemoveFileInstance(source);
