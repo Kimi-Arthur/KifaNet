@@ -59,6 +59,10 @@ class RemoveCommand : KifaCommand {
 
             var potentialFiles =
                 FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
+            if (potentialFiles.Count == 0) {
+                potentialFiles.Add(FileInformation.Client.Get(source.Id));
+            }
+
             var potentialFileInstances = potentialFiles
                 .Select(f => f.Locations.Keys.Select(l => new KifaFile(l))
                     .FirstOrDefault(l => l.Host == source.Host))
