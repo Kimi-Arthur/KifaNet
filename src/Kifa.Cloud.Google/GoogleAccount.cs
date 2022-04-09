@@ -57,7 +57,12 @@ public class GoogleAccount : OAuthAccount {
             UserId = (string) info["id"];
         });
 
-    public override KifaActionResult RefreshAccount()
+    public override bool? Fill() {
+        RefreshAccount();
+        return true;
+    }
+    
+    public KifaActionResult RefreshAccount()
         => KifaActionResult.FromAction(() => {
             var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
                 { "client_id", GoogleCloudConfig.ClientId },

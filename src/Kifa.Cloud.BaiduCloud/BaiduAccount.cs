@@ -44,8 +44,8 @@ public class BaiduAccount : OAuthAccount {
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
 
-    public override KifaActionResult RefreshAccount()
-        => KifaActionResult.FromAction(() => {
+    public override bool? Fill() {
+        if (Metadata?.Freshness?.LastUpdated < DateTime.Now - TimeSpan.FromDays(30)) {
             var response = HttpClient.Send(Rpcs.OauthRefresh.GetRequest(
                 new Dictionary<string, string> {
                     { "client_id", ClientId },
@@ -55,7 +55,11 @@ public class BaiduAccount : OAuthAccount {
                 })).GetJToken();
             AccessToken = (string) response["access_token"];
             RefreshToken = (string) response["refresh_token"];
-        });
+            return true;
+        }
+
+        return null;
+    }
 
     public class RpcList {
         public Api OauthAuthorize { get; set; }

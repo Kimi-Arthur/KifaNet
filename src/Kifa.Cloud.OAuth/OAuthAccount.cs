@@ -15,6 +15,4 @@ public abstract class OAuthAccount : DataModel {
     public abstract string GetTokenUrl(string code, string redirectUrl);
 
     public abstract KifaActionResult FillUserInfo();
-
-    public abstract KifaActionResult RefreshAccount();
 }
