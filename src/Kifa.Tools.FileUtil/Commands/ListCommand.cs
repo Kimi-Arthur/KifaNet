@@ -1,6 +1,7 @@
 ﻿using System;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -19,7 +20,9 @@ class ListCommand : KifaFileCommand {
 
     protected override int ExecuteOneFileInformation(string file) {
         counter++;
-        Console.WriteLine(file);
+        Console.WriteLine(LongListMode
+            ? $"{file}\t{FileInformation.Client.Get(file).Size}\t{FileInformation.Client.Get(file).Sha256}"
+            : file);
         return 0;
     }
 
