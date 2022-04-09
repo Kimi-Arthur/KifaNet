@@ -21,7 +21,7 @@ public class SwisscomStorageClient : StorageClient {
 
     public static List<StorageMapping> StorageMappings { get; set; }
 
-    public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId, true);
+    public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId);
 
     public override string Type => "swiss";
 
@@ -183,14 +183,14 @@ public class SwisscomStorageClient : StorageClient {
     }
 
     public static string FindAccount(List<string> accountIds, long length) {
-        var account = SwisscomAccount.Client.Get(accountIds, false).OrderBy(a => a.LeftQuota)
+        var account = SwisscomAccount.Client.Get(accountIds).OrderBy(a => a.LeftQuota)
             .FirstOrDefault(s => s.LeftQuota >= length + GraceSize);
         if (account == null) {
             throw new InsufficientStorageException();
         }
 
         // We will assume the quota is up to date here.
-        account = SwisscomAccount.Client.Get(account.Id, true);
+        account = SwisscomAccount.Client.Get(account.Id);
         if (account.LeftQuota < length + GraceSize) {
             logger.Fatal("Unexpectedly, the account doesn't have enough quota.");
             throw new InsufficientStorageException();

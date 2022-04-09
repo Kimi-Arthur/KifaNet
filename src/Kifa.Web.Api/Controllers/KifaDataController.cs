@@ -11,12 +11,7 @@ namespace Kifa.Web.Api.Controllers;
 public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     where TDataModel : DataModel, new()
     where TServiceClient : KifaServiceClient<TDataModel>, new() {
-
     protected readonly TServiceClient Client = new();
-
-    protected bool? RefreshRequested
-        => Request.Headers.CacheControl.Contains("no-cache") ? true :
-            Request.Headers.CacheControl.Contains("only-if-cached") ? false : null;
 
     // GET api/values
     [HttpGet]
@@ -24,9 +19,8 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     // GET api/values/$
     [HttpGet("$")]
-    public virtual ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids) {
-        return ids.Select(id => Client.Get(id, RefreshRequested)).ToList();
-    }
+    public virtual ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids)
+        => ids.Select(id => Client.Get(id)).ToList();
 
     // GET api/values/5
     [HttpGet("{id}")]
@@ -36,7 +30,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
             return new NotFoundResult();
         }
 
-        return Client.Get(id, RefreshRequested);
+        return Client.Get(id);
     }
 
     // PATCH api/values/5
@@ -49,33 +43,27 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     // PATCH api/values/$
     [HttpPatch("$")]
-    public KifaApiActionResult Patch([FromBody] List<TDataModel> values) {
-        foreach (var value in values) {
-            value.Metadata = null;
-        }
-
-        return Client.Update(values);
-    }
+    public KifaApiActionResult Patch([FromBody] List<TDataModel> values)
+        => Client.Update(values.Select(v => {
+            v.Metadata = null;
+            return v;
+        }).ToList());
 
     // POST api/values/5
     [HttpPost("{id}")]
     public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
         value.Id ??= Uri.UnescapeDataString(id);
         value.Metadata = null;
-        value.Fill();
         return Client.Set(value);
     }
 
     // POST api/values/$
     [HttpPost("$")]
-    public KifaApiActionResult Post([FromBody] List<TDataModel> values) {
-        foreach (var value in values) {
-            value.Metadata = null;
-            value.Fill();
-        }
-
-        return Client.Set(values);
-    }
+    public KifaApiActionResult Post([FromBody] List<TDataModel> values)
+        => Client.Set(values.Select(v => {
+            v.Metadata = null;
+            return v;
+        }).ToList());
 
     [HttpPost("^")]
     public KifaApiActionResult Link([FromBody] List<string> ids)
@@ -90,35 +78,6 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
     // DELETE api/values/$
     [HttpDelete("$")]
     public KifaApiActionResult Delete([FromBody] List<string> ids) => Client.Delete(ids);
-
-    // POST api/values/$refresh?id={id}
-    // TODO: should be generated.
-    [HttpGet("$refresh")]
-    public KifaApiActionResult RefreshGet([FromQuery] RefreshRequest request) => Refresh(request);
-
-    // POST api/values/$refresh?id={id}
-    // TODO: should be generated.
-    [HttpPost("$refresh")]
-    public KifaApiActionResult RefreshPost([FromBody] RefreshRequest request) => Refresh(request);
-
-    public class RefreshRequest {
-        public string Id { get; set; }
-    }
-
-    // Action [HttpAction("$refresh")]
-    // TODO: Should use the attribute above.
-    public KifaApiActionResult Refresh(RefreshRequest request) {
-        if (request.Id == "$") {
-            var result = new KifaBatchActionResult();
-            foreach (var id in Client.List().Keys) {
-                result.Add(Client.Refresh(id));
-            }
-
-            return result;
-        }
-
-        return Client.Refresh(request.Id);
-    }
 }
 
 public class KifaApiActionResult : IConvertToActionResult {

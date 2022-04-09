@@ -106,26 +106,19 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                    new SortedDictionary<string, TDataModel>();
         }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
-    public override TDataModel? Get(string id, bool? refresh = null)
+    public override TDataModel? Get(string id)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}") {
-                Headers = {
-                    CacheControl = GetCacheHeaderValue(refresh)
-                },
-            };
+                $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}");
 
             return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
 
-    public override List<TDataModel> Get(List<string> ids, bool? refresh = null)
+    public override List<TDataModel> Get(List<string> ids)
         => ids.Any()
             ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
                         $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
-                        Headers = {
-                            CacheControl = GetCacheHeaderValue(refresh)
-                        },
                         // Not supported by HTTP spec.
                         Content = new StringContent(
                             JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
@@ -204,11 +197,6 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             throw new KifaActionFailedException(result ?? KifaActionResult.UnknownError);
         }, (ex, i) => HandleException(ex, i, $"Failure in CALL {ModelId}.{action}"));
     }
-
-    public override KifaActionResult Refresh(string id)
-        => KifaActionResult.FromAction(() => Call("refresh", new Dictionary<string, object> {
-            { "id", id }
-        }));
 
     static void HandleException(Exception ex, int index, string message) {
         if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException &&

@@ -1,6 +1,5 @@
 using System.Net.Http;
 using Kifa.Cloud.OAuth;
-using Kifa.Service;
 using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -43,8 +42,4 @@ public abstract class
 
 public class OAuthAccountClient<TAccount> : KifaServiceJsonClient<TAccount>
     where TAccount : OAuthAccount, new() {
-    public override KifaActionResult Refresh(string id) {
-        var account = Get(id);
-        return account.RefreshAccount().And(() => Set(account));
-    }
 }

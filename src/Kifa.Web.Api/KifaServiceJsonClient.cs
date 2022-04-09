@@ -49,7 +49,18 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         }));
     }
 
-    public override TDataModel? Get(string id, bool? refresh = null) {
+    public override TDataModel? Get(string id) {
+        var data = Retrieve(id);
+        if (data == null) {
+            return null;
+        }
+
+        data.Fill();
+        WriteTarget(data.Clone());
+        return data;
+    }
+
+    public TDataModel? Retrieve(string id) {
         logger.Trace($"Get {ModelId}/{id}");
         var data = Read(id);
         if (data == null) {
@@ -62,25 +73,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             data.Id = id;
         }
 
-        if (refresh == true || refresh != false && ShouldAutoRefresh(data)) {
-            logger.Trace($"Refreshing {ModelId}/{data.Id}.");
-            var result = data.Fill();
-            if (result != null) {
-                logger.Trace($"Refreshed {ModelId}/{data.Id}.");
-                data.Metadata ??= new DataMetadata();
-                data.Metadata.Freshness ??= new FreshnessMetadata();
-                data.Metadata.Freshness.LastRefreshed = DateTimeOffset.UtcNow;
-                if (result.Value) {
-                    logger.Trace($"Updated {ModelId}/{data.Id}.");
-                    data.Metadata.Freshness.LastUpdated = data.Metadata.Freshness.LastRefreshed;
-                }
-            }
-
-            Set(data);
-        }
-
         logger.Trace($"Got {data}");
-
         return data;
     }
 
@@ -88,7 +81,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         => KifaActionResult.FromAction(() => {
             logger.Trace($"Set {ModelId}/{data.Id}: {data}");
             data = data.Clone();
-            WriteTarget(data, Get(data.Id)?.Metadata?.Linking?.VirtualLinks);
+            data.Fill();
+            WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
         });
 
     void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks) {
@@ -118,7 +112,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => {
             logger.Trace($"Update {ModelId}/{data.Id}: {data}");
-            var original = Get(data.Id) ?? new TDataModel();
+            var original = Retrieve(data.Id) ?? new TDataModel();
             foreach (var property in Properties) {
                 if (property.GetValue(data) != null) {
                     property.SetValue(original, property.GetValue(data));
@@ -126,6 +120,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             }
 
             data = original;
+            data.Fill();
             WriteTarget(data);
         });
 
@@ -160,7 +155,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     public override KifaActionResult Delete(string id) {
-        var item = Get(id);
+        var item = Retrieve(id);
         if (item == null) {
             return new KifaActionResult {
                 Status = KifaActionStatus.BadRequest,
@@ -180,7 +175,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             if (linking.Target == null) {
                 if (linking.Links != null) {
                     // It means there are still real items.
-                    var nextItem = Get(linking.Links!.First());
+                    var nextItem = Retrieve(linking.Links!.First());
                     linking = nextItem!.Metadata!.Linking!;
 
                     var links = linking.Links!;
@@ -218,8 +213,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     public override KifaActionResult Link(string targetId, string linkId) {
-        var target = Get(targetId);
-        var link = Get(linkId);
+        var target = Retrieve(targetId);
+        var link = Retrieve(linkId);
 
         if (target == null) {
             return LogAndReturn(new KifaActionResult {
@@ -265,14 +260,6 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         Write(target);
         return KifaActionResult.Success;
     }
-
-    public override KifaActionResult Refresh(string id) {
-        var value = Get(id);
-        value.Fill();
-        return Set(value);
-    }
-
-    public virtual bool ShouldAutoRefresh(TDataModel data) => false;
 
     TDataModel? Read(string id) {
         var data = ReadRaw(id);

@@ -42,7 +42,6 @@ public interface DataChef {
     string ModelId { get; }
     KifaActionResult Import(string data);
     KifaActionResult<string> Export(string data, bool getAll, bool compact);
-    KifaActionResult Refresh(string id);
     KifaActionResult Link(string target, string link);
 }
 
@@ -83,8 +82,6 @@ public class DataChef<TDataModel, TClient> : DataChef
         return new KifaActionResult<string>(
             $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> { item })))}");
     }
-
-    public KifaActionResult Refresh(string id) => Client.Refresh(id);
 
     public KifaActionResult Link(string target, string link) => Client.Link(target, link);
 

@@ -208,7 +208,7 @@ public class BasicTests : IDisposable {
         data.Id.Should().Be("new_test");
         data.Data.Should().Be("very good data");
 
-        data.Metadata.Linking.Should().BeNull();
+        data.Metadata?.Linking.Should().BeNull();
     }
 
     [Fact]
@@ -228,7 +228,7 @@ public class BasicTests : IDisposable {
         data.Id.Should().Be("test");
         data.Data.Should().Be("very good data");
 
-        data.Metadata.Linking.Should().BeNull();
+        data.Metadata?.Linking.Should().BeNull();
     }
 
     [Fact]
