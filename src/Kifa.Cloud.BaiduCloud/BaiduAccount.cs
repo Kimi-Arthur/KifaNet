@@ -45,7 +45,7 @@ public class BaiduAccount : OAuthAccount {
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
 
     public override bool? Fill() {
-        if (Metadata?.Freshness?.LastUpdated < DateTime.Now - TimeSpan.FromDays(30)) {
+        if (Metadata.LastUpdatedNoLaterThan(TimeSpan.FromDays(30))) {
             var response = HttpClient.Send(Rpcs.OauthRefresh.GetRequest(
                 new Dictionary<string, string> {
                     { "client_id", ClientId },

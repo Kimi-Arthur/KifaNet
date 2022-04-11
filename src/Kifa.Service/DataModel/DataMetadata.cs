@@ -29,3 +29,13 @@ public class FreshnessMetadata {
     public DateTimeOffset? LastUpdated { get; set; }
     public DateTimeOffset? LastRefreshed { get; set; }
 }
+
+public static class FreshnessMetadataExtensions {
+    public static bool LastUpdatedNoLaterThan(this DataMetadata? metadata, TimeSpan freshDuration)
+        => metadata?.Freshness?.LastUpdated == null ||
+           metadata.Freshness.LastUpdated < DateTimeOffset.Now - freshDuration;
+
+    public static bool LastRefreshedNoLaterThan(this DataMetadata? metadata, TimeSpan freshDuration)
+        => metadata?.Freshness?.LastRefreshed == null ||
+           metadata.Freshness.LastRefreshed < DateTimeOffset.Now - freshDuration;
+}

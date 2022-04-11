@@ -55,9 +55,29 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             return null;
         }
 
-        data.Fill();
-        WriteTarget(data.Clone());
+        if (Fill(data)) {
+            WriteTarget(data.Clone());
+        }
+
         return data;
+    }
+
+    // false -> no write needed.
+    // true -> rewrite needed.
+    bool Fill(TDataModel data) {
+        var status = data.Fill();
+        if (status == null) {
+            return false;
+        }
+
+        data.Metadata ??= new DataMetadata();
+        data.Metadata.Freshness ??= new FreshnessMetadata();
+        data.Metadata.Freshness.LastRefreshed = DateTimeOffset.Now;
+        if (status == true) {
+            data.Metadata.Freshness.LastUpdated = data.Metadata.Freshness.LastRefreshed;
+        }
+
+        return true;
     }
 
     public TDataModel? Retrieve(string id) {
@@ -81,7 +101,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         => KifaActionResult.FromAction(() => {
             logger.Trace($"Set {ModelId}/{data.Id}: {data}");
             data = data.Clone();
-            data.Fill();
+            Fill(data);
             WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
         });
 
@@ -120,7 +140,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             }
 
             data = original;
-            data.Fill();
+            Fill(data);
             WriteTarget(data);
         });
 
