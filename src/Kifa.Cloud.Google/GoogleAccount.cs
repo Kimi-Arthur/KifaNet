@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
@@ -58,12 +59,7 @@ public class GoogleAccount : OAuthAccount {
         });
 
     public override bool? Fill() {
-        RefreshAccount();
-        return true;
-    }
-    
-    public KifaActionResult RefreshAccount()
-        => KifaActionResult.FromAction(() => {
+        if (Metadata.LastUpdatedNoLaterThan(TimeSpan.FromHours(1))) {
             var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
                 { "client_id", GoogleCloudConfig.ClientId },
                 { "client_secret", GoogleCloudConfig.ClientSecret },
@@ -72,5 +68,9 @@ public class GoogleAccount : OAuthAccount {
 
             var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
             AccessToken = (string) response["access_token"];
-        });
+            return true;
+        }
+
+        return null;
+    }
 }

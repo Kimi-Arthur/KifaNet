@@ -31,11 +31,13 @@ public class FreshnessMetadata {
 }
 
 public static class FreshnessMetadataExtensions {
+    static readonly TimeSpan GracePeriod = TimeSpan.FromMinutes(5);
+
     public static bool LastUpdatedNoLaterThan(this DataMetadata? metadata, TimeSpan freshDuration)
         => metadata?.Freshness?.LastUpdated == null ||
-           metadata.Freshness.LastUpdated < DateTimeOffset.Now - freshDuration;
+           DateTimeOffset.Now - metadata.Freshness.LastUpdated > freshDuration - GracePeriod;
 
     public static bool LastRefreshedNoLaterThan(this DataMetadata? metadata, TimeSpan freshDuration)
         => metadata?.Freshness?.LastRefreshed == null ||
-           metadata.Freshness.LastRefreshed < DateTimeOffset.Now - freshDuration;
+           DateTimeOffset.Now - metadata.Freshness.LastRefreshed > freshDuration - GracePeriod;
 }

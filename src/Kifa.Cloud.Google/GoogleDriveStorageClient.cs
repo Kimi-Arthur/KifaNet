@@ -41,7 +41,8 @@ public class GoogleDriveStorageClient : StorageClient {
         }
     }
 
-    public GoogleAccount Account => account ??= GoogleAccount.Client.Get(accountId);
+    // Always a fresh account. The server will determine whether refresh is needed.
+    public GoogleAccount Account => GoogleAccount.Client.Get(accountId);
 
     public override string Type => "google";
 
@@ -261,30 +262,9 @@ public class GoogleDriveStorageClient : StorageClient {
         return (string) token["id"];
     }
 
-    void RefreshAccount() {
-        if (DateTime.Now - lastRefreshed < RefreshAccountInterval) {
-            return;
-        }
-
-        using var response = client.SendWithRetry(() => GetRequest(APIList.OauthRefresh,
-            new Dictionary<string, string> {
-                ["refresh_token"] = Account.RefreshToken,
-                ["client_id"] = GoogleCloudConfig.ClientId,
-                ["client_secret"] = GoogleCloudConfig.ClientSecret
-            }, false));
-
-        var token = response.GetJToken();
-        Account.AccessToken = (string) token["access_token"];
-        lastRefreshed = DateTime.Now;
-    }
-
-    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null,
-        bool needAccessToken = true) {
+    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null) {
         parameters ??= new Dictionary<string, string>();
-        if (needAccessToken) {
-            RefreshAccount();
-            parameters["access_token"] = Account.AccessToken;
-        }
+        parameters["access_token"] = Account.AccessToken;
 
         return api.GetRequest(parameters);
     }
