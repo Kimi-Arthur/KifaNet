@@ -21,7 +21,9 @@ public class TestDataModelWithVirtualLinks : DataModel<TestDataModelWithVirtualL
 }
 
 public class LinkTests : IDisposable {
-    readonly string folder = Path.GetTempPath() + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+    readonly string folder =
+        $"{Path.GetTempPath()}/{typeof(LinkTests).AssemblyQualifiedName}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+
     readonly KifaServiceJsonClient<TestDataModelWithVirtualLinks> client = new();
 
     public LinkTests() {

@@ -19,7 +19,9 @@ public class TestDataModel : DataModel<TestDataModel> {
 }
 
 public class BasicTests : IDisposable {
-    readonly string folder = Path.GetTempPath() + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+    readonly string folder =
+        $"{Path.GetTempPath()}/{typeof(BasicTests).AssemblyQualifiedName}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+
     readonly KifaServiceJsonClient<TestDataModel> client = new();
 
     public BasicTests() {
