@@ -14,8 +14,8 @@ public abstract class
     static readonly KifaServiceJsonClient<TAccount> ServiceClient = new();
 
     public override ActionResult<TAccount?> Get(string id) {
-        var account = ServiceClient.Get(id);
-        return account?.Id != null ? base.Get(id) : AccountAdd(id);
+        var result = base.Get(id);
+        return result.Value != null ? result : AccountAdd(id);
     }
 
     public RedirectResult AccountAdd(string id)
