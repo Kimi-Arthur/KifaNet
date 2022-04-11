@@ -183,7 +183,8 @@ public class SwisscomStorageClient : StorageClient {
     }
 
     public static string FindAccount(List<string> accountIds, long length) {
-        var account = SwisscomAccount.Client.Get(accountIds).OrderBy(a => a.LeftQuota)
+        var account = SwisscomAccount.Client.List().Values
+            .Where(account => accountIds.Contains(account.Id)).OrderBy(a => a.LeftQuota)
             .FirstOrDefault(s => s.LeftQuota >= length + GraceSize);
         if (account == null) {
             throw new InsufficientStorageException();
