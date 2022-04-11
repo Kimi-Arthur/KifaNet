@@ -25,7 +25,7 @@ public abstract class DataModel {
     public DataMetadata? Metadata { get; set; }
 
     // null -> no need to try (too fresh, data won't update etc.)
-    // false -> we tried, but nothing's changed.
+    // false -> we tried, but nothing important is changed.
     // true -> we tried, and data got updated.
     public virtual bool? Fill() => null;
 
