@@ -15,8 +15,6 @@ public class GoogleDriveStorageClient : StorageClient {
     const int BlockSize = 32 << 20;
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    static readonly TimeSpan RefreshAccountInterval = TimeSpan.FromMinutes(50);
-
     public static string RootFolder { get; set; }
 
     public static APIList APIList { get; set; }
@@ -30,8 +28,6 @@ public class GoogleDriveStorageClient : StorageClient {
     GoogleAccount? account;
 
     string? accountId;
-
-    DateTime lastRefreshed = DateTime.MinValue;
 
     public string AccountId {
         get => accountId;
@@ -262,8 +258,7 @@ public class GoogleDriveStorageClient : StorageClient {
         return (string) token["id"];
     }
 
-    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters = null) {
-        parameters ??= new Dictionary<string, string>();
+    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters) {
         parameters["access_token"] = Account.AccessToken;
 
         return api.GetRequest(parameters);
