@@ -103,7 +103,7 @@ public class MemriseClient : IDisposable {
     }
 
     public IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
-        // allExistingRows ??= GetAllExistingRows();
+        allExistingRows ??= GetAllExistingRows();
 
         foreach (var word in words) {
             var addedWord = AddWord(word);
