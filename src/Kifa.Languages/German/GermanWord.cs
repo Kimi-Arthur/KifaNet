@@ -12,7 +12,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public WordType Type => Meanings.FirstOrDefault()?.Type ?? WordType.Unknown;
+    public WordType? Type => Meanings.FirstOrDefault()?.Type ?? WordType.Unknown;
 
     public List<Meaning> Meanings { get; set; } = new();
 
@@ -33,8 +33,7 @@ public class GermanWord : DataModel<GermanWord> {
     // Shared for any meaning.
     public VerbForms VerbForms { get; set; } = new();
 
-    [JsonIgnore]
-    public string KeyForm
+    public string? KeyForm
         => Type switch {
             WordType.Verb => GetKeyVerbForm(Id, VerbForms),
             WordType.Noun => GetSimplifiedPlural(Id, NounForms),

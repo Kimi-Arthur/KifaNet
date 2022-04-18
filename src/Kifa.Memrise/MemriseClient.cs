@@ -103,7 +103,7 @@ public class MemriseClient : IDisposable {
     }
 
     public IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
-        allExistingRows ??= GetAllExistingRows();
+        // allExistingRows ??= GetAllExistingRows();
 
         foreach (var word in words) {
             var addedWord = AddWord(word);
@@ -139,6 +139,10 @@ public class MemriseClient : IDisposable {
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,
         bool alwaysCheckAudio = false) {
+        WordClient.Update(new GermanWord {
+            Id = word.RootWord
+        });
+
         var rootWord = WordClient.Get(word.RootWord);
         logger.Info($"{word.Id} => {rootWord?.Id}");
 
