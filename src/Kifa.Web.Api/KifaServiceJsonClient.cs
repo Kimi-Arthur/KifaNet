@@ -102,6 +102,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         => KifaActionResult.FromAction(() => {
             logger.Trace($"Set {ModelId}/{data.Id}: {data}");
             data = data.Clone();
+            // This is new data, we should Fill it.
+            data.ResetRefreshDate();
             Fill(data);
             WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
         });
@@ -133,7 +135,14 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => {
             logger.Trace($"Update {ModelId}/{data.Id}: {data}");
-            var original = Retrieve(data.Id) ?? new TDataModel();
+            // If it's new data, we should try Fill it.
+            var original = Retrieve(data.Id) ?? new TDataModel {
+                Metadata = new DataMetadata {
+                    Freshness = new FreshnessMetadata {
+                        NextRefresh = Date.Zero
+                    }
+                }
+            };
             foreach (var property in Properties) {
                 if (property.GetValue(data) != null) {
                     property.SetValue(original, property.GetValue(data));

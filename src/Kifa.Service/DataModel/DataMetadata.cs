@@ -30,7 +30,12 @@ public class FreshnessMetadata {
 }
 
 public static class FreshnessMetadataExtensions {
-    static readonly TimeSpan GracePeriod = TimeSpan.FromMinutes(5);
+    public static void ResetRefreshDate(this DataModel data) {
+        data.Metadata ??= new DataMetadata();
+        data.Metadata.Freshness = new FreshnessMetadata {
+            NextRefresh = Date.Zero
+        };
+    }
 
     public static bool NeedRefresh(this DataModel? data)
         => data?.Metadata?.Freshness?.NextRefresh < DateTimeOffset.UtcNow;
