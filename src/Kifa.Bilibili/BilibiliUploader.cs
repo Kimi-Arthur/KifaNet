@@ -27,8 +27,8 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
         removed.UnionWith(Aids);
         removed.ExceptWith(list);
 
-        RemovedAids = removed.OrderBy(v => v).ToList();
-        Aids = list.OrderBy(v => v).ToList();
+        RemovedAids = removed.OrderBy(v => long.Parse(v[2..])).ToList();
+        Aids = list.OrderBy(v => long.Parse(v[2..])).ToList();
 
         return true;
     }
