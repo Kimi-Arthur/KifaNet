@@ -44,8 +44,8 @@ public class SwisscomAccountQuota : DataModel<SwisscomAccountQuota> {
             logger.Warn($"Failed to get quota: {result}.");
         }
 
-        // TODO: Use token valid duration after quota and token are split.
-        return DateTimeOffset.UtcNow;
+        // Quota always needs to be refreshed as it may change any time.
+        return Date.Zero;
     }
 
     KifaActionResult UpdateQuota()

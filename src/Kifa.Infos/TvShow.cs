@@ -86,10 +86,10 @@ public class TvShow : DataModel<TvShow>, Formattable {
         return GetNextEpisodeDate();
     }
 
-    // TODO: Use UtcNow for now. It should determine how frequent it's published and last updated
-    // episode to predict.
+    // TODO: Always refresh for now.
+    // It should determine how frequent it's published and last updated episode to predict.
     DateTimeOffset? GetNextEpisodeDate() {
-        return DateTimeOffset.UtcNow;
+        return Date.Zero;
     }
 
     static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {
