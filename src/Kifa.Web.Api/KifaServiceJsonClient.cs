@@ -143,6 +143,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     }
                 }
             };
+
             foreach (var property in Properties) {
                 if (property.GetValue(data) != null) {
                     property.SetValue(original, property.GetValue(data));
