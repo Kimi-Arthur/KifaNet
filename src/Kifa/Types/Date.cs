@@ -10,6 +10,8 @@ public class Date : JsonSerializable, IComparable<Date> {
     public int Month => date.Month;
     public int Day => date.Day;
 
+    public static readonly DateTimeOffset Zero = new(2018, 5, 7, 0, 0, 0, TimeSpan.Zero);
+
     public static Date Parse(string data)
         => new() {
             date = ParseDateTime(data)

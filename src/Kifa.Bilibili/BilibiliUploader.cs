@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
@@ -17,7 +18,7 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
     public List<string> Aids { get; set; } = new();
     public List<string> RemovedAids { get; set; } = new();
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         var info = new UploaderInfoRpc().Call(Id).Data;
         Name = info.Name;
         var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => $"av{v.Aid}")
@@ -30,6 +31,6 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
         RemovedAids = removed.OrderBy(v => long.Parse(v[2..])).ToList();
         Aids = list.OrderBy(v => long.Parse(v[2..])).ToList();
 
-        return true;
+        return Date.Zero;
     }
 }

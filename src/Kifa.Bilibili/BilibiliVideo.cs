@@ -98,10 +98,10 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
     }
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         try {
             if (FillWithBilibili()) {
-                return true;
+                return Date.Zero;
             }
 
             logger.Debug($"Unable to find video {Id} from bilibili API.");
@@ -111,7 +111,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
         try {
             if (FillWithBiliplus()) {
-                return true;
+                return Date.Zero;
             }
 
             logger.Debug($"Unable to find video {Id} from biliplus API.");
@@ -127,7 +127,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
         }
 
-        return true;
+        return Date.Zero;
     }
 
     bool FillWithBilibili() {

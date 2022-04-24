@@ -10,6 +10,8 @@ namespace Kifa.Cloud.BaiduCloud;
 public class BaiduAccount : OAuthAccount {
     public const string ModelId = "accounts/baidu";
 
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(29);
+
     static KifaServiceClient<BaiduAccount>? client;
 
     public static KifaServiceClient<BaiduAccount> Client
@@ -44,21 +46,17 @@ public class BaiduAccount : OAuthAccount {
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
 
-    public override bool? Fill() {
-        if (Metadata.LastUpdatedNoLaterThan(TimeSpan.FromDays(30))) {
-            var response = HttpClient.Send(Rpcs.OauthRefresh.GetRequest(
-                new Dictionary<string, string> {
-                    { "client_id", ClientId },
-                    { "client_secret", ClientSecret },
-                    { "refresh_token", RefreshToken },
-                    { "scope", Scope }
-                })).GetJToken();
-            AccessToken = (string) response["access_token"];
-            RefreshToken = (string) response["refresh_token"];
-            return true;
-        }
+    public override DateTimeOffset? Fill() {
+        var response = HttpClient.Send(Rpcs.OauthRefresh.GetRequest(new Dictionary<string, string> {
+            { "client_id", ClientId },
+            { "client_secret", ClientSecret },
+            { "refresh_token", RefreshToken },
+            { "scope", Scope }
+        })).GetJToken();
+        AccessToken = (string) response["access_token"];
+        RefreshToken = (string) response["refresh_token"];
 
-        return null;
+        return DateTimeOffset.UtcNow + TokenValidDuration;
     }
 
     public class RpcList {

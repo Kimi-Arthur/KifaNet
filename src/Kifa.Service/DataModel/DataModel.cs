@@ -24,10 +24,9 @@ public abstract class DataModel {
     [YamlIgnore]
     public DataMetadata? Metadata { get; set; }
 
-    // null -> no need to try (too fresh, data won't update etc.)
-    // false -> we tried, but nothing important is changed.
-    // true -> we tried, and data got updated.
-    public virtual bool? Fill() => null;
+    // Return value is the next refresh time.
+    // Or null if no refresh is planned.
+    public virtual DateTimeOffset? Fill() => null;
 
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id?.StartsWith(VirtualItemPrefix) ?? false;

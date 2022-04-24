@@ -22,8 +22,8 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
     static readonly HttpClient NoAuthClient = new();
 
     public List<SkyProgram> AddForDay(int dayOffset)
-        => AddForDayAndLanguage(dayOffset, "en").Concat(AddForDayAndLanguage(dayOffset, "de"))
-            .ToList();
+        => AddForDayAndLanguage(dayOffset, "de").Concat(AddForDayAndLanguage(dayOffset, "en"))
+            .ToList(); // The order will make en version more possible to stay.
 
     public List<SkyProgram> AddForDayAndLanguage(int dayOffset, string language) {
         var channels = Channels[language];

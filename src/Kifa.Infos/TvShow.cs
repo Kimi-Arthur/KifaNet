@@ -40,7 +40,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
                               0 + Specials?.Count ?? 0;
 
@@ -83,10 +83,13 @@ public class TvShow : DataModel<TvShow>, Formattable {
             }
         }
 
-        var newEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
-                              0 + Specials?.Count ?? 0;
+        return GetNextEpisodeDate();
+    }
 
-        return newEpisodeCount != oldEpisodeCount;
+    // TODO: Use UtcNow for now. It should determine how frequent it's published and last updated
+    // episode to predict.
+    DateTimeOffset? GetNextEpisodeDate() {
+        return DateTimeOffset.UtcNow;
     }
 
     static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {

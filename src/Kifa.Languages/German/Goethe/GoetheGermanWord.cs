@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Kifa.Service;
@@ -31,17 +32,14 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     [YamlIgnore]
     public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
 
-    public override bool? Fill() {
-        if (Metadata?.Freshness?.LastRefreshed != null) {
-            return null;
-        }
-
+    public override DateTimeOffset? Fill() {
         if (Examples != null && !Examples[0].StartsWith("example")) {
-            return null;
+            // Still need to refresh next time.
+            return Date.Zero;
         }
 
         if (Form != null && Form != "¨-e" && Form != "") {
-            return false;
+            return null;
         }
 
         var word = new GermanWord {
@@ -50,11 +48,10 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
 
         word.Fill();
 
-        var originalForm = Form;
         Form = word.KeyForm;
         Meaning ??= word.Meaning;
 
-        return originalForm != Form;
+        return null;
     }
 }
 

@@ -26,18 +26,12 @@ public class LinkingMetadata {
 }
 
 public class FreshnessMetadata {
-    public DateTimeOffset? LastUpdated { get; set; }
-    public DateTimeOffset? LastRefreshed { get; set; }
+    public DateTimeOffset? NextRefresh { get; set; }
 }
 
 public static class FreshnessMetadataExtensions {
     static readonly TimeSpan GracePeriod = TimeSpan.FromMinutes(5);
 
-    public static bool LastUpdatedNoLaterThan(this DataMetadata? metadata, TimeSpan freshDuration)
-        => metadata?.Freshness?.LastUpdated == null ||
-           DateTimeOffset.Now - metadata.Freshness.LastUpdated > freshDuration - GracePeriod;
-
-    public static bool LastRefreshedNoLaterThan(this DataMetadata? metadata, TimeSpan freshDuration)
-        => metadata?.Freshness?.LastRefreshed == null ||
-           DateTimeOffset.Now - metadata.Freshness.LastRefreshed > freshDuration - GracePeriod;
+    public static bool NeedRefresh(this DataModel? data)
+        => data?.Metadata?.Freshness?.NextRefresh < DateTimeOffset.UtcNow;
 }

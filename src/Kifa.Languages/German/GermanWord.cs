@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
-using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Languages.German;
@@ -179,9 +178,10 @@ public class GermanWord : DataModel<GermanWord> {
         return (wiki, enWiki, pons, duden, dwds);
     }
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         FillWithData(GetWords());
-        return false;
+        // Maybe some data will update.
+        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
     }
 
     protected void FillWithData(

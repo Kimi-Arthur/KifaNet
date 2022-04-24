@@ -10,6 +10,8 @@ namespace Kifa.Cloud.Google;
 public class GoogleAccount : OAuthAccount {
     public const string ModelId = "accounts/google";
 
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(1);
+
     static KifaServiceClient<GoogleAccount>? client;
 
     public static KifaServiceClient<GoogleAccount> Client
@@ -58,19 +60,16 @@ public class GoogleAccount : OAuthAccount {
             UserId = (string) info["id"];
         });
 
-    public override bool? Fill() {
-        if (Metadata.LastUpdatedNoLaterThan(TimeSpan.FromHours(1))) {
-            var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
-                { "client_id", GoogleCloudConfig.ClientId },
-                { "client_secret", GoogleCloudConfig.ClientSecret },
-                { "refresh_token", RefreshToken }
-            });
+    public override DateTimeOffset? Fill() {
+        var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
+            { "client_id", GoogleCloudConfig.ClientId },
+            { "client_secret", GoogleCloudConfig.ClientSecret },
+            { "refresh_token", RefreshToken }
+        });
 
-            var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
-            AccessToken = (string) response["access_token"];
-            return true;
-        }
+        var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
+        AccessToken = (string) response["access_token"];
 
-        return null;
+        return DateTimeOffset.UtcNow + TokenValidDuration;
     }
 }

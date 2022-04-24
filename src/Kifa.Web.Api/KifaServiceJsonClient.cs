@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -65,19 +64,21 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     // false -> no write needed.
     // true -> rewrite needed.
     bool Fill(TDataModel data) {
-        var status = data.Fill();
-        if (status == null) {
-            return false;
+        if (data.NeedRefresh()) {
+            var nextUpdate = data.Fill();
+            if (nextUpdate != null) {
+                data.Metadata ??= new DataMetadata();
+                data.Metadata.Freshness = new FreshnessMetadata {
+                    NextRefresh = nextUpdate
+                };
+            } else if (data?.Metadata?.Freshness != null) {
+                data.Metadata.Freshness = null;
+            }
+
+            return true;
         }
 
-        data.Metadata ??= new DataMetadata();
-        data.Metadata.Freshness ??= new FreshnessMetadata();
-        data.Metadata.Freshness.LastRefreshed = DateTimeOffset.Now;
-        if (status == true) {
-            data.Metadata.Freshness.LastUpdated = data.Metadata.Freshness.LastRefreshed;
-        }
-
-        return true;
+        return false;
     }
 
     public TDataModel? Retrieve(string id) {

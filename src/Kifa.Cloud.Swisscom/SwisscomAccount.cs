@@ -45,9 +45,10 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
 
     public string AccessToken { get; set; }
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         if (UpdateQuota().Status == KifaActionStatus.OK) {
-            return false;
+            // TODO: Use token valid duration after quota and token are split.
+            return DateTimeOffset.UtcNow;
         }
 
         logger.Info("Access token expired.");
@@ -59,7 +60,8 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
             logger.Warn($"Failed to get quota: {result}.");
         }
 
-        return true;
+        // TODO: Use token valid duration after quota and token are split.
+        return DateTimeOffset.UtcNow;
     }
 
     string GetToken() {

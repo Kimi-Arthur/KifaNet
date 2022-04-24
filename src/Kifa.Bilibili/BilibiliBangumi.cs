@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
@@ -19,7 +20,7 @@ public class BilibiliBangumi : DataModel<BilibiliBangumi> {
     public List<string> Aids { get; set; }
     public List<string> ExtraAids { get; set; }
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         var mediaData = new MediaRpc().Call(Id).Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";
         Title = mediaData.Media.Title;
@@ -29,6 +30,6 @@ public class BilibiliBangumi : DataModel<BilibiliBangumi> {
         ExtraAids = seasonData.Section.SelectMany(s => s.Episodes.Select(e => $"av{e.Aid}"))
             .ToList();
 
-        return true;
+        return Date.Zero;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
@@ -18,13 +19,13 @@ public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
 
     public List<string> Videos { get; set; }
 
-    public override bool? Fill() {
+    public override DateTimeOffset? Fill() {
         var data = new PlaylistRpc().Call(Id).Data;
         Title = data.Info.Title;
         Uploader = data.Info.Upper.Name;
         Videos = data.Medias.Select(m => $"av{m.Id}").ToList();
         Videos.Reverse();
 
-        return true;
+        return Date.Zero;
     }
 }
