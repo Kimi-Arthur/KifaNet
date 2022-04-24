@@ -137,7 +137,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
         Description = data.Desc;
-        Tags = tags.Select(t => t.TagName).ToList();
+        Tags = tags.Select(t => t.TagName).OrderBy(t => t).ToList();
         Category = data.Tname;
         Cover = data.Pic;
         Pages = data.Pages.Select(p => new BilibiliChat {
