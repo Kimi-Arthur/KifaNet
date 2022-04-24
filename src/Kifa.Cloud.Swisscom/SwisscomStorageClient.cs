@@ -183,7 +183,7 @@ public class SwisscomStorageClient : StorageClient {
     }
 
     public static string FindAccount(List<string> accountIds, long length) {
-        var account = SwisscomAccount.Client.List().Values
+        var account = SwisscomAccountQuota.Client.List().Values
             .Where(account => accountIds.Contains(account.Id)).OrderBy(a => a.LeftQuota)
             .FirstOrDefault(s => s.LeftQuota >= length + GraceSize);
         if (account == null) {
@@ -191,13 +191,13 @@ public class SwisscomStorageClient : StorageClient {
         }
 
         // We will assume the quota is up to date here.
-        account = SwisscomAccount.Client.Get(account.Id);
+        account = SwisscomAccountQuota.Client.Get(account.Id);
         if (account.LeftQuota < length + GraceSize) {
             logger.Fatal("Unexpectedly, the account doesn't have enough quota.");
             throw new InsufficientStorageException();
         }
 
-        var result = SwisscomAccount.Client.ReserveQuota(account.Id, length);
+        var result = SwisscomAccountQuota.Client.ReserveQuota(account.Id, length);
         if (result.Status != KifaActionStatus.OK) {
             logger.Fatal($"Failed to reserve quota {length}B in {account.Id}.");
             throw new InsufficientStorageException();

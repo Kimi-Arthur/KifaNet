@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Web;
 using Kifa.Service;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 using OpenQA.Selenium;
@@ -15,6 +12,9 @@ namespace Kifa.Cloud.Swisscom;
 
 public class SwisscomAccount : DataModel<SwisscomAccount> {
     public const string ModelId = "accounts/swisscom";
+
+    // TODO: find out the actual refresh duration.
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(10);
 
     public static string WebDriverUrl { get; set; }
 
@@ -29,39 +29,14 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
 
     public string Username { get; set; }
     public string Password { get; set; }
-    public long TotalQuota { get; set; }
-    public long UsedQuota { get; set; }
-
-    [JsonIgnore]
-    public long LeftQuota => TotalQuota - Math.Max(ExpectedQuota, UsedQuota);
-
-    // This value will be filled when reserved.
-    // When it is the same as UsedQuota, it can be safely discarded or ignored.
-    public long ExpectedQuota { get; set; }
-
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
-    readonly HttpClient httpClient = new();
 
     public string AccessToken { get; set; }
 
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
     public override DateTimeOffset? Fill() {
-        if (UpdateQuota().Status == KifaActionStatus.OK) {
-            // TODO: Use token valid duration after quota and token are split.
-            return DateTimeOffset.UtcNow;
-        }
-
-        logger.Info("Access token expired.");
-
         AccessToken = GetToken();
-
-        var result = UpdateQuota();
-        if (result.Status != KifaActionStatus.OK) {
-            logger.Warn($"Failed to get quota: {result}.");
-        }
-
-        // TODO: Use token valid duration after quota and token are split.
-        return DateTimeOffset.UtcNow;
+        return DateTimeOffset.UtcNow + TokenValidDuration;
     }
 
     string GetToken() {
@@ -105,38 +80,11 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
             Thread.Sleep(TimeSpan.FromSeconds(5));
         });
     }
-
-    KifaActionResult UpdateQuota()
-        => KifaActionResult.FromAction(() => {
-            using var response = httpClient.SendWithRetry(()
-                => SwisscomStorageClient.APIList.Quota.GetRequest(new Dictionary<string, string> {
-                    ["access_token"] = AccessToken
-                }));
-            var data = response.GetJToken();
-            UsedQuota = data.Value<long>("TotalBytes");
-            TotalQuota = data.Value<long>("StorageLimit");
-        });
 }
 
 public interface SwisscomAccountServiceClient : KifaServiceClient<SwisscomAccount> {
-    List<SwisscomAccount> GetTopAccounts();
-    KifaActionResult ReserveQuota(string id, long length);
-    KifaActionResult ClearReserve(string id);
 }
 
 public class SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAccount>,
     SwisscomAccountServiceClient {
-    public List<SwisscomAccount> GetTopAccounts()
-        => Call<List<SwisscomAccount>>("get_top_accounts");
-
-    public KifaActionResult ReserveQuota(string id, long length)
-        => Call("reserve_quota", new Dictionary<string, object> {
-            { "id", id },
-            { "length", length }
-        });
-
-    public KifaActionResult ClearReserve(string id)
-        => Call("clear_all_reserves", new Dictionary<string, object> {
-            { "id", id }
-        });
 }

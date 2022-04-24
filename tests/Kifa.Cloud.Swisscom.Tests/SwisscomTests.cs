@@ -124,9 +124,8 @@ public class SwisscomTests {
 
     [Fact]
     public void QuotaTest() {
-        var client = GetStorageClient();
+        var account = SwisscomAccountQuota.Client.Get("test")!;
 
-        var account = client.Account;
         Assert.Equal(10737418240, account.TotalQuota);
         Assert.NotEqual(0, account.UsedQuota);
     }

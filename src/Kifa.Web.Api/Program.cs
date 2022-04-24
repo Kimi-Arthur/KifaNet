@@ -1,6 +1,8 @@
 ﻿using System;
 using Kifa.Apps.MomentCounter;
+using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
+using Kifa.Web.Api.Controllers.Accounts;
 using Kifa.Web.Api.Controllers.MomentCounter;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +33,7 @@ public class Program {
 
     static void RegisterClients() {
         Counter.Client = new CounterJsonServiceClient();
+        SwisscomAccountQuota.AccountClient = new SwisscomAccountJsonServiceClient();
     }
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args)
