@@ -6,6 +6,8 @@ using Kifa.Rpc;
 namespace Kifa.SkyCh.Api;
 
 public class PlayerRpc : JsonRpc<PlayerRpc.PlayerResponse> {
+    public static string SkyChCookies { get; set; }
+
     public class PlayerResponse {
         public bool Success { get; set; }
         public string Url { get; set; }
@@ -73,8 +75,7 @@ public class PlayerRpc : JsonRpc<PlayerRpc.PlayerResponse> {
             skyClient = new HttpClient {
                 Timeout = TimeSpan.FromMinutes(10)
             };
-            skyClient.DefaultRequestHeaders.Add("cookie",
-                "ASP.NET_SessionId=yrei0l5itlcdpjlusxz42szj; SkyEnvironment=SkySport; SkyCultureDomain=de; _gcl_au=1.1.928833713.1637768629; idsession=973815413; _ga=GA1.3.289487369.1637768629; _gid=GA1.3.1771599417.1637768629; _gat_UA-104634712-1=1; _gid=GA1.2.1771599417.1637768629; _gat_UA-104634712-2=1; _fbp=fb.1.1637768629362.1227063826; __RequestVerificationToken=4B7iKsPqzL3XdGbw9K4NtsCdjN-YqRXBL-DOoritK_CT5iGe-OLJ_UZZVoVrLK0VdCPM_0bFj6JSwauSYi1p796WMxM1; SL_C_23361dd035530_VID=-LcihHcCbC; SL_C_23361dd035530_KEY=4490215b459669f2b9206a829d62d403a2ac6828; SL_C_23361dd035530_SID=UhfhrNlVr9; SkyCookie=ARBj0OtV/eWvS7mVBopXkYb59WpZ6Ley23QqcHTzDQw=; _ga_PE5CH2MZZP=GS1.1.1637768628.1.1.1637768638.0; _ga=GA1.2.289487369.1637768629; DesktopUUID=0c2486402e0650edb12d34f43dfc2554; SkyNotification=1; SkyPhone=ARBj0OtV/eWvS7mVBopXkYb59WpZ6Ley23QqcHTzDQw=");
+            skyClient.DefaultRequestHeaders.Add("cookie", SkyChCookies);
             skyClient.DefaultRequestHeaders.Referrer =
                 new Uri("https://sport.sky.ch/de/live-auf-tv");
             skyClient.DefaultRequestHeaders.UserAgent.ParseAdd(
