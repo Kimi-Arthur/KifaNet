@@ -26,7 +26,7 @@ public abstract class DataModel {
 
     // Return value is the next refresh time.
     // Or null if no refresh is planned.
-    public virtual DateTimeOffset? Fill() => null;
+    public virtual DateTimeOffset? Fill() => throw new NoNeedToFillException();
 
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id?.StartsWith(VirtualItemPrefix) ?? false;
@@ -77,6 +77,14 @@ public abstract class DataModel {
 
     public override bool Equals(object? obj)
         => GetType().IsInstanceOfType(obj) && ToString() == obj?.ToString();
+}
+
+public class FillException : Exception {
+    public FillException(string message) : base(message) {
+    }
+}
+
+public class NoNeedToFillException : Exception {
 }
 
 public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {

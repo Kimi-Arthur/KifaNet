@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Kifa.Service;
@@ -50,11 +52,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public override TDataModel? Get(string id) {
         var data = Retrieve(id);
-        if (data == null) {
-            return null;
-        }
 
-        if (Fill(data)) {
+        if (Fill(ref data, id)) {
             WriteTarget(data.Clone());
         }
 
@@ -63,18 +62,38 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     // false -> no write needed.
     // true -> rewrite needed.
-    bool Fill(TDataModel data) {
-        if (data.NeedRefresh()) {
-            var nextUpdate = data.Fill();
-            if (nextUpdate != null) {
-                data.Metadata ??= new DataMetadata();
-                data.Metadata.Freshness = new FreshnessMetadata {
-                    NextRefresh = nextUpdate
-                };
-            } else if (data?.Metadata?.Freshness != null) {
-                data.Metadata.Freshness = null;
+    bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null) {
+        var newData = data ?? new TDataModel {
+            Id = id,
+            Metadata = new DataMetadata {
+                Freshness = new FreshnessMetadata {
+                    NextRefresh = Date.Zero
+                }
+            }
+        };
+
+        if (newData.NeedRefresh()) {
+            DateTimeOffset? nextUpdate;
+            try {
+                nextUpdate = newData.Fill();
+            } catch (FillException ex) {
+                logger.Warn(ex, $"Failed to fill {ModelId}/{id}.");
+                return false;
+            } catch (NoNeedToFillException) {
+                return false;
             }
 
+            if (nextUpdate != null) {
+                newData.Metadata ??= new DataMetadata();
+                newData.Metadata.Freshness = new FreshnessMetadata {
+                    NextRefresh = nextUpdate
+                };
+            } else if (newData?.Metadata?.Freshness != null) {
+                newData.Metadata.Freshness = null;
+            }
+
+            // It should infer that newData is always nonnull though.
+            data = newData!;
             return true;
         }
 
@@ -104,7 +123,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             data = data.Clone();
             // This is new data, we should Fill it.
             data.ResetRefreshDate();
-            Fill(data);
+            Fill(ref data);
             WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
         });
 
@@ -151,7 +170,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             }
 
             data = original;
-            Fill(data);
+            Fill(ref data);
             WriteTarget(data);
         });
 
