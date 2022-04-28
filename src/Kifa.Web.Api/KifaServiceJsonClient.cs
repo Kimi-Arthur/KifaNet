@@ -84,11 +84,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             }
 
             if (nextUpdate != null) {
-                newData.Metadata ??= new DataMetadata();
-                newData.Metadata.Freshness = new FreshnessMetadata {
-                    NextRefresh = nextUpdate
-                };
-            } else if (newData?.Metadata?.Freshness != null) {
+                newData.Metadata.Freshness.NextRefresh = nextUpdate;
+            } else {
                 newData.Metadata.Freshness = null;
             }
 
