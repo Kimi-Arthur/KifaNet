@@ -544,21 +544,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public bool IsCompatible(KifaFile other)
         => Host == other.Host && FileFormat == other.FileFormat;
 
-    public string CreateLocation(CloudServiceType serviceType, CloudFormatType formatType)
-        => FileInfo?.Sha256 == null || FileInfo?.Size == null
-            ? null
-            : FileInfo.Locations.Keys.FirstOrDefault(l
-                => new Regex(
-                        $@"^{serviceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{formatType.ToString().ToLower()}$")
-                    .Match(l).Success) ?? serviceType switch {
-                CloudServiceType.Google =>
-                    $"google:good/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
-                CloudServiceType.Swiss =>
-                    // TODO: Use format specific header size.
-                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{formatType.ToString().ToLower()}",
-                _ => ""
-            };
-
     public override int GetHashCode() => ToString()?.GetHashCode() ?? 0;
 
     public bool Equals(KifaFile other) {

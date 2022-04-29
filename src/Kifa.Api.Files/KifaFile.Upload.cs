@@ -1,17 +1,29 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Kifa.Cloud.Swisscom;
 using Kifa.IO;
 
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    public int Upload(CloudServiceType serviceType, CloudFormatType formatType,
-        bool deleteSource = false, bool useCache = false, bool downloadLocal = false,
-        bool skipVerify = false, bool skipRegistered = false) {
+    public int Upload(List<CloudTarget> targets, bool deleteSource = false, bool useCache = false,
+        bool downloadLocal = false, bool skipVerify = false, bool skipRegistered = false) {
+        foreach (var target in targets) {
+            Upload(target, deleteSource, useCache, downloadLocal, skipVerify, skipRegistered);
+        }
+
+        return 0;
+    }
+
+    public int Upload(CloudTarget target, bool deleteSource = false, bool useCache = false,
+        bool downloadLocal = false, bool skipVerify = false, bool skipRegistered = false) {
         UseCache = useCache | downloadLocal;
         // TODO: Better catching.
         try {
-            var destinationLocation = CreateLocation(serviceType, formatType);
+            var destinationLocation = CreateLocation(target);
             if (!deleteSource && skipRegistered) {
                 if (destinationLocation != null && new KifaFile(destinationLocation).Registered) {
                     logger.Info($"Skipped uploading of {this} to {destinationLocation} for now " +
@@ -41,7 +53,7 @@ public partial class KifaFile {
                 return 1;
             }
 
-            destinationLocation ??= CreateLocation(serviceType, formatType);
+            destinationLocation ??= CreateLocation(target);
             var destination = new KifaFile(destinationLocation);
 
             if (destination.Exists()) {
@@ -127,4 +139,19 @@ public partial class KifaFile {
             return 127;
         }
     }
+
+    public string CreateLocation(CloudTarget target)
+        => FileInfo?.Sha256 == null || FileInfo?.Size == null
+            ? null
+            : FileInfo.Locations.Keys.FirstOrDefault(l
+                => new Regex(
+                        $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType.ToString().ToLower()}$")
+                    .Match(l).Success) ?? target.ServiceType switch {
+                CloudServiceType.Google =>
+                    $"google:good/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
+                CloudServiceType.Swiss =>
+                    // TODO: Use format specific header size.
+                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
+                _ => ""
+            };
 }

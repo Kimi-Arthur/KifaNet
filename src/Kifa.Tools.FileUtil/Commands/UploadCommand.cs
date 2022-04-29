@@ -53,17 +53,19 @@ class UploadCommand : KifaCommand {
         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)
             .Select(ParseDestination).ToList();
 
-        var results = files.SelectMany(f => targets.Select(d => (f.ToString(), d,
-            new KifaFile(f.ToString()).Upload(d.serviceType, d.formatType, DeleteSource, UseCache,
-                DownloadLocal, QuickMode, true)))).ToList();
-        return results.Select(r => r.Item3).Concat(results.Where(r => r.Item3 != 0).Select(r
-            => new KifaFile(r.Item1).Upload(r.Item2.serviceType, r.Item2.formatType, DeleteSource,
-                UseCache, DownloadLocal, QuickMode, false))).Max();
+        var results = files.Select(f => (f.ToString(), targets,
+            new KifaFile(f.ToString()).Upload(targets, DeleteSource, UseCache, DownloadLocal,
+                QuickMode, true))).ToList();
+        return results.Select(r => r.Item3).Concat(results.Where(r => r.Item3 == -1).Select(r
+            => new KifaFile(r.Item1).Upload(r.Item2, DeleteSource, UseCache, DownloadLocal,
+                QuickMode, false))).Max();
     }
 
-    (CloudServiceType serviceType, CloudFormatType formatType) ParseDestination(string s) {
+    CloudTarget ParseDestination(string s) {
         var segments = s.Split(".");
-        return (Enum.Parse<CloudServiceType>(segments[0], true),
-            Enum.Parse<CloudFormatType>(segments[1], true));
+        return new CloudTarget {
+            ServiceType = Enum.Parse<CloudServiceType>(segments[0], true),
+            FormatType = Enum.Parse<CloudFormatType>(segments[1], true)
+        };
     }
 }
