@@ -40,6 +40,8 @@ public class TvShow : DataModel<TvShow>, Formattable {
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
                               0 + Specials?.Count ?? 0;

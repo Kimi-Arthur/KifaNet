@@ -32,6 +32,8 @@ public class SwisscomAccountQuota : DataModel<SwisscomAccountQuota> {
 
     readonly HttpClient httpClient = new();
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         if (UpdateQuota().Status == KifaActionStatus.OK) {
             return Date.Zero;

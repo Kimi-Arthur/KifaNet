@@ -98,6 +98,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
     }
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         try {
             if (FillWithBilibili()) {

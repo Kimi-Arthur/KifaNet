@@ -19,6 +19,8 @@ public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
 
     public List<string> Videos { get; set; }
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         var data = new PlaylistRpc().Call(Id).Data;
         Title = data.Info.Title;

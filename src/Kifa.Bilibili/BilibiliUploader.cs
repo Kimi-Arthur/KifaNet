@@ -18,6 +18,8 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
     public List<string> Aids { get; set; } = new();
     public List<string> RemovedAids { get; set; } = new();
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         var info = new UploaderInfoRpc().Call(Id).Data;
         Name = info.Name;

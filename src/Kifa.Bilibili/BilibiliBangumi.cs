@@ -20,6 +20,8 @@ public class BilibiliBangumi : DataModel<BilibiliBangumi> {
     public List<string> Aids { get; set; }
     public List<string> ExtraAids { get; set; }
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         var mediaData = new MediaRpc().Call(Id).Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";

@@ -34,6 +34,8 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
 
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         AccessToken = GetToken();
         return DateTimeOffset.UtcNow + TokenValidDuration;

@@ -60,6 +60,8 @@ public class GoogleAccount : OAuthAccount {
             UserId = (string) info["id"];
         });
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
             { "client_id", GoogleCloudConfig.ClientId },

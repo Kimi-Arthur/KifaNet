@@ -46,6 +46,8 @@ public class BaiduAccount : OAuthAccount {
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
 
+    public override bool FillByDefault => true;
+
     public override DateTimeOffset? Fill() {
         var response = HttpClient.Send(Rpcs.OauthRefresh.GetRequest(new Dictionary<string, string> {
             { "client_id", ClientId },
