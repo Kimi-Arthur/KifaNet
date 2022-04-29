@@ -83,11 +83,6 @@ public abstract class DataModel {
         => GetType().IsInstanceOfType(obj) && ToString() == obj?.ToString();
 }
 
-public class FillException : Exception {
-    public FillException(string message) : base(message) {
-    }
-}
-
 public class NoNeedToFillException : Exception {
 }
 

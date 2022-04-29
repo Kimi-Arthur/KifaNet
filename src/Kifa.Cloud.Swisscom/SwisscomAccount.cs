@@ -13,8 +13,7 @@ namespace Kifa.Cloud.Swisscom;
 public class SwisscomAccount : DataModel<SwisscomAccount> {
     public const string ModelId = "accounts/swisscom";
 
-    // TODO: find out the actual refresh duration.
-    static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(10);
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7);
 
     public static string WebDriverUrl { get; set; }
 

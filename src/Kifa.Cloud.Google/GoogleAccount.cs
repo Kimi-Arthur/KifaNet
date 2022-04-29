@@ -70,7 +70,9 @@ public class GoogleAccount : OAuthAccount {
         });
 
         var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
-        AccessToken = (string) response["access_token"];
+        var token = (string) response["access_token"];
+
+        AccessToken = token ?? throw new InvalidOperationException("Refresh is not successful.");
 
         return DateTimeOffset.UtcNow + TokenValidDuration;
     }

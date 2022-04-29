@@ -76,11 +76,11 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             DateTimeOffset? nextUpdate;
             try {
                 nextUpdate = newData.Fill();
-            } catch (FillException ex) {
-                logger.Warn(ex, $"Failed to fill {ModelId}/{id}.");
-                return false;
             } catch (NoNeedToFillException) {
                 return false;
+            } catch (Exception ex) {
+                logger.Warn(ex, $"Failed to fill {ModelId}/{id}.");
+                throw;
             }
 
             if (nextUpdate != null) {

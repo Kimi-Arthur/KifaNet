@@ -39,5 +39,5 @@ public static class FreshnessMetadataExtensions {
 
     public static bool NeedRefresh(this DataModel data)
         => data.FillByDefault && data.Metadata?.Freshness?.NextRefresh == null ||
-           data.Metadata?.Freshness?.NextRefresh < DateTimeOffset.UtcNow;
+           data.Metadata?.Freshness?.NextRefresh + TimeSpan.FromSeconds(5) < DateTimeOffset.UtcNow;
 }
