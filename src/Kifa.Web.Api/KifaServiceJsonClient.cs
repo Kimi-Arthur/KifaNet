@@ -77,7 +77,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             try {
                 nextUpdate = newData.Fill();
             } catch (NoNeedToFillException) {
-                return false;
+                nextUpdate = null;
             } catch (Exception ex) {
                 logger.Warn(ex, $"Failed to fill {ModelId}/{id}.");
                 throw;
@@ -92,8 +92,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 newData.Metadata.Freshness = null;
             }
 
-            // It should infer that newData is always nonnull though.
-            data = newData!;
+            data = newData;
             return true;
         }
 
