@@ -81,8 +81,6 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             return new List<string>();
         }
 
-        logger.Trace("ok?");
-
         var directory = new DirectoryInfo(folder);
         var items = directory.GetFiles("*.json",
             recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
