@@ -258,9 +258,7 @@ public class MemriseClient : IDisposable {
 
     bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord)
         => memriseWord != null &&
-           memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id &&
-           TrimBracket(memriseWord.Data[Course.Columns["English"]]) ==
-           TrimBracket(goetheGermanWord.Meaning);
+           memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id;
 
     static string TrimBracket(string content) {
         var reg = new Regex(@"^(\(.*\) )?(.*)( \(.*\))?$");
@@ -289,12 +287,10 @@ public class MemriseClient : IDisposable {
     }
 
     // Columns order: German, English, Form, Pronunciation, Examples, Audios
-    string FillBasicWord(Dictionary<string, string> newData) {
-        var response = new AddWordRpc {
+    void FillBasicWord(Dictionary<string, string> newData) {
+        new AddWordRpc {
             HttpClient = HttpClient
         }.Call(Course.DatabaseId, Course.BaseUrl, newData);
-
-        return response.Thing.Id.ToString();
     }
 
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
