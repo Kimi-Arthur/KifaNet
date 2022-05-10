@@ -27,7 +27,9 @@ public class SwisscomStorageClient : StorageClient {
 
     public override string Id => AccountId;
 
-    readonly HttpClient client = new();
+    readonly HttpClient client = new() {
+        Timeout = TimeSpan.FromMinutes(30)
+    };
 
     public SwisscomStorageClient(string accountId = null) {
         AccountId = accountId;
