@@ -105,17 +105,20 @@ public class SwisscomStorageClient : StorageClient {
             var targetEndByte = position + blockLength - 1;
             var content = new ByteArrayContent(buffer, 0, blockLength);
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
-            var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
-                ["access_token"] = Account.AccessToken,
-                ["upload_id"] = uploadId,
-                ["block_index"] = blockIndex.ToString()
+
+            using var response = client.SendWithRetry(() => {
+                var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
+                    ["access_token"] = Account.AccessToken,
+                    ["upload_id"] = uploadId,
+                    ["block_index"] = blockIndex.ToString()
+                });
+                uploadRequest.Content = new MultipartFormDataContent {
+                    { content, "files[]", path.Split("/").Last() }
+                };
+                uploadRequest.Content.Headers.ContentRange =
+                    new ContentRangeHeaderValue(position, targetEndByte, size);
+                return uploadRequest;
             });
-            uploadRequest.Content = new MultipartFormDataContent {
-                { content, "files[]", path.Split("/").Last() }
-            };
-            uploadRequest.Content.Headers.ContentRange =
-                new ContentRangeHeaderValue(position, targetEndByte, size);
-            using var response = client.SendAsync(uploadRequest).Result;
             blockIds.Add((response.GetJToken().Value<string>("ETag")[1..^1], blockLength));
         }
 
