@@ -58,7 +58,7 @@ class UploadCommand : KifaCommand {
                 QuickMode, true))).ToList();
         return results.Select(r => r.Item3).Concat(results.Where(r => r.Item3 == -1).Select(r
             => new KifaFile(r.Item1).Upload(r.Item2, DeleteSource, UseCache, DownloadLocal,
-                QuickMode, false))).Max();
+                QuickMode))).Max();
     }
 
     CloudTarget ParseDestination(string s) {
