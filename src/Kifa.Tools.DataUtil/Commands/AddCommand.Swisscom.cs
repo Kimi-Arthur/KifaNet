@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Kifa.Cloud.Swisscom;
 
 namespace Kifa.Tools.DataUtil.Commands;
 
@@ -9,7 +10,17 @@ public partial class AddCommand {
         var count = 1 << 4 * (5 - spec.Length);
         var number = int.Parse(spec[1..], NumberStyles.HexNumber) * count;
         for (int i = 0; i < count; i++) {
-            logger.Info($"{type}{number + i:x4}: {GetMail(type, number + i)}");
+            var account = new SwisscomAccount {
+                Id = $"{type}{number + i:x4}",
+                Username = GetMail(type, number + i),
+                Password = SwisscomAccount.DefaultPassword
+            };
+
+            account.Register();
+            account = SwisscomAccount.Client.Get(account.Id);
+            var quota = SwisscomAccountQuota.Client.Get(account.Id);
+            logger.Info(account);
+            logger.Info(quota);
         }
     }
 

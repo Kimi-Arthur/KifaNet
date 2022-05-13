@@ -69,7 +69,7 @@ public class DeWiktionaryClient {
                         wordType = ParseWordType(wordTypeNode.Id);
                         switch (wordType) {
                             case WordType.Verb:
-                                if (word.VerbForms.Count == 0) {
+                                if (word.VerbForms == null) {
                                     FillVerbForms(word);
                                 }
 
@@ -96,32 +96,31 @@ public class DeWiktionaryClient {
                         }
                     }
 
-                    if (word.NounForms.Count == 0 && node.Name == "table" &&
+                    if (word.NounForms == null && node.Name == "table" &&
                         node.HasClass("wikitable") && wordType == WordType.Noun) {
-                        var selector = new Func<int, int, string>((row, column) => {
+                        var selector = new Func<int, int, string?>((row, column) => {
                             var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]")
                                 .InnerText.Split("\n").First().Split(" ").Last();
                             return form == "—" ? null : form;
                         });
 
-                        word.NounForms[Case.Nominative] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(1, 1),
-                            [Number.Plural] = selector(1, 2)
-                        };
-
-                        word.NounForms[Case.Genitive] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(2, 1),
-                            [Number.Plural] = selector(2, 2)
-                        };
-
-                        word.NounForms[Case.Dative] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(3, 1),
-                            [Number.Plural] = selector(3, 2)
-                        };
-
-                        word.NounForms[Case.Accusative] = new Dictionary<Number, string> {
-                            [Number.Singular] = selector(4, 1),
-                            [Number.Plural] = selector(4, 2)
+                        word.NounForms = new NounForms {
+                            [Case.Nominative] = new() {
+                                [Number.Singular] = selector(1, 1),
+                                [Number.Plural] = selector(1, 2)
+                            },
+                            [Case.Genitive] = new() {
+                                [Number.Singular] = selector(2, 1),
+                                [Number.Plural] = selector(2, 2)
+                            },
+                            [Case.Dative] = new() {
+                                [Number.Singular] = selector(3, 1),
+                                [Number.Plural] = selector(3, 2)
+                            },
+                            [Case.Accusative] = new() {
+                                [Number.Singular] = selector(4, 1),
+                                [Number.Plural] = selector(4, 2)
+                            }
                         };
 
                         foreach (var nounForm in word.NounForms.Values) {
@@ -142,6 +141,8 @@ public class DeWiktionaryClient {
                     if (inAudio) {
                         var audioNodes = node.SelectNodes($"(.//a[@class='internal'])");
                         if (audioNodes != null) {
+                            word.PronunciationAudioLinks ??=
+                                new Dictionary<Source, HashSet<string>>();
                             word.PronunciationAudioLinks[Source.Wiktionary] =
                                 word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
                                     new HashSet<string>());
@@ -171,6 +172,7 @@ public class DeWiktionaryClient {
             .TakeWhile(node => node.Name != "h2").ToList();
 
         VerbFormType? state = null;
+        word.VerbForms ??= new VerbForms();
         foreach (var row in rows) {
             if (row.SelectNodes("./td|./th")?.Count == 1) {
                 state = null;

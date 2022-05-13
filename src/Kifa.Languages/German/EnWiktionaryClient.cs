@@ -85,6 +85,7 @@ public class EnWiktionaryClient {
                     switch (prefix) {
                         case "#":
                             if (meaning != null) {
+                                word.Meanings ??= new List<Meaning>();
                                 word.Meanings.Add(meaning);
                             }
 
@@ -154,6 +155,7 @@ public class EnWiktionaryClient {
         }
 
         if (meaning != null) {
+            word.Meanings ??= new List<Meaning>();
             word.Meanings.Add(meaning);
         }
 

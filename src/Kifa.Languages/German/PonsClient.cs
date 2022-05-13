@@ -55,11 +55,13 @@ public class PonsClient {
 
         var audioLinkNode = wordNode.SelectSingleNode(".//dl[1]");
         if (audioLinkNode != null) {
+            word.PronunciationAudioLinks ??= new Dictionary<Source, HashSet<string>>();
             word.PronunciationAudioLinks[Source.Pons] = new HashSet<string>() {
                 $"https://sounds.pons.com/audio_tts/de/{audioLinkNode.Id}"
             };
         }
 
+        word.Meanings ??= new List<Meaning>();
         word.Meanings.Add(new Meaning {
             Translation = wordNode.SelectSingleNode("(.//div[@class='target'])[1]")?.InnerText
                 ?.Trim(),

@@ -11,33 +11,39 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public WordType? Type => Meanings.FirstOrDefault()?.Type ?? WordType.Unknown;
+    public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
-    public List<Meaning> Meanings { get; set; } = new();
+    public List<Meaning>? Meanings { get; set; }
 
-    public string? Meaning => Meanings.FirstOrDefault()?.Translation;
+    public string? Meaning => Meanings?.FirstOrDefault()?.Translation;
 
     public Breakdown? Breakdown { get; set; }
 
     public string? Pronunciation { get; set; }
 
     public string? PronunciationAudioLink
-        => (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
-            PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
-            PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
-            PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
+        => PronunciationAudioLinks == null
+            ? null
+            : (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
+               PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
+               PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
+               PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
 
-    public Dictionary<Source, HashSet<string>> PronunciationAudioLinks { get; set; } = new();
+    public Dictionary<Source, HashSet<string>>? PronunciationAudioLinks { get; set; }
 
     // Shared for any meaning.
-    public VerbForms VerbForms { get; set; } = new();
+    public VerbForms? VerbForms { get; set; }
 
     public string? KeyForm
         => Type switch {
-            WordType.Verb => GetKeyVerbForm(Id, VerbForms),
+            WordType.Verb => GetKeyVerbForm(Id, VerbForms!),
             WordType.Noun => GetSimplifiedPlural(Id, NounForms),
             _ => null
         };
+
+    public Gender? Gender { get; set; }
+
+    public NounForms? NounForms { get; set; }
 
     static string GetKeyVerbForm(string id, VerbForms verbForms) {
         if (!verbForms.ContainsKey(VerbFormType.IndicativePresent) ||
@@ -93,23 +99,19 @@ public class GermanWord : DataModel<GermanWord> {
         return "(Sg.)";
     }
 
-    public Gender Gender { get; set; }
-
-    public NounForms NounForms { get; set; } = new();
-
     public string GetNounFormWithArticle(Case formCase, Number formNumber)
-        => NounForms.GetValueOrDefault(formCase, new Dictionary<Number, string>())
+        => NounForms!.GetValueOrDefault(formCase, new Dictionary<Number, string>())
             .ContainsKey(formNumber)
-            ? $"{GetArticle(Gender, formCase, formNumber)} {NounForms[formCase][formNumber]}"
+            ? $"{GetArticle(Gender!.Value, formCase, formNumber)} {NounForms[formCase][formNumber]}"
             : "-";
 
-    public static string GetArticle(Gender gender, Case formCase, Number formNumber)
+    public static string? GetArticle(Gender gender, Case formCase, Number formNumber)
         => formCase switch {
             Case.Nominative => formNumber switch {
                 Number.Singular => gender switch {
-                    Gender.Masculine => "der",
-                    Gender.Feminine => "die",
-                    Gender.Neuter => "das",
+                    German.Gender.Masculine => "der",
+                    German.Gender.Feminine => "die",
+                    German.Gender.Neuter => "das",
                     _ => null
                 },
                 Number.Plural => "die",
@@ -117,9 +119,9 @@ public class GermanWord : DataModel<GermanWord> {
             },
             Case.Genitive => formNumber switch {
                 Number.Singular => gender switch {
-                    Gender.Masculine => "des",
-                    Gender.Feminine => "der",
-                    Gender.Neuter => "des",
+                    German.Gender.Masculine => "des",
+                    German.Gender.Feminine => "der",
+                    German.Gender.Neuter => "des",
                     _ => null
                 },
                 Number.Plural => "der",
@@ -127,9 +129,9 @@ public class GermanWord : DataModel<GermanWord> {
             },
             Case.Dative => formNumber switch {
                 Number.Singular => gender switch {
-                    Gender.Masculine => "dem",
-                    Gender.Feminine => "der",
-                    Gender.Neuter => "dem",
+                    German.Gender.Masculine => "dem",
+                    German.Gender.Feminine => "der",
+                    German.Gender.Neuter => "dem",
                     _ => null
                 },
                 Number.Plural => "den",
@@ -137,9 +139,9 @@ public class GermanWord : DataModel<GermanWord> {
             },
             Case.Accusative => formNumber switch {
                 Number.Singular => gender switch {
-                    Gender.Masculine => "den",
-                    Gender.Feminine => "die",
-                    Gender.Neuter => "das",
+                    German.Gender.Masculine => "den",
+                    German.Gender.Feminine => "die",
+                    German.Gender.Neuter => "das",
                     _ => null
                 },
                 Number.Plural => "die",
@@ -190,23 +192,22 @@ public class GermanWord : DataModel<GermanWord> {
         var (wiki, enWiki, pons, duden, dwds) = words;
         Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
 
-        PronunciationAudioLinks[Source.Duden] =
-            duden.PronunciationAudioLinks.GetValueOrDefault(Source.Duden, new HashSet<string>());
-        PronunciationAudioLinks[Source.Wiktionary] =
-            wiki.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
-                new HashSet<string>());
-        PronunciationAudioLinks[Source.Pons] =
-            pons.PronunciationAudioLinks.GetValueOrDefault(Source.Pons, new HashSet<string>());
-        PronunciationAudioLinks[Source.Dwds] =
-            dwds.PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>());
+        PronunciationAudioLinks = new List<GermanWord> {
+                duden,
+                wiki,
+                pons,
+                dwds
+            }.Select(word => word.PronunciationAudioLinks).ExceptNull()
+            .SelectMany(pronunciationLinks => pronunciationLinks)
+            .ToDictionary(item => item.Key, item => item.Value);
 
-        Meanings = enWiki.Meanings.Any() ? enWiki.Meanings : pons.Meanings;
+        Meanings = enWiki.Meanings?.Any() == true ? enWiki.Meanings : pons.Meanings;
 
-        if (Meanings.Any(m => m.Type == WordType.Verb)) {
+        if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
             VerbForms = words.wiki.VerbForms;
         }
 
-        if (Meanings.Any(m => m.Type == WordType.Noun)) {
+        if (Meanings?.Any(m => m.Type == WordType.Noun) == true) {
             Gender = words.wiki.Gender;
             NounForms = words.wiki.NounForms;
         }

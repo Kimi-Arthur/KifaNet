@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Kifa.Languages.German;
 
-public class NounForms : Dictionary<Case, Dictionary<Number, string>> {
+public class NounForms : Dictionary<Case, Dictionary<Number, string?>> {
 }
 
 public enum Gender {

@@ -35,6 +35,7 @@ public class DeWiktionaryClientTests {
         string pe3s, string pe1p, string pe2p, string pe3p, string kf) {
         var client = new DeWiktionaryClient();
         var word = client.GetWord(id);
+        word.Meanings ??= new List<Meaning>();
         word.Meanings.Add(new Meaning() {
             Type = WordType.Verb
         });
@@ -68,18 +69,20 @@ public class DeWiktionaryClientTests {
     }
 
     [Theory]
-    [InlineData("Lernen", "Lernen", null, "Lernens", null, "Lernen", null, "Lernen", null, "(Sg.)")]
-    [InlineData("Buch", "Buch", "Bücher", "Buchs", "Bücher", "Buch", "Büchern", "Buch", "Bücher",
+    [InlineData("Lernen", Gender.Neuter, "Lernen", null, "Lernens", null, "Lernen", null, "Lernen", null, "(Sg.)")]
+    [InlineData("Buch", Gender.Neuter, "Buch", "Bücher", "Buchs", "Bücher", "Buch", "Büchern", "Buch", "Bücher",
         "¨-er")]
-    [InlineData("Daten", null, "Daten", null, "Daten", null, "Daten", null, "Daten", "(Pl.)")]
-    public void ExtractNounFormsTest(string id, string ns, string np, string gs, string gp,
+    [InlineData("Daten", Gender.Neuter, null, "Daten", null, "Daten", null, "Daten", null, "Daten", "(Pl.)")]
+    public void ExtractNounFormsTest(string id, Gender gender, string ns, string np, string gs, string gp,
         string ds, string dp, string @as, string ap, string kf) {
         var client = new DeWiktionaryClient();
         var word = client.GetWord(id);
+        word.Meanings ??= new List<Meaning>();
         word.Meanings.Add(new Meaning {
             Type = WordType.Noun
         });
 
+        Assert.Equal(gender, word.Gender);
         Assert.Equal(ns, word.NounForms[Case.Nominative].GetValueOrDefault(Number.Singular));
         Assert.Equal(kf, word.KeyForm);
     }

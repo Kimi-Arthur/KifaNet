@@ -20,6 +20,7 @@ public class DwdsClient {
         var word = new GermanWord();
 
         if (audioNodes?.Count > 0) {
+            word.PronunciationAudioLinks ??= new Dictionary<Source, HashSet<string>>();
             word.PronunciationAudioLinks[Source.Dwds] = audioNodes
                 .Select(audioNode => $"{audioNode.Attributes["src"].Value}").ToHashSet();
         }
