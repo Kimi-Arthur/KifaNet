@@ -31,7 +31,7 @@ def register(account):
     email = account[1]
     driver = webdriver.Chrome()
     z = email[0] * 2
-    driver.get('https://registration.scl.swisscom.ch/userinfo-xs')
+    driver.get('https://registration.scl.swisscom.ch/ui/reg/email-address')
     retry(lambda: driver.find_element_by_id('email').send_keys(email))
     driver.find_element_by_id('lastName').send_keys(z)
     driver.find_element_by_id('firstName').send_keys(z)
