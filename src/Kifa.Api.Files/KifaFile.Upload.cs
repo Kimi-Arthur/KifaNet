@@ -9,26 +9,26 @@ using Kifa.IO;
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    public int Upload(List<CloudTarget> targets, bool deleteSource = false, bool useCache = false,
+    public List<(CloudTarget target, string? destination, bool? result)> Upload(
+        List<CloudTarget> targets, bool deleteSource = false, bool useCache = false,
         bool downloadLocal = false, bool skipVerify = false, bool skipRegistered = false) {
-        foreach (var target in targets) {
-            Upload(target, deleteSource, useCache, downloadLocal, skipVerify, skipRegistered);
-        }
-
-        return 0;
+        return targets.Select(target => Upload(target, deleteSource, useCache, downloadLocal,
+            skipVerify, skipRegistered)).ToList();
     }
 
-    public int Upload(CloudTarget target, bool deleteSource = false, bool useCache = false,
-        bool downloadLocal = false, bool skipVerify = false, bool skipRegistered = false) {
+    public (CloudTarget target, string? destination, bool? result) Upload(CloudTarget target,
+        bool deleteSource = false, bool useCache = false, bool downloadLocal = false,
+        bool skipVerify = false, bool skipRegistered = false) {
         UseCache = useCache | downloadLocal;
         // TODO: Better catching.
         try {
             var destinationLocation = CreateLocation(target);
+
             if (!deleteSource && skipRegistered) {
                 if (destinationLocation != null && new KifaFile(destinationLocation).Registered) {
                     logger.Info($"Skipped uploading of {this} to {destinationLocation} for now " +
                                 "as it's supposed to be already uploaded...");
-                    return -1;
+                    return (target, destinationLocation, null);
                 }
             }
 
@@ -45,34 +45,39 @@ public partial class KifaFile {
                 if (sourceCheckResult != FileProperties.None) {
                     logger.Error(
                         $"Source is wrong! The following fields differ: {sourceCheckResult}");
-                    return 1;
+                    return (target, destinationLocation, false);
                 }
             } catch (FileNotFoundException ex) {
                 Unregister();
                 logger.Error(ex, "Source file not found.");
-                return 1;
+                return (target, destinationLocation, false);
             }
 
             destinationLocation ??= CreateLocation(target);
+            if (destinationLocation == null) {
+                logger.Error($"Upload destination cannot be determined for {target}.");
+                return (target, destinationLocation, false);
+            }
+
             var destination = new KifaFile(destinationLocation);
 
             if (destination.Exists()) {
                 destination.Register();
                 if (skipVerify) {
                     logger.Info($"Skipped verifying of {destination}.");
-                    return 0;
+                    return (target, destinationLocation, true);
                 }
 
                 var destinationCheckResult = destination.Add();
 
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info("Already uploaded!");
+                    Register(true);
 
                     if (deleteSource) {
                         if (IsCloud) {
                             logger.Info($"Source {this} is not removed as it's in cloud.");
-                            Register(true);
-                            return 0;
+                            return (target, destinationLocation, true);
                         }
 
                         Delete();
@@ -80,11 +85,11 @@ public partial class KifaFile {
                         logger.Info($"Source {this} removed since upload is successful.");
                     }
 
-                    return 0;
+                    return (target, destinationLocation, true);
                 }
 
-                logger.Warn("Destination exists, but doesn't match.");
-                return 2;
+                logger.Error("Destination exists, but doesn't match.");
+                return (target, destinationLocation, false);
             }
 
             destination.Unregister();
@@ -97,13 +102,14 @@ public partial class KifaFile {
                 destination.Register();
                 if (skipVerify) {
                     logger.Info($"Skipped verifying of {destination}.");
-                    return 0;
+                    return (target, destinationLocation, true);
                 }
 
                 logger.Info("Checking {0}...", destination);
                 var destinationCheckResult = destination.Add();
                 if (destinationCheckResult == FileProperties.None) {
                     logger.Info($"Successfully uploaded {this} to {destination}!");
+                    Register(true);
 
                     if (!downloadLocal) {
                         RemoveLocalCacheFile();
@@ -112,31 +118,28 @@ public partial class KifaFile {
                     if (deleteSource) {
                         if (IsCloud) {
                             logger.Info($"Source {this} is not removed as it's in cloud.");
-                            Register(true);
-                            return 0;
+                            return (target, destinationLocation, true);
                         }
 
                         Delete();
                         FileInformation.Client.RemoveLocation(Id, ToString());
                         logger.Info($"Source {this} removed since upload is successful.");
-                    } else {
-                        Register(true);
                     }
 
-                    return 0;
+                    return (target, destinationLocation, true);
                 }
 
                 destination.Delete();
-                logger.Fatal("Upload failed! The following fields differ (removed): {0}",
+                logger.Error("Upload failed! The following fields differ (removed): {0}",
                     destinationCheckResult);
-                return 2;
+                return (target, destinationLocation, false);
             }
 
             logger.Fatal("Destination doesn't exist unexpectedly!");
-            return 2;
+            return (target, destinationLocation, false);
         } catch (Exception ex) {
             logger.Fatal(ex, "Unexpected error");
-            return 127;
+            return (target, null, false);
         }
     }
 
