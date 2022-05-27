@@ -11,6 +11,8 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
+    public override int CurrentVersion => 1;
+
     public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
     public List<Meaning>? Meanings { get; set; }

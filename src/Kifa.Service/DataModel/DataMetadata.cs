@@ -7,11 +7,15 @@ namespace Kifa.Service;
 
 public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }
+
+    // If the data version is different from current code, a refresh is needed.
+    public int Version { get; set; }
+
     public FreshnessMetadata? Freshness { get; set; }
 
     [JsonIgnore]
     [YamlIgnore]
-    public bool IsEmpty => Linking == null && Freshness == null;
+    public bool IsEmpty => Linking == null && Freshness == null && Version == 0;
 }
 
 public class LinkingMetadata {
@@ -38,6 +42,7 @@ public static class FreshnessMetadataExtensions {
     }
 
     public static bool NeedRefresh(this DataModel data)
-        => data.FillByDefault && data.Metadata?.Freshness?.NextRefresh == null ||
+        => data.CurrentVersion > (data.Metadata?.Version ?? 0) ||
+           data.FillByDefault && data.Metadata?.Freshness?.NextRefresh == null ||
            data.Metadata?.Freshness?.NextRefresh + TimeSpan.FromSeconds(5) < DateTimeOffset.UtcNow;
 }

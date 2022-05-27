@@ -27,7 +27,11 @@ public abstract class DataModel {
     [JsonIgnore]
     [YamlIgnore]
     public virtual bool FillByDefault => false;
-    
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public virtual int CurrentVersion => 0;
+
     // Return value is the next refresh time.
     // Or null if no refresh is planned.
     public virtual DateTimeOffset? Fill() => throw new NoNeedToFillException();
