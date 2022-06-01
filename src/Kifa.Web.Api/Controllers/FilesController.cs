@@ -86,7 +86,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         return items.Select(i
                 => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
-            .OrderBy(i => i).ToList();
+            .OrderBy(i => i.GetNaturalSortKey()).ToList();
     }
 
     public KifaActionResult AddLocation(string id, string location, bool verified = false) {
