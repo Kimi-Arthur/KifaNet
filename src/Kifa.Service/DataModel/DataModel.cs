@@ -34,6 +34,8 @@ public abstract class DataModel {
 
     // Return value is the next refresh time.
     // Or null if no refresh is planned.
+    // If this is not implemented,
+    // FillByDefault and CurrentVersion should not be implemented, either.
     public virtual DateTimeOffset? Fill() => throw new NoNeedToFillException();
 
     public virtual SortedSet<string> GetVirtualItems() => new();

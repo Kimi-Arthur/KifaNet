@@ -77,6 +77,10 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             try {
                 nextUpdate = newData.Fill();
             } catch (NoNeedToFillException) {
+                if (newData.Metadata?.Freshness != null) {
+                    newData.Metadata.Freshness = null;
+                }
+
                 return false;
             } catch (Exception ex) {
                 logger.Warn(ex, $"Failed to fill {ModelId}/{id}.");
