@@ -47,12 +47,12 @@ public class SwisscomAccountQuotaJsonServiceClient : KifaServiceJsonClient<Swiss
     public KifaActionResult ReserveQuota(string id, long length) {
         var data = Get(id);
         data.ExpectedQuota = Math.Max(data.ExpectedQuota, data.UsedQuota) + length;
-        return Set(data);
+        return Update(data);
     }
 
     public KifaActionResult ClearReserve(string id) {
         var data = Get(id);
         data.ExpectedQuota = 0;
-        return Set(data);
+        return Update(data);
     }
 }

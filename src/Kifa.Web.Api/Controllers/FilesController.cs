@@ -101,7 +101,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         file.Locations ??= new Dictionary<string, DateTime?>();
         file.Locations[location] =
             verified ? DateTime.UtcNow : file.Locations.GetValueOrDefault(location);
-        return Set(file);
+        return Update(file);
     }
 
     public KifaActionResult RemoveLocation(string id, string location) {
@@ -115,7 +115,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
         if (file.Locations != null) {
             file.Locations.Remove(location);
-            return Set(file);
+            return Update(file);
         }
 
         return new KifaActionResult {

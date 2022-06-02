@@ -27,14 +27,14 @@ public class UserJsonServiceClient : KifaServiceJsonClient<User>, UserServiceCli
         counter.Id = $"{user.Id}/{user.Settings.NextCounter++}";
         Counter.Client.Set(counter);
         user.Counters.Add(counter.Id);
-        Set(user);
+        Update(user);
         return counter.Id;
     }
 
     public string RemoveCounter(User user, string counterId) {
         Counter.Client.Delete(counterId);
         user.Counters.Remove(counterId);
-        Set(user);
+        Update(user);
         return counterId;
     }
 
