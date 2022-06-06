@@ -138,10 +138,10 @@ public partial class KifaFile {
         }
     }
 
-    public string CreateLocation(CloudTarget target)
+    public string? CreateLocation(CloudTarget target)
         => FileInfo?.Sha256 == null || FileInfo?.Size == null
             ? null
-            : FileInfo.Locations.Keys.FirstOrDefault(l
+            : FileInfo.Locations?.Keys.FirstOrDefault(l
                 => new Regex(
                         $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType.ToString().ToLower()}$")
                     .Match(l).Success) ?? target.ServiceType switch {
