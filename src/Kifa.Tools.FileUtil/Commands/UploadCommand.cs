@@ -85,12 +85,12 @@ class UploadCommand : KifaCommand {
         }
 
         if (finalResultsBySuccess.ContainsKey(false)) {
-            logger.Info($"Failed to upload {finalResultsBySuccess[false].Count} files:");
+            logger.Error($"Failed to upload {finalResultsBySuccess[false].Count} files:");
             foreach (var finalResults in finalResultsBySuccess[false]) {
-                logger.Info($"{finalResults.Item1} =>");
+                logger.Error($"{finalResults.Item1} =>");
                 foreach (var result in finalResults.Item3) {
                     if (result.result == false) {
-                        logger.Info($"\t{result.destination ?? result.target.ToString()}");
+                        logger.Error($"\t{result.destination ?? result.target.ToString()}");
                     }
                 }
             }

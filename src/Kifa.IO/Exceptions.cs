@@ -14,6 +14,17 @@ public class InsufficientStorageException : IOException {
     }
 }
 
+public class UnableToDetermineLocationException : IOException {
+    public UnableToDetermineLocationException() {
+    }
+
+    public UnableToDetermineLocationException(string message) : base(message) {
+    }
+
+    public UnableToDetermineLocationException(string message, Exception inner) : base(message, inner) {
+    }
+}
+
 public class FileCorruptedException : IOException {
     public FileCorruptedException() {
     }
