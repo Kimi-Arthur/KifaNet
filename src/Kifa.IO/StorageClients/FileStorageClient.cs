@@ -185,7 +185,7 @@ public class FileStorageClient : StorageClient {
 
         var actualDownloadFile = $"{actualPath}.tmp";
 
-        logger.Debug($"Started copying to {actualDownloadFile}.");
+        logger.Debug($"Copying to {actualDownloadFile}...");
 
         var blockSize = DefaultBlockSize;
         EnsureParent(actualDownloadFile);

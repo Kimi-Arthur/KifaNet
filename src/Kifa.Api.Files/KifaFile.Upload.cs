@@ -28,7 +28,10 @@ public partial class KifaFile {
             .Select(target => UploadOneFile(target, deleteSource, skipVerify, skipRegistered))
             .ToList();
 
-        CleanupFiles(results.All(result => result.result == true), deleteSource, downloadLocal);
+        CleanupFiles(
+            results.Any(result => result.result == false) ? false :
+            results.Any(result => result.result == null) ? null : true, deleteSource,
+            downloadLocal);
 
         return results;
     }
@@ -91,6 +94,10 @@ public partial class KifaFile {
 
         try {
             CheckDestination(destination, skipVerify);
+            if (!skipVerify) {
+                Register(true);
+            }
+
             logger.Debug($"Checked destination {destination}.");
             return (target, destinationLocation, true);
         } catch (IOException ex) {
@@ -112,8 +119,8 @@ public partial class KifaFile {
         destination.Add();
     }
 
-    void CleanupFiles(bool allSuccessful, bool deleteSource, bool downloadLocal) {
-        if (!allSuccessful) {
+    void CleanupFiles(bool? status, bool deleteSource, bool downloadLocal) {
+        if (status == false) {
             logger.Debug("No files are removed since not all uploads are successful.");
             return;
         }
@@ -122,7 +129,7 @@ public partial class KifaFile {
             RemoveLocalCacheFile();
         }
 
-        if (deleteSource) {
+        if (deleteSource && status == true) {
             if (IsCloud) {
                 logger.Warn($"Source {this} is not removed as it's in cloud.");
             } else {

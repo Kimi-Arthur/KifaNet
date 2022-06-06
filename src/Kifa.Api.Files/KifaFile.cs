@@ -401,6 +401,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             logger.Debug($"Caching {this} to {LocalFile}...");
             LocalFile.Write(OpenRead());
             LocalFile.Add();
+            Register(true);
         }
     }
 
