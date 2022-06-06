@@ -57,27 +57,28 @@ class UploadCommand : KifaCommand {
         var allResults = files.Select(f => (f.ToString(), targets,
             new KifaFile(f.ToString()).Upload(targets, DeleteSource, UseCache, DownloadLocal,
                 QuickMode, true))).ToList();
-        var resultsByFinal = allResults.GroupBy(results => results.Item3.All(result => result.result != null))
+        var resultsByFinal = allResults
+            .GroupBy(results => results.Item3.All(result => result.result != null))
             .ToDictionary(result => result.Key, result => result.ToList());
         var finalResultsBySuccess = resultsByFinal
             .GetValueOrDefault(true,
                 new List<(string file, List<CloudTarget> targets,
                     List<(CloudTarget target, string? destination, bool? result)> results)>())
-            .Select(result => result.Item3)
             .Concat(resultsByFinal
                 .GetValueOrDefault(false,
                     new List<(string file, List<CloudTarget> targets,
                         List<(CloudTarget target, string? destination, bool? result)> results)>())
-                .Select(result => new KifaFile(result.Item1).Upload(result.Item2, DeleteSource,
-                    UseCache, DownloadLocal, QuickMode)))
-            .GroupBy(results => results.All(result => result.result == true))
+                .Select(result => (result.Item1, result.Item2,
+                    new KifaFile(result.Item1).Upload(result.Item2, DeleteSource, UseCache,
+                        DownloadLocal, QuickMode))))
+            .GroupBy(results => results.Item3.All(result => result.result == true))
             .ToDictionary(result => result.Key, result => result.ToList());
 
         if (finalResultsBySuccess.ContainsKey(true)) {
-            logger.Info(
-                $"Successfully uploaded {finalResultsBySuccess[true].Count} files to:");
+            logger.Info($"Successfully uploaded {finalResultsBySuccess[true].Count} files to:");
             foreach (var finalResults in finalResultsBySuccess[true]) {
-                foreach (var result in finalResults) {
+                logger.Info($"{finalResults.Item1} =>");
+                foreach (var result in finalResults.Item3) {
                     logger.Info($"\t{result.destination}");
                 }
             }
@@ -86,9 +87,10 @@ class UploadCommand : KifaCommand {
         if (finalResultsBySuccess.ContainsKey(false)) {
             logger.Info($"Failed to upload {finalResultsBySuccess[false].Count} files:");
             foreach (var finalResults in finalResultsBySuccess[false]) {
-                foreach (var result in finalResults) {
+                logger.Info($"{finalResults.Item1} =>");
+                foreach (var result in finalResults.Item3) {
                     if (result.result == false) {
-                        logger.Info($"\t{result.destination}");
+                        logger.Info($"\t{result.destination ?? result.target.ToString()}");
                     }
                 }
             }
@@ -98,9 +100,9 @@ class UploadCommand : KifaCommand {
 
         if (QuickMode && finalResultsBySuccess.ContainsKey(true)) {
             Console.WriteLine("To verify the unverified files:");
-            Console.Write("filex check -s");
+            Console.Write("filex add");
             foreach (var finalResults in finalResultsBySuccess[true]) {
-                foreach (var result in finalResults) {
+                foreach (var result in finalResults.Item3) {
                     Console.WriteLine("\\");
                     Console.Write($"  {result.destination}");
                 }
@@ -109,7 +111,4 @@ class UploadCommand : KifaCommand {
 
         return 0;
     }
-
-    static bool IsFinalResult(List<(CloudTarget target, string? destination, bool? result)> results)
-        => results.All(result => result.result != null);
 }

@@ -3,10 +3,15 @@ using System.IO;
 
 namespace Kifa.IO;
 
-public class StorageException : Exception {
-}
+public class InsufficientStorageException : IOException {
+    public InsufficientStorageException() {
+    }
 
-public class InsufficientStorageException : StorageException {
+    public InsufficientStorageException(string message) : base(message) {
+    }
+
+    public InsufficientStorageException(string message, Exception inner) : base(message, inner) {
+    }
 }
 
 public class FileCorruptedException : IOException {
