@@ -40,16 +40,13 @@ public partial class KifaFile {
 
             logger.Info($"Checking source {this}...");
             try {
-                var sourceCheckResult = Add();
-
-                if (sourceCheckResult != FileProperties.None) {
-                    logger.Error(
-                        $"Source is wrong! The following fields differ: {sourceCheckResult}");
-                    return (target, destinationLocation, false);
+                Add(false);
+            } catch (IOException ex) {
+                if (ex is FileNotFoundException) {
+                    Unregister();
                 }
-            } catch (FileNotFoundException ex) {
-                Unregister();
-                logger.Error(ex, "Source file not found.");
+
+                logger.Error(ex, $"Source {this} is not valid.");
                 return (target, destinationLocation, false);
             }
 
@@ -68,28 +65,26 @@ public partial class KifaFile {
                     return (target, destinationLocation, true);
                 }
 
-                var destinationCheckResult = destination.Add();
-
-                if (destinationCheckResult == FileProperties.None) {
+                try {
+                    destination.Add();
                     logger.Info("Already uploaded!");
                     Register(true);
-
-                    if (deleteSource) {
-                        if (IsCloud) {
-                            logger.Info($"Source {this} is not removed as it's in cloud.");
-                            return (target, destinationLocation, true);
-                        }
-
-                        Delete();
-                        FileInformation.Client.RemoveLocation(Id, ToString());
-                        logger.Info($"Source {this} removed since upload is successful.");
-                    }
-
-                    return (target, destinationLocation, true);
+                } catch (IOException ex) {
+                    logger.Error(ex, $"Destination {destination} exists, but doesn't match.");
+                    return (target, destinationLocation, false);
                 }
 
-                logger.Error("Destination exists, but doesn't match.");
-                return (target, destinationLocation, false);
+                if (deleteSource) {
+                    if (IsCloud) {
+                        logger.Info($"Source {this} is not removed as it's in cloud.");
+                    } else {
+                        Delete();
+                        FileInformation.Client.RemoveLocation(Id, ToString());
+                        logger.Info($"Source {this} is removed since upload is successful.");
+                    }
+                }
+
+                return (target, destinationLocation, true);
             }
 
             destination.Unregister();
@@ -105,34 +100,34 @@ public partial class KifaFile {
                     return (target, destinationLocation, true);
                 }
 
-                logger.Info("Checking {0}...", destination);
-                var destinationCheckResult = destination.Add();
-                if (destinationCheckResult == FileProperties.None) {
-                    logger.Info($"Successfully uploaded {this} to {destination}!");
-                    Register(true);
-
-                    if (!downloadLocal) {
-                        RemoveLocalCacheFile();
-                    }
-
-                    if (deleteSource) {
-                        if (IsCloud) {
-                            logger.Info($"Source {this} is not removed as it's in cloud.");
-                            return (target, destinationLocation, true);
-                        }
-
-                        Delete();
-                        FileInformation.Client.RemoveLocation(Id, ToString());
-                        logger.Info($"Source {this} removed since upload is successful.");
-                    }
-
-                    return (target, destinationLocation, true);
+                try {
+                    logger.Info($"Checking destination {destination}...");
+                    destination.Add();
+                    logger.Info($"Successfully uploaded {this} to destination {destination}!");
+                } catch (IOException ex) {
+                    destination.Delete();
+                    logger.Error(ex, $"Upload to destination {destination} failed.");
+                    return (target, destinationLocation, false);
                 }
 
-                destination.Delete();
-                logger.Error("Upload failed! The following fields differ (removed): {0}",
-                    destinationCheckResult);
-                return (target, destinationLocation, false);
+                Register(true);
+
+                if (!downloadLocal) {
+                    RemoveLocalCacheFile();
+                }
+
+                if (deleteSource) {
+                    if (IsCloud) {
+                        logger.Info($"Source {this} is not removed as it's in cloud.");
+                        return (target, destinationLocation, true);
+                    }
+
+                    Delete();
+                    FileInformation.Client.RemoveLocation(Id, ToString());
+                    logger.Info($"Source {this} removed since upload is successful.");
+                }
+
+                return (target, destinationLocation, true);
             }
 
             logger.Fatal("Destination doesn't exist unexpectedly!");
