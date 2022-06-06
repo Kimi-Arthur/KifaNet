@@ -54,10 +54,10 @@ class UploadCommand : KifaCommand {
             Console.ReadLine();
         }
 
-        var results = files.Select(f => (f.ToString(), targets,
+        var allResults = files.Select(f => (f.ToString(), targets,
             new KifaFile(f.ToString()).Upload(targets, DeleteSource, UseCache, DownloadLocal,
                 QuickMode, true))).ToList();
-        var resultsByFinal = results.GroupBy(result => IsFinalResult(result.Item3))
+        var resultsByFinal = allResults.GroupBy(results => results.Item3.All(result => result.result != null))
             .ToDictionary(result => result.Key, result => result.ToList());
         var finalResultsBySuccess = resultsByFinal
             .GetValueOrDefault(true,
@@ -97,6 +97,7 @@ class UploadCommand : KifaCommand {
         }
 
         if (QuickMode && finalResultsBySuccess.ContainsKey(true)) {
+            Console.WriteLine("To verify the unverified files:");
             Console.Write("filex check -s");
             foreach (var finalResults in finalResultsBySuccess[true]) {
                 foreach (var result in finalResults) {
