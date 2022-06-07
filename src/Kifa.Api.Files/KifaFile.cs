@@ -398,17 +398,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public void CacheFileToLocal() {
         if (!LocalFile.Registered || !LocalFile.Exists()) {
-            logger.Info($"Caching {this} to {LocalFile}...");
+            logger.Debug($"Caching {this} to {LocalFile}...");
             LocalFile.Write(OpenRead());
             LocalFile.Add();
+            Register(true);
         }
     }
 
     public void RemoveLocalCacheFile() {
         if (UseCache) {
-            logger.Info($"Remove cache file {LocalFile}...");
             LocalFile.Delete();
             LocalFile.Unregister();
+            logger.Debug($"Removed cache file {LocalFile}...");
         }
     }
 
@@ -431,18 +432,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     /// </summary>
     /// <param name="shouldCheckKnown">
     /// If it's true, it will do a full checkup no matter what.<br/>
-    /// If it's false, it will never do a check.<br/>
+    /// If it's false, it will never do a check if the file is known.<br/>
     /// If it's null (default case), it will do a quick check for known instance.</param>
-    /// <returns>The differing properties if the file exists.</returns>
     /// <exception cref="FileNotFoundException">The file doesn't exist.</exception>
-    /// <exception cref="Exception">Unexpected error, i.e. check failed for known file.</exception>
-    public FileProperties Add(bool? shouldCheckKnown = null) {
+    /// <exception cref="FileCorruptedException">File check failed for known file.</exception>
+    public void Add(bool? shouldCheckKnown = null) {
         if (!Exists()) {
             throw new FileNotFoundException(ToString());
         }
 
         var file = this;
-        logger.Info($"Checking file {file}...");
+        logger.Debug($"Checking file {file}...");
 
         var oldInfo = FileInfo;
 
@@ -459,20 +459,24 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             (FileInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
             file.Registered) {
             if (shouldCheckKnown == false) {
-                logger.Info($"Quick check skipped for {file}.");
-                return FileProperties.None;
+                logger.Debug($"Quick check skipped for {file}.");
+                return;
             }
 
             var partialInfo = file.CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
             var compareResults =
                 partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
-                logger.Error($"Quick check failed for {file} ({compareResults}).");
-                throw new Exception($"Quick check failed ({compareResults}).");
+                throw new FileCorruptedException("Quick result differs from old result:\n" +
+                                                 "Expected:\n" +
+                                                 oldInfo.RemoveProperties(FileProperties.All ^
+                                                     compareResults) + "\nActual:\n" +
+                                                 partialInfo.RemoveProperties(FileProperties.All ^
+                                                     compareResults));
             }
 
-            logger.Info($"Quick check passed for {file}.");
-            return FileProperties.None;
+            logger.Debug($"Quick check passed for {file}.");
+            return;
         }
 
         if (UseCache) {
@@ -489,20 +493,22 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
 
         if (quickCompareResult != FileProperties.None) {
-            logger.Warn(
-                $"Quick data:\n{quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
-            logger.Warn(
-                $"Actual data:\n{info.RemoveProperties(FileProperties.All ^ quickCompareResult)}");
-            return quickCompareResult;
+            throw new FileCorruptedException("New result differs from quick result:\n" +
+                                             "Expected:\n" +
+                                             quickInfo.RemoveProperties(FileProperties.All ^
+                                                 quickCompareResult) + "\nActual:\n" +
+                                             info.RemoveProperties(FileProperties.All ^
+                                                 quickCompareResult));
         }
 
         var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
         if (compareResultWithOld != FileProperties.None) {
-            logger.Warn(
-                $"Expected data:\n{oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
-            logger.Warn(
-                $"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResultWithOld)}");
-            return compareResultWithOld;
+            throw new FileCorruptedException("New result differs from old result:\n" +
+                                             "Expected:\n" +
+                                             oldInfo.RemoveProperties(FileProperties.All ^
+                                                 compareResultWithOld) + "\nActual:\n" +
+                                             info.RemoveProperties(FileProperties.All ^
+                                                 compareResultWithOld));
         }
 
         var client = FileInformation.Client;
@@ -522,13 +528,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             client.Update(info);
             Register(true);
         } else {
-            logger.Warn(
-                $"Expected data:\n{sha256Info.RemoveProperties(FileProperties.All ^ compareResult)}");
-            logger.Warn(
-                $"Actual data:\n{info.RemoveProperties(FileProperties.All ^ compareResult)}");
+            throw new FileCorruptedException("New result differs from sha256 result:\n" +
+                                             "Expected:\n" +
+                                             sha256Info.RemoveProperties(FileProperties.All ^
+                                                 compareResult) + "\nActual:\n" +
+                                             info.RemoveProperties(FileProperties.All ^
+                                                 compareResult));
         }
-
-        return compareResult;
     }
 
     public void Register(bool verified = false) {

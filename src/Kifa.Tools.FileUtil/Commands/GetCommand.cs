@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using CommandLine;
 using NLog;
 using Kifa.Api.Files;
@@ -22,67 +23,56 @@ class GetCommand : KifaFileCommand {
     protected override bool IterateOverLogicalFiles => true;
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
-        if (file.Exists()) {
-            if (file.CalculateInfo(FileProperties.Size).Size != file.FileInfo.Size) {
-                logger.Info("Target exists but size is incorrect. Assuming incomplete Get result.");
-            } else {
-                var targetCheckResult = file.Add();
-
-                if (targetCheckResult == FileProperties.None) {
-                    logger.Info("Already got!");
-                    return 0;
-                }
-
-                logger.Warn("Target exists, but doesn't match.");
-                return 2;
-            }
+        try {
+            file.Add();
+            logger.Info("Already got!");
+            return 0;
+        } catch (FileNotFoundException) {
+            // File expected to be not found.
+        } catch (FileCorruptedException ex) {
+            logger.Error(ex, "Target exists, but doesn't match.");
+            return 2;
         }
 
         file.Unregister();
 
         var info = file.FileInfo;
 
-        if (info.Locations == null) {
-            logger.Error($"No instance exists for {info.Id}!");
+        if (info?.Locations == null) {
+            logger.Error($"No instance exists for {file.Id}!");
             return 1;
         }
 
-        foreach (var location in info.Locations) {
-            if (location.Value != null) {
-                var linkSource = new KifaFile(location.Key);
+        foreach (var (location, verifyTime) in info.Locations) {
+            if (verifyTime != null) {
+                var linkSource = new KifaFile(location);
                 if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(file) &&
                     linkSource.Exists()) {
                     linkSource.Copy(file);
                     file.Register(true);
-                    logger.Info("Got {0} through hard linking to {1}.", file, linkSource);
+                    logger.Info($"Got {file} through hard linking to {linkSource}.");
                     return 0;
                 }
             }
         }
 
         if (LightweightOnly) {
-            logger.Warn("Not getting {}, which requires downloading.", file);
+            logger.Warn($"Not getting {file}, which requires downloading.");
             return 1;
         }
 
         var source = new KifaFile(fileInfo: info);
         source.Copy(file);
 
-        if (file.Exists()) {
-            logger.Info("Verifying {0}...", file);
-            var destinationCheckResult = file.Add();
-            if (destinationCheckResult == FileProperties.None) {
-                logger.Info("Successfully got {1} from {0}!", source, file);
-                source.Register(true);
-                return 0;
-            }
-
-            logger.Error("Get failed! The following fields differ (not removed): {0}",
-                destinationCheckResult);
+        try {
+            logger.Info($"Verifying destination {file}...");
+            file.Add();
+            source.Register(true);
+            logger.Info($"Successfully got destination {file} from {source}!");
+            return 0;
+        } catch (IOException ex) {
+            logger.Error(ex, $"Failed to get destination {file}.");
             return 2;
         }
-
-        logger.Fatal("Destination doesn't exist unexpectedly!");
-        return 2;
     }
 }

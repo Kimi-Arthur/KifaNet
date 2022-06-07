@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -15,11 +16,11 @@ class AddCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    [Option('f', "force-check", HelpText = "Check file integrity even if it is already recorded.")]
-    public bool ForceRecheck { get; set; } = false;
+    [Option('q', "quick", HelpText = "Check file in quick mode. Won't update registration.")]
+    public bool QuickMode { get; set; } = false;
 
-    [Option('o', "overwrite", HelpText = "Overwrite existing data if asked (with confirmation).")]
-    public bool Overwrite { get; set; } = false;
+    [Option('f', "force", HelpText = "Check file integrity even if it is already registered.")]
+    public bool ForceRecheck { get; set; } = false;
 
     public override int Execute() {
         var (multi, files) = KifaFile.ExpandFiles(FileNames);
@@ -57,23 +58,11 @@ class AddCommand : KifaCommand {
 
     void AddFile(KifaFile file) {
         logger.Info($"Adding {file}...");
-        var result = file.Add(ForceRecheck);
-
-        if (result == FileProperties.None) {
-            logger.Info($"Successfully added {file}");
-            return;
+        try {
+            file.Add(QuickMode ? null : ForceRecheck);
+            logger.Info($"Successfully added {file}.");
+        } catch (IOException ex) {
+            logger.Error(ex, $"Failed to add {file}.");
         }
-
-        if (!Overwrite) {
-            throw new KifaExecutionException(
-                $"Conflict with recorded file info! Please check: {result}");
-        }
-
-        var info = file.CalculateInfo(FileProperties.AllVerifiable);
-        Console.WriteLine($"{info}\nConfirm overwriting with new data?");
-        Console.ReadLine();
-        FileInformation.Client.Update(info);
-        file.Register(true);
-        logger.Info($"Successfully updated data and added {file}.");
     }
 }
