@@ -406,7 +406,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     }
 
     public void RemoveLocalCacheFile() {
-        if (UseCache) {
+        if (UseCache && LocalFile.Exists()) {
             LocalFile.Delete();
             LocalFile.Unregister();
             logger.Debug($"Removed cache file {LocalFile}...");
