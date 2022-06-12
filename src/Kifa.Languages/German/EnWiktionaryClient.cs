@@ -213,7 +213,7 @@ public class EnWiktionaryClient {
             "Verb" => WordType.Verb,
             "Particle" => WordType.Particle,
             "Interjection" => WordType.Interjection,
-            "Proper noun" => WordType.Special,
+            "Proper noun" => WordType.ProperNoun,
             _ => WordType.Unknown
         };
 }
