@@ -6,14 +6,11 @@ using NLog;
 namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("bangumi", HelpText = "Download all high quality Bilibili videos for one bangumi.")]
-public class DownloadBangumiCommand : KifaCommand {
+public class DownloadBangumiCommand : DownloadCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]
     public string BangumiId { get; set; }
-
-    [Option('s', "source", HelpText = "Override default source choice.")]
-    public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
     public override int Execute() {
         BilibiliBangumi.Client.Set(new BilibiliBangumi {

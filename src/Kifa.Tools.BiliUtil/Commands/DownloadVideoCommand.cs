@@ -5,16 +5,10 @@ using Kifa.Bilibili;
 namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("video", HelpText = "Download high quality Bilibili videos from biliplus.")]
-public class DownloadVideoCommand : KifaCommand {
+public class DownloadVideoCommand : DownloadCommand {
     [Value(0, Required = true,
         HelpText = "The video id from Bilibili. With possible p{n} as a suffix.")]
     public string Aid { get; set; }
-
-    [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
-    public bool PrefixDate { get; set; } = false;
-
-    [Option('s', "source", HelpText = "Override default source choice.")]
-    public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
     public override int Execute() {
         var segments = Aid.Split('p');
