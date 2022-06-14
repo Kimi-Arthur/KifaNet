@@ -15,5 +15,21 @@ public enum WordType {
     Verb,
     Particle,
     Interjection,
-    Special // Like country, city etc.
+    ProperNoun
+}
+
+public static class WordTypeExtensions {
+    public static string GetShort(this WordType type)
+        => type switch {
+            WordType.Adjective => "adj.",
+            WordType.Adverb => "adv.",
+            WordType.Article => "art.",
+            WordType.Conjunction => "conj.",
+            WordType.Noun => "n.",
+            WordType.Preposition => "prep.",
+            WordType.Pronoun => "pron.",
+            WordType.Verb => "v.",
+            WordType.Interjection => "int.",
+            _ => type.ToString().ToLowerInvariant()
+        };
 }
