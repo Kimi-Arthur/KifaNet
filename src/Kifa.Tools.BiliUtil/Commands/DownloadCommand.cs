@@ -26,32 +26,23 @@ public abstract class DownloadCommand : KifaCommand {
 
     [Option('a', "output-audio", HelpText = "Also generate audio file in destination.")]
     public bool OutputAudio { get; set; } = false;
-    
-    public DownloadOptions DownloadOptions
-        => new() {
-            PrefixDate = PrefixDate,
-            SourceChoice = SourceChoice,
-            OutputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder
-        };
-    
-    public static bool DownloadPart(BilibiliVideo video, int pid,
-        DownloadOptions downloadOptions, string alternativeFolder = null,
+
+    public bool DownloadPart(BilibiliVideo video, int pid, string alternativeFolder = null,
         BilibiliUploader uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
             Name = video.Author
         };
 
-        var (extension, quality, streamGetters) =
-            video.GetVideoStreams(pid, downloadOptions.SourceChoice);
+        var (extension, quality, streamGetters) = video.GetVideoStreams(pid, SourceChoice);
         if (extension == null) {
             logger.Warn("Failed to get video streams.");
             return false;
         }
 
-        var currentFolder = downloadOptions.OutputFolder;
+        var currentFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var prefix =
-            $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: downloadOptions.PrefixDate, uploader: uploader)}";
+            $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
         var canonicalPrefix = video.GetCanonicalName(pid, quality);
         var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
         var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
