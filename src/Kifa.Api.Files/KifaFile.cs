@@ -162,6 +162,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public KifaFile LocalFile => new($"{LocalServer}{Id}");
 
+    // TODO: the fields here will bring inconsistency.
     public string BaseName { get; set; }
 
     public string Extension { get; set; }
