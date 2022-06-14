@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
@@ -27,7 +24,12 @@ public abstract class DownloadCommand : KifaCommand {
     [Option('a', "output-audio", HelpText = "Also generate audio file in destination.")]
     public bool OutputAudio { get; set; } = false;
 
-    public bool DownloadPart(BilibiliVideo video, int pid, string alternativeFolder = null,
+    public bool Download(BilibiliVideo video, int pid, string alternativeFolder = null,
+        BilibiliUploader uploader = null) {
+        return DownloadVideo(video, pid, alternativeFolder, uploader) && ExtractAudioFiles();
+    }
+
+    public bool DownloadVideo(BilibiliVideo video, int pid, string alternativeFolder = null,
         BilibiliUploader uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
@@ -137,5 +139,15 @@ public abstract class DownloadCommand : KifaCommand {
 
     static void RemovePartFiles(List<KifaFile> partFiles) {
         partFiles.ForEach(p => p.Delete());
+    }
+
+    bool ExtractAudioFiles() {
+        if (!OutputAudio) {
+            return true;
+        }
+
+        logger.Info("Extracting audio files...");
+
+        return true;
     }
 }
