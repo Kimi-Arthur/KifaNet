@@ -17,8 +17,7 @@ public class DownloadUploaderCommand : DownloadCommand {
         foreach (var videoId in Enumerable.Reverse(uploader.Aids)) {
             var video = BilibiliVideo.Client.Get(videoId);
             foreach (var page in video.Pages) {
-                video.DownloadPart(page.Id, SourceChoice, CurrentFolder, prefixDate: PrefixDate,
-                    uploader: uploader);
+                video.DownloadPart(page.Id, DownloadOptions, uploader: uploader);
             }
         }
 

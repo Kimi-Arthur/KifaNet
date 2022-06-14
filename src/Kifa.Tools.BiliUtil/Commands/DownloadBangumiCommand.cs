@@ -23,8 +23,7 @@ public class DownloadBangumiCommand : DownloadCommand {
             });
             var video = BilibiliVideo.Client.Get(videoId);
             foreach (var page in video.Pages) {
-                video.DownloadPart(page.Id, SourceChoice, CurrentFolder,
-                    $"{bangumi.Title}-{bangumi.Id}");
+                video.DownloadPart(page.Id, DownloadOptions, $"{bangumi.Title}-{bangumi.Id}");
             }
         }
 

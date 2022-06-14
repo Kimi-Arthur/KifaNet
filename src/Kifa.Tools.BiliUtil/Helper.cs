@@ -11,6 +11,12 @@ using NLog;
 
 namespace Kifa.Tools.BiliUtil;
 
+public class DownloadOptions {
+    public int SourceChoice { get; set; }
+    public KifaFile OutputFolder { get; set; }
+    public bool PrefixDate { get; set; }
+}
+
 public static class Helper {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -38,23 +44,25 @@ public static class Helper {
             : $"{video.Author}-{video.AuthorId}/{video.Title} {p.Title}-{video.Id}.c{cid}";
     }
 
-    public static bool DownloadPart(this BilibiliVideo video, int pid, int sourceChoice,
-        KifaFile currentFolder, string alternativeFolder = null, bool prefixDate = false,
+    public static bool DownloadPart(this BilibiliVideo video, int pid,
+        DownloadOptions downloadOptions, string alternativeFolder = null,
         BilibiliUploader uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
             Name = video.Author
         };
 
-        var (extension, quality, streamGetters) = video.GetVideoStreams(pid, sourceChoice);
+        var (extension, quality, streamGetters) =
+            video.GetVideoStreams(pid, downloadOptions.SourceChoice);
         if (extension == null) {
             logger.Warn("Failed to get video streams.");
             return false;
         }
 
+        var currentFolder = downloadOptions.OutputFolder;
         if (extension != "mp4") {
             var prefix =
-                $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate, uploader: uploader)}";
+                $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: downloadOptions.PrefixDate, uploader: uploader)}";
             var canonicalPrefix = video.GetCanonicalName(pid, quality);
             var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
             var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
@@ -132,7 +140,7 @@ public static class Helper {
             }
         } else {
             var targetFile = currentFolder.GetFile(
-                $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: prefixDate)}.{extension}");
+                $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: downloadOptions.PrefixDate)}.{extension}");
             logger.Debug($"Writing to {targetFile}...");
             try {
                 targetFile.Write(streamGetters.First());

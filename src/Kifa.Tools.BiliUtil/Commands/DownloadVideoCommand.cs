@@ -22,12 +22,12 @@ public class DownloadVideoCommand : DownloadCommand {
         var video = BilibiliVideo.Client.Get(aid);
 
         if (pid > 0) {
-            video.DownloadPart(pid, SourceChoice, CurrentFolder);
+            video.DownloadPart(pid, DownloadOptions);
             return 0;
         }
 
         foreach (var page in video.Pages) {
-            video.DownloadPart(page.Id, SourceChoice, CurrentFolder, prefixDate: PrefixDate);
+            video.DownloadPart(page.Id, DownloadOptions);
         }
 
         return 0;

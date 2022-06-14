@@ -1,4 +1,5 @@
 using CommandLine;
+using Kifa.Api.Files;
 using Kifa.Bilibili;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -12,4 +13,15 @@ public abstract class DownloadCommand : KifaCommand {
 
     [Option('s', "source", HelpText = "Override default source choice.")]
     public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
+
+    [Option('o', "output-folder",
+        HelpText = "Folder to output video files to. Defaults to current folder.")]
+    public string? OutputFolder { get; set; }
+
+    public DownloadOptions DownloadOptions
+        => new() {
+            PrefixDate = PrefixDate,
+            SourceChoice = SourceChoice,
+            OutputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder
+        };
 }
