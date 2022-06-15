@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
@@ -26,11 +27,16 @@ public abstract class DownloadCommand : KifaCommand {
 
     public bool Download(BilibiliVideo video, int pid, string alternativeFolder = null,
         BilibiliUploader uploader = null) {
-        return DownloadVideo(video, pid, alternativeFolder, uploader) && ExtractAudioFiles();
+        var outputFiles = DownloadVideo(video, pid, alternativeFolder, uploader);
+        if (outputFiles == null) {
+            return false;
+        }
+
+        return !OutputAudio || ExtractAudioFiles(outputFiles);
     }
 
-    public bool DownloadVideo(BilibiliVideo video, int pid, string alternativeFolder = null,
-        BilibiliUploader uploader = null) {
+    public List<KifaFile>? DownloadVideo(BilibiliVideo video, int pid,
+        string alternativeFolder = null, BilibiliUploader uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
             Name = video.Author
@@ -39,15 +45,15 @@ public abstract class DownloadCommand : KifaCommand {
         var (extension, quality, streamGetters) = video.GetVideoStreams(pid, SourceChoice);
         if (extension == null) {
             logger.Warn("Failed to get video streams.");
-            return false;
+            return null;
         }
 
-        var currentFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
+        var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var prefix =
             $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
         var canonicalPrefix = video.GetCanonicalName(pid, quality);
-        var canonicalTargetFile = currentFolder.GetFile($"{canonicalPrefix}.mp4");
-        var finalTargetFile = currentFolder.GetFile($"{prefix}.mp4");
+        var canonicalTargetFile = outputFolder.GetFile($"{canonicalPrefix}.mp4");
+        var finalTargetFile = outputFolder.GetFile($"{prefix}.mp4");
 
         if (finalTargetFile.ExistsSomewhere()) {
             logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
@@ -56,7 +62,10 @@ public abstract class DownloadCommand : KifaCommand {
                 logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
             }
 
-            return true;
+            return new List<KifaFile> {
+                canonicalTargetFile,
+                finalTargetFile
+            };
         }
 
         if (finalTargetFile.Exists()) {
@@ -66,7 +75,10 @@ public abstract class DownloadCommand : KifaCommand {
                 logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
             }
 
-            return true;
+            return new List<KifaFile> {
+                canonicalTargetFile,
+                finalTargetFile
+            };
         }
 
         if (canonicalTargetFile.ExistsSomewhere()) {
@@ -76,7 +88,10 @@ public abstract class DownloadCommand : KifaCommand {
             FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
             logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
 
-            return true;
+            return new List<KifaFile> {
+                canonicalTargetFile,
+                finalTargetFile
+            };
         }
 
         if (canonicalTargetFile.Exists()) {
@@ -85,19 +100,22 @@ public abstract class DownloadCommand : KifaCommand {
             canonicalTargetFile.Copy(finalTargetFile);
             logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
 
-            return true;
+            return new List<KifaFile> {
+                canonicalTargetFile,
+                finalTargetFile
+            };
         }
 
         var partFiles = new List<KifaFile>();
         for (var i = 0; i < streamGetters.Count; i++) {
-            var targetFile = currentFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
+            var targetFile = outputFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
             logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
             try {
                 targetFile.Write(streamGetters[i]);
                 logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
             } catch (Exception e) {
                 logger.Warn(e, $"Failed to download {targetFile}.");
-                return false;
+                return null;
             }
 
             partFiles.Add(targetFile);
@@ -116,10 +134,14 @@ public abstract class DownloadCommand : KifaCommand {
             logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
         } catch (Exception e) {
             logger.Warn(e, $"Failed to merge files.");
-            return false;
+            return null;
         }
 
-        return true;
+
+        return new List<KifaFile> {
+            canonicalTargetFile,
+            finalTargetFile
+        };
         // Temporarily disable this part as it seems not applicable anymore.
         // TODO: verify and remove this logic.
         // } else {
@@ -141,12 +163,37 @@ public abstract class DownloadCommand : KifaCommand {
         partFiles.ForEach(p => p.Delete());
     }
 
-    bool ExtractAudioFiles() {
-        if (!OutputAudio) {
-            return true;
-        }
+    bool ExtractAudioFiles(List<KifaFile> outputFiles) {
+        var targetFiles = outputFiles.Select(f => f.Parent.GetFile(f.BaseName + ".m4a")).ToList();
+        var existingTargetFile = targetFiles.FirstOrDefault(f => f.ExistsSomewhere() || f.Exists());
+        if (existingTargetFile != null) {
+            if (existingTargetFile.ExistsSomewhere()) {
+                foreach (var file in targetFiles) {
+                    if (file != existingTargetFile) {
+                        FileInformation.Client.Link(existingTargetFile.Id, file.Id);
+                        logger.Info($"Linked {existingTargetFile.Id} ==> {file.Id}.");
+                    }
+                }
+            } else {
+                foreach (var file in targetFiles) {
+                    if (file != existingTargetFile) {
+                        existingTargetFile.Copy(file);
+                        logger.Info($"Linked {existingTargetFile} ==> {file}.");
+                    }
+                }
+            }
+        } else {
+            logger.Info("Getting video files to local for transform...");
+            // TODO: Skipped for now. Assuming the first file exists.
 
-        logger.Info("Extracting audio files...");
+            logger.Info($"Extracting audio files to {targetFiles[0]}...");
+            Helper.ExtractAudioFile(outputFiles[0], targetFiles[0]);
+            logger.Info("Extracted audio files.");
+            foreach (var file in targetFiles.Skip(1)) {
+                targetFiles[0].Copy(file);
+                logger.Info($"Linked {targetFiles[0]} ==> {file}.");
+            }
+        }
 
         return true;
     }
