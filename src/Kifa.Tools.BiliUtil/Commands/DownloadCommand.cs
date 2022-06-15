@@ -25,6 +25,9 @@ public abstract class DownloadCommand : KifaCommand {
     [Option('a', "output-audio", HelpText = "Also generate audio file in destination.")]
     public bool OutputAudio { get; set; } = false;
 
+    [Option('c', "include-cover", HelpText = "Output cover file alongside with the video.")]
+    public bool IncludeCover { get; set; } = false;
+
     public bool Download(BilibiliVideo video, int pid, string alternativeFolder = null,
         BilibiliUploader uploader = null) {
         var outputFiles = DownloadVideo(video, pid, alternativeFolder, uploader);
@@ -32,7 +35,17 @@ public abstract class DownloadCommand : KifaCommand {
             return false;
         }
 
+        if (IncludeCover) {
+            DownloadCover(video.Cover, outputFiles);
+        }
+
         return !OutputAudio || ExtractAudioFiles(outputFiles);
+    }
+
+    void DownloadCover(Uri videoCover, List<KifaFile> outputFiles) {
+        var ext = videoCover.AbsolutePath.Split(".").Last();
+        var targetFiles = outputFiles.Select(f => f.Parent.GetFile($"{f.BaseName}.{ext}")).ToList();
+        // TODO: Merge with the implementation as of ExtractAudio.
     }
 
     public List<KifaFile>? DownloadVideo(BilibiliVideo video, int pid,
