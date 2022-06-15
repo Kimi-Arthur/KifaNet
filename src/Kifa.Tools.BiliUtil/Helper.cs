@@ -11,12 +11,6 @@ using NLog;
 
 namespace Kifa.Tools.BiliUtil;
 
-public class DownloadOptions {
-    public int SourceChoice { get; set; }
-    public KifaFile OutputFolder { get; set; }
-    public bool PrefixDate { get; set; }
-}
-
 public static class Helper {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
