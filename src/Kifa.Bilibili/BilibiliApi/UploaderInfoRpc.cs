@@ -72,7 +72,7 @@ public class UploaderInfoRpc : BilibiliRpc<UploaderInfoRpc.UploaderInfoResponse>
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/space/acc/info?mid={id}";
 
-    public UploaderInfoResponse Invoke(string uploaderId)
+    public UploaderInfoResponse? Invoke(string uploaderId)
         => Invoke(new Dictionary<string, string> {
             { "id", uploaderId }
         });

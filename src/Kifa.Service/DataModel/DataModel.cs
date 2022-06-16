@@ -89,9 +89,6 @@ public abstract class DataModel {
         => GetType().IsInstanceOfType(obj) && ToString() == obj?.ToString();
 }
 
-public class NoNeedToFillException : Exception {
-}
-
 public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {
     [JsonProperty("$translations")]
     public Dictionary<string, TDataModel>? Translations { get; set; }

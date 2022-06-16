@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.Bilibili;
 
 public class BilibiliUploader : DataModel<BilibiliUploader> {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
     public const string ModelId = "bilibili/uploaders";
 
-    static KifaServiceClient<BilibiliUploader> client;
+    static KifaServiceClient<BilibiliUploader>? client;
 
     public static KifaServiceClient<BilibiliUploader> Client
         => client ??= new KifaServiceRestClient<BilibiliUploader>();
@@ -21,7 +24,12 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var info = new UploaderInfoRpc().Invoke(Id).Data;
+        var info = new UploaderInfoRpc().Invoke(Id)?.Data;
+        if (info == null) {
+            throw new DataNotFoundException(
+                $"Failed to retrieve data for uploader ({Id}) from bilibili,");
+        }
+
         Name = info.Name;
         var list = new UploaderVideoRpc().Invoke(Id).Data.List.Vlist.Select(v => $"av{v.Aid}")
             .ToHashSet();

@@ -4,9 +4,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa\Kifa.csproj"/>
+    <ProjectReference Include="..\Kifa\Kifa.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="YamlDotNet" Version="11.2.1"/>
+    <PackageReference Include="YamlDotNet" Version="11.2.1" />
   </ItemGroup>
 </Project>

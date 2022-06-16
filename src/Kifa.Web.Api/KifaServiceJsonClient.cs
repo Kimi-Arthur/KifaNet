@@ -82,8 +82,11 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 }
 
                 return false;
+            } catch (UnableToFillException ex) {
+                logger.Error(ex, $"Failed to fill {ModelId}/{id} with an expected error.");
+                throw;
             } catch (Exception ex) {
-                logger.Warn(ex, $"Failed to fill {ModelId}/{id}.");
+                logger.Error(ex, $"Failed to fill {ModelId}/{id} with an unexpected error.");
                 throw;
             }
 
