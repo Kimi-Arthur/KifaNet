@@ -6,7 +6,7 @@ namespace Kifa.Bilibili.Tests;
 public class BilibiliPlaylistTests {
     [Fact]
     public void RpcTest() {
-        Assert.True(new PlaylistRpc().Call("743911266").Data.Medias.Count > 50);
+        Assert.True(new PlaylistRpc().Invoke("743911266").Data.Medias.Count > 50);
     }
 
     [Fact]

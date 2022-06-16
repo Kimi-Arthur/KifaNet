@@ -27,7 +27,7 @@ public abstract class JsonRpc<TResponse> {
         set;
     }
 
-    public TResponse? Call(Dictionary<string, string>? parameters = null,
+    public TResponse? Invoke(Dictionary<string, string>? parameters = null,
         Dictionary<string, byte[]>? byteParameters = null) {
         parameters ??= new Dictionary<string, string>();
         byteParameters ??= new Dictionary<string, byte[]>();

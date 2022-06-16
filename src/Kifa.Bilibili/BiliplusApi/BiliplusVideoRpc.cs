@@ -187,8 +187,8 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
 
     public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
 
-    public BiliplusVideoResponse? Call(string aid)
-        => Call(new Dictionary<string, string> {
+    public BiliplusVideoResponse? Invoke(string aid)
+        => Invoke(new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
         });
 }

@@ -49,8 +49,8 @@ public class MediaSeasonRpc : BilibiliRpc<MediaSeasonRpc.MediaSeasonResponse> {
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
 
-    public MediaSeasonResponse? Call(string seasonId)
-        => Call(new Dictionary<string, string> {
+    public MediaSeasonResponse? Invoke(string seasonId)
+        => Invoke(new Dictionary<string, string> {
             { "id", seasonId.Substring(2) }
         });
 }

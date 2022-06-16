@@ -88,15 +88,15 @@ public class PlaylistRpc : BilibiliRpc<PlaylistRpc.PlaylistResponse> {
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
 
-    public PlaylistResponse Call(string playlistId) {
-        var result = Call(new Dictionary<string, string> {
+    public PlaylistResponse Invoke(string playlistId) {
+        var result = Invoke(new Dictionary<string, string> {
             { "id", playlistId },
             { "page", "1" }
         });
         var allResult = result.Clone();
         var page = 1;
         while (result.Data.HasMore) {
-            result = Call(new Dictionary<string, string> {
+            result = Invoke(new Dictionary<string, string> {
                 { "id", playlistId },
                 { "page", (++page).ToString() }
             });

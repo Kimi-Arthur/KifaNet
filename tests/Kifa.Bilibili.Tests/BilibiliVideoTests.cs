@@ -11,28 +11,28 @@ namespace Kifa.Bilibili.Tests;
 public class BilibiliVideoTests {
     [Fact]
     public void BiliplusVideoCacheRpcTest() {
-        var data = new BiliplusVideoCacheRpc().Call("av170001").Data;
+        var data = new BiliplusVideoCacheRpc().Invoke("av170001").Data;
         Assert.Equal(5, data.Parts.Count);
         Assert.Equal("Хоп", data.Parts[0].Part);
     }
 
     [Fact]
     public void BiliplusVideoRpcTest() {
-        var data = new BiliplusVideoRpc().Call("av170001");
+        var data = new BiliplusVideoRpc().Invoke("av170001");
         Assert.Equal(10, data.List.Count);
         Assert.Equal("Хоп", data.List[0].Part);
     }
 
     [Fact]
     public void BilibiliVideoRpcTest() {
-        var data = new VideoRpc().Call("av170001").Data;
+        var data = new VideoRpc().Invoke("av170001").Data;
         Assert.Equal(10, data.Pages.Count);
         Assert.Equal("Хоп", data.Pages[0].Part);
     }
 
     [Fact]
     public void BilibiliVideoTagRpcTest() {
-        var data = new VideoTagRpc().Call("av170001").Data;
+        var data = new VideoTagRpc().Invoke("av170001").Data;
         Assert.Equal(5, data.Count);
         Assert.Equal("保加利亚妖王", data[0].TagName);
     }

@@ -45,8 +45,8 @@ public class MediaRpc : BilibiliRpc<MediaRpc.MediaResponse> {
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/pgc/review/user?media_id={id}";
 
-    public MediaResponse Call(string mediaId)
-        => Call(new Dictionary<string, string> {
+    public MediaResponse Invoke(string mediaId)
+        => Invoke(new Dictionary<string, string> {
             { "id", mediaId[2..] }
         });
 }

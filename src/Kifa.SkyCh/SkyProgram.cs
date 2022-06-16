@@ -62,7 +62,7 @@ public class SkyProgram : DataModel<SkyProgram> {
         return null;
     }
 
-    public string GetVideoLink() => new PlayerRpc().Call(Id).Url;
+    public string GetVideoLink() => new PlayerRpc().Invoke(Id).Url;
 }
 
 public interface SkyProgramServiceClient : KifaServiceClient<SkyProgram> {

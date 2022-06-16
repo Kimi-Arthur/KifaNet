@@ -22,7 +22,7 @@ public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var data = new PlaylistRpc().Call(Id).Data;
+        var data = new PlaylistRpc().Invoke(Id).Data;
         Title = data.Info.Title;
         Uploader = data.Info.Upper.Name;
         Videos = data.Medias.Select(m => $"av{m.Id}").ToList();

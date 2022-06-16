@@ -118,23 +118,23 @@ public class MemriseClient : IDisposable {
     public void AddWordsToLevel(string levelId, List<string> wordIds) {
         var rendered = new GetLevelRpc {
             HttpClient = HttpClient
-        }.Call(WebDriver.Url, levelId).Rendered;
+        }.Invoke(WebDriver.Url, levelId).Rendered;
         var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
         var existingThingIds =
             thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
             logger.Debug(
-                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Call(WebDriver.Url, levelId, wordId).Success}");
+                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId).Success}");
         }
 
         foreach (var wordId in existingThingIds.Except(wordIds)) {
             logger.Debug(
-                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Call(WebDriver.Url, levelId, wordId).Success}");
+                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId).Success}");
         }
 
         logger.Debug(
-            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Call(WebDriver.Url, levelId, wordIds).Success}");
+            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordIds).Success}");
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,
@@ -221,7 +221,7 @@ public class MemriseClient : IDisposable {
             logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
-            }.Call(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken,
+            }.Invoke(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken,
                 newAudio);
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
@@ -290,7 +290,7 @@ public class MemriseClient : IDisposable {
     void FillBasicWord(Dictionary<string, string> newData) {
         new AddWordRpc {
             HttpClient = HttpClient
-        }.Call(Course.DatabaseId, Course.BaseUrl, newData);
+        }.Invoke(Course.DatabaseId, Course.BaseUrl, newData);
     }
 
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
@@ -299,7 +299,7 @@ public class MemriseClient : IDisposable {
             if (originalData.Data.GetValueOrDefault(dataKey) != newValue) {
                 new UpdateWordRpc {
                     HttpClient = HttpClient
-                }.Call(WebDriver.Url, originalData.ThingId, dataKey, newValue);
+                }.Invoke(WebDriver.Url, originalData.ThingId, dataKey, newValue);
                 updatedFields++;
             }
         }

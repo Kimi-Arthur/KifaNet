@@ -41,9 +41,9 @@ public class UploadAudioRpc : JsonRpc<UploadAudioRpc.UpdateAudioResponse> {
         ("audio", "f", "f.mp3")
     };
 
-    public UpdateAudioResponse Call(string referer, string thingId, string cellId, string csrfToken,
+    public UpdateAudioResponse Invoke(string referer, string thingId, string cellId, string csrfToken,
         byte[] audio)
-        => Call(new Dictionary<string, string> {
+        => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "thing_id", thingId },
             { "cell_id", cellId },

@@ -7,12 +7,12 @@ namespace Kifa.Bilibili.Tests;
 public class BilibiliUploaderTests {
     [Fact]
     public void VideoRpcTest() {
-        Assert.True(new UploaderVideoRpc().Call("43536").Data.List.Vlist.Count > 200);
+        Assert.True(new UploaderVideoRpc().Invoke("43536").Data.List.Vlist.Count > 200);
     }
 
     [Fact]
     public void InfoRpcTest() {
-        Assert.Equal("黑桐谷歌", new UploaderInfoRpc().Call("43536").Data.Name);
+        Assert.Equal("黑桐谷歌", new UploaderInfoRpc().Invoke("43536").Data.Name);
     }
 
     [Fact]

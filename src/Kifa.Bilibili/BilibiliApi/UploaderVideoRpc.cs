@@ -70,8 +70,8 @@ public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoRespon
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=50&pn={page}";
 
-    public UploaderVideoResponse Call(string uploaderId) {
-        var result = Call(new Dictionary<string, string> {
+    public UploaderVideoResponse Invoke(string uploaderId) {
+        var result = Invoke(new Dictionary<string, string> {
             { "id", uploaderId },
             { "page", "1" }
         });
@@ -79,7 +79,7 @@ public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoRespon
         var page = 1;
         while (result.Data?.Page?.Count > allResult.Data?.List?.Vlist?.Count) {
             Thread.Sleep(TimeSpan.FromSeconds(1));
-            result = Call(new Dictionary<string, string> {
+            result = Invoke(new Dictionary<string, string> {
                 { "id", uploaderId },
                 { "page", (++page).ToString() }
             });

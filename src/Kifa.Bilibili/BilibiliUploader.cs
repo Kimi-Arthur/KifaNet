@@ -21,9 +21,9 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var info = new UploaderInfoRpc().Call(Id).Data;
+        var info = new UploaderInfoRpc().Invoke(Id).Data;
         Name = info.Name;
-        var list = new UploaderVideoRpc().Call(Id).Data.List.Vlist.Select(v => $"av{v.Aid}")
+        var list = new UploaderVideoRpc().Invoke(Id).Data.List.Vlist.Select(v => $"av{v.Aid}")
             .ToHashSet();
 
         var removed = RemovedAids.ToHashSet();

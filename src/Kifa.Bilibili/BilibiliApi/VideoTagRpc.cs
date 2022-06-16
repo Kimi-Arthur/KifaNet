@@ -39,8 +39,8 @@ public class VideoTagRpc : BilibiliRpc<VideoTagRpc.VideoTagResponse> {
     public override string UrlPattern { get; } =
         "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
 
-    public VideoTagResponse Call(string aid)
-        => Call(new Dictionary<string, string> {
+    public VideoTagResponse Invoke(string aid)
+        => Invoke(new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
         });
 }

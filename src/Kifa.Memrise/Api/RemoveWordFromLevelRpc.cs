@@ -22,8 +22,8 @@ public class RemoveWordFromLevelRpc : JsonRpc<RemoveWordFromLevelRpc.RemoveWordF
         new KeyValuePair<string, string>("thing_id", "{thing_id}")
     };
 
-    public RemoveWordFromLevelResponse Call(string referer, string levelId, string thingId)
-        => Call(new Dictionary<string, string> {
+    public RemoveWordFromLevelResponse Invoke(string referer, string levelId, string thingId)
+        => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_id", thingId }

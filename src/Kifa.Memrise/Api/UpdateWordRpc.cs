@@ -24,8 +24,8 @@ public class UpdateWordRpc : JsonRpc<UpdateWordRpc.UpdateWordResponse> {
         new KeyValuePair<string, string>("new_val", "{value}")
     };
 
-    public UpdateWordResponse Call(string referer, string thingId, string cellId, string value)
-        => Call(new Dictionary<string, string> {
+    public UpdateWordResponse Invoke(string referer, string thingId, string cellId, string value)
+        => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "thing_id", thingId },
             { "cell_id", cellId },

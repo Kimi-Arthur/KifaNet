@@ -20,8 +20,8 @@ public class GetLevelRpc : JsonRpc<GetLevelRpc.GetLevelResponse> {
     public override string UrlPattern { get; } =
         "https://app.memrise.com/ajax/level/editing_html/?level_id={level_id}";
 
-    public GetLevelResponse Call(string referer, string levelId)
-        => Call(new Dictionary<string, string> {
+    public GetLevelResponse Invoke(string referer, string levelId)
+        => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId }
         });

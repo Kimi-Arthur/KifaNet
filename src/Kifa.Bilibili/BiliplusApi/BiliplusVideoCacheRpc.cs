@@ -48,13 +48,13 @@ public class BiliplusVideoCacheRpc : BiliplusRpc<BiliplusVideoCacheRpc.BiliplusV
 
     public override string UrlPattern { get; } = "https://www.biliplus.com{api_path}";
 
-    public BiliplusVideoCache Call(string aid) {
+    public BiliplusVideoCache Invoke(string aid) {
         var url = CachePagePattern.Format(new Dictionary<string, string> {
             { "aid", aid }
         });
         var match = ApiRegex.Match(HttpClient.GetAsync(url).Result.GetString());
         return match.Success
-            ? Call(new Dictionary<string, string> {
+            ? Invoke(new Dictionary<string, string> {
                 { "api_path", match.Groups[1].Value }
             })
             : null;

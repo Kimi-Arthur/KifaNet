@@ -131,8 +131,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     bool FillWithBilibili() {
-        var data = new VideoRpc().Call(Id).Data;
-        var tags = new VideoTagRpc().Call(Id).Data;
+        var data = new VideoRpc().Invoke(Id).Data;
+        var tags = new VideoTagRpc().Invoke(Id).Data;
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
@@ -165,7 +165,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     bool FillWithBiliplus() {
-        var data = new BiliplusVideoRpc().Call(Id);
+        var data = new BiliplusVideoRpc().Invoke(Id);
         if (data == null) {
             logger.Error("Failed to retrieve data for video (Id) from biliplus.");
             return false;
@@ -239,7 +239,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     bool FillWithBiliplusCache() {
-        var data = new BiliplusVideoCacheRpc().Call(Id).Data;
+        var data = new BiliplusVideoCacheRpc().Invoke(Id).Data;
         var info = data.Info;
         Title = info.Title;
         Author = info.Author;

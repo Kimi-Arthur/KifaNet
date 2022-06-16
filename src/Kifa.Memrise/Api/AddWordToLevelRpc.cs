@@ -22,8 +22,8 @@ public class AddWordToLevelRpc : JsonRpc<AddWordToLevelRpc.AddWordToLevelRespons
         new KeyValuePair<string, string>("copy_thing_id", "{thing_id}")
     };
 
-    public AddWordToLevelResponse Call(string referer, string levelId, string thingId)
-        => Call(new Dictionary<string, string> {
+    public AddWordToLevelResponse Invoke(string referer, string levelId, string thingId)
+        => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_id", thingId }
