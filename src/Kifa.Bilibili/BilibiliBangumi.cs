@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.Bilibili;
 
 public class BilibiliBangumi : DataModel<BilibiliBangumi> {
+    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
     public const string ModelId = "bilibili/bangumis";
 
     static KifaServiceClient<BilibiliBangumi> client;
@@ -27,7 +30,12 @@ public class BilibiliBangumi : DataModel<BilibiliBangumi> {
         SeasonId = $"ss{mediaData.Media.SeasonId}";
         Title = mediaData.Media.Title;
         Type = mediaData.Media.TypeName;
-        var seasonData = new MediaSeasonRpc().Call(SeasonId).Result;
+        var seasonData = new MediaSeasonRpc().Call(SeasonId)?.Result;
+        if (seasonData == null) {
+            logger.Error($"Failed to get data for season ({SeasonId}) from Bilibili.");
+            return Date.Zero;
+        }
+
         Aids = seasonData.MainSection.Episodes.Select(e => $"av{e.Aid}").ToList();
         ExtraAids = seasonData.Section.SelectMany(s => s.Episodes.Select(e => $"av{e.Aid}"))
             .ToList();

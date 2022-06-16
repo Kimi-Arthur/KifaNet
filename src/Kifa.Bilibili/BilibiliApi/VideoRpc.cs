@@ -115,7 +115,7 @@ public class VideoRpc : BilibiliRpc<VideoRpc.VideoResponse> {
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/web-interface/view?aid={aid}";
 
-    public VideoResponse Call(string aid)
+    public VideoResponse? Call(string aid)
         => Call(new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
         });

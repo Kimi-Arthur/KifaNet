@@ -17,10 +17,6 @@ public class DownloadVideoCommand : DownloadCommand {
         var segments = Aid.Split('p');
         var aid = segments.First();
 
-        BilibiliVideo.Client.Set(new BilibiliVideo {
-            Id = aid
-        });
-
         var video = BilibiliVideo.Client.Get(aid);
         if (video == null) {
             logger.Fatal($"Cannot find video ({aid}). Exiting.");

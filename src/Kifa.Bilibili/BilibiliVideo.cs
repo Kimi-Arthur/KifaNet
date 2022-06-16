@@ -166,6 +166,11 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     bool FillWithBiliplus() {
         var data = new BiliplusVideoRpc().Call(Id);
+        if (data == null) {
+            logger.Error("Failed to retrieve data for video (Id) from biliplus.");
+            return false;
+        }
+
         var v2 = data.V2AppApi;
 
         if (data.Title == null && v2 == null) {
@@ -207,7 +212,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             Stats.ReplyCount = stat.Reply;
             Stats.ShareCount = stat.Share;
         } else {
-            Title = data.Title;
+            Title = data.Title!;
             Author = data.Author;
             AuthorId = data.Mid.ToString();
             Description = data.Description;
@@ -281,7 +286,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return result;
     }
 
-    public string GetCanonicalName(int pid, int quality, string cid = null) {
+    public string GetCanonicalName(int pid, int quality, string? cid = null) {
         var p = Pages.First(x => x.Id == pid);
 
         if (cid != null && cid != p.Cid) {
@@ -291,9 +296,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return $"$/{Id}p{pid}.c{p.Cid}.{quality}";
     }
 
-    public string GetDesiredName(int pid, int quality, string cid = null,
-        string alternativeFolder = null, bool prefixDate = false,
-        BilibiliUploader uploader = null) {
+    public string GetDesiredName(int pid, int quality, string? cid = null,
+        string? alternativeFolder = null, bool prefixDate = false,
+        BilibiliUploader? uploader = null) {
         var p = Pages.First(x => x.Id == pid);
 
         if (cid != null && cid != p.Cid) {

@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
-    <ProjectReference Include="..\Kifa.Rpc\Kifa.Rpc.csproj"/>
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
-    <ProjectReference Include="..\Kifa.Subtitle\Kifa.Subtitle.csproj"/>
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
+    <ProjectReference Include="..\Kifa.Rpc\Kifa.Rpc.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Subtitle\Kifa.Subtitle.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.16"/>
-    <PackageReference Include="Svg" Version="3.2.3"/>
-    <PackageReference Include="Fizzler" Version="1.2.0"/>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
+    <PackageReference Include="Svg" Version="3.2.3" />
+    <PackageReference Include="Fizzler" Version="1.2.0" />
   </ItemGroup>
 </Project>

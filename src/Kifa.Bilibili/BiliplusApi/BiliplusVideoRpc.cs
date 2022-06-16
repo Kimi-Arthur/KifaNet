@@ -10,7 +10,7 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
         public long Aid { get; set; }
         public string Lastupdate { get; set; }
         public long Lastupdatets { get; set; }
-        public string Title { get; set; }
+        public string? Title { get; set; }
         public string Description { get; set; }
         public Uri Pic { get; set; }
         public long Tid { get; set; }
@@ -26,7 +26,7 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
         public long Favorites { get; set; }
         public string Tag { get; set; }
         public List<List> List { get; set; }
-        public V2AppApi V2AppApi { get; set; }
+        public V2AppApi? V2AppApi { get; set; }
     }
 
     public class List {
@@ -46,7 +46,7 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
         public long Copyright { get; set; }
         public long Ctime { get; set; }
         public string Desc { get; set; }
-        public Dimension Dimension { get; set; }
+        public Dimension? Dimension { get; set; }
         public long DmSeg { get; set; }
         public long Duration { get; set; }
         public string Dynamic { get; set; }
@@ -63,7 +63,7 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
         public Stat Stat { get; set; }
         public long State { get; set; }
         public TIcon TIcon { get; set; }
-        public List<Tag> Tag { get; set; }
+        public List<Tag>? Tag { get; set; }
         public long Tid { get; set; }
         public string Title { get; set; }
         public string Tname { get; set; }
@@ -187,7 +187,7 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
 
     public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
 
-    public BiliplusVideoResponse Call(string aid)
+    public BiliplusVideoResponse? Call(string aid)
         => Call(new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
         });

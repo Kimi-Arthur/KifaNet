@@ -20,9 +20,6 @@ public class DownloadBangumiCommand : DownloadCommand {
         }
 
         foreach (var videoId in bangumi.Aids.Distinct()) {
-            BilibiliVideo.Client.Set(new BilibiliVideo {
-                Id = videoId
-            });
             var video = BilibiliVideo.Client.Get(videoId);
             if (video == null) {
                 logger.Error($"Cannot find video ({videoId}). Skipping.");
