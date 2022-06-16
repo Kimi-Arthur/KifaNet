@@ -36,7 +36,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
     // PATCH api/values/5
     [HttpPatch("{id}")]
     public KifaApiActionResult Patch(string id, [FromBody] TDataModel value) {
-        value.Id ??= Uri.UnescapeDataString(id);
+        value.Id = Uri.UnescapeDataString(id);
         value.Metadata = null;
         return Client.Update(value);
     }
@@ -52,7 +52,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
     // POST api/values/5
     [HttpPost("{id}")]
     public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
-        value.Id ??= Uri.UnescapeDataString(id);
+        value.Id = Uri.UnescapeDataString(id);
         value.Metadata = null;
         return Client.Set(value);
     }
