@@ -49,8 +49,6 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-    static bool firstDownload = true;
-
     static HttpClient bilibiliClient;
 
     PartModeType partMode;
@@ -327,7 +325,6 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(
         int pid, int biliplusSourceChoice = 0) {
-        firstDownload = false;
 
         var cid = Pages[pid - 1].Cid;
 
