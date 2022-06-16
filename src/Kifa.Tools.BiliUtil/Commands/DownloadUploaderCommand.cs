@@ -14,8 +14,18 @@ public class DownloadUploaderCommand : DownloadCommand {
 
     public override int Execute() {
         var uploader = BilibiliUploader.Client.Get(UploaderId);
+        if (uploader == null) {
+            logger.Fatal($"Cannot find uploader ({UploaderId}). Exiting.");
+            return 1;
+        }
+
         foreach (var videoId in Enumerable.Reverse(uploader.Aids)) {
             var video = BilibiliVideo.Client.Get(videoId);
+            if (video == null) {
+                logger.Error($"Cannot find video ({videoId}). Skipping.");
+                continue;
+            }
+
             foreach (var page in video.Pages) {
                 Download(video, page.Id, uploader: uploader);
             }

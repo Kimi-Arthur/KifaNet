@@ -490,13 +490,18 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return content;
     }
 
-    public static string GetAid(string cid) {
+    public static string? GetAid(string cid) {
         using var response = BiliplusHttpClient.Instance
             .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
         var content = response.GetString();
         logger.Debug($"Cid info: {content}");
 
         var data = JToken.Parse(content)["data"];
+        if (data == null || data["aid"] == null || data["page"] == null) {
+            logger.Debug($"Failed to retrieve cid info");
+            return null;
+        }
+
         return $"av{data["aid"]}p{data["page"]}";
     }
 

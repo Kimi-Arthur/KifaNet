@@ -12,6 +12,7 @@
     <Copyright>Copyright © 2019 Kimi Arthur</Copyright>
     <PackageTags>Pimix Apps BiliUtil app</PackageTags>
     <Authors>Kimi Arthur</Authors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />

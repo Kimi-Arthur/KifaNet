@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
 
@@ -16,12 +16,12 @@ class GetChatCommand : KifaFileCommand {
     static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
     [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
-    public string Cid { get; set; }
+    public string? Cid { get; set; }
 
     [Option('a', "aid",
         HelpText = "Bilibili aid for the video. It can contain one segment or multiple." +
                    "Example: av2044037, av2044037p4")]
-    public string Aid { get; set; }
+    public string? Aid { get; set; }
 
     [Option('g', "group", HelpText = "Group name.")]
     public string Group { get; set; }
@@ -36,6 +36,10 @@ class GetChatCommand : KifaFileCommand {
         if (Aid != null) {
             var ids = Aid.Split('p');
             var v = BilibiliVideo.Client.Get(ids[0]);
+            if (v == null) {
+                logger.Fatal($"Cannot find video ({Aid}). Exiting.");
+                return 1;
+            }
 
             if (ids.Length == 1) {
                 chats.AddRange(v.Pages.Select(p => (v, p)));
@@ -50,10 +54,13 @@ class GetChatCommand : KifaFileCommand {
     }
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
-        var inferredAid = InferAid(file.ToString());
-        if (inferredAid != null) {
+        if (InferAid(file.ToString()) is { } inferredAid) {
             var ids = inferredAid.Split('p');
             var v = BilibiliVideo.Client.Get(ids[0]);
+            if (v == null) {
+                logger.Error($"Cannot find video ({ids[0]}. Skipped.");
+            }
+            
             var pid = ids.Length > 1 ? int.Parse(ids[1]) : 1;
             return GetChat(v.Pages[pid - 1], file);
         }
@@ -92,7 +99,7 @@ class GetChatCommand : KifaFileCommand {
         return 0;
     }
 
-    string InferAid(string file) {
+    string? InferAid(string file) {
         var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
         if (segments.Length < 3 || !segments[segments.Length - 3].StartsWith("av")) {
             logger.Debug("Cannot infer CID from file name.");

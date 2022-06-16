@@ -25,6 +25,11 @@ class LinkVideoCommand : KifaCommand {
         while (true) {
             Console.WriteLine($"Confirm renaming\n{target}\nto\n{newName}?");
             var line = Console.ReadLine();
+            if (line == null) {
+                logger.Fatal("Didn't get console response. Exiting.");
+                return 1;
+            }
+
             if (line == "") {
                 FileInformation.Client.Link(target, newName);
                 break;
@@ -36,7 +41,7 @@ class LinkVideoCommand : KifaCommand {
         return 0;
     }
 
-    string GetDesiredFileName(string targetName) {
+    string? GetDesiredFileName(string targetName) {
         if (targetName.StartsWith("/Venus/bilibili/")) {
             var segments = targetName.Split('/');
             segments[2] = "Dancing";

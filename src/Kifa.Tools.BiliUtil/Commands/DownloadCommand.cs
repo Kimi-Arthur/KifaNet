@@ -28,8 +28,8 @@ public abstract class DownloadCommand : KifaCommand {
     [Option('c', "include-cover", HelpText = "Output cover file alongside with the video.")]
     public bool IncludeCover { get; set; } = false;
 
-    public bool Download(BilibiliVideo video, int pid, string alternativeFolder = null,
-        BilibiliUploader uploader = null) {
+    public bool Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
+        BilibiliUploader? uploader = null) {
         var outputFiles = DownloadVideo(video, pid, alternativeFolder, uploader);
         if (outputFiles == null) {
             return false;
@@ -49,7 +49,7 @@ public abstract class DownloadCommand : KifaCommand {
     }
 
     public List<KifaFile>? DownloadVideo(BilibiliVideo video, int pid,
-        string alternativeFolder = null, BilibiliUploader uploader = null) {
+        string? alternativeFolder = null, BilibiliUploader? uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
             Name = video.Author
@@ -69,7 +69,7 @@ public abstract class DownloadCommand : KifaCommand {
         var finalTargetFile = outputFolder.GetFile($"{prefix}.mp4");
 
         if (finalTargetFile.ExistsSomewhere()) {
-            logger.Info($"{finalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+            logger.Info($"{finalTargetFile.Id} already exists in the system. Skipped.");
             if (!canonicalTargetFile.ExistsSomewhere()) {
                 FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
                 logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
@@ -96,7 +96,7 @@ public abstract class DownloadCommand : KifaCommand {
 
         if (canonicalTargetFile.ExistsSomewhere()) {
             logger.Info(
-                $"{canonicalTargetFile.FileInfo.Id} already exists in the system. Skipped.");
+                $"{canonicalTargetFile.Id} already exists in the system. Skipped.");
 
             FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
             logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");

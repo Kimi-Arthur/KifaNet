@@ -16,7 +16,7 @@ public static class Helper {
 
     static readonly Regex fileNamePattern = new(@"^AV(\d+) P(\d+) .* cid (\d+)$");
 
-    public static (string aid, int pid, string cid) GetIds(string name) {
+    public static (string? aid, int pid, string? cid) GetIds(string name) {
         var match = fileNamePattern.Match(name);
         if (!match.Success) {
             return (null, 0, null);
@@ -26,7 +26,11 @@ public static class Helper {
             match.Groups[3].Value);
     }
 
-    public static string GetDesiredFileName(BilibiliVideo video, int pid, string cid = null) {
+    // TODO: move to BilibiliVideo.
+    public static string? GetDesiredFileName(BilibiliVideo? video, int pid, string? cid = null) {
+        if (video == null) {
+            return null;
+        }
         var p = video.Pages.First(x => x.Id == pid);
 
         if (cid != null && cid != p.Cid) {

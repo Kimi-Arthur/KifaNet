@@ -13,15 +13,22 @@ public class DownloadBangumiCommand : DownloadCommand {
     public string BangumiId { get; set; }
 
     public override int Execute() {
-        BilibiliBangumi.Client.Set(new BilibiliBangumi {
-            Id = BangumiId
-        });
         var bangumi = BilibiliBangumi.Client.Get(BangumiId);
+        if (bangumi == null) {
+            logger.Fatal($"Cannot find Bangumi ({BangumiId}). Exiting.");
+            return 1;
+        }
+
         foreach (var videoId in bangumi.Aids.Distinct()) {
             BilibiliVideo.Client.Set(new BilibiliVideo {
                 Id = videoId
             });
             var video = BilibiliVideo.Client.Get(videoId);
+            if (video == null) {
+                logger.Error($"Cannot find video ({videoId}). Skipping.");
+                continue;
+            }
+
             foreach (var page in video.Pages) {
                 Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}");
             }
