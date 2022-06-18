@@ -35,7 +35,7 @@ class UploadCommand : KifaCommand {
     public bool DownloadLocal { get; set; } = false;
 
     public override int Execute() {
-        var targetsFromFlag = Targets.Split(",").ToList();
+        var targetsFromFlag = Targets.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
 
         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)
             .Select(CloudTarget.Parse).ToList();
