@@ -66,6 +66,22 @@ class MyData {
         get => Safe.Get(_bad);
         set => Safe.Set(ref _bad, value);
     }
+
+    string? myProperty;
+
+    public string MyProperty {
+        get => Safe.Get(myProperty);
+        set => Safe.Set(ref myProperty, value);
+    }
+
+    int? safeProperty;
+
+    public int SafeProperty {
+        get => Safe.Get(safeProperty);
+        set => Safe.Set(ref safeProperty, value);
+    }
+
+    
 }
 
 public class Program {
