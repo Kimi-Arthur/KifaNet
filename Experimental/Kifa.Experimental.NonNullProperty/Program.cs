@@ -9,6 +9,8 @@ public static class Safe {
             return value;
         }
 
+        // This may get hit on performance.
+        // See https://stackoverflow.com/questions/1348643/how-performant-is-stackframe
         var method = new StackFrame(1).GetMethod();
         if (method == null) {
             throw new NullReferenceException(
@@ -73,8 +75,8 @@ public class Program {
         try {
             var data = new MyData(); // Safe
 
-            Console.WriteLine(data.Bad); // throw
-            data.Bad = 12;
+            Console.WriteLine(data.Id); // throw
+            data.Id = "12";
             Console.WriteLine(data.Id); // safe
             // data.Bad = null; // throw
         } catch (Exception ex) {
