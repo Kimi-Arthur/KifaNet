@@ -7,7 +7,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("sync", HelpText = "Sync data in a specific file.")]
 public class SyncCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('t', "type", HelpText = "Type of data. Allowed values: goethe/words, goethe/lists")]
     public string Type { get; set; }
@@ -29,19 +29,19 @@ public class SyncCommand : KifaCommand {
         var chef = DataChef.GetChef(Type, content);
 
         if (chef == null) {
-            logger.Error($"Unknown type name: {Type}.\n{content}");
+            Logger.Error($"Unknown type name: {Type}.\n{content}");
             return 1;
         }
 
-        var importResult = logger.LogResult(chef.Import(content), "Summary");
+        var importResult = Logger.LogResult(chef.Import(content), "Summary");
         if (importResult.Status != KifaActionStatus.OK) {
-            logger.Error($"Failed to import data for {chef.ModelId}.");
+            Logger.Error($"Failed to import data for {chef.ModelId}.");
             return (int) importResult.Status;
         }
         
-        var result = logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
+        var result = Logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
         if (result.Status != KifaActionStatus.OK) {
-            logger.Error($"Failed to export data for {chef.ModelId}.");
+            Logger.Error($"Failed to export data for {chef.ModelId}.");
             return (int) result.Status;
         }
 

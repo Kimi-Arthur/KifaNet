@@ -15,13 +15,13 @@ public class Api {
 
     public Dictionary<string, string> Headers { get; set; } = new();
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public HttpRequestMessage GetRequest(Dictionary<string, string>? parameters = null) {
         parameters ??= new Dictionary<string, string>();
         var address = Url.Format(parameters);
 
-        logger.Trace($"{Method} {address}");
+        Logger.Trace($"{Method} {address}");
         var request = new HttpRequestMessage(new HttpMethod(Method), address);
 
         foreach (var header in Headers.Where(h => !h.Key.StartsWith("Content-"))) {

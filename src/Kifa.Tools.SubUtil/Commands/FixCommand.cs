@@ -9,7 +9,7 @@ namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("fix", HelpText = "Fix subtitle.")]
 class FixCommand : KifaFileCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     protected override string Prefix => "/Subtitles";
 
@@ -48,7 +48,7 @@ class FixCommand : KifaFileCommand {
 
         var scaleX = AssScriptInfoSection.PreferredPlayResX * 1.0 / scriptWidth;
         var scaleY = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
-        logger.Info("Scale by {0}", scaleY);
+        Logger.Info("Scale by {0}", scaleY);
 
         foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
             foreach (var line in styleSection.AssLines) {

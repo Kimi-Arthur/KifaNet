@@ -24,7 +24,7 @@ public class FileStorageClient : StorageClient {
 
     string serverId;
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
 
@@ -43,21 +43,21 @@ public class FileStorageClient : StorageClient {
            RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
-        logger.Trace($"Copying {sourcePath} to {destinationPath}...");
+        Logger.Trace($"Copying {sourcePath} to {destinationPath}...");
         Directory.GetParent(GetPath(destinationPath)).Create();
 
         if (neverLink) {
-            logger.Trace($"Use raw file copying.");
+            Logger.Trace($"Use raw file copying.");
             File.Copy(GetPath(sourcePath), GetPath(destinationPath));
         } else if (Server.RemotePrefix != null) {
-            logger.Trace($"Use remote linking.");
+            Logger.Trace($"Use remote linking.");
             RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));
         } else {
-            logger.Trace($"Use local linking.");
+            Logger.Trace($"Use local linking.");
             Link(GetPath(sourcePath), GetPath(destinationPath));
         }
 
-        logger.Trace($"Copying succeeded.");
+        Logger.Trace($"Copying succeeded.");
     }
 
     void RemoteLink(string sourcePath, string destinationPath) {
@@ -68,14 +68,14 @@ public class FileStorageClient : StorageClient {
         client.Connect();
         try {
             var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
-            logger.Trace($"stdout: {new StreamReader(result.OutputStream).ReadToEnd()}");
+            Logger.Trace($"stdout: {new StreamReader(result.OutputStream).ReadToEnd()}");
 
             if (result.ExitStatus != 0) {
-                logger.Warn($"Failed to remote link: {result.Result}");
+                Logger.Warn($"Failed to remote link: {result.Result}");
                 throw new Exception("Remote link command failed: " + result.Result);
             }
         } catch (Exception ex) {
-            logger.Warn(ex, "Failed to remote link");
+            Logger.Warn(ex, "Failed to remote link");
             throw;
         }
     }
@@ -94,10 +94,10 @@ public class FileStorageClient : StorageClient {
         proc.StartInfo.RedirectStandardError = true;
         proc.Start();
         proc.WaitForExit();
-        logger.Trace($"stdout: {proc.StandardOutput.ReadToEnd()}");
-        logger.Trace($"stderr: {proc.StandardError.ReadToEnd()}");
+        Logger.Trace($"stdout: {proc.StandardOutput.ReadToEnd()}");
+        Logger.Trace($"stderr: {proc.StandardError.ReadToEnd()}");
         if (proc.ExitCode != 0) {
-            logger.Warn($"Failed to local link.");
+            Logger.Warn($"Failed to local link.");
             throw new Exception("Local link command failed");
         }
     }
@@ -177,7 +177,7 @@ public class FileStorageClient : StorageClient {
 
     public override void Write(string path, Stream stream) {
         if (Exists(path)) {
-            logger.Debug($"Target file {path} already exists. Skipped.");
+            Logger.Debug($"Target file {path} already exists. Skipped.");
             return;
         }
 
@@ -185,7 +185,7 @@ public class FileStorageClient : StorageClient {
 
         var actualDownloadFile = $"{actualPath}.tmp";
 
-        logger.Debug($"Copying to {actualDownloadFile}...");
+        Logger.Debug($"Copying to {actualDownloadFile}...");
 
         var blockSize = DefaultBlockSize;
         EnsureParent(actualDownloadFile);
@@ -200,10 +200,10 @@ public class FileStorageClient : StorageClient {
 
         stream.CopyTo(fs, blockSize);
 
-        logger.Debug($"Finished copying to {actualDownloadFile}.");
+        Logger.Debug($"Finished copying to {actualDownloadFile}.");
 
         File.Move(actualDownloadFile, actualPath);
-        logger.Debug($"Moved to final destination {path}.");
+        Logger.Debug($"Moved to final destination {path}.");
     }
 
     public override string Type => "local";

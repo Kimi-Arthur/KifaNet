@@ -11,12 +11,12 @@ public class DnsClient {
     public static string ResourceGroup { get; set; }
     public static string Zone { get; set; }
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public void ReplaceIp(string record, string ip) {
         var ips = GetIps(record);
         if (ips.Count == 1 && ips[0] == ip) {
-            logger.Debug("IP doesn't change, no need to update.");
+            Logger.Debug("IP doesn't change, no need to update.");
             return;
         }
 
@@ -28,7 +28,7 @@ public class DnsClient {
             throw new Exception("Failed to set IP.");
         }
 
-        logger.Debug("IP set successfully.");
+        Logger.Debug("IP set successfully.");
     }
 
     List<string> GetIps(string record)
@@ -61,7 +61,7 @@ public class DnsClient {
         proc.WaitForExit();
 
         if (proc.ExitCode != 0) {
-            logger.Warn($"Failed to run az command.");
+            Logger.Warn($"Failed to run az command.");
             throw new Exception("Failed to run az command.");
         }
 

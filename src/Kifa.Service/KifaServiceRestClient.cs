@@ -13,7 +13,7 @@ using NLog;
 namespace Kifa.Service;
 
 public class KifaServiceRestClient {
-    internal static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    internal static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static HttpClient? client;
 
@@ -205,7 +205,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             throw ex;
         }
 
-        KifaServiceRestClient.logger.Warn(ex, $"{message} ({index})");
+        KifaServiceRestClient.Logger.Warn(ex, $"{message} ({index})");
         Thread.Sleep(TimeSpan.FromSeconds(5));
     }
 

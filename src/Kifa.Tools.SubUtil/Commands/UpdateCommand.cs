@@ -11,7 +11,7 @@ namespace Kifa.Tools.SubUtil.Commands;
 [Verb("update", HelpText = "Update subtitle with given modification.")]
 class UpdateCommand : KifaCommand {
     const string SubtitlesPrefix = "/Subtitles";
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file to update.")]
     public string FileUri { get; set; }
@@ -28,7 +28,7 @@ class UpdateCommand : KifaCommand {
             new TimeShiftAction()
         }, choiceName: "actions").choice.Update(sub);
 
-        logger.Info(sub.ToString());
+        Logger.Info(sub.ToString());
         target.Delete();
         target.Write(sub.ToString());
         return 0;

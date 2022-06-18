@@ -4,7 +4,7 @@ using NLog;
 namespace Kifa.Subtitle.Ass;
 
 public class AssDialogueEffect {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public virtual string EffectType => null;
     public virtual IEnumerable<string> EffectParameters => null;
@@ -19,7 +19,7 @@ public class AssDialogueEffect {
             case AssDialogueBannerEffect.EffectTypeName:
                 return new AssDialogueBannerEffect();
             default:
-                logger.Warn("Unexpected dialogue effect type: {0}", content);
+                Logger.Warn("Unexpected dialogue effect type: {0}", content);
                 return null;
         }
     }

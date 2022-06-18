@@ -47,7 +47,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     static KifaServiceClient<BilibiliVideo> client;
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static HttpClient bilibiliClient;
 
@@ -104,9 +104,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 return Date.Zero;
             }
 
-            logger.Debug($"Unable to find video {Id} from bilibili API.");
+            Logger.Debug($"Unable to find video {Id} from bilibili API.");
         } catch (Exception e) {
-            logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
+            Logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
         }
 
         try {
@@ -114,17 +114,17 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 return Date.Zero;
             }
 
-            logger.Debug($"Unable to find video {Id} from biliplus API.");
+            Logger.Debug($"Unable to find video {Id} from biliplus API.");
         } catch (Exception e) {
-            logger.Debug(e, $"Unable to find video {Id} from biliplus API.");
+            Logger.Debug(e, $"Unable to find video {Id} from biliplus API.");
         }
 
         try {
             if (!FillWithBiliplusCache()) {
-                logger.Debug($"Unable to find video {Id} from biliplus cache.");
+                Logger.Debug($"Unable to find video {Id} from biliplus cache.");
             }
         } catch (Exception e) {
-            logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
+            Logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
         }
 
         return Date.Zero;
@@ -167,7 +167,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     bool FillWithBiliplus() {
         var data = new BiliplusVideoRpc().Invoke(Id);
         if (data == null) {
-            logger.Error("Failed to retrieve data for video (Id) from biliplus.");
+            Logger.Error("Failed to retrieve data for video (Id) from biliplus.");
             return false;
         }
 
@@ -337,7 +337,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             AddDownloadJob(Id);
 
             while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
-                logger.Debug("Download not ready. Sleep 30 seconds...");
+                Logger.Debug("Download not ready. Sleep 30 seconds...");
                 UpdateDownloadStatus(cid);
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             }
@@ -349,14 +349,14 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
 
             if (choices == null) {
-                logger.Warn("No sources found. Job not successful?");
+                Logger.Warn("No sources found. Job not successful?");
                 return (null, -1, null);
             }
 
             var initialSource = biliplusSourceChoice;
             while (true) {
                 try {
-                    logger.Debug("Choosen source: " +
+                    Logger.Debug("Choosen source: " +
                                  $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
                     var link = choices[biliplusSourceChoice].link;
                     return ("mp4", -1, new List<Func<Stream>> {
@@ -368,7 +368,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                         throw;
                     }
 
-                    logger.Warn(ex, "Download failed. Try next source.");
+                    Logger.Warn(ex, "Download failed. Try next source.");
                     Thread.Sleep(TimeSpan.FromSeconds(30));
                 }
             }
@@ -392,7 +392,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 count = buffer.Length - bufferOffset;
             }
 
-            logger.Trace($"Downloading from {offset} to {offset + count} of {link}...");
+            Logger.Trace($"Downloading from {offset} to {offset + count} of {link}...");
 
             return Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Get, link);
@@ -408,7 +408,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                     throw ex;
                 }
 
-                logger.Warn(ex, $"Download from {offset} to {offset + count} failed ({i})...");
+                Logger.Warn(ex, $"Download from {offset} to {offset + count} failed ({i})...");
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             });
         }, BlockSize, ThreadCount);
@@ -419,14 +419,14 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
             .Result;
         var content = response.GetString();
-        logger.Debug($"Add download request result: {content}");
+        Logger.Debug($"Add download request result: {content}");
     }
 
     static void UpdateDownloadStatus(string cid) {
         using var response = BiliplusHttpClient.Instance
             .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}").Result;
         var content = response.GetString();
-        logger.Debug($"Check saver status: {content}");
+        Logger.Debug($"Check saver status: {content}");
     }
 
     static DownloadStatus GetDownloadStatus(string aid, int pid) {
@@ -435,7 +435,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
             .Result;
         var content = response.GetString();
-        logger.Debug($"Get download result: {content}");
+        Logger.Debug($"Get download result: {content}");
         var storage = JToken.Parse(content)["storage"];
         var access = (int) storage["access"];
         switch (access) {
@@ -461,10 +461,10 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                     $"https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid.Substring(2)}&qn={quality}&fourk=1")
                 .Result;
             var content = response.GetString();
-            logger.Debug($"Get download result: {content}");
+            Logger.Debug($"Get download result: {content}");
             var data = JToken.Parse(content);
             if ((int) data["code"] != 0) {
-                logger.Warn($"bilibili API error: {data["message"]} ({data["code"]}).");
+                Logger.Warn($"bilibili API error: {data["message"]} ({data["code"]}).");
                 Thread.Sleep(TimeSpan.FromSeconds(10));
                 continue;
             }
@@ -472,7 +472,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             var receivedQuality = (int) data["data"]["quality"];
             if (receivedQuality != (int) data["data"]["accept_quality"][0]) {
                 quality = (int) data["data"]["accept_quality"][0];
-                logger.Warn($"Quality mismatch: received quality {receivedQuality}, " +
+                Logger.Warn($"Quality mismatch: received quality {receivedQuality}, " +
                             $"best quality {data["data"]["accept_quality"][0]}.");
                 Thread.Sleep(TimeSpan.FromSeconds(2));
                 continue;
@@ -490,7 +490,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         using var response = BiliplusHttpClient.Instance
             .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4").Result;
         var content = response.GetString();
-        logger.Debug($"Downloaded page content: {content}");
+        Logger.Debug($"Downloaded page content: {content}");
 
         return content;
     }
@@ -499,11 +499,11 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         using var response = BiliplusHttpClient.Instance
             .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
         var content = response.GetString();
-        logger.Debug($"Cid info: {content}");
+        Logger.Debug($"Cid info: {content}");
 
         var data = JToken.Parse(content)["data"];
         if (data == null || data["aid"] == null || data["page"] == null) {
-            logger.Debug($"Failed to retrieve cid info");
+            Logger.Debug($"Failed to retrieve cid info");
             return null;
         }
 

@@ -8,7 +8,7 @@ using NLog;
 namespace Kifa.Bilibili;
 
 public class BilibiliBangumi : DataModel<BilibiliBangumi> {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public const string ModelId = "bilibili/bangumis";
 
@@ -32,7 +32,7 @@ public class BilibiliBangumi : DataModel<BilibiliBangumi> {
         Type = mediaData.Media.TypeName;
         var seasonData = new MediaSeasonRpc().Invoke(SeasonId)?.Result;
         if (seasonData == null) {
-            logger.Error($"Failed to get data for season ({SeasonId}) from Bilibili.");
+            Logger.Error($"Failed to get data for season ({SeasonId}) from Bilibili.");
             return Date.Zero;
         }
 

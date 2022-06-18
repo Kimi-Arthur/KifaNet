@@ -7,7 +7,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("export", HelpText = "Export data to a specific file.")]
 public class ExportCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('t', "type", HelpText = "Type of data. Allowed values: goethe/words, goethe/lists")]
     public string Type { get; set; }
@@ -29,13 +29,13 @@ public class ExportCommand : KifaCommand {
         var chef = DataChef.GetChef(Type, content);
 
         if (chef == null) {
-            logger.Error($"Unknown type name: {Type}.\n{content}");
+            Logger.Error($"Unknown type name: {Type}.\n{content}");
             return 1;
         }
 
-        var result = logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
+        var result = Logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
         if (result.Status != KifaActionStatus.OK) {
-            logger.Error($"Failed to get data for {chef.ModelId}.");
+            Logger.Error($"Failed to get data for {chef.ModelId}.");
             return (int) result.Status;
         }
 

@@ -9,7 +9,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("upload", HelpText = "Upload file to a cloud location.")]
 class UploadCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static List<string> DefaultTargets { get; set; }
 
@@ -75,22 +75,22 @@ class UploadCommand : KifaCommand {
             .ToDictionary(result => result.Key, result => result.ToList());
 
         if (finalResultsBySuccess.ContainsKey(true)) {
-            logger.Info($"Successfully uploaded {finalResultsBySuccess[true].Count} files to:");
+            Logger.Info($"Successfully uploaded {finalResultsBySuccess[true].Count} files to:");
             foreach (var finalResults in finalResultsBySuccess[true]) {
-                logger.Info($"{finalResults.Item1} =>");
+                Logger.Info($"{finalResults.Item1} =>");
                 foreach (var result in finalResults.Item3) {
-                    logger.Info($"\t{result.destination}");
+                    Logger.Info($"\t{result.destination}");
                 }
             }
         }
 
         if (finalResultsBySuccess.ContainsKey(false)) {
-            logger.Error($"Failed to upload {finalResultsBySuccess[false].Count} files:");
+            Logger.Error($"Failed to upload {finalResultsBySuccess[false].Count} files:");
             foreach (var finalResults in finalResultsBySuccess[false]) {
-                logger.Error($"{finalResults.Item1} =>");
+                Logger.Error($"{finalResults.Item1} =>");
                 foreach (var result in finalResults.Item3) {
                     if (result.result == false) {
-                        logger.Error($"\t{result.destination ?? result.target.ToString()}");
+                        Logger.Error($"\t{result.destination ?? result.target.ToString()}");
                     }
                 }
             }

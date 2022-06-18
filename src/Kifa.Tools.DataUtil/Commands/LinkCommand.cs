@@ -6,7 +6,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("link", HelpText = "Link two items.")]
 public class LinkCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target this link should point.")]
     public string Target { get; set; }
@@ -21,11 +21,11 @@ public class LinkCommand : KifaCommand {
         var chef = DataChef.GetChef(Type);
 
         if (chef == null) {
-            logger.Error($"Unknown type name: {Type}.");
+            Logger.Error($"Unknown type name: {Type}.");
             return 1;
         }
 
-        return (int) logger.LogResult(chef.Link(Target, Link), "Summary").Status;
+        return (int) Logger.LogResult(chef.Link(Target, Link), "Summary").Status;
         ;
     }
 }

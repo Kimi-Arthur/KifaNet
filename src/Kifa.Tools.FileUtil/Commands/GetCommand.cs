@@ -10,7 +10,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("get", HelpText = "Get files.")]
 class GetCommand : KifaFileCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
     public bool LightweightOnly { get; set; } = false;
@@ -25,12 +25,12 @@ class GetCommand : KifaFileCommand {
     protected override int ExecuteOneKifaFile(KifaFile file) {
         try {
             file.Add();
-            logger.Info("Already got!");
+            Logger.Info("Already got!");
             return 0;
         } catch (FileNotFoundException) {
             // File expected to be not found.
         } catch (FileCorruptedException ex) {
-            logger.Error(ex, "Target exists, but doesn't match.");
+            Logger.Error(ex, "Target exists, but doesn't match.");
             return 2;
         }
 
@@ -39,7 +39,7 @@ class GetCommand : KifaFileCommand {
         var info = file.FileInfo;
 
         if (info?.Locations == null) {
-            logger.Error($"No instance exists for {file.Id}!");
+            Logger.Error($"No instance exists for {file.Id}!");
             return 1;
         }
 
@@ -50,14 +50,14 @@ class GetCommand : KifaFileCommand {
                     linkSource.Exists()) {
                     linkSource.Copy(file);
                     file.Register(true);
-                    logger.Info($"Got {file} through hard linking to {linkSource}.");
+                    Logger.Info($"Got {file} through hard linking to {linkSource}.");
                     return 0;
                 }
             }
         }
 
         if (LightweightOnly) {
-            logger.Warn($"Not getting {file}, which requires downloading.");
+            Logger.Warn($"Not getting {file}, which requires downloading.");
             return 1;
         }
 
@@ -65,13 +65,13 @@ class GetCommand : KifaFileCommand {
         source.Copy(file);
 
         try {
-            logger.Info($"Verifying destination {file}...");
+            Logger.Info($"Verifying destination {file}...");
             file.Add();
             source.Register(true);
-            logger.Info($"Successfully got destination {file} from {source}!");
+            Logger.Info($"Successfully got destination {file} from {source}!");
             return 0;
         } catch (IOException ex) {
-            logger.Error(ex, $"Failed to get destination {file}.");
+            Logger.Error(ex, $"Failed to get destination {file}.");
             return 2;
         }
     }

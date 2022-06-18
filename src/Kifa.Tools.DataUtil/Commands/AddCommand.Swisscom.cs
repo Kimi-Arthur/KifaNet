@@ -19,8 +19,8 @@ public partial class AddCommand {
             account.Register();
             account = SwisscomAccount.Client.Get(account.Id);
             var quota = SwisscomAccountQuota.Client.Get(account.Id);
-            logger.Info(account);
-            logger.Info(quota);
+            Logger.Info(account);
+            Logger.Info(quota);
         }
     }
 

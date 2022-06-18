@@ -15,7 +15,7 @@ public class KifaServiceJsonClient {
 
 public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataModel>
     where TDataModel : DataModel, new() {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public override SortedDictionary<string, TDataModel> List() {
         var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
@@ -83,10 +83,10 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
                 return false;
             } catch (UnableToFillException ex) {
-                logger.Error(ex, $"Failed to fill {ModelId}/{id} with an expected error.");
+                Logger.Error(ex, $"Failed to fill {ModelId}/{id} with an expected error.");
                 throw;
             } catch (Exception ex) {
-                logger.Error(ex, $"Failed to fill {ModelId}/{id} with an unexpected error.");
+                Logger.Error(ex, $"Failed to fill {ModelId}/{id} with an unexpected error.");
                 throw;
             }
 
@@ -108,7 +108,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     public TDataModel? Retrieve(string id) {
-        logger.Trace($"Get {ModelId}/{id}");
+        Logger.Trace($"Get {ModelId}/{id}");
         var data = Read(id);
         if (data == null) {
             return null;
@@ -120,13 +120,13 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             data.Id = id;
         }
 
-        logger.Trace($"Got {data}");
+        Logger.Trace($"Got {data}");
         return data;
     }
 
     public override KifaActionResult Set(TDataModel data)
         => KifaActionResult.FromAction(() => {
-            logger.Trace($"Set {ModelId}/{data.Id}: {data}");
+            Logger.Trace($"Set {ModelId}/{data.Id}: {data}");
             data = data.Clone();
             // This is new data, we should Fill it.
             data.ResetRefreshDate();
@@ -160,7 +160,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => {
-            logger.Trace($"Update {ModelId}/{data.Id}: {data}");
+            Logger.Trace($"Update {ModelId}/{data.Id}: {data}");
             // If it's new data, we should try Fill it.
             var original = Retrieve(data.Id) ?? new TDataModel {
                 Metadata = new DataMetadata {
@@ -185,7 +185,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     // It will convert to the target object to write as the links don't need to be updated anyway.
     // It will also remove the parts that only make sense for the links.
     void CleanupForWriting(TDataModel data) {
-        logger.Trace($"Before cleanup: {data}");
+        Logger.Trace($"Before cleanup: {data}");
         data.Id = data.RealId;
         var linking = data.Metadata?.Linking;
         if (linking != null) {
@@ -208,7 +208,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             data.Metadata = null;
         }
 
-        logger.Trace($"After cleanup: {data}");
+        Logger.Trace($"After cleanup: {data}");
     }
 
     public override KifaActionResult Delete(string id) {
@@ -320,7 +320,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     TDataModel? Read(string id) {
         var data = ReadRaw(id);
-        logger.Trace($"Read: {data}");
+        Logger.Trace($"Read: {data}");
         return data == null
             ? null
             : JsonConvert.DeserializeObject<TDataModel>(data, Defaults.JsonSerializerSettings);
@@ -352,7 +352,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     static KifaActionResult LogAndReturn(KifaActionResult actionResult) {
-        logger.Log(actionResult.Status switch {
+        Logger.Log(actionResult.Status switch {
             KifaActionStatus.Error => LogLevel.Error,
             KifaActionStatus.BadRequest => LogLevel.Warn,
             KifaActionStatus.OK => LogLevel.Info,

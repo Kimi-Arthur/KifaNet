@@ -9,7 +9,7 @@ using NLog;
 namespace Kifa.IO;
 
 public class VerifiableStream : Stream {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static readonly HashAlgorithm MD5Hasher = new MD5CryptoServiceProvider();
 
@@ -54,7 +54,7 @@ public class VerifiableStream : Stream {
         var startPosition = Position.RoundDown(FileInformation.BlockSize);
         var endPosition = Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
-        logger.Trace($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
+        Logger.Trace($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
         lastBlock ??= new byte[FileInformation.BlockSize];
 
@@ -63,7 +63,7 @@ public class VerifiableStream : Stream {
             var bytesToRead = (int) Math.Min(endPosition - pos, FileInformation.BlockSize);
             var bytesRead = 0;
             if (pos == lastBlockStart) {
-                logger.Trace($"[{pos}, {pos + bytesToRead}) skipped");
+                Logger.Trace($"[{pos}, {pos + bytesToRead}) skipped");
                 bytesRead = bytesToRead;
             } else {
                 bool? successful = null;
@@ -73,19 +73,19 @@ public class VerifiableStream : Stream {
                         stream.Seek(pos, SeekOrigin.Begin);
                         bytesRead = stream.Read(lastBlock, 0, bytesToRead);
                         if (bytesRead != bytesToRead) {
-                            logger.Warn("Didn't get expected amount of data.");
-                            logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead,
+                            Logger.Warn("Didn't get expected amount of data.");
+                            Logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead,
                                 bytesToRead);
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                             continue;
                         }
                     } catch (CryptographicException ex) {
-                        logger.Warn(ex,
+                        Logger.Warn(ex,
                             $"Decrypt error when reading from {Position} to {Position + count}: retrying ({i})...");
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                         continue;
                     } catch (Exception ex) {
-                        logger.Warn(ex, "Failed to read from {0} to {1}:", Position,
+                        Logger.Warn(ex, "Failed to read from {0} to {1}:", Position,
                             Position + count);
                         successful = false;
                         break;
@@ -104,17 +104,17 @@ public class VerifiableStream : Stream {
 
                     if (HasMajority(candidates)) {
                         if (result == false) {
-                            logger.Warn("Block {0} is consistently wrong.",
+                            Logger.Warn("Block {0} is consistently wrong.",
                                 pos / FileInformation.BlockSize);
                             successful = false;
                             break;
                         }
 
                         if (candidates.Count > 1) {
-                            logger.Debug("Block {0} is not consistently got, but it's fine:",
+                            Logger.Debug("Block {0} is not consistently got, but it's fine:",
                                 pos / FileInformation.BlockSize);
                             foreach (var candidate in candidates) {
-                                logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
+                                Logger.Debug("{0}: {1}", candidate.Key, candidate.Value);
                             }
                         }
 
@@ -123,11 +123,11 @@ public class VerifiableStream : Stream {
                     }
 
                     if (result == false) {
-                        logger.Warn("Block {0} may be problematic, retrying ({1})...",
+                        Logger.Warn("Block {0} may be problematic, retrying ({1})...",
                             pos / FileInformation.BlockSize, i);
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                     } else if (candidates.Count > 1) {
-                        logger.Warn("Block {0} has conflicting hashes, retrying ({1})...",
+                        Logger.Warn("Block {0} has conflicting hashes, retrying ({1})...",
                             pos / FileInformation.BlockSize, i);
                         Thread.Sleep(TimeSpan.FromSeconds(10 * i));
                     }
@@ -135,13 +135,13 @@ public class VerifiableStream : Stream {
 
                 if (successful != true) {
                     if (successful == false) {
-                        logger.Error($"Block {pos / FileInformation.BlockSize} is invalid.");
+                        Logger.Error($"Block {pos / FileInformation.BlockSize} is invalid.");
                     } else {
                         if (candidates.Count > 1) {
-                            logger.Warn("Block {0} is too inconsistent:",
+                            Logger.Warn("Block {0} is too inconsistent:",
                                 pos / FileInformation.BlockSize);
                             foreach (var candidate in candidates) {
-                                logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
+                                Logger.Warn("{0}: {1}", candidate.Key, candidate.Value);
                             }
                         }
                     }
@@ -149,7 +149,7 @@ public class VerifiableStream : Stream {
                     throw new Exception($"Unable to get valid block starting from {pos}");
                 }
 
-                logger.Trace($"[{pos}, {pos + bytesToRead}) got");
+                Logger.Trace($"[{pos}, {pos + bytesToRead}) got");
 
                 lastBlockStart = pos;
             }
@@ -184,7 +184,7 @@ public class VerifiableStream : Stream {
             var expectedMd5 = info.BlockMd5[blockId];
 
             if (md5 != expectedMd5) {
-                logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedMd5, md5);
+                Logger.Warn("MD5 mismatch: expected {0}, got {1}", expectedMd5, md5);
                 result = false;
             }
         }
@@ -195,7 +195,7 @@ public class VerifiableStream : Stream {
             var expectedSha1 = info.BlockSha1[blockId];
 
             if (sha1 != expectedSha1) {
-                logger.Warn("SHA1 mismatch: expected {0}, got {1}", expectedSha1, sha1);
+                Logger.Warn("SHA1 mismatch: expected {0}, got {1}", expectedSha1, sha1);
                 result = false;
             }
         }
@@ -207,7 +207,7 @@ public class VerifiableStream : Stream {
             var expectedSha256 = info.BlockSha256[blockId];
 
             if (sha256 != expectedSha256) {
-                logger.Warn("SHA256 mismatch: expected {0}, got {1}", expectedSha256, sha256);
+                Logger.Warn("SHA256 mismatch: expected {0}, got {1}", expectedSha256, sha256);
                 result = false;
             }
         }

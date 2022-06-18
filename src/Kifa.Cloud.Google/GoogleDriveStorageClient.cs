@@ -13,7 +13,7 @@ namespace Kifa.Cloud.Google;
 
 public class GoogleDriveStorageClient : StorageClient {
     const int BlockSize = 32 << 20;
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string RootFolder { get; set; }
 
@@ -156,7 +156,7 @@ public class GoogleDriveStorageClient : StorageClient {
                 } catch (AggregateException ae) {
                     ae.Handle(x => {
                         if (x is HttpRequestException) {
-                            logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
+                            Logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
                                 position + blockLength);
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                             return true;

@@ -7,7 +7,7 @@ namespace Kifa.Subtitle.Ass;
 
 public class AssStylesSection : AssSection {
     public const string SectionHeader = "[V4+ Styles]";
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public override string SectionTitle => SectionHeader;
 
     public List<string> Format
@@ -66,7 +66,7 @@ public class AssStylesSection : AssSection {
                         break;
                     case "Style":
                         if (headers == null) {
-                            logger.Warn(
+                            Logger.Warn(
                                 "Should see header line before style line in style section.");
                             break;
                         }
@@ -77,7 +77,7 @@ public class AssStylesSection : AssSection {
                             section.NamedStyles[style.Name] = style;
                             section.Styles.Add(style);
                         } catch (Exception ex) {
-                            logger.Error(ex, $"Error parsing style: {content}");
+                            Logger.Error(ex, $"Error parsing style: {content}");
                             throw new Exception($"Error parsing style: {content}", ex);
                         }
 

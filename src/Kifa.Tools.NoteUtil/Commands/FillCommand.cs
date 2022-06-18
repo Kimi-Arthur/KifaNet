@@ -11,7 +11,7 @@ namespace Kifa.Tools.NoteUtil.Commands;
 
 [Verb("fill", HelpText = "Fill vocabulary tables with pronunciation, meaning and verb forms.")]
 public class FillCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file to rename.")]
     public string FileUri { get; set; }
@@ -87,7 +87,7 @@ public class FillCommand : KifaCommand {
                                         break;
                                 }
                             } catch (Exception ex) {
-                                logger.Warn(ex, $"Fail to fill line: |{string.Join("|", parts)}|.");
+                                Logger.Warn(ex, $"Fail to fill line: |{string.Join("|", parts)}|.");
                             }
                         }
 
@@ -109,7 +109,7 @@ public class FillCommand : KifaCommand {
         var verb = new GermanWord {
             Id = MarkdownHelpers.GetWordId(parts, columnNames)
         };
-        logger.Info($"Processing verb: {verb.Id}");
+        Logger.Info($"Processing verb: {verb.Id}");
 
         verb.Fill();
 
@@ -128,7 +128,7 @@ public class FillCommand : KifaCommand {
         var noun = new GermanWord {
             Id = MarkdownHelpers.GetWordId(parts, columnNames)
         };
-        logger.Info($"Processing noun: {noun.Id}");
+        Logger.Info($"Processing noun: {noun.Id}");
 
         noun.Fill();
 
@@ -147,7 +147,7 @@ public class FillCommand : KifaCommand {
         var word = new GermanWord {
             Id = MarkdownHelpers.GetWordId(parts, columnNames)
         };
-        logger.Info($"Processing word: {word.Id}");
+        Logger.Info($"Processing word: {word.Id}");
 
         word.Fill();
 

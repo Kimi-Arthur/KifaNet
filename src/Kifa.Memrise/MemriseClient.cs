@@ -19,7 +19,7 @@ using OpenQA.Selenium.Remote;
 namespace Kifa.Memrise;
 
 public class MemriseClient : IDisposable {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     string lineBreak = new(' ', 100);
 
@@ -107,7 +107,7 @@ public class MemriseClient : IDisposable {
 
         foreach (var word in words) {
             var addedWord = AddWord(word);
-            logger.LogResult(addedWord, $"Upload word {word}");
+            Logger.LogResult(addedWord, $"Upload word {word}");
             if (addedWord.Status == KifaActionStatus.OK) {
                 var added = addedWord.Response;
                 yield return added.ThingId;
@@ -124,16 +124,16 @@ public class MemriseClient : IDisposable {
             thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
-            logger.Debug(
+            Logger.Debug(
                 $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId).Success}");
         }
 
         foreach (var wordId in existingThingIds.Except(wordIds)) {
-            logger.Debug(
+            Logger.Debug(
                 $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId).Success}");
         }
 
-        logger.Debug(
+        Logger.Debug(
             $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordIds).Success}");
     }
 
@@ -144,13 +144,13 @@ public class MemriseClient : IDisposable {
         });
 
         var rootWord = WordClient.Get(word.RootWord);
-        logger.Info($"{word.Id} => {rootWord?.Id}");
+        Logger.Info($"{word.Id} => {rootWord?.Id}");
 
         allExistingRows ??= new Dictionary<string, MemriseWord>();
 
         WebDriver.Url = Course.DatabaseUrl;
 
-        logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{rootWord}");
+        Logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{rootWord}");
 
         // Check headers (temporarily disabled)
         // var checkHeadersResult = CheckHeaders(GetHeaders());
@@ -170,7 +170,7 @@ public class MemriseClient : IDisposable {
             Thread.Sleep(TimeSpan.FromSeconds(5));
             existingRow = GetExistingRow(word);
             if (existingRow == null) {
-                logger.Error($"Failed to add word: {word.Id}.");
+                Logger.Error($"Failed to add word: {word.Id}.");
                 return new KifaActionResult<MemriseWord>(KifaActionStatus.Error,
                     $"failed to add word {word.Id}");
             }
@@ -188,11 +188,11 @@ public class MemriseClient : IDisposable {
     }
 
     KifaActionResult CheckHeaders(Dictionary<string, string> headers) {
-        logger.Debug($"Headers: {string.Join(", ", headers)}");
+        Logger.Debug($"Headers: {string.Join(", ", headers)}");
         foreach (var column in Course.Columns) {
             var headerIndex = headers.GetValueOrDefault(column.Key) ?? "not found";
             if (headerIndex != column.Value) {
-                logger.Fatal(
+                Logger.Fatal(
                     $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}.");
                 return new KifaActionResult {
                     Status = KifaActionStatus.Error,
@@ -214,11 +214,11 @@ public class MemriseClient : IDisposable {
             var info = FileInformation.GetInformation(new MemoryStream(newAudio),
                 FileProperties.Size | FileProperties.Md5);
             if (currentAudios.Contains((info.Size ?? 0, info.Md5))) {
-                logger.Debug($"{link} for {baseWord.Id} ({originalWord.ThingId}) already exists.");
+                Logger.Debug($"{link} for {baseWord.Id} ({originalWord.ThingId}) already exists.");
                 continue;
             }
 
-            logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
+            Logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
             }.Invoke(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken,
@@ -327,7 +327,7 @@ public class MemriseClient : IDisposable {
     }
 
     MemriseWord GetDataFromRow(IWebElement existingRow) {
-        logger.Trace($"Getting word from row {existingRow.Text}.");
+        Logger.Trace($"Getting word from row {existingRow.Text}.");
         var data = new Dictionary<string, string>();
 
         foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {

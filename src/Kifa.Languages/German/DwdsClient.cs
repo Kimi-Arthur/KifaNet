@@ -7,7 +7,7 @@ using NLog;
 namespace Kifa.Languages.German;
 
 public class DwdsClient {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static HttpClient dwdsClient = new();
 

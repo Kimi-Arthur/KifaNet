@@ -9,7 +9,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("touch", HelpText = "Touch file.")]
 class TouchCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, MetaName = "File URL")]
     public string FileUri { get; set; }
@@ -38,18 +38,18 @@ class TouchCommand : KifaCommand {
 
     int TouchFile(KifaFile target) {
         if (target.Exists()) {
-            logger.Info($"{target} already exists!");
+            Logger.Info($"{target} already exists!");
             return 0;
         }
 
         target.Touch();
 
         if (target.Exists()) {
-            logger.Info($"{target} is successfully touched!");
+            Logger.Info($"{target} is successfully touched!");
             return 0;
         }
 
-        logger.Fatal($"{target} doesn't exist unexpectedly!");
+        Logger.Fatal($"{target} doesn't exist unexpectedly!");
         return 2;
     }
 }

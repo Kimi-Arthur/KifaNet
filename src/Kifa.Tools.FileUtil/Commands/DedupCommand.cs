@@ -9,7 +9,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("dedup", HelpText = "Deduplicate file entries.")]
 class DedupCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -33,7 +33,7 @@ class DedupCommand : KifaCommand {
         }
 
         if (filesToDelete.Count == 0) {
-            logger.Info("No duplicated files found!");
+            Logger.Info("No duplicated files found!");
             return 0;
         }
 
@@ -52,16 +52,16 @@ class DedupCommand : KifaCommand {
             foreach (var fileName in fileInfo.Locations.Keys) {
                 var file = new KifaFile(fileName);
                 if (file.Id == id) {
-                    logger.Info($"Removing {file}...");
+                    Logger.Info($"Removing {file}...");
                     file.Delete();
-                    logger.Info($"Removing {file} from locations...");
+                    Logger.Info($"Removing {file} from locations...");
                     file.Unregister();
                 }
             }
         }
 
-        logger.Info($"Removing file info {fileInfo.Id}...");
+        Logger.Info($"Removing file info {fileInfo.Id}...");
         FileInformation.Client.Delete(fileInfo.Id);
-        logger.Info($"Successfully removed {fileInfo.Id}.");
+        Logger.Info($"Successfully removed {fileInfo.Id}.");
     }
 }

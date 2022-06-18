@@ -13,7 +13,7 @@ namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("get", HelpText = "Get Bilibili chat as xml document.")]
 class GetChatCommand : KifaFileCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
     public string? Cid { get; set; }
@@ -37,7 +37,7 @@ class GetChatCommand : KifaFileCommand {
             var ids = Aid.Split('p');
             var v = BilibiliVideo.Client.Get(ids[0]);
             if (v == null) {
-                logger.Fatal($"Cannot find video ({Aid}). Exiting.");
+                Logger.Fatal($"Cannot find video ({Aid}). Exiting.");
                 return 1;
             }
 
@@ -58,7 +58,7 @@ class GetChatCommand : KifaFileCommand {
             var ids = inferredAid.Split('p');
             var v = BilibiliVideo.Client.Get(ids[0]);
             if (v == null) {
-                logger.Error($"Cannot find video ({ids[0]}. Skipped.");
+                Logger.Error($"Cannot find video ({ids[0]}. Skipped.");
             }
             
             var pid = ids.Length > 1 ? int.Parse(ids[1]) : 1;
@@ -102,7 +102,7 @@ class GetChatCommand : KifaFileCommand {
     string? InferAid(string file) {
         var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
         if (segments.Length < 3 || !segments[segments.Length - 3].StartsWith("av")) {
-            logger.Debug("Cannot infer CID from file name.");
+            Logger.Debug("Cannot infer CID from file name.");
             return null;
         }
 

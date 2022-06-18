@@ -7,7 +7,7 @@ namespace Kifa.Subtitle.Ass;
 
 public class AssEventsSection : AssSection {
     public const string SectionHeader = "[Events]";
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public override string SectionTitle => SectionHeader;
 
     public List<string> Format
@@ -51,7 +51,7 @@ public class AssEventsSection : AssSection {
                         break;
                     case "Dialogue":
                         if (headers == null) {
-                            logger.Warn(
+                            Logger.Warn(
                                 "Should see header line before event line in events section.");
                             break;
                         }
@@ -60,7 +60,7 @@ public class AssEventsSection : AssSection {
                             section.Events.Add(AssEvent.Parse(stylesSection.NamedStyles, type,
                                 content.Split(",", headers.Count).Select(s => s.Trim()), headers));
                         } catch (Exception ex) {
-                            logger.Error(ex, $"Error parsing event: {content}");
+                            Logger.Error(ex, $"Error parsing event: {content}");
                             throw new Exception($"Error parsing event: {content}", ex);
                         }
 

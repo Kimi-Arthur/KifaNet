@@ -16,9 +16,9 @@ public partial class KifaFile {
         try {
             // We don't really need to check source, but we need the sha256 and size to continue.
             Add(false);
-            logger.Debug($"Checked source {this}: sha256={FileInfo!.Sha256}, size={FileInfo.Size}");
+            Logger.Debug($"Checked source {this}: sha256={FileInfo!.Sha256}, size={FileInfo.Size}");
         } catch (IOException ex) {
-            logger.Error(ex, $"Failed to check source {this}.");
+            Logger.Error(ex, $"Failed to check source {this}.");
             return targets
                 .Select<CloudTarget, (CloudTarget, string?, bool?)>(target => (target, null, false))
                 .ToList();
@@ -58,15 +58,15 @@ public partial class KifaFile {
         try {
             destinationLocation = CreateLocation(target);
         } catch (IOException ex) {
-            logger.Error(ex, $"Failed to create location to upload {this} as {target}");
+            Logger.Error(ex, $"Failed to create location to upload {this} as {target}");
             return (target, null, false);
         }
 
-        logger.Debug($"Will upload {this} to {destinationLocation}");
+        Logger.Debug($"Will upload {this} to {destinationLocation}");
 
         if (!deleteSource && skipRegistered) {
             if (new KifaFile(destinationLocation).Registered) {
-                logger.Debug($"Skipped uploading of {this} to {destinationLocation} for now " +
+                Logger.Debug($"Skipped uploading of {this} to {destinationLocation} for now " +
                              "as it's supposed to be already uploaded...");
                 return (target, destinationLocation, null);
             }
@@ -80,16 +80,16 @@ public partial class KifaFile {
 
         try {
             CheckDestination(destination, skipVerify);
-            logger.Debug($"Destination {destination} is already uploaded.");
+            Logger.Debug($"Destination {destination} is already uploaded.");
             return (target, destinationLocation, true);
         } catch (FileNotFoundException) {
             // Expected not to find the destination.
         } catch (IOException ex) {
-            logger.Error(ex, $"Failed to check destination {destination}");
+            Logger.Error(ex, $"Failed to check destination {destination}");
             return (target, destinationLocation, false);
         }
 
-        logger.Debug($"Copying from source {this} to destination {destination}...");
+        Logger.Debug($"Copying from source {this} to destination {destination}...");
         Copy(destination);
 
         try {
@@ -98,10 +98,10 @@ public partial class KifaFile {
                 Register(true);
             }
 
-            logger.Debug($"Checked destination {destination}.");
+            Logger.Debug($"Checked destination {destination}.");
             return (target, destinationLocation, true);
         } catch (IOException ex) {
-            logger.Error(ex, $"Failed to check destination {destination} after uploading.");
+            Logger.Error(ex, $"Failed to check destination {destination} after uploading.");
             return (target, destinationLocation, false);
         }
     }
@@ -121,7 +121,7 @@ public partial class KifaFile {
 
     void CleanupFiles(bool? status, bool deleteSource, bool downloadLocal) {
         if (status == false) {
-            logger.Debug("No files are removed since not all uploads are successful.");
+            Logger.Debug("No files are removed since not all uploads are successful.");
             return;
         }
 
@@ -131,11 +131,11 @@ public partial class KifaFile {
 
         if (deleteSource && status == true) {
             if (IsCloud) {
-                logger.Warn($"Source {this} is not removed as it's in cloud.");
+                Logger.Warn($"Source {this} is not removed as it's in cloud.");
             } else {
                 Delete();
                 FileInformation.Client.RemoveLocation(Id, ToString());
-                logger.Debug($"Source {this} is removed since upload is successful.");
+                Logger.Debug($"Source {this} is removed since upload is successful.");
             }
         }
     }

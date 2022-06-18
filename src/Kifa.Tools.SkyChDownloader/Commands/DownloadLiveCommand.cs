@@ -8,7 +8,7 @@ namespace Kifa.Tools.SkyChDownloader.Commands;
 
 [Verb("live", HelpText = "Download program with id from Live TV page.")]
 public class DownloadLiveCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Live TV ID.")]
     public string LiveId { get; set; }
@@ -24,9 +24,9 @@ public class DownloadLiveCommand : KifaCommand {
             title += " - " + HttpUtility.HtmlDecode(skyProgram.Subtitle);
         }
 
-        logger.Info($"Name: {title}.{skyProgram.Id}.mp4");
-        logger.Info($"Cover: {skyProgram.ImageLink}");
-        logger.Info($"Link: {skyProgram.GetVideoLink()}");
+        Logger.Info($"Name: {title}.{skyProgram.Id}.mp4");
+        Logger.Info($"Cover: {skyProgram.ImageLink}");
+        Logger.Info($"Link: {skyProgram.GetVideoLink()}");
         return 0;
     }
 }

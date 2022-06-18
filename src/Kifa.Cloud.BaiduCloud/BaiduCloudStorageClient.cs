@@ -20,7 +20,7 @@ public class BaiduCloudStorageClient : StorageClient {
     const long MaxBlockCount = 1L << 10;
     const long MaxBlockSize = 2L << 30;
     const long MinBlockSize = 32L << 20;
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static APIList APIList { get; set; }
 
@@ -63,12 +63,12 @@ public class BaiduCloudStorageClient : StorageClient {
                     readCount = DownloadChunk(buffer, path, bufferOffset + chunkOffset,
                         offset + chunkOffset, chunkSize);
                     if (readCount != chunkSize) {
-                        logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
+                        Logger.Warn("Internal failure downloading {0} bytes from {1}: only got {2}",
                             chunkSize, offset + chunkOffset, readCount);
                         Thread.Sleep(TimeSpan.FromSeconds(5));
                     }
                 } catch (Exception ex) {
-                    logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
+                    Logger.Warn(ex, "Internal failure downloading {0} bytes from {1}:", chunkSize,
                         offset + chunkOffset);
                     Thread.Sleep(TimeSpan.FromSeconds(5));
                 }
@@ -79,7 +79,7 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset, int count) {
-        logger.Trace($"Download chunk: [{offset}, {offset + count})");
+        Logger.Trace($"Download chunk: [{offset}, {offset + count})");
 
         var request = GetRequest(APIList.DownloadFile, new Dictionary<string, string> {
             ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
@@ -102,18 +102,18 @@ public class BaiduCloudStorageClient : StorageClient {
 
             if (response.StatusCode >= HttpStatusCode.MultipleChoices &&
                 response.StatusCode < HttpStatusCode.BadRequest) {
-                logger.Trace($"Redirecting to {response.Headers.Location}");
+                Logger.Trace($"Redirecting to {response.Headers.Location}");
                 request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
                 response.Dispose();
             } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
-                logger.Warn(
+                Logger.Warn(
                     $"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
                 request = GetRequest(APIList.DownloadFile, new Dictionary<string, string> {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 });
                 Thread.Sleep(TimeSpan.FromSeconds(10));
             } else {
-                logger.Fatal(response.Content.ReadAsStringAsync().Result);
+                Logger.Fatal(response.Content.ReadAsStringAsync().Result);
                 throw new Exception($"Unexpected download response: {response}");
             }
         }
@@ -156,20 +156,20 @@ public class BaiduCloudStorageClient : StorageClient {
             var uploadDirectDone = false;
             while (!uploadDirectDone) {
                 try {
-                    logger.Debug("Upload method: Direct");
+                    Logger.Debug("Upload method: Direct");
                     UploadDirect(path, buffer, 0, blockLength);
                     uploadDirectDone = true;
                 } catch (WebException ex) {
-                    logger.Warn($"WebException:\n{0}", ex);
+                    Logger.Warn($"WebException:\n{0}", ex);
                     if (ex.Response != null) {
-                        logger.Warn("Response:");
+                        Logger.Warn("Response:");
                         using var s = new StreamReader(ex.Response.GetResponseStream());
-                        logger.Warn(s.ReadToEnd());
+                        Logger.Warn(s.ReadToEnd());
                     }
 
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 } catch (ObjectDisposedException ex) {
-                    logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
+                    Logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
             }
@@ -177,26 +177,26 @@ public class BaiduCloudStorageClient : StorageClient {
             return;
         }
 
-        logger.Debug("Upload method: Block");
+        Logger.Debug("Upload method: Block");
 
         var blockIds = new List<string>();
 
         for (long position = 0; position < size; position += blockLength) {
             blockLength = input.Read(buffer, 0, blockSize);
 
-            logger.Debug("Upload block ({0}): [{1}, {2})", position / blockSize, position,
+            Logger.Debug("Upload block ({0}): [{1}, {2})", position / blockSize, position,
                 position + blockLength);
 
             var done = false;
             while (!done) {
                 try {
                     blockIds.Add(UploadBlock(buffer, 0, blockLength));
-                    logger.Debug("Block ID/MD5: {0}", blockIds.Last());
+                    Logger.Debug("Block ID/MD5: {0}", blockIds.Last());
                     done = true;
                 } catch (AggregateException ae) {
                     ae.Handle(x => {
                         if (x is HttpRequestException || x is TaskCanceledException) {
-                            logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
+                            Logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
                                 position + blockLength);
                             Thread.Sleep(TimeSpan.FromSeconds(10));
                             return true;
@@ -205,17 +205,17 @@ public class BaiduCloudStorageClient : StorageClient {
                         return false;
                     });
                 } catch (ObjectDisposedException ex) {
-                    logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
+                    Logger.Warn("Unexpected ObjectDisposedException:\n{0}", ex);
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 } catch (UploadBlockException ex) {
-                    logger.Warn("MD5 mismatch:\n{0}", ex);
+                    Logger.Warn("MD5 mismatch:\n{0}", ex);
                     Thread.Sleep(TimeSpan.FromSeconds(10));
                 }
             }
         }
 
         Retry.Run(() => { MergeBlocks(path, blockIds); }, (ex, i) => {
-            logger.Warn(ex, "Failed when merging");
+            Logger.Warn(ex, "Failed when merging");
             Thread.Sleep(TimeSpan.FromSeconds(5));
         });
     }
@@ -304,7 +304,7 @@ public class BaiduCloudStorageClient : StorageClient {
             } catch (AggregateException ae) {
                 ae.Handle(x => {
                     if (x is HttpRequestException) {
-                        logger.Warn(x, "Get download length failed once");
+                        Logger.Warn(x, "Get download length failed once");
                         Thread.Sleep(TimeSpan.FromSeconds(10));
                         return true;
                     }
@@ -437,7 +437,7 @@ public class BaiduCloudStorageClient : StorageClient {
 
                 return (long) responseObject["list"][0]["size"];
             } catch (Exception ex) {
-                logger.Debug(ex, "Existence test failed");
+                Logger.Debug(ex, "Existence test failed");
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             }
         }
@@ -455,7 +455,7 @@ public class BaiduCloudStorageClient : StorageClient {
                 Size = (long) data["size"]
             };
         } catch (Exception) {
-            logger.Warn("Failed to get basic info for {0}", path);
+            Logger.Warn("Failed to get basic info for {0}", path);
             return new FileInformation();
         }
     }
@@ -476,7 +476,7 @@ public class BaiduCloudStorageClient : StorageClient {
                 throw new Exception("to field is incorrect");
             }
         } catch (Exception ex) {
-            logger.Warn(ex, "Copy failed!");
+            Logger.Warn(ex, "Copy failed!");
             throw;
         }
     }
@@ -497,7 +497,7 @@ public class BaiduCloudStorageClient : StorageClient {
                 throw new Exception("to field is incorrect");
             }
         } catch (Exception ex) {
-            logger.Warn(ex, "Move failed!");
+            Logger.Warn(ex, "Move failed!");
             throw;
         }
     }

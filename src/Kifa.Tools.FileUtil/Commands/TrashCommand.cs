@@ -10,7 +10,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("trash", HelpText = "Move the file to trash.")]
 class TrashCommand : KifaFileCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly FileInformationServiceClient client = FileInformation.Client;
 
     public override bool ById => true;
@@ -34,43 +34,43 @@ class TrashCommand : KifaFileCommand {
             return Trash(file, choice);
         }
 
-        logger.Info($"File {file} not trashed as a destination is not selected.");
+        Logger.Info($"File {file} not trashed as a destination is not selected.");
         return 0;
     }
 
     static int Trash(string file, string choice) {
         var target = choice + ".Trash/" + file.Substring(choice.Length);
         client.Link(file, target);
-        logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
+        Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
         var targetInfo = client.Get(target);
         if (targetInfo?.Locations != null) {
             foreach (var location in targetInfo.Locations.Keys) {
                 var instance = new KifaFile(location);
                 if (instance.Client == null) {
-                    logger.Warn($"{instance} not accessible.");
+                    Logger.Warn($"{instance} not accessible.");
                     continue;
                 }
 
                 if (instance.Id == file) {
                     if (instance.Exists()) {
                         instance.Delete();
-                        logger.Info($"File {instance} deleted.");
+                        Logger.Info($"File {instance} deleted.");
                     } else {
-                        logger.Warn($"File {instance} not found.");
+                        Logger.Warn($"File {instance} not found.");
                     }
 
                     client.RemoveLocation(targetInfo.Id, location);
-                    logger.Info($"Entry {location} removed.");
+                    Logger.Info($"Entry {location} removed.");
                 }
             }
 
             client.Delete(file);
-            logger.Info($"Original FileInfo {file} removed.");
+            Logger.Info($"Original FileInfo {file} removed.");
             return 0;
         }
 
-        logger.Warn($"No locations found in {targetInfo}.");
+        Logger.Warn($"No locations found in {targetInfo}.");
         return 1;
     }
 }

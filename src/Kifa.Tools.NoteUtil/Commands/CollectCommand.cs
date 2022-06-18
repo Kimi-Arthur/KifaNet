@@ -9,7 +9,7 @@ namespace Kifa.Tools.NoteUtil.Commands;
 
 [Verb("collect", HelpText = "Collect all vocabulary into vocabulary files.")]
 public class CollectCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file to collect vocabulary from.")]
     public string FileUri { get; set; }
@@ -60,7 +60,7 @@ public class CollectCommand : KifaCommand {
                             if (wordsSections.ContainsKey(section) &&
                                 (wordsSections[section].Type != section || !wordsSections[section]
                                     .ColumnNames.SequenceEqual(definition))) {
-                                logger.Error("Different definitions.");
+                                Logger.Error("Different definitions.");
                             }
 
                             wordsSections[section] ??= new WordsSection();

@@ -7,7 +7,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("import", HelpText = "Import data from a specific file.")]
 public class ImportCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('t', "type", HelpText = "Type of data. Allowed values: goethe/words, goethe/lists")]
     public string Type { get; set; }
@@ -21,10 +21,10 @@ public class ImportCommand : KifaCommand {
         var chef = DataChef.GetChef(Type, content);
 
         if (chef == null) {
-            logger.Error($"Unknown type name: {Type}.\n{content}");
+            Logger.Error($"Unknown type name: {Type}.\n{content}");
             return 1;
         }
 
-        return (int) logger.LogResult(chef.Import(content), "Summary").Status;
+        return (int) Logger.LogResult(chef.Import(content), "Summary").Status;
     }
 }

@@ -9,7 +9,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("clean", HelpText = "Clean file entries.")]
 class CleanCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -26,7 +26,7 @@ class CleanCommand : KifaCommand {
         var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
         if (filesToRemove.Count == 0) {
-            logger.Info("No missing files found.");
+            Logger.Info("No missing files found.");
             return;
         }
 
@@ -48,12 +48,12 @@ class CleanCommand : KifaCommand {
         foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Sha256}")) {
             var target = sameFiles.First();
             foreach (var file in sameFiles.Skip(1)) {
-                logger.Info($"Removing {file} and linking it to {target}...");
+                Logger.Info($"Removing {file} and linking it to {target}...");
                 file.Delete();
                 file.Unregister();
                 target.Copy(file);
                 file.Add();
-                logger.Info($"Linked {file} to {target}.");
+                Logger.Info($"Linked {file} to {target}.");
             }
         }
     }

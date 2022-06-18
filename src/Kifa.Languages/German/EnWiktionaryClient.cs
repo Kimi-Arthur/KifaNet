@@ -11,7 +11,7 @@ using WikiClientLibrary.Sites;
 namespace Kifa.Languages.German;
 
 public class EnWiktionaryClient {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     const string TranslationDivider = "–";
 
@@ -71,7 +71,7 @@ public class EnWiktionaryClient {
                         if (!SkippedSections.Contains(title)) {
                             wordType = ParseWordType(title);
                             if (wordType == WordType.Unknown) {
-                                logger.Warn($"Unknown header when expecting word type: {title}.");
+                                Logger.Warn($"Unknown header when expecting word type: {title}.");
                             }
                         }
                     }
@@ -102,12 +102,12 @@ public class EnWiktionaryClient {
                             break;
                         case "#:":
                             if (meaning == null) {
-                                logger.Warn("Meaning is null unexpectedly,");
+                                Logger.Warn("Meaning is null unexpectedly,");
                                 meaning = new Meaning();
                             }
 
                             if (example != null) {
-                                logger.Warn(
+                                Logger.Warn(
                                     $"Example value is unexpectedly not null: {example.Text}, {example.Translation}.");
                             }
 
@@ -141,7 +141,7 @@ public class EnWiktionaryClient {
 
                             break;
                         case "#::" when example == null:
-                            logger.Warn(
+                            Logger.Warn(
                                 $"Encountered translation line without example line: {listItem}");
                             break;
                         case "#::":
@@ -190,7 +190,7 @@ public class EnWiktionaryClient {
                     return
                         $"({string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))})";
                 default:
-                    logger.Warn($"Unknown template: {template}");
+                    Logger.Warn($"Unknown template: {template}");
                     break;
             }
         }

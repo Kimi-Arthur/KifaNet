@@ -6,7 +6,7 @@ using NLog;
 namespace Kifa.Rpc;
 
 public abstract class JsonRpc<TResponse> {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public virtual HttpClient HttpClient { get; set; } = new();
 
@@ -33,7 +33,7 @@ public abstract class JsonRpc<TResponse> {
         byteParameters ??= new Dictionary<string, byte[]>();
 
         var address = UrlPattern.Format(parameters);
-        logger.Trace($"{Method} {address}");
+        Logger.Trace($"{Method} {address}");
 
         var request = new HttpRequestMessage(Method, address);
 

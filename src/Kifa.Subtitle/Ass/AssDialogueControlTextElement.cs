@@ -8,7 +8,7 @@ using NLog;
 namespace Kifa.Subtitle.Ass;
 
 public class AssDialogueControlTextElement : AssDialogueTextElement {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static readonly Regex subElementPattern =
         new(@"\\([^\\(]*(\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!)))?)");
@@ -146,11 +146,11 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
                     break;
                 default:
                     s = new UnknownElement(name);
-                    logger.Warn("Unknown element: {0}({1})", name, valueContent);
+                    Logger.Warn("Unknown element: {0}({1})", name, valueContent);
                     break;
             }
 
-            logger.Trace($"{s.GetType().Name}({valueContent})");
+            Logger.Trace($"{s.GetType().Name}({valueContent})");
             result.Elements.Add(s.ParseValue(valueContent));
         }
 

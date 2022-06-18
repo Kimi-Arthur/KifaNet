@@ -7,17 +7,17 @@ namespace Kifa.Web.Api.Controllers.MomentCounter;
 
 [Route("api/" + Apps.MomentCounter.User.ModelId)]
 public class UserController : KifaDataController<User, UserJsonServiceClient> {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [HttpPost("$add_counter")]
     public KifaApiActionResult<string> AddCounter([FromBody] AddCounterRequest request) {
-        logger.Trace($"Request: {request.ToPrettyJson()}");
+        Logger.Trace($"Request: {request.ToPrettyJson()}");
         return Client.AddCounter(Client.Get(request.UserId), request.Counter);
     }
 
     [HttpPost("$remove_counter")]
     public KifaApiActionResult<string> RemoveCounter([FromBody] RemoveCounterRequest request) {
-        logger.Trace($"Request: {request.ToPrettyJson()}");
+        Logger.Trace($"Request: {request.ToPrettyJson()}");
         return Client.RemoveCounter(Client.Get(request.UserId), request.CounterId);
     }
 }

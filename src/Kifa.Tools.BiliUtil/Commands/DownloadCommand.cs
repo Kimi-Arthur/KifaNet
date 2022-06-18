@@ -10,7 +10,7 @@ using NLog;
 namespace Kifa.Tools.BiliUtil.Commands;
 
 public abstract class DownloadCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
     public bool PrefixDate { get; set; } = false;
@@ -57,7 +57,7 @@ public abstract class DownloadCommand : KifaCommand {
 
         var (extension, quality, streamGetters) = video.GetVideoStreams(pid, SourceChoice);
         if (extension == null) {
-            logger.Warn("Failed to get video streams.");
+            Logger.Warn("Failed to get video streams.");
             return null;
         }
 
@@ -69,10 +69,10 @@ public abstract class DownloadCommand : KifaCommand {
         var finalTargetFile = outputFolder.GetFile($"{prefix}.mp4");
 
         if (finalTargetFile.ExistsSomewhere()) {
-            logger.Info($"{finalTargetFile.Id} already exists in the system. Skipped.");
+            Logger.Info($"{finalTargetFile.Id} already exists in the system. Skipped.");
             if (!canonicalTargetFile.ExistsSomewhere()) {
                 FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
-                logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
+                Logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
             }
 
             return new List<KifaFile> {
@@ -82,10 +82,10 @@ public abstract class DownloadCommand : KifaCommand {
         }
 
         if (finalTargetFile.Exists()) {
-            logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
+            Logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
             if (!canonicalTargetFile.Exists()) {
                 finalTargetFile.Copy(canonicalTargetFile);
-                logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
+                Logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
             }
 
             return new List<KifaFile> {
@@ -95,11 +95,11 @@ public abstract class DownloadCommand : KifaCommand {
         }
 
         if (canonicalTargetFile.ExistsSomewhere()) {
-            logger.Info(
+            Logger.Info(
                 $"{canonicalTargetFile.Id} already exists in the system. Skipped.");
 
             FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
-            logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
+            Logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
 
             return new List<KifaFile> {
                 canonicalTargetFile,
@@ -108,10 +108,10 @@ public abstract class DownloadCommand : KifaCommand {
         }
 
         if (canonicalTargetFile.Exists()) {
-            logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
+            Logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
 
             canonicalTargetFile.Copy(finalTargetFile);
-            logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
+            Logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
 
             return new List<KifaFile> {
                 canonicalTargetFile,
@@ -122,12 +122,12 @@ public abstract class DownloadCommand : KifaCommand {
         var partFiles = new List<KifaFile>();
         for (var i = 0; i < streamGetters.Count; i++) {
             var targetFile = outputFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
-            logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
+            Logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
             try {
                 targetFile.Write(streamGetters[i]);
-                logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
+                Logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
             } catch (Exception e) {
-                logger.Warn(e, $"Failed to download {targetFile}.");
+                Logger.Warn(e, $"Failed to download {targetFile}.");
                 return null;
             }
 
@@ -135,18 +135,18 @@ public abstract class DownloadCommand : KifaCommand {
         }
 
         try {
-            logger.Debug(
+            Logger.Debug(
                 $"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
             Helper.MergePartFiles(partFiles, canonicalTargetFile);
             RemovePartFiles(partFiles);
-            logger.Debug(
+            Logger.Debug(
                 $"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
 
-            logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
+            Logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
             canonicalTargetFile.Copy(finalTargetFile);
-            logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
+            Logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
         } catch (Exception e) {
-            logger.Warn(e, $"Failed to merge files.");
+            Logger.Warn(e, $"Failed to merge files.");
             return null;
         }
 
@@ -160,12 +160,12 @@ public abstract class DownloadCommand : KifaCommand {
         // } else {
         //     var targetFile = currentFolder.GetFile(
         //         $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: downloadOptions.PrefixDate)}.{extension}");
-        //     logger.Debug($"Writing to {targetFile}...");
+        //     Logger.Debug($"Writing to {targetFile}...");
         //     try {
         //         targetFile.Write(streamGetters.First());
-        //         logger.Debug($"Successfully written to {targetFile}.");
+        //         Logger.Debug($"Successfully written to {targetFile}.");
         //     } catch (Exception e) {
-        //         logger.Warn(e, $"Failed to download {targetFile}.");
+        //         Logger.Warn(e, $"Failed to download {targetFile}.");
         //         return false;
         //     }
         //
@@ -184,27 +184,27 @@ public abstract class DownloadCommand : KifaCommand {
                 foreach (var file in targetFiles) {
                     if (file != existingTargetFile) {
                         FileInformation.Client.Link(existingTargetFile.Id, file.Id);
-                        logger.Info($"Linked {existingTargetFile.Id} ==> {file.Id}.");
+                        Logger.Info($"Linked {existingTargetFile.Id} ==> {file.Id}.");
                     }
                 }
             } else {
                 foreach (var file in targetFiles) {
                     if (file != existingTargetFile) {
                         existingTargetFile.Copy(file);
-                        logger.Info($"Linked {existingTargetFile} ==> {file}.");
+                        Logger.Info($"Linked {existingTargetFile} ==> {file}.");
                     }
                 }
             }
         } else {
-            logger.Info("Getting video files to local for transform...");
+            Logger.Info("Getting video files to local for transform...");
             // TODO: Skipped for now. Assuming the first file exists.
 
-            logger.Info($"Extracting audio files to {targetFiles[0]}...");
+            Logger.Info($"Extracting audio files to {targetFiles[0]}...");
             Helper.ExtractAudioFile(outputFiles[0], targetFiles[0]);
-            logger.Info("Extracted audio files.");
+            Logger.Info("Extracted audio files.");
             foreach (var file in targetFiles.Skip(1)) {
                 targetFiles[0].Copy(file);
-                logger.Info($"Linked {targetFiles[0]} ==> {file}.");
+                Logger.Info($"Linked {targetFiles[0]} ==> {file}.");
             }
         }
 

@@ -9,7 +9,7 @@ using NLog;
 namespace Kifa.Tools;
 
 public abstract class KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static HashSet<string> LoggingTargets { get; set; }
 
@@ -120,7 +120,7 @@ public abstract class KifaCommand {
         //             ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
         //                 .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
         //             : new List<TChoice> {choices[int.Parse(i)]}).ToList();
-        // logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
+        // Logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
         // return chosen;
 
         Console.Write(
@@ -133,7 +133,7 @@ public abstract class KifaCommand {
                 : new List<TChoice> {
                     choices[int.Parse(i)]
                 }).ToList();
-        logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
+        Logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
         return chosen;
     }
 

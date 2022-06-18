@@ -13,7 +13,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
 class ImportCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to import.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -62,7 +62,7 @@ class ImportCommand : KifaCommand {
                     var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
                     targetFileName = Confirm($"Confirm importing {file} as ", targetFileName);
                     FileInformation.Client.Link(file, targetFileName);
-                    logger.Info($"Successfully linked {file} to {targetFileName}");
+                    Logger.Info($"Successfully linked {file} to {targetFileName}");
                 }
 
                 return 0;

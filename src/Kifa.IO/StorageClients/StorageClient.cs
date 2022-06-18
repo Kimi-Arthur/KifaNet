@@ -7,7 +7,7 @@ using NLog;
 namespace Kifa.IO;
 
 public abstract class StorageClient : IDisposable {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public virtual void Dispose() {
     }

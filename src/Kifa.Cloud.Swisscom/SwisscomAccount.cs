@@ -40,7 +40,7 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
 
     public string AccessToken { get; set; }
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public override bool FillByDefault => true;
 
@@ -83,8 +83,8 @@ public class SwisscomAccount : DataModel<SwisscomAccount> {
                 throw ex;
             }
 
-            logger.Warn(ex, $"Failed to get token for {Username}...");
-            logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
+            Logger.Warn(ex, $"Failed to get token for {Username}...");
+            Logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
         });

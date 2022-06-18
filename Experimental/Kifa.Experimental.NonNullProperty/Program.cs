@@ -69,7 +69,7 @@ class MyData {
 }
 
 public class Program {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static void Main(string[] args) {
         try {
@@ -80,7 +80,7 @@ public class Program {
             Console.WriteLine(data.Id); // safe
             // data.Bad = null; // throw
         } catch (Exception ex) {
-            logger.Error(ex, "Failure");
+            Logger.Error(ex, "Failure");
         }
     }
 }

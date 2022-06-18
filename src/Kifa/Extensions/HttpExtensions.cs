@@ -12,13 +12,13 @@ using NLog;
 namespace Kifa;
 
 public static class HttpExtensions {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string GetString(this HttpResponseMessage response) {
         using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
             Encoding.GetEncoding("UTF-8"));
         var data = sr.ReadToEnd();
-        logger.Trace($"Response ({response.StatusCode:D}): {data}");
+        Logger.Trace($"Response ({response.StatusCode:D}): {data}");
         return data;
     }
 
@@ -29,9 +29,9 @@ public static class HttpExtensions {
         => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
     public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request) {
-        logger.Trace(request);
+        Logger.Trace(request);
         if (request.Content != null) {
-            logger.Trace($"Content: {request.Content.ReadAsStringAsync().Result}");
+            Logger.Trace($"Content: {request.Content.ReadAsStringAsync().Result}");
         }
 
         using var response = client.Send(request);
@@ -39,14 +39,14 @@ public static class HttpExtensions {
     }
 
     public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
-        logger.Trace($"Get headers for {url}...");
+        Logger.Trace($"Get headers for {url}...");
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Range = new RangeHeaderValue(0, 0);
         return client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
     }
 
     public static long? GetContentLength(this HttpClient client, string url) {
-        logger.Trace($"Get content length of {url}...");
+        Logger.Trace($"Get content length of {url}...");
         return GetHeaders(client, url).Content.Headers.ContentRange?.Length;
     }
 
@@ -67,7 +67,7 @@ public static class HttpExtensions {
                 throw ex;
             }
 
-            logger.Warn(ex, $"HTTP request failed ({index})");
+            Logger.Warn(ex, $"HTTP request failed ({index})");
             Thread.Sleep(TimeSpan.FromSeconds(5));
         });
 
@@ -89,7 +89,7 @@ public static class HttpExtensions {
                 throw ex;
             }
 
-            logger.Warn(ex, $"HTTP request failed ({index})");
+            Logger.Warn(ex, $"HTTP request failed ({index})");
             Thread.Sleep(TimeSpan.FromSeconds(5));
         });
 }

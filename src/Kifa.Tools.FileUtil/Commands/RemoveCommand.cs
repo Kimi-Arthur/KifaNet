@@ -11,7 +11,7 @@ namespace Kifa.Tools.FileUtil.Commands;
     HelpText =
         "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
 class RemoveCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, MetaName = "FILE", MetaValue = "STRING", HelpText = "File to be removed.")]
     public string FileUri { get; set; }
@@ -105,20 +105,20 @@ class RemoveCommand : KifaCommand {
 
                     if (file.Exists()) {
                         file.Delete();
-                        logger.Info($"File {file} deleted.");
+                        Logger.Info($"File {file} deleted.");
                     } else {
-                        logger.Warn($"File {file} not found.");
+                        Logger.Warn($"File {file} not found.");
                     }
 
                     FileInformation.Client.RemoveLocation(info.Id, location);
-                    logger.Info($"Entry {location} removed.");
+                    Logger.Info($"Entry {location} removed.");
                 }
             }
         }
 
         // Logical removal.
         FileInformation.Client.Delete(info.Id);
-        logger.Info($"FileInfo {info.Id} removed.");
+        Logger.Info($"FileInfo {info.Id} removed.");
         return 0;
     }
 
@@ -126,10 +126,10 @@ class RemoveCommand : KifaCommand {
         if (file.FileInfo?.Locations?.ContainsKey(file.ToString()) != true) {
             if (file.Exists()) {
                 file.Delete();
-                logger.Warn($"File {file} deleted, no entry found though.");
+                Logger.Warn($"File {file} deleted, no entry found though.");
             } else {
                 file.Delete();
-                logger.Warn($"File {file} not found.");
+                Logger.Warn($"File {file} not found.");
             }
 
             return 0;
@@ -139,15 +139,15 @@ class RemoveCommand : KifaCommand {
         if (!RemoveLinkOnly) {
             if (file.Exists()) {
                 file.Delete();
-                logger.Info($"File {file} deleted.");
+                Logger.Info($"File {file} deleted.");
             } else {
                 file.Delete();
-                logger.Warn($"File {file} not found.");
+                Logger.Warn($"File {file} not found.");
             }
         }
 
         FileInformation.Client.RemoveLocation(file.Id, file.ToString());
-        logger.Info($"Entry {file} removed.");
+        Logger.Info($"Entry {file} removed.");
 
         return 0;
     }

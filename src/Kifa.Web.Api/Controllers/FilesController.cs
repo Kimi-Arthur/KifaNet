@@ -66,7 +66,7 @@ public class
 
 public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInformation>,
     FileInformationServiceClient {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static readonly Dictionary<string, long> ShardSizes = new() {
         ["swiss"] = 1 << 30
@@ -74,9 +74,9 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
     public List<string> ListFolder(string folder, bool recursive = false) {
         var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
-        logger.Trace(prefix);
+        Logger.Trace(prefix);
         folder = $"{prefix}/{folder.Trim('/')}";
-        logger.Trace(folder);
+        Logger.Trace(folder);
         if (!Directory.Exists(folder)) {
             return new List<string>();
         }

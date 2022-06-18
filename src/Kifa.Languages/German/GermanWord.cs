@@ -7,7 +7,7 @@ using NLog;
 namespace Kifa.Languages.German;
 
 public class GermanWord : DataModel<GermanWord> {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public const string ModelId = "languages/german/words";
 
@@ -158,21 +158,21 @@ public class GermanWord : DataModel<GermanWord> {
         try {
             wiki = new DeWiktionaryClient().GetWord(Id);
         } catch (Exception ex) {
-            logger.Warn(ex, $"Failed to get word from de.wiktionary.org for {Id}");
+            Logger.Warn(ex, $"Failed to get word from de.wiktionary.org for {Id}");
         }
 
         var enWiki = new GermanWord();
         try {
             enWiki = new EnWiktionaryClient().GetWord(Id);
         } catch (Exception ex) {
-            logger.Warn(ex, $"Failed to get word from en.wiktionary.org for {Id}");
+            Logger.Warn(ex, $"Failed to get word from en.wiktionary.org for {Id}");
         }
 
         var pons = new GermanWord();
         try {
             pons = new PonsClient().GetWord(Id);
         } catch (Exception ex) {
-            logger.Warn(ex, $"Failed to get pons word for {Id}");
+            Logger.Warn(ex, $"Failed to get pons word for {Id}");
         }
 
         var duden = new DudenClient().GetWord(Id);

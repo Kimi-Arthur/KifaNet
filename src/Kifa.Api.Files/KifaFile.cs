@@ -18,7 +18,7 @@ using NLog;
 namespace Kifa.Api.Files;
 
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static Regex subPathIgnoredFiles;
 
@@ -264,7 +264,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public void Write(Func<Stream> getStream) {
         if (Exists()) {
-            logger.Debug($"Target file {this} already exists. Skipped.");
+            Logger.Debug($"Target file {this} already exists. Skipped.");
             return;
         }
 
@@ -399,7 +399,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public void CacheFileToLocal() {
         if (!LocalFile.Registered || !LocalFile.Exists()) {
-            logger.Debug($"Caching {this} to {LocalFile}...");
+            Logger.Debug($"Caching {this} to {LocalFile}...");
             LocalFile.Write(OpenRead());
             LocalFile.Add();
             Register(true);
@@ -410,7 +410,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         if (UseCache && LocalFile.Exists()) {
             LocalFile.Delete();
             LocalFile.Unregister();
-            logger.Debug($"Removed cache file {LocalFile}...");
+            Logger.Debug($"Removed cache file {LocalFile}...");
         }
     }
 
@@ -443,7 +443,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         }
 
         var file = this;
-        logger.Debug($"Checking file {file}...");
+        Logger.Debug($"Checking file {file}...");
 
         var oldInfo = FileInfo;
 
@@ -452,7 +452,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) ==
                 FileProperties.None) {
                 file = LocalFile;
-                logger.Debug($"Use local file {file} instead.");
+                Logger.Debug($"Use local file {file} instead.");
             }
         }
 
@@ -460,7 +460,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             (FileInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
             file.Registered) {
             if (shouldCheckKnown == false) {
-                logger.Debug($"Quick check skipped for {file}.");
+                Logger.Debug($"Quick check skipped for {file}.");
                 return;
             }
 
@@ -476,7 +476,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                                                      compareResults));
             }
 
-            logger.Debug($"Quick check passed for {file}.");
+            Logger.Debug($"Quick check passed for {file}.");
             return;
         }
 
@@ -487,7 +487,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         // Compare with quick info.
         var quickInfo = file.QuickInfo();
-        logger.Debug($"Quick info:\n{quickInfo}");
+        Logger.Debug($"Quick info:\n{quickInfo}");
 
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 

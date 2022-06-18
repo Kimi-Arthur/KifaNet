@@ -10,7 +10,7 @@ public class SeekableReadStream : Stream {
     public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0,
         int count = -1);
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     readonly Reader reader;
     readonly int maxChunkSize;
@@ -98,7 +98,7 @@ public class SeekableReadStream : Stream {
                     throw ex;
                 }
 
-                logger.Warn(ex,
+                Logger.Warn(ex,
                     $"Internal failure getting {chunkSize} bytes from {Position + chunkOffset}.");
                 Thread.Sleep(TimeSpan.FromSeconds(5 * index));
             });

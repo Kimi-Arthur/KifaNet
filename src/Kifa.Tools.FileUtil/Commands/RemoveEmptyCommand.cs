@@ -9,7 +9,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("rm-empty", HelpText = "Remove empty folders recursively.")]
 public class RemoveEmptyCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Folders to be removed.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -36,9 +36,9 @@ public class RemoveEmptyCommand : KifaCommand {
             return true;
         }
 
-        logger.Info($"Removing empty folder {fileName}...");
+        Logger.Info($"Removing empty folder {fileName}...");
         Directory.Delete(fileName);
-        logger.Info($"Removed empty folder {fileName}...");
+        Logger.Info($"Removed empty folder {fileName}...");
         return false;
     }
 }

@@ -6,13 +6,13 @@ using NLog;
 namespace Kifa.Markdown.Converters;
 
 public class DefaultConverter : HtmlMarkdownConverter {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public override IEnumerable<MarkdownElement> ParseHtml(HtmlNode node) {
         var html = node.OuterHtml;
 
         if (node.Name != "#text") {
-            logger.Warn($"Unknown html node type ({node.Name}) in:\n{html}");
+            Logger.Warn($"Unknown html node type ({node.Name}) in:\n{html}");
         }
 
         if (string.IsNullOrWhiteSpace(node.InnerText)) {

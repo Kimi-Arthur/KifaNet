@@ -8,7 +8,7 @@ namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("merge", HelpText = "Merge flv to mp4.")]
 public class MergeCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -21,7 +21,7 @@ public class MergeCommand : KifaCommand {
         var targetFileName = Confirm($"Confirming merging files {string.Join(", ", files)} to ",
             GetTargetFileName(files));
         Helper.MergePartFiles(files, new KifaFile(targetFileName));
-        logger.Info($"Successfully merged files {string.Join(", ", files)} to {targetFileName}!");
+        Logger.Info($"Successfully merged files {string.Join(", ", files)} to {targetFileName}!");
         return 0;
     }
 

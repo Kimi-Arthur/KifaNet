@@ -11,7 +11,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("add", HelpText = "Add file entry.")]
 class AddCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -33,7 +33,7 @@ class AddCommand : KifaCommand {
             Console.ReadLine();
         }
 
-        var executionHandler = new KifaExecutionHandler<KifaFile>(logger);
+        var executionHandler = new KifaExecutionHandler<KifaFile>(Logger);
 
         foreach (var file in files) {
             executionHandler.Execute(new KifaFile(file.ToString()), AddFile, "Failed to add {0}.");
@@ -57,12 +57,12 @@ class AddCommand : KifaCommand {
     }
 
     void AddFile(KifaFile file) {
-        logger.Info($"Adding {file}...");
+        Logger.Info($"Adding {file}...");
         try {
             file.Add(QuickMode ? null : ForceRecheck);
-            logger.Info($"Successfully added {file}.");
+            Logger.Info($"Successfully added {file}.");
         } catch (IOException ex) {
-            logger.Error(ex, $"Failed to add {file}.");
+            Logger.Error(ex, $"Failed to add {file}.");
         }
     }
 }

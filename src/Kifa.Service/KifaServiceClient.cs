@@ -22,7 +22,7 @@ public interface KifaServiceClient<TDataModel> where TDataModel : DataModel {
 
 public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDataModel>
     where TDataModel : DataModel {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     protected BaseKifaServiceClient() {
         var typeInfo = typeof(TDataModel);

@@ -9,7 +9,7 @@ using Kifa.IO;
 namespace Kifa.Tools;
 
 public abstract partial class KifaFileCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -105,18 +105,18 @@ public abstract partial class KifaFileCommand {
             try {
                 return ExecuteOneFileInformation(s);
             } catch (Exception ex) {
-                logger.Error($"{s}: {ex}");
+                Logger.Error($"{s}: {ex}");
                 errors[s] = ex;
                 return 255;
             }
         }).Max();
 
         foreach (var (key, value) in errors) {
-            logger.Error($"{key}: {value}");
+            Logger.Error($"{key}: {value}");
         }
 
         if (errors.Count > 0) {
-            logger.Error($"{errors.Count} files failed to be taken action on.");
+            Logger.Error($"{errors.Count} files failed to be taken action on.");
         }
 
         return result;
@@ -139,18 +139,18 @@ public abstract partial class KifaFileCommand {
             try {
                 return ExecuteOneKifaFile(s);
             } catch (Exception ex) {
-                logger.Error($"{s}: {ex}");
+                Logger.Error($"{s}: {ex}");
                 errors[s.ToString()] = ex;
                 return 255;
             }
         }).Max();
 
         foreach (var (key, value) in errors) {
-            logger.Error($"{key}: {value}");
+            Logger.Error($"{key}: {value}");
         }
 
         if (errors.Count > 0) {
-            logger.Error($"{errors.Count} files failed to be taken action on.");
+            Logger.Error($"{errors.Count} files failed to be taken action on.");
         }
 
         return result;

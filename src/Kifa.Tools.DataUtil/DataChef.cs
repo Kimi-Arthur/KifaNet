@@ -48,7 +48,7 @@ public interface DataChef {
 public class DataChef<TDataModel, TClient> : DataChef
     where TDataModel : DataModel<TDataModel>, new()
     where TClient : KifaServiceClient<TDataModel>, new() {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static KifaServiceClient<TDataModel> client;
 
@@ -60,7 +60,7 @@ public class DataChef<TDataModel, TClient> : DataChef
     public KifaActionResult Import(string data) {
         var items = new Deserializer().Deserialize<List<TDataModel>>(data);
 
-        return logger.LogResult(Client.Update(items),
+        return Logger.LogResult(Client.Update(items),
             $"Update {ModelId}({string.Join(", ", items.Select(item => item.Id))})");
     }
 

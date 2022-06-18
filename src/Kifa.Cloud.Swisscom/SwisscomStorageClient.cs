@@ -12,7 +12,7 @@ using NLog;
 namespace Kifa.Cloud.Swisscom;
 
 public class SwisscomStorageClient : StorageClient {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     const int BlockSize = 8 << 20;
     const long GraceSize = 10 << 20;
     public const long ShardSize = 1 << 30;
@@ -48,7 +48,7 @@ public class SwisscomStorageClient : StorageClient {
         }
 
         if (response.StatusCode != HttpStatusCode.NotFound) {
-            logger.Debug($"Get length failed for {path}, status: {response.StatusCode}");
+            Logger.Debug($"Get length failed for {path}, status: {response.StatusCode}");
         }
 
         return response.StatusCode == HttpStatusCode.NotFound ? 0 : -1;
@@ -61,7 +61,7 @@ public class SwisscomStorageClient : StorageClient {
                 ["access_token"] = Account.AccessToken
             }));
         if (!response.IsSuccessStatusCode) {
-            logger.Debug($"Delete of {path} is not successful, but is ignored.");
+            Logger.Debug($"Delete of {path} is not successful, but is ignored.");
         }
     }
 
@@ -74,7 +74,7 @@ public class SwisscomStorageClient : StorageClient {
             }));
 
         if (!response.IsSuccessStatusCode) {
-            logger.Error($"Move from {sourcePath} to {destinationPath} failed: {response}");
+            Logger.Error($"Move from {sourcePath} to {destinationPath} failed: {response}");
         }
     }
 
@@ -198,13 +198,13 @@ public class SwisscomStorageClient : StorageClient {
         // We will assume the quota is up to date here.
         account = SwisscomAccountQuota.Client.Get(account.Id);
         if (account.LeftQuota < length + GraceSize) {
-            logger.Fatal("Unexpectedly, the account doesn't have enough quota.");
+            Logger.Fatal("Unexpectedly, the account doesn't have enough quota.");
             throw new InsufficientStorageException();
         }
 
         var result = SwisscomAccountQuota.Client.ReserveQuota(account.Id, length);
         if (result.Status != KifaActionStatus.OK) {
-            logger.Fatal($"Failed to reserve quota {length}B in {account.Id}.");
+            Logger.Fatal($"Failed to reserve quota {length}B in {account.Id}.");
             throw new InsufficientStorageException();
         }
 

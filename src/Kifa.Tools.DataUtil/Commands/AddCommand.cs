@@ -6,7 +6,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 [Verb("add", HelpText = "Add data entity based on type.")]
 public partial class AddCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('t', "type", HelpText = "Type of data. Allowed values: accounts/swisscom")]
     public string Type { get; set; }
@@ -20,7 +20,7 @@ public partial class AddCommand : KifaCommand {
                 CreateSwisscomAccounts(Spec);
                 return 0;
             default:
-                logger.Warn($"No add logic found for {Type}");
+                Logger.Warn($"No add logic found for {Type}");
                 return 1;
         }
     }

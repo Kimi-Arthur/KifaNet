@@ -5,7 +5,7 @@ using NLog;
 namespace Kifa.Subtitle.Srt;
 
 public class SrtLine {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public int Index { get; set; }
     public TimeSpan StartTime { get; set; }
@@ -13,7 +13,7 @@ public class SrtLine {
     public SrtTextElement Text { get; set; }
 
     public static SrtLine Parse(string s) {
-        logger.Trace($"Parsing srt line: {s}");
+        Logger.Trace($"Parsing srt line: {s}");
         var lines = s.Trim('\n').Split('\n', 3, StringSplitOptions.RemoveEmptyEntries);
         var times = lines[1].Replace(',', '.').Split(new[] { " --> " }, StringSplitOptions.None);
         return new SrtLine {

@@ -15,7 +15,7 @@ namespace Kifa.Tools.SubUtil.Commands;
 [Verb("generate", HelpText = "Generate subtitle.")]
 class GenerateCommand : KifaFileCommand {
     const string SubtitlesPrefix = "/Subtitles";
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     List<int> selectedBilibiliChatIndexes;
 
     List<int> selectedSubtitleIndexes;
@@ -237,7 +237,7 @@ class GenerateCommand : KifaFileCommand {
             if (movement > 0) {
                 if (movement > 10) {
                     totalBigMove++;
-                    logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
+                    Logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
                 }
 
                 comments[i].Start += TimeSpan.FromSeconds(movement);
@@ -251,9 +251,9 @@ class GenerateCommand : KifaFileCommand {
             }
         }
 
-        logger.Info("{} comments moved, by {} in total.", totalMoved, totalMovement);
+        Logger.Info("{} comments moved, by {} in total.", totalMoved, totalMovement);
         if (totalBigMove > 0) {
-            logger.Warn("{} comments are moved by more than 10 seconds!", totalBigMove);
+            Logger.Warn("{} comments are moved by more than 10 seconds!", totalBigMove);
         }
     }
 

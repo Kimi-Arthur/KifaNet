@@ -28,7 +28,7 @@ public class SwisscomAccountQuota : DataModel<SwisscomAccountQuota> {
     // When it is the same as UsedQuota, it can be safely discarded or ignored.
     public long ExpectedQuota { get; set; }
 
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     readonly HttpClient httpClient = new();
 
@@ -39,11 +39,11 @@ public class SwisscomAccountQuota : DataModel<SwisscomAccountQuota> {
             return Date.Zero;
         }
 
-        logger.Info("Access token expired.");
+        Logger.Info("Access token expired.");
 
         var result = UpdateQuota();
         if (result.Status != KifaActionStatus.OK) {
-            logger.Warn($"Failed to get quota: {result}.");
+            Logger.Warn($"Failed to get quota: {result}.");
         }
 
         // Quota always needs to be refreshed as it may change any time.

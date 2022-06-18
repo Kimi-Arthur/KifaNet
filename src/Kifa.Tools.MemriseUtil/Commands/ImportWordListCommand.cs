@@ -8,7 +8,7 @@ namespace Kifa.Tools.MemriseUtil.Commands;
 
 [Verb("import", HelpText = "Import word list for the given course.")]
 public class ImportWordListCommand : KifaCommand {
-    static readonly Logger logger = LogManager.GetCurrentClassLogger();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Min = 1, HelpText = "Word list IDs.")]
     public IEnumerable<string> WordListIds { get; set; }

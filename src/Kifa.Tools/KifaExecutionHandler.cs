@@ -5,13 +5,13 @@ using NLog;
 namespace Kifa.Tools;
 
 public class KifaExecutionHandler<TArgument> {
-    readonly Logger logger;
+    readonly Logger Logger;
 
     public List<(TArgument argument, KifaExecutionException exception)> Errors { get; set; } =
         new();
 
-    public KifaExecutionHandler(Logger logger) {
-        this.logger = logger;
+    public KifaExecutionHandler(Logger Logger) {
+        this.Logger = Logger;
     }
 
     public void Execute(TArgument argument, Action<TArgument> action,
@@ -25,7 +25,7 @@ public class KifaExecutionHandler<TArgument> {
             };
 
             Errors.Add((argument, exception));
-            logger.Error(exception, failureMessage.Format(argument));
+            Logger.Error(exception, failureMessage.Format(argument));
         }
     }
 
@@ -34,9 +34,9 @@ public class KifaExecutionHandler<TArgument> {
             return 0;
         }
 
-        logger.Error(failureMessage.Format(Errors.Count));
+        Logger.Error(failureMessage.Format(Errors.Count));
         foreach (var (argument, exception) in Errors) {
-            logger.Error(exception, argument.ToString);
+            Logger.Error(exception, argument.ToString);
         }
 
         return 1;
