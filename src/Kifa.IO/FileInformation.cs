@@ -208,10 +208,20 @@ public class FileInformation : DataModel<FileInformation> {
     }
 
     IEnumerable<KeyValuePair<FileProperties, PropertyInfo>> ValidProperties
-        => properties.Where(x => x.Value.GetValue(this) != null);
+        => properties.Where(x => {
+            try {
+                return x.Value.GetValue(this) != null;
+            } catch (TargetInvocationException ex) {
+                if (ex.InnerException is NullReferenceException) {
+                    return false;
+                }
+
+                throw;
+            }
+        });
 
     public FileProperties GetProperties()
-        => properties.Where(x => x.Value.GetValue(this) != null).Select(x => x.Key)
+        => ValidProperties.Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
     public FileProperties CompareProperties(FileInformation? other,
