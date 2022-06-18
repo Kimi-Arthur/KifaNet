@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-using NLog;
+using System;
+using System.Diagnostics;
 
-namespace Kifa.Experimental.NonNullProperty;
+namespace Kifa;
 
-static class Safe {
+public static class Safe {
     public static T Get<T>(T? value) {
         if (value != null) {
             return value;
@@ -49,54 +49,5 @@ static class Safe {
         }
 
         field = value;
-    }
-}
-
-class MyData {
-    private string? _id;
-
-    public string Id {
-        get => Safe.Get(_id);
-        set => Safe.Set(ref _id, value);
-    }
-
-    private int? _bad;
-
-    public int Bad {
-        get => Safe.Get(_bad);
-        set => Safe.Set(ref _bad, value);
-    }
-
-    string? myProperty;
-
-    public string MyProperty {
-        get => Safe.Get(myProperty);
-        set => Safe.Set(ref myProperty, value);
-    }
-
-    int? safeProperty;
-
-    public int SafeProperty {
-        get => Safe.Get(safeProperty);
-        set => Safe.Set(ref safeProperty, value);
-    }
-
-    
-}
-
-public class Program {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    static void Main(string[] args) {
-        try {
-            var data = new MyData(); // Safe
-
-            Console.WriteLine(data.Id); // throw
-            data.Id = "12";
-            Console.WriteLine(data.Id); // safe
-            // data.Bad = null; // throw
-        } catch (Exception ex) {
-            Logger.Error(ex, "Failure");
-        }
     }
 }

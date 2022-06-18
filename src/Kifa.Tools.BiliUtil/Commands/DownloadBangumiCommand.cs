@@ -9,8 +9,14 @@ namespace Kifa.Tools.BiliUtil.Commands;
 public class DownloadBangumiCommand : DownloadCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+
+    string? bangumiId;
+
     [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]
-    public string BangumiId { get; set; }
+    public string BangumiId {
+        get => Safe.Get(bangumiId);
+        set => Safe.Set(ref bangumiId, value);
+    }
 
     public override int Execute() {
         var bangumi = BilibiliBangumi.Client.Get(BangumiId);
