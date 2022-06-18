@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Kifa;
 
-public static class Safe {
+public static class Late {
     public static T Get<T>(T? value) {
         if (value != null) {
             return value;

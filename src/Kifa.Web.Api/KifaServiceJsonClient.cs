@@ -10,7 +10,12 @@ using NLog;
 namespace Kifa.Web.Api;
 
 public class KifaServiceJsonClient {
-    public static string DataFolder { get; set; }
+    public static string DataFolder {
+        get => Late.Get(dataFolder);
+        set => Late.Set(ref dataFolder, value);
+    }
+
+    static string? dataFolder;
 }
 
 public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataModel>
