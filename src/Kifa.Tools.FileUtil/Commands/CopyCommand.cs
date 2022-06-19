@@ -1,9 +1,9 @@
 ﻿using System;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -45,12 +45,12 @@ class CopyCommand : KifaCommand {
 
         var files = FileInformation.Client.ListFolder(target, true);
         if (files.Count == 0) {
-            if (!FileInformation.Client.Get(target).Exists) {
+            if (FileInformation.Client.Get(target)?.Exists != true) {
                 Logger.Fatal($"Target {target} not found.");
                 return 1;
             }
 
-            if (FileInformation.Client.Get(linkName).Exists) {
+            if (FileInformation.Client.Get(linkName)?.Exists == true) {
                 Logger.Fatal($"Link name {linkName} already exists.");
                 return 1;
             }
