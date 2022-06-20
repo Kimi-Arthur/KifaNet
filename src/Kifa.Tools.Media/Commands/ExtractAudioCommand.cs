@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Bilibili;
 using Kifa.IO;
 using NLog;
 
@@ -53,12 +55,18 @@ public class ExtractAudioCommand : KifaCommand {
     }
 
     static void ExtractAudioFile(KifaFile sourceFile) {
+        var coverFile = GetCover(sourceFile);
+        var metadata = string.Join(" ",
+            ExtractMetadata(sourceFile).Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
+
         var targetFile = sourceFile.Parent.GetFile($"{sourceFile.BaseName}.m4a");
 
         var sourcePath = ((FileStorageClient) sourceFile.Client).GetPath(sourceFile.Path);
         var targetPath = ((FileStorageClient) targetFile.Client).GetPath(targetFile.Path);
+        var coverPath = ((FileStorageClient) coverFile.Client).GetPath(coverFile.Path);
 
-        var arguments = $"-i \"{sourcePath}\" -map 0:a -acodec copy \"{targetPath}\"";
+        var arguments =
+            $"-i \"{sourcePath}\" -i \"{coverPath}\" -map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadata} \"{targetPath}\"";
         Logger.Debug($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
@@ -72,5 +80,27 @@ public class ExtractAudioCommand : KifaCommand {
         if (proc.ExitCode != 0) {
             throw new Exception("Extract audio file failed.");
         }
+    }
+
+    static KifaFile GetCover(KifaFile file) {
+        var aid = file.FileInfo.Metadata.Linking.Target.Split("-")[^1].Split(".")[0];
+        var coverLink = new KifaFile(BilibiliVideo.Client.Get(aid).Cover.ToString());
+        var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLink.Extension}");
+        coverLink.Copy(coverFile);
+        return coverFile;
+    }
+
+    static readonly Regex MusicFilePattern = new(@"\[([^\]]*)\] (.*)");
+
+    static Dictionary<string, string> ExtractMetadata(KifaFile file) {
+        var name = file.BaseName;
+        var match = MusicFilePattern.Match(name);
+
+        return new Dictionary<string, string> {
+            { "title", match.Groups[2].Value },
+            { "artist", match.Groups[1].Value },
+            { "date", file.FileInfo.Metadata.Linking.Target.Split("/")[^1].Split(" ")[0] },
+            { "album", "Covers" }
+        };
     }
 }
