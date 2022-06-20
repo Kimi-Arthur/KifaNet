@@ -18,7 +18,7 @@ public static class Helper {
             .Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
 
         var fileListPath = Path.GetTempFileName();
-        File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GeFfmpegTargetPath(p)}"));
+        File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GetFfmpegTargetPath(p)}"));
 
         var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
         var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
@@ -62,7 +62,7 @@ public static class Helper {
         return newPath;
     }
 
-    static string GeFfmpegTargetPath(string targetPath) {
+    static string GetFfmpegTargetPath(string targetPath) {
         return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
     }
 }
