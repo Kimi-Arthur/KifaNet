@@ -22,6 +22,7 @@ public class ExtractAudioCommand : KifaCommand {
 
     public override int Execute() {
         var (multi, files) = KifaFile.ExpandFiles(FileNames, recursive: false);
+        files = files.Where(file => file.Extension == "mp4").ToList();
         if (multi) {
             foreach (var file in files) {
                 Console.WriteLine(file);
@@ -55,11 +56,15 @@ public class ExtractAudioCommand : KifaCommand {
     }
 
     static void ExtractAudioFile(KifaFile sourceFile) {
+        sourceFile = new KifaFile(sourceFile.ToString());
+        var targetFile = sourceFile.Parent.GetFile($"{sourceFile.BaseName}.m4a");
+        if (targetFile.Exists()) {
+            return;
+        }
+
         var coverFile = GetCover(sourceFile);
         var metadata = string.Join(" ",
             ExtractMetadata(sourceFile).Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
-
-        var targetFile = sourceFile.Parent.GetFile($"{sourceFile.BaseName}.m4a");
 
         var sourcePath = ((FileStorageClient) sourceFile.Client).GetPath(sourceFile.Path);
         var targetPath = ((FileStorageClient) targetFile.Client).GetPath(targetFile.Path);
@@ -86,7 +91,10 @@ public class ExtractAudioCommand : KifaCommand {
         var aid = file.FileInfo.Metadata.Linking.Target.Split("-")[^1].Split(".")[0];
         var coverLink = new KifaFile(BilibiliVideo.Client.Get(aid).Cover.ToString());
         var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLink.Extension}");
-        coverLink.Copy(coverFile);
+        if (!coverFile.Exists()) {
+            coverLink.Copy(coverFile);
+        }
+
         return coverFile;
     }
 
