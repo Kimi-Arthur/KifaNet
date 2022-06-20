@@ -170,6 +170,8 @@ public abstract class DownloadCommand : KifaCommand {
     }
 
     static void RemovePartFiles(List<KifaFile> partFiles) {
-        partFiles.ForEach(p => p.Delete());
+        foreach (var p in partFiles) {
+            p.Delete();
+        }
     }
 }

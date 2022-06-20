@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Kifa.Api.Files;
-using Kifa.IO;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil;
@@ -14,14 +13,14 @@ public static class Helper {
 
     public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
         // Convert parts first
-        var partPaths = parts
-            .Select(p => ConvertPartFile(p.GetLocalPath())).ToList();
+        var partFiles = parts.Select(ConvertPartFile).ToList();
 
-        var fileListPath = Path.GetTempFileName();
-        File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GetFfmpegTargetPath(p)}"));
+        var fileListFile = target.Parent.GetFile($"!{target.BaseName}.list");
+        fileListFile.Write(string.Join("\n",
+            partFiles.Select(p => $"file {GetFfmpegTargetPath(p.GetLocalPath())}")));
 
-        var targetPath = target.GetLocalPath();
-        var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
+        var arguments =
+            $"-safe 0 -f concat -i \"{fileListFile.GetLocalPath()}\" -c copy \"{target.GetLocalPath()}\"";
         Logger.Debug($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
@@ -35,17 +34,17 @@ public static class Helper {
             throw new Exception("Merging files failed.");
         }
 
-        File.Delete(fileListPath);
+        fileListFile.Delete();
 
         // Delete part files
-        foreach (var partPath in partPaths) {
-            File.Delete(partPath);
+        foreach (var partFile in partFiles) {
+            partFile.Delete();
         }
     }
 
-    static string ConvertPartFile(string path) {
-        var newPath = Path.GetTempPath() + path.Split("/").Last() + ".mp4";
-        var arguments = $"-i \"{path}\" -c copy \"{newPath}\"";
+    static KifaFile ConvertPartFile(KifaFile inputFile) {
+        var newPath = inputFile.Parent.GetFile($"!{inputFile.BaseName}.mp4");
+        var arguments = $"-i \"{inputFile.GetLocalPath()}\" -c copy \"{newPath.GetLocalPath()}\"";
         Logger.Debug($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
