@@ -22,9 +22,6 @@ public abstract class DownloadCommand : KifaCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
-    [Option('a', "output-audio", HelpText = "Also generate audio file in destination.")]
-    public bool OutputAudio { get; set; } = false;
-
     [Option('c', "include-cover", HelpText = "Output cover file alongside with the video.")]
     public bool IncludeCover { get; set; } = false;
 
@@ -39,7 +36,7 @@ public abstract class DownloadCommand : KifaCommand {
             DownloadCover(video.Cover, outputFiles);
         }
 
-        return !OutputAudio || ExtractAudioFiles(outputFiles);
+        return true;
     }
 
     void DownloadCover(Uri videoCover, List<KifaFile> outputFiles) {
@@ -174,40 +171,5 @@ public abstract class DownloadCommand : KifaCommand {
 
     static void RemovePartFiles(List<KifaFile> partFiles) {
         partFiles.ForEach(p => p.Delete());
-    }
-
-    bool ExtractAudioFiles(List<KifaFile> outputFiles) {
-        var targetFiles = outputFiles.Select(f => f.Parent.GetFile(f.BaseName + ".m4a")).ToList();
-        var existingTargetFile = targetFiles.FirstOrDefault(f => f.ExistsSomewhere() || f.Exists());
-        if (existingTargetFile != null) {
-            if (existingTargetFile.ExistsSomewhere()) {
-                foreach (var file in targetFiles) {
-                    if (file != existingTargetFile) {
-                        FileInformation.Client.Link(existingTargetFile.Id, file.Id);
-                        Logger.Info($"Linked {existingTargetFile.Id} ==> {file.Id}.");
-                    }
-                }
-            } else {
-                foreach (var file in targetFiles) {
-                    if (file != existingTargetFile) {
-                        existingTargetFile.Copy(file);
-                        Logger.Info($"Linked {existingTargetFile} ==> {file}.");
-                    }
-                }
-            }
-        } else {
-            Logger.Info("Getting video files to local for transform...");
-            // TODO: Skipped for now. Assuming the first file exists.
-
-            Logger.Info($"Extracting audio files to {targetFiles[0]}...");
-            Helper.ExtractAudioFile(outputFiles[0], targetFiles[0]);
-            Logger.Info("Extracted audio files.");
-            foreach (var file in targetFiles.Skip(1)) {
-                targetFiles[0].Copy(file);
-                Logger.Info($"Linked {targetFiles[0]} ==> {file}.");
-            }
-        }
-
-        return true;
     }
 }

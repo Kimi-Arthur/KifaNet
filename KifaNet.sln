@@ -143,6 +143,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experimental", "Experimenta
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Experimental.NonNullProperty", "Experimental\Kifa.Experimental.NonNullProperty\Kifa.Experimental.NonNullProperty.csproj", "{355D184F-26D4-4D12-973A-B83B23B19EA3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.Media", "src\Kifa.Tools.Media\Kifa.Tools.Media.csproj", "{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -377,6 +379,10 @@ Global
 		{355D184F-26D4-4D12-973A-B83B23B19EA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{355D184F-26D4-4D12-973A-B83B23B19EA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{355D184F-26D4-4D12-973A-B83B23B19EA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

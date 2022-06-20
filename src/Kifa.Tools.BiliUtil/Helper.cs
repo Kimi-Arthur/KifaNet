@@ -62,27 +62,6 @@ public static class Helper {
         return newPath;
     }
 
-    public static string ExtractAudioFile(KifaFile sourceVideoFile, KifaFile targetAudioFile) {
-        var sourcePath = ((FileStorageClient) sourceVideoFile.Client).GetPath(sourceVideoFile.Path);
-        var targetPath = ((FileStorageClient) targetAudioFile.Client).GetPath(targetAudioFile.Path);
-
-        var arguments = $"-i \"{sourcePath}\" -map 0:a -acodec copy \"{targetPath}\"";
-        Logger.Debug($"Executing: ffmpeg {arguments}");
-        using var proc = new Process {
-            StartInfo = {
-                FileName = "ffmpeg",
-                Arguments = arguments
-            }
-        };
-        proc.Start();
-        proc.WaitForExit();
-        if (proc.ExitCode != 0) {
-            throw new Exception("Extract audio file failed.");
-        }
-
-        return targetPath;
-    }
-
     static string GeFfmpegTargetPath(string targetPath) {
         return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
     }
