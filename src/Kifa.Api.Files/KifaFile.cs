@@ -593,4 +593,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         using var streamReader = new StreamReader(OpenRead());
         return streamReader.ReadToEnd();
     }
+
+    public string GetLocalPath() => ((FileStorageClient) Client).GetPath(Path);
 }

@@ -66,9 +66,9 @@ public class ExtractAudioCommand : KifaCommand {
         var metadata = string.Join(" ",
             ExtractMetadata(sourceFile).Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
 
-        var sourcePath = ((FileStorageClient) sourceFile.Client).GetPath(sourceFile.Path);
-        var targetPath = ((FileStorageClient) targetFile.Client).GetPath(targetFile.Path);
-        var coverPath = ((FileStorageClient) coverFile.Client).GetPath(coverFile.Path);
+        var sourcePath = sourceFile.GetLocalPath();
+        var targetPath = targetFile.GetLocalPath();
+        var coverPath = coverFile.GetLocalPath();
 
         var arguments =
             $"-i \"{sourcePath}\" -i \"{coverPath}\" -map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadata} \"{targetPath}\"";

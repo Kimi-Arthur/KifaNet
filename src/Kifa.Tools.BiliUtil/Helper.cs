@@ -15,12 +15,12 @@ public static class Helper {
     public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
         // Convert parts first
         var partPaths = parts
-            .Select(p => ConvertPartFile(((FileStorageClient) p.Client).GetPath(p.Path))).ToList();
+            .Select(p => ConvertPartFile(p.GetLocalPath())).ToList();
 
         var fileListPath = Path.GetTempFileName();
         File.WriteAllLines(fileListPath, partPaths.Select(p => $"file {GetFfmpegTargetPath(p)}"));
 
-        var targetPath = ((FileStorageClient) target.Client).GetPath(target.Path);
+        var targetPath = target.GetLocalPath();
         var arguments = $"-safe 0 -f concat -i \"{fileListPath}\" -c copy \"{targetPath}\"";
         Logger.Debug($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
