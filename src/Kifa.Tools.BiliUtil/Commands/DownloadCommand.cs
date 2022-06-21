@@ -22,18 +22,11 @@ public abstract class DownloadCommand : KifaCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
-    [Option('c', "include-cover", HelpText = "Output cover file alongside with the video.")]
-    public bool IncludeCover { get; set; } = false;
-
     public bool Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null) {
         var outputFiles = DownloadVideo(video, pid, alternativeFolder, uploader);
         if (outputFiles == null) {
             return false;
-        }
-
-        if (IncludeCover) {
-            DownloadCover(video.Cover, outputFiles);
         }
 
         return true;
@@ -45,8 +38,8 @@ public abstract class DownloadCommand : KifaCommand {
         // TODO: Merge with the implementation as of ExtractAudio.
     }
 
-    public List<KifaFile>? DownloadVideo(BilibiliVideo video, int pid,
-        string? alternativeFolder = null, BilibiliUploader? uploader = null) {
+    public int DownloadVideo(BilibiliVideo video, int pid, string? alternativeFolder = null,
+        BilibiliUploader? uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
             Name = video.Author
@@ -55,7 +48,7 @@ public abstract class DownloadCommand : KifaCommand {
         var (extension, quality, streamGetters) = video.GetVideoStreams(pid, SourceChoice);
         if (extension == null) {
             Logger.Warn("Failed to get video streams.");
-            return null;
+            return 1;
         }
 
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
@@ -72,10 +65,7 @@ public abstract class DownloadCommand : KifaCommand {
                 Logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
             }
 
-            return new List<KifaFile> {
-                canonicalTargetFile,
-                finalTargetFile
-            };
+            return 0;
         }
 
         if (finalTargetFile.Exists()) {
@@ -85,23 +75,16 @@ public abstract class DownloadCommand : KifaCommand {
                 Logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
             }
 
-            return new List<KifaFile> {
-                canonicalTargetFile,
-                finalTargetFile
-            };
+            return 0;
         }
 
         if (canonicalTargetFile.ExistsSomewhere()) {
-            Logger.Info(
-                $"{canonicalTargetFile.Id} already exists in the system. Skipped.");
+            Logger.Info($"{canonicalTargetFile.Id} already exists in the system. Skipped.");
 
             FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
             Logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
 
-            return new List<KifaFile> {
-                canonicalTargetFile,
-                finalTargetFile
-            };
+            return 0;
         }
 
         if (canonicalTargetFile.Exists()) {
@@ -110,32 +93,42 @@ public abstract class DownloadCommand : KifaCommand {
             canonicalTargetFile.Copy(finalTargetFile);
             Logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
 
-            return new List<KifaFile> {
-                canonicalTargetFile,
-                finalTargetFile
-            };
+            return 0;
         }
 
         var partFiles = new List<KifaFile>();
         for (var i = 0; i < streamGetters.Count; i++) {
-            var targetFile = outputFolder.GetFile($"{canonicalPrefix}-{i + 1}.{extension}");
+            var targetFile =
+                canonicalTargetFile.Parent.GetFile($"!{canonicalTargetFile.Name}.{extension}");
             Logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
             try {
                 targetFile.Write(streamGetters[i]);
                 Logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
             } catch (Exception e) {
                 Logger.Warn(e, $"Failed to download {targetFile}.");
-                return null;
+                return 1;
             }
 
             partFiles.Add(targetFile);
         }
 
+        var coverLink = new KifaFile(video.Cover.ToString());
+        var coverFile =
+            canonicalTargetFile.Parent.GetFile(
+                $"!{canonicalTargetFile.Name}.{coverLink.Extension}");
+        coverLink.Copy(coverFile);
+
         try {
             Logger.Debug(
                 $"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
-            Helper.MergePartFiles(partFiles, canonicalTargetFile);
-            RemovePartFiles(partFiles);
+            Helper.MergePartFiles(partFiles, coverFile, canonicalTargetFile);
+
+            foreach (var p in partFiles) {
+                p.Delete();
+            }
+
+            coverFile.Delete();
+
             Logger.Debug(
                 $"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
 
@@ -143,15 +136,12 @@ public abstract class DownloadCommand : KifaCommand {
             canonicalTargetFile.Copy(finalTargetFile);
             Logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
         } catch (Exception e) {
-            Logger.Warn(e, $"Failed to merge files.");
-            return null;
+            Logger.Warn(e, "Failed to merge files.");
+            return 1;
         }
 
 
-        return new List<KifaFile> {
-            canonicalTargetFile,
-            finalTargetFile
-        };
+        return 0;
         // Temporarily disable this part as it seems not applicable anymore.
         // TODO: verify and remove this logic.
         // } else {
@@ -167,11 +157,5 @@ public abstract class DownloadCommand : KifaCommand {
         //     }
         //
         //     return true;
-    }
-
-    static void RemovePartFiles(List<KifaFile> partFiles) {
-        foreach (var p in partFiles) {
-            p.Delete();
-        }
     }
 }

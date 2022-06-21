@@ -8,5 +8,5 @@ class Program {
         => KifaCommand.Run(
             Parser.Default
                 .ParseArguments<GetChatCommand, DownloadVideoCommand, DownloadUploaderCommand,
-                    DownloadBangumiCommand, MergeCommand>, args);
+                    DownloadBangumiCommand>, args);
 }

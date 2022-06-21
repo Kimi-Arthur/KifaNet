@@ -10,7 +10,7 @@ namespace Kifa.Tools.BiliUtil;
 public static class Helper {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static void MergePartFiles(List<KifaFile> parts, KifaFile target) {
+    public static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
         // Convert parts first
         var partFiles = parts.Select(ConvertPartFile).ToList();
 
@@ -19,7 +19,7 @@ public static class Helper {
             partFiles.Select(p => $"file {GetFfmpegTargetPath(p.GetLocalPath())}")));
 
         var arguments =
-            $"-safe 0 -f concat -i \"{fileListFile.GetLocalPath()}\" -c copy \"{target.GetLocalPath()}\"";
+            $"-safe 0 -f concat -i \"{fileListFile.GetLocalPath()}\" -i \"{cover.GetLocalPath()}\" -map 1 -disposition:v:0 attached_pic -map 0 -c copy \"{target.GetLocalPath()}\"";
         Logger.Debug($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
