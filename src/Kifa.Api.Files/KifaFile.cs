@@ -594,5 +594,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         return streamReader.ReadToEnd();
     }
 
+    // TODO: I don't like these two...
     public string GetLocalPath() => ((FileStorageClient) Client).GetPath(Path);
+
+    public string GetRemotePath() => ((FileStorageClient) Client).GetRemotePath(Path);
 }

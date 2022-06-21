@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
-using Kifa.IO;
 using NLog;
 
 namespace Kifa.Tools.Media.Commands;
@@ -33,9 +32,12 @@ public class ExtractAudioCommand : KifaCommand {
         }
 
         var failedFiles = new List<KifaFile>();
+
+        var trackNumbers = GatherTrackNumbers(files);
+
         foreach (var file in files) {
             try {
-                ExtractAudioFile(file);
+                ExtractAudioFile(file, trackNumbers[file.ToString()]);
             } catch (Exception ex) {
                 Logger.Error(ex, $"Failed to extract audio from {file}");
                 failedFiles.Add(file);
@@ -55,7 +57,30 @@ public class ExtractAudioCommand : KifaCommand {
         return 0;
     }
 
-    static void ExtractAudioFile(KifaFile sourceFile) {
+    Dictionary<string, int> GatherTrackNumbers(List<KifaFile> files) {
+        var filesWithDates = files
+            .Select(file => (
+                new KifaFile(file.ToString()).FileInfo.Metadata.Linking.Target.Split("/")[^1]
+                    .Split(" ")[0], file)).OrderBy(item => item.Item1).ToList();
+
+        var lastYear = "";
+        var lastTrack = 0;
+
+        var results = new Dictionary<string, int>();
+        foreach (var (date, file) in filesWithDates) {
+            var year = date[..4];
+            if (year != lastYear) {
+                lastYear = year;
+                lastTrack = 1;
+            }
+
+            results[file.ToString()] = lastTrack++;
+        }
+
+        return results;
+    }
+
+    static void ExtractAudioFile(KifaFile sourceFile, int trackNumber) {
         sourceFile = new KifaFile(sourceFile.ToString());
         var targetFile = sourceFile.Parent.GetFile($"{sourceFile.BaseName}.m4a");
         if (targetFile.Exists()) {
@@ -63,15 +88,24 @@ public class ExtractAudioCommand : KifaCommand {
         }
 
         var coverFile = GetCover(sourceFile);
+        var croppedFiles = ImageCropper.Crop(coverFile);
+        var finalCoverFile =
+            sourceFile.Parent.GetFile($"{coverFile.BaseName}.final.{coverFile.Extension}");
+
+        if (!finalCoverFile.Exists()) {
+            croppedFiles[0].Copy(finalCoverFile);
+        }
+
         var metadata = string.Join(" ",
-            ExtractMetadata(sourceFile).Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
+            ExtractMetadata(sourceFile, trackNumber)
+                .Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
 
         var sourcePath = sourceFile.GetLocalPath();
         var targetPath = targetFile.GetLocalPath();
-        var coverPath = coverFile.GetLocalPath();
+        var squareCoverPath = finalCoverFile.GetLocalPath();
 
         var arguments =
-            $"-i \"{sourcePath}\" -i \"{coverPath}\" -map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadata} \"{targetPath}\"";
+            $"-i \"{sourcePath}\" -i \"{squareCoverPath}\" -map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadata} \"{targetPath}\"";
         Logger.Debug($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
@@ -98,17 +132,23 @@ public class ExtractAudioCommand : KifaCommand {
         return coverFile;
     }
 
-    static readonly Regex MusicFilePattern = new(@"\[([^\]]*)\] (.*)");
+    static readonly Regex MusicFilePattern = new(@"\[[^\]]*\] (.*)");
 
-    static Dictionary<string, string> ExtractMetadata(KifaFile file) {
+    static Dictionary<string, string> ExtractMetadata(KifaFile file, int trackNumber) {
         var name = file.BaseName;
         var match = MusicFilePattern.Match(name);
 
+        var artist = file.Path.Split("/")[^2];
+
+        var date = file.FileInfo.Metadata.Linking.Target.Split("/")[^1].Split(" ")[0];
+        var year = date[..4];
+
         return new Dictionary<string, string> {
-            { "title", match.Groups[2].Value },
-            { "artist", match.Groups[1].Value },
-            { "date", file.FileInfo.Metadata.Linking.Target.Split("/")[^1].Split(" ")[0] },
-            { "album", "Covers" }
+            { "title", match.Groups[1].Value },
+            { "artist", artist },
+            { "date", date },
+            { "album", $"{artist} - {date[..4]}" },
+            { "track", trackNumber.ToString() }
         };
     }
 }

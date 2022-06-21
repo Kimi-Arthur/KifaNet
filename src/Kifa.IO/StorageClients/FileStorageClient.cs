@@ -218,5 +218,5 @@ public class FileStorageClient : StorageClient {
         Directory.GetParent(path)?.Create();
     }
 
-    string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";
+    public string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";
 }

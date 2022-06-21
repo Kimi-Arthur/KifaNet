@@ -20,12 +20,15 @@
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Scope/=8B59E26E1C12624EAD1A5ED99DB5F512/Type/@EntryValue">MustBeInUnitySerializableType</s:String>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Shortcut/@EntryValue">lp</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Text/@EntryValue">public $type$ $propertyName$ {
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Text/@EntryValue">#region public late $type$ $propertyName$ { get; set; }
+
+$type$? $fieldName$;
+
+public $type$ $propertyName$ {
     get =&gt; Late.Get($fieldName$);
     set =&gt; Late.Set(ref $fieldName$, value);
 }
 
-$type$? $fieldName$;
-</s:String>
+#endregion</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Kifa/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Pimix/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

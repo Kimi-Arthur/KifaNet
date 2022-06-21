@@ -228,10 +228,10 @@ public class AssStyle : AssLine {
                     style.BorderStyle = (BorderStyleType) int.Parse(p.Item1);
                     break;
                 case "Outline":
-                    style.Outline = double.Parse(p.Item1).RoundUp(1);
+                    style.Outline = double.Parse(p.Item1).RoundUp();
                     break;
                 case "Shadow":
-                    style.Shadow = double.Parse(p.Item1).RoundUp(1);
+                    style.Shadow = double.Parse(p.Item1).RoundUp();
                     break;
                 case "Alignment":
                     style.Alignment = (AssAlignment) int.Parse(p.Item1);
