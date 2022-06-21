@@ -257,8 +257,7 @@ public class MemriseClient : IDisposable {
     }
 
     bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord)
-        => memriseWord != null &&
-           memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id;
+        => memriseWord != null && memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id;
 
     static string TrimBracket(string content) {
         var reg = new Regex(@"^(\(.*\) )?(.*)( \(.*\))?$");
@@ -320,7 +319,8 @@ public class MemriseClient : IDisposable {
 
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
-                ? string.Join(lineBreak, word.Examples)
+                ? string.Join(lineBreak,
+                    word.Examples.Select((example, index) => $"{index}. {example}"))
                 : "";
 
         return data;
