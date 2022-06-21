@@ -49,7 +49,7 @@ public class FileStorageClient : StorageClient {
         if (neverLink) {
             Logger.Trace($"Use raw file copying.");
             File.Copy(GetPath(sourcePath), GetPath(destinationPath));
-        } else if (Server.RemotePrefix != null) {
+        } else if (Server.RemotePrefix != null && Server.Host != null && Server.Password != null) {
             Logger.Trace($"Use remote linking.");
             RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));
         } else {
