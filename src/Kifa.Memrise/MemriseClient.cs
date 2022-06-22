@@ -139,10 +139,6 @@ public class MemriseClient : IDisposable {
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,
         bool alwaysCheckAudio = false) {
-        WordClient.Update(new GermanWord {
-            Id = word.RootWord
-        });
-
         var rootWord = WordClient.Get(word.RootWord);
         Logger.Info($"{word.Id} => {rootWord?.Id}");
 
