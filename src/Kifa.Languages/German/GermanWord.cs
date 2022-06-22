@@ -11,13 +11,13 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public override int CurrentVersion => 1;
+    public override int CurrentVersion => 2;
 
     public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
     public List<Meaning>? Meanings { get; set; }
 
-    public string? Meaning => Meanings?.FirstOrDefault()?.Translation;
+    public string? Meaning => Meanings?.FirstOrDefault()?.SafeTranslation;
 
     public Breakdown? Breakdown { get; set; }
 
@@ -213,6 +213,8 @@ public class GermanWord : DataModel<GermanWord> {
             Gender = words.wiki.Gender;
             NounForms = words.wiki.NounForms;
         }
+
+        Breakdown = dwds.Breakdown;
     }
 }
 
@@ -220,11 +222,24 @@ public class Meaning {
     public WordType Type { get; set; }
     public string? Translation { get; set; }
     public string? TranslationWithNotes { get; set; }
+
+    public string? SafeTranslation
+        => string.IsNullOrEmpty(Translation) ? TranslationWithNotes : Translation;
+
     public List<Example> Examples { get; set; } = new();
 }
 
 public class Breakdown {
-    public List<Example> Segments { get; set; } = new();
+    #region public late List<Example> Segments { get; set; }
+
+    List<Example>? segments;
+
+    public List<Example> Segments {
+        get => Late.Get(segments);
+        set => Late.Set(ref segments, value);
+    }
+
+    #endregion
 }
 
 public class Example {

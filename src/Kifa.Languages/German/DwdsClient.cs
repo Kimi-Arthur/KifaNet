@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using HtmlAgilityPack;
-using NLog;
 
 namespace Kifa.Languages.German;
 
 public class DwdsClient {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     static HttpClient dwdsClient = new();
+
+    public static GermanWordServiceClient GermanWordClient { get; set; } =
+        new GermanWordRestServiceClient();
 
     public GermanWord GetWord(string wordId) {
         var doc = new HtmlDocument();
@@ -25,6 +25,43 @@ public class DwdsClient {
                 .Select(audioNode => $"{audioNode.Attributes["src"].Value}").ToHashSet();
         }
 
+        var segments = ExtractSourceWords(doc);
+
+        if (segments != null) {
+            word.Breakdown = new Breakdown {
+                Segments = segments
+            };
+        }
+
         return word;
+    }
+
+    List<Example>? ExtractSourceWords(HtmlDocument doc) {
+        var nodes = doc.DocumentNode.SelectNodes("//div[@class='dwdswb-ft-block']");
+        foreach (var nodePair in nodes) {
+            if (nodePair.ChildNodes.Count < 2) {
+                continue;
+            }
+
+            if (nodePair.ChildNodes[0].InnerText == "Wortzerlegung") {
+                return nodePair.ChildNodes[1].SelectNodes("./a")
+                    .Select(node => GetTranslated(node.InnerText)).ToList();
+            }
+
+            if (nodePair.ChildNodes[0].InnerText == "Grundform") {
+                return nodePair.ChildNodes[1].SelectNodes("./a")
+                    .Select(node => GetTranslated(node.InnerText)).ToList();
+            }
+        }
+
+        return null;
+    }
+
+    Example GetTranslated(string german) {
+        var word = GermanWordClient.Get(german);
+        return new Example {
+            Text = german,
+            Translation = word.Meaning
+        };
     }
 }
