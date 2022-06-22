@@ -15,7 +15,11 @@ public enum WordType {
     Verb,
     Particle,
     Interjection,
-    ProperNoun
+    ProperNoun,
+    Suffix,
+    Prefix,
+    Infix,
+    Interfix
 }
 
 public static class WordTypeExtensions {

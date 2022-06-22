@@ -214,6 +214,10 @@ public class EnWiktionaryClient {
             "Particle" => WordType.Particle,
             "Interjection" => WordType.Interjection,
             "Proper noun" => WordType.ProperNoun,
+            "Suffix" => WordType.Suffix,
+            "Prefix" => WordType.Prefix,
+            "Infix" => WordType.Infix,
+            "Interfix" => WordType.Interfix,
             _ => WordType.Unknown
         };
 }
