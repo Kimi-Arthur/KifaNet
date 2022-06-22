@@ -89,7 +89,9 @@ public class EnWiktionaryClient {
                                 word.Meanings.Add(meaning);
                             }
 
-                            if (listContent == "") {
+                            var lineWithNotes = GetLineWithNotes(listItem);
+
+                            if (listContent == "" && lineWithNotes == "") {
                                 meaning = null;
                                 continue;
                             }
@@ -97,7 +99,7 @@ public class EnWiktionaryClient {
                             meaning = new Meaning {
                                 Type = wordType,
                                 Translation = listContent,
-                                TranslationWithNotes = GetLineWithNotes(listItem)
+                                TranslationWithNotes = lineWithNotes
                             };
                             break;
                         case "#:":
@@ -185,13 +187,9 @@ public class EnWiktionaryClient {
                 case "lb":
                     return
                         $"({string.Join(", ", template.Arguments.Skip(1).Select(a => a.Value.ToPlainText()))})";
-                case "gloss":
-                case "q":
-                    return
-                        $"({string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))})";
                 default:
-                    Logger.Warn($"Unknown template: {template}");
-                    break;
+                    return
+                        $"{string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))}";
             }
         }
 
