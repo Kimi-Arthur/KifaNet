@@ -43,14 +43,12 @@ public class DwdsClient {
                 continue;
             }
 
-            if (nodePair.ChildNodes[0].InnerText == "Wortzerlegung") {
-                return nodePair.ChildNodes[1].SelectNodes("./a")
-                    .Select(node => GetTranslated(node.InnerText)).ToList();
-            }
-
-            if (nodePair.ChildNodes[0].InnerText == "Grundform") {
-                return nodePair.ChildNodes[1].SelectNodes("./a")
-                    .Select(node => GetTranslated(node.InnerText)).ToList();
+            if (nodePair.ChildNodes[0].InnerText == "Wortzerlegung" ||
+                nodePair.ChildNodes[0].InnerText == "Grundform") {
+                return nodePair.ChildNodes[1].SelectNodes("./a").Select(node
+                        => GetTranslated(string.Join("",
+                            node.ChildNodes.Where(n => !n.HasChildNodes).Select(n => n.InnerText))))
+                    .ToList();
             }
         }
 
