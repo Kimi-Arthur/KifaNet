@@ -27,7 +27,7 @@ public class Program {
     static void ConfigureLogger() {
         LogManager.Configuration.LoggingRules.Clear();
 
-        LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
+        LogManager.Configuration.AddRule(LogLevel.Debug, LogLevel.Fatal, "console");
         LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
 
         LogManager.ReconfigExistingLoggers();
