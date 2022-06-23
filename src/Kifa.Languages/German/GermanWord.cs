@@ -33,6 +33,8 @@ public class GermanWord : DataModel<GermanWord> {
 
     public Dictionary<Source, HashSet<string>>? PronunciationAudioLinks { get; set; }
 
+    public HashSet<string>? Images { get; set; }
+
     // Shared for any meaning.
     public VerbForms? VerbForms { get; set; }
 
