@@ -13,6 +13,7 @@
     <Copyright>Copyright © 2021 Kimi Arthur</Copyright>
     <PackageTags>Kifa Apps MemriseUtil app</PackageTags>
     <Authors>KimiArthur</Authors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

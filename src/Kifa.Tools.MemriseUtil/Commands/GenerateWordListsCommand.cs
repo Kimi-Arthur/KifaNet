@@ -36,7 +36,8 @@ public class GenerateWordListsCommand : KifaCommand {
     public override int Execute() {
         var wordsChef = new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>();
         var words = wordsChef.Load(new KifaFile(WordsFile).ReadAsString()).Where(word
-            => word.Level != null && !word.Examples[0].StartsWith("example")).ToList();
+            => word.Level != null && word.Examples != null &&
+               !word.Examples[0].StartsWith("example")).ToList();
 
         var lists = new List<GoetheWordList> {
             new() {

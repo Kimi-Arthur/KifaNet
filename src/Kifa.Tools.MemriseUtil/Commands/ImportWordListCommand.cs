@@ -10,11 +10,29 @@ namespace Kifa.Tools.MemriseUtil.Commands;
 public class ImportWordListCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Value(0, Min = 1, HelpText = "Word list IDs.")]
-    public IEnumerable<string> WordListIds { get; set; }
+    #region public late IEnumerable<string> WordListIds { get; set; }
 
-    [Option('c', "course", HelpText = "Course to add the word list to.")]
-    public string Course { get; set; } = "test-course";
+    IEnumerable<string>? wordListIds;
+
+    [Value(0, Min = 1, HelpText = "Word list IDs.")]
+    public IEnumerable<string> WordListIds {
+        get => Late.Get(wordListIds);
+        set => Late.Set(ref wordListIds, value);
+    }
+
+    #endregion
+    
+    #region public late string Course { get; set; }
+
+    string? course;
+
+    [Option('c', "course", Required = true, HelpText = "Course to add the word list to.")]
+    public string Course {
+        get => Late.Get(course);
+        set => Late.Set(ref course, value);
+    }
+
+    #endregion
 
     public override int Execute() {
         var memriseCourseClient = new MemriseCourseRestServiceClient();
