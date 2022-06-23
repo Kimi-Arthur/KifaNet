@@ -13,6 +13,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     public string DatabaseId { get; set; }
 
     // Map from column name to data-key.
+    [JsonIgnore]
     public Dictionary<string, string> Columns { get; set; }
 
     // Map from level name to its id. The name doesn't have to comply with the actual level name.

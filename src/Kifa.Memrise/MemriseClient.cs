@@ -74,6 +74,8 @@ public class MemriseClient : IDisposable {
     Dictionary<string, MemriseWord> allExistingRows;
 
     public KifaActionResult AddWordList(GoetheWordList wordList) {
+        SetupHeaders();
+
         AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
 
         return KifaActionResult.Success;
@@ -102,7 +104,7 @@ public class MemriseClient : IDisposable {
         }
     }
 
-    public IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
+    IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
         allExistingRows ??= GetAllExistingRows();
 
         foreach (var word in words) {
@@ -115,7 +117,7 @@ public class MemriseClient : IDisposable {
         }
     }
 
-    public void AddWordsToLevel(string levelId, List<string> wordIds) {
+    void AddWordsToLevel(string levelId, List<string> wordIds) {
         var rendered = new GetLevelRpc {
             HttpClient = HttpClient
         }.Invoke(WebDriver.Url, levelId).Rendered;
@@ -148,12 +150,6 @@ public class MemriseClient : IDisposable {
 
         Logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{rootWord}");
 
-        // Check headers (temporarily disabled)
-        // var checkHeadersResult = CheckHeaders(GetHeaders());
-        // if (checkHeadersResult.Status != KifaActionStatus.OK) {
-        //     return new KifaActionResult<string>(checkHeadersResult);
-        // }
-
         var newData = GetDataFromWord(word, rootWord);
 
         var existingRow = allExistingRows.GetValueOrDefault(word.Id);
@@ -181,24 +177,6 @@ public class MemriseClient : IDisposable {
         }
 
         return new KifaActionResult<MemriseWord>(existingRow);
-    }
-
-    KifaActionResult CheckHeaders(Dictionary<string, string> headers) {
-        Logger.Debug($"Headers: {string.Join(", ", headers)}");
-        foreach (var column in Course.Columns) {
-            var headerIndex = headers.GetValueOrDefault(column.Key) ?? "not found";
-            if (headerIndex != column.Value) {
-                Logger.Fatal(
-                    $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}.");
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Error,
-                    Message =
-                        $"Header mismatch: {column.Key} should be in column {column.Value}, not {headerIndex}."
-                };
-            }
-        }
-
-        return KifaActionResult.Success;
     }
 
     void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
@@ -281,7 +259,6 @@ public class MemriseClient : IDisposable {
         return rows.Select(GetDataFromRow).ToList();
     }
 
-    // Columns order: German, English, Form, Pronunciation, Examples, Audios
     void FillBasicWord(Dictionary<string, string> newData) {
         new AddWordRpc {
             HttpClient = HttpClient
@@ -319,6 +296,13 @@ public class MemriseClient : IDisposable {
                     word.Examples.Select((example, index) => $"{index}. {example}"))
                 : "";
 
+        if (baseWord.Breakdown != null) {
+            data[Course.Columns["Etymology"]] =
+                string.Join(" + ", baseWord.Breakdown.Segments.Select(seg => seg.Text)) +
+                lineBreak + string.Join(" + ",
+                    baseWord.Breakdown.Segments.Select(seg => seg.Translation));
+        }
+
         return data;
     }
 
@@ -337,6 +321,11 @@ public class MemriseClient : IDisposable {
             Data = data,
             AudioLinks = audioLinks.Select(link => link.GetAttribute("data-url")).ToList()
         };
+    }
+
+    void SetupHeaders() {
+        WebDriver.Url = Course.DatabaseUrl;
+        Course.Columns ??= GetHeaders();
     }
 
     public void Dispose() {
