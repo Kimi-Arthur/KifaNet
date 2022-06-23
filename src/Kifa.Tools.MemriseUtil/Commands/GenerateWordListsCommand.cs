@@ -35,24 +35,23 @@ public class GenerateWordListsCommand : KifaCommand {
 
     public override int Execute() {
         var wordsChef = new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>();
-        var words = wordsChef.Load(new KifaFile(WordsFile).ReadAsString());
-        var wordsByLevels = words
-            .Where(word => word.Level != null && !word.Examples[0].StartsWith("example"))
-            .GroupBy(word => word.Level).ToDictionary(group => group.Key,
-                group => group.Select(w => w.Id).ToList());
+        var words = wordsChef.Load(new KifaFile(WordsFile).ReadAsString()).Where(word
+            => word.Level != null && !word.Examples[0].StartsWith("example")).ToList();
 
         var lists = new List<GoetheWordList> {
             new() {
                 Id = "A1",
-                Words = wordsByLevels["A1"]
+                Words = words.Where(word => word.Level is "A1").Select(word => word.Id).ToList()
             },
             new() {
                 Id = "A2",
-                Words = wordsByLevels["A2"]
+                Words = words.Where(word => word.Level is "A1" or "A2").Select(word => word.Id)
+                    .ToList()
             },
             new() {
                 Id = "B1",
-                Words = wordsByLevels["B1"]
+                Words = words.Where(word => word.Level is "A1" or "A2" or "B1")
+                    .Select(word => word.Id).ToList()
             }
         };
 
