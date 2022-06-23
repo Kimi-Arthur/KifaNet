@@ -57,11 +57,27 @@ public class DataChef<TDataModel, TClient> : DataChef
     // TODO: Should not rely implementation detail. 
     public string ModelId => Client.ModelId;
 
+    public List<TDataModel> Load(string data)
+        => new Deserializer().Deserialize<List<TDataModel>>(data);
+
     public KifaActionResult Import(string data) {
-        var items = new Deserializer().Deserialize<List<TDataModel>>(data);
+        var items = Load(data);
 
         return Logger.LogResult(Client.Update(items),
             $"Update {ModelId}({string.Join(", ", items.Select(item => item.Id))})");
+    }
+
+    public string Save(List<TDataModel> items, bool compact) {
+        var serializerBuilder = new SerializerBuilder().WithIndentedSequences()
+            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
+        if (compact) {
+            serializerBuilder =
+                serializerBuilder.WithEventEmitter(next
+                    => new FlowStyleScalarSequenceEmitter(next));
+        }
+
+        return
+            $"# {ModelId}\n{string.Join("\n", items.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> { item })))}";
     }
 
     public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
@@ -71,16 +87,8 @@ public class DataChef<TDataModel, TClient> : DataChef
         var updatedItems =
             getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
 
-        var serializerBuilder = new SerializerBuilder().WithIndentedSequences()
-            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
-        if (compact) {
-            serializerBuilder =
-                serializerBuilder.WithEventEmitter(next
-                    => new FlowStyleScalarSequenceEmitter(next));
-        }
 
-        return new KifaActionResult<string>(
-            $"# {ModelId}\n{string.Join("\n", updatedItems.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> { item })))}");
+        return new KifaActionResult<string>(Save(updatedItems, compact));
     }
 
     public KifaActionResult Link(string target, string link) => Client.Link(target, link);
