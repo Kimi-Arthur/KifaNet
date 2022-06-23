@@ -22,7 +22,8 @@ public static class Defaults {
         Error = (sender, ev) => ev.ErrorContext.Handled = true,
         DefaultValueHandling = DefaultValueHandling.Ignore,
         NullValueHandling = NullValueHandling.Ignore,
-        MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+        MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+        ObjectCreationHandling = ObjectCreationHandling.Replace
     };
 
     public static readonly JsonSerializerSettings PrettyJsonSerializerSettings = new() {
@@ -40,7 +41,8 @@ public static class Defaults {
         Error = (sender, ev) => ev.ErrorContext.Handled = true,
         DefaultValueHandling = DefaultValueHandling.Ignore,
         NullValueHandling = NullValueHandling.Ignore,
-        MetadataPropertyHandling = MetadataPropertyHandling.Ignore
+        MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
+        ObjectCreationHandling = ObjectCreationHandling.Replace
     };
 }
 
