@@ -76,8 +76,10 @@ public class DataChef<TDataModel, TClient> : DataChef
                     => new FlowStyleScalarSequenceEmitter(next));
         }
 
+        var serializer = serializerBuilder.Build();
+
         return
-            $"# {ModelId}\n{string.Join("\n", items.Select(item => serializerBuilder.Build().Serialize(new List<TDataModel> { item })))}";
+            $"# {ModelId}\n{string.Join("\n", items.Select(item => serializer.Serialize(new List<TDataModel> { item })))}";
     }
 
     public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
