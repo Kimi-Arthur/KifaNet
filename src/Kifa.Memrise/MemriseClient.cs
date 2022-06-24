@@ -172,7 +172,7 @@ public class MemriseClient : IDisposable {
 
         FillRow(existingRow, newData);
 
-        if (alwaysCheckAudio || existingRow.AudioLinks.Count == 0 ||
+        if (alwaysCheckAudio || existingRow.Audios.Count == 0 ||
             rootWord?.PronunciationAudioLinks != null) {
             UploadAudios(existingRow, rootWord);
         }
@@ -181,14 +181,15 @@ public class MemriseClient : IDisposable {
     }
 
     void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
-        var currentAudios = GetAudios(originalWord.AudioLinks);
+        FillAudios(originalWord.Audios);
 
         foreach (var link in baseWord.PronunciationAudioLinks.Where(item => item.Value != null)
                      .OrderBy(item => item.Key).SelectMany(item => item.Value).Take(3)) {
             var newAudio = new KifaFile(link).OpenRead().ToByteArray();
             var info = FileInformation.GetInformation(new MemoryStream(newAudio),
                 FileProperties.Size | FileProperties.Md5);
-            if (currentAudios.Contains((info.Size ?? 0, info.Md5))) {
+            if (originalWord.Audios.Any(audio
+                    => audio.Size == info.Size && audio.Md5 == info.Md5)) {
                 Logger.Debug($"{link} for {baseWord.Id} ({originalWord.ThingId}) already exists.");
                 continue;
             }
@@ -202,15 +203,12 @@ public class MemriseClient : IDisposable {
         }
     }
 
-    HashSet<(long length, string md5)> GetAudios(List<string> currentAudioLinks) {
-        var result = new HashSet<(long length, string md5)>();
-        foreach (var link in currentAudioLinks) {
-            var response = HttpClient.GetHeaders(link);
-            result.Add((response.Content.Headers.ContentRange?.Length ?? 0,
-                response.Headers.ETag?.Tag.ToUpperInvariant()[1..^1]));
+    void FillAudios(List<MemriseAudio> originalWordAudios) {
+        foreach (var audio in originalWordAudios) {
+            var response = HttpClient.GetHeaders(audio.Link);
+            audio.Size = response.Content.Headers.ContentRange?.Length ?? 0;
+            audio.Md5 = response.Headers.ETag?.Tag.ToUpperInvariant()[1..^1];
         }
-
-        return result;
     }
 
     Dictionary<string, string> GetHeaders()
@@ -315,12 +313,16 @@ public class MemriseClient : IDisposable {
             data[td.GetAttribute("data-key")] = td.Text;
         }
 
-        var audioLinks = existingRow.FindElements(By.CssSelector($"td[data-key='{Course.Columns["Audios"]}'] a"));
+        var audioLinks =
+            existingRow.FindElements(
+                By.CssSelector($"td[data-key='{Course.Columns["Audios"]}'] a"));
 
         return new MemriseWord {
             ThingId = existingRow.GetAttribute("data-thing-id"),
             Data = data,
-            AudioLinks = audioLinks.Select(link => link.GetAttribute("data-url")).ToList()
+            Audios = audioLinks.Select(link => new MemriseAudio {
+                Link = link.GetAttribute("data-url")
+            }).ToList()
         };
     }
 
