@@ -13,6 +13,9 @@ public class DataMetadata {
 
     public FreshnessMetadata? Freshness { get; set; }
 
+    // Overrides that will apply after Fill() is called.
+    public Dictionary<string, object>? Overrides { get; set; }
+
     [JsonIgnore]
     [YamlIgnore]
     public bool IsEmpty => Linking == null && Freshness == null && Version == 0;
