@@ -31,4 +31,13 @@ public class EnWiktionaryClientTests {
         Assert.Equal("zum Bahnhof", example.Text);
         Assert.Equal("to the train station", example.Translation);
     }
+
+    [Fact]
+    public void ExtractSuffixTest() {
+        var client = new EnWiktionaryClient();
+        var word = client.GetWord("-er");
+        Assert.Equal(5, word.Meanings.Count);
+        Assert.Equal("Forms agent nouns etc. from verbs, suffixed to the verb stem.",
+            word.Meanings[0].TranslationWithNotes);
+    }
 }

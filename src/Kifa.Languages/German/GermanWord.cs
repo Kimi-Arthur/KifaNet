@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
+using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Languages.German;
@@ -11,7 +12,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public override int CurrentVersion => 2;
+    public override int CurrentVersion => 6;
 
     public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
@@ -19,7 +20,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public string? Meaning => Meanings?.FirstOrDefault()?.SafeTranslation;
 
-    public Breakdown? Breakdown { get; set; }
+    public List<string>? Etymology { get; set; }
 
     public string? Pronunciation { get; set; }
 
@@ -216,7 +217,7 @@ public class GermanWord : DataModel<GermanWord> {
             NounForms = words.wiki.NounForms;
         }
 
-        Breakdown = dwds.Breakdown;
+        Etymology = dwds.Etymology;
     }
 }
 
@@ -225,6 +226,7 @@ public class Meaning {
     public string? Translation { get; set; }
     public string? TranslationWithNotes { get; set; }
 
+    [JsonIgnore]
     public string? SafeTranslation
         => string.IsNullOrEmpty(Translation) ? TranslationWithNotes : Translation;
 

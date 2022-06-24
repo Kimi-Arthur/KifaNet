@@ -10,7 +10,8 @@ public class DwdsClientTests {
     [InlineData("malen", "https://media.dwds.de/dwds2/audio/019/mahlen.mp3")]
     [InlineData("Ankunft", "https://media.dwds.de/dwds2/audio/004/die_Ankunft.mp3")]
     [InlineData("Laptop", "https://media.dwds.de/dwds2/audio/100/der_Laptop.mp3")]
-    [InlineData("ab", null)]
+    [InlineData("Blei", "https://media.dwds.de/dwds2/audio/007/das_Blei.mp3")]
+    [InlineData("ab", "https://media.dwds.de/dwds2/audio/119/ab.mp3")]
     public void AudioLinkTest(string wordId, string link) {
         var client = new DwdsClient();
         var word = client.GetWord(wordId);

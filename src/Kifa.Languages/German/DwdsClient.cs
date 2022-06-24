@@ -25,41 +25,18 @@ public class DwdsClient {
                 .Select(audioNode => $"{audioNode.Attributes["src"].Value}").ToHashSet();
         }
 
-        var segments = ExtractSourceWords(doc);
-
-        if (segments != null) {
-            word.Breakdown = new Breakdown {
-                Segments = segments
-            };
-        }
+        word.Etymology = ExtractEtymology(doc);
 
         return word;
     }
 
-    List<Example>? ExtractSourceWords(HtmlDocument doc) {
-        var nodes = doc.DocumentNode.SelectNodes("//div[@class='dwdswb-ft-block']");
-        foreach (var nodePair in nodes) {
-            if (nodePair.ChildNodes.Count < 2) {
-                continue;
-            }
-
-            if (nodePair.ChildNodes[0].InnerText == "Wortzerlegung" ||
-                nodePair.ChildNodes[0].InnerText == "Grundform") {
-                return nodePair.ChildNodes[1].SelectNodes("./a").Select(node
-                        => GetTranslated(string.Join("",
-                            node.ChildNodes.Where(n => !n.HasChildNodes).Select(n => n.InnerText))))
-                    .ToList();
-            }
-        }
-
-        return null;
-    }
-
-    Example GetTranslated(string german) {
-        var word = GermanWordClient.Get(german);
-        return new Example {
-            Text = german,
-            Translation = word.Meaning
-        };
-    }
+    static List<string>? ExtractEtymology(HtmlDocument doc)
+        => doc.DocumentNode.SelectNodes("//div[@class='dwdswb-ft-block']")
+            ?.Where(nodePair => nodePair.ChildNodes.Count >= 2 &&
+                                (nodePair.ChildNodes[0].InnerText == "Wortzerlegung" ||
+                                 nodePair.ChildNodes[0].InnerText == "Grundform")).Select(nodePair
+                => nodePair.ChildNodes[1].SelectNodes("./a").Select(node
+                        => string.Join("",
+                            node.ChildNodes.Where(n => !n.HasChildNodes).Select(n => n.InnerText)))
+                    .ToList()).FirstOrDefault();
 }

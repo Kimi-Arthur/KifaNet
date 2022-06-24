@@ -187,9 +187,13 @@ public class EnWiktionaryClient {
                 case "lb":
                     return
                         $"({string.Join(", ", template.Arguments.Skip(1).Select(a => a.Value.ToPlainText()))})";
-                default:
+                case "gloss":
+                case "q":
+                case "non-gloss definition":
                     return
                         $"{string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))}";
+                default:
+                    return "";
             }
         }
 
