@@ -205,6 +205,10 @@ public class MemriseClient : IDisposable {
 
     void FillAudios(List<MemriseAudio> originalWordAudios) {
         foreach (var audio in originalWordAudios) {
+            if (audio.Md5 != null) {
+                continue;
+            }
+
             var response = HttpClient.GetHeaders(audio.Link);
             audio.Size = response.Content.Headers.ContentRange?.Length ?? 0;
             audio.Md5 = response.Headers.ETag?.Tag.ToUpperInvariant()[1..^1];
