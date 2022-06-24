@@ -294,7 +294,7 @@ public class MemriseClient : IDisposable {
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
                 ? string.Join(lineBreak,
-                    word.Examples.Select((example, index) => $"{index}. {example}"))
+                    word.Examples.Select((example, index) => $"{index + 1}. {example}"))
                 : "";
 
         if (baseWord.Breakdown != null) {
