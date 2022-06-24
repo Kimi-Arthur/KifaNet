@@ -297,12 +297,12 @@ public class MemriseClient : IDisposable {
                     word.Examples.Select((example, index) => $"{index + 1}. {example}"))
                 : "";
 
-        if (baseWord.Breakdown != null) {
-            data[Course.Columns["Etymology"]] =
-                string.Join(" + ", baseWord.Breakdown.Segments.Select(seg => seg.Text)) +
-                lineBreak + string.Join(" + ",
-                    baseWord.Breakdown.Segments.Select(seg => seg.Translation));
-        }
+        data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
+            ? string.Join(lineBreak,
+                baseWord.Etymology.Select(segment
+                    => segment + ": " + (GoetheClient.Get(segment)?.Meaning ??
+                                         WordClient.Get(segment)?.Meaning ?? "<unknown>")))
+            : "";
 
         return data;
     }
