@@ -315,7 +315,7 @@ public class MemriseClient : IDisposable {
             data[td.GetAttribute("data-key")] = td.Text;
         }
 
-        var audioLinks = existingRow.FindElements(By.CssSelector("td[data-key='6'] a"));
+        var audioLinks = existingRow.FindElements(By.CssSelector($"td[data-key='{Course.Columns["Audios"]}'] a"));
 
         return new MemriseWord {
             ThingId = existingRow.GetAttribute("data-thing-id"),
