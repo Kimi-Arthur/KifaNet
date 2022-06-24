@@ -172,7 +172,8 @@ public class MemriseClient : IDisposable {
 
         FillRow(existingRow, newData);
 
-        if (alwaysCheckAudio || existingRow.AudioLinks.Count == 0) {
+        if (alwaysCheckAudio || existingRow.AudioLinks.Count == 0 ||
+            rootWord?.PronunciationAudioLinks != null) {
             UploadAudios(existingRow, rootWord);
         }
 
@@ -279,7 +280,7 @@ public class MemriseClient : IDisposable {
         return updatedFields;
     }
 
-    Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord baseWord) {
+    Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord) {
         var data = new Dictionary<string, string> {
             { Course.Columns["German"], word.Id },
             { Course.Columns["English"], word.Meaning }
@@ -288,7 +289,7 @@ public class MemriseClient : IDisposable {
         data[Course.Columns["Form"]] = word.Form ?? "";
 
         data[Course.Columns["Pronunciation"]] =
-            baseWord.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
+            baseWord?.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
 
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
