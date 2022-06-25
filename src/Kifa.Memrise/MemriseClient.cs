@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Api.Files;
-using Kifa.IO;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
@@ -185,9 +183,9 @@ public class MemriseClient : IDisposable {
 
         foreach (var link in baseWord.PronunciationAudioLinks.Where(item => item.Value != null)
                      .OrderBy(item => item.Key).SelectMany(item => item.Value).Take(3)) {
-            var newAudio = new KifaFile(link).OpenRead().ToByteArray();
-            var info = FileInformation.GetInformation(new MemoryStream(newAudio),
-                FileProperties.Size | FileProperties.Md5);
+            var newAudioFile = new KifaFile(link);
+            newAudioFile.Add(false);
+            var info = newAudioFile.FileInfo!;
             if (originalWord.Audios.Any(audio
                     => audio.Size == info.Size && audio.Md5 == info.Md5)) {
                 Logger.Debug($"{link} for {baseWord.Id} ({originalWord.ThingId}) already exists.");
@@ -198,7 +196,7 @@ public class MemriseClient : IDisposable {
             new UploadAudioRpc {
                 HttpClient = HttpClient
             }.Invoke(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken,
-                newAudio);
+                newAudioFile.ReadAsBytes());
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
     }
