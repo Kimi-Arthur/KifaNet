@@ -40,9 +40,11 @@ public static class HttpExtensions {
 
     public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
         Logger.Trace($"Get headers for {url}...");
-        var request = new HttpRequestMessage(HttpMethod.Get, url);
-        request.Headers.Range = new RangeHeaderValue(0, 0);
-        return client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
+        return client.SendWithRetry(() => {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Range = new RangeHeaderValue(0, 0);
+            return request;
+        });
     }
 
     public static long? GetContentLength(this HttpClient client, string url) {
@@ -52,15 +54,7 @@ public static class HttpExtensions {
 
     public static HttpResponseMessage SendWithRetry(this HttpClient client,
         Func<HttpRequestMessage> request)
-        => Retry.Run(() => {
-            var task = client.SendAsync(request());
-            task.Wait();
-            if (task.IsCompleted) {
-                return task.Result;
-            }
-
-            throw new Exception($"Unexpected task status {task.Status}");
-        }, (ex, index) => {
+        => Retry.Run(() => client.Send(request()).EnsureSuccessStatusCode(), (ex, index) => {
             if (index >= 5 || ex is HttpRequestException &&
                 ex.InnerException is SocketException socketException &&
                 socketException.Message == "Device not configured") {
