@@ -6,7 +6,18 @@ using System.Net.Http.Headers;
 namespace Kifa.IO.StorageClients;
 
 public class WebStorageClient : StorageClient {
-    HttpClient httpClient = new();
+    readonly HttpClient httpClient = GetHttpClient();
+
+    static HttpClient GetHttpClient() {
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+        return client;
+    }
+
+    public override void Dispose() {
+        httpClient.Dispose();
+    }
 
     public string Protocol { get; set; }
 
