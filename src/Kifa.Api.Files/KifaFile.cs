@@ -598,6 +598,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         return streamReader.ReadToEnd();
     }
 
+    public byte[] ReadAsBytes() => OpenRead().ToByteArray();
+
     // TODO: I don't like these two...
     public string GetLocalPath() => ((FileStorageClient) Client).GetPath(Path);
 
