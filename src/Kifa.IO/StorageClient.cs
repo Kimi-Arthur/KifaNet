@@ -21,6 +21,7 @@ public abstract class StorageClient : IDisposable {
 
     public virtual FileInformation QuickInfo(string path)
         => new() {
+            Id = path,
             Size = Length(path)
         };
 

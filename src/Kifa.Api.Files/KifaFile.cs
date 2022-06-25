@@ -253,7 +253,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public bool HasEntry => FileInfo?.Locations?.ContainsKey(ToString()) == true;
 
     public FileInformation QuickInfo()
-        => FileFormat is RawFileFormat ? Client.QuickInfo(Path) : new FileInformation();
+        => FileFormat is RawFileFormat
+            ? Client.QuickInfo(Path)
+            : new FileInformation {
+                Id = Id
+            };
 
     public Stream OpenRead()
         => new VerifiableStream(
