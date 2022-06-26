@@ -16,20 +16,17 @@ namespace Kifa.Tools.DataUtil;
 public interface DataChef {
     public static DataChef GetChef(string modelId, string content = null) {
         return (modelId ?? GetYamlType(content)) switch {
-            MemriseCourse.ModelId => new DataChef<MemriseCourse, MemriseCourseRestServiceClient>(),
-            GoetheGermanWord.ModelId =>
-                new DataChef<GoetheGermanWord, GoetheGermanWordRestServiceClient>(),
-            GoetheWordList.ModelId =>
-                new DataChef<GoetheWordList, GoetheWordListRestServiceClient>(),
-            GuitarChord.ModelId => new DataChef<GuitarChord, GuitarChordRestServiceClient>(),
-            TvShow.ModelId => new DataChef<TvShow, TvShowRestServiceClient>(),
-            Anime.ModelId => new DataChef<Anime, AnimeRestServiceClient>(),
-            Unit.ModelId => new DataChef<Unit, UnitRestServiceClient>(),
-            User.ModelId => new DataChef<User, UserRestServiceClient>(),
-            Event.ModelId => new DataChef<Event, EventRestServiceClient>(),
-            Counter.ModelId => new DataChef<Counter, CounterRestServiceClient>(),
-            SwisscomAccount.ModelId =>
-                new DataChef<SwisscomAccount, SwisscomAccountRestServiceClient>(),
+            MemriseCourse.ModelId => new DataChef<MemriseCourse>(),
+            GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord>(),
+            GoetheWordList.ModelId => new DataChef<GoetheWordList>(),
+            GuitarChord.ModelId => new DataChef<GuitarChord>(),
+            TvShow.ModelId => new DataChef<TvShow>(),
+            Anime.ModelId => new DataChef<Anime>(),
+            Unit.ModelId => new DataChef<Unit>(),
+            User.ModelId => new DataChef<User>(),
+            Event.ModelId => new DataChef<Event>(),
+            Counter.ModelId => new DataChef<Counter>(),
+            SwisscomAccount.ModelId => new DataChef<SwisscomAccount>(),
             _ => null
         };
     }
@@ -45,14 +42,13 @@ public interface DataChef {
     KifaActionResult Link(string target, string link);
 }
 
-public class DataChef<TDataModel, TClient> : DataChef
-    where TDataModel : DataModel<TDataModel>, new()
-    where TClient : KifaServiceClient<TDataModel>, new() {
+public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataModel>, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static KifaServiceClient<TDataModel> client;
 
-    static KifaServiceClient<TDataModel> Client => client ??= new TClient();
+    static KifaServiceClient<TDataModel> Client
+        => client ??= new KifaServiceRestClient<TDataModel>();
 
     // TODO: Should not rely implementation detail. 
     public string ModelId => Client.ModelId;
