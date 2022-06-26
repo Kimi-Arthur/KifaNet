@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Kifa.Service;
 
 namespace Kifa.Memrise;
 
-public class MemriseWord {
-    public string ThingId { get; set; }
+public class MemriseWord : DataModel {
+    public const string ModelId = "memrise/words";
 
     public Dictionary<string, string> Data { get; set; }
 

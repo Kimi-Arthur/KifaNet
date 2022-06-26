@@ -27,9 +27,9 @@ public class MemriseClient : IDisposable {
 
     public MemriseCourse Course { get; set; }
 
-    IWebDriver webDriver;
+    static IWebDriver webDriver;
 
-    IWebDriver WebDriver {
+    static IWebDriver WebDriver {
         get {
             if (webDriver == null) {
                 var options = new ChromeOptions();
@@ -110,7 +110,7 @@ public class MemriseClient : IDisposable {
             Logger.LogResult(addedWord, $"Upload word {word}");
             if (addedWord.Status == KifaActionStatus.OK) {
                 var added = addedWord.Response;
-                yield return added.ThingId;
+                yield return added.Id;
             }
         }
     }
@@ -188,14 +188,14 @@ public class MemriseClient : IDisposable {
             var info = newAudioFile.FileInfo!;
             if (originalWord.Audios.Any(audio
                     => audio.Size == info.Size && audio.Md5 == info.Md5)) {
-                Logger.Debug($"{link} for {baseWord.Id} ({originalWord.ThingId}) already exists.");
+                Logger.Debug($"{link} for {baseWord.Id} ({originalWord.Id}) already exists.");
                 continue;
             }
 
-            Logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.ThingId}).");
+            Logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.Id}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
-            }.Invoke(WebDriver.Url, originalWord.ThingId, Course.Columns["Audios"], CsrfToken,
+            }.Invoke(WebDriver.Url, originalWord.Id, Course.Columns["Audios"], CsrfToken,
                 newAudioFile.ReadAsBytes());
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
@@ -228,7 +228,7 @@ public class MemriseClient : IDisposable {
         searchBar.SendKeys(searchQuery);
         searchBar.Submit();
 
-        return GetWordsInPage().FirstOrDefault(w => SameWord(w, word));
+        return Course.GetWordsInPage().FirstOrDefault(w => SameWord(w, word));
     }
 
     bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord)
@@ -248,16 +248,11 @@ public class MemriseClient : IDisposable {
         var words = new Dictionary<string, MemriseWord>();
         for (var i = 0; i < totalPageNumber; i++) {
             WebDriver.Url = $"{Course.DatabaseUrl}?page={i + 1}";
-            GetWordsInPage().ForEach(word => words.Add(word.Data[Course.Columns["German"]], word));
+            Course.GetWordsInPage()
+                .ForEach(word => words.Add(word.Data[Course.Columns["German"]], word));
         }
 
         return words;
-    }
-
-    List<MemriseWord> GetWordsInPage() {
-        var things = WebDriver.FindElement(By.CssSelector("tbody.things"));
-        var rows = things.FindElements(By.CssSelector("tr.thing"));
-        return rows.Select(GetDataFromRow).ToList();
     }
 
     void FillBasicWord(Dictionary<string, string> newData) {
@@ -272,7 +267,7 @@ public class MemriseClient : IDisposable {
             if (originalData.Data.GetValueOrDefault(dataKey) != newValue) {
                 new UpdateWordRpc {
                     HttpClient = HttpClient
-                }.Invoke(WebDriver.Url, originalData.ThingId, dataKey, newValue);
+                }.Invoke(WebDriver.Url, originalData.Id, dataKey, newValue);
                 updatedFields++;
             }
         }
@@ -307,26 +302,6 @@ public class MemriseClient : IDisposable {
         return data;
     }
 
-    MemriseWord GetDataFromRow(IWebElement existingRow) {
-        Logger.Trace($"Getting word from row {existingRow.Text}.");
-        var data = new Dictionary<string, string>();
-
-        foreach (var td in existingRow.FindElements(By.CssSelector("td[data-key]"))) {
-            data[td.GetAttribute("data-key")] = td.Text;
-        }
-
-        var audioLinks =
-            existingRow.FindElements(
-                By.CssSelector($"td[data-key='{Course.Columns["Audios"]}'] a"));
-
-        return new MemriseWord {
-            ThingId = existingRow.GetAttribute("data-thing-id"),
-            Data = data,
-            Audios = audioLinks.Select(link => new MemriseAudio {
-                Link = link.GetAttribute("data-url")
-            }).ToList()
-        };
-    }
 
     void SetupHeaders() {
         WebDriver.Url = Course.DatabaseUrl;
