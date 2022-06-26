@@ -5,18 +5,22 @@ namespace Kifa.Service;
 // Unlimited linking not supported now.
 public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
     where TDataModel : DataModel, new() {
-    public string Id { get; set; } = "";
+    public string Id { get; set; }
+
+    public Link(TDataModel data) {
+        Id = data.Id;
+    }
+
+    public Link(string id) {
+        Id = id;
+    }
 
     TDataModel Get()
         => new() {
             Id = Id
         };
 
-    public static implicit operator Link<TDataModel>(string id) {
-        var data = new Link<TDataModel>();
-        data.FromJson(id);
-        return data;
-    }
+    public static implicit operator Link<TDataModel>(string id) => new(id);
 
     public static implicit operator string(Link<TDataModel> data) => data.ToJson();
 
