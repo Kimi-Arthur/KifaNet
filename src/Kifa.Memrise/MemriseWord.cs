@@ -6,6 +6,9 @@ namespace Kifa.Memrise;
 public class MemriseWord : DataModel {
     public const string ModelId = "memrise/words";
 
+    static MemriseWordServiceClient? client;
+    public static MemriseWordServiceClient Client => client ??= new MemriseWordRestServiceClient();
+
     public Dictionary<string, string> Data { get; set; }
 
     public List<MemriseAudio> Audios { get; set; }
@@ -25,4 +28,11 @@ public class MemriseAudio {
 
     public long Size { get; set; }
     public string? Md5 { get; set; }
+}
+
+public interface MemriseWordServiceClient : KifaServiceClient<MemriseWord> {
+}
+
+public class MemriseWordRestServiceClient : KifaServiceRestClient<MemriseWord>,
+    MemriseWordServiceClient {
 }

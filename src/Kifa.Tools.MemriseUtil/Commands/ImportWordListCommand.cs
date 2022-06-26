@@ -35,7 +35,7 @@ public class ImportWordListCommand : KifaCommand {
     #endregion
 
     public override int Execute() {
-        var memriseCourseClient = new MemriseCourseRestServiceClient();
+        var memriseCourseClient = MemriseCourse.Client;
         var course = memriseCourseClient.Get(Course);
 
         using var memriseClient = new MemriseClient {

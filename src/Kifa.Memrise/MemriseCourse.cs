@@ -14,6 +14,13 @@ namespace Kifa.Memrise;
 public class MemriseCourse : DataModel<MemriseCourse> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    static MemriseCourseServiceClient? client;
+
+    public static MemriseCourseServiceClient Client
+        => client ??= new MemriseCourseRestServiceClient();
+
+    static MemriseWordServiceClient WordClient => MemriseWord.Client;
+
     public const string ModelId = "memrise/courses";
 
     public string CourseName { get; set; }
@@ -37,7 +44,6 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     [YamlIgnore]
     public string BaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/";
 
-    
     static IWebDriver webDriver;
 
     static IWebDriver WebDriver {
@@ -45,8 +51,8 @@ public class MemriseCourse : DataModel<MemriseCourse> {
             if (webDriver == null) {
                 var options = new ChromeOptions();
                 //options.AddArgument("--headless");
-                webDriver = new RemoteWebDriver(new Uri(MemriseClient.WebDriverUrl), options.ToCapabilities(),
-                    TimeSpan.FromMinutes(10));
+                webDriver = new RemoteWebDriver(new Uri(MemriseClient.WebDriverUrl),
+                    options.ToCapabilities(), TimeSpan.FromMinutes(10));
 
                 webDriver.Url = "https://app.memrise.com/";
 
@@ -67,13 +73,15 @@ public class MemriseCourse : DataModel<MemriseCourse> {
         var totalPageNumber =
             int.Parse(WebDriver.FindElements(By.CssSelector("ul.pagination > li"))[^2].Text);
 
-        var words = new Dictionary<string, MemriseWord>();
         for (var i = 0; i < totalPageNumber; i++) {
             WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
-            GetWordsInPage().ForEach(word => words.Add(word.Data[Columns["German"]], word));
+            foreach (var word in GetWordsInPage()) {
+                Words.Add(word.Data[Columns["German"]], new Link<MemriseWord>(word));
+                WordClient.Set(word);
+            }
         }
 
-        return Date.Zero;
+        return null;
     }
 
     public List<MemriseWord> GetWordsInPage() {
