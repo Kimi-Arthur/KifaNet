@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -80,28 +79,36 @@ public class MemriseCourse : DataModel<MemriseCourse> {
         Words = new Dictionary<string, Link<MemriseWord>>();
 
         for (var i = 0; i < totalPageNumber; i++) {
-            WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
-            Thread.Sleep(TimeSpan.FromSeconds(2));
-            foreach (var word in GetWordsInPage()) {
-                var oldWord = WordClient.Get(word.Id);
-                if (word.Audios != null) {
-                    if (oldWord?.Audios != null) {
-                        foreach (var audio in word.Audios) {
-                            var existingAudio =
-                                oldWord.Audios.FirstOrDefault(a => a.Link == audio.Link);
-                            if (existingAudio != null) {
-                                audio.Md5 = existingAudio.Md5;
-                                audio.Size = existingAudio.Size;
+            Logger.Debug($"Filling page {i + 1}...");
+            Retry.Run(() => {
+                WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
+                foreach (var word in GetWordsInPage()) {
+                    var oldWord = WordClient.Get(word.Id);
+                    if (word.Audios != null) {
+                        if (oldWord?.Audios != null) {
+                            foreach (var audio in word.Audios) {
+                                var existingAudio =
+                                    oldWord.Audios.FirstOrDefault(a => a.Link == audio.Link);
+                                if (existingAudio != null) {
+                                    audio.Md5 = existingAudio.Md5;
+                                    audio.Size = existingAudio.Size;
+                                }
                             }
                         }
+
+                        word.FillAudios();
                     }
 
-                    word.FillAudios();
+                    Words.Add(word.Data[Columns["German"]], new Link<MemriseWord>(word));
+                    WordClient.Set(word);
+                }
+            }, (ex, index) => {
+                if (index > 5 || ex is not StaleElementReferenceException) {
+                    throw ex;
                 }
 
-                Words.Add(word.Data[Columns["German"]], new Link<MemriseWord>(word));
-                WordClient.Set(word);
-            }
+                Logger.Warn(ex, $"Failed to get data for page {i + 1} ({index}).");
+            });
         }
 
         return null;
