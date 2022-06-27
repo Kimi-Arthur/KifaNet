@@ -72,8 +72,6 @@ public class MemriseClient : IDisposable {
     Dictionary<string, MemriseWord> allExistingRows;
 
     public KifaActionResult AddWordList(GoetheWordList wordList) {
-        SetupHeaders();
-
         AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
 
         return KifaActionResult.Success;
@@ -179,8 +177,6 @@ public class MemriseClient : IDisposable {
     }
 
     void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
-        FillAudios(originalWord.Audios);
-
         foreach (var link in baseWord.PronunciationAudioLinks.Where(item => item.Value != null)
                      .OrderBy(item => item.Key).SelectMany(item => item.Value).Take(3)) {
             var newAudioFile = new KifaFile(link);
@@ -200,23 +196,6 @@ public class MemriseClient : IDisposable {
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
     }
-
-    void FillAudios(List<MemriseAudio> originalWordAudios) {
-        foreach (var audio in originalWordAudios) {
-            if (audio.Md5 != null) {
-                continue;
-            }
-
-            var response = HttpClient.GetHeaders(audio.Link);
-            audio.Size = response.Content.Headers.ContentRange?.Length ?? 0;
-            audio.Md5 = response.Headers.ETag?.Tag.ToUpperInvariant()[1..^1];
-        }
-    }
-
-    Dictionary<string, string> GetHeaders()
-        => WebDriver.FindElement(By.CssSelector("thead.columns"))
-            .FindElements(By.CssSelector("th.column")).ToDictionary(th => th.Text.Trim(),
-                th => th.GetAttribute("data-key"));
 
     MemriseWord GetExistingRow(GoetheGermanWord word)
         => GetExistingRow(word, TrimBracket(word.Id)) ??
@@ -300,12 +279,6 @@ public class MemriseClient : IDisposable {
             : "";
 
         return data;
-    }
-
-
-    void SetupHeaders() {
-        WebDriver.Url = Course.DatabaseUrl;
-        Course.Columns ??= GetHeaders();
     }
 
     public void Dispose() {

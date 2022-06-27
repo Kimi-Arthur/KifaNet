@@ -16,8 +16,10 @@ public class MemriseCourse : DataModel<MemriseCourse> {
 
     static MemriseCourseServiceClient? client;
 
-    public static MemriseCourseServiceClient Client
-        => client ??= new MemriseCourseRestServiceClient();
+    public static MemriseCourseServiceClient Client {
+        get => client ??= new MemriseCourseRestServiceClient();
+        set => client = value;
+    }
 
     static MemriseWordServiceClient WordClient => MemriseWord.Client;
 
@@ -27,8 +29,6 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     public string CourseId { get; set; }
     public string DatabaseId { get; set; }
 
-    // Map from column name to data-key.
-    [JsonIgnore]
     public Dictionary<string, string> Columns { get; set; }
 
     // Map from level name to its id. The name doesn't have to comply with the actual level name.
@@ -68,20 +68,46 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     }
 
     public override DateTimeOffset? Fill() {
+        FillHeaders();
+
         WebDriver.Url = DatabaseUrl;
 
-        var totalPageNumber =
-            int.Parse(WebDriver.FindElements(By.CssSelector("ul.pagination > li"))[^2].Text);
+        var elements = WebDriver.FindElements(By.CssSelector("ul.pagination > li > a"));
+        var totalPageNumber = elements.Where(element => element.GetDomAttribute("href") != "#")
+            .Select(element => int.Parse(element.GetDomAttribute("href")[6..])).Max();
+
+        Words = new Dictionary<string, Link<MemriseWord>>();
 
         for (var i = 0; i < totalPageNumber; i++) {
             WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
             foreach (var word in GetWordsInPage()) {
+                var oldWord = WordClient.Get(word.Id);
+                if (word.Audios != null && oldWord.Audios != null) {
+                    foreach (var audio in word.Audios) {
+                        var existingAudio =
+                            oldWord.Audios.FirstOrDefault(a => a.Link == audio.Link);
+                        if (existingAudio != null) {
+                            audio.Md5 = existingAudio.Md5;
+                            audio.Size = existingAudio.Size;
+                        }
+                    }
+
+                    word.FillAudios();
+                }
+
                 Words.Add(word.Data[Columns["German"]], new Link<MemriseWord>(word));
                 WordClient.Set(word);
             }
         }
 
         return null;
+    }
+
+    public void FillHeaders() {
+        WebDriver.Url = DatabaseUrl;
+        Columns = WebDriver.FindElement(By.CssSelector("thead.columns"))
+            .FindElements(By.CssSelector("th.column")).ToDictionary(th => th.Text.Trim(),
+                th => th.GetAttribute("data-key"));
     }
 
     public List<MemriseWord> GetWordsInPage() {
