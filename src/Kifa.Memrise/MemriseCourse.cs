@@ -50,7 +50,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
         get {
             if (webDriver == null) {
                 var options = new ChromeOptions();
-                //options.AddArgument("--headless");
+                options.AddArgument("--headless");
                 webDriver = new RemoteWebDriver(new Uri(MemriseClient.WebDriverUrl),
                     options.ToCapabilities(), TimeSpan.FromMinutes(10));
 
@@ -82,7 +82,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
             WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
             foreach (var word in GetWordsInPage()) {
                 var oldWord = WordClient.Get(word.Id);
-                if (word.Audios != null && oldWord.Audios != null) {
+                if (word.Audios != null && oldWord?.Audios != null) {
                     foreach (var audio in word.Audios) {
                         var existingAudio =
                             oldWord.Audios.FirstOrDefault(a => a.Link == audio.Link);
