@@ -55,10 +55,10 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         }));
     }
 
-    public override TDataModel? Get(string id) {
+    public override TDataModel? Get(string id, bool refresh = false) {
         var data = Retrieve(id);
 
-        if (Fill(ref data, id)) {
+        if (Fill(ref data, id, refresh)) {
             WriteTarget(data.Clone());
         }
 
@@ -67,7 +67,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     // false -> no write needed.
     // true -> rewrite needed.
-    bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null) {
+    bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null, bool refresh = false) {
         var newData = data ?? new TDataModel {
             Id = id,
             Metadata = new DataMetadata {
@@ -76,6 +76,13 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 }
             }
         };
+
+        if (refresh) {
+            newData.Metadata ??= new DataMetadata();
+            newData.Metadata.Freshness = new FreshnessMetadata {
+                NextRefresh = Date.Zero
+            };
+        }
 
         if (newData.NeedRefresh()) {
             DateTimeOffset? nextUpdate;

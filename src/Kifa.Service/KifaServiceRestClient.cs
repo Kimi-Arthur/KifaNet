@@ -106,10 +106,11 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                    new SortedDictionary<string, TDataModel>();
         }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
-    public override TDataModel? Get(string id)
+    public override TDataModel? Get(string id, bool refresh = false)
         => Retry.Run(() => {
+            var refreshQuery = refresh ? "?refresh=true" : "";
             var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}");
+                $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(id)}{refreshQuery}");
 
             return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
