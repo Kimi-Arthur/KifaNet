@@ -23,7 +23,7 @@ public class ReorderWordsInLevelRpc : JsonRpc<ReorderWordsInLevelRpc.ReorderWord
         new KeyValuePair<string, string>("thing_ids", "{thing_ids}")
     };
 
-    public ReorderWordsInLevelResponse Invoke(string referer, string levelId, List<string> thingIds)
+    public ReorderWordsInLevelResponse? Invoke(string referer, string levelId, List<string> thingIds)
         => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },

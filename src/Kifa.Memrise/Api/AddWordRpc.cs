@@ -53,7 +53,7 @@ public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
         new KeyValuePair<string, string>("pool_id", "{databaseId}")
     };
 
-    public AddWordResponse Invoke(string databaseId, string referer,
+    public AddWordResponse? Invoke(string databaseId, string referer,
         Dictionary<string, string> data)
         => Invoke(new Dictionary<string, string> {
             { "databaseId", databaseId },

@@ -123,16 +123,16 @@ public class MemriseClient : IDisposable {
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
             Logger.Debug(
-                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId).Success}");
+                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId)?.Success}");
         }
 
         foreach (var wordId in existingThingIds.Except(wordIds)) {
             Logger.Debug(
-                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId).Success}");
+                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId)?.Success}");
         }
 
         Logger.Debug(
-            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordIds).Success}");
+            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordIds)?.Success}");
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,

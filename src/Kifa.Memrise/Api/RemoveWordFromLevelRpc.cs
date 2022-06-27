@@ -22,7 +22,7 @@ public class RemoveWordFromLevelRpc : JsonRpc<RemoveWordFromLevelRpc.RemoveWordF
         new KeyValuePair<string, string>("thing_id", "{thing_id}")
     };
 
-    public RemoveWordFromLevelResponse Invoke(string referer, string levelId, string thingId)
+    public RemoveWordFromLevelResponse? Invoke(string referer, string levelId, string thingId)
         => Invoke(new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },
