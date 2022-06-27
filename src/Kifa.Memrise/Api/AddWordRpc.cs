@@ -48,12 +48,13 @@ public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
 
     public override string UrlPattern { get; } = "https://app.memrise.com/ajax/thing/add/";
 
-    public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
+    public override List<KeyValuePair<string, string>> FormContent { get; } = new() {
         new KeyValuePair<string, string>("columns", "{data}"),
         new KeyValuePair<string, string>("pool_id", "{databaseId}")
     };
 
-    public AddWordResponse Invoke(string databaseId, string referer, Dictionary<string, string> data)
+    public AddWordResponse Invoke(string databaseId, string referer,
+        Dictionary<string, string> data)
         => Invoke(new Dictionary<string, string> {
             { "databaseId", databaseId },
             { "referer", referer },

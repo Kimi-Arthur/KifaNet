@@ -20,11 +20,10 @@ public abstract class JsonRpc<TResponse> {
     public virtual Dictionary<string, Dictionary<string, string>> PartHeaders { get; } = new();
 
     // Different types of content
-    public virtual List<KeyValuePair<string, string>>? FormContent { get; set; }
+    public virtual List<KeyValuePair<string, string>>? FormContent => null;
 
     public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent {
         get;
-        set;
     }
 
     public TResponse? Invoke(Dictionary<string, string>? parameters = null,
@@ -53,7 +52,7 @@ public abstract class JsonRpc<TResponse> {
 
             foreach (var (dataKey, name, fileName) in ExtraMultipartContent) {
                 var content = new ByteArrayContent(byteParameters[dataKey]);
-                if (PartHeaders[dataKey] != null) {
+                if (PartHeaders.ContainsKey(dataKey)) {
                     foreach (var (headerName, value) in PartHeaders[dataKey]) {
                         content.Headers.Add(headerName.Format(parameters),
                             value.Format(parameters));

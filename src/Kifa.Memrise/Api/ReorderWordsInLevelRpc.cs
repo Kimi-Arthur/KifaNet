@@ -18,7 +18,7 @@ public class ReorderWordsInLevelRpc : JsonRpc<ReorderWordsInLevelRpc.ReorderWord
 
     public override string UrlPattern { get; } = "https://app.memrise.com/ajax/level/reorder/";
 
-    public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
+    public override List<KeyValuePair<string, string>> FormContent { get; } = new() {
         new KeyValuePair<string, string>("level_id", "{level_id}"),
         new KeyValuePair<string, string>("thing_ids", "{thing_ids}")
     };

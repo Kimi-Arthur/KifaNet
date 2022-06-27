@@ -17,7 +17,7 @@ public class RemoveWordFromLevelRpc : JsonRpc<RemoveWordFromLevelRpc.RemoveWordF
 
     public override string UrlPattern { get; } = "https://app.memrise.com/ajax/level/thing_remove/";
 
-    public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
+    public override List<KeyValuePair<string, string>> FormContent { get; } = new() {
         new KeyValuePair<string, string>("level_id", "{level_id}"),
         new KeyValuePair<string, string>("thing_id", "{thing_id}")
     };

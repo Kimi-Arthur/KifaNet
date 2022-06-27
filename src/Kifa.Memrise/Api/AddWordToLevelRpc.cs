@@ -17,7 +17,7 @@ public class AddWordToLevelRpc : JsonRpc<AddWordToLevelRpc.AddWordToLevelRespons
 
     public override string UrlPattern { get; } = "https://app.memrise.com/ajax/level/thing/add/";
 
-    public override List<KeyValuePair<string, string>> FormContent { get; set; } = new() {
+    public override List<KeyValuePair<string, string>> FormContent { get; } = new() {
         new KeyValuePair<string, string>("level_id", "{level_id}"),
         new KeyValuePair<string, string>("copy_thing_id", "{thing_id}")
     };
