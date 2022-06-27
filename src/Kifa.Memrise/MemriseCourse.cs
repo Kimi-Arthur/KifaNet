@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -80,15 +81,18 @@ public class MemriseCourse : DataModel<MemriseCourse> {
 
         for (var i = 0; i < totalPageNumber; i++) {
             WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
+            Thread.Sleep(TimeSpan.FromSeconds(2));
             foreach (var word in GetWordsInPage()) {
                 var oldWord = WordClient.Get(word.Id);
-                if (word.Audios != null && oldWord?.Audios != null) {
-                    foreach (var audio in word.Audios) {
-                        var existingAudio =
-                            oldWord.Audios.FirstOrDefault(a => a.Link == audio.Link);
-                        if (existingAudio != null) {
-                            audio.Md5 = existingAudio.Md5;
-                            audio.Size = existingAudio.Size;
+                if (word.Audios != null) {
+                    if (oldWord?.Audios != null) {
+                        foreach (var audio in word.Audios) {
+                            var existingAudio =
+                                oldWord.Audios.FirstOrDefault(a => a.Link == audio.Link);
+                            if (existingAudio != null) {
+                                audio.Md5 = existingAudio.Md5;
+                                audio.Size = existingAudio.Size;
+                            }
                         }
                     }
 
