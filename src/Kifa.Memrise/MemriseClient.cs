@@ -197,11 +197,12 @@ public class MemriseClient : IDisposable {
         }
     }
 
-    MemriseWord GetExistingRow(GoetheGermanWord word)
-        => GetExistingRow(word, TrimBracket(word.Id)) ??
-           GetExistingRow(word, TrimBracket(word.Meaning));
+    MemriseWord? GetExistingRow(GoetheGermanWord word)
+        => GetExistingRow(word, TrimBracket(word.Id)) ?? (word.Meaning != null
+            ? GetExistingRow(word, TrimBracket(word.Meaning))
+            : null);
 
-    MemriseWord GetExistingRow(GoetheGermanWord word, string searchQuery) {
+    MemriseWord? GetExistingRow(GoetheGermanWord word, string searchQuery) {
         var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
         searchBar.Clear();
         searchBar.SendKeys(searchQuery);
