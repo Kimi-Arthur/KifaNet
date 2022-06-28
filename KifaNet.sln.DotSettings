@@ -5,10 +5,12 @@
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Description/@EntryValue">Late Property</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=fieldName/@KeyIndexDefined">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=fieldName/Expression/@EntryValue">decapitalize(propertyName)</s:String>
-	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=fieldName/Order/@EntryValue">2</s:Int64>
-	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=propertyName/@KeyIndexDefined">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=propertyName/Expression/@EntryValue">suggestVariableName()</s:String>
-	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=propertyName/Order/@EntryValue">1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=fieldName/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=propertyName/@KeyIndexDefined">False</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=PropertyName/@KeyIndexDefined">True</s:Boolean>
+	
+	
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=PropertyName/Order/@EntryValue">2</s:Int64>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=type/@KeyIndexDefined">True</s:Boolean>
 	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=type/InitialRange/@EntryValue">0</s:Int64>
 	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Field/=type/Order/@EntryValue">0</s:Int64>
@@ -20,11 +22,11 @@
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Scope/=8B59E26E1C12624EAD1A5ED99DB5F512/Type/@EntryValue">MustBeInUnitySerializableType</s:String>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Shortcut/@EntryValue">lp</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
-	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Text/@EntryValue">#region public late $type$ $propertyName$ { get; set; }
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2DA99A25B1A48E4092E0A5F17F8C9300/Text/@EntryValue">#region public late $type$ $PropertyName$ { get; set; }
 
 $type$? $fieldName$;
 
-public $type$ $propertyName$ {
+public $type$ $PropertyName$ {
     get =&gt; Late.Get($fieldName$);
     set =&gt; Late.Set(ref $fieldName$, value);
 }
