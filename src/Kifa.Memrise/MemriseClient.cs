@@ -69,7 +69,7 @@ public class MemriseClient : IDisposable {
     GoetheGermanWordRestServiceClient GoetheClient = new();
 
     GermanWordRestServiceClient WordClient = new();
-    Dictionary<string, MemriseWord> allExistingRows;
+    Dictionary<string, MemriseWord>? allExistingRows;
 
     public KifaActionResult AddWordList(GoetheWordList wordList) {
         AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
@@ -211,7 +211,7 @@ public class MemriseClient : IDisposable {
         return Course.GetWordsInPage().FirstOrDefault(w => SameWord(w, word));
     }
 
-    bool SameWord(MemriseWord memriseWord, GoetheGermanWord goetheGermanWord)
+    bool SameWord(MemriseWord? memriseWord, GoetheGermanWord goetheGermanWord)
         => memriseWord != null && memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id;
 
     static string TrimBracket(string content) {
