@@ -69,7 +69,20 @@ public class MemriseCourse : DataModel<MemriseCourse> {
 
     public override DateTimeOffset? Fill() {
         FillHeaders();
+        FillWords();
+        FillLevels();
 
+        return null;
+    }
+
+    void FillHeaders() {
+        WebDriver.Url = DatabaseUrl;
+        Columns = WebDriver.FindElement(By.CssSelector("thead.columns"))
+            .FindElements(By.CssSelector("th.column")).ToDictionary(th => th.Text.Trim(),
+                th => th.GetAttribute("data-key"));
+    }
+
+    void FillWords() {
         WebDriver.Url = DatabaseUrl;
 
         var elements = WebDriver.FindElements(By.CssSelector("ul.pagination > li > a"));
@@ -111,15 +124,9 @@ public class MemriseCourse : DataModel<MemriseCourse> {
                 Logger.Warn(ex, $"Failed to get data for page {i + 1} ({index}).");
             });
         }
-
-        return null;
     }
 
-    public void FillHeaders() {
-        WebDriver.Url = DatabaseUrl;
-        Columns = WebDriver.FindElement(By.CssSelector("thead.columns"))
-            .FindElements(By.CssSelector("th.column")).ToDictionary(th => th.Text.Trim(),
-                th => th.GetAttribute("data-key"));
+    void FillLevels() {
     }
 
     public List<MemriseWord> GetWordsInPage() {
@@ -160,8 +167,9 @@ public class AddWordRequest {
 
 public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>,
     MemriseCourseServiceClient {
-    public void AddWord(string courseId, MemriseWord word) => Call("add_word", new AddWordRequest {
-        Id = courseId,
-        Word = word
-    });
+    public void AddWord(string courseId, MemriseWord word)
+        => Call("add_word", new AddWordRequest {
+            Id = courseId,
+            Word = word
+        });
 }
