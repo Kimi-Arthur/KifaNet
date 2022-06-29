@@ -69,7 +69,8 @@ public class MemriseClient : IDisposable {
     GoetheGermanWordRestServiceClient GoetheClient = new();
 
     GermanWordRestServiceClient WordClient = new();
-    Dictionary<string, MemriseWord>? allExistingRows;
+
+    MemriseCourseServiceClient CourseClient => MemriseCourse.Client;
 
     public KifaActionResult AddWordList(GoetheWordList wordList) {
         AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
@@ -101,13 +102,16 @@ public class MemriseClient : IDisposable {
     }
 
     IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
-        allExistingRows ??= GetAllExistingRows();
-
         foreach (var word in words) {
+            if (Course.Words.ContainsKey(word.Id)) {
+                yield return Course.Words[word.Id].Id;
+            }
+
             var addedWord = AddWord(word);
             Logger.LogResult(addedWord, $"Upload word {word}");
             if (addedWord.Status == KifaActionStatus.OK) {
-                var added = addedWord.Response;
+                var added = addedWord.Response!;
+                CourseClient.AddWord(Course.Id, added);
                 yield return added.Id;
             }
         }
@@ -138,9 +142,14 @@ public class MemriseClient : IDisposable {
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,
         bool alwaysCheckAudio = false) {
         var rootWord = WordClient.Get(word.RootWord);
-        Logger.Info($"{word.Id} => {rootWord?.Id}");
+        if (rootWord == null) {
+            return new KifaActionResult<MemriseWord> {
+                Message = "Failed to get root word.",
+                Status = KifaActionStatus.Error
+            };
+        }
 
-        allExistingRows ??= new Dictionary<string, MemriseWord>();
+        Logger.Info($"{word.Id} => {rootWord.Id}");
 
         WebDriver.Url = Course.DatabaseUrl;
 
@@ -148,32 +157,55 @@ public class MemriseClient : IDisposable {
 
         var newData = GetDataFromWord(word, rootWord);
 
-        var existingRow = allExistingRows.GetValueOrDefault(word.Id);
-        if (!SameWord(existingRow, word)) {
-            existingRow = GetExistingRow(word);
-        }
+        var existingRow = Course.Words.GetValueOrDefault(word.Id)?.Data;
 
         if (existingRow == null) {
-            FillBasicWord(newData);
+            var thingId = Retry.Run(() => FillBasicWord(newData), (ex, index) => {
+                if (index > 5) {
+                    throw ex;
+                }
+
+                Logger.Warn($"Failed to fill basic row. Retrying ({index + 1}).");
+            }, (result, index) => {
+                if (result != null) {
+                    return true;
+                }
+
+                if (index > 5) {
+                    throw new Exception("Failed to fill basic row.");
+                }
+
+                Logger.Warn($"Retry result ({result}) is not valid. Retrying ({index + 1}).");
+                return false;
+            });
+
             Thread.Sleep(TimeSpan.FromSeconds(5));
             existingRow = GetExistingRow(word);
             if (existingRow == null) {
-                Logger.Error($"Failed to add word: {word.Id}.");
+                Logger.Error($"Failed to get filled row of id {thingId}.");
                 return new KifaActionResult<MemriseWord>(KifaActionStatus.Error,
                     $"failed to add word {word.Id}");
             }
 
-            allExistingRows.Add(existingRow.Data[Course.Columns["German"]], existingRow);
+            if (existingRow.Id != thingId) {
+                Logger.Error($"Thing ids ({existingRow.Id}) and ({thingId}) don't match.");
+            }
         }
 
         FillRow(existingRow, newData);
 
-        if (alwaysCheckAudio || existingRow.Audios.Count == 0 ||
-            rootWord?.PronunciationAudioLinks != null) {
+        if (rootWord.PronunciationAudioLinks == null) {
+            return new KifaActionResult<MemriseWord>(existingRow);
+        }
+
+        var audios = rootWord.PronunciationAudioLinks.Values.SelectMany(links => links).Take(3)
+            .ToList();
+
+        if (alwaysCheckAudio || (existingRow.Audios?.Count ?? 0) < audios.Count) {
             UploadAudios(existingRow, rootWord);
         }
 
-        return new KifaActionResult<MemriseWord>(existingRow);
+        return new KifaActionResult<MemriseWord>(GetExistingRow(word)!);
     }
 
     void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
@@ -219,27 +251,10 @@ public class MemriseClient : IDisposable {
         return reg.Match(content).Groups[2].Value;
     }
 
-    public Dictionary<string, MemriseWord> GetAllExistingRows() {
-        WebDriver.Url = Course.DatabaseUrl;
-
-        var totalPageNumber =
-            int.Parse(WebDriver.FindElements(By.CssSelector("ul.pagination > li"))[^2].Text);
-
-        var words = new Dictionary<string, MemriseWord>();
-        for (var i = 0; i < totalPageNumber; i++) {
-            WebDriver.Url = $"{Course.DatabaseUrl}?page={i + 1}";
-            Course.GetWordsInPage()
-                .ForEach(word => words.Add(word.Data[Course.Columns["German"]], word));
-        }
-
-        return words;
-    }
-
-    void FillBasicWord(Dictionary<string, string> newData) {
-        new AddWordRpc {
+    string? FillBasicWord(Dictionary<string, string> newData)
+        => new AddWordRpc {
             HttpClient = HttpClient
-        }.Invoke(Course.DatabaseId, Course.BaseUrl, newData);
-    }
+        }.Invoke(Course.DatabaseId, Course.BaseUrl, newData)?.Thing.Id.ToString();
 
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
         var updatedFields = 0;
