@@ -129,13 +129,27 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     void FillLevels() {
     }
 
+    public List<MemriseWord> GetPotentialExistingRows(string searchQuery) {
+        WebDriver.Url = DatabaseUrl;
+        var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
+        searchBar.Clear();
+        searchBar.SendKeys(searchQuery);
+        searchBar.Submit();
+
+        return GetWordsInPage();
+    }
+
     public List<MemriseWord> GetWordsInPage() {
-        var things = WebDriver.FindElement(By.CssSelector("tbody.things"));
-        var rows = things.FindElements(By.CssSelector("tr.thing"));
+        var things = WebDriver.FindElements(By.CssSelector("tbody.things"));
+        if (things.Count == 0) {
+            return new List<MemriseWord>();
+        }
+
+        var rows = things[0].FindElements(By.CssSelector("tr.thing"));
         return rows.Select(GetDataFromRow).ToList();
     }
 
-    public MemriseWord GetDataFromRow(IWebElement existingRow) {
+    MemriseWord GetDataFromRow(IWebElement existingRow) {
         Logger.Trace($"Getting word from row {existingRow.Text}.");
         var data = new Dictionary<string, string>();
 

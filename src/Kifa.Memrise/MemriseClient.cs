@@ -157,7 +157,7 @@ public class MemriseClient : IDisposable {
 
         var newData = GetDataFromWord(word, rootWord);
 
-        var existingRow = Course.Words.GetValueOrDefault(word.Id)?.Data;
+        var existingRow = Course.Words.GetValueOrDefault(word.Id)?.Data ?? GetExistingRow(word);
 
         if (existingRow == null) {
             var thingId = Retry.Run(() => FillBasicWord(newData), (ex, index) => {
@@ -198,14 +198,18 @@ public class MemriseClient : IDisposable {
             return new KifaActionResult<MemriseWord>(existingRow);
         }
 
+        existingRow.FillAudios();
+
         var audios = rootWord.PronunciationAudioLinks.Values.SelectMany(links => links).Take(3)
             .ToList();
 
         if (alwaysCheckAudio || (existingRow.Audios?.Count ?? 0) < audios.Count) {
             UploadAudios(existingRow, rootWord);
+            existingRow = GetExistingRow(word);
+            existingRow.FillAudios();
         }
 
-        return new KifaActionResult<MemriseWord>(GetExistingRow(word)!);
+        return new KifaActionResult<MemriseWord>(existingRow);
     }
 
     void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
@@ -230,18 +234,9 @@ public class MemriseClient : IDisposable {
     }
 
     MemriseWord? GetExistingRow(GoetheGermanWord word)
-        => GetExistingRow(word, TrimBracket(word.Id)) ?? (word.Meaning != null
-            ? GetExistingRow(word, TrimBracket(word.Meaning))
-            : null);
-
-    MemriseWord? GetExistingRow(GoetheGermanWord word, string searchQuery) {
-        var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
-        searchBar.Clear();
-        searchBar.SendKeys(searchQuery);
-        searchBar.Submit();
-
-        return Course.GetWordsInPage().FirstOrDefault(w => SameWord(w, word));
-    }
+        => Course.GetPotentialExistingRows(TrimBracket(word.Id))
+            .Concat(Course.GetPotentialExistingRows(TrimBracket(word.Meaning)))
+            .FirstOrDefault(mem => SameWord(mem, word));
 
     bool SameWord(MemriseWord? memriseWord, GoetheGermanWord goetheGermanWord)
         => memriseWord != null && memriseWord.Data[Course.Columns["German"]] == goetheGermanWord.Id;
