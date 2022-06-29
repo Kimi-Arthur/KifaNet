@@ -76,6 +76,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
         var totalPageNumber = elements.Where(element => element.GetDomAttribute("href") != "#")
             .Select(element => int.Parse(element.GetDomAttribute("href")[6..])).Max();
 
+        // Should reuse the previous words maybe.
         Words = new Dictionary<string, Link<MemriseWord>>();
 
         for (var i = 0; i < totalPageNumber; i++) {
@@ -149,8 +150,18 @@ public class MemriseCourse : DataModel<MemriseCourse> {
 }
 
 public interface MemriseCourseServiceClient : KifaServiceClient<MemriseCourse> {
+    void AddWord(string courseId, MemriseWord word);
+}
+
+public class AddWordRequest {
+    public string Id { get; set; }
+    public MemriseWord Word { get; set; }
 }
 
 public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>,
     MemriseCourseServiceClient {
+    public void AddWord(string courseId, MemriseWord word) => Call("add_word", new AddWordRequest {
+        Id = courseId,
+        Word = word
+    });
 }
