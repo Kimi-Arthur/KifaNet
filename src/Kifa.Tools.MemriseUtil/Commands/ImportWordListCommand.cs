@@ -22,12 +22,12 @@ public class ImportWordListCommand : KifaCommand {
 
     #endregion
     
-    #region public late string Course { get; set; }
+    #region public late string CourseName { get; set; }
 
     string? course;
 
     [Option('c', "course", Required = true, HelpText = "Course to add the word list to.")]
-    public string Course {
+    public string CourseName {
         get => Late.Get(course);
         set => Late.Set(ref course, value);
     }
@@ -36,9 +36,13 @@ public class ImportWordListCommand : KifaCommand {
 
     public override int Execute() {
         var memriseCourseClient = MemriseCourse.Client;
-        var course = memriseCourseClient.Get(Course);
-        course.Fill();
+        var course = memriseCourseClient.Get(CourseName);
 
+        if (course == null) {
+            Logger.Fatal($"Failed to find course ({CourseName}). Exiting.");
+            return 1;
+        }
+        
         using var memriseClient = new MemriseClient {
             Course = course
         };
