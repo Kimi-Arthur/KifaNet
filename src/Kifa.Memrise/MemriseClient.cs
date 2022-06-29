@@ -50,7 +50,7 @@ public class MemriseClient : IDisposable {
         }
     }
 
-    HttpClient httpClient;
+    HttpClient? httpClient;
 
     HttpClient HttpClient {
         get {
