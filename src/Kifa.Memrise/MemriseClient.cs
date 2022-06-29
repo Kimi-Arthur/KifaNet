@@ -103,14 +103,11 @@ public class MemriseClient : IDisposable {
 
     IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
         foreach (var word in words) {
-            if (Course.Words.ContainsKey(word.Id)) {
-                yield return Course.Words[word.Id].Id;
-            }
-
             var addedWord = AddWord(word);
             Logger.LogResult(addedWord, $"Upload word {word}");
             if (addedWord.Status == KifaActionStatus.OK) {
                 var added = addedWord.Response!;
+                Logger.Debug($"Update Memrise record: {added}.");
                 CourseClient.AddWord(Course.Id, added);
                 yield return added.Id;
             }
@@ -139,8 +136,7 @@ public class MemriseClient : IDisposable {
             $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordIds)?.Success}");
     }
 
-    public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word,
-        bool alwaysCheckAudio = false) {
+    public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word) {
         var rootWord = WordClient.Get(word.RootWord);
         if (rootWord == null) {
             return new KifaActionResult<MemriseWord> {
@@ -200,11 +196,13 @@ public class MemriseClient : IDisposable {
 
         existingRow.FillAudios();
 
-        var audios = rootWord.PronunciationAudioLinks.Values.SelectMany(links => links).Take(3)
-            .ToList();
-
-        if (alwaysCheckAudio || (existingRow.Audios?.Count ?? 0) < audios.Count) {
-            UploadAudios(existingRow, rootWord);
+        var audios = rootWord.GetTopPronunciationAudioLinks().Take(3).ToList();
+        if (audios.Count == 0) {
+            if (ClearAllAudios(existingRow)) {
+                existingRow = GetExistingRow(word);
+                existingRow.FillAudios();
+            }
+        } else if (UploadAudios(existingRow, audios)) {
             existingRow = GetExistingRow(word);
             existingRow.FillAudios();
         }
@@ -212,25 +210,80 @@ public class MemriseClient : IDisposable {
         return new KifaActionResult<MemriseWord>(existingRow);
     }
 
-    void UploadAudios(MemriseWord originalWord, GermanWord baseWord) {
-        foreach (var link in baseWord.PronunciationAudioLinks.Where(item => item.Value != null)
-                     .OrderBy(item => item.Key).SelectMany(item => item.Value).Take(3)) {
-            var newAudioFile = new KifaFile(link);
+    bool UploadAudios(MemriseWord originalWord, List<string> audios) {
+        var modified = RemoveDuplicateAudios(originalWord);
+        foreach (var audioLink in audios) {
+            var newAudioFile = new KifaFile(audioLink);
             newAudioFile.Add(false);
             var info = newAudioFile.FileInfo!;
-            if (originalWord.Audios.Any(audio
-                    => audio.Size == info.Size && audio.Md5 == info.Md5)) {
-                Logger.Debug($"{link} for {baseWord.Id} ({originalWord.Id}) already exists.");
+            if (originalWord.Audios?.Any(audio
+                    => audio.Size == info.Size && audio.Md5 == info.Md5) ?? false) {
+                Logger.Debug(
+                    $"{audioLink} for {originalWord.Data["1"]} ({originalWord.Id}) already exists.");
                 continue;
             }
 
-            Logger.Debug($"Uploading {link} for {baseWord.Id} ({originalWord.Id}).");
+            Logger.Debug(
+                $"Uploading {audioLink} for {originalWord.Data["1"]} ({originalWord.Id}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
             }.Invoke(WebDriver.Url, originalWord.Id, Course.Columns["Audios"], CsrfToken,
                 newAudioFile.ReadAsBytes());
+            modified = true;
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
+
+        return modified;
+    }
+
+    bool ClearAllAudios(MemriseWord originalWord) {
+        if (originalWord.Audios == null) {
+            Logger.Debug(
+                $"No audio files to remove for {originalWord.Data["1"]} ({originalWord.Id}).");
+            return false;
+        }
+
+        Logger.Debug(
+            $"Remove all {originalWord.Audios.Count} audio files for {originalWord.Data["1"]} ({originalWord.Id}).");
+        foreach (var _ in originalWord.Audios) {
+            var result = new RemoveAudioRpc {
+                HttpClient = HttpClient
+            }.Invoke(Course.BaseUrl, originalWord.Id, Course.Columns["Audios"], "1")?.Success;
+            Logger.Debug($"Result of removing file 1: {result}");
+        }
+
+        return originalWord.Audios.Count > 0;
+    }
+
+    bool RemoveDuplicateAudios(MemriseWord originalWord) {
+        if (originalWord.Audios == null) {
+            return false;
+        }
+
+        var foundOnes = new HashSet<(long size, string md5)>();
+        var duplicates = new List<int>();
+        for (var i = 0; i < originalWord.Audios.Count; i++) {
+            var audio = originalWord.Audios[i];
+            var key = (audio.Size, audio.Md5);
+            if (foundOnes.Contains(key)) {
+                duplicates.Add(i + 1);
+            }
+
+            foundOnes.Add(key);
+        }
+
+        Logger.Debug(
+            $"Remove {duplicates.Count} audio files for {originalWord.Data["1"]} ({originalWord.Id}): {string.Join(", ", duplicates)}");
+        foreach (var fileId in (duplicates as IEnumerable<int>).Reverse()) {
+            var result = new RemoveAudioRpc {
+                    HttpClient = HttpClient
+                }.Invoke(Course.BaseUrl, originalWord.Id, Course.Columns["Audios"],
+                    fileId.ToString())
+                ?.Success;
+            Logger.Debug($"Result of removing file {fileId}: {result}");
+        }
+
+        return duplicates.Count > 0;
     }
 
     MemriseWord? GetExistingRow(GoetheGermanWord word)

@@ -219,6 +219,17 @@ public class GermanWord : DataModel<GermanWord> {
 
         Etymology = dwds.Etymology;
     }
+
+    public IEnumerable<string> GetTopPronunciationAudioLinks()
+        => PronunciationAudioLinks == null
+            ? Enumerable.Empty<string>()
+            : PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>())
+                .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden,
+                    new HashSet<string>()))
+                .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
+                //     new HashSet<string>()))
+                // .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Pons,
+                    new HashSet<string>()));
 }
 
 public class Meaning {
