@@ -1,12 +1,17 @@
 using System;
+using NLog;
 
 namespace Kifa;
 
 public static class Retry {
-    public static T Run<T>(Func<T> action, Action<Exception, int> handleException) {
+    public static T Run<T>(Func<T> action, Action<Exception, int> handleException,
+        Func<T, int, bool>? isValid = null) {
         for (var i = 1;; i++) {
             try {
-                return action();
+                var result = action();
+                if (isValid == null || isValid(result, i)) {
+                    return result;
+                }
             } catch (Exception ex) {
                 while (ex is AggregateException) {
                     // AggregateException should have inner exception.
