@@ -10,19 +10,13 @@ namespace Kifa.Memrise.Tests;
 
 public class MemriseClientTests {
     static readonly MemriseCourse TestCourse = new() {
-        CourseId = "5942698",
-        CourseName = "test-course",
-        DatabaseId = "6977236",
-        Columns = new Dictionary<string, string> {
-            { "German", "1" },
-            { "English", "2" },
-            { "Form", "3" },
-            { "Pronunciation", "4" },
-            { "Examples", "5" },
-            { "Audios", "6" }
-        },
+        CourseId = "5946002",
+        CourseName = "goethe-zertifikat-wortliste",
+        DatabaseId = "6985350",
         Levels = new Dictionary<string, string> {
-            { "test", "13309553" }
+            { "A1", "13341759" },
+            { "A2", "13341763" },
+            { "B1", "13341765" }
         }
     };
 
@@ -106,10 +100,7 @@ public class MemriseClientTests {
     [Test]
     public void GetAllWordsTest() {
         KifaConfigs.LoadFromSystemConfigs();
-        using var client = new MemriseClient {
-            Course = TestCourse
-        };
-        var rows = client.GetAllExistingRows();
-        Assert.NotZero(rows.Count);
+        TestCourse.Fill();
+        Assert.NotZero(TestCourse.Words.Count);
     }
 }
