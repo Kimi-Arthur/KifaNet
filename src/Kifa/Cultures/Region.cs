@@ -64,13 +64,16 @@ public class Region : JsonSerializable {
         (r.Name, r)
     }).ToDictionary(tuple => tuple.key, tuple => tuple.value);
 
-    public string Name { get; set; } = "";
-    public string Code { get; set; } = "";
+    public string Name { get; set; }
+    public string Code { get; set; }
 
     public string ToJson() => Name;
 
-    public void FromJson(string data) {
-        var region = All[data];
+    Region() {
+    }
+
+    public Region(string id) {
+        var region = All[id];
         Name = region.Name;
         Code = region.Code;
     }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Kifa; 
+namespace Kifa;
 
 public class Language : JsonSerializable {
     public static readonly Language German = new() {
@@ -115,8 +115,11 @@ public class Language : JsonSerializable {
 
     public string ToJson() => Code;
 
-    public void FromJson(string data) {
-        var lang = All[data];
+    Language() {
+    }
+
+    public Language(string id) {
+        var lang = All[id];
         Name = lang.Name;
         NativeName = lang.NativeName;
         Code = lang.Code;
