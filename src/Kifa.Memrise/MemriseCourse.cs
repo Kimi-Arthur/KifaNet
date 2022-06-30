@@ -44,7 +44,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     [YamlIgnore]
     public string BaseUrl => $"https://app.memrise.com/course/{CourseId}/{CourseName}/edit/";
 
-    static IWebDriver webDriver;
+    static IWebDriver? webDriver;
 
     static IWebDriver WebDriver {
         get {
@@ -54,7 +54,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
                 webDriver = new RemoteWebDriver(new Uri(MemriseClient.WebDriverUrl),
                     options.ToCapabilities(), TimeSpan.FromMinutes(10));
 
-                webDriver.Url = "https://app.memrise.com/";
+                webDriver.GoToUrl("https://app.memrise.com/");
 
                 foreach (var cookie in MemriseClient.Cookies.Split("; ")) {
                     var cookiePair = cookie.Split("=", 2);
@@ -76,14 +76,14 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     }
 
     void FillHeaders() {
-        WebDriver.Url = DatabaseUrl;
+        WebDriver.GoToUrl(DatabaseUrl);
         Columns = WebDriver.FindElement(By.CssSelector("thead.columns"))
             .FindElements(By.CssSelector("th.column")).ToDictionary(th => th.Text.Trim(),
                 th => th.GetAttribute("data-key"));
     }
 
     void FillWords() {
-        WebDriver.Url = DatabaseUrl;
+        WebDriver.GoToUrl(DatabaseUrl);
 
         var elements = WebDriver.FindElements(By.CssSelector("ul.pagination > li > a"));
         var totalPageNumber = elements.Where(element => element.GetDomAttribute("href") != "#")
@@ -95,7 +95,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
         for (var i = 0; i < totalPageNumber; i++) {
             Logger.Debug($"Filling page {i + 1}...");
             Retry.Run(() => {
-                WebDriver.Url = $"{DatabaseUrl}?page={i + 1}";
+                WebDriver.GoToUrl($"{DatabaseUrl}?page={i + 1}");
                 foreach (var word in GetWordsInPage()) {
                     var oldWord = WordClient.Get(word.Id);
                     if (word.Audios != null) {
@@ -117,7 +117,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
                     WordClient.Set(word);
                 }
             }, (ex, index) => {
-                if (index > 5 || ex is not StaleElementReferenceException) {
+                if (index > 5 || ex is not WebDriverException) {
                     throw ex;
                 }
 
@@ -129,24 +129,31 @@ public class MemriseCourse : DataModel<MemriseCourse> {
     void FillLevels() {
     }
 
-    public List<MemriseWord> GetPotentialExistingRows(string searchQuery) {
-        WebDriver.Url = DatabaseUrl;
-        var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
-        searchBar.Clear();
-        searchBar.SendKeys(searchQuery);
-        searchBar.Submit();
+    public IEnumerable<MemriseWord> GetPotentialExistingRows(string searchQuery)
+        => Retry.Run(() => {
+            WebDriver.GoToUrl(DatabaseUrl);
+            var searchBar = WebDriver.FindElement(By.CssSelector("input#search_string"));
+            searchBar.Clear();
+            searchBar.SendKeys(searchQuery);
+            searchBar.Submit();
 
-        return GetWordsInPage();
-    }
+            return GetWordsInPage();
+        }, (ex, index) => {
+            if (index > 5 || ex is not WebDriverException) {
+                throw ex;
+            }
 
-    public List<MemriseWord> GetWordsInPage() {
+            Logger.Warn(ex, $"Failed to search for '{searchQuery}' ({index}).");
+        });
+
+    public IEnumerable<MemriseWord> GetWordsInPage() {
         var things = WebDriver.FindElements(By.CssSelector("tbody.things"));
         if (things.Count == 0) {
             return new List<MemriseWord>();
         }
 
         var rows = things[0].FindElements(By.CssSelector("tr.thing"));
-        return rows.Select(GetDataFromRow).ToList();
+        return rows.Select(GetDataFromRow);
     }
 
     MemriseWord GetDataFromRow(IWebElement existingRow) {

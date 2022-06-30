@@ -27,29 +27,6 @@ public class MemriseClient : IDisposable {
 
     public MemriseCourse Course { get; set; }
 
-    static IWebDriver webDriver;
-
-    static IWebDriver WebDriver {
-        get {
-            if (webDriver == null) {
-                var options = new ChromeOptions();
-                //options.AddArgument("--headless");
-                webDriver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
-                    TimeSpan.FromMinutes(10));
-
-                webDriver.Url = "https://app.memrise.com/";
-
-                foreach (var cookie in Cookies.Split("; ")) {
-                    var cookiePair = cookie.Split("=", 2);
-                    webDriver.Manage().Cookies.AddCookie(new Cookie(cookiePair[0], cookiePair[1],
-                        "app.memrise.com", "/", DateTime.Now + TimeSpan.FromDays(365)));
-                }
-            }
-
-            return webDriver;
-        }
-    }
-
     HttpClient? httpClient;
 
     HttpClient HttpClient {
@@ -117,23 +94,23 @@ public class MemriseClient : IDisposable {
     void AddWordsToLevel(string levelId, List<string> wordIds) {
         var rendered = new GetLevelRpc {
             HttpClient = HttpClient
-        }.Invoke(WebDriver.Url, levelId).Rendered;
+        }.Invoke(Course.DatabaseUrl, levelId).Rendered;
         var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
         var existingThingIds =
             thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
             Logger.Debug(
-                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId)?.Success}");
+                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordId)?.Success}");
         }
 
         foreach (var wordId in existingThingIds.Except(wordIds)) {
             Logger.Debug(
-                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordId)?.Success}");
+                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordId)?.Success}");
         }
 
         Logger.Debug(
-            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(WebDriver.Url, levelId, wordIds)?.Success}");
+            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordIds)?.Success}");
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word) {
@@ -147,9 +124,7 @@ public class MemriseClient : IDisposable {
 
         Logger.Info($"{word.Id} => {rootWord.Id}");
 
-        WebDriver.Url = Course.DatabaseUrl;
-
-        Logger.Debug($"Adding word in {WebDriver.Url}:\n{word}\n{rootWord}");
+        Logger.Debug($"Adding word in {Course.DatabaseUrl}:\n{word}\n{rootWord}");
 
         var newData = GetDataFromWord(word, rootWord);
 
@@ -188,7 +163,7 @@ public class MemriseClient : IDisposable {
             }
         }
 
-        FillRow(existingRow, newData);
+        var needsRetrieval = FillRow(existingRow, newData) > 0;
 
         if (rootWord.PronunciationAudioLinks == null) {
             return new KifaActionResult<MemriseWord>(existingRow);
@@ -197,13 +172,18 @@ public class MemriseClient : IDisposable {
         existingRow.FillAudios();
 
         var audios = rootWord.GetTopPronunciationAudioLinks().Take(3).ToList();
-        if (audios.Count == 0) {
-            if (ClearAllAudios(existingRow)) {
-                existingRow = GetExistingRow(word);
-                existingRow.FillAudios();
-            }
-        } else if (UploadAudios(existingRow, audios)) {
+        needsRetrieval = needsRetrieval || (audios.Count == 0
+            ? ClearAllAudios(existingRow)
+            : UploadAudios(existingRow, audios));
+
+        if (needsRetrieval) {
             existingRow = GetExistingRow(word);
+            if (existingRow == null) {
+                Logger.Error($"Failed to get filled row of id {word}.");
+                return new KifaActionResult<MemriseWord>(KifaActionStatus.Error,
+                    $"failed to add word {word.Id}");
+            }
+
             existingRow.FillAudios();
         }
 
@@ -227,7 +207,7 @@ public class MemriseClient : IDisposable {
                 $"Uploading {audioLink} for {originalWord.Data["1"]} ({originalWord.Id}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
-            }.Invoke(WebDriver.Url, originalWord.Id, Course.Columns["Audios"], CsrfToken,
+            }.Invoke(Course.DatabaseUrl, originalWord.Id, Course.Columns["Audios"], CsrfToken,
                 newAudioFile.ReadAsBytes());
             modified = true;
             Thread.Sleep(TimeSpan.FromSeconds(1));
@@ -310,7 +290,7 @@ public class MemriseClient : IDisposable {
             if (originalData.Data.GetValueOrDefault(dataKey) != newValue) {
                 new UpdateWordRpc {
                     HttpClient = HttpClient
-                }.Invoke(WebDriver.Url, originalData.Id, dataKey, newValue);
+                }.Invoke(Course.DatabaseUrl, originalData.Id, dataKey, newValue);
                 updatedFields++;
             }
         }
@@ -346,7 +326,6 @@ public class MemriseClient : IDisposable {
     }
 
     public void Dispose() {
-        webDriver?.Dispose();
         httpClient?.Dispose();
     }
 }
