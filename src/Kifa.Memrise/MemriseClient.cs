@@ -19,7 +19,7 @@ namespace Kifa.Memrise;
 public class MemriseClient : IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    string lineBreak = new(' ', 100);
+    static readonly string LineBreak = new(' ', 100);
 
     public static string WebDriverUrl { get; set; }
     public static string Cookies { get; set; }
@@ -287,7 +287,7 @@ public class MemriseClient : IDisposable {
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
         var updatedFields = 0;
         foreach (var (dataKey, newValue) in newData) {
-            if (originalData.Data.GetValueOrDefault(dataKey) != newValue) {
+            if (!SameText(originalData.Data.GetValueOrDefault(dataKey), newValue)) {
                 new UpdateWordRpc {
                     HttpClient = HttpClient
                 }.Invoke(Course.DatabaseUrl, originalData.Id, dataKey, newValue);
@@ -296,6 +296,18 @@ public class MemriseClient : IDisposable {
         }
 
         return updatedFields;
+    }
+
+    static readonly Regex Spaces = new("\\s+");
+
+    static bool SameText(string? oldValue, string newValue) {
+        if (oldValue == null) {
+            return true;
+        }
+
+        var normalizedOldValue = Spaces.Replace(oldValue, " ");
+        var normalizedNewValue = Spaces.Replace(newValue, " ");
+        return normalizedNewValue == normalizedOldValue;
     }
 
     Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord) {
@@ -311,12 +323,12 @@ public class MemriseClient : IDisposable {
 
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
-                ? string.Join(lineBreak,
+                ? string.Join(LineBreak,
                     word.Examples.Select((example, index) => $"{index + 1}. {example}"))
                 : "";
 
         data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
-            ? string.Join(lineBreak,
+            ? string.Join(LineBreak,
                 baseWord.Etymology.Select(segment
                     => segment + ": " + (GoetheClient.Get(segment)?.Meaning ??
                                          WordClient.Get(segment)?.Meaning ?? "<unknown>")))
