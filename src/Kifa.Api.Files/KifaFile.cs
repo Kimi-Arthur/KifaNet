@@ -442,7 +442,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     /// <exception cref="FileNotFoundException">The file doesn't exist.</exception>
     /// <exception cref="FileCorruptedException">File check failed for known file.</exception>
     public void Add(bool? shouldCheckKnown = null) {
-        if (!Exists()) {
+        if (shouldCheckKnown != false && !Exists()) {
             throw new FileNotFoundException(ToString());
         }
 
