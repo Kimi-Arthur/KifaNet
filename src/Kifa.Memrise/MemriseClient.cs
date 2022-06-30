@@ -10,9 +10,6 @@ using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
 using Kifa.Service;
 using NLog;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Remote;
 
 namespace Kifa.Memrise;
 
@@ -268,7 +265,8 @@ public class MemriseClient : IDisposable {
 
     MemriseWord? GetExistingRow(GoetheGermanWord word)
         => Course.GetPotentialExistingRows(TrimBracket(word.Id))
-            .Concat(Course.GetPotentialExistingRows(TrimBracket(word.Meaning)))
+            .FirstOrDefault(mem => SameWord(mem, word)) ?? Course
+            .GetPotentialExistingRows(TrimBracket(word.Meaning))
             .FirstOrDefault(mem => SameWord(mem, word));
 
     bool SameWord(MemriseWord? memriseWord, GoetheGermanWord goetheGermanWord)
