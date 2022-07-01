@@ -22,7 +22,7 @@ public class MemriseClient : IDisposable {
     public static string Cookies { get; set; }
     public static string CsrfToken { get; set; }
 
-    public MemriseCourse Course { get; set; }
+    public MemriseCourse Course { get; init; }
 
     HttpClient? httpClient;
 
@@ -55,7 +55,12 @@ public class MemriseClient : IDisposable {
     public IEnumerable<GoetheGermanWord> ExpandWords(IEnumerable<string> words) {
         foreach (var word in words) {
             var expandedWords = new Queue<GoetheGermanWord>();
-            expandedWords.Enqueue(GoetheClient.Get(word));
+            var originalWord = GoetheClient.Get(word);
+            if (originalWord == null) {
+                throw new NullReferenceException($"{nameof(originalWord)} is null.");
+            }
+
+            expandedWords.Enqueue(originalWord);
             while (expandedWords.Count > 0) {
                 var goetheWord = expandedWords.Dequeue();
                 yield return goetheWord;
@@ -91,7 +96,11 @@ public class MemriseClient : IDisposable {
     void AddWordsToLevel(string levelId, List<string> wordIds) {
         var rendered = new GetLevelRpc {
             HttpClient = HttpClient
-        }.Invoke(Course.DatabaseUrl, levelId).Rendered;
+        }.Invoke(Course.DatabaseUrl, levelId)?.Rendered;
+        if (rendered == null) {
+            throw new Exception($"Failed to get current words in level {levelId}.");
+        }
+
         var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
         var existingThingIds =
             thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
@@ -241,7 +250,7 @@ public class MemriseClient : IDisposable {
         var duplicates = new List<int>();
         for (var i = 0; i < originalWord.Audios.Count; i++) {
             var audio = originalWord.Audios[i];
-            var key = (audio.Size, audio.Md5);
+            var key = (audio.Size, audio.Md5!);
             if (foundOnes.Contains(key)) {
                 duplicates.Add(i + 1);
             }
