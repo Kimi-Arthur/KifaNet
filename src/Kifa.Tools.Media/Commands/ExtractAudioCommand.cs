@@ -141,7 +141,6 @@ public class ExtractAudioCommand : KifaCommand {
         var artist = file.Path.Split("/")[^2];
 
         var date = file.FileInfo.Metadata.Linking.Target.Split("/")[^1].Split(" ")[0];
-        var year = date[..4];
 
         return new Dictionary<string, string> {
             { "title", match.Groups[1].Value },
