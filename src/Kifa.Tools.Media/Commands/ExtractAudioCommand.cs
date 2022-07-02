@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Bilibili;
 using NLog;
 
 namespace Kifa.Tools.Media.Commands;
@@ -135,11 +134,24 @@ public class ExtractAudioCommand : KifaCommand {
             "image").choice;
 
     static KifaFile GetCover(KifaFile file) {
-        var aid = file.FileInfo.Metadata.Linking.Target.Split("-")[^1].Split(".")[0];
-        var coverLink = new KifaFile(BilibiliVideo.Client.Get(aid).Cover.ToString());
-        var coverFile = file.Parent.GetFile($"!{file.BaseName}.{coverLink.Extension}");
+        // Extension doesn't matter here.
+        var coverFile = file.Parent.GetFile($"!{file.BaseName}.jpg");
         if (!coverFile.Exists()) {
-            coverLink.Copy(coverFile);
+            var arguments = $"-i \"{file.GetLocalPath()}\" " +
+                            $"-map 0:v -map -0:V -c copy \"{coverFile.GetLocalPath()}\"";
+            Logger.Trace($"Executing: ffmpeg {arguments}");
+            using var proc = new Process {
+                StartInfo = {
+                    FileName = "ffmpeg",
+                    Arguments = arguments
+                }
+            };
+
+            proc.Start();
+            proc.WaitForExit();
+            if (proc.ExitCode != 0) {
+                throw new Exception("Extract cover file failed.");
+            }
         }
 
         return coverFile;
