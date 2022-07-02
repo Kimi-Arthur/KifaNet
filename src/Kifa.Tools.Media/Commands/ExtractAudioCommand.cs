@@ -59,10 +59,8 @@ public class ExtractAudioCommand : KifaCommand {
     }
 
     Dictionary<string, int> GatherTrackNumbers(List<KifaFile> files) {
-        var filesWithDates = files
-            .Select(file => (
-                new KifaFile(file.ToString()).FileInfo.Metadata.Linking.Target.Split("/")[^1]
-                    .Split(" ")[0], file)).OrderBy(item => item.Item1).ToList();
+        var filesWithDates = files.Select(file => (file.BaseName.Split(" ")[0], file))
+            .OrderBy(item => item.Item1).ToList();
 
         var lastYear = "";
         var lastTrack = 0;
