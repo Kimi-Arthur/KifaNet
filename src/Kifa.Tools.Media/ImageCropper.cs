@@ -43,44 +43,15 @@ public class ImageCropper {
 
     #endregion
 
-    public static List<KifaFile> Crop(KifaFile sourceFile) {
+    // Gets the images with cropped with presets in base64 encoded formats.
+    public static List<string> Crop(KifaFile sourceFile) {
         using var image = Image.Load(sourceFile.GetLocalPath(), out var format);
 
-        var middleFile =
-            sourceFile.Parent.GetFile($"{sourceFile.BaseName}.middle.{sourceFile.Extension}");
-
-        if (!middleFile.Exists()) {
-            using var croppedMiddle = CropMiddle(image);
-            croppedMiddle.Save(middleFile.GetLocalPath(), format);
-        }
-
-        var leftFile =
-            sourceFile.Parent.GetFile($"{sourceFile.BaseName}.left.{sourceFile.Extension}");
-
-        if (!leftFile.Exists()) {
-            using var croppedLeft = CropLeft(image);
-            croppedLeft.Save(leftFile.GetLocalPath(), format);
-        }
-
-        var rightFile =
-            sourceFile.Parent.GetFile($"{sourceFile.BaseName}.right.{sourceFile.Extension}");
-        if (!rightFile.Exists()) {
-            using var croppedRight = CropRight(image);
-            croppedRight.Save(rightFile.GetLocalPath(), format);
-        }
-
-        var deepFile =
-            sourceFile.Parent.GetFile($"{sourceFile.BaseName}.deep.{sourceFile.Extension}");
-        if (!deepFile.Exists()) {
-            using var croppedDeep = CropDeep(sourceFile, image);
-            croppedDeep.Save(deepFile.GetLocalPath(), format);
-        }
-
-        return new List<KifaFile> {
-            middleFile,
-            leftFile,
-            rightFile,
-            deepFile
+        return new List<string> {
+            CropMiddle(image).ToBase64String(format),
+            CropLeft(image).ToBase64String(format),
+            CropRight(image).ToBase64String(format),
+            CropDeep(sourceFile, image).ToBase64String(format)
         };
     }
 
@@ -109,7 +80,7 @@ public class ImageCropper {
         var arguments = CropArguments.Format(new Dictionary<string, string> {
             { "image_path", remoteFile.GetRemotePath() }
         });
-        Logger.Debug($"Executing: {CropCommand} {arguments}");
+        Logger.Trace($"Executing: {CropCommand} {arguments}");
         using var proc = new Process {
             StartInfo = {
                 FileName = CropCommand,

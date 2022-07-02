@@ -11,6 +11,8 @@ namespace Kifa.Tools.Media.Commands;
 public class ExtractAudioCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public static int ImageSize { get; set; } = 256;
+
     [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
     public IEnumerable<string> FileNames {
         get => Late.Get(fileNames);
@@ -82,31 +84,30 @@ public class ExtractAudioCommand : KifaCommand {
 
     static void ExtractAudioFile(KifaFile sourceFile, int trackNumber) {
         sourceFile = new KifaFile(sourceFile.ToString());
-        var targetFile = sourceFile.Parent.GetFile($"{sourceFile.BaseName}.m4a");
+
+        var metadata = ExtractMetadata(sourceFile, trackNumber);
+        var metadataString =
+            string.Join(" ", metadata.Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
+
+        var fileName = GetFileName(metadata);
+
+        var targetFile = sourceFile.Parent.GetFile($"Albums/{fileName}.m4a");
         if (targetFile.Exists()) {
             return;
         }
 
         var coverFile = GetCover(sourceFile);
-        var croppedFiles = ImageCropper.Crop(coverFile);
-        var finalCoverFile =
-            sourceFile.Parent.GetFile($"{coverFile.BaseName}.final.{coverFile.Extension}");
-
-        if (!finalCoverFile.Exists()) {
-            croppedFiles[0].Copy(finalCoverFile);
-        }
-
-        var metadata = string.Join(" ",
-            ExtractMetadata(sourceFile, trackNumber)
-                .Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
+        var croppedImages = ImageCropper.Crop(coverFile);
+        var chosenImage = ChooseImage(croppedImages);
 
         var sourcePath = sourceFile.GetLocalPath();
         var targetPath = targetFile.GetLocalPath();
-        var squareCoverPath = finalCoverFile.GetLocalPath();
+        Directory.GetParent(targetPath)!.Create();
 
-        var arguments =
-            $"-i \"{sourcePath}\" -i \"{squareCoverPath}\" -map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadata} \"{targetPath}\"";
-        Logger.Debug($"Executing: ffmpeg {arguments}");
+        // Inline image: https://ffmpeg.org/ffmpeg-protocols.html#data
+        var arguments = $"-i \"{sourcePath}\" -i \"{chosenImage}\" " +
+                        $"-map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadataString} \"{targetPath}\"";
+        Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
                 FileName = "ffmpeg",
@@ -121,6 +122,17 @@ public class ExtractAudioCommand : KifaCommand {
         }
     }
 
+    static string GetFileName(Dictionary<string, string> metadata)
+        => $"{metadata["album"]}/{metadata["track"].PadLeft(2, '0')} {metadata["title"]}";
+
+    // https://iterm2.com/3.2/documentation-images.html
+    // https://stu.dev/displaying-images-in-iterm-from-dotnet-apps/
+    static string ChooseImage(List<string> images)
+        => SelectOne(images,
+            image
+                => $"\u001B]1337;File=;width={ImageSize}px;height={ImageSize}px;inline=1:{image[23..]}\u0007",
+            "image").choice;
+
     static KifaFile GetCover(KifaFile file) {
         var aid = file.FileInfo.Metadata.Linking.Target.Split("-")[^1].Split(".")[0];
         var coverLink = new KifaFile(BilibiliVideo.Client.Get(aid).Cover.ToString());
@@ -132,7 +144,7 @@ public class ExtractAudioCommand : KifaCommand {
         return coverFile;
     }
 
-    static readonly Regex MusicFilePattern = new(@"\[[^\]]*\] (.*)");
+    static readonly Regex MusicFilePattern = new(@"\[[^\]]*\] (\d+-\d+-\d+)? (.*)");
 
     static Dictionary<string, string> ExtractMetadata(KifaFile file, int trackNumber) {
         var name = file.BaseName;
@@ -140,10 +152,10 @@ public class ExtractAudioCommand : KifaCommand {
 
         var artist = file.Path.Split("/")[^2];
 
-        var date = file.FileInfo.Metadata.Linking.Target.Split("/")[^1].Split(" ")[0];
+        var date = match.Groups[1].Value;
 
         return new Dictionary<string, string> {
-            { "title", match.Groups[1].Value },
+            { "title", match.Groups[2].Value },
             { "artist", artist },
             { "date", date },
             { "album", $"{artist} - {date[..4]}" },
