@@ -99,6 +99,7 @@ public class ExtractAudioCommand : KifaCommand {
         var coverFile = GetCover(sourceFile);
         var croppedImages = ImageCropper.Crop(coverFile);
         var chosenImage = ChooseImage(croppedImages);
+        coverFile.Delete();
 
         var sourcePath = sourceFile.GetLocalPath();
         var targetPath = targetFile.GetLocalPath();
@@ -136,7 +137,7 @@ public class ExtractAudioCommand : KifaCommand {
     static KifaFile GetCover(KifaFile file) {
         var aid = file.FileInfo.Metadata.Linking.Target.Split("-")[^1].Split(".")[0];
         var coverLink = new KifaFile(BilibiliVideo.Client.Get(aid).Cover.ToString());
-        var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLink.Extension}");
+        var coverFile = file.Parent.GetFile($"!{file.BaseName}.{coverLink.Extension}");
         if (!coverFile.Exists()) {
             coverLink.Copy(coverFile);
         }

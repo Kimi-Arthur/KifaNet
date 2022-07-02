@@ -96,6 +96,8 @@ public class ImageCropper {
 
         var lines = proc.StandardOutput.ReadToEnd().Split("\n");
 
+        remoteFile.Delete();
+
         return CropToRectangle(image, ExtractValue(lines, "x0: "), ExtractValue(lines, "y0: "),
             ExtractValue(lines, "x1: "), ExtractValue(lines, "y1: "));
     }
