@@ -72,6 +72,8 @@ public abstract class KifaCommand {
 
     public abstract int Execute();
 
+    static int defaultIndex = 1;
+
     public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceToString = null, string choiceName = null,
         TChoice negative = default) {
@@ -88,9 +90,10 @@ public abstract class KifaCommand {
         Console.WriteLine($"\nDefault [1]: {choiceStrings[0]}\n");
 
         Console.Write(
-            $"Choose one from above {choiceName} [1-{choices.Count}], 1 is the default: ");
+            $"Choose one from above {choiceName} [1-{choices.Count}], Default is {defaultIndex}: ");
         var line = Console.ReadLine();
-        var choice = string.IsNullOrEmpty(line) ? 0 : int.Parse(line) - 1;
+        var choice = string.IsNullOrEmpty(line) ? defaultIndex - 1 : int.Parse(line) - 1;
+        defaultIndex = choice + 1;
         return (choice < 0 ? negative : choices[choice], choice);
     }
 
