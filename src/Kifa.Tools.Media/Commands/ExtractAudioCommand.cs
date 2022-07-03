@@ -60,7 +60,7 @@ public class ExtractAudioCommand : KifaCommand {
     }
 
     Dictionary<string, int> GatherTrackNumbers(List<KifaFile> files) {
-        var filesWithDates = files.Select(file => (file.BaseName.Split(" ")[0], file))
+        var filesWithDates = files.Select(file => (file.BaseName.Split(" ")[1], file))
             .OrderBy(item => item.Item1).ToList();
 
         var lastYear = "";
