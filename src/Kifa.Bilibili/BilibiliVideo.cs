@@ -8,12 +8,12 @@ using System.Threading;
 using HtmlAgilityPack;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NLog;
 using Kifa.IO;
 using Kifa.Service;
 using Kifa.Subtitle.Ass;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NLog;
 
 namespace Kifa.Bilibili;
 
@@ -307,7 +307,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
         var partName = p.Title.NormalizeFileName();
         var title = Title.NormalizeFileName();
-        if (title.StartsWith(partName)) {
+        if (title.Contains(partName)) {
             partName = "";
         } else if (partName.StartsWith(title)) {
             partName = partName.Substring(title.Length);
@@ -330,7 +330,6 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(
         int pid, int biliplusSourceChoice = 0) {
-
         var cid = Pages[pid - 1].Cid;
 
         if (UseMergedSource) {
