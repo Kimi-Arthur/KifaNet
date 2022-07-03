@@ -133,23 +133,41 @@ public class ExtractAudioCommand : KifaCommand {
             "image").choice;
 
     static KifaFile GetCover(KifaFile file) {
-        // Extension doesn't matter here.
-        var coverFile = file.Parent.GetFile($"!{file.BaseName}.jpg");
-        if (!coverFile.Exists()) {
-            var result = GetCoverFromEmbedded(file, coverFile);
-            if (result.Status != KifaActionStatus.OK) {
-                result = GetCoverFromThumbnail(file, coverFile);
-            }
-
-            if (result.Status != KifaActionStatus.OK) {
-                throw new Exception("Failed to extract raw cover image.");
-            }
+        var name = $"!{file.BaseName}";
+        var coverPngFile = file.Parent.GetFile($"{name}.png");
+        var coverJpgFile = file.Parent.GetFile($"{name}.jpg");
+        if (coverPngFile.Exists()) {
+            return coverPngFile;
         }
 
-        return coverFile;
+        if (coverJpgFile.Exists()) {
+            return coverJpgFile;
+        }
+
+        var result = GetCoverFromEmbedded(file, name);
+        if (result.Status == KifaActionStatus.OK) {
+            return result.Response!;
+        }
+
+        result = GetCoverFromThumbnail(file, name);
+        if (result.Status == KifaActionStatus.OK) {
+            return result.Response!;
+        }
+
+        throw new Exception("Failed to extract raw cover image.");
     }
 
-    static KifaActionResult GetCoverFromEmbedded(KifaFile sourceFile, KifaFile coverFile) {
+    static KifaActionResult<KifaFile> GetCoverFromEmbedded(KifaFile sourceFile, string name) {
+        var extension = GetExtension(sourceFile);
+        if (extension == null) {
+            return new KifaActionResult<KifaFile> {
+                Status = KifaActionStatus.Error,
+                Message = "Failed to extract attached cover image. Maybe no cover is attached."
+            };
+        }
+
+        var coverFile = sourceFile.Parent.GetFile($"{name}.{extension}");
+
         var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
                         $"-map 0:v -map -0:V -c copy \"{coverFile.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
@@ -162,12 +180,55 @@ public class ExtractAudioCommand : KifaCommand {
 
         proc.Start();
         proc.WaitForExit();
-        return proc.ExitCode != 0 ? KifaActionResult.UnknownError : KifaActionResult.Success;
+        return proc.ExitCode != 0
+            ? new KifaActionResult<KifaFile> {
+                Status = KifaActionStatus.Error,
+                Message = "Failed to extract thumbnail as cover image."
+            }
+            : new KifaActionResult<KifaFile> {
+                Status = KifaActionStatus.OK,
+                Response = coverFile
+            };
     }
 
-    static KifaActionResult GetCoverFromThumbnail(KifaFile sourceFile, KifaFile coverFile) {
+    static readonly Regex CoverInfoRegex = new(@"Video: (\w+).*\(attached pic\)");
+
+    static readonly Dictionary<string, string> ImageExtensionMapping = new() {
+        { "mjpeg", "jpg" }
+    };
+
+    static string? GetExtension(KifaFile sourceFile) {
+        var arguments = $"\"{sourceFile.GetLocalPath()}\"";
+        Logger.Trace($"Executing: ffprobe {arguments}");
+        using var proc = new Process {
+            StartInfo = {
+                FileName = "ffprobe",
+                Arguments = arguments
+            }
+        };
+
+        proc.StartInfo.RedirectStandardError = true;
+
+        proc.Start();
+        proc.WaitForExit();
+
+        if (proc.ExitCode != 0) {
+            return null;
+        }
+
+        var match = CoverInfoRegex.Match(proc.StandardError.ReadToEnd());
+        if (!match.Success) {
+            return null;
+        }
+
+        return ImageExtensionMapping.GetValueOrDefault(match.Groups[1].Value,
+            match.Groups[1].Value);
+    }
+
+    static KifaActionResult<KifaFile> GetCoverFromThumbnail(KifaFile sourceFile, string name) {
+        var coverFile = sourceFile.Parent.GetFile($"{name}.jpg");
         var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
-                        $"-vframes 1 \"{coverFile.GetLocalPath()}\"";
+                        $"-frames:v 1 \"{coverFile.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
@@ -178,7 +239,15 @@ public class ExtractAudioCommand : KifaCommand {
 
         proc.Start();
         proc.WaitForExit();
-        return proc.ExitCode != 0 ? KifaActionResult.UnknownError : KifaActionResult.Success;
+        return proc.ExitCode != 0
+            ? new KifaActionResult<KifaFile> {
+                Status = KifaActionStatus.Error,
+                Message = "Failed to extract thumbnail as cover image."
+            }
+            : new KifaActionResult<KifaFile> {
+                Status = KifaActionStatus.OK,
+                Response = coverFile
+            };
     }
 
     static readonly Regex MusicFilePattern = new(@"\[[^\]]*\] (\d+-\d+-\d+)? (.*)");
