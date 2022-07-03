@@ -288,7 +288,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 .Select(info => new KifaFile(Host + info.Id, fileInfo: info));
 
     public static (bool isMultiple, List<KifaFile> files) ExpandFiles(IEnumerable<string> sources,
-        string prefix = null, bool recursive = true, bool fullFile = false) {
+        string? prefix = null, bool recursive = true, bool fullFile = false) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
