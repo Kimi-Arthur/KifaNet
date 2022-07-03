@@ -22,25 +22,26 @@ public class ServerConfig {
 public class FileStorageClient : StorageClient {
     const int DefaultBlockSize = 32 << 20;
 
-    string serverId;
-
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
 
-    public string ServerId {
-        get => serverId;
-        set {
-            serverId = value;
-            Server = ServerConfigs.GetValueOrDefault(serverId, null);
-        }
-    }
+    public string ServerId { get; }
 
-    public ServerConfig Server { get; set; }
+    public ServerConfig Server { get; }
 
     static bool IsUnixLike
         => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
            RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+    public FileStorageClient(string serverId) {
+        if (!ServerConfigs.ContainsKey(serverId)) {
+            throw new FileNotFoundException($"Server {serverId} is not configured.");
+        }
+
+        ServerId = serverId;
+        Server = ServerConfigs[serverId];
+    }
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         Logger.Trace($"Copying {sourcePath} to {destinationPath}...");

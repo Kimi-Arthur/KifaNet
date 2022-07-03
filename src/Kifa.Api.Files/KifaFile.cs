@@ -62,14 +62,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                     Protocol = specs[0]
                 };
             case "local":
-                var c = new FileStorageClient {
-                    ServerId = specs[1]
-                };
-                if (c.Server == null) {
-                    c = null;
-                }
-
-                return knownClients[spec] = c;
+                return knownClients[spec] = new FileStorageClient(specs[1]);
         }
 
         return knownClients[spec];

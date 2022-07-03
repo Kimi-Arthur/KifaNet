@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -39,16 +40,18 @@ class TrashCommand : KifaFileCommand {
     }
 
     static int Trash(string file, string choice) {
-        var target = choice + ".Trash/" + file.Substring(choice.Length);
+        var target = choice + ".Trash/" + file[choice.Length..];
         client.Link(file, target);
         Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
         var targetInfo = client.Get(target);
         if (targetInfo?.Locations != null) {
             foreach (var location in targetInfo.Locations.Keys) {
-                var instance = new KifaFile(location);
-                if (instance.Client == null) {
-                    Logger.Warn($"{instance} not accessible.");
+                KifaFile instance;
+                try {
+                    instance = new KifaFile(location);
+                } catch (FileNotFoundException ex) {
+                    Logger.Warn(ex, $"{location} not accessible.");
                     continue;
                 }
 
