@@ -3,77 +3,90 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Service;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("trash", HelpText = "Move the file to trash.")]
-class TrashCommand : KifaFileCommand {
+class TrashCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    static readonly FileInformationServiceClient client = FileInformation.Client;
 
-    public override bool ById => true;
+    [Value(0, Required = true, HelpText = "Target files to trash.")]
+    public IEnumerable<string> FileNames { get; set; }
 
-    protected override bool IterateOverLogicalFiles => true;
-
-    protected override Func<List<string>, string> FileInformationConfirmText
-        => files => $"Confirm trashing the {files.Count} files above?";
-
-    protected override int ExecuteOneFileInformation(string file) {
-        var segments = file.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var options = new List<string> {
-            "/"
-        };
-        foreach (var segment in segments) {
-            options.Add($"{options.Last()}{segment}/");
+    public override int Execute() {
+        var (_, foundFiles) = KifaFile.FindAllFiles(FileNames);
+        var fileIds = foundFiles.Select(f => f.Id).ToList();
+        foreach (var fileId in fileIds) {
+            Console.WriteLine(fileId);
         }
 
-        var (choice, index) = SelectOne(options, op => op + ".Trash");
-        if (choice != null) {
-            return Trash(file, choice);
+        var trashFolder =
+            Confirm($"Confirm trashing the {fileIds.Count} files above to the .Trash/ folder in: ",
+                fileIds[0][..fileIds[0].LastIndexOf('/')]);
+
+        var fileIdsByResult = fileIds.Select(fileId => (fileId, result: Trash(fileId, trashFolder)))
+            .GroupBy(item => item.result.Status)
+            .ToDictionary(item => item.Key == KifaActionStatus.OK, item => item.ToList());
+        if (fileIdsByResult.ContainsKey(true)) {
+            var files = fileIdsByResult[true];
+            Logger.Info($"Successfully trashed the following {files.Count} files:");
+            foreach (var (file, _) in files) {
+                Logger.Info($"\t{file}");
+            }
         }
 
-        Logger.Info($"File {file} not trashed as a destination is not selected.");
+        if (fileIdsByResult.ContainsKey(false)) {
+            var files = fileIdsByResult[false];
+            Logger.Info($"Failed to trash the following {files.Count} files:");
+            foreach (var (file, result) in files) {
+                Logger.Info($"\t{file}: {result.Message}");
+            }
+
+            return 1;
+        }
+
         return 0;
     }
 
-    static int Trash(string file, string choice) {
-        var target = choice + ".Trash/" + file[choice.Length..];
-        client.Link(file, target);
-        Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
+    static KifaActionResult Trash(string file, string trashFolder)
+        => KifaActionResult.FromAction(() => {
+            var client = FileInformation.Client;
+            var target = trashFolder + "/.Trash" + file[trashFolder.Length..];
+            client.Link(file, target);
+            Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
-        var targetInfo = client.Get(target);
-        if (targetInfo?.Locations != null) {
-            foreach (var location in targetInfo.Locations.Keys) {
-                KifaFile instance;
-                try {
-                    instance = new KifaFile(location);
-                } catch (FileNotFoundException ex) {
-                    Logger.Warn(ex, $"{location} not accessible.");
-                    continue;
-                }
-
-                if (instance.Id == file) {
-                    if (instance.Exists()) {
-                        instance.Delete();
-                        Logger.Info($"File {instance} deleted.");
-                    } else {
-                        Logger.Warn($"File {instance} not found.");
+            var targetInfo = client.Get(target);
+            if (targetInfo?.Locations != null) {
+                foreach (var location in targetInfo.Locations.Keys) {
+                    KifaFile instance;
+                    try {
+                        instance = new KifaFile(location);
+                    } catch (FileNotFoundException ex) {
+                        Logger.Warn(ex, $"{location} not accessible.");
+                        continue;
                     }
 
-                    client.RemoveLocation(targetInfo.Id, location);
-                    Logger.Info($"Entry {location} removed.");
+                    if (instance.Id == file) {
+                        if (instance.Exists()) {
+                            var targetInstance = new KifaFile(instance.Host + targetInfo.Id);
+                            instance.Move(targetInstance);
+                            Logger.Info($"File {instance} moved to {targetInstance}.");
+                            targetInstance.Add();
+                        } else {
+                            Logger.Warn($"File {instance} not found.");
+                        }
+
+                        client.RemoveLocation(targetInfo.Id, location);
+                        Logger.Info($"Entry {location} removed.");
+                    }
                 }
+
+                client.Delete(file);
+                Logger.Info($"Original FileInfo {file} removed.");
             }
-
-            client.Delete(file);
-            Logger.Info($"Original FileInfo {file} removed.");
-            return 0;
-        }
-
-        Logger.Warn($"No locations found in {targetInfo}.");
-        return 1;
-    }
+        });
 }
