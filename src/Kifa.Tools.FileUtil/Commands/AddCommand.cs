@@ -23,7 +23,7 @@ class AddCommand : KifaCommand {
     public bool ForceRecheck { get; set; } = false;
 
     public override int Execute() {
-        var (multi, files) = KifaFile.ExpandFiles(FileNames);
+        var (multi, files) = KifaFile.FindExistingFiles(FileNames);
         if (multi) {
             foreach (var file in files) {
                 Console.WriteLine(file);
@@ -39,7 +39,7 @@ class AddCommand : KifaCommand {
             executionHandler.Execute(new KifaFile(file.ToString()), AddFile, "Failed to add {0}.");
         }
 
-        (_, files) = KifaFile.ExpandLogicalFiles(FileNames);
+        (_, files) = KifaFile.FindPotentialFiles(FileNames);
         var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists())
             .ToList();
 

@@ -40,7 +40,7 @@ class UploadCommand : KifaCommand {
         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)
             .Select(CloudTarget.Parse).ToList();
 
-        var (multi, files) = KifaFile.ExpandFiles(FileNames);
+        var (multi, files) = KifaFile.FindExistingFiles(FileNames);
         if (multi) {
             foreach (var file in files) {
                 Console.WriteLine(file);

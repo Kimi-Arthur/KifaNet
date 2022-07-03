@@ -20,7 +20,7 @@ class DedupCommand : KifaCommand {
     public bool Unsafe { get; set; } = false;
 
     public override int Execute() {
-        var files = KifaFile.ExpandLogicalFiles(FileNames, fullFile: true).files
+        var files = KifaFile.FindPotentialFiles(FileNames, fullFile: true).files
             .Select(f => f.FileInfo);
         var filesToDelete = new List<(string truth, FileInformation toDelete)>();
         foreach (var sameFiles in files.GroupBy(f => f.Sha256)) {

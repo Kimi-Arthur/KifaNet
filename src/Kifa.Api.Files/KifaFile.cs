@@ -287,8 +287,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                                                        !FullPathIgnoredFiles.IsMatch(f.Id)))
                 .Select(info => new KifaFile(Host + info.Id, fileInfo: info));
 
-    public static (bool isMultiple, List<KifaFile> files) ExpandFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, bool fullFile = false) {
+    public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
+        IEnumerable<string> sources, string? prefix = null, bool recursive = true,
+        bool fullFile = false) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
@@ -318,8 +319,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
     }
 
-    public static (bool isMultiple, List<KifaFile> files) ExpandLogicalFiles(
-        IEnumerable<string> sources, string prefix = null, bool recursive = true,
+    public static (bool isMultiple, List<KifaFile> files) FindPotentialFiles(
+        IEnumerable<string> sources, string? prefix = null, bool recursive = true,
         bool fullFile = false) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
@@ -347,6 +348,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         return (multi > 1,
             files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
+    }
+
+
+    public static (bool isMultiple, List<KifaFile> files) FindAllFiles(IEnumerable<string> sources,
+        string? prefix = null, bool recursive = true, bool fullFile = false) {
+        var existingFiles = FindExistingFiles(sources, prefix, recursive, fullFile);
+        var potentialFiles = FindPotentialFiles(sources, prefix, recursive, fullFile);
+        var allFiles = new HashSet<KifaFile>();
+        allFiles.UnionWith(existingFiles.files);
+        allFiles.UnionWith(potentialFiles.files);
+        return (existingFiles.isMultiple || potentialFiles.isMultiple,
+            allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList());
     }
 
     static bool IsMatch(string path, string pattern) {

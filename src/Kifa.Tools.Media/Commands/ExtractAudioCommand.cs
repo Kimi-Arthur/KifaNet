@@ -21,7 +21,7 @@ public class ExtractAudioCommand : KifaCommand {
     IEnumerable<string>? fileNames;
 
     public override int Execute() {
-        var (multi, files) = KifaFile.ExpandFiles(FileNames, recursive: false);
+        var (multi, files) = KifaFile.FindExistingFiles(FileNames, recursive: false);
         files = files.Where(file => file.Extension == "mp4").ToList();
         if (multi) {
             foreach (var file in files) {
