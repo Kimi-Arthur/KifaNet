@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.Media.Commands;
@@ -22,7 +23,7 @@ public class ExtractAudioCommand : KifaCommand {
 
     public override int Execute() {
         var (multi, files) = KifaFile.FindExistingFiles(FileNames, recursive: false);
-        files = files.Where(file => file.Extension == "mp4").ToList();
+        files = files.Where(file => file.Extension != "m4a").ToList();
         if (multi) {
             foreach (var file in files) {
                 Console.WriteLine(file);
@@ -135,24 +136,49 @@ public class ExtractAudioCommand : KifaCommand {
         // Extension doesn't matter here.
         var coverFile = file.Parent.GetFile($"!{file.BaseName}.jpg");
         if (!coverFile.Exists()) {
-            var arguments = $"-i \"{file.GetLocalPath()}\" " +
-                            $"-map 0:v -map -0:V -c copy \"{coverFile.GetLocalPath()}\"";
-            Logger.Trace($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {
-                StartInfo = {
-                    FileName = "ffmpeg",
-                    Arguments = arguments
-                }
-            };
+            var result = GetCoverFromEmbedded(file, coverFile);
+            if (result.Status != KifaActionStatus.OK) {
+                result = GetCoverFromThumbnail(file, coverFile);
+            }
 
-            proc.Start();
-            proc.WaitForExit();
-            if (proc.ExitCode != 0) {
-                throw new Exception("Extract cover file failed.");
+            if (result.Status != KifaActionStatus.OK) {
+                throw new Exception("Failed to extract raw cover image.");
             }
         }
 
         return coverFile;
+    }
+
+    static KifaActionResult GetCoverFromEmbedded(KifaFile sourceFile, KifaFile coverFile) {
+        var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
+                        $"-map 0:v -map -0:V -c copy \"{coverFile.GetLocalPath()}\"";
+        Logger.Trace($"Executing: ffmpeg {arguments}");
+        using var proc = new Process {
+            StartInfo = {
+                FileName = "ffmpeg",
+                Arguments = arguments
+            }
+        };
+
+        proc.Start();
+        proc.WaitForExit();
+        return proc.ExitCode != 0 ? KifaActionResult.UnknownError : KifaActionResult.Success;
+    }
+
+    static KifaActionResult GetCoverFromThumbnail(KifaFile sourceFile, KifaFile coverFile) {
+        var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
+                        $"-vframes 1 \"{coverFile.GetLocalPath()}\"";
+        Logger.Trace($"Executing: ffmpeg {arguments}");
+        using var proc = new Process {
+            StartInfo = {
+                FileName = "ffmpeg",
+                Arguments = arguments
+            }
+        };
+
+        proc.Start();
+        proc.WaitForExit();
+        return proc.ExitCode != 0 ? KifaActionResult.UnknownError : KifaActionResult.Success;
     }
 
     static readonly Regex MusicFilePattern = new(@"\[[^\]]*\] (\d+-\d+-\d+)? (.*)");
