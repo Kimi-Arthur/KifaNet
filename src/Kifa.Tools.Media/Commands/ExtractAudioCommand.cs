@@ -168,6 +168,7 @@ public class ExtractAudioCommand : KifaCommand {
 
         var coverFile = sourceFile.Parent.GetFile($"{name}.{extension}");
 
+        // https://superuser.com/a/1328212
         var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
                         $"-map 0:v -map -0:V -c copy \"{coverFile.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
@@ -227,6 +228,8 @@ public class ExtractAudioCommand : KifaCommand {
 
     static KifaActionResult<KifaFile> GetCoverFromThumbnail(KifaFile sourceFile, string name) {
         var coverFile = sourceFile.Parent.GetFile($"{name}.jpg");
+
+        // https://ffmpeg.org/ffmpeg.html#:~:text=%2Dframes%5B%3Astream_specifier,after%20framecount%20frames.
         var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
                         $"-frames:v 1 \"{coverFile.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
