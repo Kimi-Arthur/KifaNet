@@ -87,7 +87,7 @@ public abstract class KifaCommand {
             Console.WriteLine($"[{i + 1}] {choiceStrings[i]}");
         }
 
-        Console.WriteLine($"\nDefault [1]: {choiceStrings[0]}\n");
+        Console.WriteLine($"\nDefault [{defaultIndex}]: {choiceStrings[defaultIndex - 1]}\n");
 
         Console.Write(
             $"Choose one from above {choiceName} [1-{choices.Count}], Default is {defaultIndex}: ");
