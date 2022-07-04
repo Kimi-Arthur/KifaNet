@@ -55,13 +55,6 @@ public static class HttpExtensions {
         return GetHeaders(client, url).Content.Headers.ContentRange?.Length;
     }
 
-    public static HttpResponseMessage SendWithRetry(this HttpClient client,
-        Func<HttpRequestMessage> request)
-        => Retry.Run(() => {
-            using var response = client.Send(request());
-            return response.EnsureSuccessStatusCode();
-        }, HandleHttpException);
-
     public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,
         Func<JToken, bool>? validate = null)
         => Retry.Run(() => {
@@ -82,6 +75,13 @@ public static class HttpExtensions {
                 Logger.Warn($"Failed to get desired response ({index}): {token}");
                 return false;
             });
+
+    public static HttpResponseMessage SendWithRetry(this HttpClient client,
+        Func<HttpRequestMessage> request)
+        => Retry.Run(() => {
+            using var response = client.Send(request());
+            return response.EnsureSuccessStatusCode();
+        }, HandleHttpException);
 
     static void HandleHttpException(Exception ex, int index) {
         if (index >= 5 || ex is HttpRequestException {
