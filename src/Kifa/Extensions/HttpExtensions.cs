@@ -40,7 +40,7 @@ public static class HttpExtensions {
 
     public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
         Logger.Trace($"Get headers for {url}...");
-        
+
         // Using HEAD won't be enough as sometimes the server only returns some information (e.g.
         // size) when requesting with a GET method.
         return client.SendWithRetry(() => {
@@ -57,12 +57,15 @@ public static class HttpExtensions {
 
     public static HttpResponseMessage SendWithRetry(this HttpClient client,
         Func<HttpRequestMessage> request)
-        => Retry.Run(() => client.Send(request()).EnsureSuccessStatusCode(), HandleHttpException);
+        => Retry.Run(() => {
+            using var response = client.Send(request());
+            return response.EnsureSuccessStatusCode();
+        }, HandleHttpException);
 
     public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,
         Func<JToken, bool>? validate = null)
         => Retry.Run(() => {
-            var response = client.Send(request());
+            using var response = client.Send(request());
             response.EnsureSuccessStatusCode();
             return response.GetJToken();
         }, HandleHttpException, validate == null
