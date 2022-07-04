@@ -54,41 +54,39 @@ public static class HttpExtensions {
 
     public static HttpResponseMessage SendWithRetry(this HttpClient client,
         Func<HttpRequestMessage> request)
-        => Retry.Run(() => client.Send(request()).EnsureSuccessStatusCode(), (ex, index) => {
-            if (index >= 5 || ex is HttpRequestException &&
-                ex.InnerException is SocketException socketException &&
-                socketException.Message == "Device not configured") {
-                throw ex;
-            }
-
-            Logger.Warn(ex, $"HTTP request failed ({index})");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-        });
+        => Retry.Run(() => client.Send(request()).EnsureSuccessStatusCode(), HandleHttpException);
 
     public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,
         Func<JToken, bool>? validate = null)
         => Retry.Run(() => {
-            var result = client.SendAsync(request()).Result.GetJToken();
+            var response = client.Send(request());
+            response.EnsureSuccessStatusCode();
+            return response.GetJToken();
+        }, HandleHttpException, validate == null
+            ? null
+            : (token, index) => {
+                if (validate(token)) {
+                    return true;
+                }
 
-            if (validate != null && !validate(result)) {
-                throw new InvalidResponseException(
-                    "Response body does not indicate successful status.");
-            }
+                if (index >= 5) {
+                    throw new HttpRequestException($"Failed to get desired response: {token}");
+                }
 
-            return result;
-        }, (ex, index) => {
-            if (index >= 5 || ex is HttpRequestException &&
-                ex.InnerException is SocketException socketException &&
-                socketException.Message == "Device not configured") {
-                throw ex;
-            }
+                Logger.Warn($"Failed to get desired response ({index}): {token}");
+                return false;
+            });
 
-            Logger.Warn(ex, $"HTTP request failed ({index})");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-        });
-}
+    static void HandleHttpException(Exception ex, int index) {
+        if (index >= 5 || ex is HttpRequestException {
+                InnerException: SocketException {
+                    Message: "Device not configured"
+                }
+            }) {
+            throw ex;
+        }
 
-public class InvalidResponseException : Exception {
-    public InvalidResponseException(string message) : base(message) {
+        Logger.Warn(ex, $"HTTP request failed ({index})");
+        Thread.Sleep(TimeSpan.FromSeconds(5));
     }
 }
