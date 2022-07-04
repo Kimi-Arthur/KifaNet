@@ -129,7 +129,7 @@ public class ExtractAudioCommand : KifaCommand {
     static string ChooseImage(List<string> images)
         => SelectOne(images,
             image
-                => $"\u001B]1337;File=;width={ImageSize}px;height={ImageSize}px;inline=1:{image[23..]}\u0007",
+                => $"\u001B]1337;File=;width={ImageSize}px;height={ImageSize}px;inline=1:{image.Split(",")[^1]}\u0007",
             "image").choice;
 
     static KifaFile GetCover(KifaFile file) {
