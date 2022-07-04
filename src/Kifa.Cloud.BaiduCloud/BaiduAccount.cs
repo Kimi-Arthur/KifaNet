@@ -49,12 +49,13 @@ public class BaiduAccount : OAuthAccount {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var response = HttpClient.Send(Rpcs.OauthRefresh.GetRequest(new Dictionary<string, string> {
-            { "client_id", ClientId },
-            { "client_secret", ClientSecret },
-            { "refresh_token", RefreshToken },
-            { "scope", Scope }
-        })).GetJToken();
+        var response = HttpClient.FetchJToken(() => Rpcs.OauthRefresh.GetRequest(
+            new Dictionary<string, string> {
+                { "client_id", ClientId },
+                { "client_secret", ClientSecret },
+                { "refresh_token", RefreshToken },
+                { "scope", Scope }
+            }));
         AccessToken = (string) response["access_token"];
         RefreshToken = (string) response["refresh_token"];
 

@@ -129,12 +129,11 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override void Delete(string path) {
-        var request = GetRequest(APIList.RemovePath, new Dictionary<string, string> {
-            ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-        });
-
-        using var response = client.SendAsync(request).Result;
-        if (response.GetJToken() == null) {
+        var response = client.FetchJToken(() => GetRequest(APIList.RemovePath,
+            new Dictionary<string, string> {
+                ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+            }));
+        if (response == null) {
             throw new InvalidOperationException();
         }
     }
@@ -461,13 +460,12 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
-        var request = GetRequest(APIList.CopyFile, new Dictionary<string, string> {
-            ["from_remote_path"] = sourcePath.TrimStart('/'),
-            ["to_remote_path"] = destinationPath.TrimStart('/')
-        });
         try {
-            using var response = client.SendAsync(request).Result;
-            var value = response.GetJToken();
+            var value = client.FetchJToken(() => GetRequest(APIList.CopyFile,
+                new Dictionary<string, string> {
+                    ["from_remote_path"] = sourcePath.TrimStart('/'),
+                    ["to_remote_path"] = destinationPath.TrimStart('/')
+                }));
             if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
                 throw new Exception("from field is incorrect");
             }
