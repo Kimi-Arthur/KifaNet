@@ -40,6 +40,9 @@ public static class HttpExtensions {
 
     public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
         Logger.Trace($"Get headers for {url}...");
+        
+        // Using HEAD won't be enough as sometimes the server only returns some information (e.g.
+        // size) when requesting with a GET method.
         return client.SendWithRetry(() => {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Range = new RangeHeaderValue(0, 0);
