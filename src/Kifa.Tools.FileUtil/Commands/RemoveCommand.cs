@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -88,7 +89,14 @@ class RemoveCommand : KifaCommand {
     int RemoveLogicalFile(FileInformation info) {
         if (!RemoveLinkOnly && info.Locations != null) {
             foreach (var location in info.Locations.Keys) {
-                var file = new KifaFile(location);
+                KifaFile file;
+
+                try {
+                    file = new KifaFile(location);
+                } catch (FileNotFoundException ex) {
+                    Logger.Warn($"{location} is not found. Skipped.");
+                    continue;
+                }
 
                 var toRemove = file.Id == info.Id;
                 if (!toRemove && ForceRemove) {
