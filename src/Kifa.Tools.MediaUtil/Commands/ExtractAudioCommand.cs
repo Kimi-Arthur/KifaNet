@@ -5,7 +5,7 @@ using Kifa.Api.Files;
 using Kifa.Service;
 using NLog;
 
-namespace Kifa.Tools.Media.Commands;
+namespace Kifa.Tools.MediaUtil.Commands;
 
 [Verb("audio", HelpText = "Extract audio from file.")]
 public class ExtractAudioCommand : KifaCommand {

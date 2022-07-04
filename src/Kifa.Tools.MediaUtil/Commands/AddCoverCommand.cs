@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace Kifa.Tools.Media.Commands; 
+namespace Kifa.Tools.MediaUtil.Commands; 
 
 
 [Verb("cover", HelpText = "[Not implemented] Add cover to media file.")]

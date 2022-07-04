@@ -133,7 +133,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Experimental", "Experimenta
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Experimental.NonNullProperty", "Experimental\Kifa.Experimental.NonNullProperty\Kifa.Experimental.NonNullProperty.csproj", "{355D184F-26D4-4D12-973A-B83B23B19EA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.Media", "src\Kifa.Tools.Media\Kifa.Tools.Media.csproj", "{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Tools.MediaUtil", "src\Kifa.Tools.MediaUtil\Kifa.Tools.MediaUtil.csproj", "{688F61AC-9D53-40CD-ACA4-A34ACF3070AA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{D7872B9A-1A03-4E1C-90D8-A5FB6F9D3174}"
 EndProject

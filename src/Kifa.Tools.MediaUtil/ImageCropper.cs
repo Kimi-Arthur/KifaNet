@@ -5,7 +5,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Kifa.Tools.Media;
+namespace Kifa.Tools.MediaUtil;
 
 public class ImageCropper {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
