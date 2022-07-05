@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -46,16 +45,11 @@ class RemoveCommand : KifaCommand {
             return RemoveLogicalFile(FileInformation.Client.Get(FileId));
         }
 
-        KifaFile source;
-        try {
-            source = new KifaFile(FileUri);
-        } catch (FileNotFoundException ex) {
-            Logger.Error(ex, $"Source {FileUri} not accessible. Wrong server?");
-            return 1;
-        }
+        var source = new KifaFile(FileUri);
 
-        var localFiles = source.List(true).ToList();
+        // TODO: testing whether it's folder or not with Exists is not optimal.
         if (!source.Exists()) {
+            var localFiles = source.List(true).ToList();
             foreach (var file in localFiles) {
                 Console.WriteLine(file);
             }
@@ -91,20 +85,11 @@ class RemoveCommand : KifaCommand {
     int RemoveLogicalFile(FileInformation info) {
         if (!RemoveLinkOnly && info.Locations != null) {
             foreach (var location in info.Locations.Keys) {
-                KifaFile file;
-
-                try {
-                    file = new KifaFile(location);
-                } catch (FileNotFoundException ex) {
-                    Logger.Warn($"{location} is not found. Skipped.");
-                    continue;
-                }
+                var file = new KifaFile(location);
 
                 var toRemove = file.Id == info.Id;
                 if (!toRemove && ForceRemove) {
-                    Console.Write(
-                        $"Confirm removing instance {file}, not matching file name? [Y/n] ");
-                    toRemove = !Console.ReadLine().ToLower().StartsWith("n");
+                    toRemove = Confirm($"Confirm removing instance {file}, not matching file name");
                 }
 
                 if (toRemove) {

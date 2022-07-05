@@ -1,10 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -16,13 +15,7 @@ class TouchCommand : KifaCommand {
     public string FileUri { get; set; }
 
     public override int Execute() {
-        KifaFile target;
-        try {
-            target = new KifaFile(FileUri);
-        } catch (FileNotFoundException ex) {
-            Logger.Error(ex, $"Target {FileUri} not accessible. Wrong server?");
-            return 1;
-        }
+        var target = new KifaFile(FileUri);
 
         var files = FileInformation.Client.ListFolder(target.Id, true);
         if (files.Count > 0) {

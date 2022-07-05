@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
@@ -62,14 +61,7 @@ class TrashCommand : KifaCommand {
             var targetInfo = client.Get(target);
             if (targetInfo?.Locations != null) {
                 foreach (var location in targetInfo.Locations.Keys) {
-                    KifaFile instance;
-                    try {
-                        instance = new KifaFile(location);
-                    } catch (FileNotFoundException ex) {
-                        Logger.Warn(ex, $"{location} not accessible.");
-                        continue;
-                    }
-
+                    var instance = new KifaFile(location);
                     if (instance.Id == file) {
                         if (instance.Exists()) {
                             var targetInstance = new KifaFile(instance.Host + targetInfo.Id);
