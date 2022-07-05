@@ -291,7 +291,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
         IEnumerable<string> sources, string? prefix = null, bool recursive = true,
-        bool fullFile = false) {
+        string pattern = "*", bool fullFile = false) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
@@ -304,7 +304,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 multi++;
                 files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
             } else {
-                var fileInfos = fileInfo.List(recursive).ToList();
+                var fileInfos = fileInfo.List(recursive, pattern: pattern).ToList();
                 if (fileInfos.Count > 0) {
                     multi = 2;
                     files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
@@ -323,7 +323,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static (bool isMultiple, List<KifaFile> files) FindPotentialFiles(
         IEnumerable<string> sources, string? prefix = null, bool recursive = true,
-        bool fullFile = false) {
+        string pattern = "*", bool fullFile = false) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
@@ -352,11 +352,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
     }
 
-
     public static (bool isMultiple, List<KifaFile> files) FindAllFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, bool fullFile = false) {
-        var existingFiles = FindExistingFiles(sources, prefix, recursive, fullFile);
-        var potentialFiles = FindPotentialFiles(sources, prefix, recursive, fullFile);
+        string? prefix = null, bool recursive = true, string pattern = "*", bool fullFile = false) {
+        var sourceFiles = sources.ToList();
+        var existingFiles = FindExistingFiles(sourceFiles, prefix, recursive, pattern: pattern,
+            fullFile: fullFile);
+        var potentialFiles = FindPotentialFiles(sourceFiles, prefix, recursive, pattern: pattern,
+            fullFile: fullFile);
         var allFiles = new HashSet<KifaFile>();
         allFiles.UnionWith(existingFiles.files);
         allFiles.UnionWith(potentialFiles.files);
