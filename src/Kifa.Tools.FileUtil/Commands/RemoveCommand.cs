@@ -46,9 +46,11 @@ class RemoveCommand : KifaCommand {
             return RemoveLogicalFile(FileInformation.Client.Get(FileId));
         }
 
-        var source = new KifaFile(FileUri);
-        if (source.Client == null) {
-            Console.WriteLine($"Source {FileUri} not accessible. Wrong server?");
+        KifaFile source;
+        try {
+            source = new KifaFile(FileUri);
+        } catch (FileNotFoundException ex) {
+            Logger.Error(ex, $"Source {FileUri} not accessible. Wrong server?");
             return 1;
         }
 
@@ -106,11 +108,6 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (toRemove) {
-                    if (file.Client == null) {
-                        Console.WriteLine($"{file} not accessible.");
-                        continue;
-                    }
-
                     if (file.Exists()) {
                         file.Delete();
                         Logger.Info($"File {file} deleted.");

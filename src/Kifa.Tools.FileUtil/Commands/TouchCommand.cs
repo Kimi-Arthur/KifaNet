@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using NLog;
@@ -15,9 +16,11 @@ class TouchCommand : KifaCommand {
     public string FileUri { get; set; }
 
     public override int Execute() {
-        var target = new KifaFile(FileUri);
-        if (target.Client == null) {
-            Console.WriteLine($"Target {FileUri} not accessible. Wrong server?");
+        KifaFile target;
+        try {
+            target = new KifaFile(FileUri);
+        } catch (FileNotFoundException ex) {
+            Logger.Error(ex, $"Target {FileUri} not accessible. Wrong server?");
             return 1;
         }
 

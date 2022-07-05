@@ -166,7 +166,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public string Host => Client?.ToString();
 
-    public StorageClient Client { get; set; }
+    StorageClient Client { get; set; }
 
     KifaFileFormat FileFormat { get; }
 
@@ -178,6 +178,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public bool IsCloud
         => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
            FileFormat is KifaFileV1Format or KifaFileV2Format;
+
+    public bool IsLocal => Client is FileStorageClient;
 
     static string? GetUri(string id) {
         string? candidate = null;

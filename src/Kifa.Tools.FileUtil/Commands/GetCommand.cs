@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -53,8 +53,7 @@ class GetCommand : KifaFileCommand {
                     continue;
                 }
 
-                if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(file) &&
-                    linkSource.Exists()) {
+                if (linkSource.IsLocal && linkSource.IsCompatible(file) && linkSource.Exists()) {
                     linkSource.Copy(file);
                     file.Register(true);
                     Logger.Info($"Got {file} through hard linking to {linkSource}.");
