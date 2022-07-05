@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -129,15 +130,17 @@ public class GoogleDriveStorageClient : StorageClient {
 
             while (!done) {
                 try {
-                    using var response = client.SendWithRetry(()
-                        => new HttpRequestMessage(HttpMethod.Put, uploadUri) {
-                            Content = content
-                        });
                     if (targetEndByte + 1 == size) {
-                        if (!response.IsSuccessStatusCode) {
-                            throw new Exception("Last request should have success code");
-                        }
+                        using var response = client.SendWithRetry(()
+                            => new HttpRequestMessage(HttpMethod.Put, uploadUri) {
+                                Content = content
+                            });
                     } else {
+                        using var response = client.SendWithRetry(()
+                            => new HttpRequestMessage(HttpMethod.Put, uploadUri) {
+                                Content = content
+                            }, HttpStatusCode.PermanentRedirect);
+
                         var range = RangeHeaderValue.Parse(response.Headers
                             .First(h => h.Key == "Range").Value.First());
                         var fromByte = range.Ranges.First().From;
