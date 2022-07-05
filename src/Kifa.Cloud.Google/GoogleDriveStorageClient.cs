@@ -59,10 +59,6 @@ public class GoogleDriveStorageClient : StorageClient {
                     ["parent_id"] = fileId,
                     ["page_token"] = pageToken
                 }));
-            if (!response.IsSuccessStatusCode) {
-                throw new Exception(
-                    $"List Files is not successful ({response.ReasonPhrase}):\n{response.GetString()}");
-            }
 
             var token = response.GetJToken();
             pageToken = token.Value<string>("nextPageToken");
@@ -196,17 +192,16 @@ public class GoogleDriveStorageClient : StorageClient {
             return -1;
         }
 
-        using var response = client.SendWithRetry(() => GetRequest(APIList.GetFileInfo,
+        var response = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
             new Dictionary<string, string> {
                 ["file_id"] = fileId
             }));
-        var token = response.GetJToken();
-        return long.Parse((string) token["size"]);
+        return long.Parse((string) response["size"]);
     }
 
     static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
 
-    string GetFileId(string path, bool createParents = false) {
+    string? GetFileId(string path, bool createParents = false) {
         var fileId = "root";
         foreach (var segment in $"{RootFolder}{path}".Split('/',
                      StringSplitOptions.RemoveEmptyEntries)) {

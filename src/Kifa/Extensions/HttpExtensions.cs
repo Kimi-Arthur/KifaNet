@@ -80,7 +80,7 @@ public static class HttpExtensions {
     public static HttpResponseMessage SendWithRetry(this HttpClient client,
         Func<HttpRequestMessage> request, HttpStatusCode? expectedStatusCode = null)
         => Retry.Run(() => {
-            using var response = client.Send(request());
+            var response = client.Send(request());
             if (expectedStatusCode != null && expectedStatusCode == response.StatusCode) {
                 return response;
             }
