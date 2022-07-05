@@ -102,6 +102,8 @@ public class KifaActionResult<TValue> : KifaActionResult {
 
     public TValue? Response { get; set; }
 
+    public static implicit operator KifaActionResult<TValue>(TValue value) => new(value);
+
     public static KifaActionResult<TValue> FromAction(Func<TValue> action) {
         try {
             return new KifaActionResult<TValue>(action.Invoke());
