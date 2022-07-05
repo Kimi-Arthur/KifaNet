@@ -608,8 +608,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public byte[] ReadAsBytes() => OpenRead().ToByteArray();
 
-    // TODO: I don't like these two...
-    public string GetLocalPath() => ((FileStorageClient) Client).GetPath(Path);
+    public string GetLocalPath()
+        => Client is FileStorageClient fileClient
+            ? fileClient.GetPath(Path)
+            : throw new InvalidOperationException(
+                "Should not try to get a local path with a non FileStorageClient.");
 
-    public string GetRemotePath() => ((FileStorageClient) Client).GetRemotePath(Path);
+    public string GetRemotePath()
+        => Client is FileStorageClient fileClient
+            ? fileClient.GetRemotePath(Path)
+            : throw new InvalidOperationException(
+                "Should not try to get a remote path with a non FileStorageClient.");
 }
