@@ -140,9 +140,9 @@ public abstract class KifaCommand {
         return chosen;
     }
 
-    public static string Confirm(string prefix, string suggested = "") {
+    public static string Confirm(string prefix, string suggested) {
         while (true) {
-            Console.WriteLine($"{prefix}{suggested}?");
+            Console.WriteLine($"{prefix} ({suggested})?");
 
             var line = Console.ReadLine();
             if (line == "") {
@@ -150,6 +150,26 @@ public abstract class KifaCommand {
             }
 
             suggested = line;
+        }
+    }
+
+    public static bool Confirm(string prefix, bool suggested = true) {
+        while (true) {
+            var suggestedOptions = suggested ? "Y/n" : "y/N";
+            Console.WriteLine($"{prefix} ({suggestedOptions})?");
+
+            var line = Console.ReadLine()!;
+            if (line == "") {
+                return suggested;
+            }
+
+            if (line.ToLower().StartsWith("y")) {
+                return true;
+            }
+
+            if (line.ToLower().StartsWith("n")) {
+                return false;
+            }
         }
     }
 }
