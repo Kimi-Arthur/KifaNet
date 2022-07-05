@@ -60,7 +60,7 @@ class ImportCommand : KifaCommand {
                                  .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
                     var ext = file.Substring(file.LastIndexOf(".") + 1);
                     var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
-                    targetFileName = Confirm($"Confirm importing {file} as ", targetFileName);
+                    targetFileName = Confirm($"Confirm importing {file} as", targetFileName);
                     FileInformation.Client.Link(file, targetFileName);
                     Logger.Info($"Successfully linked {file} to {targetFileName}");
                 }

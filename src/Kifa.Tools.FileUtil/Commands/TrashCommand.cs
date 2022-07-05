@@ -25,12 +25,12 @@ class TrashCommand : KifaCommand {
         }
 
         var trashFolder =
-            Confirm($"Confirm trashing the {fileIds.Count} files above to the .Trash/ folder in: ",
+            Confirm($"Confirm trashing the {fileIds.Count} files above to the .Trash/ folder in:",
                 fileIds[0][..fileIds[0].LastIndexOf('/')]);
 
         var fileIdsByResult = fileIds.Select(fileId => (fileId, result: Trash(fileId, trashFolder)))
-            .GroupBy(item => item.result.Status)
-            .ToDictionary(item => item.Key == KifaActionStatus.OK, item => item.ToList());
+            .GroupBy(item => item.result.Status == KifaActionStatus.OK)
+            .ToDictionary(item => item.Key, item => item.ToList());
         if (fileIdsByResult.ContainsKey(true)) {
             var files = fileIdsByResult[true];
             Logger.Info($"Successfully trashed the following {files.Count} files:");
