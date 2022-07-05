@@ -84,9 +84,9 @@ class TrashCommand : KifaCommand {
                         Logger.Info($"Entry {location} removed.");
                     }
                 }
-
-                client.Delete(file);
-                Logger.Info($"Original FileInfo {file} removed.");
             }
+
+            client.Delete(file);
+            Logger.Info($"Original FileInfo {file} removed.");
         });
 }
