@@ -78,7 +78,7 @@ public class ImageCropper {
         sourceFile.Copy(remoteFile);
 
         var arguments = CropArguments.Format(new Dictionary<string, string> {
-            { "image_path", remoteFile.GetRemotePath() }
+            { "image_path", remoteFile.GetLocalPath() }
         });
         Logger.Trace($"Executing: {CropCommand} {arguments}");
         using var proc = new Process {

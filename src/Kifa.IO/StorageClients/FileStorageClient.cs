@@ -8,67 +8,86 @@ using System.Text;
 using NLog;
 using Renci.SshNet;
 
-namespace Kifa.IO;
+namespace Kifa.IO.StorageClients;
 
 public class ServerConfig {
-    public bool Removed { get; set; }
-    public string? Username { get; set; }
-    public string? Password { get; set; }
-    public string? Host { get; set; }
-    public string? RemotePrefix { get; set; }
-    public string? Prefix { get; set; }
+    #region public late string Prefix { get; set; }
+
+    string? prefix;
+
+    public string Prefix {
+        get => Late.Get(prefix);
+        set => Late.Set(ref prefix, value);
+    }
+
+    #endregion
+
+    public RemoteServerConfig? RemoteServer { get; set; }
+
+    public string GetId(string actualPath) => actualPath[Prefix.Length..].Replace('\\', '/');
+
+    public string GetPath(string path) => $"{Prefix}{path}";
 }
 
-public class FileStorageClient : StorageClient {
-    const int DefaultBlockSize = 32 << 20;
-
+public class RemoteServerConfig {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
+    #region public late string Username { get; set; }
 
-    public string ServerId { get; }
+    string? username;
 
-    public ServerConfig Server { get; }
-
-    static bool IsUnixLike
-        => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-           RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-
-    public FileStorageClient(string serverId) {
-        if (!ServerConfigs.ContainsKey(serverId)) {
-            throw new FileNotFoundException($"Server {serverId} is not configured.");
-        }
-
-        ServerId = serverId;
-        Server = ServerConfigs[serverId];
+    public string Username {
+        get => Late.Get(username);
+        set => Late.Set(ref username, value);
     }
 
-    public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
-        Logger.Trace($"Copying {sourcePath} to {destinationPath}...");
-        Directory.GetParent(GetPath(destinationPath)).Create();
+    #endregion
 
-        if (neverLink) {
-            Logger.Trace($"Use raw file copying.");
-            File.Copy(GetPath(sourcePath), GetPath(destinationPath));
-        } else if (Server.RemotePrefix != null && Server.Host != null && Server.Password != null) {
-            Logger.Trace($"Use remote linking.");
-            RemoteLink(GetRemotePath(sourcePath), GetRemotePath(destinationPath));
-        } else {
-            Logger.Trace($"Use local linking.");
-            Link(GetPath(sourcePath), GetPath(destinationPath));
-        }
+    #region public late string Password { get; set; }
 
-        Logger.Trace($"Copying succeeded.");
+    string? password;
+
+    public string Password {
+        get => Late.Get(password);
+        set => Late.Set(ref password, value);
     }
 
-    void RemoteLink(string sourcePath, string destinationPath) {
-        var connectionInfo = new ConnectionInfo(Server.Host, Server.Username,
-            new PasswordAuthenticationMethod(Server.Username, Server.Password));
+    #endregion
+
+    #region public late string Host { get; set; }
+
+    string? host;
+
+    public string Host {
+        get => Late.Get(host);
+        set => Late.Set(ref host, value);
+    }
+
+    #endregion
+
+    #region public late string RemotePrefix { get; set; }
+
+    string? remotePrefix;
+
+    public string RemotePrefix {
+        get => Late.Get(remotePrefix);
+        set => Late.Set(ref remotePrefix, value);
+    }
+
+    #endregion
+
+    public string GetRemotePath(string path) => $"{RemotePrefix}{path}";
+
+    public void RemoteLink(string sourcePath, string destinationPath) {
+        var connectionInfo = new ConnectionInfo(Host, Username,
+            new PasswordAuthenticationMethod(Username, Password));
 
         using var client = new SshClient(connectionInfo);
         client.Connect();
         try {
-            var result = client.RunCommand($"ln \"{sourcePath}\" \"{destinationPath}\"");
+            var result =
+                client.RunCommand(
+                    $"ln \"{GetRemotePath(sourcePath)}\" \"{GetRemotePath(destinationPath)}\"");
             Logger.Trace($"stdout: {new StreamReader(result.OutputStream).ReadToEnd()}");
 
             if (result.ExitStatus != 0) {
@@ -80,14 +99,62 @@ public class FileStorageClient : StorageClient {
             throw;
         }
     }
+}
 
-    void Link(string sourcePath, string destinationPath) {
+public class FileStorageClient : StorageClient {
+    const int DefaultBlockSize = 32 << 20;
+
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
+
+    string ServerId { get; }
+
+    ServerConfig? Server { get; }
+
+    static bool IsUnixLike
+        => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+           RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+    public FileStorageClient(string serverId) {
+        ServerId = serverId;
+        Server = ServerConfigs.GetValueOrDefault(serverId);
+    }
+
+    public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
+        if (Server == null) {
+            throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+        }
+
+        var actualSourcePath = Server.GetPath(sourcePath);
+        var actualDestinationPath = Server.GetPath(destinationPath);
+
+        Logger.Trace($"Copying {actualSourcePath} to {actualDestinationPath}...");
+
+        // Parent is created even for remote case as we don't use remote to create parent.
+        EnsureParent(actualDestinationPath);
+
+        if (neverLink) {
+            Logger.Trace($"Use raw file copying.");
+            File.Copy(actualSourcePath, actualDestinationPath);
+        } else if (Server.RemoteServer != null) {
+            Logger.Trace($"Use remote linking.");
+            Server.RemoteServer.RemoteLink(sourcePath, destinationPath);
+        } else {
+            Logger.Trace($"Use local linking.");
+            Link(actualSourcePath, actualDestinationPath);
+        }
+
+        Logger.Trace($"Copying succeeded.");
+    }
+
+    static void Link(string actualSourcePath, string actualDestinationPath) {
         using var proc = new Process {
             StartInfo = {
                 FileName = IsUnixLike ? "ln" : "cmd.exe",
                 Arguments = IsUnixLike
-                    ? $"\"{sourcePath}\" \"{destinationPath}\""
-                    : $"/c mklink /h \"{destinationPath}\" \"{sourcePath}\"",
+                    ? $"\"{actualSourcePath}\" \"{actualDestinationPath}\""
+                    : $"/c mklink /h \"{actualDestinationPath}\" \"{actualSourcePath}\"",
                 UseShellExecute = false
             }
         };
@@ -104,37 +171,54 @@ public class FileStorageClient : StorageClient {
     }
 
     public override void Delete(string path) {
-        path = GetPath(path);
+        if (Server == null) {
+            Logger.Warn($"Server {ServerId} is not found in config.");
+            return;
+        }
+
+        path = Server.GetPath(path);
         if (File.Exists(path)) {
             File.Delete(path);
         }
     }
 
     public override void Touch(string path) {
-        path = GetPath(path);
+        if (Server == null) {
+            throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+        }
+
+        path = Server.GetPath(path);
         EnsureParent(path);
 
         File.Create(path).Close();
     }
 
     public override void Move(string sourcePath, string destinationPath) {
-        destinationPath = GetPath(destinationPath);
+        if (Server == null) {
+            throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+        }
+
+        destinationPath = Server.GetPath(destinationPath);
         EnsureParent(destinationPath);
 
-        File.Move(GetPath(sourcePath), destinationPath);
+        File.Move(Server.GetPath(sourcePath), destinationPath);
     }
 
     public override long Length(string path) {
-        if (Server.Removed) {
+        if (Server == null) {
             return -1;
         }
 
-        var info = new FileInfo(GetPath(path));
+        var info = new FileInfo(Server.GetPath(path));
         return info.Exists ? info.Length : -1;
     }
 
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
-        var normalizedPath = GetPath(path);
+        if (Server == null) {
+            throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+        }
+
+        var normalizedPath = Server.GetPath(path);
         if (!Directory.Exists(normalizedPath)) {
             return Enumerable.Empty<FileInformation>();
         }
@@ -145,12 +229,12 @@ public class FileStorageClient : StorageClient {
         return items.OrderBy(i => i.Name.Normalize(NormalizationForm.FormC)).Select(i => {
             try {
                 return new FileInformation {
-                    Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
+                    Id = Server.GetId(i.FullName.Normalize(NormalizationForm.FormC)),
                     Size = i.Length
                 };
             } catch (Exception) {
                 return new FileInformation {
-                    Id = GetId(i.FullName.Normalize(NormalizationForm.FormC)),
+                    Id = Server.GetId(i.FullName.Normalize(NormalizationForm.FormC)),
                     Size = 0
                 };
             }
@@ -158,7 +242,11 @@ public class FileStorageClient : StorageClient {
     }
 
     public override Stream OpenRead(string path) {
-        var localPath = GetPath(path);
+        if (Server == null) {
+            throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+        }
+
+        var localPath = Server.GetPath(path);
         var fileSize = new FileInfo(localPath).Length;
         return new SeekableReadStream(fileSize,
             (buffer, bufferOffset, offset, count)
@@ -177,12 +265,16 @@ public class FileStorageClient : StorageClient {
     }
 
     public override void Write(string path, Stream stream) {
+        if (Server == null) {
+            throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+        }
+
         if (Exists(path)) {
             Logger.Debug($"Target file {path} already exists. Skipped.");
             return;
         }
 
-        var actualPath = GetPath(path);
+        var actualPath = Server.GetPath(path);
 
         var actualDownloadFile = $"{actualPath}.tmp";
 
@@ -211,13 +303,17 @@ public class FileStorageClient : StorageClient {
 
     public override string Id => ServerId;
 
-    string GetId(string path) => path.Substring(Server.Prefix.Length).Replace("\\", "/");
+    static void EnsureParent(string actualPath) {
+        var parent = Directory.GetParent(actualPath);
+        if (parent == null) {
+            throw new FileNotFoundException($"Cannot find parent folder for {actualPath}");
+        }
 
-    public string GetPath(string path) => $"{Server.Prefix}{path}";
-
-    void EnsureParent(string path) {
-        Directory.GetParent(path)?.Create();
+        parent.Create();
     }
 
-    public string GetRemotePath(string path) => $"{Server.RemotePrefix}{path}";
+    public string GetLocalPath(string path) {
+        return Server?.GetPath(path) ??
+               throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+    }
 }

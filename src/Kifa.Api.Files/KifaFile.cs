@@ -610,13 +610,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public string GetLocalPath()
         => Client is FileStorageClient fileClient
-            ? fileClient.GetPath(Path)
-            : throw new InvalidOperationException(
+            ? fileClient.GetLocalPath(Path)
+            : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
-
-    public string GetRemotePath()
-        => Client is FileStorageClient fileClient
-            ? fileClient.GetRemotePath(Path)
-            : throw new InvalidOperationException(
-                "Should not try to get a remote path with a non FileStorageClient.");
 }
