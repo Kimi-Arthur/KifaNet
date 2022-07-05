@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Kifa.Api.Files;
+using Kifa.Bilibili;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil;
 
-public static class Helper {
+static class Helper {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
@@ -62,5 +64,27 @@ public static class Helper {
 
     static string GetFfmpegTargetPath(string targetPath) {
         return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
+    }
+
+    static readonly Regex FileNamePattern = new Regex(@"-(av\d+)(p\d+)?\.(c\d+)\.");
+
+    public static string? InferAid(string file) {
+        var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
+        if (segments.Length < 3 || !segments[segments.Length - 3].StartsWith("av")) {
+            Logger.Debug("Cannot infer CID from file name.");
+            return null;
+        }
+
+        return segments[segments.Length - 3];
+    }
+
+
+    public static BilibiliVideo? GetVideo(string file) {
+        var match = FileNamePattern.Match(file);
+        if (!match.Success) {
+            return null;
+        }
+
+        return BilibiliVideo.Client.Get(match.Groups[1].Value);
     }
 }

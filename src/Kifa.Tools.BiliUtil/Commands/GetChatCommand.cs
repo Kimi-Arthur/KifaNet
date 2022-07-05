@@ -11,7 +11,7 @@ using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
 
-[Verb("get", HelpText = "Get Bilibili chat as xml document.")]
+[Verb("chat", HelpText = "Get Bilibili chat as xml document.")]
 class GetChatCommand : KifaFileCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -54,7 +54,7 @@ class GetChatCommand : KifaFileCommand {
     }
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
-        if (InferAid(file.ToString()) is { } inferredAid) {
+        if (Helper.InferAid(file.ToString()) is { } inferredAid) {
             var ids = inferredAid.Split('p');
             var v = BilibiliVideo.Client.Get(ids[0]);
             if (v == null) {
@@ -97,16 +97,6 @@ class GetChatCommand : KifaFileCommand {
         memoryStream.Dispose();
 
         return 0;
-    }
-
-    string? InferAid(string file) {
-        var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
-        if (segments.Length < 3 || !segments[segments.Length - 3].StartsWith("av")) {
-            Logger.Debug("Cannot infer CID from file name.");
-            return null;
-        }
-
-        return segments[segments.Length - 3];
     }
 }
 
