@@ -142,7 +142,7 @@ public abstract class KifaCommand {
 
     public static string Confirm(string prefix, string suggested) {
         while (true) {
-            Console.WriteLine($"{prefix} ({suggested})?");
+            Console.WriteLine($"{prefix} [{suggested}]?");
 
             var line = Console.ReadLine();
             if (line == "") {
@@ -156,7 +156,7 @@ public abstract class KifaCommand {
     public static bool Confirm(string prefix, bool suggested = true) {
         while (true) {
             var suggestedOptions = suggested ? "Y/n" : "y/N";
-            Console.Write($"{prefix} ({suggestedOptions})?");
+            Console.Write($"{prefix} [{suggestedOptions}]?");
 
             var line = Console.ReadLine()!;
             if (line == "") {
