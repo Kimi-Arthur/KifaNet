@@ -45,7 +45,14 @@ class GetCommand : KifaFileCommand {
 
         foreach (var (location, verifyTime) in info.Locations) {
             if (verifyTime != null) {
-                var linkSource = new KifaFile(location);
+                KifaFile linkSource;
+                try {
+                    linkSource = new KifaFile(location);
+                } catch (FileNotFoundException ex) {
+                    Logger.Debug(ex, $"{location} is not accessible.");
+                    continue;
+                }
+
                 if (linkSource.Client is FileStorageClient && linkSource.IsCompatible(file) &&
                     linkSource.Exists()) {
                     linkSource.Copy(file);
