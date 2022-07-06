@@ -127,7 +127,7 @@ public abstract class KifaCommand {
         // return chosen;
 
         Console.Write(
-            $"Choose 0 or more from above {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
+            $"Choose 0 or more from above {choices.Count} {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
         var reply = Console.ReadLine() ?? "";
         var chosen = reply == "" ? choices :
             reply == "." ? new List<TChoice>() : reply.Split(',').SelectMany(i => i.Contains('-')
