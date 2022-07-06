@@ -92,8 +92,8 @@ public abstract class DownloadCommand : KifaCommand {
 
         var partFiles = new List<KifaFile>();
         for (var i = 0; i < streamGetters.Count; i++) {
-            var targetFile =
-                canonicalTargetFile.Parent.GetFile($"!{canonicalTargetFile.Name}.{extension}");
+            var targetFile = canonicalTargetFile.Parent.GetFile(
+                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.Name}.{extension}");
             Logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
             try {
                 targetFile.Write(streamGetters[i]);
@@ -109,7 +109,7 @@ public abstract class DownloadCommand : KifaCommand {
         var coverLink = new KifaFile(video.Cover.ToString());
         var coverFile =
             canonicalTargetFile.Parent.GetFile(
-                $"!{canonicalTargetFile.Name}.{coverLink.Extension}");
+                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.Name}.{coverLink.Extension}");
         coverLink.Copy(coverFile);
 
         try {

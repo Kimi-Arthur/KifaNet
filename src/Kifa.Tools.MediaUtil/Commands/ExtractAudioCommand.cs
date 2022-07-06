@@ -133,7 +133,7 @@ public class ExtractAudioCommand : KifaCommand {
             "image").choice;
 
     static KifaFile GetCover(KifaFile file) {
-        var name = $"!{file.BaseName}";
+        var name = $"{KifaFile.DefaultIgnoredPrefix}{file.BaseName}";
         var coverPngFile = file.Parent.GetFile($"{name}.png");
         var coverJpgFile = file.Parent.GetFile($"{name}.jpg");
         if (coverPngFile.Exists()) {

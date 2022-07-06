@@ -16,7 +16,8 @@ static class Helper {
         // Convert parts first
         var partFiles = parts.Select(ConvertPartFile).ToList();
 
-        var fileListFile = target.Parent.GetFile($"!{target.BaseName}.list");
+        var fileListFile =
+            target.Parent.GetFile($"{KifaFile.DefaultIgnoredPrefix}{target.BaseName}.list");
         fileListFile.Write(string.Join("\n",
             partFiles.Select(p => $"file {GetFfmpegTargetPath(p.GetLocalPath())}")));
 
@@ -44,7 +45,7 @@ static class Helper {
     }
 
     static KifaFile ConvertPartFile(KifaFile inputFile) {
-        var newPath = inputFile.Parent.GetFile($"!{inputFile.BaseName}.mp4");
+        var newPath = inputFile.Parent.GetFile($"{KifaFile.DefaultIgnoredPrefix}{inputFile.BaseName}.mp4");
         var arguments = $"-i \"{inputFile.GetLocalPath()}\" -c copy \"{newPath.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {

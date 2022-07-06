@@ -20,10 +20,6 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static Regex subPathIgnoredFiles;
-
-    static Regex fullPathIgnoredFiles;
-
     static readonly Dictionary<string, StorageClient> knownClients = new();
 
     static StorageClient GetClient(string spec) {
@@ -134,17 +130,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static string LocalServer { get; set; }
 
-    public static string SubPathIgnorePattern { get; set; } = "$^";
+    public static string DefaultIgnoredPrefix { get; set; } = "@";
 
-    public static string FullPathIgnorePattern { get; set; } = "$^";
+    public static HashSet<string> IgnoredPrefixes { get; set; } = new();
 
-    static Regex SubPathIgnoredFiles
-        => LazyInitializer.EnsureInitialized(ref subPathIgnoredFiles,
-            () => new Regex(SubPathIgnorePattern, RegexOptions.Compiled));
+    public static HashSet<string> IgnoredExtensions { get; set; } = new();
 
-    static Regex FullPathIgnoredFiles
-        => LazyInitializer.EnsureInitialized(ref fullPathIgnoredFiles,
-            () => new Regex(FullPathIgnorePattern, RegexOptions.Compiled));
+    public static string IgnoredPattern { get; set; } = "$^";
+
+    static Regex? ignoredFiles;
+
+    static Regex IgnoredFiles => ignoredFiles ??= new Regex(IgnoredPattern, RegexOptions.Compiled);
 
     public string Id { get; set; }
 
@@ -283,11 +279,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         => Exists()
             ? Enumerable.Repeat(this, 1)
             : Client.List(Path, recursive)
-                .Where(f => IsMatch(f.Id, pattern) && (!ignoreFiles ||
-                                                       !SubPathIgnoredFiles.IsMatch(
-                                                           f.Id.Substring(Path.Length)) &&
-                                                       !FullPathIgnoredFiles.IsMatch(f.Id)))
-                .Select(info => new KifaFile(Host + info.Id, fileInfo: info));
+                .Select(info => new KifaFile(Host + info.Id, fileInfo: info)).Where(f
+                    => IsMatch(f.Id, pattern) && (!ignoreFiles ||
+                                                  !IgnoredExtensions.Contains(f.Extension) &&
+                                                  !IgnoredPrefixes.Any(prefix
+                                                      => f.Name.StartsWith(prefix)) ||
+                                                  !IgnoredFiles.IsMatch(f.Id)));
 
     public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
         IEnumerable<string> sources, string? prefix = null, bool recursive = true,
