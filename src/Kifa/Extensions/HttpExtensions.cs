@@ -53,7 +53,8 @@ public static class HttpExtensions {
 
     public static long? GetContentLength(this HttpClient client, string url) {
         Logger.Trace($"Get content length of {url}...");
-        return GetHeaders(client, url).Content.Headers.ContentRange?.Length;
+        return client.SendWithRetry(() => new HttpRequestMessage(HttpMethod.Head, url)).Content
+            .Headers.ContentLength ?? GetHeaders(client, url).Content.Headers.ContentRange?.Length;
     }
 
     public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,

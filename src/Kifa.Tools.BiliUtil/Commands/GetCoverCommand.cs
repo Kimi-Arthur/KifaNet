@@ -73,6 +73,7 @@ public class GetCoverCommand : KifaCommand {
             var coverLink = video.Cover.ToString();
             var coverLinkFile = new KifaFile(coverLink);
             var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLinkFile.Extension}");
+            coverFile.Delete();
             coverLinkFile.Copy(coverFile);
             return coverFile;
         });
