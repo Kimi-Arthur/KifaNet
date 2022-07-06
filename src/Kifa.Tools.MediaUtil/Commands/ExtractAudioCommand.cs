@@ -11,7 +11,7 @@ namespace Kifa.Tools.MediaUtil.Commands;
 public class ExtractAudioCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static int ImageSize { get; set; } = 256;
+    public static int DisplayImageSize { get; set; } = 256;
 
     [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
     public IEnumerable<string> FileNames {
@@ -129,7 +129,7 @@ public class ExtractAudioCommand : KifaCommand {
     static string ChooseImage(List<string> images)
         => SelectOne(images,
             image
-                => $"\u001B]1337;File=;width={ImageSize}px;height={ImageSize}px;inline=1:{image.Split(",")[^1]}\u0007",
+                => $"\u001B]1337;File=;width={DisplayImageSize}px;height={DisplayImageSize}px;inline=1:{image.Split(",")[^1]}\u0007",
             "image").choice;
 
     static KifaFile GetCover(KifaFile file) {
