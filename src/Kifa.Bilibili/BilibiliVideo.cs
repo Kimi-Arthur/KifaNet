@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
-using HtmlAgilityPack;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
 using Kifa.IO;
@@ -29,8 +28,6 @@ public class BilibiliVideoStats {
 
 public class BilibiliVideo : DataModel<BilibiliVideo> {
     public const string ModelId = "bilibili/videos";
-
-    public static bool UseMergedSource { get; set; }
 
     public enum PartModeType {
         SinglePartMode,
@@ -332,58 +329,23 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         int pid, int biliplusSourceChoice = 0) {
         var cid = Pages[pid - 1].Cid;
 
-        if (UseMergedSource) {
-            AddDownloadJob(Id);
-
-            while (GetDownloadStatus(Id, pid) == DownloadStatus.InProgress) {
-                Logger.Debug("Download not ready. Sleep 30 seconds...");
-                UpdateDownloadStatus(cid);
-                Thread.Sleep(TimeSpan.FromSeconds(30));
-            }
-
-            var doc = new HtmlDocument();
-            doc.LoadHtml(GetDownloadPage(cid));
-
-            var choices = doc.DocumentNode.SelectNodes("//a")?.Select(linkNode
-                => (name: linkNode.InnerText, link: linkNode.Attributes["href"].Value)).ToList();
-
-            if (choices == null) {
-                Logger.Warn("No sources found. Job not successful?");
-                return (null, -1, null);
-            }
-
-            var initialSource = biliplusSourceChoice;
-            while (true) {
-                try {
-                    Logger.Debug("Choosen source: " +
-                                 $"{choices[biliplusSourceChoice].name}({choices[biliplusSourceChoice].link})");
-                    var link = choices[biliplusSourceChoice].link;
-                    return ("mp4", -1, new List<Func<Stream>> {
-                        () => BuildDownloadStream(link)
-                    });
-                } catch (Exception ex) {
-                    biliplusSourceChoice = (biliplusSourceChoice + 1) % choices.Count;
-                    if (biliplusSourceChoice == initialSource) {
-                        throw;
-                    }
-
-                    Logger.Warn(ex, "Download failed. Try next source.");
-                    Thread.Sleep(TimeSpan.FromSeconds(30));
-                }
-            }
-        } else {
-            var (extension, quality, links) = GetDownloadLinks(Id, cid);
-            return extension == null
-                ? (null, -1, null)
-                : (extension, quality,
-                    links.Select<string, Func<Stream>>(l => () => BuildDownloadStream(l)).ToList());
-        }
+        var (extension, quality, links) = GetDownloadLinks(Id, cid);
+        return extension == null
+            ? (null, -1, null)
+            : (extension, quality,
+                links.Select<(string link, long size), Func<Stream>>(l
+                    => () => BuildDownloadStream(l)).ToList());
     }
 
-    static Stream BuildDownloadStream(string link) {
-        var length = GetBilibiliClient().GetContentLength(link);
+    static Stream BuildDownloadStream((string link, long size) link) {
+        var length = GetBilibiliClient().GetContentLength(link.link);
         if (length == null) {
-            throw new Exception("Content length is not found.");
+            throw new FileCorruptedException("Content length is not found.");
+        }
+
+        if (length != link.size) {
+            throw new FileCorruptedException(
+                $"Content length ({length}) is not expected ({link.size}).");
         }
 
         return new SeekableReadStream(length.Value, (buffer, bufferOffset, offset, count) => {
@@ -391,10 +353,10 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 count = buffer.Length - bufferOffset;
             }
 
-            Logger.Trace($"Downloading from {offset} to {offset + count} of {link}...");
+            Logger.Trace($"Downloading from {offset} to {offset + count} of {link.link}...");
 
             return Retry.Run(() => {
-                var request = new HttpRequestMessage(HttpMethod.Get, link);
+                var request = new HttpRequestMessage(HttpMethod.Get, link.link);
 
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
                 using var response = GetBilibiliClient().SendAsync(request).Result;
@@ -451,8 +413,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
     }
 
-    static (string extension, int quality, List<string> links) GetDownloadLinks(string aid,
-        string cid) {
+    static (string extension, int quality, List<(string link, long size)> links) GetDownloadLinks(
+        string aid, string cid) {
         var quality = 120;
         while (true) {
             using var response = GetBilibiliClient()
@@ -481,7 +443,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             var extension = (string) urls[0]["url"];
             extension = extension[..extension.IndexOf('?')];
             extension = extension[(extension.LastIndexOf('.') + 1)..];
-            return (extension, receivedQuality, urls.Select(x => (string) x["url"]).ToList());
+            return (extension, receivedQuality,
+                urls.Select(x => ((string) x["url"], (long) x["size"])).ToList());
         }
     }
 

@@ -32,12 +32,6 @@ public abstract class DownloadCommand : KifaCommand {
         return true;
     }
 
-    void DownloadCover(Uri videoCover, List<KifaFile> outputFiles) {
-        var ext = videoCover.AbsolutePath.Split(".").Last();
-        var targetFiles = outputFiles.Select(f => f.Parent.GetFile($"{f.BaseName}.{ext}")).ToList();
-        // TODO: Merge with the implementation as of ExtractAudio.
-    }
-
     public int DownloadVideo(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null) {
         uploader ??= new BilibiliUploader {
