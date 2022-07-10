@@ -153,7 +153,8 @@ public class DeWiktionaryClient {
                     }
                 }
             } else if (node.Name == "h2" &&
-                       node.SelectSingleNode($"./span[@id='{wordId}_(Deutsch)']") != null) {
+                       node.SelectSingleNode(
+                           $"./span[@id='{wordId.NormalizeWikiTitle()}_(Deutsch)']") != null) {
                 inDeutsch = true;
             }
         }
@@ -199,14 +200,13 @@ public class DeWiktionaryClient {
     }
 
     static string Normalize(string s, VerbFormType v, Person p) {
-        var value =
-            (s.StartsWith(PersonPrefixes[p]) ? s.Substring(PersonPrefixes[p].Length + 1) : s)
-            .Trim(' ', ',');
+        var value = (s.StartsWith(PersonPrefixes[p]) ? s[(PersonPrefixes[p].Length + 1)..] : s)
+            .Replace("\u00A0", " ").Trim(' ', ',');
         return v == VerbFormType.Imperative && !value.EndsWith("!") ? value + "!" : value;
     }
 
     static WordType ParseWordType(string id)
-        => id.Split(",").First() switch {
+        => id.Split(",_").Select(type => type switch {
             "Adjektiv" => WordType.Adjective,
             "Postposition" => WordType.Postposition,
             "Präposition" => WordType.Preposition,
@@ -221,5 +221,5 @@ public class DeWiktionaryClient {
             "Substantiv" => WordType.Noun,
             "Verb" => WordType.Verb,
             _ => WordType.Unknown
-        };
+        }).Where(type => type != WordType.Unknown).FirstOrDefault(WordType.Unknown);
 }
