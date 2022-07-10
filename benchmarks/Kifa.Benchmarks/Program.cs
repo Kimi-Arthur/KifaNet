@@ -4,24 +4,22 @@ using System.Linq;
 
 namespace Kifa.Benchmarks;
 
-class Test {
-    string value;
+class A {
+    string b;
 
-    public string Value {
-        get {
-            Console.WriteLine("get");
-            return value;
-        }
+    public string B {
+        get => b;
         set {
-            Console.WriteLine("set");
-            this.value = value;
+            Console.WriteLine("called");
+            b = value;
         }
     }
 }
 
 class Program {
     static void Main(string[] args) {
-        var x = new Test();
-        x.Value ??= "abc";
+        var x = new A();
+        x.B = "d";
+        Console.WriteLine(x.B);
     }
 }
