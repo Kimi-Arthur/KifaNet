@@ -12,7 +12,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public override int CurrentVersion => 6;
+    public override int CurrentVersion => 7;
 
     public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
