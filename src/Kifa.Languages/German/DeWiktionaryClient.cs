@@ -98,9 +98,13 @@ public class DeWiktionaryClient {
 
                     if (word.NounForms == null && node.Name == "table" &&
                         node.HasClass("wikitable") && wordType == WordType.Noun) {
+                        var extraHeaderCount = node.SelectNodes(".//tr[1]/td").Count != 0 ? 7 : 0;
+
                         var selector = new Func<int, int, string?>((row, column) => {
-                            var form = node.SelectSingleNode($".//tr[{row + 1}]/td[{column}]")
-                                .InnerText.Split("\n").First().Split(" ").Last();
+                            var form = node
+                                .SelectSingleNode(
+                                    $".//tr[{row + extraHeaderCount + 1}]/td[{column}]").InnerText
+                                .Split("\n").First().Split(" ").Last();
                             return form == "—" ? null : form;
                         });
 
