@@ -37,7 +37,10 @@ public class EnWiktionaryClient {
         var word = new GermanWord {
             Id = wordId
         };
-        var client = new WikiClient();
+        var client = new WikiClient() {
+            ClientUserAgent =
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+        };
         var site = new WikiSite(client, "https://en.wiktionary.org/w/api.php");
         site.Initialization.Wait();
         var page = new WikiPage(site, wordId);
