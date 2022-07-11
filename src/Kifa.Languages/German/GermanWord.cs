@@ -43,8 +43,8 @@ public class GermanWord : DataModel<GermanWord> {
 
     public string? KeyForm
         => Type switch {
-            WordType.Verb => GetKeyVerbForm(Id, VerbForms!),
-            WordType.Noun => GetSimplifiedPlural(Id, NounForms),
+            WordType.Verb => VerbForms == null ? null : GetKeyVerbForm(Id, VerbForms),
+            WordType.Noun => NounForms == null ? null : GetSimplifiedPlural(Id, NounForms),
             _ => null
         };
 
