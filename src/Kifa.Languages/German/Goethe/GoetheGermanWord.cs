@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Kifa.Service;
 using Newtonsoft.Json;
+using NLog;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German.Goethe;
 
 public class GoetheGermanWord : DataModel<GoetheGermanWord> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public const string ModelId = "goethe/words";
+    public override int CurrentVersion => 1;
 
     static readonly Regex RootWordPattern =
         new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen)?$");
@@ -26,6 +31,9 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     public GoetheGermanWord? Abbreviation { get; set; }
 
     public string? Meaning { get; set; }
+
+    public string? WikiMeanings { get; set; }
+
     public List<string>? Examples { get; set; }
 
     [JsonIgnore]
@@ -33,23 +41,16 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
 
     public override DateTimeOffset? Fill() {
-        if (Examples != null && !Examples[0].StartsWith("example")) {
-            // Still need to refresh next time.
-            return Date.Zero;
-        }
+        var word = GermanWord.Client.Get(RootWord);
 
-        if (Form != null && Form != "¨-e" && Form != "") {
+        if (word == null) {
+            Logger.Warn($"Failed to find root word ({RootWord}) for {Id}.");
             return null;
         }
 
-        var word = new GermanWord {
-            Id = RootWord
-        };
-
-        word.Fill();
-
         Form = word.KeyForm;
         Meaning ??= word.Meaning;
+        WikiMeanings = string.Join("; ", word.Meanings.Select(meaning => meaning.Translation));
 
         return null;
     }

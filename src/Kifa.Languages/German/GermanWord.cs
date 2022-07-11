@@ -14,6 +14,8 @@ public class GermanWord : DataModel<GermanWord> {
 
     public override int CurrentVersion => 7;
 
+    public static GermanWordServiceClient Client { get; set; } = new GermanWordRestServiceClient();
+
     public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
     public List<Meaning>? Meanings { get; set; }

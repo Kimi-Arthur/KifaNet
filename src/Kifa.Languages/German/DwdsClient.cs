@@ -8,9 +8,6 @@ namespace Kifa.Languages.German;
 public class DwdsClient {
     static HttpClient dwdsClient = new();
 
-    public static GermanWordServiceClient GermanWordClient { get; set; } =
-        new GermanWordRestServiceClient();
-
     public GermanWord GetWord(string wordId) {
         var doc = new HtmlDocument();
         using var response = dwdsClient.GetAsync($"https://www.dwds.de/wb/{wordId}").Result;

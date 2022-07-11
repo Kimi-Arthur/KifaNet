@@ -42,7 +42,7 @@ public class MemriseClient : IDisposable {
 
     GoetheGermanWordRestServiceClient GoetheClient = new();
 
-    GermanWordRestServiceClient WordClient = new();
+    GermanWordServiceClient WordClient => GermanWord.Client;
 
     MemriseCourseServiceClient CourseClient => MemriseCourse.Client;
 
