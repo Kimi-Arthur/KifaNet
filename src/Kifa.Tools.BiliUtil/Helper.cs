@@ -45,7 +45,8 @@ static class Helper {
     }
 
     static KifaFile ConvertPartFile(KifaFile inputFile) {
-        var newPath = inputFile.Parent.GetFile($"{KifaFile.DefaultIgnoredPrefix}{inputFile.BaseName}.mp4");
+        var newPath =
+            inputFile.Parent.GetFile($"{KifaFile.DefaultIgnoredPrefix}{inputFile.BaseName}.mp4");
         var arguments = $"-i \"{inputFile.GetLocalPath()}\" -c copy \"{newPath.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
@@ -67,7 +68,7 @@ static class Helper {
         return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
     }
 
-    static readonly Regex FileNamePattern = new Regex(@"-(av\d+)(p\d+)?\.(c\d+)\.");
+    static readonly Regex FileNamePattern = new Regex(@"-(av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");
 
     public static string? InferAid(string file) {
         var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
@@ -80,12 +81,14 @@ static class Helper {
     }
 
 
-    public static BilibiliVideo? GetVideo(string file) {
+    public static (BilibiliVideo? video, int pid, int quality) GetVideo(string file) {
         var match = FileNamePattern.Match(file);
         if (!match.Success) {
-            return null;
+            return (null, 1, 0);
         }
 
-        return BilibiliVideo.Client.Get(match.Groups[1].Value);
+        return (BilibiliVideo.Client.Get(match.Groups[1].Value),
+            match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1,
+            match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 0);
     }
 }

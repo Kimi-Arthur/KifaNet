@@ -66,11 +66,11 @@ public class GetCoverCommand : KifaCommand {
             }
 
             var video = Helper.GetVideo(file.Id);
-            if (video == null) {
+            if (video.video == null) {
                 throw new Exception($"Video not found for {file.Id}.");
             }
 
-            var coverLink = video.Cover.ToString();
+            var coverLink = video.video.Cover.ToString();
             var coverLinkFile = new KifaFile(coverLink);
             var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLinkFile.Extension}");
             coverFile.Delete();
