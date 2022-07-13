@@ -199,25 +199,13 @@ public class ExtractAudioCommand : KifaCommand {
     };
 
     static string? GetExtension(KifaFile sourceFile) {
-        var arguments = $"\"{sourceFile.GetLocalPath()}\"";
-        Logger.Trace($"Executing: ffprobe {arguments}");
-        using var proc = new Process {
-            StartInfo = {
-                FileName = "ffprobe",
-                Arguments = arguments
-            }
-        };
+        var result = Executor.Run("ffprobe", $"\"{sourceFile.GetLocalPath()}\"");
 
-        proc.StartInfo.RedirectStandardError = true;
-
-        proc.Start();
-        proc.WaitForExit();
-
-        if (proc.ExitCode != 0) {
+        if (result.ExitCode != 0) {
             return null;
         }
 
-        var match = CoverInfoRegex.Match(proc.StandardError.ReadToEnd());
+        var match = CoverInfoRegex.Match(result.StandardError);
         if (!match.Success) {
             return null;
         }
