@@ -11,8 +11,7 @@ public static class Executor {
         using var proc = new Process {
             StartInfo = {
                 FileName = command,
-                Arguments = arguments,
-                UseShellExecute = false
+                Arguments = arguments
             }
         };
 
