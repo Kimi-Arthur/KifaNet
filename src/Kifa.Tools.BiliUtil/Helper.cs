@@ -88,7 +88,7 @@ static class Helper {
         }
 
         return (BilibiliVideo.Client.Get(match.Groups[1].Value),
-            match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 1,
+            match.Groups[2].Success ? int.Parse(match.Groups[2].Value[1..]) : 1,
             match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 0);
     }
 }
