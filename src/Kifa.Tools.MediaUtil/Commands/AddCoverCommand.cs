@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Service;
@@ -65,25 +64,14 @@ public class AddCoverCommand : KifaCommand {
         return 0;
     }
 
-    KifaActionResult AddCover((KifaFile source, KifaFile cover, KifaFile target) file)
-        => KifaActionResult.FromAction(() => {
-            Directory.GetParent(file.target.GetLocalPath()).Create();
+    KifaActionResult AddCover((KifaFile source, KifaFile cover, KifaFile target) file) {
+        Directory.GetParent(file.target.GetLocalPath()).Create();
 
-            var arguments =
-                $"-i \"{file.source.GetLocalPath()}\" -i \"{file.cover.GetLocalPath()}\" -map 1 -disposition:v:0 attached_pic -map 0 -c copy \"{file.target.GetLocalPath()}\"";
-            Logger.Trace($"Executing: ffmpeg {arguments}");
-            using var proc = new Process {
-                StartInfo = {
-                    FileName = "ffmpeg",
-                    Arguments = arguments
-                }
-            };
-            proc.Start();
-            proc.WaitForExit();
-            if (proc.ExitCode != 0) {
-                throw new Exception("Merging files failed.");
-            }
-        });
+        return KifaActionResult.FromExecutionResult(Executor.Run("ffmpeg",
+            $"-i \"{file.source.GetLocalPath()}\" -i \"{file.cover.GetLocalPath()}\" " +
+            "-map 0:0 -c copy -map 0:1 -c copy -map 1 -disposition:v:0 attached_pic " +
+            $"\"{file.target.GetLocalPath()}\""));
+    }
 
     static readonly List<string> ExpectedCoverExtensions = new() {
         "jpg",

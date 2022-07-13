@@ -41,6 +41,14 @@ public class KifaActionResult {
         }
     }
 
+    public static KifaActionResult FromExecutionResult(ExecutionResult result)
+        => result.ExitCode == 0
+            ? Success
+            : new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = result.StandardError
+            };
+
     public KifaActionResult And(KifaActionResult nextResult)
         => Status == KifaActionStatus.OK ? nextResult : this;
 
