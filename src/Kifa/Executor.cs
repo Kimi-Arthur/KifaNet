@@ -27,9 +27,10 @@ public static class Executor {
         };
 
         var logLevel = result.ExitCode == 0 ? LogLevel.Trace : LogLevel.Warn;
-        Logger.Log(logLevel, $"exit code: {result.ExitCode}");
-        Logger.Log(logLevel, $"stdout: {result.StandardOutput}");
-        Logger.Log(logLevel, $"stderr: {result.StandardError}");
+        Logger.Log(logLevel, $"Executed: {command} {arguments}");
+        Logger.Log(logLevel, $"\texit code: {result.ExitCode}");
+        Logger.Log(logLevel, $"\tstdout: {result.StandardOutput}");
+        Logger.Log(logLevel, $"\tstderr: {result.StandardError}");
 
         return result;
     }
