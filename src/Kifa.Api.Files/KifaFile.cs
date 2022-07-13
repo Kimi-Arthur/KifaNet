@@ -132,7 +132,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static string DefaultIgnoredPrefix { get; set; } = "@";
 
-    public static HashSet<string> IgnoredPrefixes { get; set; } = new();
+    public static HashSet<string> IgnoredPrefixes { get; set; } = new() {
+        DefaultIgnoredPrefix
+    };
 
     public static HashSet<string> IgnoredExtensions { get; set; } = new();
 
