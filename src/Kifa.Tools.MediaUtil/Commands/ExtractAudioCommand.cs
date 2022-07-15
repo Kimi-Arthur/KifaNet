@@ -98,7 +98,7 @@ public class ExtractAudioCommand : KifaCommand {
         var croppedImages = ImageCropper.Crop(coverFile);
         var chosenImage = ChooseImage(croppedImages);
         coverFile.Delete();
-        coverFile.Write(chosenImage.FromBase64());
+        coverFile.Write(chosenImage.Split(",")[^1].FromBase64());
 
         var sourcePath = sourceFile.GetLocalPath();
         var targetPath = targetFile.GetLocalPath();
