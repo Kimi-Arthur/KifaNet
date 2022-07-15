@@ -98,13 +98,14 @@ public class ExtractAudioCommand : KifaCommand {
         var croppedImages = ImageCropper.Crop(coverFile);
         var chosenImage = ChooseImage(croppedImages);
         coverFile.Delete();
+        coverFile.Write(chosenImage.FromBase64());
 
         var sourcePath = sourceFile.GetLocalPath();
         var targetPath = targetFile.GetLocalPath();
         Directory.GetParent(targetPath)!.Create();
 
         // Inline image: https://ffmpeg.org/ffmpeg-protocols.html#data
-        var arguments = $"-i \"{sourcePath}\" -i \"{chosenImage}\" " +
+        var arguments = $"-i \"{sourcePath}\" -i \"{coverFile.GetLocalPath()}\" " +
                         $"-map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadataString} \"{targetPath}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
@@ -119,6 +120,8 @@ public class ExtractAudioCommand : KifaCommand {
         if (proc.ExitCode != 0) {
             throw new Exception("Extract audio file failed.");
         }
+
+        coverFile.Delete();
     }
 
     static string GetFileName(Dictionary<string, string> metadata, string prefix)

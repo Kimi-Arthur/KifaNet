@@ -117,8 +117,7 @@ public static class StringExtensions {
             .Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
                 (current, mapping) => current.Replace(mapping.Key, mapping.Value));
 
-    public static string FromBase64(this string text)
-        => Encoding.UTF8.GetString(Convert.FromBase64String(text));
+    public static byte[] FromBase64(this string text) => Convert.FromBase64String(text);
 
     public static string ToBase64(this string text)
         => Convert.ToBase64String(Encoding.UTF8.GetBytes(text));
