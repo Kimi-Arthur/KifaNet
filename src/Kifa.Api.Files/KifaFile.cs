@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Kifa.Cloud.BaiduCloud;
 using Kifa.Cloud.Google;
 using Kifa.Cloud.MegaNz;
@@ -29,7 +28,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         var specs = spec.Split(':');
 
-        if (specs[1].Contains("+")) {
+        if (specs[1].Contains('+')) {
             // Sharded client.
             return knownClients[spec] = new ShardedStorageClient() {
                 Clients = specs[1].Split("+").Select(s => GetClient($"{specs[0]}:{s}")).ToList(),
