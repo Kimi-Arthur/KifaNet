@@ -284,7 +284,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                     => IsMatch(f.Id, pattern) && (!ignoreFiles ||
                                                   !IgnoredExtensions.Contains(f.Extension) &&
                                                   !IgnoredPrefixes.Any(prefix
-                                                      => f.Name.StartsWith(prefix)) ||
+                                                      => f.Id[Path.Length..].Split("/").Any(segment
+                                                          => segment.StartsWith(prefix))) &&
                                                   !IgnoredFiles.IsMatch(f.Id)));
 
     public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
