@@ -40,6 +40,7 @@ public interface DataChef {
     KifaActionResult Import(string data);
     KifaActionResult<string> Export(string data, bool getAll, bool compact);
     KifaActionResult Link(string target, string link);
+    KifaActionResult Delete(List<string> ids);
 }
 
 public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataModel>, new() {
@@ -90,6 +91,7 @@ public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataM
     }
 
     public KifaActionResult Link(string target, string link) => Client.Link(target, link);
+    public KifaActionResult Delete(List<string> ids) => Client.Delete(ids);
 
     static List<TDataModel> GetItemsWithExistingOrder(IEnumerable<string> items,
         SortedDictionary<string, TDataModel> list)
