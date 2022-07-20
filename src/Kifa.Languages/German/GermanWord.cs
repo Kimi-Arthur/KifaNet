@@ -20,7 +20,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public List<Meaning>? Meanings { get; set; }
 
-    public string? Meaning => Meanings?.FirstOrDefault()?.SafeTranslation;
+    public string? Meaning { get; set; }
 
     public List<string>? Etymology { get; set; }
 
@@ -210,6 +210,8 @@ public class GermanWord : DataModel<GermanWord> {
 
         Meanings = enWiki.Meanings?.Any() == true ? enWiki.Meanings : pons.Meanings;
 
+        Meaning ??= Meanings?.FirstOrDefault()?.SafeTranslation;
+
         if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
             VerbForms = words.wiki.VerbForms;
         }
@@ -227,10 +229,10 @@ public class GermanWord : DataModel<GermanWord> {
             ? Enumerable.Empty<string>()
             : PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>())
                 .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden,
-                    new HashSet<string>()))
-                .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
-                //     new HashSet<string>()))
-                // .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Pons,
+                    new HashSet<string>())).Concat(PronunciationAudioLinks.GetValueOrDefault(
+                    Source.Wiktionary,
+                    //     new HashSet<string>()))
+                    // .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Pons,
                     new HashSet<string>()));
 }
 
