@@ -193,6 +193,7 @@ public class EnWiktionaryClient {
                 case "gloss":
                 case "q":
                 case "non-gloss definition":
+                case "n-g":
                     return
                         $"{string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))}";
                 default:
