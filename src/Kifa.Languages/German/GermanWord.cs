@@ -16,7 +16,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public static GermanWordServiceClient Client { get; set; } = new GermanWordRestServiceClient();
 
-    public WordType? Type => Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
+    public WordType? Type { get; set; }
 
     public List<Meaning>? Meanings { get; set; }
 
@@ -211,6 +211,7 @@ public class GermanWord : DataModel<GermanWord> {
         Meanings = enWiki.Meanings?.Any() == true ? enWiki.Meanings : pons.Meanings;
 
         Meaning ??= Meanings?.FirstOrDefault()?.SafeTranslation;
+        Type ??= Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
         if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
             VerbForms = words.wiki.VerbForms;

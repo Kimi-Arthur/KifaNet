@@ -4,6 +4,7 @@ using System.Linq;
 using Kifa.Apps.MomentCounter;
 using Kifa.Cloud.Swisscom;
 using Kifa.Infos;
+using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise;
 using Kifa.Music;
@@ -19,6 +20,7 @@ public interface DataChef {
             MemriseCourse.ModelId => new DataChef<MemriseCourse>(),
             GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord>(),
             GoetheWordList.ModelId => new DataChef<GoetheWordList>(),
+            GermanWord.ModelId => new DataChef<GermanWord>(),
             GuitarChord.ModelId => new DataChef<GuitarChord>(),
             TvShow.ModelId => new DataChef<TvShow>(),
             Anime.ModelId => new DataChef<Anime>(),
