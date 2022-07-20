@@ -48,7 +48,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
             return null;
         }
 
-        Form = word.KeyForm;
+        Form ??= word.KeyForm;
         Meaning ??= word.Meaning;
         WikiMeanings = string.Join("; ",
             word.Meanings?.Select(meaning => meaning.Translation) ?? Enumerable.Empty<string>());
