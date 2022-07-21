@@ -337,8 +337,7 @@ public class MemriseClient : IDisposable {
         data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
             ? string.Join(LineBreak,
                 baseWord.Etymology.Select(segment
-                    => segment + ": " + (GoetheClient.Get(segment)?.Meaning ??
-                                         WordClient.Get(segment)?.Meaning ?? "<unknown>")))
+                    => segment + ": " + (WordClient.Get(segment)?.Meaning ?? "<unknown>")))
             : "";
 
         return data;
