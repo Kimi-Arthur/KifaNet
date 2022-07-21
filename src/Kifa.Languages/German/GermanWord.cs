@@ -12,7 +12,7 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public override int CurrentVersion => 8;
+    public override int CurrentVersion => 9;
 
     public static GermanWordServiceClient Client { get; set; } = new GermanWordRestServiceClient();
 
