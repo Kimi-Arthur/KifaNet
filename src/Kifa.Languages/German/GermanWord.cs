@@ -4,6 +4,7 @@ using System.Linq;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German;
 
@@ -243,6 +244,7 @@ public class Meaning {
     public string? TranslationWithNotes { get; set; }
 
     [JsonIgnore]
+    [YamlIgnore]
     public string? SafeTranslation
         => string.IsNullOrEmpty(Translation) ? TranslationWithNotes : Translation;
 
