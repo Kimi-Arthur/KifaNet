@@ -359,7 +359,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             break;
         }
 
-        if (finalLink != null) {
+        if (finalLink == null) {
             throw new Exception("No suitable download link.");
         }
 
