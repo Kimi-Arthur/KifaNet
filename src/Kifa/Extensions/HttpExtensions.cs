@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Kifa.Rpc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
@@ -88,6 +89,12 @@ public static class HttpExtensions {
 
             return response.EnsureSuccessStatusCode();
         }, HandleHttpException);
+
+    public static TResponse? SendWithRetry<TResponse>(this HttpClient client,
+        ParameterizedRequest request, HttpStatusCode? expectedStatusCode = null) {
+        using var response = client.SendWithRetry(request.GetRequest, expectedStatusCode);
+        return response.GetObject<TResponse>();
+    }
 
     static void HandleHttpException(Exception ex, int index) {
         if (index >= 5 || ex is HttpRequestException {
