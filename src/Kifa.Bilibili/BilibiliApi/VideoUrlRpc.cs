@@ -54,8 +54,8 @@ public class Dash {
 
 public class Resource {
     public int Id { get; set; }
-    public Uri BaseUrl { get; set; }
-    public List<Uri> BackupUrl { get; set; }
+    public string BaseUrl { get; set; }
+    public List<string> BackupUrl { get; set; }
     public long Bandwidth { get; set; }
     public string MimeType { get; set; }
     public string Codecs { get; set; }

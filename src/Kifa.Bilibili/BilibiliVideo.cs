@@ -331,19 +331,36 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
         var (extension, quality, videoLink, audioLinks) = GetDownloadLinks(Id, cid);
         return (extension, quality, () => BuildDownloadStream(videoLink),
-            audioLinks.Select<(string link, long size), Func<Stream>>(l
+            audioLinks.Select<(List<string> links, long size), Func<Stream>>(l
                 => () => BuildDownloadStream(l)).ToList());
     }
 
-    static Stream BuildDownloadStream((string link, long size) link) {
-        var length = GetBilibiliClient().GetContentLength(link.link);
-        if (length == null) {
-            throw new FileCorruptedException("Content length is not found.");
+    static Stream BuildDownloadStream((List<string> links, long size) link) {
+        string? finalLink = null;
+        long? length = null;
+        foreach (var l in link.links) {
+            try {
+                length = GetBilibiliClient().GetContentLength(l);
+            } catch (HttpRequestException ex) {
+                Logger.Warn(ex, $"Not available: {l}");
+                continue;
+            }
+
+            if (length == null) {
+                Logger.Warn($"Length not found: {l}");
+            }
+
+            if (length * 2 < link.size) {
+                throw new FileCorruptedException(
+                    $"Content length ({length}) is too much smaller than ({link.size}).");
+            }
+
+            finalLink = l;
+            break;
         }
 
-        if (length * 2 < link.size) {
-            throw new FileCorruptedException(
-                $"Content length ({length}) is too much smaller than ({link.size}).");
+        if (finalLink != null) {
+            throw new Exception("No suitable download link.");
         }
 
         return new SeekableReadStream(length.Value, (buffer, bufferOffset, offset, count) => {
@@ -351,10 +368,10 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 count = buffer.Length - bufferOffset;
             }
 
-            Logger.Trace($"Downloading from {offset} to {offset + count} of {link.link}...");
+            Logger.Trace($"Downloading from {offset} to {offset + count} of {finalLink}...");
 
             return Retry.Run(() => {
-                var request = new HttpRequestMessage(HttpMethod.Get, link.link);
+                var request = new HttpRequestMessage(HttpMethod.Get, finalLink);
 
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
                 using var response = GetBilibiliClient().SendAsync(request).Result;
@@ -411,8 +428,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
     }
 
-    static (string extension, int quality, (string link, long size) videoLink,
-        List<(string link, long size)> audioLinks) GetDownloadLinks(string aid, string cid) {
+    static (string extension, int quality, (List<string> links, long size) videoLink,
+        List<(List<string> links, long size)> audioLinks) GetDownloadLinks(string aid, string cid) {
         var quality = 127;
         while (true) {
             var response = GetBilibiliClient()
@@ -455,10 +472,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 : video.Bandwidth * data.Dash.Duration / 8;
 
             return (video.MimeType.Split("/").Last(), receivedQuality,
-                (video.BaseUrl.ToString(), videoSize),
-                audios.Select(audio
-                        => (audio.BaseUrl.ToString(), audio.Bandwidth * data.Dash.Duration / 8))
-                    .ToList());
+                (video.BackupUrl.Prepend(video.BaseUrl).ToList(), videoSize),
+                audios.Select(audio => (audio.BackupUrl.Prepend(audio.BaseUrl).ToList(),
+                    audio.Bandwidth * data.Dash.Duration / 8)).ToList());
         }
     }
 
