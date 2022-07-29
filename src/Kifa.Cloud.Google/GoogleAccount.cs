@@ -55,7 +55,8 @@ public class GoogleAccount : OAuthAccount {
             var userInfoUrl = UserInfoUrlPattern.Format(new Dictionary<string, string> {
                 { "access_token", AccessToken }
             });
-            var info = HttpClient.GetAsync(userInfoUrl).Result.GetJToken();
+            var info =
+                HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Get, userInfoUrl));
             UserName = (string) info["email"];
             UserId = (string) info["id"];
         });
@@ -69,7 +70,8 @@ public class GoogleAccount : OAuthAccount {
             { "refresh_token", RefreshToken }
         });
 
-        var response = HttpClient.PostAsync(refreshTokenUrl, null).Result.GetJToken();
+        var response =
+            HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Post, refreshTokenUrl));
         var token = (string) response["access_token"];
 
         AccessToken = token ?? throw new InvalidOperationException("Refresh is not successful.");

@@ -10,7 +10,7 @@ public class DwdsClient {
 
     public GermanWord GetWord(string wordId) {
         var doc = new HtmlDocument();
-        using var response = dwdsClient.GetAsync($"https://www.dwds.de/wb/{wordId}").Result;
+        var response = dwdsClient.GetAsync($"https://www.dwds.de/wb/{wordId}").Result;
         doc.LoadHtml(response.GetString());
         var audioNodes = doc.DocumentNode.SelectNodes("//audio/source");
 

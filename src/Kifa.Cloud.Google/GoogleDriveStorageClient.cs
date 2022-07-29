@@ -54,13 +54,11 @@ public class GoogleDriveStorageClient : StorageClient {
         var pageToken = "";
 
         while (pageToken != null) {
-            using var response = client.SendWithRetry(() => GetRequest(APIList.ListFiles,
+            var token = client.FetchJToken(() => GetRequest(APIList.ListFiles,
                 new Dictionary<string, string> {
                     ["parent_id"] = fileId,
                     ["page_token"] = pageToken
                 }));
-
-            var token = response.GetJToken();
             pageToken = token.Value<string>("nextPageToken");
 
             foreach (var fileToken in token["files"]) {
@@ -247,12 +245,11 @@ public class GoogleDriveStorageClient : StorageClient {
     }
 
     string CreateFolder(string parentId, string name) {
-        using var response = client.SendWithRetry(() => GetRequest(APIList.CreateFolder,
+        var token = client.FetchJToken(() => GetRequest(APIList.CreateFolder,
             new Dictionary<string, string> {
                 ["parent_id"] = parentId,
                 ["name"] = name
             }));
-        var token = response.GetJToken();
         return (string) token["id"];
     }
 

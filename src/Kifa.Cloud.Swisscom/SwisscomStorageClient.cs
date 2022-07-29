@@ -43,6 +43,7 @@ public class SwisscomStorageClient : StorageClient {
                 ["file_id"] = GetFileId(path),
                 ["access_token"] = Account.AccessToken
             }));
+
         if (response.IsSuccessStatusCode) {
             return response.GetJToken().Value<long>("Length");
         }
@@ -106,7 +107,7 @@ public class SwisscomStorageClient : StorageClient {
             var content = new ByteArrayContent(buffer, 0, blockLength);
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
 
-            using var response = client.SendWithRetry(() => {
+            var response = client.FetchJToken(() => {
                 var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
                     ["access_token"] = Account.AccessToken,
                     ["upload_id"] = uploadId,
@@ -119,27 +120,24 @@ public class SwisscomStorageClient : StorageClient {
                     new ContentRangeHeaderValue(position, targetEndByte, size);
                 return uploadRequest;
             });
-            blockIds.Add((response.GetJToken().Value<string>("ETag")[1..^1], blockLength));
+            blockIds.Add((response.Value<string>("ETag")[1..^1], blockLength));
         }
 
         FinishUpload(uploadId, path, blockIds);
     }
 
-    string InitUpload(string path, long length) {
-        using var response = client.SendWithRetry(() => APIList.InitUpload.GetRequest(
-            new Dictionary<string, string> {
-                ["file_path"] = path,
-                ["file_length"] = length.ToString(),
-                ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
-                ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                ["access_token"] = Account.AccessToken
-            }));
-        return response.GetJToken().Value<string>("Identifier");
-    }
+    string InitUpload(string path, long length)
+        => client.FetchJToken(() => APIList.InitUpload.GetRequest(new Dictionary<string, string> {
+            ["file_path"] = path,
+            ["file_length"] = length.ToString(),
+            ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
+            ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+            ["access_token"] = Account.AccessToken
+        })).Value<string>("Identifier");
 
     bool FinishUpload(string uploadId, string path, List<(string etag, int length)> blockIds) {
         var partTemplate = "{\"Index\":{index},\"Length\":{length},\"ETag\":\"\\\"{etag}\\\"\"}";
-        using var response = client.SendWithRetry(() => APIList.FinishUpload.GetRequest(
+        return client.FetchJToken(() => APIList.FinishUpload.GetRequest(
             new Dictionary<string, string> {
                 ["upload_id"] = uploadId,
                 ["access_token"] = Account.AccessToken,
@@ -151,8 +149,7 @@ public class SwisscomStorageClient : StorageClient {
                         ["length"] = item.length.ToString(),
                         ["etag"] = item.etag
                     }))) + "]"
-            }));
-        return response.GetJToken().Value<string>("Path").EndsWith(path);
+            })).Value<string>("Path").EndsWith(path);
     }
 
     int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,

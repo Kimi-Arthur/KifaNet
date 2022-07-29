@@ -21,6 +21,7 @@ public static class HttpExtensions {
             Encoding.GetEncoding("UTF-8"));
         var data = sr.ReadToEnd();
         Logger.Trace($"Response ({response.StatusCode:D}): {data}");
+        response.Dispose();
         return data;
     }
 
@@ -36,8 +37,7 @@ public static class HttpExtensions {
             Logger.Trace($"Content: {request.Content.ReadAsStringAsync().Result}");
         }
 
-        using var response = client.Send(request);
-        return response.GetObject<T>();
+        return client.Send(request).GetObject<T>();
     }
 
     public static HttpResponseMessage GetHeaders(this HttpClient client, string url) {
@@ -61,7 +61,7 @@ public static class HttpExtensions {
     public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,
         Func<JToken, bool>? validate = null)
         => Retry.Run(() => {
-            using var response = client.Send(request());
+            var response = client.Send(request());
             response.EnsureSuccessStatusCode();
             return response.GetJToken();
         }, HandleHttpException, validate == null
@@ -91,10 +91,8 @@ public static class HttpExtensions {
         }, HandleHttpException);
 
     public static TResponse? SendWithRetry<TResponse>(this HttpClient client,
-        ParameterizedRequest request, HttpStatusCode? expectedStatusCode = null) {
-        using var response = client.SendWithRetry(request.GetRequest, expectedStatusCode);
-        return response.GetObject<TResponse>();
-    }
+        ParameterizedRequest request, HttpStatusCode? expectedStatusCode = null)
+        => client.SendWithRetry(request.GetRequest, expectedStatusCode).GetObject<TResponse>();
 
     static void HandleHttpException(Exception ex, int index) {
         if (index >= 5 || ex is HttpRequestException {

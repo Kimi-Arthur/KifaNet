@@ -25,7 +25,8 @@ public abstract class
     public IActionResult AccountRedirect([FromQuery] string code, [FromQuery] string state) {
         var tokenUrl = new TAccount().GetTokenUrl(code, this.ForAction(nameof(AccountRedirect)));
 
-        var response = HttpClient.PostAsync(tokenUrl, null).Result.GetJToken();
+        var response =
+            HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Post, tokenUrl));
         var account = new TAccount {
             Id = state,
             AccessToken = (string) response["access_token"],

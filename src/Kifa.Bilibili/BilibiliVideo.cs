@@ -374,7 +374,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     static void AddDownloadJob(string aid) {
-        using var response = BiliplusHttpClient.Instance
+        var response = BiliplusHttpClient.Instance
             .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
             .Result;
         var content = response.GetString();
@@ -382,14 +382,14 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     static void UpdateDownloadStatus(string cid) {
-        using var response = BiliplusHttpClient.Instance
+        var response = BiliplusHttpClient.Instance
             .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}").Result;
         var content = response.GetString();
         Logger.Debug($"Check saver status: {content}");
     }
 
     static DownloadStatus GetDownloadStatus(string aid, int pid) {
-        using var response = BiliplusHttpClient.Instance
+        var response = BiliplusHttpClient.Instance
             .GetAsync(
                 $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
             .Result;
@@ -463,7 +463,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     static string GetDownloadPage(string cid) {
-        using var response = BiliplusHttpClient.Instance
+        var response = BiliplusHttpClient.Instance
             .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4").Result;
         var content = response.GetString();
         Logger.Debug($"Downloaded page content: {content}");
@@ -472,7 +472,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     public static string? GetAid(string cid) {
-        using var response = BiliplusHttpClient.Instance
+        var response = BiliplusHttpClient.Instance
             .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
         var content = response.GetString();
         Logger.Debug($"Cid info: {content}");

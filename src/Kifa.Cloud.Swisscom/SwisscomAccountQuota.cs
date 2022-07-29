@@ -52,13 +52,12 @@ public class SwisscomAccountQuota : DataModel<SwisscomAccountQuota> {
 
     KifaActionResult UpdateQuota()
         => KifaActionResult.FromAction(() => {
-            using var response = httpClient.SendWithRetry(()
+            var response = httpClient.FetchJToken(()
                 => SwisscomStorageClient.APIList.Quota.GetRequest(new Dictionary<string, string> {
                     ["access_token"] = AccountClient.Get(Id!)!.AccessToken
                 }));
-            var data = response.GetJToken();
-            UsedQuota = data.Value<long>("TotalBytes");
-            TotalQuota = data.Value<long>("StorageLimit");
+            UsedQuota = response.Value<long>("TotalBytes");
+            TotalQuota = response.Value<long>("StorageLimit");
         });
 }
 
