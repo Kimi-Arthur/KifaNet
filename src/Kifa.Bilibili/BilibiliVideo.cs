@@ -472,8 +472,10 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 : video.Bandwidth * data.Dash.Duration / 8;
 
             return (video.MimeType.Split("/").Last(), receivedQuality,
-                (video.BackupUrl.Prepend(video.BaseUrl).ToList(), videoSize),
-                audios.Select(audio => (audio.BackupUrl.Prepend(audio.BaseUrl).ToList(),
+                ((video.BackupUrl ?? Enumerable.Empty<string>()).Prepend(video.BaseUrl).ToList(),
+                    videoSize),
+                audios.Select(audio => (
+                    (audio.BackupUrl ?? Enumerable.Empty<string>()).Prepend(audio.BaseUrl).ToList(),
                     audio.Bandwidth * data.Dash.Duration / 8)).ToList());
         }
     }
