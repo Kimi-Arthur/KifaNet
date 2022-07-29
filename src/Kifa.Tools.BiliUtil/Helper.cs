@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Kifa.Api.Files;
@@ -13,20 +12,13 @@ static class Helper {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
-        var arguments = string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
-                        $" -i \"{cover.GetLocalPath()}\" -map {parts.Count} -disposition:v:0 attached_pic " +
-                        string.Join(" ", parts.Select((_, index) => $"-map {index}")) +
-                        $" -c copy \"{target.GetLocalPath()}\"";
-        Logger.Trace($"Executing: ffmpeg {arguments}");
-        using var proc = new Process {
-            StartInfo = {
-                FileName = "ffmpeg",
-                Arguments = arguments
-            }
-        };
-        proc.Start();
-        proc.WaitForExit();
-        if (proc.ExitCode != 0) {
+        var result = Executor.Run("ffmpeg",
+            string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
+            $" -i \"{cover.GetLocalPath()}\" -map {parts.Count} -disposition:v:0 attached_pic " +
+            string.Join(" ", parts.Select((_, index) => $"-map {index}")) +
+            $" -c copy \"{target.GetLocalPath()}\"");
+
+        if (result.ExitCode != 0) {
             throw new Exception("Merging files failed.");
         }
     }

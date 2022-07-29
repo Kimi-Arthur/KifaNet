@@ -5,8 +5,8 @@ using Kifa.Rpc;
 namespace Kifa.Bilibili.BilibiliApi;
 
 public sealed class VideoUrlRequest : ParameterizedRequest {
-    public override string UrlPattern { get; } =
-        "https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid}&qn={quality}&fnval=4048&fourk=1";
+    public override string UrlPattern
+        => "https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid}&qn={quality}&fnval=4048&fourk=1";
 
     public VideoUrlRequest(string aid, string cid, int quality) {
         parameters = new Dictionary<string, string> {
