@@ -13,16 +13,10 @@ static class Helper {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
-        // Convert parts first
-        var partFiles = parts.Select(ConvertPartFile).ToList();
-
-        var fileListFile =
-            target.Parent.GetFile($"{KifaFile.DefaultIgnoredPrefix}{target.BaseName}.list");
-        fileListFile.Write(string.Join("\n",
-            partFiles.Select(p => $"file {GetFfmpegTargetPath(p.GetLocalPath())}")));
-
-        var arguments =
-            $"-safe 0 -f concat -i \"{fileListFile.GetLocalPath()}\" -i \"{cover.GetLocalPath()}\" -map 1 -disposition:v:0 attached_pic -map 0 -c copy \"{target.GetLocalPath()}\"";
+        var arguments = string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
+                        $" -i \"{cover.GetLocalPath()}\" -map {parts.Count} -disposition:v:0 attached_pic " +
+                        string.Join(" ", parts.Select((_, index) => $"-map {index}")) +
+                        $" -c copy \"{target.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
@@ -35,37 +29,6 @@ static class Helper {
         if (proc.ExitCode != 0) {
             throw new Exception("Merging files failed.");
         }
-
-        fileListFile.Delete();
-
-        // Delete part files
-        foreach (var partFile in partFiles) {
-            partFile.Delete();
-        }
-    }
-
-    static KifaFile ConvertPartFile(KifaFile inputFile) {
-        var newPath =
-            inputFile.Parent.GetFile($"{KifaFile.DefaultIgnoredPrefix}{inputFile.BaseName}.mp4");
-        var arguments = $"-i \"{inputFile.GetLocalPath()}\" -c copy \"{newPath.GetLocalPath()}\"";
-        Logger.Trace($"Executing: ffmpeg {arguments}");
-        using var proc = new Process {
-            StartInfo = {
-                FileName = "ffmpeg",
-                Arguments = arguments
-            }
-        };
-        proc.Start();
-        proc.WaitForExit();
-        if (proc.ExitCode != 0) {
-            throw new Exception("Converting part files failed.");
-        }
-
-        return newPath;
-    }
-
-    static string GetFfmpegTargetPath(string targetPath) {
-        return string.Join("\\'", targetPath.Split("'").Select(s => $"'{s}'"));
     }
 
     static readonly Regex FileNamePattern = new Regex(@"-(av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");

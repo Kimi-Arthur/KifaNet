@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
@@ -14,9 +13,6 @@ public abstract class DownloadCommand : KifaCommand {
 
     [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
     public bool PrefixDate { get; set; } = false;
-
-    [Option('s', "source", HelpText = "Override default source choice.")]
-    public int SourceChoice { get; set; } = BilibiliVideo.DefaultBiliplusSourceChoice;
 
     [Option('o', "output-folder",
         HelpText = "Folder to output video files to. Defaults to current folder.")]
@@ -39,11 +35,7 @@ public abstract class DownloadCommand : KifaCommand {
             Name = video.Author
         };
 
-        var (extension, quality, streamGetters) = video.GetVideoStreams(pid, SourceChoice);
-        if (extension == null) {
-            Logger.Warn("Failed to get video streams.");
-            return 1;
-        }
+        var (extension, quality, videoStreamGetter, audioStreamGetters) = video.GetStreams(pid);
 
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var prefix =
@@ -90,43 +82,53 @@ public abstract class DownloadCommand : KifaCommand {
             return 0;
         }
 
-        var partFiles = new List<KifaFile>();
-        for (var i = 0; i < streamGetters.Count; i++) {
+        var coverLink = new KifaFile(video.Cover.ToString());
+        var coverFile = canonicalTargetFile.Parent.GetFile(
+            $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.c.{coverLink.Extension}");
+        coverLink.Copy(coverFile);
+
+        var trackFiles = new List<KifaFile>();
+        var videoFile = canonicalTargetFile.Parent.GetFile(
+            $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.v.{extension}");
+        Logger.Debug($"Writing video file to {videoFile}...");
+        try {
+            videoFile.Write(videoStreamGetter);
+            trackFiles.Add(videoFile);
+            Logger.Debug($"Written video file to {videoFile}...");
+        } catch (Exception e) {
+            Logger.Warn(e, $"Failed to download {videoFile}.");
+            return 1;
+        }
+
+        for (var i = 0; i < audioStreamGetters.Count; i++) {
             var targetFile = canonicalTargetFile.Parent.GetFile(
-                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.Name}.{extension}");
-            Logger.Debug($"Writing to part file ({i + 1}): {targetFile}...");
+                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.a{i}.{extension}");
+            Logger.Debug($"Writing to audio file ({i + 1}): {targetFile}...");
             try {
-                targetFile.Write(streamGetters[i]);
-                Logger.Debug($"Written to part file ({i + 1}): {targetFile}.");
+                targetFile.Write(audioStreamGetters[i]);
+                Logger.Debug($"Written to audio file ({i + 1}): {targetFile}.");
             } catch (Exception e) {
                 Logger.Warn(e, $"Failed to download {targetFile}.");
                 return 1;
             }
 
-            partFiles.Add(targetFile);
+            trackFiles.Add(targetFile);
         }
-
-        var coverLink = new KifaFile(video.Cover.ToString());
-        var coverFile =
-            canonicalTargetFile.Parent.GetFile(
-                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.Name}.{coverLink.Extension}");
-        coverLink.Copy(coverFile);
 
         try {
             Logger.Debug(
-                $"Merging and removing part files ({streamGetters.Count}) to {canonicalTargetFile}...");
-            Helper.MergePartFiles(partFiles, coverFile, canonicalTargetFile);
+                $"Merging 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}...");
+            Helper.MergePartFiles(trackFiles, coverFile, canonicalTargetFile);
+            Logger.Debug(
+                $"Merged 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}.");
 
-            foreach (var p in partFiles) {
+            foreach (var p in trackFiles) {
                 p.Delete();
             }
 
             coverFile.Delete();
+            Logger.Debug("Removed temp files.");
 
-            Logger.Debug(
-                $"Merged and removed part files ({streamGetters.Count}) to {canonicalTargetFile}.");
-
-            Logger.Debug($"Copying from {canonicalTargetFile} to {finalTargetFile}...");
             canonicalTargetFile.Copy(finalTargetFile);
             Logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
         } catch (Exception e) {
@@ -134,22 +136,6 @@ public abstract class DownloadCommand : KifaCommand {
             return 1;
         }
 
-
         return 0;
-        // Temporarily disable this part as it seems not applicable anymore.
-        // TODO: verify and remove this logic.
-        // } else {
-        //     var targetFile = currentFolder.GetFile(
-        //         $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: downloadOptions.PrefixDate)}.{extension}");
-        //     Logger.Debug($"Writing to {targetFile}...");
-        //     try {
-        //         targetFile.Write(streamGetters.First());
-        //         Logger.Debug($"Successfully written to {targetFile}.");
-        //     } catch (Exception e) {
-        //         Logger.Warn(e, $"Failed to download {targetFile}.");
-        //         return false;
-        //     }
-        //
-        //     return true;
     }
 }

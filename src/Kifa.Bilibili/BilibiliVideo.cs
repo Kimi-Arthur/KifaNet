@@ -325,16 +325,14 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}.{quality}");
     }
 
-    public (string extension, int quality, List<Func<Stream>> streamGetters) GetVideoStreams(
-        int pid, int biliplusSourceChoice = 0) {
+    public (string extension, int quality, Func<Stream> videoStreamGetter, List<Func<Stream>>
+        audioStreamGetters) GetStreams(int pid) {
         var cid = Pages[pid - 1].Cid;
 
-        var (extension, quality, links) = GetDownloadLinks(Id, cid);
-        return extension == null
-            ? (null, -1, null)
-            : (extension, quality,
-                links.Select<(string link, long size), Func<Stream>>(l
-                    => () => BuildDownloadStream(l)).ToList());
+        var (extension, quality, videoLink, audioLinks) = GetDownloadLinks(Id, cid);
+        return (extension, quality, () => BuildDownloadStream(videoLink),
+            audioLinks.Select<(string link, long size), Func<Stream>>(l
+                => () => BuildDownloadStream(l)).ToList());
     }
 
     static Stream BuildDownloadStream((string link, long size) link) {
@@ -343,9 +341,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             throw new FileCorruptedException("Content length is not found.");
         }
 
-        if (length != link.size) {
+        if (length * 2 < link.size) {
             throw new FileCorruptedException(
-                $"Content length ({length}) is not expected ({link.size}).");
+                $"Content length ({length}) is too much smaller than ({link.size}).");
         }
 
         return new SeekableReadStream(length.Value, (buffer, bufferOffset, offset, count) => {
@@ -413,38 +411,54 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
     }
 
-    static (string extension, int quality, List<(string link, long size)> links) GetDownloadLinks(
-        string aid, string cid) {
-        var quality = 120;
+    static (string extension, int quality, (string link, long size) videoLink,
+        List<(string link, long size)> audioLinks) GetDownloadLinks(string aid, string cid) {
+        var quality = 127;
         while (true) {
-            using var response = GetBilibiliClient()
-                .GetAsync(
-                    $"https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid.Substring(2)}&qn={quality}&fourk=1")
-                .Result;
-            var content = response.GetString();
-            Logger.Debug($"Get download result: {content}");
-            var data = JToken.Parse(content);
-            if ((int) data["code"] != 0) {
-                Logger.Warn($"bilibili API error: {data["message"]} ({data["code"]}).");
+            var response = GetBilibiliClient()
+                .SendWithRetry<VideoUrlResponse>(new VideoUrlRequest(aid, cid, quality));
+
+            if (response is not { Code: 0 }) {
+                Logger.Warn($"bilibili API error: {response?.Message} ({response?.Code}).");
                 Thread.Sleep(TimeSpan.FromSeconds(10));
                 continue;
             }
 
-            var receivedQuality = (int) data["data"]["quality"];
-            if (receivedQuality != (int) data["data"]["accept_quality"][0]) {
-                quality = (int) data["data"]["accept_quality"][0];
+            var data = response.Data!;
+            var receivedQuality = data.Quality;
+            if (receivedQuality != data.AcceptQuality[0]) {
+                quality = data.AcceptQuality[0];
                 Logger.Warn($"Quality mismatch: received quality {receivedQuality}, " +
-                            $"best quality {data["data"]["accept_quality"][0]}.");
+                            $"best quality {quality}.");
                 Thread.Sleep(TimeSpan.FromSeconds(2));
                 continue;
             }
 
-            var urls = data["data"]["durl"];
-            var extension = (string) urls[0]["url"];
-            extension = extension[..extension.IndexOf('?')];
-            extension = extension[(extension.LastIndexOf('.') + 1)..];
-            return (extension, receivedQuality,
-                urls.Select(x => ((string) x["url"], (long) x["size"])).ToList());
+            var video = data.Dash.Video![0];
+            var audio = data.Dash.Audio![0];
+            var dolby = data.Dash.Dolby?.Audio?[0];
+            var flac = data.Dash.Flac?.Audio?[0];
+            var audios = new List<Resource>();
+            if (dolby != null) {
+                audios.Add(dolby);
+            }
+
+            if (flac != null) {
+                audios.Add(flac);
+            }
+
+            audios.Add(audio);
+
+            // dvh seems to calculate the bandwidth incorrectly.
+            var videoSize = video.Codecs.StartsWith("dvh")
+                ? video.Bandwidth * data.Dash.Duration / 8 / 5
+                : video.Bandwidth * data.Dash.Duration / 8;
+
+            return (video.MimeType.Split("/").Last(), receivedQuality,
+                (video.BaseUrl.ToString(), videoSize),
+                audios.Select(audio
+                        => (audio.BaseUrl.ToString(), audio.Bandwidth * data.Dash.Duration / 8))
+                    .ToList());
         }
     }
 
