@@ -307,7 +307,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         if (title.Contains(partName)) {
             partName = "";
         } else if (partName.StartsWith(title)) {
-            partName = partName.Substring(title.Length);
+            partName = partName[title.Length..].Trim();
         }
 
         var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
@@ -321,8 +321,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return (alternativeFolder == null
             ? $"{uploader.Name}-{uploader.Id}".NormalizeFileName()
             : $"{alternativeFolder}") + (Pages.Count > 1
-            ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}-{Id}p{pid}.c{p.Cid}.{quality}"
-            : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}-{Id}.c{p.Cid}.{quality}");
+            ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}.{Id}p{pid}.c{p.Cid}.{quality}"
+            : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}.{Id}p{pid}.c{p.Cid}.{quality}");
     }
 
     public (string extension, int quality, Func<Stream> videoStreamGetter, List<Func<Stream>>
