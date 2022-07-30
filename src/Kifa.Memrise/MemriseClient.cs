@@ -63,6 +63,10 @@ public class MemriseClient : IDisposable {
             expandedWords.Enqueue(originalWord);
             while (expandedWords.Count > 0) {
                 var goetheWord = expandedWords.Dequeue();
+                if (goetheWord.Examples?[0].StartsWith("example") == true) {
+                    goetheWord.Examples = null;
+                }
+
                 yield return goetheWord;
 
                 if (goetheWord.Feminine != null) {

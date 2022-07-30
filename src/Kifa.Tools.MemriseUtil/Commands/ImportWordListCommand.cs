@@ -21,7 +21,7 @@ public class ImportWordListCommand : KifaCommand {
     }
 
     #endregion
-    
+
     #region public late string CourseName { get; set; }
 
     string? course;
@@ -42,7 +42,7 @@ public class ImportWordListCommand : KifaCommand {
             Logger.Fatal($"Failed to find course ({CourseName}). Exiting.");
             return 1;
         }
-        
+
         using var memriseClient = new MemriseClient {
             Course = course
         };
