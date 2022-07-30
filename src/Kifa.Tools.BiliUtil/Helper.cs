@@ -24,18 +24,7 @@ static class Helper {
         }
     }
 
-    static readonly Regex FileNamePattern = new Regex(@"-(av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");
-
-    public static string? InferAid(string file) {
-        var segments = file.Substring(file.LastIndexOf('-') + 1).Split('.');
-        if (segments.Length < 3 || !segments[segments.Length - 3].StartsWith("av")) {
-            Logger.Debug("Cannot infer CID from file name.");
-            return null;
-        }
-
-        return segments[segments.Length - 3];
-    }
-
+    static readonly Regex FileNamePattern = new(@"[-.](av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");
 
     public static (BilibiliVideo? video, int pid, int quality) GetVideo(string file) {
         var match = FileNamePattern.Match(file);

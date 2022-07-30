@@ -54,18 +54,12 @@ class GetChatCommand : KifaFileCommand {
     }
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
-        if (Helper.InferAid(file.ToString()) is { } inferredAid) {
-            var ids = inferredAid.Split('p');
-            var v = BilibiliVideo.Client.Get(ids[0]);
-            if (v == null) {
-                Logger.Error($"Cannot find video ({ids[0]}. Skipped.");
-            }
-            
-            var pid = ids.Length > 1 ? int.Parse(ids[1]) : 1;
-            return GetChat(v.Pages[pid - 1], file);
+        var (video, pid, _) = Helper.GetVideo(file.ToString());
+        if (video != null) {
+            return GetChat(video.Pages[pid], file);
         }
 
-        var ((video, chat), index) = SelectOne(chats,
+        var ((_, chat), index) = SelectOne(chats,
             c => $"{file} => {c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
             "danmaku", (null, null));
 
