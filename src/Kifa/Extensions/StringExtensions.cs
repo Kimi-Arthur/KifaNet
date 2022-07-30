@@ -110,12 +110,16 @@ public static class StringExtensions {
 
     public static string NormalizeFileName(this string fileName)
         => SafeCharacterMapping.Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
-            (current, mapping) => current.Replace(mapping.Key, mapping.Value));
+                (current, mapping) => current.Replace(mapping.Key, mapping.Value))
+            .RemoveUnnecessarySpaces();
 
     public static string NormalizeFilePath(this string fileName)
-        => SafeCharacterMapping.Skip(1)
-            .Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
-                (current, mapping) => current.Replace(mapping.Key, mapping.Value));
+        => string.Join("/", fileName.Split('/').Select(NormalizeFileName));
+
+    static readonly Regex MultipleSpacesPattern = new(" +");
+
+    static string RemoveUnnecessarySpaces(this string text)
+        => MultipleSpacesPattern.Replace(text.Trim(), " ");
 
     public static byte[] FromBase64(this string text) => Convert.FromBase64String(text);
 
