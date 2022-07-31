@@ -18,5 +18,6 @@ public class MemriseCourseJsonServiceClient : KifaServiceJsonClient<MemriseCours
         var course = Get(courseId);
         course.Words[word.Id] = word;
         MemriseWord.Client.Set(word);
+        MemriseCourse.Client.Update(course);
     }
 }
