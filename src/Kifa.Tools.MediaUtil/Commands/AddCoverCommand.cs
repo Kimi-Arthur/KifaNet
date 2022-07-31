@@ -69,7 +69,7 @@ public class AddCoverCommand : KifaCommand {
 
         return KifaActionResult.FromExecutionResult(Executor.Run("ffmpeg",
             $"-i \"{file.source.GetLocalPath()}\" -i \"{file.cover.GetLocalPath()}\" " +
-            "-map 1 -disposition:v:0 attached_pic -map 0:0 -map 0:1 -c copy " +
+            "-map 0 -c copy -map 1 -disposition:v:1 attached_pic " +
             $"\"{file.target.GetLocalPath()}\""));
     }
 

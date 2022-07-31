@@ -15,8 +15,8 @@ static class Helper {
         var result = Executor.Run("ffmpeg",
             string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
             $" -i \"{cover.GetLocalPath()}\" " +
-            string.Join(" ", parts.Select((_, index) => $"-map {index}")) + " -c:v copy -c:a copy" +
-            $" -map {parts.Count} -disposition:v:0 attached_pic " +
+            string.Join(" ", parts.Select((_, index) => $"-map {index}")) + " -c copy" +
+            $" -map {parts.Count} -disposition:v:1 attached_pic " +
             $" \"{target.GetLocalPath()}\"");
 
         if (result.ExitCode != 0) {
