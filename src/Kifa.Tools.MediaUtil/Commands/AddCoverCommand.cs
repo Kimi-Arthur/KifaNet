@@ -5,7 +5,7 @@ using NLog;
 
 namespace Kifa.Tools.MediaUtil.Commands;
 
-[Verb("cover", HelpText = "[Not implemented] Add cover to media file.")]
+[Verb("cover", HelpText = "Add cover to media file.")]
 public class AddCoverCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
