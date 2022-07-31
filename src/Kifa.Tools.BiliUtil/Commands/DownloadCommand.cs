@@ -118,6 +118,7 @@ public abstract class DownloadCommand : KifaCommand {
         try {
             Logger.Debug(
                 $"Merging 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}...");
+            canonicalTargetFile.Delete();
             Helper.MergePartFiles(trackFiles, coverFile, canonicalTargetFile);
             Logger.Debug(
                 $"Merged 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}.");
