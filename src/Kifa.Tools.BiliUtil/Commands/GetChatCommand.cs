@@ -56,7 +56,7 @@ class GetChatCommand : KifaFileCommand {
     protected override int ExecuteOneKifaFile(KifaFile file) {
         var (video, pid, _) = Helper.GetVideo(file.ToString());
         if (video != null) {
-            return GetChat(video.Pages[pid], file);
+            return GetChat(video.Pages[pid - 1], file);
         }
 
         var ((_, chat), index) = SelectOne(chats,
