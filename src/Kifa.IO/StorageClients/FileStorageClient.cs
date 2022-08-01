@@ -284,16 +284,17 @@ public class FileStorageClient : StorageClient {
         EnsureParent(actualDownloadFile);
 
         // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
-        using var fs = new FileStream(actualDownloadFile, FileMode.OpenOrCreate,
-            FileAccess.ReadWrite, FileShare.None);
-        fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
-        if (fs.Position != 0) {
-            stream.Seek(fs.Position, SeekOrigin.Begin);
+        using (var fs = new FileStream(actualDownloadFile, FileMode.OpenOrCreate,
+                   FileAccess.ReadWrite, FileShare.None)) {
+            fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
+            if (fs.Position != 0) {
+                stream.Seek(fs.Position, SeekOrigin.Begin);
+            }
+
+            stream.CopyTo(fs, blockSize);
+
+            Logger.Debug($"Finished copying to {actualDownloadFile}.");
         }
-
-        stream.CopyTo(fs, blockSize);
-
-        Logger.Debug($"Finished copying to {actualDownloadFile}.");
 
         File.Move(actualDownloadFile, actualPath);
         Logger.Debug($"Moved to final destination {path}.");
