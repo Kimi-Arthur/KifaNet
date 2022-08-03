@@ -283,24 +283,15 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return result;
     }
 
-    public string GetCanonicalName(int pid, int quality, string? cid = null) {
+    public string GetCanonicalName(int pid, int quality) {
         var p = Pages.First(x => x.Id == pid);
-
-        if (cid != null && cid != p.Cid) {
-            return null;
-        }
 
         return $"$/{Id}p{pid}.c{p.Cid}.{quality}";
     }
 
-    public string GetDesiredName(int pid, int quality, string? cid = null,
-        string? alternativeFolder = null, bool prefixDate = false,
-        BilibiliUploader? uploader = null) {
+    public string GetDesiredName(int pid, int quality, string? alternativeFolder = null,
+        bool prefixDate = false, BilibiliUploader? uploader = null) {
         var p = Pages.First(x => x.Id == pid);
-
-        if (cid != null && cid != p.Cid) {
-            return null;
-        }
 
         var partName = p.Title.NormalizeFileName();
         var title = Title.NormalizeFileName();
