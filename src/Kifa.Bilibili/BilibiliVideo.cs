@@ -284,7 +284,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return result;
     }
 
-    static readonly Regex FileNamePattern = new(@"[-.](av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");
+    static readonly Regex FileNamePattern = new(@"[-./](av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");
 
     public static (BilibiliVideo? video, int pid, int quality) Parse(string file) {
         var match = FileNamePattern.Match(file);
