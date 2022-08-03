@@ -104,4 +104,25 @@ public class BilibiliVideoTests {
             Assert.Equal(TimeSpan.Zero, item.ChatOffset);
         }
     }
+
+    [Theory]
+    [InlineData("/Downloads/bilibili/$/c279786.64.mp4", null, 0, null, 0)]
+    [InlineData("/Downloads/bilibili/$/av170001p1.c279786.64.mp4", "av170001", 1, "279786", 64)]
+    [InlineData("/Downloads/bilibili/冰封.虾子-122541/【MV】保加利亚妖王AZIS视频合辑.av170001p1.c279786.64.mp4", "av170001", 1, "279786", 64)]
+    [InlineData("/Downloads/bilibili/冰封.虾子-122541/【MV】保加利亚妖王AZIS视频合辑-av170001p2.c279786.64.mp4", "av170001", 2, "275431", 64)]
+    [InlineData("/Downloads/bilibili/冰封.虾子-122541/【MV】保加利亚妖王AZIS视频合辑.av170001.c279786.64.mp4", "av170001", 1, "279786", 64)]
+    public void VideoFileNameParsing(string fileName, string? aid, int pid, string cid,
+        int quality) {
+        KifaServiceRestClient.ServerAddress = "http://localhost:5000/api";
+        var result = BilibiliVideo.Parse(fileName);
+        if (aid == null) {
+            Assert.Null(result.video);
+            return;
+        }
+
+        Assert.Equal(aid, result.video.Id);
+        Assert.Equal(pid, result.pid);
+        Assert.Equal(cid, result.video.Pages[pid - 1].Cid);
+        Assert.Equal(quality, result.quality);
+    }
 }
