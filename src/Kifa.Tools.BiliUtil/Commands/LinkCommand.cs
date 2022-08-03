@@ -33,7 +33,10 @@ public class LinkCommand : KifaCommand {
             var files = filesByResult[true];
             Logger.Info($"Successfully linked files for the following {files.Count} files:");
             foreach (var (file, result) in files) {
-                Logger.Info($"\t{file} => {result.Response}");
+                Logger.Info($"\t{file} =>");
+                foreach (var message in result.Response) {
+                    Logger.Info($"\t\t{message}");
+                }
             }
         }
 
@@ -50,23 +53,31 @@ public class LinkCommand : KifaCommand {
         return 0;
     }
 
-    KifaActionResult<KifaFile> LinkFile(KifaFile file) {
+    KifaActionResult<List<string>> LinkFile(KifaFile file) {
         var video = Helper.GetVideo(file.Id);
-        var canonicalName = video.video.GetCanonicalName(video.pid, video.quality);
-        if (file.Equals(CurrentFolder.GetFile(canonicalName))) {
-            Logger.Debug("Source file is canonical file. Link to desired name.");
-            // Skip for now.
-            return file;
-        } else {
-            var target = CurrentFolder.GetFile($"{canonicalName}.{file.Extension}");
-            if (target.Exists() && target.Length() == file.Length()) {
-                Logger.Debug($"Source file is not canonical file. And canonical file {target} exists too. Skipped.");
-                return target;
+        var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality);
+        var linkedFiles = new List<string>();
+        foreach (var canonicalName in canonicalNames) {
+            var canonicalFile = CurrentFolder.GetFile($"{canonicalName}.{file.Extension}");
+            if (canonicalFile.Equals(file)) {
+                Logger.Info($"Skipped {canonicalFile} as it's the source file.");
+                linkedFiles.Add($"{canonicalFile} is source file.");
+                continue;
             }
 
-            file.Copy(target);
-            Logger.Debug($"Source file is not canonical file. Linked to canonical file {target}.");
-            return target;
+            if (canonicalFile.Exists() && canonicalFile.Length() == file.Length()) {
+                Logger.Info(
+                    $"Source file is not canonical file, but canonical file {canonicalFile} exists too. Skipped.");
+                linkedFiles.Add($"{canonicalFile} exists.");
+                continue;
+            }
+
+            file.Copy(canonicalFile);
+            Logger.Info(
+                $"Source file is not canonical file. Linked to canonical file {canonicalFile}.");
+            linkedFiles.Add($"Copied to {canonicalFile}");
         }
+
+        return linkedFiles;
     }
 }

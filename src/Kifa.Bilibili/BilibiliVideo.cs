@@ -283,10 +283,13 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return result;
     }
 
-    public string GetCanonicalName(int pid, int quality) {
+    public List<string> GetCanonicalNames(int pid, int quality) {
         var p = Pages.First(x => x.Id == pid);
 
-        return $"$/{Id}p{pid}.c{p.Cid}.{quality}";
+        return new List<string> {
+            $"$/{Id}p{pid}.c{p.Cid}.{quality}",
+            $"$/c{p.Cid}.{quality}"
+        };
     }
 
     public string GetDesiredName(int pid, int quality, string? alternativeFolder = null,

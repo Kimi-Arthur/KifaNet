@@ -40,7 +40,8 @@ public abstract class DownloadCommand : KifaCommand {
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var desiredName =
             $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
-        var canonicalName = video.GetCanonicalName(pid, quality);
+        // TODO: should link to all files.
+        var canonicalName = video.GetCanonicalNames(pid, quality)[0];
         var canonicalTargetFile = outputFolder.GetFile($"{canonicalName}.mp4");
         var finalTargetFile = outputFolder.GetFile($"{desiredName}.mp4");
 
