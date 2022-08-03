@@ -38,11 +38,11 @@ public abstract class DownloadCommand : KifaCommand {
         var (extension, quality, videoStreamGetter, audioStreamGetters) = video.GetStreams(pid);
 
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
-        var prefix =
+        var desiredName =
             $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
-        var canonicalPrefix = video.GetCanonicalName(pid, quality);
-        var canonicalTargetFile = outputFolder.GetFile($"{canonicalPrefix}.mp4");
-        var finalTargetFile = outputFolder.GetFile($"{prefix}.mp4");
+        var canonicalName = video.GetCanonicalName(pid, quality);
+        var canonicalTargetFile = outputFolder.GetFile($"{canonicalName}.mp4");
+        var finalTargetFile = outputFolder.GetFile($"{desiredName}.mp4");
 
         if (finalTargetFile.ExistsSomewhere()) {
             Logger.Info($"{finalTargetFile.Id} already exists in the system. Skipped.");
