@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Bilibili;
 using Kifa.Service;
 using NLog;
 
@@ -54,7 +55,7 @@ public class LinkCommand : KifaCommand {
     }
 
     KifaActionResult<List<string>> LinkFile(KifaFile file) {
-        var video = Helper.GetVideo(file.Id);
+        var video = BilibiliVideo.Parse(file.Id);
         var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality);
         var linkedFiles = new List<string>();
         foreach (var canonicalName in canonicalNames) {

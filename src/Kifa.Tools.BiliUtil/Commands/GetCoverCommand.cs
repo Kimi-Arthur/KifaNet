@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Bilibili;
 using Kifa.Service;
 using NLog;
 
@@ -65,7 +66,7 @@ public class GetCoverCommand : KifaCommand {
                 return file.Parent.GetFile($"{file.BaseName}.{foundCoverExtension}");
             }
 
-            var video = Helper.GetVideo(file.Id);
+            var video = BilibiliVideo.Parse(file.Id);
             if (video.video == null) {
                 throw new Exception($"Video not found for {file.Id}.");
             }

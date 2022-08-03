@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
@@ -281,6 +282,19 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
 
         return result;
+    }
+
+    static readonly Regex FileNamePattern = new(@"[-.](av\d+)(p\d+)?\.(c\d+)\.(\d+).mp4");
+
+    public static (BilibiliVideo? video, int pid, int quality) Parse(string file) {
+        var match = FileNamePattern.Match(file);
+        if (!match.Success) {
+            return (null, 1, 0);
+        }
+
+        return (Client.Get(match.Groups[1].Value),
+            match.Groups[2].Success ? int.Parse(match.Groups[2].Value[1..]) : 1,
+            match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 0);
     }
 
     public List<string> GetCanonicalNames(int pid, int quality) {

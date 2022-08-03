@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
@@ -120,7 +121,7 @@ public abstract class DownloadCommand : KifaCommand {
             Logger.Debug(
                 $"Merging 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}...");
             canonicalTargetFile.Delete();
-            Helper.MergePartFiles(trackFiles, coverFile, canonicalTargetFile);
+            MergePartFiles(trackFiles, coverFile, canonicalTargetFile);
             Logger.Debug(
                 $"Merged 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}.");
 
@@ -139,5 +140,18 @@ public abstract class DownloadCommand : KifaCommand {
         }
 
         return 0;
+    }
+
+    static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
+        var result = Executor.Run("ffmpeg",
+            string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
+            $" -i \"{cover.GetLocalPath()}\" " +
+            string.Join(" ", parts.Select((_, index) => $"-map {index}")) + " -c copy" +
+            $" -map {parts.Count} -disposition:v:1 attached_pic " +
+            $" \"{target.GetLocalPath()}\"");
+
+        if (result.ExitCode != 0) {
+            throw new Exception("Merging files failed.");
+        }
     }
 }
