@@ -18,19 +18,20 @@ public class CombineCommand : KifaCommand {
     public string? Title { get; set; }
 
     [Option('o', "output", HelpText = "Output file name.")]
-    public string OutputFile { get; set; } = "output.mp4";
+    public string? OutputFile { get; set; }
 
     [Value(0, Required = true, HelpText = "Files to combine.")]
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute() {
+        var files = FileNames.Select(file => new KifaFile(file)).ToList();
+
+        OutputFile ??= $"{Title}.{files[0].Extension}";
         var target = new KifaFile(OutputFile);
         if (target.Exists()) {
             Logger.Info("Target file already exists. Skipped");
             return 1;
         }
-
-        var files = FileNames.Select(file => new KifaFile(file)).ToList();
 
         var arguments =
             FFMpegArguments.FromDemuxConcatInput(files.Select(file => $"{file.GetLocalPath()}"));
