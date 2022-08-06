@@ -223,7 +223,7 @@ public class GermanWord : DataModel<GermanWord> {
             NounForms = words.wiki.NounForms;
         }
 
-        Etymology = dwds.Etymology;
+        Etymology ??= dwds.Etymology;
     }
 
     public IEnumerable<string> GetTopPronunciationAudioLinks()
