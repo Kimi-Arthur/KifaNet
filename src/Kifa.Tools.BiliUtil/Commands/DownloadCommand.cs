@@ -41,48 +41,22 @@ public abstract class DownloadCommand : KifaCommand {
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var desiredName =
             $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
-        // TODO: should link to all files.
-        var canonicalName = video.GetCanonicalNames(pid, quality)[0];
-        var canonicalTargetFile = outputFolder.GetFile($"{canonicalName}.mp4");
-        var finalTargetFile = outputFolder.GetFile($"{desiredName}.mp4");
+        var canonicalNames = video.GetCanonicalNames(pid, quality);
 
-        if (finalTargetFile.ExistsSomewhere()) {
-            Logger.Info($"{finalTargetFile.Id} already exists in the system. Skipped.");
-            if (!canonicalTargetFile.ExistsSomewhere()) {
-                FileInformation.Client.Link(finalTargetFile.Id, canonicalTargetFile.Id);
-                Logger.Info($"Linked {canonicalTargetFile.Id} ==> {finalTargetFile.Id}");
-            }
+        var targetFiles = canonicalNames.Append(desiredName)
+            .Select(name => outputFolder.GetFile($"{name}.mp4")).ToList();
+        var found = KifaFile.FindOne(targetFiles);
 
+        if (found != null) {
+            var message = found.ExistsSomewhere()
+                ? $"{found.Id} exists in the system"
+                : $"{found} exists locally";
+            Logger.Info($"Found {message}. Will link instead.");
+            KifaFile.LinkAll(found, targetFiles);
             return 0;
         }
 
-        if (finalTargetFile.Exists()) {
-            Logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
-            if (!canonicalTargetFile.Exists()) {
-                finalTargetFile.Copy(canonicalTargetFile);
-                Logger.Info($"Linked {finalTargetFile} ==> {canonicalTargetFile}");
-            }
-
-            return 0;
-        }
-
-        if (canonicalTargetFile.ExistsSomewhere()) {
-            Logger.Info($"{canonicalTargetFile.Id} already exists in the system. Skipped.");
-
-            FileInformation.Client.Link(canonicalTargetFile.Id, finalTargetFile.Id);
-            Logger.Info($"Linked {finalTargetFile.Id} ==> {canonicalTargetFile.Id}");
-
-            return 0;
-        }
-
-        if (canonicalTargetFile.Exists()) {
-            Logger.Info($"Target file {finalTargetFile} already exists. Skipped.");
-
-            canonicalTargetFile.Copy(finalTargetFile);
-            Logger.Info($"Linked {canonicalTargetFile} ==> {finalTargetFile}");
-
-            return 0;
-        }
+        var canonicalTargetFile = targetFiles[0];
 
         var coverLink = new KifaFile(video.Cover.ToString());
         var coverFile = canonicalTargetFile.Parent.GetFile(
@@ -132,8 +106,7 @@ public abstract class DownloadCommand : KifaCommand {
             coverFile.Delete();
             Logger.Debug("Removed temp files.");
 
-            canonicalTargetFile.Copy(finalTargetFile);
-            Logger.Debug($"Copied from {canonicalTargetFile} to {finalTargetFile}.");
+            KifaFile.LinkAll(canonicalTargetFile, targetFiles);
         } catch (Exception e) {
             Logger.Warn(e, "Failed to merge files.");
             return 1;

@@ -365,6 +365,35 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList());
     }
 
+    public static KifaFile? FindOne(List<KifaFile> files)
+        => files.Find(file => file.Exists() || file.ExistsSomewhere());
+
+    public static void LinkAll(KifaFile source, List<KifaFile> links) {
+        if (source.ExistsSomewhere()) {
+            Logger.Debug("Source is alreay in system. Will link files virtually.");
+            foreach (var link in links) {
+                if (link == source) {
+                    continue;
+                }
+
+                FileInformation.Client.Link(source.Id, link.Id);
+                Logger.Debug($"Linked {link.Id} => {source.Id}.");
+            }
+
+            return;
+        }
+
+        Logger.Debug("Source is not in system. Will link files locally.");
+        foreach (var link in links) {
+            if (link.Exists()) {
+                continue;
+            }
+
+            source.Copy(link);
+            Logger.Debug($"Linked {link} => {source}.");
+        }
+    }
+
     static bool IsMatch(string path, string pattern) {
         path = path.Substring(path.LastIndexOf("/", StringComparison.Ordinal) + 1);
         var segments = pattern.Split("*", StringSplitOptions.RemoveEmptyEntries);
