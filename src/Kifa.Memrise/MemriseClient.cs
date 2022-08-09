@@ -181,7 +181,8 @@ public class MemriseClient : IDisposable {
 
         existingRow.FillAudios();
 
-        var audios = rootWord.GetTopPronunciationAudioLinks().Take(3).ToList();
+        var audios = rootWord.GetTopPronunciationAudioLinks()
+            .Where(link => !WithDifferentArticle(link, word.Id)).Take(3).ToList();
         needsRetrieval = needsRetrieval || (audios.Count == 0
             ? ClearAllAudios(existingRow)
             : UploadAudios(existingRow, audios));
@@ -198,6 +199,19 @@ public class MemriseClient : IDisposable {
         }
 
         return new KifaActionResult<MemriseWord>(existingRow);
+    }
+
+    static readonly Regex WordArticlePattern = new Regex("^(der|die|das) .*");
+    static readonly Regex LinkArticlePattern = new Regex("/(der|die|das) .*");
+
+    static bool WithDifferentArticle(string link, string goetheGermanWord) {
+        var wordArticle = WordArticlePattern.Match(goetheGermanWord);
+        if (!wordArticle.Success) {
+            return false;
+        }
+
+        var linkArticle = LinkArticlePattern.Match(link);
+        return linkArticle != wordArticle;
     }
 
     bool UploadAudios(MemriseWord originalWord, List<string> audios) {
