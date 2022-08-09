@@ -202,7 +202,7 @@ public class MemriseClient : IDisposable {
     }
 
     static readonly Regex WordArticlePattern = new Regex("^(der|die|das) .*");
-    static readonly Regex LinkArticlePattern = new Regex("/(der|die|das) .*");
+    static readonly Regex LinkArticlePattern = new Regex("/(der|die|das)_.*");
 
     static bool WithDifferentArticle(string link, string goetheGermanWord) {
         var wordArticle = WordArticlePattern.Match(goetheGermanWord);
