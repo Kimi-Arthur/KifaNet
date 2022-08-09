@@ -211,7 +211,11 @@ public class MemriseClient : IDisposable {
         }
 
         var linkArticle = LinkArticlePattern.Match(link);
-        return linkArticle != wordArticle;
+        if (!linkArticle.Success) {
+            return false;
+        }
+
+        return linkArticle.Value != wordArticle.Value;
     }
 
     bool UploadAudios(MemriseWord originalWord, List<string> audios) {
