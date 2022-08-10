@@ -188,9 +188,9 @@ public class MemriseClient : IDisposable {
             Logger.Debug(audio);
         }
 
-        needsRetrieval = needsRetrieval || (audios.Count == 0
+        needsRetrieval = (audios.Count == 0
             ? ClearAllAudios(existingRow)
-            : UploadAudios(existingRow, audios));
+            : UploadAudios(existingRow, audios)) || needsRetrieval;
 
         if (needsRetrieval) {
             existingRow = GetExistingRow(word);
