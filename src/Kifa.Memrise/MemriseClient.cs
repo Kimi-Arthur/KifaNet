@@ -249,7 +249,9 @@ public class MemriseClient : IDisposable {
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
-        return modified || RemoveUnneededAudios(originalWord, audioFiles);
+        originalWord.FillAudios();
+
+        return RemoveUnneededAudios(originalWord, audioFiles) || modified;
     }
 
     bool ClearAllAudios(MemriseWord originalWord) {
