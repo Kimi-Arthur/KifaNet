@@ -284,10 +284,12 @@ public class MemriseClient : IDisposable {
             var key = (audio.Size, audio.Md5!);
             if (foundOnes.Contains(key)) {
                 toRemove.Add(i + 1);
+                continue;
             }
 
             if (!audioFiles.Contains(key)) {
                 toRemove.Add(i + 1);
+                continue;
             }
 
             foundOnes.Add(key);
