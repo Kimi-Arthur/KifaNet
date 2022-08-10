@@ -346,14 +346,23 @@ public class MemriseClient : IDisposable {
 
     static readonly Regex Spaces = new("\\s+");
 
+    static readonly List<(string original, string replacement)> CompatibilityMapping = new() {
+        ("\u00A8", "\u0308"), // Standalone umlaut character: ¨
+        ("\u2026", "...") // Three dots character: …
+    };
+
     static bool SameText(string? oldValue, string newValue) {
         if (oldValue == null) {
             return true;
         }
 
         var normalizedOldValue = Spaces.Replace(oldValue, " ");
-        var normalizedNewValue =
-            Spaces.Replace(newValue, " ").Normalize(NormalizationForm.FormKD).Trim();
+        var normalizedNewValue = Spaces.Replace(newValue, " ");
+
+        foreach (var (original, replacement) in CompatibilityMapping) {
+            normalizedNewValue = normalizedNewValue.Replace(original, replacement);
+        }
+
         return normalizedNewValue == normalizedOldValue;
     }
 
