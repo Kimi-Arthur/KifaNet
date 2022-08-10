@@ -8,8 +8,7 @@ public class NounForms : Dictionary<Case, Dictionary<Number, string?>> {
 public enum Gender {
     Masculine,
     Feminine,
-    Neuter,
-    Error
+    Neuter
 }
 
 public enum Case {
