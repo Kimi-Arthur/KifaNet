@@ -183,6 +183,11 @@ public class MemriseClient : IDisposable {
 
         var audios = rootWord.GetTopPronunciationAudioLinks()
             .Where(link => !WithDifferentArticle(link, word.Id)).Take(3).ToList();
+        Logger.Debug($"Will upload {audios.Count} audios:");
+        foreach (var audio in audios) {
+            Logger.Debug(audio);
+        }
+
         needsRetrieval = needsRetrieval || (audios.Count == 0
             ? ClearAllAudios(existingRow)
             : UploadAudios(existingRow, audios));
@@ -219,11 +224,14 @@ public class MemriseClient : IDisposable {
     }
 
     bool UploadAudios(MemriseWord originalWord, List<string> audios) {
-        var modified = RemoveDuplicateAudios(originalWord);
+        var modified = false;
+        var audioFiles = new HashSet<(long size, string md5)>();
         foreach (var audioLink in audios) {
             var newAudioFile = new KifaFile(audioLink);
             newAudioFile.Add(false);
             var info = newAudioFile.FileInfo!;
+            audioFiles.Add((info.Size!.Value, info.Md5!));
+
             if (originalWord.Audios?.Any(audio
                     => audio.Size == info.Size && audio.Md5 == info.Md5) ?? false) {
                 Logger.Debug(
@@ -241,7 +249,7 @@ public class MemriseClient : IDisposable {
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
-        return modified;
+        return modified || RemoveUnneededAudios(originalWord, audioFiles);
     }
 
     bool ClearAllAudios(MemriseWord originalWord) {
@@ -263,26 +271,31 @@ public class MemriseClient : IDisposable {
         return originalWord.Audios.Count > 0;
     }
 
-    bool RemoveDuplicateAudios(MemriseWord originalWord) {
+    bool RemoveUnneededAudios(MemriseWord originalWord,
+        HashSet<(long size, string md5)> audioFiles) {
         if (originalWord.Audios == null) {
             return false;
         }
 
         var foundOnes = new HashSet<(long size, string md5)>();
-        var duplicates = new List<int>();
+        var toRemove = new List<int>();
         for (var i = 0; i < originalWord.Audios.Count; i++) {
             var audio = originalWord.Audios[i];
             var key = (audio.Size, audio.Md5!);
             if (foundOnes.Contains(key)) {
-                duplicates.Add(i + 1);
+                toRemove.Add(i + 1);
+            }
+
+            if (!audioFiles.Contains(key)) {
+                toRemove.Add(i + 1);
             }
 
             foundOnes.Add(key);
         }
 
         Logger.Debug(
-            $"Remove {duplicates.Count} audio files for {originalWord.Data["1"]} ({originalWord.Id}): {string.Join(", ", duplicates)}");
-        foreach (var fileId in (duplicates as IEnumerable<int>).Reverse()) {
+            $"Remove {toRemove.Count} audio files for {originalWord.Data["1"]} ({originalWord.Id}): {string.Join(", ", toRemove)}");
+        foreach (var fileId in (toRemove as IEnumerable<int>).Reverse()) {
             var result = new RemoveAudioRpc {
                     HttpClient = HttpClient
                 }.Invoke(Course.BaseUrl, originalWord.Id, Course.Columns["Audios"],
@@ -291,7 +304,7 @@ public class MemriseClient : IDisposable {
             Logger.Debug($"Result of removing file {fileId}: {result}");
         }
 
-        return duplicates.Count > 0;
+        return toRemove.Count > 0;
     }
 
     MemriseWord? GetExistingRow(GoetheGermanWord word)
