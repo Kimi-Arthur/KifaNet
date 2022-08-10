@@ -83,7 +83,7 @@ public class DeWiktionaryClient {
                                 break;
 
                             case WordType.Noun:
-                                word.Gender = wordTypeNode.Id.Split(",").Last() switch {
+                                word.Gender = wordTypeNode.Id.Split(",")[1] switch {
                                     "_m" => Gender.Masculine,
                                     "_f" => Gender.Feminine,
                                     "_n" => Gender.Neuter,
@@ -105,7 +105,7 @@ public class DeWiktionaryClient {
 
                     if (word.NounForms == null && node.Name == "table" &&
                         node.HasClass("wikitable") && wordType == WordType.Noun) {
-                        var extraHeaderCount = node.SelectNodes(".//tr[1]/td").Count != 0 ? 7 : 0;
+                        var extraHeaderCount = node.SelectNodes(".//tr[1]/td")?.Count > 0 ? 7 : 0;
 
                         var selector = new Func<int, int, string?>((row, column) => {
                             var form = node
@@ -115,22 +115,27 @@ public class DeWiktionaryClient {
                             return form == "—" ? null : form;
                         });
 
+                        var headers = node.SelectNodes($".//tr[{extraHeaderCount + 1}]/th")
+                            .Select(node => node.InnerText.Trim().Split(" ")[0]).ToList();
+                        var singularColumn = headers.IndexOf("Singular");
+                        var pluralColumn = headers.IndexOf("Plural");
+
                         word.NounForms = new NounForms {
                             [Case.Nominative] = new() {
-                                [Number.Singular] = selector(1, 1),
-                                [Number.Plural] = selector(1, 2)
+                                [Number.Singular] = selector(1, singularColumn),
+                                [Number.Plural] = selector(1, pluralColumn)
                             },
                             [Case.Genitive] = new() {
-                                [Number.Singular] = selector(2, 1),
-                                [Number.Plural] = selector(2, 2)
+                                [Number.Singular] = selector(2, singularColumn),
+                                [Number.Plural] = selector(2, pluralColumn)
                             },
                             [Case.Dative] = new() {
-                                [Number.Singular] = selector(3, 1),
-                                [Number.Plural] = selector(3, 2)
+                                [Number.Singular] = selector(3, singularColumn),
+                                [Number.Plural] = selector(3, pluralColumn)
                             },
                             [Case.Accusative] = new() {
-                                [Number.Singular] = selector(4, 1),
-                                [Number.Plural] = selector(4, 2)
+                                [Number.Singular] = selector(4, singularColumn),
+                                [Number.Plural] = selector(4, pluralColumn)
                             }
                         };
 
