@@ -215,7 +215,7 @@ public class MemriseClient : IDisposable {
             return false;
         }
 
-        return linkArticle.Value != wordArticle.Value;
+        return linkArticle.Groups[1].Value != wordArticle.Groups[1].Value;
     }
 
     bool UploadAudios(MemriseWord originalWord, List<string> audios) {
