@@ -224,34 +224,33 @@ public class MemriseClient : IDisposable {
     }
 
     bool UploadAudios(MemriseWord originalWord, List<string> audios) {
-        var modified = false;
-        var audioFiles = new HashSet<(long size, string md5)>();
-        foreach (var audioLink in audios) {
-            var newAudioFile = new KifaFile(audioLink);
-            newAudioFile.Add(false);
-            var info = newAudioFile.FileInfo!;
-            audioFiles.Add((info.Size!.Value, info.Md5!));
+        var audioFiles = audios.Select(audio => new KifaFile(audio)).ToList();
+        audioFiles.ForEach(file => file.Add(false));
+        var keys = audioFiles.Select(file => (file.FileInfo!.Size!.Value, file.FileInfo.Md5!))
+            .ToHashSet();
+        var modified = RemoveUnneededAudios(originalWord, keys);
+
+        foreach (var audioFile in audioFiles) {
+            var info = audioFile.FileInfo!;
 
             if (originalWord.Audios?.Any(audio
                     => audio.Size == info.Size && audio.Md5 == info.Md5) ?? false) {
                 Logger.Debug(
-                    $"{audioLink} for {originalWord.Data["1"]} ({originalWord.Id}) already exists.");
+                    $"{audioFile} for {originalWord.Data["1"]} ({originalWord.Id}) already exists.");
                 continue;
             }
 
             Logger.Debug(
-                $"Uploading {audioLink} for {originalWord.Data["1"]} ({originalWord.Id}).");
+                $"Uploading {audioFile} for {originalWord.Data["1"]} ({originalWord.Id}).");
             new UploadAudioRpc {
                 HttpClient = HttpClient
             }.Invoke(Course.DatabaseUrl, originalWord.Id, Course.Columns["Audios"], CsrfToken,
-                newAudioFile.ReadAsBytes());
+                audioFile.ReadAsBytes());
             modified = true;
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
-        originalWord.FillAudios();
-
-        return RemoveUnneededAudios(originalWord, audioFiles) || modified;
+        return modified;
     }
 
     bool ClearAllAudios(MemriseWord originalWord) {
