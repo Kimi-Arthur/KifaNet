@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Api.Files;
@@ -351,7 +352,8 @@ public class MemriseClient : IDisposable {
         }
 
         var normalizedOldValue = Spaces.Replace(oldValue, " ");
-        var normalizedNewValue = Spaces.Replace(newValue, " ");
+        var normalizedNewValue =
+            Spaces.Replace(newValue, " ").Normalize(NormalizationForm.FormKD).Trim();
         return normalizedNewValue == normalizedOldValue;
     }
 
