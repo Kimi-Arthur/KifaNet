@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Api.Files;
@@ -346,21 +345,25 @@ public class MemriseClient : IDisposable {
 
     static readonly Regex Spaces = new("\\s+");
 
-    static readonly List<(string original, string replacement)> CompatibilityMapping = new() {
-        ("\u00A8", "\u0308"), // Standalone umlaut character: ¨
-        ("\u2026", "...") // Three dots character: …
+    static readonly List<(Regex original, string replacement)> CompatibilityMapping = new() {
+        (new Regex("\\s+"), " "), // Spaces used as line breaks.
+        (new Regex("^\u00A8"), "\u0308"), // Standalone umlaut character: ¨
+        (new Regex("\u2026"), "...") // Three dots character: …
     };
 
     static bool SameText(string? oldValue, string newValue) {
         if (oldValue == null) {
-            return true;
+            return false;
         }
 
-        var normalizedOldValue = Spaces.Replace(oldValue, " ");
-        var normalizedNewValue = Spaces.Replace(newValue, " ");
-
+        var normalizedOldValue = oldValue;
         foreach (var (original, replacement) in CompatibilityMapping) {
-            normalizedNewValue = normalizedNewValue.Replace(original, replacement);
+            normalizedOldValue = original.Replace(normalizedOldValue, replacement);
+        }
+
+        var normalizedNewValue = newValue;
+        foreach (var (original, replacement) in CompatibilityMapping) {
+            normalizedNewValue = original.Replace(normalizedNewValue, replacement);
         }
 
         return normalizedNewValue == normalizedOldValue;
