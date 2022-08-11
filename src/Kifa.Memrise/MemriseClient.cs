@@ -375,6 +375,12 @@ public class MemriseClient : IDisposable {
             { Course.Columns["English"], word.Meaning }
         };
 
+        data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
+            ? string.Join(LineBreak,
+                baseWord.Etymology.Select(segment
+                    => segment + ": " + (WordClient.Get(segment)?.Meaning ?? "<unknown>")))
+            : "";
+
         data[Course.Columns["Form"]] = word.Form ?? "";
 
         data[Course.Columns["Pronunciation"]] =
@@ -385,12 +391,6 @@ public class MemriseClient : IDisposable {
                 ? string.Join(LineBreak,
                     word.Examples.Select((example, index) => $"{index + 1}. {example}"))
                 : "";
-
-        data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
-            ? string.Join(LineBreak,
-                baseWord.Etymology.Select(segment
-                    => segment + ": " + (WordClient.Get(segment)?.Meaning ?? "<unknown>")))
-            : "";
 
         return data;
     }
