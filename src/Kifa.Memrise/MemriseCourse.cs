@@ -123,7 +123,6 @@ public class MemriseCourse : DataModel<MemriseCourse> {
                 }
 
                 Logger.Warn(ex, $"Failed to get data for page {i + 1} ({index}).");
-                Thread.Sleep(TimeSpan.FromSeconds(10));
             });
         }
     }
