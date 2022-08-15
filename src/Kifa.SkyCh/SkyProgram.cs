@@ -2,14 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Web;
 using HtmlAgilityPack;
 using Kifa.Service;
 using Kifa.SkyCh.Api;
+using NLog;
 
 namespace Kifa.SkyCh;
 
 public class SkyProgram : DataModel<SkyProgram> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public const string ModelId = "sky.ch/programs";
 
     public string Title { get; set; }
@@ -25,8 +29,12 @@ public class SkyProgram : DataModel<SkyProgram> {
 
     static readonly HttpClient NoAuthClient = new();
 
+    static DateTime LastFilled = DateTime.MinValue;
+
     // Should not be called frequently.
     public override DateTimeOffset? Fill() {
+        WaitCooldown();
+
         var epgPage = NoAuthClient
             .GetStringAsync($"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}").Result;
         var doc = new HtmlDocument();
@@ -60,6 +68,15 @@ public class SkyProgram : DataModel<SkyProgram> {
         Channel = root.SelectSingleNode("//img[@class='channel-logo']").Attributes["alt"].Value;
 
         return null;
+    }
+
+    static void WaitCooldown() {
+        var wait = TimeSpan.FromSeconds(10) - (DateTime.Now - LastFilled);
+        if (wait > TimeSpan.Zero) {
+            Logger.Debug(
+                $"SkyProgram.Fill triggered too frequently. Sleep {wait.TotalSeconds} seconds.");
+            Thread.Sleep(wait);
+        }
     }
 
     public string GetVideoLink() => new PlayerRpc().Invoke(Id).Url;
