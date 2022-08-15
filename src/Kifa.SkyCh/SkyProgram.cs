@@ -40,13 +40,16 @@ public class SkyProgram : DataModel<SkyProgram> {
         var doc = new HtmlDocument();
         doc.LoadHtml(epgPage);
         var root = doc.DocumentNode;
-        if (root == null) {
-            throw new UnableToFillException($"Could not get document node for {pageUrl}");
+
+        var imageLinks = root.SelectNodes("//div[@class='img-container']/img");
+
+        if (imageLinks == null) {
+            throw new UnableToFillException($"Could not get image link node for {pageUrl}");
         }
 
-        ImageLink = root.SelectSingleNode("//div[@class='img-container']/img").Attributes["src"]
-            .Value.Split("?")[0];
+        ImageLink = imageLinks[0].Attributes["src"].Value.Split("?")[0];
 
+        // No need to check the following nodes.
         Type = root.SelectSingleNode("//span[@class='type-tag']").InnerText.Trim();
         Title = HttpUtility.HtmlDecode(root.SelectSingleNode("//h1[@class='program-title']")
             .InnerText.Trim());
