@@ -16,30 +16,34 @@ public class SkyProgram : DataModel<SkyProgram> {
 
     public const string ModelId = "sky.ch/programs";
 
-    public string Title { get; set; }
-    public string Subtitle { get; set; }
+    public string? Title { get; set; }
+    public string? Subtitle { get; set; }
 
-    public List<string> Categories { get; set; }
-    public string ImageLink { get; set; }
+    public List<string>? Categories { get; set; }
+    public string? ImageLink { get; set; }
 
-    public string Channel { get; set; }
+    public string? Channel { get; set; }
     public DateTime AirDateTime { get; set; }
     public TimeSpan Duration { get; set; }
-    public string Type { get; set; }
+    public string? Type { get; set; }
 
     static readonly HttpClient NoAuthClient = new();
 
-    static DateTime LastFilled = DateTime.MinValue;
+    static DateTime lastFilled = DateTime.MinValue;
 
     // Should not be called frequently.
     public override DateTimeOffset? Fill() {
         WaitCooldown();
 
-        var epgPage = NoAuthClient
-            .GetStringAsync($"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}").Result;
+        var pageUrl = $"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}";
+        var epgPage = NoAuthClient.GetStringAsync(pageUrl).Result;
         var doc = new HtmlDocument();
         doc.LoadHtml(epgPage);
         var root = doc.DocumentNode;
+        if (root == null) {
+            throw new UnableToFillException($"Could not get document node for {pageUrl}");
+        }
+
         ImageLink = root.SelectSingleNode("//div[@class='img-container']/img").Attributes["src"]
             .Value.Split("?")[0];
 
@@ -71,12 +75,14 @@ public class SkyProgram : DataModel<SkyProgram> {
     }
 
     static void WaitCooldown() {
-        var wait = TimeSpan.FromSeconds(10) - (DateTime.Now - LastFilled);
+        var wait = TimeSpan.FromSeconds(10) - (DateTime.Now - lastFilled);
         if (wait > TimeSpan.Zero) {
             Logger.Debug(
                 $"SkyProgram.Fill triggered too frequently. Sleep {wait.TotalSeconds} seconds.");
             Thread.Sleep(wait);
         }
+
+        lastFilled = DateTime.Now;
     }
 
     public string GetVideoLink() => new PlayerRpc().Invoke(Id).Url;
