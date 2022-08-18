@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Web;
 using HtmlAgilityPack;
 
 namespace Kifa.Languages.German;
@@ -163,7 +164,9 @@ public class DeWiktionaryClient {
                                 word.PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
                                     new HashSet<string>());
                             word.PronunciationAudioLinks[Source.Wiktionary].UnionWith(audioNodes
-                                .Select(audioNode => $"https:{audioNode.Attributes["href"].Value}")
+                                .Select(audioNode
+                                    => HttpUtility.UrlDecode(
+                                        $"https:{audioNode.Attributes["href"].Value}"))
                                 .ToHashSet());
                         }
                     }

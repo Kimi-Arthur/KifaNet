@@ -366,10 +366,6 @@ public class MemriseClient : IDisposable {
             normalizedNewValue = original.Replace(normalizedNewValue, replacement);
         }
 
-        Logger.Trace($"Old: {normalizedOldValue}");
-        Logger.Trace($"New: {normalizedNewValue}");
-        Logger.Trace($"Compare Result: {normalizedNewValue == normalizedOldValue}");
-
         return normalizedNewValue == normalizedOldValue;
     }
 
