@@ -19,24 +19,22 @@ public class TvShow : DataModel<TvShow>, Formattable {
         [Language.Italian] = s => $"Stagione {s}"
     };
 
-    static TvShowServiceClient client;
+    public static TvShowServiceClient Client { get; } = new TvShowRestServiceClient();
 
-    public static TvShowServiceClient Client => client ??= new TvShowRestServiceClient();
+    public string? Title { get; set; }
+    public Date? AirDate { get; set; }
+    public string? Overview { get; set; }
+    public string? TvNetwork { get; set; }
+    public Region? Region { get; set; }
+    public List<string>? Genres { get; set; }
+    public string? TmdbId { get; set; }
+    public string? TvdbId { get; set; }
+    public Language? Language { get; set; }
 
-    public string Title { get; set; }
-    public Date AirDate { get; set; }
-    public string Overview { get; set; }
-    public string TvNetwork { get; set; }
-    public Region Region { get; set; }
-    public List<string> Genres { get; set; }
-    public string TmdbId { get; set; }
-    public string TvdbId { get; set; }
-    public Language Language { get; set; }
+    public List<Season>? Seasons { get; set; }
+    public List<Episode>? Specials { get; set; }
 
-    public List<Season> Seasons { get; set; }
-    public List<Episode> Specials { get; set; }
-
-    public string PatternId { get; set; }
+    public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
@@ -46,8 +44,18 @@ public class TvShow : DataModel<TvShow>, Formattable {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
                               0 + Specials?.Count ?? 0;
 
+        if (TmdbId == null || Language?.Code == null) {
+            throw new UnableToFillException(
+                $"Not enough info to fill TvShow (TmdbId = {TmdbId}, Language = {Language})");
+        }
+
         var tmdb = new TmdbClient();
         var series = tmdb.GetSeries(TmdbId, Language.Code);
+        if (series == null) {
+            throw new UnableToFillException(
+                $"Failed to find series with {TmdbId}, {Language.Code}.");
+        }
+
         Title ??= Id;
         AirDate = series.FirstAirDate;
         TvNetwork = series.Networks[0].Name;
@@ -98,12 +106,12 @@ public class TvShow : DataModel<TvShow>, Formattable {
         return seasonName == StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
     }
 
-    public string Format(Season season, Episode episode)
+    public string? Format(Season season, Episode episode)
         => Format(season, new List<Episode> {
             episode
         });
 
-    public string Format(Season season, List<Episode> episodes) {
+    public string? Format(Season season, List<Episode> episodes) {
         var episode = episodes.First();
         var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
@@ -117,26 +125,23 @@ public class TvShow : DataModel<TvShow>, Formattable {
         var episodeTitle = GetTitle(episodes.Select(e => e.Title).ToList());
 
         // season.Title and episode.Title can be empty.
-        switch (patternId) {
-            case "multi_season":
-                return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                       $"/Season {season.Id} {season.Title}".TrimEnd() +
-                       $" ({season.AirDate.Year})" +
-                       $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}"
-                           .TrimEnd();
-            case "single_season":
-                return $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                       $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}"
-                           .TrimEnd();
-            default:
-                return "Unexpected!";
-        }
+        return patternId switch {
+            "multi_season" => $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
+                              $"/Season {season.Id} {season.Title}".TrimEnd() +
+                              $" ({season.AirDate.Year})" +
+                              $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}"
+                                  .TrimEnd(),
+            "single_season" => $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
+                               $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}"
+                                   .TrimEnd(),
+            _ => null
+        };
     }
 
     static string GetTitle(IReadOnlyList<string> titles)
         => GetSharedTitle(titles) ?? string.Join(" ", titles);
 
-    static string GetSharedTitle(IReadOnlyList<string> titles) {
+    static string? GetSharedTitle(IReadOnlyList<string> titles) {
         if (titles.Count < 2) {
             return null;
         }
@@ -180,6 +185,9 @@ public interface TvShowServiceClient : KifaServiceClient<TvShow> {
 }
 
 public class TvShowRestServiceClient : KifaServiceRestClient<TvShow>, TvShowServiceClient {
+    internal TvShowRestServiceClient() {
+    }
+
     public string Format(string id, int seasonId, int episodeId)
         => Format(id, seasonId, new List<int> {
             episodeId

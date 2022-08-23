@@ -6,23 +6,23 @@ namespace Kifa.Infos;
 
 public class Season : WithFormatInfo {
     public int Id { get; set; }
-    public string Title { get; set; }
-    public Date AirDate { get; set; }
-    public string Overview { get; set; }
-    public List<Episode> Episodes { get; set; }
+    public string? Title { get; set; }
+    public Date? AirDate { get; set; }
+    public string? Overview { get; set; }
+    public List<Episode>? Episodes { get; set; }
 
-    public string PatternId { get; set; }
+    public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 }
 
 public class Episode : WithFormatInfo {
     public int Id { get; set; }
-    public string Title { get; set; }
-    public Date AirDate { get; set; }
-    public string Overview { get; set; }
+    public string? Title { get; set; }
+    public Date? AirDate { get; set; }
+    public string? Overview { get; set; }
 
-    public string PatternId { get; set; }
+    public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 }
@@ -38,21 +38,21 @@ public class Episode : WithFormatInfo {
 //     关于我转生变成史莱姆这档事 (2019)/转生史莱姆日记 (2020)/转生史莱姆日记 S01E01 xx
 public class SpecialEpisode : Episode {
     // Alternative season for the special episode.
-    public string Season { get; set; }
+    public string? Season { get; set; }
 
     // The special collection this belongs to. Like Extras.
-    public string Collection { get; set; }
+    public string? Collection { get; set; }
 
     // Alternative episode for the special episode. It can also be like 13.5 or 13.1.
-    public string Episode { get; set; }
+    public string? Episode { get; set; }
 }
 
 public interface Formattable : WithFormatInfo {
-    string Format(Season season, Episode episode);
+    string? Format(Season season, Episode episode);
 }
 
 public interface WithFormatInfo {
-    string PatternId { get; set; }
+    string? PatternId { get; set; }
     int? SeasonIdWidth { get; set; }
     int? EpisodeIdWidth { get; set; }
 }
@@ -79,7 +79,7 @@ static class Helper {
             }
         };
 
-    public static string NormalizeTitle(string title, Language language = null) {
+    public static string NormalizeTitle(string title, Language? language = null) {
         if (string.IsNullOrEmpty(title)) {
             return title;
         }

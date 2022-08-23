@@ -11,17 +11,17 @@ public class Anime : DataModel<Anime>, Formattable {
 
     public static KifaServiceClient<Anime> Client => client ??= new KifaServiceRestClient<Anime>();
 
-    public string Title { get; set; }
-    public Date AirDate { get; set; }
-    public string TmdbId { get; set; }
-    public List<Season> Seasons { get; set; }
-    public List<Episode> Specials { get; set; }
+    public string? Title { get; set; }
+    public Date? AirDate { get; set; }
+    public string? TmdbId { get; set; }
+    public List<Season>? Seasons { get; set; }
+    public List<Episode>? Specials { get; set; }
 
-    public string PatternId { get; set; }
+    public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
-    public string Format(Season season, Episode episode) {
+    public string? Format(Season season, Episode episode) {
         var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
         var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
@@ -38,13 +38,13 @@ public class Anime : DataModel<Anime>, Formattable {
                               $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd(),
             "single_season" => $"/Anime/{Title} ({AirDate.Year})" +
                                $"/{Title} EP{eid} {episode.Title}".TrimEnd(),
-            _ => "Unexpected!"
+            _ => null
         };
     }
 }
 
 public interface AnimeServiceClient : KifaServiceClient<Anime> {
-    string Format(string id, int seasonId, int episodeId);
+    string? Format(string id, int seasonId, int episodeId);
 }
 
 public class AnimeRestServiceClient : KifaServiceRestClient<Anime>, AnimeServiceClient {

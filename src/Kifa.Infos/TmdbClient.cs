@@ -6,22 +6,33 @@ using Kifa.Service;
 namespace Kifa.Infos.Tmdb;
 
 public class TmdbClient {
-    public static string ApiKey { get; set; }
+    #region public late string ApiKey { get; set; }
+
+    string? apiKey;
+
+    public string ApiKey {
+        get => Late.Get(apiKey);
+        set => Late.Set(ref apiKey, value);
+    }
+
+    #endregion
+
+    // TODO: Convert to RPCs
     public static APIList Apis { get; set; }
 
-    static HttpClient client = new();
+    static readonly HttpClient HttpClient = new();
 
-    public TmdbSeries GetSeries(string tmdbId, string language) {
+    public TmdbSeries? GetSeries(string tmdbId, string language) {
         var request = Apis.Series.GetRequest(new Dictionary<string, string> {
             ["sid"] = tmdbId,
             ["lang"] = language,
             ["api_key"] = ApiKey
         });
 
-        return client.GetObject<TmdbSeries>(request);
+        return HttpClient.GetObject<TmdbSeries>(request);
     }
 
-    public TmdbSeason GetSeason(string tmdbId, long seasonNumber, string language) {
+    public TmdbSeason? GetSeason(string tmdbId, long seasonNumber, string language) {
         var request = Apis.Season.GetRequest(new Dictionary<string, string> {
             ["sid"] = tmdbId,
             ["season"] = seasonNumber.ToString(),
@@ -29,7 +40,7 @@ public class TmdbClient {
             ["api_key"] = ApiKey
         });
 
-        return client.GetObject<TmdbSeason>(request);
+        return HttpClient.GetObject<TmdbSeason>(request);
     }
 }
 
