@@ -57,25 +57,25 @@ public interface WithFormatInfo {
     int? EpisodeIdWidth { get; set; }
 }
 
-public static class Helper {
-    static List<(Regex pattern, MatchEvaluator replacer)> BasePatterns = new() {
-        (new Regex(@"/"), match => "／")
+static class Helper {
+    static readonly List<(Regex pattern, MatchEvaluator replacer)> BasePatterns = new() {
+        (new Regex(@"/"), _ => "／")
     };
 
-    static Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>> LanguagePatterns =
+    static readonly Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>> LanguagePatterns =
         new() {
             [Language.Japanese] = new List<(Regex pattern, MatchEvaluator replacer)> {
-                (new Regex(@" *\([ぁ-ヿ]+\) *"), match => ""),
-                (new Regex(@" *\[[ぁ-ヿ]+\] *"), match => ""),
+                (new Regex(@" *\([ぁ-ヿ]+\) *"), _ => ""),
+                (new Regex(@" *\[[ぁ-ヿ]+\] *"), _ => ""),
                 (new Regex(@"\""(.+)\"""), match => $"“{match.Groups[1].Value}”"),
-                (new Regex(@", "), match => "、"),
-                (new Regex(@"\? *"), match => "？"),
-                (new Regex(@"! *"), match => "！"),
-                (new Regex(@"… *"), match => "…")
+                (new Regex(@", "), _ => "、"),
+                (new Regex(@"\? *"), _ => "？"),
+                (new Regex(@"! *"), _ => "！"),
+                (new Regex(@"… *"), _ => "…")
             },
             [Language.English] = new List<(Regex pattern, MatchEvaluator replacer)> {
                 (new Regex(@" \((\d+)\)"), match => $" - Part {match.Groups[1].Value}"),
-                (new Regex(@""""), match => "'")
+                (new Regex(@""""), _ => "'")
             }
         };
 
