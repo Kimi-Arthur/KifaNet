@@ -48,10 +48,10 @@ public interface AnimeServiceClient : KifaServiceClient<Anime> {
 }
 
 public class AnimeRestServiceClient : KifaServiceRestClient<Anime>, AnimeServiceClient {
-    public string Format(string id, int seasonId, int episodeId) {
-        var show = Get(id);
-        var season = show.Seasons.First(s => s.Id == seasonId);
-        var episode = season.Episodes.First(e => e.Id == episodeId);
-        return show.Format(season, episode);
-    }
+    public string? Format(string id, int seasonId, int episodeId)
+        => Call<string?>("format", new Dictionary<string, string> {
+            { "id", id },
+            { "seasonId", seasonId.ToString() },
+            { "episodeId", episodeId.ToString() }
+        });
 }
