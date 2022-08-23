@@ -31,18 +31,15 @@ public class Anime : DataModel<Anime>, Formattable {
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
 
         // season.Title and episode.Title can be empty.
-        switch (patternId) {
-            case "multi_season":
-                return $"/Anime/{Title} ({AirDate.Year})" +
-                       $"/Season {season.Id} {season.Title}".TrimEnd() +
-                       $" ({season.AirDate.Year})" +
-                       $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd();
-            case "single_season":
-                return $"/Anime/{Title} ({AirDate.Year})" +
-                       $"/{Title} EP{eid} {episode.Title}".TrimEnd();
-            default:
-                return "Unexpected!";
-        }
+        return patternId switch {
+            "multi_season" => $"/Anime/{Title} ({AirDate.Year})" +
+                              $"/Season {season.Id} {season.Title}".TrimEnd() +
+                              $" ({season.AirDate.Year})" +
+                              $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd(),
+            "single_season" => $"/Anime/{Title} ({AirDate.Year})" +
+                               $"/{Title} EP{eid} {episode.Title}".TrimEnd(),
+            _ => "Unexpected!"
+        };
     }
 }
 
