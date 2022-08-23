@@ -18,7 +18,7 @@ public class AnimeTests {
             Title = "咲-Saki-",
             AirDate = Date.Parse("2009-04-06"),
             PatternId = "multi_season",
-            Seasons = new List<AnimeSeason> {
+            Seasons = new List<Season> {
                 new() {
                     Id = 1,
                     AirDate = Date.Parse("2009-04-06"),
@@ -58,7 +58,7 @@ public class AnimeTests {
             Title = "咲-Saki-",
             AirDate = Date.Parse("2009-04-06"),
             PatternId = "single_season",
-            Seasons = new List<AnimeSeason> {
+            Seasons = new List<Season> {
                 new() {
                     Id = 1,
                     Episodes = new List<Episode> {

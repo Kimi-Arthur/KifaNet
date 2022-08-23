@@ -13,8 +13,8 @@ public class Anime : DataModel<Anime>, Formattable {
 
     public string Title { get; set; }
     public Date AirDate { get; set; }
-
-    public List<AnimeSeason> Seasons { get; set; }
+    public string TmdbId { get; set; }
+    public List<Season> Seasons { get; set; }
     public List<Episode> Specials { get; set; }
 
     public string PatternId { get; set; }
@@ -41,10 +41,6 @@ public class Anime : DataModel<Anime>, Formattable {
             _ => "Unexpected!"
         };
     }
-}
-
-public class AnimeSeason : Season {
-    public string AnidbId { get; set; }
 }
 
 public interface AnimeServiceClient : KifaServiceClient<Anime> {
