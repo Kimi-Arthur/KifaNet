@@ -82,6 +82,7 @@ public class FileInformation : DataModel<FileInformation> {
     }
 
     public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
+        // Only calculate and populate nonexistent fields.
         requiredProperties -= requiredProperties & GetProperties();
 
         if (Size == null && (requiredProperties.HasFlag(FileProperties.Size) ||
