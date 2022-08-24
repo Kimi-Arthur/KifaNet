@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Kifa.Configs;
 using Kifa.Service;
 using Newtonsoft.Json;
 using Xunit;
@@ -7,8 +8,9 @@ namespace Kifa.Infos.Tests;
 
 public class TvShowTests {
     public TvShowTests() {
-        KifaServiceRestClient.ServerAddress = "http://www.jingbian.tk/api";
-        Client = new KifaServiceRestClient<TvShow>();
+        KifaConfigs.Init();
+
+        Client = TvShow.Client;
     }
 
     public KifaServiceClient<TvShow> Client { get; set; }
