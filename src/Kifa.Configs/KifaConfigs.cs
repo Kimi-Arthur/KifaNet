@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using NLog;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
@@ -43,13 +45,23 @@ public static class KifaConfigs {
 
     public static void LoadFromSystemConfigs(Assembly assembly = null) {
         var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
+        var assemblyName = assembly == null
+            ? string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(ass => ass.FullName))
+            : assembly.FullName;
+        Log($"Configure the following {properties.Count} properties in {assemblyName}:");
+        foreach (var property in properties) {
+            Log($"\t{property.Key}");
+        }
+
         if (ConfigFilePath != null) {
             var localConfig = ConfigFilePath;
             var remoteConfig = localConfig.Replace(".yaml", ".remote.yaml");
             if (File.Exists(remoteConfig)) {
+                Log($"Load configs from {remoteConfig}...");
                 LoadFromStream(File.OpenRead(remoteConfig), properties);
             }
 
+            Log($"Load configs from {localConfig}...");
             LoadFromStream(File.OpenRead(localConfig), properties);
         }
     }
@@ -92,16 +104,16 @@ public static class KifaConfigs {
     static void Apply(YamlMappingNode node, string prefix,
         IReadOnlyDictionary<string, PropertyInfo> properties) {
         foreach (var p in node) {
-            if (p.Value == null) {
-                continue;
-            }
-
             var id = $"{prefix}{((YamlScalarNode) p.Key).Value}";
+            Log($"Apply config for {id}");
             if (properties.TryGetValue(id, out var prop)) {
+                Log($"Property found for {id}");
                 var value = deserializer.Deserialize(
                     new YamlNodeParser(
                         YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
                     prop.PropertyType);
+                Log($"Value for {id}: {value}");
+
                 if (value == null) {
                     Console.WriteLine($"Cannot parse for {id}");
                     continue;
@@ -117,9 +129,39 @@ public static class KifaConfigs {
         }
     }
 
-    public static void Init() {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    static bool loggerConfigured;
+    static bool loggingNeeded;
+
+    static readonly List<string> PendingLogs = new();
+
+    static void Log(string message) {
+        if (!loggingNeeded) {
+            return;
+        }
+
+        if (loggerConfigured) {
+            Logger.Trace(message);
+        } else {
+            PendingLogs.Add(message);
+        }
+    }
+
+    public static void Init(bool logEvents = false) {
+        loggingNeeded = logEvents;
         AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
             => LoadFromSystemConfigs(eventArgs.LoadedAssembly);
         LoadFromSystemConfigs();
+    }
+
+    public static void LoggerConfigured() {
+        loggerConfigured = true;
+        Logger.Trace("Logger configured. Logging pending logs...");
+        foreach (var log in PendingLogs) {
+            Logger.Trace(log);
+        }
+
+        PendingLogs.Clear();
     }
 }

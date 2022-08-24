@@ -1,5 +1,4 @@
-﻿using System;
-using Kifa.Apps.MomentCounter;
+﻿using Kifa.Apps.MomentCounter;
 using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
 using Kifa.Languages.German;
@@ -16,12 +15,10 @@ namespace Kifa.Web.Api;
 
 public class Program {
     public static void Main(string[] args) {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
-            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
-
-        KifaConfigs.LoadFromSystemConfigs();
+        KifaConfigs.Init();
         RegisterClients();
         ConfigureLogger();
+        KifaConfigs.LoggerConfigured();
 
         CreateWebHostBuilder(args).Build().Run();
     }
