@@ -1,1 +1,1 @@
-datax import tv_shows.yaml
+datax sync tv_shows.yaml
