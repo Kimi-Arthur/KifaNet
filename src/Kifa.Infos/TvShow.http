@@ -1,4 +1,0 @@
-POST {{server}}/api/tv_shows/LEGAL HIGH
-Content-Type: text/json
-
-{"tmdb_id": "46234","language":"ja"}
