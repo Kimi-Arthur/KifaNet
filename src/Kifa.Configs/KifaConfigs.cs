@@ -116,4 +116,10 @@ public static class KifaConfigs {
             }
         }
     }
+
+    public static void Init() {
+        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+            => LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        LoadFromSystemConfigs();
+    }
 }
