@@ -107,87 +107,97 @@ public class FileInformation : DataModel<FileInformation> {
         }
 
         if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None) {
-            var hashers = new List<HashAlgorithm?> {
-                requiredProperties.HasFlag(FileProperties.Md5)
-                    ? new MD5CryptoServiceProvider()
-                    : null,
-                requiredProperties.HasFlag(FileProperties.Sha1)
-                    ? new SHA1CryptoServiceProvider()
-                    : null,
-                requiredProperties.HasFlag(FileProperties.Sha256)
-                    ? new SHA256CryptoServiceProvider()
-                    : null
-            };
-
-            BlockMd5 = requiredProperties.HasFlag(FileProperties.BlockMd5)
-                ? new List<string>()
-                : BlockMd5;
-            BlockSha1 = requiredProperties.HasFlag(FileProperties.BlockSha1)
-                ? new List<string>()
-                : BlockSha1;
-            BlockSha256 = requiredProperties.HasFlag(FileProperties.BlockSha256)
-                ? new List<string>()
-                : BlockSha256;
-
-            var blockHashers = new List<HashAlgorithm?> {
-                requiredProperties.HasFlag(FileProperties.BlockMd5)
-                    ? new MD5CryptoServiceProvider()
-                    : null,
-                requiredProperties.HasFlag(FileProperties.BlockSha1)
-                    ? new SHA1CryptoServiceProvider()
-                    : null,
-                requiredProperties.HasFlag(FileProperties.BlockSha256)
-                    ? new SHA256CryptoServiceProvider()
-                    : null
-            };
-
-            var additionalHashers = new List<IHash?> {
-                requiredProperties.HasFlag(FileProperties.Crc32)
-                    ? HashFactory.Checksum.CreateCRC32_IEEE()
-                    : null,
-                requiredProperties.HasFlag(FileProperties.Adler32)
-                    ? HashFactory.Checksum.CreateAdler32()
-                    : null
-            };
-
-            foreach (var hasher in additionalHashers) {
-                hasher?.Initialize();
+            var transformers = new List<Action<byte[], int>>();
+            HashAlgorithm? md5Hasher = null;
+            if (requiredProperties.HasFlag(FileProperties.Md5)) {
+                md5Hasher = new MD5CryptoServiceProvider();
+                transformers.Add((buffer, readLength)
+                    => md5Hasher.TransformBlock(buffer, 0, readLength, buffer, 0));
             }
 
+            HashAlgorithm? sha1Hasher = null;
+            if (requiredProperties.HasFlag(FileProperties.Sha1)) {
+                sha1Hasher = new SHA1CryptoServiceProvider();
+                transformers.Add((buffer, readLength)
+                    => sha1Hasher.TransformBlock(buffer, 0, readLength, buffer, 0));
+            }
+
+            HashAlgorithm? sha256Hasher = null;
+            if (requiredProperties.HasFlag(FileProperties.Sha256)) {
+                sha256Hasher = new SHA256CryptoServiceProvider();
+                transformers.Add((buffer, readLength)
+                    => sha256Hasher.TransformBlock(buffer, 0, readLength, buffer, 0));
+            }
+
+            HashAlgorithm? blockMd5Hasher;
+            if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
+                BlockMd5 = new List<string>();
+                blockMd5Hasher = new MD5CryptoServiceProvider();
+                transformers.Add((buffer, readLength)
+                    => BlockMd5.Add(blockMd5Hasher.ComputeHash(buffer, 0, readLength)
+                        .ToHexString()));
+            }
+
+            HashAlgorithm? blockSha1Hasher;
+            if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
+                BlockSha1 = new List<string>();
+                blockSha1Hasher = new SHA1CryptoServiceProvider();
+                transformers.Add((buffer, readLength)
+                    => BlockSha1.Add(blockSha1Hasher.ComputeHash(buffer, 0, readLength)
+                        .ToHexString()));
+            }
+
+            HashAlgorithm? blockSha256Hasher;
+            if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
+                BlockSha256 = new List<string>();
+                blockSha256Hasher = new SHA256CryptoServiceProvider();
+                transformers.Add((buffer, readLength)
+                    => BlockSha256.Add(blockSha256Hasher.ComputeHash(buffer, 0, readLength)
+                        .ToHexString()));
+            }
+
+            IHash? crc32Hasher = null;
+            if (requiredProperties.HasFlag(FileProperties.Crc32)) {
+                crc32Hasher = HashFactory.Checksum.CreateCRC32_IEEE();
+                crc32Hasher.Initialize();
+                transformers.Add((buffer, readLength)
+                    => crc32Hasher.TransformBytes(buffer, 0, readLength));
+            }
+
+            IHash? adler32Hasher = null;
+            if (requiredProperties.HasFlag(FileProperties.Adler32)) {
+                adler32Hasher = HashFactory.Checksum.CreateAdler32();
+                adler32Hasher.Initialize();
+                transformers.Add((buffer, readLength)
+                    => adler32Hasher.TransformBytes(buffer, 0, readLength));
+            }
+
+            var threadCount = transformers.Count;
             while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) != 0) {
-                Parallel.ForEach(hashers,
-                    hasher => { hasher?.TransformBlock(buffer, 0, readLength, buffer, 0); });
-
-                Parallel.ForEach(additionalHashers,
-                    hasher => { hasher?.TransformBytes(buffer, 0, readLength); });
-
-                if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
-                    BlockMd5.Add(blockHashers[0]!.ComputeHash(buffer, 0, readLength).ToHexString());
-                }
-
-                if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
-                    BlockSha1.Add(blockHashers[1]!.ComputeHash(buffer, 0, readLength)
-                        .ToHexString());
-                }
-
-                if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
-                    BlockSha256.Add(blockHashers[2]!.ComputeHash(buffer, 0, readLength)
-                        .ToHexString());
-                }
+                Parallel.ForEach(transformers, new ParallelOptions {
+                    MaxDegreeOfParallelism = threadCount
+                }, transformer => transformer(buffer, readLength));
 
                 readLength = 0;
             }
 
-            foreach (var hasher in hashers) {
-                hasher?.TransformFinalBlock(buffer, 0, 0);
+            if (md5Hasher != null) {
+                md5Hasher.TransformFinalBlock(buffer, 0, 0);
+                Md5 ??= md5Hasher.Hash?.ToHexString();
             }
 
-            Md5 ??= hashers[0]?.Hash?.ToHexString();
-            Sha1 ??= hashers[1]?.Hash?.ToHexString();
-            Sha256 ??= hashers[2]?.Hash?.ToHexString();
-            Crc32 ??= additionalHashers[0]?.TransformFinal().GetBytes().Reverse().ToArray()
-                .ToHexString();
-            Adler32 ??= additionalHashers[1]?.TransformFinal().GetBytes().Reverse().ToArray()
+            if (sha1Hasher != null) {
+                sha1Hasher.TransformFinalBlock(buffer, 0, 0);
+                Sha1 ??= sha1Hasher.Hash?.ToHexString();
+            }
+
+            if (sha256Hasher != null) {
+                sha256Hasher.TransformFinalBlock(buffer, 0, 0);
+                Sha256 ??= sha256Hasher.Hash?.ToHexString();
+            }
+
+            Crc32 ??= crc32Hasher?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
+            Adler32 ??= adler32Hasher?.TransformFinal().GetBytes().Reverse().ToArray()
                 .ToHexString();
         }
 
