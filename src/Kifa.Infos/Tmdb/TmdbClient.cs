@@ -16,11 +16,11 @@ public class TmdbClient {
 
     static readonly HttpClient HttpClient = new();
 
-    public TmdbSeriesResponse? GetSeries(string tmdbId, string language)
+    public TmdbSeriesResponse? GetSeries(string tmdbId, Language language)
         => HttpClient.SendWithRetry<TmdbSeriesResponse>(
             new TmdbSeriesRequest(tmdbId, language, ApiKey));
 
-    public TmdbSeasonResponse? GetSeason(string tmdbId, int seasonNumber, string language)
+    public TmdbSeasonResponse? GetSeason(string tmdbId, int seasonNumber, Language language)
         => HttpClient.SendWithRetry<TmdbSeasonResponse>(
             new TmdbSeasonRequest(tmdbId, seasonNumber, language, ApiKey));
 }

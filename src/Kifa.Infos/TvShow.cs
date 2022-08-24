@@ -50,7 +50,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
         }
 
         var tmdb = new TmdbClient();
-        var series = tmdb.GetSeries(TmdbId, Language.Code);
+        var series = tmdb.GetSeries(TmdbId, Language);
         if (series == null) {
             throw new UnableToFillException(
                 $"Failed to find series with {TmdbId}, {Language.Code}.");
@@ -68,7 +68,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
         Seasons = new List<Season>();
 
         foreach (var seasonInfo in series.Seasons) {
-            var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, Language.Code);
+            var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, Language);
 
             var episodes = data.Episodes.Select(episode => new Episode {
                 Id = episode.EpisodeNumber,

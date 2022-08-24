@@ -10,7 +10,7 @@ public sealed class TmdbSeriesRequest : ParameterizedRequest {
         parameters = new Dictionary<string, string> {
             {"sid", sid},
             {"api_key", apiKey},
-            {"language", language.Code}
+            {"lang", language.Code}
         };
     }
 }
