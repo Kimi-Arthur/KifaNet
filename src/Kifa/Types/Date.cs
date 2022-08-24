@@ -12,12 +12,15 @@ public class Date : JsonSerializable, IComparable<Date> {
 
     public static readonly DateTimeOffset Zero = new(2018, 5, 7, 0, 0, 0, TimeSpan.Zero);
 
-    public static Date Parse(string data)
-        => new() {
-            date = ParseDateTime(data)
-        };
+    public static Date Parse(string data) => new(data);
 
     public string ToJson() => date.ToString("yyyy-MM-dd");
+
+    public Date(string value) {
+        date = ParseDateTime(value);
+    }
+
+    public static implicit operator Date(string data) => Parse(data);
 
     public void FromJson(string data) {
         date = ParseDateTime(data);
