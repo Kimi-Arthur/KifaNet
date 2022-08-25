@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Kifa.Infos.Tmdb;
 using Kifa.Service;
 
@@ -10,14 +11,6 @@ public class TvShow : DataModel<TvShow>, Formattable {
     public const string ModelId = "tv_shows";
 
     const string Part1Suffix = " - Part 1";
-
-    static Dictionary<Language, Func<int, string>> StandardSeasonNames = new() {
-        [Language.German] = s => $"Staffel {s}",
-        [Language.English] = s => $"Season {s}",
-        [Language.Japanese] = s => $"シーズン{s}",
-        [Language.Chinese] = s => $"第{GetChineseNumber(s)}季",
-        [Language.Italian] = s => $"Stagione {s}"
-    };
 
     public static TvShowServiceClient Client { get; } = new TvShowRestServiceClient();
 
@@ -82,9 +75,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
                 Seasons.Add(new Season {
                     AirDate = seasonInfo.AirDate,
                     Id = seasonInfo.SeasonNumber,
-                    Title = IsStandardSeasonName(seasonName, seasonInfo.SeasonNumber, Language)
-                        ? null
-                        : seasonName,
+                    Title = NormalizeSeasonTitle(seasonName),
                     Overview = seasonInfo.Overview,
                     Episodes = episodes
                 });
@@ -96,14 +87,27 @@ public class TvShow : DataModel<TvShow>, Formattable {
         return GetNextEpisodeDate();
     }
 
+    static readonly List<(Regex Pattern, MatchEvaluator Replacement)> SeasonNameReplacements =
+        new() {
+            (new Regex(@"Season \d+|Staffel \d+|Stagione \d+|シーズン\d+|第[零一二三四五六七八九十百千万]+季"),
+                _ => ""),
+            (new Regex(@"Season \w+:"), _ => ""),
+        };
+
+    static string? NormalizeSeasonTitle(string seasonName) {
+        foreach (var (pattern, replacement) in SeasonNameReplacements) {
+            seasonName = pattern.Replace(seasonName, replacement);
+        }
+
+        seasonName = seasonName.Trim();
+
+        return string.IsNullOrEmpty(seasonName) ? null : seasonName;
+    }
+
     // TODO: Always refresh for now.
     // It should determine how frequent it's published and last updated episode to predict.
     DateTimeOffset? GetNextEpisodeDate() {
         return Date.Zero;
-    }
-
-    static bool IsStandardSeasonName(string seasonName, int seasonNumber, Language language) {
-        return seasonName == StandardSeasonNames.GetValueOrDefault(language, s => "")(seasonNumber);
     }
 
     public string? Format(Season season, Episode episode)
@@ -161,22 +165,6 @@ public class TvShow : DataModel<TvShow>, Formattable {
 
         return sharedTitle;
     }
-
-    static List<string> ChineseNumbers = new() {
-        "零",
-        "一",
-        "二",
-        "三",
-        "四",
-        "五",
-        "六",
-        "七",
-        "八",
-        "九",
-        "十"
-    };
-
-    static string GetChineseNumber(int number) => ChineseNumbers[number];
 }
 
 public interface TvShowServiceClient : KifaServiceClient<TvShow> {
