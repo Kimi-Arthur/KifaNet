@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Kifa.Configs;
 using Kifa.Service;
 using Newtonsoft.Json;
 using Xunit;
@@ -7,7 +8,8 @@ namespace Kifa.Infos.Tests;
 
 public class AnimeTests {
     public AnimeTests() {
-        Client = new KifaServiceRestClient<Anime>();
+        KifaConfigs.Init();
+        Client = Anime.Client;
     }
 
     public KifaServiceClient<Anime> Client { get; set; }

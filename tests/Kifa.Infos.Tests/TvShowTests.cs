@@ -9,7 +9,6 @@ namespace Kifa.Infos.Tests;
 public class TvShowTests {
     public TvShowTests() {
         KifaConfigs.Init();
-
         Client = TvShow.Client;
     }
 
