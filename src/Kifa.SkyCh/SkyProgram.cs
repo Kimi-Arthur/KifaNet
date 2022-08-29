@@ -33,6 +33,10 @@ public class SkyProgram : DataModel<SkyProgram> {
 
     // Should not be called frequently.
     public override DateTimeOffset? Fill() {
+        if (Title != null) {
+            return null;
+        }
+
         WaitCooldown();
 
         var pageUrl = $"https://sport.sky.ch/en/SkyChannelAjax/DetailEpg?id={Id}";
