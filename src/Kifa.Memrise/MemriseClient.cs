@@ -190,7 +190,7 @@ public class MemriseClient : IDisposable {
 
         needsRetrieval = (audios.Count == 0
             ? ClearAllAudios(existingRow)
-            : UploadAudios(existingRow, audios)) || needsRetrieval;
+            : UploadAudios(existingRow, word, audios)) || needsRetrieval;
 
         if (needsRetrieval) {
             existingRow = GetExistingRow(word);
@@ -223,12 +223,12 @@ public class MemriseClient : IDisposable {
         return linkArticle.Groups[1].Value != wordArticle.Groups[1].Value;
     }
 
-    bool UploadAudios(MemriseWord originalWord, List<string> audios) {
+    bool UploadAudios(MemriseWord originalWord, GoetheGermanWord word, List<string> audios) {
         var audioFiles = audios.Select(audio => new KifaFile(audio)).ToList();
         audioFiles.ForEach(file => file.Add(false));
         var keys = audioFiles.Select(file => (file.FileInfo!.Size!.Value, file.FileInfo.Md5!))
             .ToHashSet();
-        var modified = RemoveUnneededAudios(originalWord, keys);
+        var modified = RemoveUnneededAudios(originalWord, word, keys);
 
         foreach (var audioFile in audioFiles) {
             var info = audioFile.FileInfo!;
@@ -269,7 +269,7 @@ public class MemriseClient : IDisposable {
         return originalWord.Audios.Count > 0;
     }
 
-    bool RemoveUnneededAudios(MemriseWord originalWord,
+    bool RemoveUnneededAudios(MemriseWord originalWord, GoetheGermanWord word,
         HashSet<(long size, string md5)> audioFiles) {
         if (originalWord.Audios == null) {
             return false;
@@ -299,6 +299,7 @@ public class MemriseClient : IDisposable {
             }
 
             if (foundToRemove) {
+                originalWord = GetExistingRow(word)!;
                 originalWord.FillAudios();
                 foundAnyToRemove = true;
             }
