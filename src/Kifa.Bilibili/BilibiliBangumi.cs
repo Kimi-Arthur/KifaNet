@@ -28,7 +28,7 @@ public class BilibiliBangumi : DataModel<BilibiliBangumi> {
     public override DateTimeOffset? Fill() {
         var mediaData = new MediaRpc().Invoke(Id).Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";
-        Title = mediaData.Media.Title;
+        Title = mediaData.Media.Title.Trim();
         Type = mediaData.Media.TypeName;
         var seasonData = new MediaSeasonRpc().Invoke(SeasonId)?.Result;
         if (seasonData == null) {
