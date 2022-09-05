@@ -22,6 +22,9 @@
   <ItemGroup>
     <None Remove="car-20120827-manifest.mpd" />
     <None Remove="KELLMFAAMAOJEBDG.mpd" />
+    <None Update="3995788.mpd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

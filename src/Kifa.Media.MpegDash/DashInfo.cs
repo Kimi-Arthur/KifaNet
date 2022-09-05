@@ -18,10 +18,10 @@ public class S {
     public string D { get; set; }
 
     [XmlAttribute(AttributeName = "r")]
-    public string R { get; set; }
+    public string? R { get; set; }
 
     [XmlAttribute(AttributeName = "t")]
-    public string T { get; set; }
+    public string? T { get; set; }
 }
 
 [XmlRoot(ElementName = "SegmentTimeline", Namespace = "urn:mpeg:dash:schema:mpd:2011")]
