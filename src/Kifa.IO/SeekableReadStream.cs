@@ -63,7 +63,7 @@ public class SeekableReadStream : Stream {
         }
 
         if (Position < 0) {
-            throw new ArgumentException(nameof(offset));
+            throw new ArgumentException("Seek position is out of range.", nameof(offset));
         }
 
         return Position;
