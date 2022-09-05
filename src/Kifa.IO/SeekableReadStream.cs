@@ -18,7 +18,14 @@ public class SeekableReadStream : Stream {
 
     public SeekableReadStream(long length, Reader reader, int maxChunkSize = int.MaxValue,
         int threadCount = 1) {
-        Length = length;
+        this.length = length;
+        this.reader = reader;
+        this.maxChunkSize = maxChunkSize;
+        this.threadCount = threadCount;
+    }
+
+    public SeekableReadStream(Func<long> lengthGetter, Reader reader,
+        int maxChunkSize = int.MaxValue, int threadCount = 1) {
         this.reader = reader;
         this.maxChunkSize = maxChunkSize;
         this.threadCount = threadCount;
@@ -30,7 +37,11 @@ public class SeekableReadStream : Stream {
 
     public override bool CanWrite => false;
 
-    public override long Length { get; }
+    readonly Func<long>? lengthGetter = null;
+
+    long? length;
+
+    public override long Length => (length ??= lengthGetter?.Invoke()!).Value;
 
     public override long Position { get; set; }
 
