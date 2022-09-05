@@ -1,6 +1,6 @@
 using System;
 
-namespace Kifa.Media.MpegDash; 
+namespace Kifa; 
 
 public class ResourceNotFoundException : Exception {
     public ResourceNotFoundException() {
