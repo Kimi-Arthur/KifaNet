@@ -37,15 +37,15 @@ public class DownloadLiveCommand : KifaCommand {
         var mpegDash = new MpegDashFile(videoLink);
         var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
+        var selected = SelectMany(audioStreamGetters, _ => "audio");
+
         var parts = new List<KifaFile>();
-        var videoFile = targetFile.GetTempFile(".v.mp4");
+        var videoFile = targetFile.GetTempFile("v.mp4");
         videoFile.Write(videoStreamGetter);
         parts.Add(videoFile);
 
-        var selected = SelectMany(audioStreamGetters, _ => "audio");
-
         foreach (var (streamGetter, index) in selected.Select((x, i) => (x, i))) {
-            var audioFile = targetFile.GetTempFile($".a{index}.m4a");
+            var audioFile = targetFile.GetTempFile($"a{index}.m4a");
             audioFile.Write(streamGetter);
             parts.Add(audioFile);
         }
