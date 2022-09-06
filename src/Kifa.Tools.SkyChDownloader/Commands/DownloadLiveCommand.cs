@@ -50,7 +50,7 @@ public class DownloadLiveCommand : KifaCommand {
         }
 
         KifaFile? coverFile = null;
-        if (skyProgram.ImageLink?.EndsWith("svg") != true) {
+        if (skyProgram.ImageLink?.EndsWith("svg") ?? false) {
             var coverLink = new KifaFile(skyProgram.ImageLink);
             coverFile = targetFile.GetTempFile($"c.{coverLink.Extension}");
             coverLink.Copy(coverFile);
