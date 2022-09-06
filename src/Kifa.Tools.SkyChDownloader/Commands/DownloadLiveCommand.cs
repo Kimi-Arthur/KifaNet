@@ -74,6 +74,13 @@ public class DownloadLiveCommand : KifaCommand {
         }
 
         MergeParts(parts, coverFile, targetFile);
+
+        foreach (var part in parts) {
+            part.Delete();
+        }
+        
+        // Cover file is left there by design as avidemux will not bring the cover along.
+        
         return 0;
     }
 
