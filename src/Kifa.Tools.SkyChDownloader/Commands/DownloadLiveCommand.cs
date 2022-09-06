@@ -59,6 +59,11 @@ public class DownloadLiveCommand : KifaCommand {
         var videoLink = skyProgram.GetVideoLink();
         Logger.Info($"Link: {videoLink}");
 
+        if (videoLink == null) {
+            Logger.Fatal($"Cannot get video link for {liveId}.");
+            return 1;
+        }
+
         var mpegDash = new MpegDashFile(videoLink);
         var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 

@@ -92,7 +92,7 @@ public class SkyProgram : DataModel<SkyProgram> {
         lastFilled = DateTime.Now;
     }
 
-    public string GetVideoLink() => new PlayerRpc().Invoke(Id).Url;
+    public string? GetVideoLink() => new PlayerRpc().Invoke(Id)?.Url;
 }
 
 public interface SkyProgramServiceClient : KifaServiceClient<SkyProgram> {

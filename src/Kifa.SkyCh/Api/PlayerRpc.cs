@@ -94,7 +94,7 @@ public class PlayerRpc : JsonRpc<PlayerRpc.PlayerResponse> {
     public override string UrlPattern { get; } =
         "https://sport.sky.ch/en/SkyPlayerAjax/SkyPlayer?id={id}&contentType=8";
 
-    public PlayerResponse Invoke(string id)
+    public PlayerResponse? Invoke(string id)
         => Invoke(new Dictionary<string, string> {
             { "id", id }
         });
