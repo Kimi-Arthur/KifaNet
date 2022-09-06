@@ -97,6 +97,8 @@ public class ConcatenatedReadStream : Stream {
             return 0;
         }
 
+        Logger.Trace($"Reading {count} bytes from {Position}...");
+
         var left = count;
         var (index, streamOffset) = StreamPosition;
         for (; index < Streams.Count; index++) {
@@ -124,7 +126,8 @@ public class ConcatenatedReadStream : Stream {
             streamOffset = 0;
         }
 
-        throw new FileCorruptedException("Read beyond end of streams.");
+        throw new FileCorruptedException(
+            $"Read beyond end of streams. {left}/{count} bytes to read.");
     }
 
     public override void Write(byte[] buffer, int offset, int count)
