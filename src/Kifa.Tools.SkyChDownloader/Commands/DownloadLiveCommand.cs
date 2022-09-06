@@ -35,11 +35,14 @@ public class DownloadLiveCommand : KifaCommand {
         var mpegDash = new MpegDashFile(videoLink);
         var (extension, videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
-        var videoFile =
-            targetFile.Parent.GetFile(
-                KifaFile.DefaultIgnoredPrefix + targetFile.BaseName + ".v.mp4");
+        targetFile.Parent.GetFile(KifaFile.DefaultIgnoredPrefix + targetFile.BaseName + ".v.mp4")
+            .Write(videoStreamGetter);
 
-        videoFile.Write(videoStreamGetter());
+        for (var i = 0; i < audioStreamGetters.Count; i++) {
+            targetFile.Parent
+                .GetFile(KifaFile.DefaultIgnoredPrefix + targetFile.BaseName + $".a{i}.m4a")
+                .Write(audioStreamGetters[i]);
+        }
 
         return 0;
     }
