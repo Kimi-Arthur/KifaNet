@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj" />
     <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
   </ItemGroup>

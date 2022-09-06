@@ -1,5 +1,7 @@
 using System.Web;
 using CommandLine;
+using Kifa.Api.Files;
+using Kifa.Media.MpegDash;
 using Kifa.Service;
 using Kifa.SkyCh;
 using NLog;
@@ -24,9 +26,21 @@ public class DownloadLiveCommand : KifaCommand {
             title += " - " + HttpUtility.HtmlDecode(skyProgram.Subtitle);
         }
 
+        var targetFile = CurrentFolder.GetFile($"{title}.{skyProgram.Id}.mp4");
         Logger.Info($"Name: {title}.{skyProgram.Id}.mp4");
         Logger.Info($"Cover: {skyProgram.ImageLink}");
-        Logger.Info($"Link: {skyProgram.GetVideoLink()}");
+        var videoLink = skyProgram.GetVideoLink();
+        Logger.Info($"Link: {videoLink}");
+
+        var mpegDash = new MpegDashFile(videoLink);
+        var (extension, videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
+
+        var videoFile =
+            targetFile.Parent.GetFile(
+                KifaFile.DefaultIgnoredPrefix + targetFile.BaseName + ".v.mp4");
+
+        videoFile.Write(videoStreamGetter());
+
         return 0;
     }
 }
