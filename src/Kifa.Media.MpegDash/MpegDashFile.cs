@@ -121,6 +121,8 @@ public class MpegDashFile {
                 time += long.Parse(segment.D);
             }
         }
+        
+        links.Add(BaseUri + "/" + mediaTemplate.Replace("$Time$", time.ToString()));
 
         return links;
     }
