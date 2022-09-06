@@ -37,13 +37,10 @@ public class MpegDashFile {
         DashInfo = (DashInfo) xml.Deserialize(stream)!;
     }
 
-    public (string extension, Func<Stream> videoStreamGetter, List<Func<Stream>> audioStreamGetters)
-        GetStreams() {
+    public (Func<Stream> videoStreamGetter, List<Func<Stream>> audioStreamGetters) GetStreams() {
         var links = GetLinks();
 
-        // Assumed file extension for now.
-        // TODO: This won't work as the part file endpoint won't accpet range header.
-        return ("mp4",
+        return (
             () => new ConcatenatedReadStream(links.VideoLinks.Select(GetStreamFromLink).ToList()),
             links.AudioLinks.Select<List<string>, Func<Stream>>(audioLinks => (()
                     => new ConcatenatedReadStream(audioLinks.Select(GetStreamFromLink).ToList())))
