@@ -120,6 +120,7 @@ public class ConcatenatedReadStream : Stream {
                     streamPosition = (index, streamOffset + readCount);
                 }
 
+                Position += count;
                 return count;
             }
 
