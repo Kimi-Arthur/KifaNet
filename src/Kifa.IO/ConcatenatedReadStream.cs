@@ -22,7 +22,24 @@ public class ConcatenatedReadStream : Stream {
 
     public override bool CanWrite => false;
 
-    public override long Length => Streams.Select(s => s.Length).Sum();
+    int countedStreams;
+    long tentativeLength;
+
+    // Optional parameter threshold meaning if the length is known to be longer than that, we don't
+    // care about the actual value.
+    long GetTentativeLength(long threshold = long.MaxValue) {
+        if (tentativeLength > threshold) {
+            return tentativeLength;
+        }
+
+        while (countedStreams < Streams.Count && tentativeLength <= threshold) {
+            tentativeLength += Streams[countedStreams++].Length;
+        }
+
+        return tentativeLength;
+    }
+
+    public override long Length => GetTentativeLength();
 
     public override long Position { get; set; }
 
@@ -61,6 +78,7 @@ public class ConcatenatedReadStream : Stream {
                 Position += offset;
                 break;
             case SeekOrigin.End:
+                Logger.Debug("Full length is calculated.");
                 Position = Length + offset;
                 break;
         }
@@ -86,14 +104,14 @@ public class ConcatenatedReadStream : Stream {
             throw new ArgumentOutOfRangeException(nameof(offset));
         }
 
-        count = (int) Math.Min(count, Length - Position);
+        count = (int) Math.Min(count, GetTentativeLength(count + Position) - Position);
 
         if (buffer.Length - offset < count) {
             throw new ArgumentException();
         }
 
         // This will trigger preflight of all links.
-        if (Position >= Length) {
+        if (Position >= GetTentativeLength(Position)) {
             return 0;
         }
 
