@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using NLog;
 
 namespace Kifa.IO;
@@ -28,6 +27,10 @@ public class ConcatenatedReadStream : Stream {
     // Optional parameter threshold meaning if the length is known to be longer than that, we don't
     // care about the actual value.
     long GetTentativeLength(long threshold = long.MaxValue) {
+        if (threshold == long.MaxValue) {
+            Logger.Debug("Full length is calculated.");
+        }
+
         if (tentativeLength > threshold) {
             return tentativeLength;
         }
@@ -78,7 +81,6 @@ public class ConcatenatedReadStream : Stream {
                 Position += offset;
                 break;
             case SeekOrigin.End:
-                Logger.Debug("Full length is calculated.");
                 Position = Length + offset;
                 break;
         }
