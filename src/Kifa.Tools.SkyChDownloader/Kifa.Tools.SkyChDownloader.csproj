@@ -13,6 +13,7 @@
     <Copyright>Copyright © 2022 Kimi Arthur</Copyright>
     <PackageTags>Kifa</PackageTags>
     <Authors>KimiArthur</Authors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
