@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using CommandLine;
 using Kifa.Api.Files;
@@ -33,15 +35,19 @@ public class DownloadLiveCommand : KifaCommand {
         Logger.Info($"Link: {videoLink}");
 
         var mpegDash = new MpegDashFile(videoLink);
-        var (extension, videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
+        var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
-        targetFile.Parent.GetFile(KifaFile.DefaultIgnoredPrefix + targetFile.BaseName + ".v.mp4")
-            .Write(videoStreamGetter);
+        var parts = new List<KifaFile>();
+        var videoFile = targetFile.GetTempFile(".v.mp4");
+        videoFile.Write(videoStreamGetter);
+        parts.Add(videoFile);
 
-        for (var i = 0; i < audioStreamGetters.Count; i++) {
-            targetFile.Parent
-                .GetFile(KifaFile.DefaultIgnoredPrefix + targetFile.BaseName + $".a{i}.m4a")
-                .Write(audioStreamGetters[i]);
+        var selected = SelectMany(audioStreamGetters, _ => "audio");
+
+        foreach (var (streamGetter, index) in selected.Select((x, i) => (x, i))) {
+            var audioFile = targetFile.GetTempFile($".a{index}.m4a");
+            audioFile.Write(streamGetter);
+            parts.Add(audioFile);
         }
 
         return 0;

@@ -232,6 +232,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public KifaFile GetFilePrefixed(string prefix)
         => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
 
+    public KifaFile GetTempFile(string type)
+        => Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}");
+
     public override string ToString() => $"{Host}{Path}";
 
     public bool Exists() => Client.Exists(Path);
