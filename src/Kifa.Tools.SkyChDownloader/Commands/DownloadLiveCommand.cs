@@ -42,8 +42,7 @@ public class DownloadLiveCommand : KifaCommand {
 
         var date = skyProgram.AirDateTime.ToString("yyyyMMdd");
 
-        var targetFile =
-            KifaFile.GetLocal($"/Downloads/Soccer/{date[2..6]}/{date}_{Title}.{skyProgram.Id}.mp4");
+        var targetFile = CurrentFolder.GetFile($"{date[2..6]}/{date}_{Title}.{skyProgram.Id}.mp4");
         if (targetFile.Exists() || targetFile.ExistsSomewhere()) {
             Logger.Info($"File {targetFile} already downloaded.");
             return 0;
