@@ -50,8 +50,8 @@ public class MpegDashFile {
                 .ToList());
     }
 
-    static Stream GetStreamFromLink(string link) {
-        return new SeekableReadStream(() => HttpClient.GetContentLength(link)!.Value,
+    static Stream GetStreamFromLink(string link)
+        => new SeekableReadStream(() => HttpClient.GetContentLength(link)!.Value,
             (buffer, bufferOffset, offset, count) => {
                 if (count < 0) {
                     count = buffer.Length - bufferOffset;
@@ -62,12 +62,12 @@ public class MpegDashFile {
                 return Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get, link);
 
-                    request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
                     using var response = HttpClient.SendAsync(request).Result;
                     response.EnsureSuccessStatusCode();
-                    var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-                    response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
-                    return (int) memoryStream.Position;
+                    var stream = response.Content.ReadAsStreamAsync().Result;
+                    stream.Seek(offset, SeekOrigin.Begin);
+                    stream.Read(buffer, bufferOffset, count);
+                    return count;
                 }, (ex, i) => {
                     if (i >= 5) {
                         throw ex;
@@ -77,7 +77,6 @@ public class MpegDashFile {
                     Thread.Sleep(TimeSpan.FromSeconds(30));
                 });
             });
-    }
 
     public (List<string> VideoLinks, List<List<string>> AudioLinks) GetLinks() {
         List<string>? videoLinks = null;
