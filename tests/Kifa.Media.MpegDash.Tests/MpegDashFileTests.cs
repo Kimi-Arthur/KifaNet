@@ -29,7 +29,7 @@ public class MpegDashFileTests {
             "https://tvoosa-pez0406.sctv.ch/dash/BMGNOFAADLLOEBDG.mpd/QualityLevels(7200000)/Fragments(video=80000000)";
 
         var videoLinks = links.VideoLinks;
-        Assert.Equal(450, videoLinks.Count);
+        Assert.Equal(451, videoLinks.Count);
         Assert.Equal(videoInit, videoLinks[0]);
         Assert.Equal(video0, videoLinks[1]);
         Assert.Equal(video1, videoLinks[2]);
@@ -43,12 +43,15 @@ public class MpegDashFileTests {
             "https://tvoosa-pez0406.sctv.ch/dash/BMGNOFAADLLOEBDG.mpd/QualityLevels(96000)/Fragments(audio_482_qae=96397)";
         var audio2 =
             "https://tvoosa-pez0406.sctv.ch/dash/BMGNOFAADLLOEBDG.mpd/QualityLevels(96000)/Fragments(audio_482_qae=192653)";
+        var audio3 =
+            "https://tvoosa-pez0406.sctv.ch/dash/BMGNOFAADLLOEBDG.mpd/QualityLevels(96000)/Fragments(audio_482_qae=288909)";
 
         var audioLinks0 = links.AudioLinks[0];
-        Assert.Equal(338, audioLinks0.Count);
+        Assert.Equal(451, audioLinks0.Count);
         Assert.Equal(audioInit, audioLinks0[0]);
         Assert.Equal(audio0, audioLinks0[1]);
         Assert.Equal(audio1, audioLinks0[2]);
         Assert.Equal(audio2, audioLinks0[3]);
+        Assert.Equal(audio3, audioLinks0[4]);
     }
 }

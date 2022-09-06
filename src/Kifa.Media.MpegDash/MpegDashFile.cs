@@ -115,13 +115,11 @@ public class MpegDashFile {
                 time = long.Parse(segment.T);
             }
 
-            for (var i = 0; i < (segment.R == null ? 1 : int.Parse(segment.R)); i++) {
+            for (var i = 0; i < (segment.R == null ? 1 : int.Parse(segment.R) + 1); i++) {
                 links.Add(BaseUri + "/" + mediaTemplate.Replace("$Time$", time.ToString()));
                 time += long.Parse(segment.D);
             }
         }
-        
-        links.Add(BaseUri + "/" + mediaTemplate.Replace("$Time$", time.ToString()));
 
         return links;
     }
