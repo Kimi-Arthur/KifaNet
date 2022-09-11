@@ -64,17 +64,21 @@ public class CombineCommand : KifaCommand {
         var rawMediaInfos = files
             .Select(file => (Title: file.BaseName, Info: FFProbe.Analyse(file.GetLocalPath())))
             .ToList();
-        var mediaInfos = new List<(string Title, TimeSpan Start, TimeSpan End)> {
-            (rawMediaInfos[0].Title, TimeSpan.Zero, rawMediaInfos[0].Info.Duration)
-        };
 
-        foreach (var info in rawMediaInfos.Skip(1)) {
-            var last = mediaInfos[^1];
-            mediaInfos.Add((info.Title, last.End, last.End + info.Info.Duration));
+        if (rawMediaInfos.Count > 1) {
+            // Add chapters for more than one.
+            var mediaInfos = new List<(string Title, TimeSpan Start, TimeSpan End)> {
+                (rawMediaInfos[0].Title, TimeSpan.Zero, rawMediaInfos[0].Info.Duration)
+            };
+
+            foreach (var info in rawMediaInfos.Skip(1)) {
+                var last = mediaInfos[^1];
+                mediaInfos.Add((info.Title, last.End, last.End + info.Info.Duration));
+            }
+
+            metadata.Chapters.AddRange(mediaInfos.Select(info
+                => new ChapterData(info.Title, info.Start, info.End)));
         }
-
-        metadata.Chapters.AddRange(mediaInfos.Select(info
-            => new ChapterData(info.Title, info.Start, info.End)));
 
         return metadata;
     }
