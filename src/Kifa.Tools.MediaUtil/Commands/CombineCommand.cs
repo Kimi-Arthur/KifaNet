@@ -20,6 +20,9 @@ public class CombineCommand : KifaCommand {
     [Option('o', "output", HelpText = "Output file name.")]
     public string? OutputFile { get; set; }
 
+    [Option('m', "add-chapters", HelpText = "Add Chapters.")]
+    public bool AddChapters { get; set; } = false;
+
     [Value(0, Required = true, HelpText = "Files to combine.")]
     public IEnumerable<string> FileNames { get; set; }
 
@@ -65,7 +68,7 @@ public class CombineCommand : KifaCommand {
             .Select(file => (Title: file.BaseName, Info: FFProbe.Analyse(file.GetLocalPath())))
             .ToList();
 
-        if (rawMediaInfos.Count > 1) {
+        if (rawMediaInfos.Count > 1 && AddChapters) {
             // Add chapters for more than one.
             var mediaInfos = new List<(string Title, TimeSpan Start, TimeSpan End)> {
                 (rawMediaInfos[0].Title, TimeSpan.Zero, rawMediaInfos[0].Info.Duration)
