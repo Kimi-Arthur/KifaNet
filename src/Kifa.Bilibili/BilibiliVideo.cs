@@ -459,7 +459,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 continue;
             }
 
-            var video = data.Dash.Video![0];
+            var videos = data.Dash.Video.Where(v => v.Id == receivedQuality).ToList();
+            var video = videos.OrderByDescending(v => v.Codecid).First();
             var audio = data.Dash.Audio![0];
             var dolby = data.Dash.Dolby?.Audio?[0];
             var flac = data.Dash.Flac?.Audio?[0];
