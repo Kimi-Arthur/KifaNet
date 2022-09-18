@@ -54,6 +54,7 @@ class GetChatCommand : KifaFileCommand {
     }
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
+        file = new KifaFile(file.ToString());
         var (video, pid, _) = file.FileInfo!.GetAllLinks().Select(link => BilibiliVideo.Parse(link))
             .FirstOrDefault(v => v.video != null, (null, 0, 0));
         if (video != null) {
