@@ -46,6 +46,13 @@ public abstract class DataModel {
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id?.StartsWith(VirtualItemPrefix) ?? false;
 
+    public SortedSet<string> GetAllLinks()
+        => Metadata?.Linking?.Links == null
+            ? new SortedSet<string> {
+                Id
+            }
+            : new SortedSet<string>(Metadata.Linking.Links.Append(RealId!));
+
     // Not finished
     public string Compare<TDataModel>(TDataModel other) {
         if (!(this is TDataModel model)) {
