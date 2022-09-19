@@ -186,7 +186,7 @@ public class AssStyle : AssLine {
                     style.FontName = p.Item1;
                     break;
                 case "Fontsize":
-                    style.FontSize = int.Parse(p.Item1);
+                    style.FontSize = (int) double.Parse(p.Item1);
                     break;
                 case "PrimaryColour":
                     style.PrimaryColour = AssFormatter.ParseColor(p.Item1);
