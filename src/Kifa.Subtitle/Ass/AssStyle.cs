@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using NLog;
 
 namespace Kifa.Subtitle.Ass;
 
 public class AssStyle : AssLine {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public enum BorderStyleType {
         OutlineWithDropShadow = 1,
         OpaqueBox = 3
@@ -120,7 +123,9 @@ public class AssStyle : AssLine {
         get => shadow;
         set {
             if (value < 0 || value > 4) {
-                throw new ArgumentOutOfRangeException(nameof(Shadow));
+                var newValue = value < 0 ? 0 : 4;
+                Logger.Warn($"Shadow value out of range: {value}, setting it to {newValue}");
+                value = newValue;
             }
 
             shadow = value;
@@ -186,7 +191,7 @@ public class AssStyle : AssLine {
                     style.FontName = p.Item1;
                     break;
                 case "Fontsize":
-                    style.FontSize = (int) double.Parse(p.Item1);
+                    style.FontSize = double.Parse(p.Item1).RoundUp();
                     break;
                 case "PrimaryColour":
                     style.PrimaryColour = AssFormatter.ParseColor(p.Item1);
