@@ -63,7 +63,7 @@ public class LinkCommand : KifaCommand {
             };
         }
 
-        var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality);
+        var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality, video.codec);
         var linkedFiles = new List<string>();
         foreach (var canonicalName in canonicalNames) {
             var canonicalFile = CurrentFolder.GetFile($"{canonicalName}.{file.Extension}");

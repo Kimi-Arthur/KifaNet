@@ -36,12 +36,12 @@ public abstract class DownloadCommand : KifaCommand {
             Name = video.Author
         };
 
-        var (extension, quality, videoStreamGetter, audioStreamGetters) = video.GetStreams(pid);
+        var (extension, quality, codec, videoStreamGetter, audioStreamGetters) = video.GetStreams(pid);
 
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var desiredName =
-            $"{video.GetDesiredName(pid, quality, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
-        var canonicalNames = video.GetCanonicalNames(pid, quality);
+            $"{video.GetDesiredName(pid, quality, codec, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
+        var canonicalNames = video.GetCanonicalNames(pid, quality, codec);
 
         var targetFiles = canonicalNames.Append(desiredName)
             .Select(name => outputFolder.GetFile($"{name}.mp4")).ToList();
