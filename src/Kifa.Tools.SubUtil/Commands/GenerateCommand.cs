@@ -158,10 +158,9 @@ class GenerateCommand : KifaFileCommand {
     static void PositionNormalComments(List<AssDialogue> comments) {
         var screenWidth = 1920;
 
-        // var sizes = comments.Select(x
-        //     => x.Text.TextElements.Where(e => e is AssDialogueRawTextElement)
-        //         .Sum(e => ((AssDialogueRawTextElement) e).Content.Length) * 50F).ToList();
-        var sizes = comments.Select(x => 500F).ToList();
+        var sizes = comments.Select(x
+            => x.Text.TextElements.Where(e => e is AssDialogueRawTextElement)
+                .Sum(e => ((AssDialogueRawTextElement) e).Content.Length) * 50F).ToList();
 
         var speeds = sizes.Zip(comments,
             (s, c) => (screenWidth + s) / (c.End - c.Start).TotalSeconds).ToList();
