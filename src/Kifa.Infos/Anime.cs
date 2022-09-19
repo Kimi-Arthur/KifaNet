@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa.Infos.Tmdb;
 using Kifa.Service;
 
 namespace Kifa.Infos;
@@ -8,6 +10,8 @@ public class Anime : DataModel<Anime>, Formattable {
     public const string ModelId = "animes";
 
     static KifaServiceClient<Anime> client;
+
+    static readonly Language DefaultLanguage = Language.Japanese;
 
     public static KifaServiceClient<Anime> Client => client ??= new KifaServiceRestClient<Anime>();
 
@@ -40,6 +44,50 @@ public class Anime : DataModel<Anime>, Formattable {
                                $"/{Title} EP{eid} {episode.Title}".TrimEnd(),
             _ => null
         };
+    }
+
+    public override DateTimeOffset? Fill() {
+        if (TmdbId == null) {
+            throw new UnableToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
+        }
+
+        var tmdb = new TmdbClient();
+        var series = tmdb.GetSeries(TmdbId, DefaultLanguage);
+        if (series == null) {
+            throw new UnableToFillException($"Failed to find series with {TmdbId}.");
+        }
+
+        Title ??= Id;
+        AirDate = series.FirstAirDate;
+
+        Specials = null;
+        Seasons = new List<Season>();
+
+        foreach (var seasonInfo in series.Seasons) {
+            var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, DefaultLanguage);
+
+            var episodes = data.Episodes.Select(episode => new Episode {
+                Id = episode.EpisodeNumber,
+                Title = Helper.NormalizeTitle(episode.Name, DefaultLanguage),
+                AirDate = episode.AirDate,
+                Overview = episode.Overview
+            }).ToList();
+
+            if (seasonInfo.SeasonNumber > 0) {
+                var seasonName = Helper.NormalizeTitle(seasonInfo.Name);
+                Seasons.Add(new Season {
+                    AirDate = seasonInfo.AirDate,
+                    Id = seasonInfo.SeasonNumber,
+                    Title = TmdbClient.NormalizeSeasonTitle(seasonName),
+                    Overview = seasonInfo.Overview,
+                    Episodes = episodes
+                });
+            } else {
+                Specials = episodes;
+            }
+        }
+
+        return Date.Zero;
     }
 }
 

@@ -75,7 +75,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
                 Seasons.Add(new Season {
                     AirDate = seasonInfo.AirDate,
                     Id = seasonInfo.SeasonNumber,
-                    Title = NormalizeSeasonTitle(seasonName),
+                    Title = TmdbClient.NormalizeSeasonTitle(seasonName),
                     Overview = seasonInfo.Overview,
                     Episodes = episodes
                 });
@@ -85,23 +85,6 @@ public class TvShow : DataModel<TvShow>, Formattable {
         }
 
         return GetNextEpisodeDate();
-    }
-
-    static readonly List<(Regex Pattern, MatchEvaluator Replacement)> SeasonNameReplacements =
-        new() {
-            (new Regex(@"Season \d+|Staffel \d+|Stagione \d+|シーズン\d+|第[零一二三四五六七八九十百千万]+季"),
-                _ => ""),
-            (new Regex(@"Season \w+:"), _ => ""),
-        };
-
-    static string? NormalizeSeasonTitle(string seasonName) {
-        foreach (var (pattern, replacement) in SeasonNameReplacements) {
-            seasonName = pattern.Replace(seasonName, replacement);
-        }
-
-        seasonName = seasonName.Trim();
-
-        return string.IsNullOrEmpty(seasonName) ? null : seasonName;
     }
 
     // TODO: Always refresh for now.
