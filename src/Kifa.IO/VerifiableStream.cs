@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using NLog;
 
 namespace Kifa.IO;
@@ -177,8 +178,17 @@ public class VerifiableStream : Stream {
     (bool? result, string md5, string sha1, string sha256) IsBlockValid(byte[] buffer, int offset,
         int count, int blockId) {
         bool? result = null;
+        string? md5 = null, sha1 = null, sha256 = null;
+        var transformers = new List<Action> {
+            () => md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString(),
+            () => sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString(),
+            () => sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString(),
+        };
 
-        var md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString();
+        Parallel.ForEach(transformers, new ParallelOptions {
+            MaxDegreeOfParallelism = 3
+        }, transformer => transformer());
+
         if (info?.BlockMd5 != null) {
             result = true;
             var expectedMd5 = info.BlockMd5[blockId];
@@ -189,7 +199,6 @@ public class VerifiableStream : Stream {
             }
         }
 
-        var sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString();
         if (info?.BlockSha1 != null) {
             result ??= true;
             var expectedSha1 = info.BlockSha1[blockId];
@@ -199,8 +208,6 @@ public class VerifiableStream : Stream {
                 result = false;
             }
         }
-
-        var sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString();
 
         if (info?.BlockSha256 != null) {
             result ??= true;
