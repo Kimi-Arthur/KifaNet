@@ -20,6 +20,8 @@ class FixCommand : KifaFileCommand {
 
         var sub = AssDocument.Parse(file.OpenRead());
         sub = FixSubtitleResolution(sub);
+        // This is needed as Emby will reject the parts with \fad element.
+        sub = RemoveFadElement(sub);
         Console.WriteLine(sub.ToString());
         file.Delete();
         file.Write(sub.ToString());
@@ -66,6 +68,23 @@ class FixCommand : KifaFileCommand {
                             foreach (var e in controlTextElement.Elements) {
                                 e.Scale(scaleX, scaleY);
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        return sub;
+    }
+
+    static AssDocument RemoveFadElement(AssDocument sub) {
+        foreach (var eventsSection in sub.Sections.Where(s => s is AssEventsSection)) {
+            foreach (var line in eventsSection.AssLines) {
+                if (line is AssDialogue dialogue) {
+                    foreach (var element in dialogue.Text.TextElements) {
+                        if (element is AssDialogueControlTextElement controlTextElement) {
+                            controlTextElement.Elements = controlTextElement.Elements
+                                .Where(e => e is not FadeTimeFunction).ToList();
                         }
                     }
                 }
