@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ToolCommandName>bilix</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>8.2.4</Version>
+    <Version>8.3.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>

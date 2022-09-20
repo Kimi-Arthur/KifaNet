@@ -20,8 +20,11 @@ class GetChatCommand : KifaFileCommand {
 
     [Option('a', "aid",
         HelpText = "Bilibili aid for the video. It can contain one segment or multiple." +
-                   "Example: av2044037, av2044037p4")]
+                   "Example: av2044037, av2044037p4p5")]
     public string? Aid { get; set; }
+
+    [Option('b', "bangumi-id", HelpText = "Bangumi id that starts with 'md'.")]
+    public string? Bid { get; set; }
 
     [Option('g', "group", HelpText = "Group name.")]
     public string Group { get; set; }
@@ -30,7 +33,20 @@ class GetChatCommand : KifaFileCommand {
 
     public override int Execute() {
         if (Cid != null) {
-            Aid = BilibiliVideo.GetAid(Cid);
+            var video = BilibiliVideo.Client.Get(BilibiliVideo.GetAid(Cid));
+            if (video == null) {
+                Logger.Fatal($"Cannot find video for {Cid}.");
+                return 1;
+            }
+
+            var chat = video.Pages.FirstOrDefault(c => c.Cid == Cid);
+
+            if (chat == null) {
+                Logger.Fatal($"Cannot find chat for {Cid}.");
+                return 1;
+            }
+
+            chats.Add((video, chat));
         }
 
         if (Aid != null) {
@@ -50,12 +66,26 @@ class GetChatCommand : KifaFileCommand {
             }
         }
 
+        if (Bid != null) {
+            var bangumi = BilibiliBangumi.Client.Get(Bid);
+            if (bangumi == null) {
+                Logger.Fatal($"Cannot find Bangumi ({Bid}). Exiting.");
+                return 1;
+            }
+
+            foreach (var aid in bangumi.Aids) {
+                var video = BilibiliVideo.Client.Get(aid);
+                chats.AddRange(video.Pages.Select(c => (video, c)));
+            }
+        }
+
         return base.Execute();
     }
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
         file = new KifaFile(file.ToString());
-        var (video, pid, _, _) = file.FileInfo!.GetAllLinks().Select(link => BilibiliVideo.Parse(link))
+        var (video, pid, _, _) = file.FileInfo!.GetAllLinks()
+            .Select(link => BilibiliVideo.Parse(link))
             .FirstOrDefault(v => v.video != null, (null, 0, 0, 0));
         if (video != null) {
             return GetChat(video.Pages[pid - 1], file);
