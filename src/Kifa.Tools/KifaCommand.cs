@@ -72,6 +72,7 @@ public abstract class KifaCommand {
 
     public abstract int Execute();
 
+    static bool alwaysDefault = false;
     static int defaultIndex = 1;
 
     public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
@@ -88,13 +89,29 @@ public abstract class KifaCommand {
 
         Console.WriteLine($"\nDefault [{defaultIndex}]: {choiceStrings[defaultIndex - 1]}\n");
 
-        Console.Write(
-            $"Choose one from above {choiceName} [1-{choices.Count}], Default is {defaultIndex}: ");
+        if (alwaysDefault) {
+            Console.WriteLine($"Automatically chose [{defaultIndex}] as previously instructed.\n");
+            return (choices[defaultIndex - 1], defaultIndex - 1);
+        }
+
+        Console.WriteLine(
+            $"Choose one from the {choiceName} above [1-{choices.Count}]. Append 'a' to always choose the same index,");
+        Console.Write($"Default is [{defaultIndex}]: ");
         var line = Console.ReadLine();
+
+        if (line.EndsWith('a')) {
+            alwaysDefault = true;
+            line = line[..^1];
+        }
+
         var chosenIndex = string.IsNullOrEmpty(line) ? defaultIndex : int.Parse(line);
         defaultIndex = chosenIndex;
         if (chosenIndex < 1 || chosenIndex > choices.Count) {
             throw new InvalidChoiceException($"Choice {chosenIndex} is out of range.");
+        }
+
+        if (alwaysDefault) {
+            Console.WriteLine($"Will always choose [{chosenIndex}] from now on.\n");
         }
 
         return (choices[chosenIndex - 1], chosenIndex - 1);
