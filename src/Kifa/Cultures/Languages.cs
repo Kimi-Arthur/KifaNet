@@ -136,5 +136,5 @@ public partial class Language {
         (r.Code3, r),
         (r.Name, r),
         (r.NativeName, r)
-    }).Distinct().ToDictionary(tuple => tuple.key, tuple => tuple.value);
+    }).DistinctBy(item => item.key).ToDictionary(tuple => tuple.key, tuple => tuple.value);
 }
