@@ -48,8 +48,8 @@ class ExtractCommand : KifaCommand {
         foreach (var file in foundFiles) {
             var info = FFProbe.Analyse(file.GetLocalPath());
             var (choice, index) = SelectOne(info.SubtitleStreams,
-                s => s.Language +
-                     (s.Tags?.ContainsKey("title") ?? false ? $" ({s.Tags["title"]})" : "") +
+                s => $"{ExtractLanguage(s.Language)} ({s.Language})" +
+                     (s.Tags?.ContainsKey("title") ?? false ? $": {s.Tags["title"]}" : "") +
                      $" => {GetExtractedSubtitleFile(file, s)}");
 
             allResults.Add((file.ToString(),
