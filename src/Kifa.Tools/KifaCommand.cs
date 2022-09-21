@@ -75,8 +75,7 @@ public abstract class KifaCommand {
     static int defaultIndex = 1;
 
     public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
-        Func<TChoice, string> choiceToString = null, string choiceName = null,
-        TChoice negative = default) {
+        Func<TChoice, string> choiceToString = null, string choiceName = null) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
@@ -92,9 +91,13 @@ public abstract class KifaCommand {
         Console.Write(
             $"Choose one from above {choiceName} [1-{choices.Count}], Default is {defaultIndex}: ");
         var line = Console.ReadLine();
-        var choice = string.IsNullOrEmpty(line) ? defaultIndex - 1 : int.Parse(line) - 1;
-        defaultIndex = choice + 1;
-        return (choice < 0 ? negative : choices[choice], choice);
+        var chosenIndex = string.IsNullOrEmpty(line) ? defaultIndex : int.Parse(line);
+        defaultIndex = chosenIndex;
+        if (chosenIndex < 1 || chosenIndex > choices.Count) {
+            throw new InvalidChoiceException($"Choice {chosenIndex} is out of range.");
+        }
+
+        return (choices[chosenIndex - 1], chosenIndex - 1);
     }
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,

@@ -75,13 +75,14 @@ class ImportCommand : KifaCommand {
                      => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
                          Recursive))) {
             var suffix = file[file.LastIndexOf('.')..];
-            var ((season, episode), index) = SelectOne(episodes,
-                e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping",
-                (null, null));
-            if (index >= 0) {
+            try {
+                var ((season, episode), index) = SelectOne(episodes,
+                    e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping");
                 FileInformation.Client.Link(file,
                     series.Format(season, episode).NormalizeFilePath() + suffix);
                 episodes.RemoveAt(index);
+            } catch (InvalidChoiceException) {
+                Logger.Warn($"File {file} skipped.");
             }
         }
 

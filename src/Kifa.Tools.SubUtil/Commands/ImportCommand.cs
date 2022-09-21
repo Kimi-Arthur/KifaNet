@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Infos;
+using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Subtitles/Sources folder with resource id.")]
 class ImportCommand : KifaFileCommand {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     List<(Season season, Episode episode)> episodes;
     Formattable series;
 
@@ -81,14 +84,15 @@ class ImportCommand : KifaFileCommand {
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
         var suffix = file.Path.Substring(file.Path.LastIndexOf('.'));
-        var ((season, episode), index) = SelectOne(episodes,
-            e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping",
-            (null, null));
-        if (index >= 0) {
+        try {
+            var ((season, episode), index) = SelectOne(episodes,
+                e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping");
             file.Copy(
                 new KifaFile($"{file.Host}/Subtitles{series.Format(season, episode)}" +
                              $".{LanguageCode}-{ReleaseGroup}{suffix}"), true);
             episodes.RemoveAt(index);
+        } catch (InvalidChoiceException) {
+            Logger.Warn($"File {file} skipped.");
         }
 
         return 0;
