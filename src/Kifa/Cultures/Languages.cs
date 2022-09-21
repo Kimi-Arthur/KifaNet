@@ -4,28 +4,6 @@ using System.Linq;
 namespace Kifa;
 
 public partial class Language {
-    public static readonly Dictionary<string, Language> All = new List<Language> {
-        German,
-        English,
-        Spanish,
-        French,
-        Italian,
-        Japanese,
-        Korean,
-        Hungarian,
-        Portuguese,
-        Russian,
-        Turkish,
-        Chinese,
-        TraditionalChinese,
-        Unknown
-    }.SelectMany(r => new List<(string key, Language value)> {
-        (r.Code, r),
-        (r.Code3, r),
-        (r.Name, r),
-        (r.NativeName, r)
-    }).Distinct().ToDictionary(tuple => tuple.key, tuple => tuple.value);
-
     public static readonly Language German = new() {
         Name = "German",
         NativeName = "Deutsch",
@@ -137,4 +115,26 @@ public partial class Language {
         Code3 = "und",
         Code3T = "und"
     };
+
+    public static readonly Dictionary<string, Language> All = new List<Language> {
+        German,
+        English,
+        Spanish,
+        French,
+        Italian,
+        Japanese,
+        Korean,
+        Hungarian,
+        Portuguese,
+        Russian,
+        Turkish,
+        Chinese,
+        TraditionalChinese,
+        Unknown
+    }.SelectMany(r => new List<(string key, Language value)> {
+        (r.Code, r),
+        (r.Code3, r),
+        (r.Name, r),
+        (r.NativeName, r)
+    }).Distinct().ToDictionary(tuple => tuple.key, tuple => tuple.value);
 }
