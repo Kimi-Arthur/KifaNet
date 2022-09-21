@@ -39,4 +39,7 @@ public class ExecutionResult {
     public int ExitCode { get; set; }
     public string StandardOutput { get; set; } = "";
     public string StandardError { get; set; } = "";
+
+    public override string ToString()
+        => $"Exit code: {ExitCode}\nStdout: {StandardOutput}\nStderr: {StandardError}";
 }

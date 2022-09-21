@@ -647,5 +647,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
 
+    public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
+
     public static KifaFile GetLocal(string path) => new($"{LocalServer}{path}");
 }

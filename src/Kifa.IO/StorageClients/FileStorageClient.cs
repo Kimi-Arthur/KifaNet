@@ -304,7 +304,7 @@ public class FileStorageClient : StorageClient {
 
     public override string Id => ServerId;
 
-    static void EnsureParent(string actualPath) {
+    public static void EnsureParent(string actualPath) {
         var parent = Directory.GetParent(actualPath);
         if (parent == null) {
             throw new FileNotFoundException($"Cannot find parent folder for {actualPath}");
