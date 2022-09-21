@@ -116,7 +116,10 @@ class ExtractCommand : KifaCommand {
 
     KifaFile GetExtractedSubtitleFile(KifaFile file, SubtitleStream subtitle)
         => file.Parent
-            .GetFile(file.BaseName + "." + subtitle.Language[..subtitle.Language.IndexOf("-")] +
+            .GetFile(file.BaseName + "." + ExtractLanguage(subtitle.Language).Code +
                      (Group != null ? $"-{Group}." : ".") + SubtitleExtensions[subtitle.CodecName])
             .GetFilePrefixed(SubtitlesPrefix);
+
+    Language ExtractLanguage(string languageName)
+        => languageName.Contains('-') ? languageName[..languageName.IndexOf("-")] : languageName;
 }
