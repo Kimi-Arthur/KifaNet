@@ -92,10 +92,15 @@ class ExtractCommand : KifaCommand {
     KifaActionResult ExtractSubtitle(KifaFile file, SubtitleStream choice) {
         var subtitleFile = GetExtractedSubtitleFile(file, choice);
         if (subtitleFile.Exists()) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.OK,
-                Message = $"Subtitle file {subtitleFile} already exists. Skipped"
-            };
+            if (!Force) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"Subtitle file {subtitleFile} already exists. Skipped"
+                };
+            }
+
+            Logger.Info(
+                $"Though subtitle file {subtitleFile} exists. It's requested to overwritten.");
         }
 
         subtitleFile.EnsureLocalParent();
