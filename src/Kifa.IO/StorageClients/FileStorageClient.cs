@@ -274,18 +274,18 @@ public class FileStorageClient : StorageClient {
             return;
         }
 
-        var actualPath = Server.GetPath(path);
+        var localPath = Server.GetPath(path);
 
-        var actualDownloadFile = $"{actualPath}.tmp";
+        var tempPath = $"{localPath}.tmp";
 
-        Logger.Debug($"Copying to {actualDownloadFile}...");
+        Logger.Trace($"Copying to {tempPath}...");
 
         var blockSize = DefaultBlockSize;
-        EnsureParent(actualDownloadFile);
+        EnsureParent(tempPath);
 
         // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
-        using (var fs = new FileStream(actualDownloadFile, FileMode.OpenOrCreate,
-                   FileAccess.ReadWrite, FileShare.None)) {
+        using (var fs = new FileStream(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite,
+                   FileShare.None)) {
             fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
             if (fs.Position != 0) {
                 stream.Seek(fs.Position, SeekOrigin.Begin);
@@ -293,11 +293,11 @@ public class FileStorageClient : StorageClient {
 
             stream.CopyTo(fs, blockSize);
 
-            Logger.Debug($"Finished copying to {actualDownloadFile}.");
+            Logger.Trace($"Finished copying to {tempPath}.");
         }
 
-        File.Move(actualDownloadFile, actualPath);
-        Logger.Debug($"Moved to final destination {path}.");
+        File.Move(tempPath, localPath);
+        Logger.Trace($"Moved to final destination {path}.");
     }
 
     public override string Type => "local";

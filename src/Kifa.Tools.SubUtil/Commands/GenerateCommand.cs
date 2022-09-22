@@ -251,9 +251,9 @@ class GenerateCommand : KifaFileCommand {
             }
         }
 
-        Logger.Info("{} comments moved, by {} in total.", totalMoved, totalMovement);
+        Logger.Trace($"{totalMoved} comments moved, by {totalMovement} in total.");
         if (totalBigMove > 0) {
-            Logger.Warn("{} comments are moved by more than 10 seconds!", totalBigMove);
+            Logger.Debug($"{totalBigMove} comments are moved by more than 10 seconds!");
         }
     }
 
