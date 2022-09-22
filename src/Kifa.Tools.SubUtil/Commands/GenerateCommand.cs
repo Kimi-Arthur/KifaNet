@@ -237,7 +237,7 @@ class GenerateCommand : KifaFileCommand {
             if (movement > 0) {
                 if (movement > 10) {
                     totalBigMove++;
-                    Logger.Warn("Comment {} moved by {}.", comments[i].Text, movement);
+                    Logger.Warn($"Comment {comments[i].Text} moved by {movement}.");
                 }
 
                 comments[i].Start += TimeSpan.FromSeconds(movement);
