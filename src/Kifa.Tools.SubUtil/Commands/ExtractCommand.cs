@@ -125,6 +125,7 @@ class ExtractCommand : KifaCommand {
                      (Group != null ? $"-{Group}." : ".") + SubtitleExtensions[subtitle.CodecName])
             .GetFilePrefixed(SubtitlesPrefix);
 
-    Language ExtractLanguage(string languageName)
-        => languageName.Contains('-') ? languageName[..languageName.IndexOf("-")] : languageName;
+    static Language ExtractLanguage(string? languageName)
+        => languageName == null ? Language.Unknown :
+            languageName.Contains('-') ? languageName[..languageName.IndexOf("-")] : languageName;
 }
