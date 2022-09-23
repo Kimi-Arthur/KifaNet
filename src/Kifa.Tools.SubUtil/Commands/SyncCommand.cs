@@ -21,13 +21,13 @@ public class SyncCommand : KifaCommand {
     public string Source { get; set; }
 
     public override int Execute() {
-        var file = new KifaFile(FileName);
+        var file = new KifaFile(FileName, simpleMode: true);
         if (file.Extension != "ass") {
             Logger.Fatal("Only ass files are supported.");
             return 1;
         }
 
-        var sourceFile = new KifaFile(Source);
+        var sourceFile = new KifaFile(Source, simpleMode: true);
         if (sourceFile.Extension != "ass" && sourceFile.Extension != "srt") {
             Logger.Fatal("Reference source must be ass or srt file.");
             return 1;
@@ -40,16 +40,57 @@ public class SyncCommand : KifaCommand {
 
         var lines = GetAssLines(subtitle);
 
+        var matchedLines =
+            new List<(List<SubtitleLine> targetLines, List<SubtitleLine> sourceLines)>();
+        var referenceEnumerator = referenceLines.GetEnumerator();
+        var hasValue = referenceEnumerator.MoveNext();
         foreach (var line in lines) {
-            Console.WriteLine($"{line.Start}, {line.End}, {line.Content}");
+            while (hasValue && !IsMatch(line, referenceEnumerator.Current) &&
+                   referenceEnumerator.Current.Start < line.End) {
+                hasValue = referenceEnumerator.MoveNext();
+            }
+
+            if (hasValue && IsMatch(line, referenceEnumerator.Current)) {
+                matchedLines.Add((new() {
+                    line
+                }, new() {
+                    referenceEnumerator.Current
+                }));
+            } else {
+                matchedLines.Add((new() {
+                    line
+                }, new()));
+            }
         }
 
-        foreach (var line in referenceLines) {
-            Console.WriteLine($"{line.Start}, {line.End}, {line.Content}");
+        foreach (var matchedLine in matchedLines) {
+            if (matchedLine.sourceLines.Count == 0) {
+                Console.WriteLine($"{matchedLine.targetLines[0].Start} =>");
+                Console.WriteLine($"{matchedLine.targetLines[0].End} =>");
+                Console.WriteLine($"{matchedLine.targetLines[0].Content} =>");
+                continue;
+            }
+
+            Console.WriteLine(
+                $"{matchedLine.targetLines[0].Start} => {matchedLine.sourceLines[0].Start}");
+            Console.WriteLine(
+                $"{matchedLine.targetLines[0].End} => {matchedLine.sourceLines[0].End}");
+            Console.WriteLine(
+                $"{matchedLine.targetLines[0].Content} => {matchedLine.sourceLines[0].Content}");
         }
+
+        Console.WriteLine(
+            $"{matchedLines.Count(l => l.sourceLines.Count > 0)} out of {matchedLines.Count} lines matched in total.");
 
         return 0;
     }
+
+    const double TimeThreshold = 0.2;
+
+    static bool IsMatch(SubtitleLine line, SubtitleLine reference)
+        => (Math.Min(line.End.TotalMilliseconds, reference.End.TotalMilliseconds) -
+            Math.Max(line.Start.TotalMilliseconds, reference.Start.TotalMilliseconds)) /
+            (line.End.TotalMilliseconds - line.Start.TotalMilliseconds) > TimeThreshold;
 
     static List<SubtitleLine> GetAssLines(AssDocument assDocument) {
         return assDocument.Sections.First(section => section is AssEventsSection).AssLines
