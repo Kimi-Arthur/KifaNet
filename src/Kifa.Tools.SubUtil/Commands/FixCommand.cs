@@ -14,8 +14,9 @@ class FixCommand : KifaFileCommand {
     protected override string Prefix => "/Subtitles";
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
-        if (!file.Path.EndsWith(".ass")) {
-            return 0;
+        if (file.Extension != "ass") {
+            Logger.Fatal("Only ass files are supported.");
+            return 1;
         }
 
         var sub = AssDocument.Parse(file.OpenRead());

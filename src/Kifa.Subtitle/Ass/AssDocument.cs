@@ -18,7 +18,7 @@ public class AssDocument {
         return Parse(sr.ReadToEnd());
     }
 
-    static AssDocument Parse(string content) {
+    public static AssDocument Parse(string content) {
         var document = new AssDocument();
 
         AssStylesSection stylesSection = null;
