@@ -47,6 +47,18 @@ public class SyncCommand : KifaCommand {
         foreach (var line in lines) {
             while (hasValue && !IsMatch(line, referenceEnumerator.Current) &&
                    referenceEnumerator.Current.Start < line.End) {
+                if (matchedLines.Count > 0 && matchedLines[^1].sourceLines.Count > 0 &&
+                    matchedLines[^1].sourceLines[^1] != referenceEnumerator.Current) {
+                    if (IsMatch(matchedLines[^1].targetLines[0], referenceEnumerator.Current)) {
+                        matchedLines[^1].sourceLines.Add(referenceEnumerator.Current);
+                    } else {
+                        matchedLines.Add((new() {
+                        }, new() {
+                            referenceEnumerator.Current
+                        }));
+                    }
+                }
+
                 hasValue = referenceEnumerator.MoveNext();
             }
 
@@ -63,24 +75,42 @@ public class SyncCommand : KifaCommand {
             }
         }
 
-        foreach (var matchedLine in matchedLines) {
-            if (matchedLine.sourceLines.Count == 0) {
-                Console.WriteLine($"{matchedLine.targetLines[0].Start} =>");
-                Console.WriteLine($"{matchedLine.targetLines[0].End} =>");
-                Console.WriteLine($"{matchedLine.targetLines[0].Content} =>");
+        var combinedMatchedLines =
+            new List<(List<SubtitleLine> targetLines, List<SubtitleLine> sourceLines)>();
+        foreach (var line in matchedLines) {
+            if (combinedMatchedLines.Count > 0 && combinedMatchedLines[^1].sourceLines.Count == 1 &&
+                line.sourceLines.Count == 1 &&
+                combinedMatchedLines[^1].sourceLines[0] == line.sourceLines[0]) {
+                combinedMatchedLines[^1].targetLines.AddRange(line.targetLines);
                 continue;
             }
 
-            Console.WriteLine(
-                $"{matchedLine.targetLines[0].Start} => {matchedLine.sourceLines[0].Start}");
-            Console.WriteLine(
-                $"{matchedLine.targetLines[0].End} => {matchedLine.sourceLines[0].End}");
-            Console.WriteLine(
-                $"{matchedLine.targetLines[0].Content} => {matchedLine.sourceLines[0].Content}");
+            combinedMatchedLines.Add(line);
         }
 
-        Console.WriteLine(
-            $"{matchedLines.Count(l => l.sourceLines.Count > 0)} out of {matchedLines.Count} lines matched in total.");
+        foreach (var matchedLine in combinedMatchedLines) {
+            if (matchedLine.targetLines.Count == 0 && matchedLine.sourceLines.Count == 0) {
+                continue;
+            }
+
+            Logger.Info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+            foreach (var targetLine in matchedLine.targetLines) {
+                Logger.Info(targetLine.Start);
+                Logger.Info(targetLine.End);
+                Logger.Info(targetLine.Content);
+            }
+
+            Logger.Info("=======================================");
+
+            foreach (var sourceLine in matchedLine.sourceLines) {
+                Logger.Info(sourceLine.Start);
+                Logger.Info(sourceLine.End);
+                Logger.Info(sourceLine.Content);
+            }
+
+            Logger.Info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        }
 
         return 0;
     }
@@ -89,8 +119,9 @@ public class SyncCommand : KifaCommand {
 
     static bool IsMatch(SubtitleLine line, SubtitleLine reference)
         => (Math.Min(line.End.TotalMilliseconds, reference.End.TotalMilliseconds) -
-            Math.Max(line.Start.TotalMilliseconds, reference.Start.TotalMilliseconds)) /
-            (line.End.TotalMilliseconds - line.Start.TotalMilliseconds) > TimeThreshold;
+            Math.Max(line.Start.TotalMilliseconds, reference.Start.TotalMilliseconds)) / Math.Min(
+            line.End.TotalMilliseconds - line.Start.TotalMilliseconds,
+            reference.End.TotalMilliseconds - reference.Start.TotalMilliseconds) > TimeThreshold;
 
     static List<SubtitleLine> GetAssLines(AssDocument assDocument) {
         return assDocument.Sections.First(section => section is AssEventsSection).AssLines
