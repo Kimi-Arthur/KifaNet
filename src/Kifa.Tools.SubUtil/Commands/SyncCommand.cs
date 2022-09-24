@@ -89,7 +89,7 @@ public class SyncCommand : KifaCommand {
         }
 
         foreach (var matchedLine in combinedMatchedLines) {
-            if (matchedLine.targetLines.Count == 0 && matchedLine.sourceLines.Count == 0) {
+            if (matchedLine.targetLines.Count == 1 && matchedLine.sourceLines.Count == 1) {
                 continue;
             }
 
