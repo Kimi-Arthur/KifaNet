@@ -95,35 +95,23 @@ public class SyncCommand : KifaCommand {
             combinedMatchedLines.Add(line);
         }
 
-        foreach (var matchedLine in combinedMatchedLines) {
-            if (matchedLine.targetLines.Count == 1 && matchedLine.sourceLines.Count == 1) {
+        foreach (var line in combinedMatchedLines) {
+            if (line.sourceLines.Count == 0 || line.targetLines.Count == 0) {
                 continue;
             }
 
-            Logger.Info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
-            foreach (var targetLine in matchedLine.targetLines) {
-                Logger.Info(targetLine.Start);
-                Logger.Info(targetLine.End);
-                Logger.Info(targetLine.Content);
-            }
-
-            Logger.Info("=======================================");
-
-            foreach (var sourceLine in matchedLine.sourceLines) {
-                Logger.Info(sourceLine.Start);
-                Logger.Info(sourceLine.End);
-                Logger.Info(sourceLine.Content);
-            }
-
-            Logger.Info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            line.targetLines[0].Original.Start = line.sourceLines[0].Start;
+            line.targetLines[^1].Original.End = line.sourceLines[^1].End;
         }
+
+        file.Delete();
+        file.Write(subtitle.ToString());
 
         return 0;
     }
 
     const double MinTimeThreshold = 0.2;
-    const double Threshold = 1;
+    const double Threshold = 0.8;
 
     bool IsMatch(SubtitleLine line, SubtitleLine reference) {
         var score =
@@ -134,7 +122,7 @@ public class SyncCommand : KifaCommand {
         return score switch {
             > Threshold => true,
             < MinTimeThreshold => false,
-            _ => GetContentScore(line.Content, reference.Content) > Threshold
+            _ => score + GetContentScore(line.Content, reference.Content) > Threshold
         };
     }
 
@@ -182,19 +170,21 @@ public class SyncCommand : KifaCommand {
 
     static List<SubtitleLine> GetAssLines(AssDocument assDocument) {
         return assDocument.Sections.First(section => section is AssEventsSection).AssLines
-            .OfType<AssEvent>().Select(GetAssLine).ToList();
+            .OfType<AssEvent>().Where(e => e.Style.Name.StartsWith("Subtitle")).Select(GetAssLine)
+            .OrderBy(l => l.Start).ToList();
     }
 
     static SubtitleLine GetAssLine(AssEvent assEvent) {
         return new SubtitleLine {
             Start = assEvent.Start,
             End = assEvent.End,
-            Content = assEvent.Text.ToString()
+            Content = assEvent.Text.ToString(),
+            Original = assEvent
         };
     }
 
     static List<SubtitleLine> GetSrtLines(SrtDocument srtDocument)
-        => srtDocument.Lines.Select(GetSrtLine).ToList();
+        => srtDocument.Lines.Select(GetSrtLine).OrderBy(l => l.Start).ToList();
 
     static SubtitleLine GetSrtLine(SrtLine srtLine) {
         return new SubtitleLine {
@@ -209,4 +199,5 @@ class SubtitleLine {
     public TimeSpan Start { get; set; }
     public TimeSpan End { get; set; }
     public string Content { get; set; }
+    public AssEvent Original { get; set; }
 }
