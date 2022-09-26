@@ -297,22 +297,22 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
-            var fileInfo = new KifaFile(fileName);
-            if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
-                fileInfo = fileInfo.GetFilePrefixed(prefix);
+            var file = new KifaFile(fileName, simpleMode: !fullFile);
+            if (prefix != null && !file.Path.StartsWith(prefix)) {
+                file = file.GetFilePrefixed(prefix);
             }
 
-            if (fileInfo.Exists()) {
+            if (file.Exists()) {
                 multi++;
-                files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
+                files.Add((file.ToString().GetNaturalSortKey(), file));
             } else {
-                var fileInfos = fileInfo.List(recursive, pattern: pattern).ToList();
+                var fileInfos = file.List(recursive, pattern: pattern).ToList();
                 if (fileInfos.Count > 0) {
                     multi = 2;
                     files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
                 } else {
                     multi++;
-                    files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
+                    files.Add((file.ToString().GetNaturalSortKey(), file));
                 }
             }
         }

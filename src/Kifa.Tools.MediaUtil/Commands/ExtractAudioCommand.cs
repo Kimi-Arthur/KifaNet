@@ -128,8 +128,6 @@ public class ExtractAudioCommand : KifaCommand {
     static string GetFileName(Dictionary<string, string> metadata, string prefix)
         => $"{metadata["album"]}/{prefix} {metadata["track"].PadLeft(2, '0')} {metadata["title"]}";
 
-    // https://iterm2.com/3.2/documentation-images.html
-    // https://stu.dev/displaying-images-in-iterm-from-dotnet-apps/
     static string ChooseImage(List<string> images)
         => SelectOne(images,
             image => ITermImage.GetITermImageFromBase64(image, DisplayImageSize, DisplayImageSize),
