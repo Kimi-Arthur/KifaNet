@@ -22,9 +22,8 @@ public class SyncCommand : KifaCommand {
     public string Source { get; set; }
 
     [Option('c', "content", Required = false,
-        HelpText =
-            "Whether two subtitle files should have the same content. Supported values: 'full', 'partial' (default), 'no'.")]
-    public string ContentType { get; set; } = "partial";
+        HelpText = "Whether two subtitle files share part of the content.")]
+    public bool ContentMatch { get; set; } = true;
 
     public override int Execute() {
         var file = new KifaFile(FileName, simpleMode: true);
@@ -47,48 +46,47 @@ public class SyncCommand : KifaCommand {
         var lines = GetAssLines(subtitle);
 
         var matchedLines =
-            new List<(List<SubtitleLine> targetLines, List<SubtitleLine> sourceLines)>();
+            new List<(List<SubtitleLine> TargetLines, List<SubtitleLine> SourceLines, List<string>
+                MatchedWords)>();
         var referenceEnumerator = referenceLines.GetEnumerator();
         var hasValue = referenceEnumerator.MoveNext();
         foreach (var line in lines) {
-            while (hasValue && !IsMatch(line, referenceEnumerator.Current) &&
-                   referenceEnumerator.Current.Start < line.End) {
-                if (matchedLines.Count > 0 && matchedLines[^1].sourceLines.Count > 0 &&
-                    matchedLines[^1].sourceLines[^1] != referenceEnumerator.Current &&
-                    matchedLines[^1].targetLines.Count == 1) {
-                    if (IsMatch(matchedLines[^1].targetLines[0], referenceEnumerator.Current)) {
-                        matchedLines[^1].sourceLines.Add(referenceEnumerator.Current);
-                    } else {
-                        matchedLines.Add((new() {
-                        }, new() {
-                            referenceEnumerator.Current
-                        }));
-                    }
+            var matchedLine = (new List<SubtitleLine> {
+                line
+            }, new List<SubtitleLine>(), new List<string>());
+            var matchedWords = IsContentMatch(line, referenceEnumerator.Current);
+            matchedLine.Item3.AddRange(matchedWords);
+            while (hasValue &&
+                   (matchedWords.Count > 0 || referenceEnumerator.Current.End < line.End)) {
+                if (matchedWords.Count > 0) {
+                    matchedLine.Item2.Add(referenceEnumerator.Current);
+                }
+
+                if (line.Content.Count == 0) {
+                    break;
                 }
 
                 hasValue = referenceEnumerator.MoveNext();
+                if (!hasValue) {
+                    break;
+                }
+
+                matchedWords = IsContentMatch(line, referenceEnumerator.Current);
+                matchedLine.Item3.AddRange(matchedWords);
             }
 
-            if (hasValue && IsMatch(line, referenceEnumerator.Current)) {
-                matchedLines.Add((new() {
-                    line
-                }, new() {
-                    referenceEnumerator.Current
-                }));
-            } else {
-                matchedLines.Add((new() {
-                    line
-                }, new()));
-            }
+            matchedLines.Add(matchedLine);
         }
 
         var combinedMatchedLines =
-            new List<(List<SubtitleLine> targetLines, List<SubtitleLine> sourceLines)>();
+            new List<(List<SubtitleLine> TargetLines, List<SubtitleLine> SourceLines, List<string>
+                MatchedWords)>();
         foreach (var line in matchedLines) {
-            if (combinedMatchedLines.Count > 0 && combinedMatchedLines[^1].sourceLines.Count == 1 &&
-                line.sourceLines.Count == 1 &&
-                combinedMatchedLines[^1].sourceLines[0] == line.sourceLines[0]) {
-                combinedMatchedLines[^1].targetLines.AddRange(line.targetLines);
+            if (combinedMatchedLines.Count > 0 && combinedMatchedLines[^1].SourceLines.Count > 0 &&
+                line.SourceLines.Count > 0 &&
+                combinedMatchedLines[^1].SourceLines[^1] == line.SourceLines[0]) {
+                combinedMatchedLines[^1].SourceLines.AddRange(line.SourceLines.Skip(1));
+                combinedMatchedLines[^1].TargetLines.AddRange(line.TargetLines);
                 continue;
             }
 
@@ -96,12 +94,12 @@ public class SyncCommand : KifaCommand {
         }
 
         foreach (var line in combinedMatchedLines) {
-            if (line.sourceLines.Count == 0 || line.targetLines.Count == 0) {
+            if (line.SourceLines.Count == 0 || line.TargetLines.Count == 0) {
                 continue;
             }
 
-            line.targetLines[0].Original.Start = line.sourceLines[0].Start;
-            line.targetLines[^1].Original.End = line.sourceLines[^1].End;
+            line.TargetLines[0].Original.Start = line.SourceLines[0].Start;
+            line.TargetLines[^1].Original.End = line.SourceLines[^1].End;
         }
 
         file.Delete();
@@ -111,7 +109,7 @@ public class SyncCommand : KifaCommand {
     }
 
     const double MinTimeThreshold = 0.2;
-    const double Threshold = 0.8;
+    const double Threshold = 0.5;
 
     bool IsMatch(SubtitleLine line, SubtitleLine reference) {
         var score =
@@ -119,53 +117,53 @@ public class SyncCommand : KifaCommand {
              Math.Max(line.Start.TotalMilliseconds, reference.Start.TotalMilliseconds)) / Math.Min(
                 line.End.TotalMilliseconds - line.Start.TotalMilliseconds,
                 reference.End.TotalMilliseconds - reference.Start.TotalMilliseconds);
+
         return score switch {
-            > Threshold => true,
             < MinTimeThreshold => false,
-            _ => score + GetContentScore(line.Content, reference.Content) > Threshold
+            _ => true
+            // _ => ContentMatch ? IsContentMatch(line, reference) : score > Threshold
         };
     }
 
     static readonly Regex SplitterPattern = new(@"<[^>]*>| |\n|\\N|{[^}]*}|\W|(?=[^a-zA-Z0-9])");
 
-    const double DefaultContentScore = 0.5;
-    const double DefaultPartialScale = 1.5;
-
-    double GetContentScore(string lineContent, string referenceContent) {
-        if (ContentType == "no") {
-            return DefaultContentScore;
+    static List<string> IsContentMatch(SubtitleLine lineContent, SubtitleLine referenceContent) {
+        var matchedWords = MatchWords(lineContent.Content, referenceContent.Content);
+        if (matchedWords.Count >
+            Math.Min(lineContent.Content.Count, referenceContent.Content.Count) * Threshold) {
+            var words = lineContent.Content.Skip(matchedWords.EndLine - matchedWords.Count)
+                .Take(matchedWords.Count).ToList();
+            lineContent.Content = lineContent.Content.Skip(matchedWords.EndLine).ToList();
+            referenceContent.Content =
+                referenceContent.Content.Skip(matchedWords.EndReference).ToList();
+            return words;
         }
 
-        var lineWords = SplitterPattern.Split(lineContent).Where(w => !string.IsNullOrEmpty(w))
-            .ToList();
-        var referenceWords = SplitterPattern.Split(referenceContent)
-            .Where(w => !string.IsNullOrEmpty(w)).ToList();
-        var matchedWords = MatchWords(lineWords, referenceWords);
-        return matchedWords * (ContentType == "partial" ? DefaultPartialScale : 1.0) /
-               Math.Min(lineWords.Count, referenceWords.Count);
+        return new List<string>();
     }
 
-    static int MatchWords(List<string> lineWords, List<string> referenceWords) {
+    static (int Count, int EndLine, int EndReference) MatchWords(List<string> lineWords,
+        List<string> referenceWords) {
         var n = lineWords.Count;
         var m = referenceWords.Count;
         var f = new int[n + 1, m + 1];
+        var s = 0;
+        var el = 0;
+        var er = 0;
         for (var i = 0; i <= n; i++) {
             for (var j = 0; j <= m; j++) {
-                if (i > 0) {
-                    f[i, j] = Math.Max(f[i, j], f[i - 1, j]);
-                }
-
-                if (j > 0) {
-                    f[i, j] = Math.Max(f[i, j], f[i, j - 1]);
-                }
-
                 if (i > 0 && j > 0 && lineWords[i - 1] == referenceWords[j - 1]) {
-                    f[i, j] = Math.Max(f[i, j], f[i - 1, j - 1] + 1);
+                    f[i, j] = f[i - 1, j - 1] + 1;
+                    if (s < f[i, j]) {
+                        s = Math.Max(s, f[i, j]);
+                        el = i;
+                        er = j;
+                    }
                 }
             }
         }
 
-        return f[n, m];
+        return (s, el, er);
     }
 
     static List<SubtitleLine> GetAssLines(AssDocument assDocument) {
@@ -174,11 +172,16 @@ public class SyncCommand : KifaCommand {
             .OrderBy(l => l.Start).ToList();
     }
 
+    static readonly Regex TextPattern = new Regex(@"{\\fs40}(.*)");
+
     static SubtitleLine GetAssLine(AssEvent assEvent) {
+        var text = assEvent.Text.ToString();
+        var match = TextPattern.Match(text);
         return new SubtitleLine {
             Start = assEvent.Start,
             End = assEvent.End,
-            Content = assEvent.Text.ToString(),
+            Content = SplitterPattern.Split(match.Success ? match.Groups[1].Value : text)
+                .Where(w => !string.IsNullOrEmpty(w)).Select(w => w.ToLower()).ToList(),
             Original = assEvent
         };
     }
@@ -190,7 +193,8 @@ public class SyncCommand : KifaCommand {
         return new SubtitleLine {
             Start = srtLine.StartTime,
             End = srtLine.EndTime,
-            Content = srtLine.Text.Content
+            Content = SplitterPattern.Split(srtLine.Text.Content)
+                .Where(w => !string.IsNullOrEmpty(w)).Select(w => w.ToLower()).ToList()
         };
     }
 }
@@ -198,6 +202,6 @@ public class SyncCommand : KifaCommand {
 class SubtitleLine {
     public TimeSpan Start { get; set; }
     public TimeSpan End { get; set; }
-    public string Content { get; set; }
+    public List<string> Content { get; set; }
     public AssEvent Original { get; set; }
 }
