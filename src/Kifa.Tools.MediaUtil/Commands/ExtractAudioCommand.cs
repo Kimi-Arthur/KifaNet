@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.ITerm;
 using Kifa.Service;
 using NLog;
 
@@ -131,8 +132,7 @@ public class ExtractAudioCommand : KifaCommand {
     // https://stu.dev/displaying-images-in-iterm-from-dotnet-apps/
     static string ChooseImage(List<string> images)
         => SelectOne(images,
-            image
-                => $"\u001B]1337;File=;width={DisplayImageSize}px;height={DisplayImageSize}px;inline=1:{image.Split(",")[^1]}\u0007",
+            image => ITermImage.GetITermImageFromBase64(image, DisplayImageSize, DisplayImageSize),
             "image").choice;
 
     static KifaFile GetCover(KifaFile file) {
