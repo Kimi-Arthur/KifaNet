@@ -10,10 +10,10 @@ public class ViewCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     [Option('t', "timeframe", HelpText = "Timeframe to use as thumbnail for videos.")]
-    public string? Timeframe { get; set; }
+    public string Timeframe { get; set; } = "00:01:00";
 
     [Option('w', "width", HelpText = "Display width of the view.")]
-    public int Width { get; set; } = 0;
+    public int Width { get; set; } = 6000;
 
     [Option('h', "height", HelpText = "Display height of the view.")]
     public int Height { get; set; } = 0;
@@ -38,6 +38,19 @@ public class ViewCommand : KifaCommand {
             Console.WriteLine(file);
             Console.WriteLine(
                 ITermImage.GetITermImageFromRawBytes(file.ReadAsBytes(), Width, Height));
+        }
+
+        foreach (var file in files.Where(f => VideoExtensions.Contains(f.Extension))) {
+            Console.WriteLine(file);
+            var tmp = new FileInfo(Path.Join(Path.GetTempPath(),
+                Path.GetRandomFileName() + ".png"));
+            if (Executor.Run("ffmpeg",
+                        $"-ss {Timeframe} -i {file.GetLocalPath()} -frames:v 1 {tmp.FullName}")
+                    .ExitCode == 0) {
+                Console.WriteLine(ITermImage.GetITermImageFromRawBytes(tmp.OpenRead().ToByteArray(),
+                    Width, Height));
+                tmp.Delete();
+            }
         }
 
         return 0;

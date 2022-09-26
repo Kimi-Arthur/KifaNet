@@ -227,13 +227,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         return candidate;
     }
 
-    public KifaFile GetFile(string name) => new($"{Host}{Path}/{name}");
+    public KifaFile GetFile(string name, bool simpleMode = false)
+        => new($"{Host}{Path}/{name}", simpleMode: simpleMode);
 
     public KifaFile GetFilePrefixed(string prefix)
         => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
 
-    public KifaFile GetTempFile(string type)
-        => Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}");
+    public KifaFile GetIgnoredFile(string type, bool simpleMode = false)
+        => Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}", simpleMode);
 
     public override string ToString() => $"{Host}{Path}";
 

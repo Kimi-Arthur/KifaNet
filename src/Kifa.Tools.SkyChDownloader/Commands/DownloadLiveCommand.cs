@@ -51,7 +51,7 @@ public class DownloadLiveCommand : KifaCommand {
         KifaFile? coverFile = null;
         if (!skyProgram.ImageLink?.EndsWith("svg") ?? false) {
             var coverLink = new KifaFile(skyProgram.ImageLink);
-            coverFile = targetFile.GetTempFile($"c.{coverLink.Extension}");
+            coverFile = targetFile.GetIgnoredFile($"c.{coverLink.Extension}");
             coverLink.Copy(coverFile);
         }
 
@@ -69,12 +69,12 @@ public class DownloadLiveCommand : KifaCommand {
         var selected = SelectMany(audioStreamGetters, _ => "audio");
 
         var parts = new List<KifaFile>();
-        var videoFile = targetFile.GetTempFile("v.mp4");
+        var videoFile = targetFile.GetIgnoredFile("v.mp4");
         parts.Add(videoFile);
 
         Parallel.Invoke(() => videoFile.Write(videoStreamGetter), () => {
             foreach (var (streamGetter, index) in selected.Select((x, i) => (x, i))) {
-                var audioFile = targetFile.GetTempFile($"a{index}.m4a");
+                var audioFile = targetFile.GetIgnoredFile($"a{index}.m4a");
                 audioFile.Write(streamGetter);
                 parts.Add(audioFile);
             }
