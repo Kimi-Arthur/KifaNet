@@ -94,7 +94,7 @@ public static class StringExtensions {
                 double.Parse(timeSpanString.Substring(0, timeSpanString.Length - 1)));
         }
 
-        return TimeSpan.FromSeconds(double.Parse(timeSpanString));
+        return TimeSpan.Parse(timeSpanString);
     }
 
     public static DateTimeOffset ParseDateTimeOffset(this string dateTimeOffsetString,

@@ -63,16 +63,19 @@ public class ViewCommand : KifaCommand {
     }
 
     bool GetScreenshot(KifaFile file, FileInfo output) {
+        var info = FFProbe.Analyse(file.GetLocalPath());
+
         if (!IgnoreCover) {
-            var info = FFProbe.Analyse(file.GetLocalPath());
             var cover = info.VideoStreams.FirstOrDefault(v
-                => v.Disposition.GetValueOrDefault("attached_pic", false));
+                => v.Disposition?.GetValueOrDefault("attached_pic", false) ?? false);
             if (cover != null) {
                 return Executor.Run("ffmpeg",
                         $"-i {file.GetLocalPath()} -map 0:{cover.Index} -c copy  {output.FullName}")
                     .ExitCode == 0;
             }
         }
+
+        var timePoint = Kifa.Min(Timeframe.ParseTimeSpanString(), info.Duration / 2);
 
         return Executor.Run("ffmpeg",
                    $"-ss {Timeframe} -i {file.GetLocalPath()} -frames:v 1 {output.FullName}")
