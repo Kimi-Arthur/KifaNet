@@ -1,4 +1,5 @@
 using CommandLine;
+using FFMpegCore;
 using Kifa.Api.Files;
 using Kifa.ITerm;
 
@@ -12,11 +13,18 @@ public class ViewCommand : KifaCommand {
     [Option('t', "timeframe", HelpText = "Timeframe to use as thumbnail for videos.")]
     public string Timeframe { get; set; } = "00:01:00";
 
+    [Option('i', "ignore-cover", HelpText = "Ignore embedded cover for videos.")]
+    public bool IgnoreCover { get; set; } = false;
+
+    public static int DefaultWidth { get; set; } = 0;
+
     [Option('w', "width", HelpText = "Display width of the view.")]
-    public int Width { get; set; } = 6000;
+    public int Width { get; set; } = DefaultWidth;
+
+    public static int DefaultHeight { get; set; } = 0;
 
     [Option('h', "height", HelpText = "Display height of the view.")]
-    public int Height { get; set; } = 0;
+    public int Height { get; set; } = DefaultHeight;
 
     static readonly HashSet<string> ImageExtensions = new() {
         "png",
@@ -44,9 +52,7 @@ public class ViewCommand : KifaCommand {
             Console.WriteLine(file);
             var tmp = new FileInfo(Path.Join(Path.GetTempPath(),
                 Path.GetRandomFileName() + ".png"));
-            if (Executor.Run("ffmpeg",
-                        $"-ss {Timeframe} -i {file.GetLocalPath()} -frames:v 1 {tmp.FullName}")
-                    .ExitCode == 0) {
+            if (GetScreenshot(file, tmp)) {
                 Console.WriteLine(ITermImage.GetITermImageFromRawBytes(tmp.OpenRead().ToByteArray(),
                     Width, Height));
                 tmp.Delete();
@@ -54,5 +60,23 @@ public class ViewCommand : KifaCommand {
         }
 
         return 0;
+    }
+
+    bool GetScreenshot(KifaFile file, FileInfo output) {
+        if (!IgnoreCover) {
+            var info = FFProbe.Analyse(file.GetLocalPath());
+            var cover = info.VideoStreams.FirstOrDefault(v
+                => v.Disposition.GetValueOrDefault("attached_pic", false));
+            if (cover != null) {
+                return Executor.Run("ffmpeg",
+                        $"-i {file.GetLocalPath()} -map 0:{cover.Index} -c copy  {output.FullName}")
+                    .ExitCode == 0;
+            }
+        }
+
+        return Executor.Run("ffmpeg",
+                   $"-ss {Timeframe} -i {file.GetLocalPath()} -frames:v 1 {output.FullName}")
+               .ExitCode ==
+               0;
     }
 }
