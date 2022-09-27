@@ -2,11 +2,14 @@ using CommandLine;
 using FFMpegCore;
 using Kifa.Api.Files;
 using Kifa.ITerm;
+using NLog;
 
 namespace Kifa.Tools.MediaUtil.Commands;
 
 [Verb("view", HelpText = "View files with its thumbnails etc.")]
 public class ViewCommand : KifaCommand {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     [Value(0, Required = true, HelpText = "Files to produce preview for.")]
     public IEnumerable<string> FileNames { get; set; }
 
@@ -48,6 +51,8 @@ public class ViewCommand : KifaCommand {
                 ITermImage.GetITermImageFromRawBytes(file.ReadAsBytes(), Width, Height));
         }
 
+        Logger.Trace($"Window width: {Console.WindowWidth}");
+
         foreach (var file in files.Where(f => VideoExtensions.Contains(f.Extension))) {
             Console.WriteLine(file);
             var tmp = new FileInfo(Path.Join(Path.GetTempPath(),
@@ -79,8 +84,7 @@ public class ViewCommand : KifaCommand {
         var timePoint = Kifa.Min(Timeframe.ParseTimeSpanString(), info.Duration / 2);
 
         return Executor.Run("ffmpeg",
-                   $"-ss {timePoint} -i \"{file.GetLocalPath()}\" -frames:v 1 {output.FullName}")
-               .ExitCode ==
-               0;
+                $"-ss {timePoint} -i \"{file.GetLocalPath()}\" -frames:v 1 {output.FullName}")
+            .ExitCode == 0;
     }
 }
