@@ -71,7 +71,7 @@ public class ViewCommand : KifaCommand {
                 => v.Disposition?.GetValueOrDefault("attached_pic", false) ?? false);
             if (cover != null) {
                 return Executor.Run("ffmpeg",
-                        $"-i {file.GetLocalPath()} -map 0:{cover.Index} -c copy  {output.FullName}")
+                        $"-i \"{file.GetLocalPath()}\" -map 0:{cover.Index} -c copy  {output.FullName}")
                     .ExitCode == 0;
             }
         }
@@ -79,7 +79,7 @@ public class ViewCommand : KifaCommand {
         var timePoint = Kifa.Min(Timeframe.ParseTimeSpanString(), info.Duration / 2);
 
         return Executor.Run("ffmpeg",
-                   $"-ss {timePoint} -i {file.GetLocalPath()} -frames:v 1 {output.FullName}")
+                   $"-ss {timePoint} -i \"{file.GetLocalPath()}\" -frames:v 1 {output.FullName}")
                .ExitCode ==
                0;
     }
