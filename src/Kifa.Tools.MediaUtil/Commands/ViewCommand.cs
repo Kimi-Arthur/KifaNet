@@ -16,15 +16,15 @@ public class ViewCommand : KifaCommand {
     [Option('i', "ignore-cover", HelpText = "Ignore embedded cover for videos.")]
     public bool IgnoreCover { get; set; } = false;
 
-    public static int DefaultWidth { get; set; } = 0;
+    public static string? DefaultWidth { get; set; } = "80%";
 
     [Option('w', "width", HelpText = "Display width of the view.")]
-    public int Width { get; set; } = DefaultWidth;
+    public string? Width { get; set; } = DefaultWidth;
 
-    public static int DefaultHeight { get; set; } = 0;
+    public static string? DefaultHeight { get; set; } = "80%";
 
     [Option('h', "height", HelpText = "Display height of the view.")]
-    public int Height { get; set; } = DefaultHeight;
+    public string? Height { get; set; } = DefaultHeight;
 
     static readonly HashSet<string> ImageExtensions = new() {
         "png",
@@ -78,7 +78,7 @@ public class ViewCommand : KifaCommand {
         var timePoint = Kifa.Min(Timeframe.ParseTimeSpanString(), info.Duration / 2);
 
         return Executor.Run("ffmpeg",
-                   $"-ss {Timeframe} -i {file.GetLocalPath()} -frames:v 1 {output.FullName}")
+                   $"-ss {timePoint} -i {file.GetLocalPath()} -frames:v 1 {output.FullName}")
                .ExitCode ==
                0;
     }

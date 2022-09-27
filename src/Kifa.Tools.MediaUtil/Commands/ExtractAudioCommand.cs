@@ -12,7 +12,7 @@ namespace Kifa.Tools.MediaUtil.Commands;
 public class ExtractAudioCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static int DisplayImageSize { get; set; } = 256;
+    public static string DisplayImageSize { get; set; } = "20%";
 
     [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
     public IEnumerable<string> FileNames {
