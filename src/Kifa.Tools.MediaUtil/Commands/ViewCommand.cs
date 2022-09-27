@@ -53,8 +53,9 @@ public class ViewCommand : KifaCommand {
             var tmp = new FileInfo(Path.Join(Path.GetTempPath(),
                 Path.GetRandomFileName() + ".png"));
             if (GetScreenshot(file, tmp)) {
-                Console.WriteLine(ITermImage.GetITermImageFromRawBytes(tmp.OpenRead().ToByteArray(),
-                    Width, Height));
+                Console.WriteLine(new string(' ', Console.WindowWidth / 10) +
+                                  ITermImage.GetITermImageFromRawBytes(tmp.OpenRead().ToByteArray(),
+                                      Width, Height));
                 tmp.Delete();
             }
         }
