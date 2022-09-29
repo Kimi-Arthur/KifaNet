@@ -32,7 +32,8 @@ public class ViewCommand : KifaCommand {
     static readonly HashSet<string> ImageExtensions = new() {
         "png",
         "jpg",
-        "bmp"
+        "bmp",
+        "pdf"
     };
 
     static readonly HashSet<string> VideoExtensions = new() {
@@ -40,7 +41,8 @@ public class ViewCommand : KifaCommand {
         "mkv",
         "webm",
         "mov",
-        "ts"
+        "ts",
+        "flv"
     };
 
     public override int Execute() {
@@ -54,7 +56,7 @@ public class ViewCommand : KifaCommand {
         Logger.Trace($"Window width: {Console.WindowWidth}");
 
         foreach (var file in files.Where(f => VideoExtensions.Contains(f.Extension))) {
-            Console.WriteLine(file);
+            Console.WriteLine($"{file}\n");
             var tmp = new FileInfo(Path.Join(Path.GetTempPath(),
                 Path.GetRandomFileName() + ".png"));
             if (GetScreenshot(file, tmp)) {
