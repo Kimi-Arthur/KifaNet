@@ -29,6 +29,34 @@ public class
     public KifaApiActionResult<List<string>> ListFolderPost([FromBody] ListFolderRequest request)
         => Client.ListFolder(request.Folder, request.Recursive);
 
+    public class MoveServerRequest {
+        #region public late string FromServer { get; set; }
+
+        string? fromServer;
+
+        public string FromServer {
+            get => Late.Get(fromServer);
+            set => Late.Set(ref fromServer, value);
+        }
+
+        #endregion
+
+        #region public late string ToServer { get; set; }
+
+        string? toServer;
+
+        public string ToServer {
+            get => Late.Get(toServer);
+            set => Late.Set(ref toServer, value);
+        }
+
+        #endregion
+    }
+
+    [HttpPost("$move_server")]
+    public KifaApiActionResult MoveServer([FromBody] MoveServerRequest request)
+        => Client.MoveServer(request.FromServer, request.ToServer);
+
     public class AddLocationRequest {
         public string Id { get; set; }
         public string Location { get; set; }
@@ -144,4 +172,44 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
     public string GetLocation(string id, List<string> types = null)
         => throw new NotImplementedException();
+
+    public KifaApiActionResult MoveServer(string fromServer, string toServer)
+        => List().Values.AsParallel().Select(file => {
+            if (file.Locations?.Count > 0) {
+                var locationsFromServer = file.Locations
+                    .Where(l => new FileLocation(l.Key).Server == fromServer).ToList();
+                if (locationsFromServer.Count == 0) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.OK,
+                        Message = $"No files to move for {file.Id}."
+                    };
+                }
+
+                var message = string.Join("\n", locationsFromServer.AsParallel().Select(location
+                    => {
+                    var newLocation = new FileLocation(location.Key) {
+                        Server = toServer
+                    };
+
+                    file.Locations.Remove(location.Key);
+                    file.Locations[newLocation.ToString()] = Kifa.Max(location.Value,
+                        file.Locations.GetValueOrDefault(newLocation.ToString()));
+                    return $"\tMoved {location.Key} to {newLocation}";
+                }));
+
+                Update(file);
+
+                return new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message =
+                        $"Moved {locationsFromServer.Count} files to {toServer} for {file.Id}:\n{message}"
+                };
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"No files to move for {file.Id}."
+            };
+        }).Aggregate(new KifaBatchActionResult(),
+            (result, actionResult) => result.Add(actionResult));
 }

@@ -32,3 +32,14 @@ Accept: application/json
 ###
 
 DELETE http://{{server}}/api/files/%2Fwow.mkv
+
+
+###
+
+POST {{server}}/api/files/$move_server
+Content-Type: application/json
+
+{
+  "from_server": "local:exs",
+  "to_server": "local:kch"
+}
