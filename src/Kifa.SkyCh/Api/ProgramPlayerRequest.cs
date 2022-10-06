@@ -1,21 +1,20 @@
-using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using Kifa.Rpc;
 
 namespace Kifa.SkyCh.Api;
 
-public sealed class LivePlayerRequest : ParameterizedRequest {
+public sealed class ProgramPlayerRequest : ParameterizedRequest {
     public override Dictionary<string, string> Headers { get; } = new() {
         { "x-requested-with", "XMLHttpRequest" }
     };
 
     public override string UrlPattern { get; } =
-        "https://sport.sky.ch/en/SkyPlayerAjax/SkyPlayer?id={live_id}&contentType=8";
+        "https://sport.sky.ch/en/SkyPlayerAjax/SkyPlayer?id={program_id}&contentType=1&eventId={event_id}";
 
-    public LivePlayerRequest(string liveId) {
+    public ProgramPlayerRequest(string programId, string eventId) {
         parameters = new Dictionary<string, string> {
-            { "live_id", liveId }
+            { "program_id", programId },
+            { "event_id", eventId }
         };
     }
 }

@@ -31,6 +31,9 @@ public class DownloadLiveCommand : KifaCommand {
     [Option('t', "title", HelpText = "Descriptive file title.")]
     public string? Title { get; set; }
 
+    [Option('k', "keep", HelpText = "Keep temp files.")]
+    public bool KeepTempFiles { get; set; } = false;
+
     public override int Execute() {
         var skyProgram = new KifaServiceRestClient<SkyLiveProgram>().Get(LiveId);
         if (skyProgram == null) {
@@ -82,12 +85,17 @@ public class DownloadLiveCommand : KifaCommand {
 
         MergeParts(parts, coverFile, targetFile);
 
-        foreach (var part in parts) {
-            part.Delete();
+        if (KeepTempFiles) {
+            Logger.Info("Temp files are kept.");
+        } else {
+            foreach (var part in parts) {
+                part.Delete();
+            }
+
+            Logger.Info("Removed temp files.");
         }
 
         // Cover file is left there by design as avidemux will not bring the cover along.
-
         return 0;
     }
 

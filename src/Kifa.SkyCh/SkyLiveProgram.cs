@@ -32,7 +32,7 @@ public class SkyLiveProgram : DataModel<SkyLiveProgram> {
     static readonly HttpClient NoAuthClient = new();
 
     static HttpClient? skyClient;
-    static HttpClient SkyClient => skyClient ??= CreateSkyClient();
+    public static HttpClient SkyClient => skyClient ??= CreateSkyClient();
 
     public static HttpClient CreateSkyClient() {
         skyClient = new HttpClient {
