@@ -185,8 +185,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
                     };
                 }
 
-                var message = string.Join("\n", locationsFromServer.AsParallel().Select(location
-                    => {
+                var message = string.Join("\n", locationsFromServer.Select(location => {
                     var newLocation = new FileLocation(location.Key) {
                         Server = toServer
                     };
