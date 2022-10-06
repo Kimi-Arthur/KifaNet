@@ -16,6 +16,8 @@ public class SkyProgram : DataModel<SkyProgram> {
 
     public const string ModelId = "sky.ch/programs";
 
+    public static string SkyChCookies { get; set; }
+
     public string? Title { get; set; }
     public string? Subtitle { get; set; }
 
@@ -28,6 +30,21 @@ public class SkyProgram : DataModel<SkyProgram> {
     public string? Type { get; set; }
 
     static readonly HttpClient NoAuthClient = new();
+
+    static HttpClient? skyClient;
+    static HttpClient SkyClient => skyClient ??= CreateSkyClient();
+
+    public static HttpClient CreateSkyClient() {
+        skyClient = new HttpClient {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+        skyClient.DefaultRequestHeaders.Add("cookie", SkyChCookies);
+        skyClient.DefaultRequestHeaders.Referrer = new Uri("https://sport.sky.ch/de/live-auf-tv");
+        skyClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36");
+
+        return skyClient;
+    }
 
     static DateTime lastFilled = DateTime.MinValue;
 
@@ -92,7 +109,9 @@ public class SkyProgram : DataModel<SkyProgram> {
         lastFilled = DateTime.Now;
     }
 
-    public string? GetVideoLink() => new PlayerRpc().Invoke(Id)?.Url;
+    public string? GetVideoLink() {
+        return SkyClient.SendWithRetry<PlayerResponse>(new LivePlayerRequest(Id))?.Url;
+    }
 }
 
 public interface SkyProgramServiceClient : KifaServiceClient<SkyProgram> {
