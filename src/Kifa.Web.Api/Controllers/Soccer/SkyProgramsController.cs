@@ -10,22 +10,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Soccer;
 
-[Route("api/" + SkyProgram.ModelId)]
-public class SkyProgramsController : KifaDataController<SkyProgram, SkyProgramJsonServiceClient> {
+[Route("api/" + SkyLiveProgram.ModelId)]
+public class SkyProgramsController : KifaDataController<SkyLiveProgram, SkyProgramJsonServiceClient> {
     [HttpGet("$add_for_day")]
-    public KifaApiActionResult<List<SkyProgram>> AddForDay(int dayOffset)
+    public KifaApiActionResult<List<SkyLiveProgram>> AddForDay(int dayOffset)
         => Client.AddForDay(dayOffset);
 }
 
-public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
+public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyLiveProgram>,
     SkyProgramServiceClient {
     static readonly HttpClient NoAuthClient = new();
 
-    public List<SkyProgram> AddForDay(int dayOffset)
+    public List<SkyLiveProgram> AddForDay(int dayOffset)
         => AddForDayAndLanguage(dayOffset, "de").Concat(AddForDayAndLanguage(dayOffset, "en"))
             .ToList(); // The order will make en version more possible to stay.
 
-    public List<SkyProgram> AddForDayAndLanguage(int dayOffset, string language) {
+    public List<SkyLiveProgram> AddForDayAndLanguage(int dayOffset, string language) {
         var channels = Channels[language];
         var date = DateTime.UtcNow.Date.AddDays(dayOffset);
         var listPage = NoAuthClient
@@ -35,7 +35,7 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
         doc.LoadHtml(listPage);
         var channelNodes = doc.DocumentNode.SelectNodes("//ul");
 
-        var programs = new List<SkyProgram>();
+        var programs = new List<SkyLiveProgram>();
         foreach (var (channelNode, channelName) in channelNodes.Zip(channels)) {
             foreach (var programNode in channelNode.SelectNodes(".//li")
                          .Where(node => node.Attributes["data-id"].Value != "0")) {
@@ -65,7 +65,7 @@ public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyProgram>,
 
                     Set(program);
                 } else {
-                    var program = new SkyProgram {
+                    var program = new SkyLiveProgram {
                         Id = programNode.Attributes["data-id"].Value,
                         Title = HttpUtility.HtmlDecode(textNodes[0].InnerText.Trim()),
                         Subtitle = HttpUtility.HtmlDecode(textNodes[1].InnerText.Trim()),

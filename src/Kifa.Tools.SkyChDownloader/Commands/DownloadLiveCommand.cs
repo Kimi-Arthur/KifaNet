@@ -32,7 +32,7 @@ public class DownloadLiveCommand : KifaCommand {
     public string? Title { get; set; }
 
     public override int Execute() {
-        var skyProgram = new KifaServiceRestClient<SkyProgram>().Get(LiveId);
+        var skyProgram = new KifaServiceRestClient<SkyLiveProgram>().Get(LiveId);
         if (skyProgram == null) {
             Logger.Fatal($"Cannot find Sky program with id {liveId}.");
             return 1;
@@ -106,10 +106,10 @@ public class DownloadLiveCommand : KifaCommand {
         }
     }
 
-    static string? InferTitle(SkyProgram skyProgram) {
-        var title = HttpUtility.HtmlDecode(skyProgram.Title);
-        if (skyProgram.Subtitle?.Length > 0) {
-            title += " - " + HttpUtility.HtmlDecode(skyProgram.Subtitle);
+    static string? InferTitle(SkyLiveProgram skyLiveProgram) {
+        var title = HttpUtility.HtmlDecode(skyLiveProgram.Title);
+        if (skyLiveProgram.Subtitle?.Length > 0) {
+            title += " - " + HttpUtility.HtmlDecode(skyLiveProgram.Subtitle);
         }
 
         return title;

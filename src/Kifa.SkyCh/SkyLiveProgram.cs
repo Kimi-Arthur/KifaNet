@@ -11,10 +11,10 @@ using NLog;
 
 namespace Kifa.SkyCh;
 
-public class SkyProgram : DataModel<SkyProgram> {
+public class SkyLiveProgram : DataModel<SkyLiveProgram> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public const string ModelId = "sky.ch/programs";
+    public const string ModelId = "sky.ch/lives";
 
     public static string SkyChCookies { get; set; }
 
@@ -102,7 +102,7 @@ public class SkyProgram : DataModel<SkyProgram> {
         var wait = TimeSpan.FromSeconds(10) - (DateTime.Now - lastFilled);
         if (wait > TimeSpan.Zero) {
             Logger.Debug(
-                $"SkyProgram.Fill triggered too frequently. Sleep {wait.TotalSeconds} seconds.");
+                $"SkyLiveProgram.Fill triggered too frequently. Sleep {wait.TotalSeconds} seconds.");
             Thread.Sleep(wait);
         }
 
@@ -114,11 +114,11 @@ public class SkyProgram : DataModel<SkyProgram> {
     }
 }
 
-public interface SkyProgramServiceClient : KifaServiceClient<SkyProgram> {
-    List<SkyProgram> AddForDay(int dayOffset);
+public interface SkyProgramServiceClient : KifaServiceClient<SkyLiveProgram> {
+    List<SkyLiveProgram> AddForDay(int dayOffset);
 }
 
-public class SkyProgramRestServiceClient : KifaServiceRestClient<SkyProgram>,
+public class SkyProgramRestServiceClient : KifaServiceRestClient<SkyLiveProgram>,
     SkyProgramServiceClient {
-    public List<SkyProgram> AddForDay(int dayOffset) => throw new NotImplementedException();
+    public List<SkyLiveProgram> AddForDay(int dayOffset) => throw new NotImplementedException();
 }

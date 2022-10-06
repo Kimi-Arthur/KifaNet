@@ -9,7 +9,7 @@ public class SkyProgramTests {
         => new List<object[]> {
             new object[] {
                 "1",
-                new SkyProgram {
+                new SkyLiveProgram {
                     Id = "1",
                     Type = "Sports non-event",
                     Title = "Eurosport News",
@@ -25,7 +25,7 @@ public class SkyProgramTests {
             },
             new object[] {
                 "100",
-                new SkyProgram {
+                new SkyLiveProgram {
                     Id = "100",
                     Type = "Sports non-event",
                     Title = "Football Greats",
@@ -41,7 +41,7 @@ public class SkyProgramTests {
             },
             new object[] {
                 "2693487",
-                new SkyProgram {
+                new SkyLiveProgram {
                     Id = "2693487",
                     Type = "Sports event",
                     Title = "Football : UEFA Champions League - Matchday 2",
@@ -59,12 +59,12 @@ public class SkyProgramTests {
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void EpgExtractionTest(string id, SkyProgram expectedProgram) {
-        var program = new SkyProgram {
+    public void EpgExtractionTest(string id, SkyLiveProgram expectedLiveProgram) {
+        var program = new SkyLiveProgram {
             Id = id
         };
         program.Fill();
 
-        Assert.Equal(expectedProgram.ToString(), program.ToString());
+        Assert.Equal(expectedLiveProgram.ToString(), program.ToString());
     }
 }
