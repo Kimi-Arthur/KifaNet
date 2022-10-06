@@ -13,11 +13,10 @@ public class ViewCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Files to produce preview for.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    [Option('t', "timeframe", HelpText = "Timeframe to use as thumbnail for videos.")]
-    public string Timeframe { get; set; } = "00:01:00";
+    public static TimeSpan DefaultTimeFrame { get; set; } = TimeSpan.FromMinutes(1);
 
-    [Option('i', "ignore-cover", HelpText = "Ignore embedded cover for videos.")]
-    public bool IgnoreCover { get; set; } = false;
+    [Option('t', "timeframe", HelpText = "Timeframe to use as thumbnail for videos.")]
+    public string? Timeframe { get; set; } = null;
 
     public static string? DefaultWidth { get; set; } = "80%";
 
@@ -73,7 +72,7 @@ public class ViewCommand : KifaCommand {
     bool GetScreenshot(KifaFile file, FileInfo output) {
         var info = FFProbe.Analyse(file.GetLocalPath());
 
-        if (!IgnoreCover) {
+        if (Timeframe != null) {
             var cover = info.VideoStreams.FirstOrDefault(v
                 => v.Disposition?.GetValueOrDefault("attached_pic", false) ?? false);
             if (cover != null) {
@@ -83,7 +82,13 @@ public class ViewCommand : KifaCommand {
             }
         }
 
-        var timePoint = Kifa.Min(Timeframe.ParseTimeSpanString(), info.Duration / 2);
+        var timePoint = Timeframe?.ParseTimeSpanString() ?? DefaultTimeFrame;
+        if (timePoint > info.Duration) {
+            timePoint = DefaultTimeFrame;
+            if (timePoint > info.Duration) {
+                timePoint = TimeSpan.Zero;
+            }
+        }
 
         return Executor.Run("ffmpeg",
                 $"-ss {timePoint} -i \"{file.GetLocalPath()}\" -frames:v 1 {output.FullName}")

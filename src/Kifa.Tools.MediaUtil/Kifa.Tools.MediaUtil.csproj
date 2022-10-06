@@ -5,7 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ToolCommandName>mediax</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>3.1.7</Version>
+    <Version>3.1.8</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
