@@ -72,7 +72,7 @@ public class ViewCommand : KifaCommand {
     bool GetScreenshot(KifaFile file, FileInfo output) {
         var info = FFProbe.Analyse(file.GetLocalPath());
 
-        if (Timeframe != null) {
+        if (Timeframe == null) {
             var cover = info.VideoStreams.FirstOrDefault(v
                 => v.Disposition?.GetValueOrDefault("attached_pic", false) ?? false);
             if (cover != null) {
