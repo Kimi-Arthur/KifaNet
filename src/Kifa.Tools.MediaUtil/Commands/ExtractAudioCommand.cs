@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.ITerm;
+using Kifa.Graphics;
 using Kifa.Service;
 using NLog;
 

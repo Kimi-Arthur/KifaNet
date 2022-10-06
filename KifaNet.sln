@@ -149,7 +149,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Media.MpegDash", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Media.MpegDash.Tests", "tests\Kifa.Media.MpegDash.Tests\Kifa.Media.MpegDash.Tests.csproj", "{E36368E8-EDEF-455D-887C-1A09FF7F267B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.ITerm", "src\Kifa.ITerm\Kifa.ITerm.csproj", "{449A03BE-2028-4138-B65C-E9607F08A5BC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Graphics", "src\Kifa.Graphics\Kifa.Graphics.csproj", "{449A03BE-2028-4138-B65C-E9607F08A5BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
-    <ProjectReference Include="..\Kifa.ITerm\Kifa.ITerm.csproj" />
+    <ProjectReference Include="..\Kifa.Graphics\Kifa.Graphics.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
     <ProjectReference Include="..\Kifa\Kifa.csproj" />
   </ItemGroup>

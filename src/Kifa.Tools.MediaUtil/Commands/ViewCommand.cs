@@ -1,7 +1,7 @@
 using CommandLine;
 using FFMpegCore;
 using Kifa.Api.Files;
-using Kifa.ITerm;
+using Kifa.Graphics;
 using NLog;
 
 namespace Kifa.Tools.MediaUtil.Commands;

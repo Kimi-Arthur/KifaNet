@@ -1,4 +1,4 @@
-namespace Kifa.ITerm;
+namespace Kifa.Graphics;
 
 public class ITermImage {
     // https://iterm2.com/3.2/documentation-images.html
