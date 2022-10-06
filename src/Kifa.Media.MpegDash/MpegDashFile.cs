@@ -21,12 +21,7 @@ public class MpegDashFile {
     static readonly HttpClient HttpClient = new();
 
     public MpegDashFile(string manifestUri) {
-        if (!manifestUri.EndsWith("/Manifest")) {
-            throw new ArgumentException("Manifest uri should end with '/Manifest'",
-                nameof(manifestUri));
-        }
-
-        BaseUri = manifestUri[..manifestUri.LastIndexOf("/Manifest")];
+        BaseUri = manifestUri[..manifestUri.LastIndexOf("/")];
         var xml = new XmlSerializer(typeof(DashInfo));
         DashInfo = (DashInfo) xml.Deserialize(HttpClient.GetStreamAsync(manifestUri).Result)!;
     }
