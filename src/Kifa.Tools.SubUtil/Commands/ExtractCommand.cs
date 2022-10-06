@@ -104,6 +104,7 @@ class ExtractCommand : KifaCommand {
         }
 
         subtitleFile.EnsureLocalParent();
+        subtitleFile.Delete();
         var result = Executor.Run("ffmpeg",
             $"-i \"{file.GetLocalPath()}\" -map 0:{choice.Index} -c copy \"{subtitleFile.GetLocalPath()}\"");
         if (result.ExitCode != 0) {
