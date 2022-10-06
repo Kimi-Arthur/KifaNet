@@ -6,7 +6,8 @@ namespace Kifa.Subtitle.Ass;
 public class AssDialogueEffect {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public virtual string EffectType { get; set; }
+    public virtual string EffectType => null;
+
     public virtual IEnumerable<string> EffectParameters => null;
 
     public static AssDialogueEffect Parse(string content) {
@@ -20,9 +21,7 @@ public class AssDialogueEffect {
                 return new AssDialogueBannerEffect();
             default:
                 Logger.Warn("Unexpected dialogue effect type: {0}", content);
-                return new AssDialogueEffect {
-                    EffectType = segments[0]
-                };
+                return new AssDialogueEffect();
         }
     }
 
