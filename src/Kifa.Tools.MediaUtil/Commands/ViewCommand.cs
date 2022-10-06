@@ -47,7 +47,7 @@ public class ViewCommand : KifaCommand {
 
     public override int Execute() {
         var (_, files) = KifaFile.FindExistingFiles(FileNames, recursive: false);
-        foreach (var file in files.Where(f => ImageExtensions.Contains(f.Extension))) {
+        foreach (var file in files.Where(f => ImageExtensions.Contains(f.Extension.ToLower()))) {
             Console.WriteLine(file);
             Console.WriteLine(
                 ITermImage.GetITermImageFromRawBytes(file.ReadAsBytes(), Width, Height));
@@ -55,7 +55,7 @@ public class ViewCommand : KifaCommand {
 
         Logger.Trace($"Window width: {Console.WindowWidth}");
 
-        foreach (var file in files.Where(f => VideoExtensions.Contains(f.Extension))) {
+        foreach (var file in files.Where(f => VideoExtensions.Contains(f.Extension.ToLower()))) {
             Console.WriteLine($"{file}\n");
             var tmp = new FileInfo(Path.Join(Path.GetTempPath(),
                 Path.GetRandomFileName() + ".png"));
