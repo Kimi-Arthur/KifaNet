@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Media.MpegDash;
-using Kifa.Service;
 using Kifa.SkyCh;
 using Kifa.SkyCh.Api;
 using NLog;
@@ -50,8 +48,20 @@ public class DownloadProgramCommand : KifaCommand {
             return 0;
         }
 
-        var videoLink = SkyLiveProgram.SkyClient
-            .SendWithRetry<PlayerResponse>(new ProgramPlayerRequest(programId, eventId))?.Url;
+        var response =
+            SkyLiveProgram.SkyClient.SendWithRetry<PlayerResponse>(
+                new ProgramPlayerRequest(programId, eventId));
+
+        if (response == null) {
+            throw new Exception("Failed to get player response.");
+        }
+
+        if (response.LicenseUrl != null) {
+            throw new Exception("Video requires license verification.");
+        }
+
+        var videoLink = response.Url;
+
         Logger.Info($"Link: {videoLink}");
 
         if (videoLink == null) {

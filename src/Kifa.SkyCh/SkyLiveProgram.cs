@@ -110,7 +110,16 @@ public class SkyLiveProgram : DataModel<SkyLiveProgram> {
     }
 
     public string? GetVideoLink() {
-        return SkyClient.SendWithRetry<PlayerResponse>(new LivePlayerRequest(Id))?.Url;
+        var response = SkyClient.SendWithRetry<PlayerResponse>(new LivePlayerRequest(Id));
+        if (response == null) {
+            throw new Exception("Failed to get player response.");
+        }
+
+        if (response.LicenseUrl != null) {
+            throw new Exception("Video requires license verification.");
+        }
+
+        return response.Url;
     }
 }
 

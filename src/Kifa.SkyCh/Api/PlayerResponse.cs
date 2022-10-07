@@ -2,8 +2,8 @@ namespace Kifa.SkyCh.Api;
 
 public class PlayerResponse {
     public bool Success { get; set; }
-    public string Url { get; set; }
-    public string LicenseUrl { get; set; }
+    public string? Url { get; set; }
+    public string? LicenseUrl { get; set; }
     public WatchTrackingObject WatchTrackingObject { get; set; }
     public string Language { get; set; }
     public bool DisplayResumePlayBack { get; set; }
