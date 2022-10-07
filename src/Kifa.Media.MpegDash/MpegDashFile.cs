@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Xml.Serialization;
 using Kifa.IO;
@@ -23,13 +23,17 @@ public class MpegDashFile {
     public MpegDashFile(string manifestUri) {
         BaseUri = manifestUri[..manifestUri.LastIndexOf("/")];
         var xml = new XmlSerializer(typeof(DashInfo));
-        DashInfo = (DashInfo) xml.Deserialize(HttpClient.GetStreamAsync(manifestUri).Result)!;
+        var mpdContent = HttpClient.GetByteArrayAsync(manifestUri).Result;
+        Logger.Trace($"MPD file content:\n{Encoding.UTF8.GetString(mpdContent)}");
+        DashInfo = (DashInfo) xml.Deserialize(new MemoryStream(mpdContent))!;
     }
 
     public MpegDashFile(string baseUri, Stream stream) {
         BaseUri = baseUri;
         var xml = new XmlSerializer(typeof(DashInfo));
-        DashInfo = (DashInfo) xml.Deserialize(stream)!;
+        var mpdContent = stream.ToByteArray();
+        Logger.Trace($"MPD file content:\n{Encoding.UTF8.GetString(mpdContent)}");
+        DashInfo = (DashInfo) xml.Deserialize(new MemoryStream(mpdContent))!;
     }
 
     public (Func<Stream> videoStreamGetter, List<Func<Stream>> audioStreamGetters) GetStreams() {
