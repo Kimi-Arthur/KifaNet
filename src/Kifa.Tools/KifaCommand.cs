@@ -72,7 +72,7 @@ public abstract class KifaCommand {
 
     public abstract int Execute();
 
-    static bool alwaysDefault = false;
+    static bool alwaysDefault;
     static int defaultIndex = 1;
 
     public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
