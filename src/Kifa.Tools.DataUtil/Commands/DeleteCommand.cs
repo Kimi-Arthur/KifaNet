@@ -34,7 +34,7 @@ public partial class DeleteCommand : KifaCommand {
             return 0;
         }
 
-        return Logger.LogResult(chef.Delete(Ids.ToList()), "Deleting items").Status ==
+        return Logger.LogResult(chef.Delete(Ids.ToList()), "deleting items").Status ==
                KifaActionStatus.OK
             ? 0
             : 1;

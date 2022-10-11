@@ -63,7 +63,7 @@ public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataM
         var items = Load(data);
 
         return Logger.LogResult(Client.Update(items),
-            $"Update {ModelId}({string.Join(", ", items.Select(item => item.Id))})");
+            $"updating {ModelId}({string.Join(", ", items.Select(item => item.Id))})");
     }
 
     public string Save(List<TDataModel> items, bool compact) {

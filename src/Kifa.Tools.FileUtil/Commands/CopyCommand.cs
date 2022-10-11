@@ -56,7 +56,7 @@ class CopyCommand : KifaCommand {
             }
 
             Logger.LogResult(FileInformation.Client.Link(target, linkName),
-                $"Linked {linkName} => {target}!");
+                $"linking {linkName} => {target}!");
         } else {
             foreach (var file in files) {
                 var linkFile = linkName + file.Substring(target.Length);
@@ -79,7 +79,7 @@ class CopyCommand : KifaCommand {
                 }
 
                 Logger.LogResult(FileInformation.Client.Link(file, linkFile),
-                    $"Linked {linkFile} => {file}!");
+                    $"linking {linkFile} => {file}!");
             }
         }
 

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
-using Kifa.IO;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -33,10 +31,8 @@ class AddCommand : KifaCommand {
             Console.ReadLine();
         }
 
-        var executionHandler = new KifaExecutionHandler<KifaFile>(Logger);
-
         foreach (var file in files) {
-            executionHandler.Execute(new KifaFile(file.ToString()), AddFile, "Failed to add {0}.");
+            ExecuteItem(file.ToString(), () => AddFile(new KifaFile(file.ToString())));
         }
 
         (_, files) = KifaFile.FindPotentialFiles(FileNames);
@@ -53,16 +49,11 @@ class AddCommand : KifaCommand {
             }
         }
 
-        return executionHandler.PrintSummary("Failed to add the following {0} files:");
+        return LogSummary();
     }
 
     void AddFile(KifaFile file) {
         Logger.Info($"Adding {file}...");
-        try {
-            file.Add(QuickMode ? null : ForceRecheck);
-            Logger.Info($"Successfully added {file}.");
-        } catch (IOException ex) {
-            Logger.Error(ex, $"Failed to add {file}.");
-        }
+        file.Add(QuickMode ? null : ForceRecheck);
     }
 }

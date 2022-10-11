@@ -128,7 +128,7 @@ public static class KifaActionResultLogger {
     public static KifaActionResult LogResult(this Logger Logger, KifaActionResult result,
         string action) {
         Logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn,
-            $"{action}: {result}");
+            $"Result of {action}: {result}");
         return result;
     }
 

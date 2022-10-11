@@ -25,6 +25,6 @@ public class ImportCommand : KifaCommand {
             return 1;
         }
 
-        return (int) Logger.LogResult(chef.Import(content), "Summary").Status;
+        return (int) Logger.LogResult(chef.Import(content), "importing data").Status;
     }
 }

@@ -44,7 +44,6 @@ class ExtractCommand : KifaCommand {
             return 0;
         }
 
-        var allResults = new List<(string item, KifaActionResult result)>();
         foreach (var file in foundFiles) {
             var info = FFProbe.Analyse(file.GetLocalPath());
             var (choice, _) = SelectOne(info.SubtitleStreams,
@@ -52,41 +51,10 @@ class ExtractCommand : KifaCommand {
                      (s.Tags?.ContainsKey("title") ?? false ? $": {s.Tags["title"]}" : "") +
                      $" => {GetExtractedSubtitleFile(file, s)}");
 
-            allResults.Add((file.ToString(),
-                Logger.LogResult(ExtractSubtitle(file, choice), file.ToString())));
+            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, choice));
         }
 
-        return LogSummary(allResults);
-    }
-
-    static int LogSummary(List<(string item, KifaActionResult result)> allResults) {
-        var resultsByStatus = allResults.GroupBy(item => item.result.Status == KifaActionStatus.OK)
-            .ToDictionary(item => item.Key, item => item.ToList());
-        if (resultsByStatus.ContainsKey(true)) {
-            var items = resultsByStatus[true];
-            Logger.Info($"Successfully acted on the following {items.Count} items:");
-            foreach (var (item, result) in items) {
-                Logger.Info($"{item}:");
-                foreach (var line in (result.Message ?? "OK").Split("\n")) {
-                    Logger.Info($"\t{line}");
-                }
-            }
-        }
-
-        if (resultsByStatus.ContainsKey(false)) {
-            var items = resultsByStatus[false];
-            Logger.Error($"Failed to act on the following {items.Count} items:");
-            foreach (var (item, result) in items) {
-                Logger.Error($"{item} =>");
-                foreach (var line in (result.Message ?? "OK").Split("\n")) {
-                    Logger.Error($"\t{line}");
-                }
-            }
-
-            return 1;
-        }
-
-        return 0;
+        return LogSummary();
     }
 
     KifaActionResult ExtractSubtitle(KifaFile file, SubtitleStream choice) {
