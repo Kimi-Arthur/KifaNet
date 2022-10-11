@@ -16,7 +16,7 @@ public abstract partial class KifaCommand {
     public static KifaFile CurrentFolder => new(".");
 
     [Option('v', "verbose", HelpText = "Show most detailed log.")]
-    public virtual bool Verbose { get; set; } = false;
+    public bool Verbose { get; set; } = false;
 
     public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
         Initialize();
