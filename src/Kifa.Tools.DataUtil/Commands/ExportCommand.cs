@@ -33,7 +33,7 @@ public class ExportCommand : KifaCommand {
             return 1;
         }
 
-        var result = Logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
+        var result = Logger.LogResult(chef.Export(content, GetAll, Compact), "exporting data");
         if (result.Status != KifaActionStatus.OK) {
             Logger.Error($"Failed to get data for {chef.ModelId}.");
             return (int) result.Status;

@@ -39,7 +39,7 @@ public class SyncCommand : KifaCommand {
             return (int) importResult.Status;
         }
         
-        var result = Logger.LogResult(chef.Export(content, GetAll, Compact), "Summary");
+        var result = Logger.LogResult(chef.Export(content, GetAll, Compact), "exporting data");
         if (result.Status != KifaActionStatus.OK) {
             Logger.Error($"Failed to export data for {chef.ModelId}.");
             return (int) result.Status;
