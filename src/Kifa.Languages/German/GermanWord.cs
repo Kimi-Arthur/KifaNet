@@ -209,7 +209,7 @@ public class GermanWord : DataModel<GermanWord> {
             .SelectMany(pronunciationLinks => pronunciationLinks)
             .ToDictionary(item => item.Key, item => item.Value);
 
-        Meanings = enWiki.Meanings?.Any() == true ? enWiki.Meanings : pons.Meanings;
+        Meanings = enWiki.Meanings;
 
         Meaning ??= Meanings?.FirstOrDefault()?.SafeTranslation;
         Type ??= Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;

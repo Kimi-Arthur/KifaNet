@@ -45,6 +45,7 @@ public class EnWiktionaryClient {
         site.Initialization.Wait();
         var page = new WikiPage(site, wordId);
         page.RefreshAsync(PageQueryOptions.FetchContent).Wait();
+        word.Meanings = new List<Meaning>();
         Meaning? meaning = null;
         Example? example = null;
         var parser = new WikitextParser();
@@ -87,8 +88,8 @@ public class EnWiktionaryClient {
                     var listContent = GetLineWithoutNotes(listItem);
                     switch (prefix) {
                         case "#":
+                        case "##":
                             if (meaning != null) {
-                                word.Meanings ??= new List<Meaning>();
                                 word.Meanings.Add(meaning);
                             }
 
@@ -160,8 +161,11 @@ public class EnWiktionaryClient {
         }
 
         if (meaning != null) {
-            word.Meanings ??= new List<Meaning>();
             word.Meanings.Add(meaning);
+        }
+
+        if (word.Meanings.Count == 0) {
+            word.Meanings = null;
         }
 
         return word;
