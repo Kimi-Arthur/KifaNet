@@ -13,7 +13,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public const string ModelId = "goethe/words";
-    public override int CurrentVersion => 1;
+    public override int CurrentVersion => 2;
 
     static readonly Regex RootWordPattern =
         new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen)?$");
@@ -53,7 +53,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
         WikiMeanings = string.Join("; ",
             word.Meanings?.Select(meaning => meaning.Translation) ?? Enumerable.Empty<string>());
 
-        return null;
+        return Date.Zero;
     }
 }
 
