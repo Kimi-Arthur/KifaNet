@@ -64,7 +64,7 @@ public class GermanWord : DataModel<GermanWord> {
             $"{verbForms[VerbFormType.IndicativePresent][Person.Er]}, {verbForms[VerbFormType.IndicativePreterite][Person.Er]}, {verbForms[VerbFormType.IndicativePerfect][Person.Er]}";
     }
 
-    static Dictionary<char, char> UmlautMapping = new() {
+    static readonly Dictionary<char, char> UmlautMapping = new() {
         { 'a', 'ä' },
         { 'o', 'ö' },
         { 'u', 'ü' },
@@ -89,19 +89,19 @@ public class GermanWord : DataModel<GermanWord> {
             }
 
             // Add a suffix and umlaut.
-            var hasUmlaut = false;
+            var umlaut = ' ';
             foreach (var (ochar, pchar) in original.Zip(plural)) {
                 if (ochar != pchar) {
-                    if (UmlautMapping.GetValueOrDefault(ochar) != pchar || hasUmlaut) {
-                        // Only full text
+                    if (UmlautMapping.GetValueOrDefault(ochar) != pchar || umlaut != ' ') {
+                        // Only full text in this special case
                         return plural;
                     }
 
-                    hasUmlaut = true;
+                    umlaut = pchar;
                 }
             }
 
-            return !hasUmlaut ? plural : $"¨-{plural[original.Length..]}";
+            return umlaut == ' ' ? plural : $"-{umlaut}-{plural[original.Length..]}";
         }
 
         return "(Sg.)";
@@ -158,8 +158,7 @@ public class GermanWord : DataModel<GermanWord> {
             _ => null
         };
 
-    protected (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord
-        dwds) GetWords() {
+    protected (GermanWord wiki, GermanWord enWiki, GermanWord duden, GermanWord dwds) GetWords() {
         var wiki = new GermanWord();
         try {
             wiki = new DeWiktionaryClient().GetWord(Id);
@@ -174,18 +173,11 @@ public class GermanWord : DataModel<GermanWord> {
             Logger.Warn(ex, $"Failed to get word from en.wiktionary.org for {Id}");
         }
 
-        var pons = new GermanWord();
-        try {
-            pons = new PonsClient().GetWord(Id);
-        } catch (Exception ex) {
-            Logger.Warn(ex, $"Failed to get pons word for {Id}");
-        }
-
         var duden = new DudenClient().GetWord(Id);
 
         var dwds = new DwdsClient().GetWord(Id);
 
-        return (wiki, enWiki, pons, duden, dwds);
+        return (wiki, enWiki, duden, dwds);
     }
 
     public override DateTimeOffset? Fill() {
@@ -195,15 +187,13 @@ public class GermanWord : DataModel<GermanWord> {
     }
 
     protected void FillWithData(
-        (GermanWord wiki, GermanWord enWiki, GermanWord pons, GermanWord duden, GermanWord dwds)
-            words) {
-        var (wiki, enWiki, pons, duden, dwds) = words;
-        Pronunciation = wiki.Pronunciation ?? pons.Pronunciation;
+        (GermanWord wiki, GermanWord enWiki, GermanWord duden, GermanWord dwds) words) {
+        var (wiki, enWiki, duden, dwds) = words;
+        Pronunciation = wiki.Pronunciation;
 
         PronunciationAudioLinks = new List<GermanWord> {
                 duden,
                 wiki,
-                pons,
                 dwds
             }.Select(word => word.PronunciationAudioLinks).ExceptNull()
             .SelectMany(pronunciationLinks => pronunciationLinks)
@@ -232,10 +222,7 @@ public class GermanWord : DataModel<GermanWord> {
             : PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>())
                 .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden,
                     new HashSet<string>())).Concat(PronunciationAudioLinks.GetValueOrDefault(
-                    Source.Wiktionary,
-                    //     new HashSet<string>()))
-                    // .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Pons,
-                    new HashSet<string>()));
+                    Source.Wiktionary, new HashSet<string>()));
 }
 
 public class Meaning {
