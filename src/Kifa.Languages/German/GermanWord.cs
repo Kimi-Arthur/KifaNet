@@ -101,7 +101,7 @@ public class GermanWord : DataModel<GermanWord> {
                 }
             }
 
-            return umlaut == ' ' ? plural : $"-{umlaut}-{plural[original.Length..]}";
+            return umlaut == ' ' ? plural : $"{umlaut}-{plural[original.Length..]}";
         }
 
         return "(Sg.)";
