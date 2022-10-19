@@ -108,7 +108,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         if (!Directory.Exists(folder)) {
             return File.Exists(folder + ".json")
                 ? new List<string> {
-                    folder
+                    folder[prefix.Length..^5]
                 }
                 : new List<string>();
         }
@@ -116,9 +116,8 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         var directory = new DirectoryInfo(folder);
         var items = directory.GetFiles("*.json",
             recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        return items.Select(i
-                => i.FullName.Substring(prefix.Length, i.FullName.Length - prefix.Length - 5))
-            .OrderBy(i => i.GetNaturalSortKey()).ToList();
+        return items.Select(i => i.FullName[prefix.Length..^5]).OrderBy(i => i.GetNaturalSortKey())
+            .ToList();
     }
 
     public KifaActionResult AddLocation(string id, string location, bool verified = false) {
