@@ -98,8 +98,39 @@ public class TvShow : DataModel<TvShow>, Formattable {
             episode
         });
 
-    public (Season Season, Episode Episode)? Parse(string formatted)
-        => throw new NotImplementedException();
+    public (Season Season, Episode Episode)? Parse(string formatted) {
+        var pattern = PatternId switch {
+            "multi_season" =>
+                $@"/TV Shows/{Title} \({AirDate.Year}\)/Season (\d+) (.*) (\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+            "single_season" => $@"/TV Shows/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
+            _ => null
+        };
+
+        if (pattern == null) {
+            return null;
+        }
+
+        var match = Regex.Match(formatted, pattern);
+        if (match.Success) {
+            var seasonId = match.Groups["season_id"].Success
+                ? int.Parse(match.Groups["season_id"].Value)
+                : 1;
+
+            var episodeId = match.Groups["episode_id"].Success
+                ? int.Parse(match.Groups["episode_id"].Value)
+                : -1;
+
+            if (episodeId < 0) {
+                return null;
+            }
+
+            var season = Seasons.First(s => s.Id == seasonId);
+            var episode = season.Episodes.First(e => e.Id == episodeId);
+            return (season, episode);
+        }
+
+        return null;
+    }
 
     public string? Format(Season season, List<Episode> episodes) {
         var episode = episodes.First();
