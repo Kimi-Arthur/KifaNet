@@ -104,9 +104,9 @@ public static class StringExtensions {
     }
 
     public static string GetNaturalSortKey(this string path)
-        => path.Contains("/$/") || path.Length >= 5
+        => path.Contains("/$/")
             ? path
-            : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D5}");
+            : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D8}");
 
     public static string NormalizeFileName(this string fileName)
         => SafeCharacterMapping.Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
