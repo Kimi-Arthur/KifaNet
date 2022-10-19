@@ -74,6 +74,18 @@ class ImportCommand : KifaCommand {
                      => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
                          Recursive))) {
             var suffix = file[file.LastIndexOf('.')..];
+            var info = FileInformation.Client.Get(file);
+            var existingMatch = episodes.FirstOrDefault(e
+                => info.Metadata.Linking.Links.Contains(
+                    $"{series.Format(e.season, e.episode).NormalizeFilePath()}{suffix}"));
+
+            if (existingMatch.season != null) {
+                Logger.Info(
+                    $"{file} already matched to {series.Format(existingMatch.season, existingMatch.episode).NormalizeFilePath()}{suffix}");
+                episodes.Remove(existingMatch);
+                continue;
+            }
+
             try {
                 var selected = SelectOne(episodes,
                     e => $"{file} => {series.Format(e.season, e.episode).NormalizeFilePath()}{suffix}",

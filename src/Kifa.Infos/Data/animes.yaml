@@ -1,4 +1,5 @@
 # animes
 - Id: 名探偵コナン
   TmdbId: 30983
+  EpisodeIdWidth: 3
   PatternId: single_season
