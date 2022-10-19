@@ -98,6 +98,9 @@ public class TvShow : DataModel<TvShow>, Formattable {
             episode
         });
 
+    public (Season Season, Episode Episode) Parse(string formatted)
+        => throw new NotImplementedException();
+
     public string? Format(Season season, List<Episode> episodes) {
         var episode = episodes.First();
         var patternId = episode.PatternId ?? season.PatternId ?? PatternId;

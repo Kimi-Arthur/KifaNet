@@ -46,6 +46,8 @@ public class Anime : DataModel<Anime>, Formattable {
         };
     }
 
+    public (Season Season, Episode Episode) Parse(string formatted) => throw new NotImplementedException();
+
     public override DateTimeOffset? Fill() {
         if (TmdbId == null) {
             throw new UnableToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
