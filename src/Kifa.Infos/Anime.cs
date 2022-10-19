@@ -74,7 +74,7 @@ public class Anime : DataModel<Anime>, Formattable {
             }).ToList();
 
             if (seasonInfo.SeasonNumber > 0) {
-                var seasonName = Helper.NormalizeTitle(seasonInfo.Name);
+                var seasonName = Helper.NormalizeTitle(seasonInfo.Name, DefaultLanguage);
                 Seasons.Add(new Season {
                     AirDate = seasonInfo.AirDate,
                     Id = seasonInfo.SeasonNumber,
