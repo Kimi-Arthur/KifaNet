@@ -2,6 +2,7 @@
 
 public enum KifaActionStatus {
     OK,
+    Warning,
     BadRequest,
     Error
 }

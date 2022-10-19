@@ -140,18 +140,24 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         var file = Get(id);
         if (file == null) {
             return new KifaActionResult {
-                Status = KifaActionStatus.BadRequest,
-                Message = $"Cannot find {id}"
+                Status = KifaActionStatus.Warning,
+                Message = $"Cannot find {id}."
             };
         }
 
-        if (file.Locations != null) {
+        if (file.Locations?.GetValueOrDefault(location) != null) {
             file.Locations.Remove(location);
-            return Update(file);
+            var update = Update(file);
+            return new KifaActionResult {
+                Status = update.Status,
+                Message = update.Status == KifaActionStatus.OK
+                    ? $"Removed location {location} from {id}."
+                    : update.Message
+            };
         }
 
         return new KifaActionResult {
-            Status = KifaActionStatus.OK,
+            Status = KifaActionStatus.Warning,
             Message = $"Location {location} not found for {id}."
         };
     }

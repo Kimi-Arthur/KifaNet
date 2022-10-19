@@ -4,6 +4,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NLog;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
 
@@ -16,6 +17,10 @@ public class KifaActionResult {
         Status = KifaActionStatus.Error,
         Message = "Unknown Error"
     };
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public bool IsAcceptable => Status is KifaActionStatus.OK or KifaActionStatus.Warning;
 
     public static KifaActionResult FromAction(Action action) {
         try {
@@ -86,7 +91,7 @@ public class KifaBatchActionResult : KifaActionResult {
     [JsonConverter(typeof(StringEnumConverter))]
     public override KifaActionStatus Status => Results.Max(r => r.Status);
 
-    public override string Message => string.Join("; ", Results.Where(r => r.Message != null));
+    public override string Message => string.Join("\n", Results.Where(r => r.Message != null));
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {

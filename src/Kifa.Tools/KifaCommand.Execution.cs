@@ -17,7 +17,7 @@ public abstract partial class KifaCommand {
             Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}")));
 
     public int LogSummary() {
-        var resultsByStatus = Results.GroupBy(item => item.result.Status == KifaActionStatus.OK)
+        var resultsByStatus = Results.GroupBy(item => item.result.IsAcceptable)
             .ToDictionary(item => item.Key, item => item.ToList());
         if (resultsByStatus.ContainsKey(true)) {
             var items = resultsByStatus[true];
