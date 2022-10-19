@@ -106,7 +106,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         folder = $"{prefix}/{folder.Trim('/')}";
         Logger.Trace(folder);
         if (!Directory.Exists(folder)) {
-            return File.Exists(folder)
+            return File.Exists(folder + ".json")
                 ? new List<string> {
                     folder
                 }
