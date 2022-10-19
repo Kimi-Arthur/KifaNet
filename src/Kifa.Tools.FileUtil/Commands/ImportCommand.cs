@@ -76,13 +76,25 @@ class ImportCommand : KifaCommand {
             var suffix = file[file.LastIndexOf('.')..];
             try {
                 var selected = SelectOne(episodes,
-                    e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping");
-                FileInformation.Client.Link(file,
-                    series.Format(selected.Choice.season, selected.Choice.episode)
-                        .NormalizeFilePath() + suffix);
-                episodes.RemoveAt(selected.Index);
-            } catch (InvalidChoiceException) {
-                Logger.Warn($"File {file} skipped.");
+                    e => $"{file} => {series.Format(e.season, e.episode).NormalizeFilePath()}{suffix}",
+                    "mapping", startingIndex: 1, supportsSpecial: true);
+                if (selected.Special) {
+                    var newName = Confirm(
+                        $"Confirm linking {file} to {series.Format(selected.Choice.season, selected.Choice.episode).NormalizeFilePath()}{suffix}",
+                        $"{series.Format(selected.Choice.season, selected.Choice.episode).NormalizeFilePath()}{suffix}");
+                    FileInformation.Client.Link(file, newName);
+                    if (Confirm(
+                            $"Remove info item {series.Format(selected.Choice.season, selected.Choice.episode).NormalizeFilePath()}?")) {
+                        episodes.RemoveAt(selected.Index);
+                    }
+                } else {
+                    FileInformation.Client.Link(file,
+                        series.Format(selected.Choice.season, selected.Choice.episode)
+                            .NormalizeFilePath() + suffix);
+                    episodes.RemoveAt(selected.Index);
+                }
+            } catch (InvalidChoiceException ex) {
+                Logger.Warn(ex, $"File {file} skipped.");
             }
         }
 

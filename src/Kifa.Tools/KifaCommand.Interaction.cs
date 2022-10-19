@@ -1,16 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Kifa.Tools;
 
 public abstract partial class KifaCommand {
     static bool alwaysDefault;
-    static int defaultIndex = 1;
+    static int defaultIndex;
+
+    static readonly Regex ChoiceRegex = new Regex(@"(\d*)([as]*)");
 
     public static (TChoice Choice, int Index, bool Special) SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string> choiceToString = null,
-        string choiceName = null) {
+        string choiceName = null, int startingIndex = 0, bool supportsSpecial = false) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
@@ -18,39 +21,57 @@ public abstract partial class KifaCommand {
         choiceName ??= "items";
 
         for (var i = 0; i < choices.Count; i++) {
-            Console.WriteLine($"[{i + 1}] {choiceStrings[i]}");
-        }
-
-        Console.WriteLine($"\nDefault [{defaultIndex}]: {choiceStrings[defaultIndex - 1]}\n");
-
-        if (alwaysDefault) {
-            Console.WriteLine($"Automatically chose [{defaultIndex}] as previously instructed.\n");
-            return (choices[defaultIndex - 1], defaultIndex - 1, false);
+            Console.WriteLine($"[{i + startingIndex}] {choiceStrings[i]}");
         }
 
         Console.WriteLine(
-            $"Choose one from the {choiceName} above [1-{choices.Count}]. Append 'a' to always choose the same index,");
-        Console.Write($"Default is [{defaultIndex}]: ");
-        var line = Console.ReadLine();
+            $"\nDefault [{defaultIndex + startingIndex}]: {choiceStrings[defaultIndex]}\n");
 
-        if (line.EndsWith('a')) {
-            alwaysDefault = true;
-            line = line[..^1];
+        if (alwaysDefault) {
+            Console.WriteLine(
+                $"Automatically chose [{defaultIndex + startingIndex}] as previously instructed.\n");
+            return (choices[defaultIndex], defaultIndex, false);
         }
 
-        var special = line.EndsWith('s');
+        Console.WriteLine(
+            $"Choose one from the {choiceName} above [{startingIndex} - {choices.Count - 1 + startingIndex}].");
+        Console.WriteLine("Append 'a' to always choose the same index,");
+        if (supportsSpecial) {
+            Console.WriteLine("Append 's' to use special handling,");
+        }
 
-        var chosenIndex = string.IsNullOrEmpty(line) ? defaultIndex : int.Parse(line);
+        Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
+        var match = ChoiceRegex.Match(Console.ReadLine() ?? "");
+        if (!match.Success) {
+            throw new InvalidChoiceException("Doesn't match ChoiceRegex.");
+        }
+
+        var choiceText = match.Groups[1].Value;
+        var chosenIndex = string.IsNullOrEmpty(choiceText)
+            ? defaultIndex
+            : int.Parse(choiceText) - startingIndex;
+
+        var flags = match.Groups[2].Value;
+
+        if (flags.Contains('a')) {
+            alwaysDefault = true;
+        }
+
+        var special = flags.Contains('s');
+        if (!supportsSpecial && special) {
+            throw new InvalidChoiceException("Special is not supported...");
+        }
+
         defaultIndex = chosenIndex;
-        if (chosenIndex < 1 || chosenIndex > choices.Count) {
+        if (chosenIndex < 0 || chosenIndex >= choices.Count) {
             throw new InvalidChoiceException($"Choice {chosenIndex} is out of range.");
         }
 
         if (alwaysDefault) {
-            Console.WriteLine($"Will always choose [{chosenIndex}] from now on.\n");
+            Console.WriteLine($"Will always choose [{chosenIndex + startingIndex}] from now on.\n");
         }
 
-        return (choices[chosenIndex - 1], chosenIndex - 1, special);
+        return (choices[chosenIndex], chosenIndex, special);
     }
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
