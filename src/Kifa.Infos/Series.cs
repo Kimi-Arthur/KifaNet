@@ -49,7 +49,7 @@ public class SpecialEpisode : Episode {
 
 public interface Formattable : WithFormatInfo {
     string? Format(Season season, Episode episode);
-    (Season Season, Episode Episode) Parse(string formatted);
+    (Season Season, Episode Episode)? Parse(string formatted);
 }
 
 public interface WithFormatInfo {

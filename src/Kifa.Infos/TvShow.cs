@@ -98,7 +98,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
             episode
         });
 
-    public (Season Season, Episode Episode) Parse(string formatted)
+    public (Season Season, Episode Episode)? Parse(string formatted)
         => throw new NotImplementedException();
 
     public string? Format(Season season, List<Episode> episodes) {

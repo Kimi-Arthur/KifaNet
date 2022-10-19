@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Kifa.Infos.Tmdb;
 using Kifa.Service;
 
@@ -26,7 +27,6 @@ public class Anime : DataModel<Anime>, Formattable {
     public int? EpisodeIdWidth { get; set; }
 
     public string? Format(Season season, Episode episode) {
-        var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
         var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
@@ -35,7 +35,7 @@ public class Anime : DataModel<Anime>, Formattable {
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
 
         // season.Title and episode.Title can be empty.
-        return patternId switch {
+        return PatternId switch {
             "multi_season" => $"/Anime/{Title} ({AirDate.Year})" +
                               $"/Season {season.Id} {season.Title}".TrimEnd() +
                               $" ({season.AirDate.Year})" +
@@ -46,7 +46,39 @@ public class Anime : DataModel<Anime>, Formattable {
         };
     }
 
-    public (Season Season, Episode Episode) Parse(string formatted) => throw new NotImplementedException();
+    public (Season Season, Episode Episode)? Parse(string formatted) {
+        var pattern = PatternId switch {
+            "multi_season" =>
+                $@"/Anime/{Title} \({AirDate.Year}\)/Season (\d+) (.*) (\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+            "single_season" => $@"/Anime/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
+            _ => null
+        };
+
+        if (pattern == null) {
+            return null;
+        }
+
+        var match = Regex.Match(formatted, pattern);
+        if (match.Success) {
+            var seasonId = match.Groups["season_id"].Success
+                ? int.Parse(match.Groups["season_id"].Value)
+                : 1;
+
+            var episodeId = match.Groups["episode_id"].Success
+                ? int.Parse(match.Groups["episode_id"].Value)
+                : -1;
+
+            if (episodeId < 0) {
+                return null;
+            }
+
+            var season = Seasons.First(s => s.Id == seasonId);
+            var episode = season.Episodes.First(e => e.Id == episodeId);
+            return (season, episode);
+        }
+
+        return null;
+    }
 
     public override DateTimeOffset? Fill() {
         if (TmdbId == null) {

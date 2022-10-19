@@ -34,7 +34,7 @@ class ImportCommand : KifaCommand {
         var seasonId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
         var episodeId = segments.Length > 3 ? int.Parse(segments[3]) : 0;
 
-        List<(Season season, Episode episode)> episodes;
+        List<(Season Season, Episode Episode, bool Matched)> episodes;
         Formattable series;
 
         switch (type) {
@@ -42,15 +42,17 @@ class ImportCommand : KifaCommand {
                 var tvShow = TvShow.Client.Get(id);
                 series = tvShow;
                 episodes = tvShow.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
-                    .SelectMany(season => season.Episodes, (season, episode) => (season, episode))
-                    .Where(item => episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                    .SelectMany(season => season.Episodes,
+                        (season, episode) => (season, episode, false)).Where(item
+                        => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             case "animes":
                 var anime = Anime.Client.Get(id);
                 series = anime;
                 episodes = anime.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
-                    .SelectMany(season => season.Episodes, (season, episode) => (season, episode))
-                    .Where(item => episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                    .SelectMany(season => season.Episodes,
+                        (season, episode) => (season, episode, false)).Where(item
+                        => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             case "soccer":
                 foreach (var file in FileNames.SelectMany(path
@@ -75,35 +77,36 @@ class ImportCommand : KifaCommand {
                          Recursive))) {
             var suffix = file[file.LastIndexOf('.')..];
             var info = FileInformation.Client.Get(file);
-            var existingMatch = episodes.FirstOrDefault(e => info.Metadata.Linking.Links.Any(l
-                => l.StartsWith($"{series.Format(e.season, e.episode).NormalizeFilePath()}{suffix}"
-                    .RemoveAfter("/"))));
+            var existingMatch = info.GetAllLinks().Select(l => (Link: l, Episode: series.Parse(l)))
+                .FirstOrDefault(e => e.Episode != null, ("", null));
 
-            if (existingMatch.season != null) {
-                Logger.Info(
-                    $"{file} already matched to {series.Format(existingMatch.season, existingMatch.episode).NormalizeFilePath()}{suffix}");
-                episodes.Remove(existingMatch);
+            if (existingMatch.Episode.HasValue) {
+                var match = existingMatch.Episode.Value;
+                Logger.Info($"{file} already matched to {existingMatch.Link}");
+                MarkMatched(episodes, match.Season, match.Episode);
+
                 continue;
             }
 
+            var validEpisodes = episodes.Where(e => !e.Matched).ToList();
             try {
-                var selected = SelectOne(episodes,
-                    e => $"{file} => {series.Format(e.season, e.episode).NormalizeFilePath()}{suffix}",
+                var selected = SelectOne(validEpisodes,
+                    e => $"{file} => {series.Format(e.Season, e.Episode).NormalizeFilePath()}{suffix}",
                     "mapping", startingIndex: 1, supportsSpecial: true);
                 if (selected.Special) {
                     var newName = Confirm(
-                        $"Confirm linking {file} to {series.Format(selected.Choice.season, selected.Choice.episode).NormalizeFilePath()}{suffix}",
-                        $"{series.Format(selected.Choice.season, selected.Choice.episode).NormalizeFilePath()}{suffix}");
+                        $"Confirm linking {file} to {series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}{suffix}",
+                        $"{series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}{suffix}");
                     FileInformation.Client.Link(file, newName);
                     if (Confirm(
-                            $"Remove info item {series.Format(selected.Choice.season, selected.Choice.episode).NormalizeFilePath()}?")) {
-                        episodes.RemoveAt(selected.Index);
+                            $"Remove info item {series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}?")) {
+                        MarkMatched(episodes, selected.Choice.Season, selected.Choice.Episode);
                     }
                 } else {
                     FileInformation.Client.Link(file,
-                        series.Format(selected.Choice.season, selected.Choice.episode)
+                        series.Format(selected.Choice.Season, selected.Choice.Episode)
                             .NormalizeFilePath() + suffix);
-                    episodes.RemoveAt(selected.Index);
+                    MarkMatched(episodes, selected.Choice.Season, selected.Choice.Episode);
                 }
             } catch (InvalidChoiceException ex) {
                 Logger.Warn(ex, $"File {file} skipped.");
@@ -111,5 +114,14 @@ class ImportCommand : KifaCommand {
         }
 
         return 0;
+    }
+
+    static void MarkMatched(List<(Season Season, Episode Episode, bool Matched)> episodes,
+        Season matchSeason, Episode matchEpisode) {
+        for (var i = 0; i < episodes.Count; i++) {
+            if (episodes[i].Season == matchSeason && episodes[i].Episode == matchEpisode) {
+                episodes[i] = (episodes[i].Season, episodes[i].Episode, true);
+            }
+        }
     }
 }
