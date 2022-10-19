@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -54,6 +55,9 @@ class RemoveCommand : KifaCommand {
                         => ExecuteItem(f.Id, () => RemoveLogicalFile(f.FileInfo!)));
                     return LogSummary();
                 }
+
+                Logger.Info("Action canceled.");
+                return 2;
             }
 
             var files = new List<string>();
@@ -71,6 +75,9 @@ class RemoveCommand : KifaCommand {
                         => ExecuteItem(f, () => RemoveLogicalFile(FileInformation.Client.Get(f)!)));
                     return LogSummary();
                 }
+
+                Logger.Info("Action canceled.");
+                return 2;
             }
 
             Logger.Fatal("No files found!");
@@ -79,43 +86,22 @@ class RemoveCommand : KifaCommand {
 
         var (_, localFiles) = KifaFile.FindExistingFiles(FileNames);
 
-            foreach (var file in localFiles) {
-                Console.WriteLine(file);
-            }
+        foreach (var file in localFiles) {
+            Console.WriteLine(file);
+        }
 
-            if (Confirm($"Confirm deleting the {localFiles.Count} files above{removalText}?")) {
-                localFiles.ForEach(f
-                    => ExecuteItem(f, () => RemoveLogicalFile(FileInformation.Client.Get(f)!)));
-                return LogSummary();
-            }
+        if (Confirm(
+                $"Confirm deleting the {localFiles.Count} file instances above{removalText}?")) {
+            localFiles.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+            return LogSummary();
+        }
 
-            var potentialFiles =
-                FileInformation.Client.Get(FileInformation.Client.ListFolder(source.Id, true));
-            if (potentialFiles.Count == 0) {
-                potentialFiles.Add(FileInformation.Client.Get(source.Id));
-            }
-
-            var potentialFileInstances = potentialFiles
-                .Select(f => f.Locations.Keys.Select(l => new KifaFile(l))
-                    .FirstOrDefault(l => l.Host == source.Host))
-                .Where(f => f != null && !localFiles.Contains(f)).ToList();
-
-            if (potentialFileInstances.Any()) {
-                foreach (var file in potentialFileInstances) {
-                    Console.WriteLine($"{file} (link only)");
-                }
-            }
-
-            Console.Write($"Confirm deleting the {localFiles.Count} files above{removalText}?");
-            Console.ReadLine();
-
-            return localFiles.Concat(potentialFileInstances)
-                .Select(f => RemoveFileInstance(new KifaFile(f.ToString()))).Max();
-
-        return RemoveFileInstance(source);
+        Logger.Info("Action canceled.");
+        return 2;
     }
 
-    int RemoveLogicalFile(FileInformation info) {
+    KifaActionResult RemoveLogicalFile(FileInformation info) {
+        var result = new KifaBatchActionResult();
         if (!RemoveLinkOnly && info.Locations != null) {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
@@ -126,52 +112,68 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (toRemove) {
-                    if (file.Exists()) {
-                        file.Delete();
-                        Logger.Info($"File {file} deleted.");
-                    } else {
-                        Logger.Warn($"File {file} not found.");
-                    }
+                    result.Add(file.Exists()
+                        ? new KifaActionResult {
+                            Status = KifaActionStatus.OK,
+                            Message = $"File {file} deleted."
+                        }
+                        : new KifaActionResult {
+                            Status = KifaActionStatus.Warning,
+                            Message = $"File {file} not found."
+                        });
 
-                    FileInformation.Client.RemoveLocation(info.Id, location);
-                    Logger.Info($"Entry {location} removed.");
+                    file.Delete();
+
+                    result.Add(FileInformation.Client.RemoveLocation(info.Id, location));
                 }
             }
         }
 
         // Logical removal.
-        FileInformation.Client.Delete(info.Id);
-        Logger.Info($"FileInfo {info.Id} removed.");
-        return 0;
+        result.Add(FileInformation.Client.Delete(info.Id));
+        return result;
     }
 
-    int RemoveFileInstance(KifaFile file) {
-        if (file.FileInfo?.Locations?.ContainsKey(file.ToString()) != true) {
-            if (file.Exists()) {
-                file.Delete();
-                Logger.Warn($"File {file} deleted, no entry found though.");
-            } else {
-                file.Delete();
-                Logger.Warn($"File {file} not found.");
+    KifaActionResult RemoveFileInstance(KifaFile file) {
+        var result = new KifaBatchActionResult();
+
+        bool fileExists = file.Exists();
+        if (!file.Registered) {
+            if (RemoveLinkOnly) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = "File not registered and only link is asked to be removed."
+                };
             }
 
-            return 0;
+            file.Delete();
+
+            return fileExists
+                ? new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"File {file} deleted, no entry found though."
+                }
+                : new KifaActionResult {
+                    Status = KifaActionStatus.Warning,
+                    Message = $"File {file} not found."
+                };
         }
 
-        // Remove specific location item.
         if (!RemoveLinkOnly) {
-            if (file.Exists()) {
-                file.Delete();
-                Logger.Info($"File {file} deleted.");
-            } else {
-                file.Delete();
-                Logger.Warn($"File {file} not found.");
-            }
+            file.Delete();
+            result.Add(fileExists
+                ? new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"File {file} deleted."
+                }
+                : new KifaActionResult {
+                    Status = KifaActionStatus.Warning,
+                    Message = $"File {file} not found."
+                });
         }
 
-        FileInformation.Client.RemoveLocation(file.Id, file.ToString());
-        Logger.Info($"Entry {file} removed.");
+        result.Add(FileInformation.Client.RemoveLocation(file.Id, file.ToString()));
 
-        return 0;
+        return result;
     }
 }
