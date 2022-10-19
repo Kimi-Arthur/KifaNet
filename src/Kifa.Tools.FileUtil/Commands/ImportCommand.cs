@@ -77,7 +77,7 @@ class ImportCommand : KifaCommand {
             var info = FileInformation.Client.Get(file);
             var existingMatch = episodes.FirstOrDefault(e => info.Metadata.Linking.Links.Any(l
                 => l.StartsWith($"{series.Format(e.season, e.episode).NormalizeFilePath()}{suffix}"
-                    .StripFrom("/"))));
+                    .RemoveAfter("/"))));
 
             if (existingMatch.season != null) {
                 Logger.Info(

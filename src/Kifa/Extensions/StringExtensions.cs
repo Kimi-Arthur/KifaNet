@@ -51,7 +51,7 @@ public static class StringExtensions {
     }
 
     // Remove all characters including and after the last split.
-    public static string StripFrom(this string s, string split) {
+    public static string RemoveAfter(this string s, string split) {
         var index = s.LastIndexOf(split);
         return index < 0 ? s : s[..index];
     }
