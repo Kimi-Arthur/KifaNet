@@ -19,6 +19,7 @@ class RemoveCommand : KifaCommand {
 
     IEnumerable<string>? fileNames;
 
+    [Value(0, Required = true, HelpText = "Target file(s) to remove.")]
     public IEnumerable<string> FileNames {
         get => Late.Get(fileNames);
         set => Late.Set(ref fileNames, value);
