@@ -26,7 +26,7 @@ class UpdateCommand : KifaCommand {
 
         SelectOne(new List<Action> {
             new TimeShiftAction()
-        }, choiceName: "actions").choice.Update(sub);
+        }, choiceName: "actions").Choice.Update(sub);
 
         Logger.Info(sub.ToString());
         target.Delete();

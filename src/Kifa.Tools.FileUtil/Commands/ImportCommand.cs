@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
-using Kifa.Soccer;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.Infos;
 using Kifa.IO;
+using Kifa.Soccer;
+using NLog;
 using Season = Kifa.Infos.Season;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -49,9 +49,8 @@ class ImportCommand : KifaCommand {
                 var anime = Anime.Client.Get(id);
                 series = anime;
                 episodes = anime.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
-                    .SelectMany(season => season.Episodes,
-                        (season, episode) => ((Season) season, episode)).Where(item
-                        => episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                    .SelectMany(season => season.Episodes, (season, episode) => (season, episode))
+                    .Where(item => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             case "soccer":
                 foreach (var file in FileNames.SelectMany(path
@@ -76,11 +75,12 @@ class ImportCommand : KifaCommand {
                          Recursive))) {
             var suffix = file[file.LastIndexOf('.')..];
             try {
-                var ((season, episode), index) = SelectOne(episodes,
+                var selected = SelectOne(episodes,
                     e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping");
                 FileInformation.Client.Link(file,
-                    series.Format(season, episode).NormalizeFilePath() + suffix);
-                episodes.RemoveAt(index);
+                    series.Format(selected.Choice.season, selected.Choice.episode)
+                        .NormalizeFilePath() + suffix);
+                episodes.RemoveAt(selected.Index);
             } catch (InvalidChoiceException) {
                 Logger.Warn($"File {file} skipped.");
             }

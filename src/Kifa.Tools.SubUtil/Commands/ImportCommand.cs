@@ -85,12 +85,13 @@ class ImportCommand : KifaFileCommand {
     protected override int ExecuteOneKifaFile(KifaFile file) {
         var suffix = file.Path.Substring(file.Path.LastIndexOf('.'));
         try {
-            var ((season, episode), index) = SelectOne(episodes,
+            var selected = SelectOne(episodes,
                 e => $"{file} => {series.Format(e.season, e.episode)}{suffix}", "mapping");
             file.Copy(
-                new KifaFile($"{file.Host}/Subtitles{series.Format(season, episode)}" +
-                             $".{LanguageCode}-{ReleaseGroup}{suffix}"), true);
-            episodes.RemoveAt(index);
+                new KifaFile(
+                    $"{file.Host}/Subtitles{series.Format(selected.Choice.season, selected.Choice.episode)}" +
+                    $".{LanguageCode}-{ReleaseGroup}{suffix}"), true);
+            episodes.RemoveAt(selected.Index);
         } catch (InvalidChoiceException) {
             Logger.Warn($"File {file} skipped.");
         }

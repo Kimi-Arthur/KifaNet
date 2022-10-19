@@ -131,7 +131,7 @@ public class ExtractAudioCommand : KifaCommand {
     static string ChooseImage(List<string> images)
         => SelectOne(images,
             image => ITermImage.GetITermImageFromBase64(image, DisplayImageSize, DisplayImageSize),
-            "image").choice;
+            "image").Choice;
 
     static KifaFile GetCover(KifaFile file) {
         var name = $"{KifaFile.DefaultIgnoredPrefix}{file.BaseName}";

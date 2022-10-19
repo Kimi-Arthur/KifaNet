@@ -91,13 +91,13 @@ class GetChatCommand : KifaFileCommand {
             return GetChat(video.Pages[pid - 1], file);
         }
 
-        var ((_, chat), index) = SelectOne(chats,
+        var selected = SelectOne(chats,
             c => $"{file} => {c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
             "danmaku");
 
-        chats.RemoveAt(index);
+        chats.RemoveAt(selected.Index);
 
-        return index >= 0 ? GetChat(chat, file) : 0;
+        return selected.Index >= 0 ? GetChat(selected.Choice.chat, file) : 0;
     }
 
     int GetChat(BilibiliChat chat, KifaFile rawFile) {

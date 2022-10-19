@@ -8,8 +8,9 @@ public abstract partial class KifaCommand {
     static bool alwaysDefault;
     static int defaultIndex = 1;
 
-    public static (TChoice choice, int index) SelectOne<TChoice>(List<TChoice> choices,
-        Func<TChoice, string> choiceToString = null, string choiceName = null) {
+    public static (TChoice Choice, int Index, bool Special) SelectOne<TChoice>(
+        List<TChoice> choices, Func<TChoice, string> choiceToString = null,
+        string choiceName = null) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
@@ -24,7 +25,7 @@ public abstract partial class KifaCommand {
 
         if (alwaysDefault) {
             Console.WriteLine($"Automatically chose [{defaultIndex}] as previously instructed.\n");
-            return (choices[defaultIndex - 1], defaultIndex - 1);
+            return (choices[defaultIndex - 1], defaultIndex - 1, false);
         }
 
         Console.WriteLine(
@@ -47,7 +48,7 @@ public abstract partial class KifaCommand {
             Console.WriteLine($"Will always choose [{chosenIndex}] from now on.\n");
         }
 
-        return (choices[chosenIndex - 1], chosenIndex - 1);
+        return (choices[chosenIndex - 1], chosenIndex - 1, false);
     }
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
