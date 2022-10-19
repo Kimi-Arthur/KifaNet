@@ -106,7 +106,11 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         folder = $"{prefix}/{folder.Trim('/')}";
         Logger.Trace(folder);
         if (!Directory.Exists(folder)) {
-            return new List<string>();
+            return File.Exists(folder)
+                ? new List<string> {
+                    folder
+                }
+                : new List<string>();
         }
 
         var directory = new DirectoryInfo(folder);

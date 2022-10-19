@@ -14,7 +14,7 @@ public class ExtractAudioCommand : KifaCommand {
 
     public static string DisplayImageSize { get; set; } = "20%";
 
-    [Value(0, Required = true, HelpText = "Target file(s) to take action on.")]
+    [Value(0, Required = true, HelpText = "Target file(s) to extract audios from.")]
     public IEnumerable<string> FileNames {
         get => Late.Get(fileNames);
         set => Late.Set(ref fileNames, value);
