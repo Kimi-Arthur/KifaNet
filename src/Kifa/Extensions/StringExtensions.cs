@@ -50,6 +50,12 @@ public static class StringExtensions {
         return string.Format(format, args);
     }
 
+    // Remove all characters including and after the last split.
+    public static string StripFrom(this string s, string split) {
+        var index = s.LastIndexOf(split);
+        return index < 0 ? s : s[..index];
+    }
+
     public static long ParseSizeString(this string data) {
         if (string.IsNullOrEmpty(data)) {
             throw new ArgumentNullException(nameof(data));
