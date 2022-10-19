@@ -38,6 +38,8 @@ public abstract partial class KifaCommand {
             line = line[..^1];
         }
 
+        var special = line.EndsWith('s');
+
         var chosenIndex = string.IsNullOrEmpty(line) ? defaultIndex : int.Parse(line);
         defaultIndex = chosenIndex;
         if (chosenIndex < 1 || chosenIndex > choices.Count) {
@@ -48,7 +50,7 @@ public abstract partial class KifaCommand {
             Console.WriteLine($"Will always choose [{chosenIndex}] from now on.\n");
         }
 
-        return (choices[chosenIndex - 1], chosenIndex - 1, false);
+        return (choices[chosenIndex - 1], chosenIndex - 1, special);
     }
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
