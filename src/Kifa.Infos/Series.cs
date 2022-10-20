@@ -66,8 +66,8 @@ static class Helper {
     static readonly Dictionary<Language, List<(Regex pattern, MatchEvaluator replacer)>>
         LanguagePatterns = new() {
             [Language.Japanese] = new List<(Regex pattern, MatchEvaluator replacer)> {
-                (new Regex(@" *\([ぁ-ヿ]+\) *"), _ => ""),
-                (new Regex(@" *\[[ぁ-ヿ]+\] *"), _ => ""),
+                (new Regex(@" *\([ぁ-ヿ･-ﾟ]+\) *"), _ => ""),
+                (new Regex(@" *\[[ぁ-ヿ･-ﾟ]+\] *"), _ => ""),
                 (new Regex(@"\""(.+)\"""), match => $"“{match.Groups[1].Value}”"),
                 (new Regex(@" *\((.+)\) *"), match => $"（{match.Groups[1].Value}）"),
                 (new Regex(@", "), _ => "、"),
