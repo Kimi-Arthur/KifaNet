@@ -308,13 +308,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 files.Add((file.ToString().GetNaturalSortKey(), file));
             } else {
                 var fileInfos = file.List(recursive, pattern: pattern).ToList();
-                if (fileInfos.Count > 0) {
-                    multi = 2;
-                    files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
-                } else {
-                    multi++;
-                    files.Add((file.ToString().GetNaturalSortKey(), file));
-                }
+                multi = 2;
+                files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
             }
         }
 
