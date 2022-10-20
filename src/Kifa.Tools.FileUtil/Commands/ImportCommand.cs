@@ -72,21 +72,30 @@ class ImportCommand : KifaCommand {
                 return 1;
         }
 
-        foreach (var file in FileNames.SelectMany(path
-                     => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
-                         Recursive))) {
-            var suffix = file[file.LastIndexOf('.')..];
-            var info = FileInformation.Client.Get(file);
+        var files = FileNames.SelectMany(path
+                => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
+                    Recursive))
+            .Select(f => (File: f, Matched: false)).ToList();
+
+        for (int i = 0; i < files.Count; i++) {
+            var info = FileInformation.Client.Get(files[i].File);
             var existingMatch = info.GetAllLinks().Select(l => (Link: l, Episode: series.Parse(l)))
                 .FirstOrDefault(e => e.Episode != null, ("", null));
 
             if (existingMatch.Episode.HasValue) {
                 var match = existingMatch.Episode.Value;
-                Logger.Info($"{file} already matched to {existingMatch.Link}");
+                Logger.Info($"{files[i].File} already matched to {existingMatch.Link}");
                 MarkMatched(episodes, match.Season, match.Episode);
+                files[i] = (files[i].File, true);
+            }
+        }
 
+        foreach (var (file, matched) in files) {
+            if (matched) {
                 continue;
             }
+
+            var suffix = file[file.LastIndexOf('.')..];
 
             var validEpisodes = episodes.Where(e => !e.Matched).ToList();
             try {
