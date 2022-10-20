@@ -348,7 +348,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
         var codecString = codec == DefaultCodec ? "" : $"-{CodecNames[codec]}";
         var aidString = aid == null ? "" : $"{aid}p{pid}.";
-        return $"{aidString}c{cid}.{quality}-{codecString}";
+        return $"{aidString}c{cid}.{quality}{codecString}";
     }
 
     public (string extension, int quality, int codec, Func<Stream> videoStreamGetter,
