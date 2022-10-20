@@ -307,9 +307,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return (Client.Get(match.Groups[1].Value),
             match.Groups[2].Success ? int.Parse(match.Groups[2].Value[1..]) : 1,
             match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 0,
-            match.Groups[5].Success
-                ? CodecNames.First(c => c.Value == match.Groups[5].Value).Key
-                : DefaultCodec);
+            match.Groups[5].Success ? GetCodecId(match.Groups[5].Value) : DefaultCodec);
     }
 
     public List<string> GetCanonicalNames(int pid, int quality, int codec) {
@@ -354,10 +352,11 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     public (string extension, int quality, int codec, Func<Stream> videoStreamGetter,
-        List<Func<Stream>> audioStreamGetters) GetStreams(int pid) {
+        List<Func<Stream>> audioStreamGetters) GetStreams(int pid, string? preferredCodec = null) {
         var cid = Pages[pid - 1].Cid;
 
-        var (extension, quality, codec, videoLink, audioLinks) = GetDownloadLinks(Id, cid);
+        var (extension, quality, codec, videoLink, audioLinks) =
+            GetDownloadLinks(Id, cid, preferredCodec);
         return (extension, quality, codec, () => BuildDownloadStream(videoLink),
             audioLinks.Select<(List<string> links, long size), Func<Stream>>(l
                 => () => BuildDownloadStream(l)).ToList());
@@ -457,7 +456,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     static (string extension, int quality, int codec, (List<string> links, long size) videoLink,
-        List<(List<string> links, long size)> audioLinks) GetDownloadLinks(string aid, string cid) {
+        List<(List<string> links, long size)> audioLinks) GetDownloadLinks(string aid, string cid,
+            string? preferredCodec = null) {
         var quality = 127;
         while (true) {
             var response = GetBilibiliClient()
@@ -480,10 +480,13 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             }
 
             var videos = data.Dash.Video.Where(v => v.Id == receivedQuality).ToList();
-            var codec = DesiredCodecs.FirstOrDefault(c => videos.Any(v => v.Codecid == c));
+            var desiredCodecs = (preferredCodec != null
+                ? DesiredCodecs.Prepend(GetCodecId(preferredCodec)).ToList()
+                : DesiredCodecs);
+            var codec = desiredCodecs.FirstOrDefault(c => videos.Any(v => v.Codecid == c));
             if (codec == 0) {
                 Logger.Warn(
-                    $"No desired code found: expected {string.Join(", ", DesiredCodecs)}, found {string.Join(", ", videos.Select(v => v.Codecid))}");
+                    $"No desired code found: expected {string.Join(", ", desiredCodecs)}, found {string.Join(", ", videos.Select(v => v.Codecid))}");
                 Thread.Sleep(TimeSpan.FromSeconds(2));
                 continue;
             }
@@ -516,6 +519,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                     audio.Bandwidth * data.Dash.Duration / 8)).ToList());
         }
     }
+
+    static int GetCodecId(string preferredCodec)
+        => CodecNames.First(c => c.Value == preferredCodec).Key;
 
     static string GetDownloadPage(string cid) {
         var response = BiliplusHttpClient.Instance
