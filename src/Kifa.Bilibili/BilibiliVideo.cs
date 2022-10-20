@@ -459,24 +459,20 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         List<(List<string> links, long size)> audioLinks) GetDownloadLinks(string aid, string cid,
             string? preferredCodec = null) {
         var quality = 127;
-        while (true) {
+        return Retry.Run(() => {
             var response = GetBilibiliClient()
                 .SendWithRetry<VideoUrlResponse>(new VideoUrlRequest(aid, cid, quality));
 
             if (response is not { Code: 0 }) {
-                Logger.Warn($"bilibili API error: {response?.Message} ({response?.Code}).");
-                Thread.Sleep(TimeSpan.FromSeconds(10));
-                continue;
+                throw new Exception($"bilibili API error: {response?.Message} ({response?.Code}).");
             }
 
             var data = response.Data!;
             var receivedQuality = data.Quality;
             if (receivedQuality != data.AcceptQuality[0]) {
                 quality = data.AcceptQuality[0];
-                Logger.Warn($"Quality mismatch: received quality {receivedQuality}, " +
-                            $"best quality {quality}.");
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-                continue;
+                throw new Exception(
+                    $"Quality mismatch: received quality {receivedQuality}, best quality {quality}.");
             }
 
             var videos = data.Dash.Video.Where(v => v.Id == receivedQuality).ToList();
@@ -485,10 +481,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 : DesiredCodecs);
             var codec = desiredCodecs.FirstOrDefault(c => videos.Any(v => v.Codecid == c));
             if (codec == 0) {
-                Logger.Warn(
+                throw new Exception(
                     $"No desired code found: expected {string.Join(", ", desiredCodecs)}, found {string.Join(", ", videos.Select(v => v.Codecid))}");
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-                continue;
             }
 
             var video = videos.First(v => v.Codecid == codec);
@@ -517,7 +511,14 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 audios.Select(audio => (
                     (audio.BackupUrl ?? Enumerable.Empty<string>()).Prepend(audio.BaseUrl).ToList(),
                     audio.Bandwidth * data.Dash.Duration / 8)).ToList());
-        }
+        }, (ex, index) => {
+            if (index > 5) {
+                throw ex;
+            }
+
+            Logger.Warn(ex, $"Failed to get download links ({index}).");
+            Thread.Sleep(TimeSpan.FromSeconds(10));
+        });
     }
 
     static int GetCodecId(string preferredCodec)

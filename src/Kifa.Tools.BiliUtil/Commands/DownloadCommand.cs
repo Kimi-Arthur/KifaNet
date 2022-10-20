@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -22,17 +23,7 @@ public abstract class DownloadCommand : KifaCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
-    public bool Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
-        BilibiliUploader? uploader = null) {
-        var outputFiles = DownloadVideo(video, pid, alternativeFolder, uploader);
-        if (outputFiles == null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public int DownloadVideo(BilibiliVideo video, int pid, string? alternativeFolder = null,
+    public KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null) {
         uploader ??= new BilibiliUploader {
             Id = video.AuthorId,
@@ -57,7 +48,7 @@ public abstract class DownloadCommand : KifaCommand {
                 : $"{found} exists locally";
             Logger.Info($"Found {message}. Will link instead.");
             KifaFile.LinkAll(found, targetFiles);
-            return 0;
+            return KifaActionResult.Success;
         }
 
         var canonicalTargetFile = targetFiles[0];
@@ -76,8 +67,10 @@ public abstract class DownloadCommand : KifaCommand {
             trackFiles.Add(videoFile);
             Logger.Debug($"Written video file to {videoFile}...");
         } catch (Exception e) {
-            Logger.Warn(e, $"Failed to download {videoFile}.");
-            return 1;
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to download {videoFile}:\n{e}"
+            };
         }
 
         for (var i = 0; i < audioStreamGetters.Count; i++) {
@@ -88,8 +81,10 @@ public abstract class DownloadCommand : KifaCommand {
                 targetFile.Write(audioStreamGetters[i]);
                 Logger.Debug($"Written to audio file ({i + 1}): {targetFile}.");
             } catch (Exception e) {
-                Logger.Warn(e, $"Failed to download {targetFile}.");
-                return 1;
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = $"Failed to download {targetFile}:\n{e}"
+                };
             }
 
             trackFiles.Add(targetFile);
@@ -112,11 +107,13 @@ public abstract class DownloadCommand : KifaCommand {
 
             KifaFile.LinkAll(canonicalTargetFile, targetFiles);
         } catch (Exception e) {
-            Logger.Warn(e, "Failed to merge files.");
-            return 1;
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to merge files: \n{e}"
+            };
         }
 
-        return 0;
+        return KifaActionResult.Success;
     }
 
     static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
