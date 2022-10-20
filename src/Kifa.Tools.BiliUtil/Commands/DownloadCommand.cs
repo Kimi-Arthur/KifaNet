@@ -24,73 +24,61 @@ public abstract class DownloadCommand : KifaCommand {
     public string? OutputFolder { get; set; }
 
     public KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
-        BilibiliUploader? uploader = null) {
-        uploader ??= new BilibiliUploader {
-            Id = video.AuthorId,
-            Name = video.Author
-        };
+        BilibiliUploader? uploader = null)
+        => KifaActionResult.FromAction(() => {
+            uploader ??= new BilibiliUploader {
+                Id = video.AuthorId,
+                Name = video.Author
+            };
 
-        var (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
-            video.GetStreams(pid, PreferredCodec);
+            var (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
+                video.GetStreams(pid, PreferredCodec);
 
-        var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
-        var desiredName =
-            $"{video.GetDesiredName(pid, quality, codec, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
-        var canonicalNames = video.GetCanonicalNames(pid, quality, codec);
+            var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
+            var desiredName =
+                $"{video.GetDesiredName(pid, quality, codec, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
+            var canonicalNames = video.GetCanonicalNames(pid, quality, codec);
 
-        var targetFiles = canonicalNames.Append(desiredName)
-            .Select(name => outputFolder.GetFile($"{name}.mp4")).ToList();
-        var found = KifaFile.FindOne(targetFiles);
+            var targetFiles = canonicalNames.Append(desiredName)
+                .Select(name => outputFolder.GetFile($"{name}.mp4")).ToList();
+            var found = KifaFile.FindOne(targetFiles);
 
-        if (found != null) {
-            var message = found.ExistsSomewhere()
-                ? $"{found.Id} exists in the system"
-                : $"{found} exists locally";
-            Logger.Info($"Found {message}. Will link instead.");
-            KifaFile.LinkAll(found, targetFiles);
-            return KifaActionResult.Success;
-        }
+            if (found != null) {
+                var message = found.ExistsSomewhere()
+                    ? $"{found.Id} exists in the system"
+                    : $"{found} exists locally";
+                Logger.Info($"Found {message}. Will link instead.");
+                KifaFile.LinkAll(found, targetFiles);
+                return;
+            }
 
-        var canonicalTargetFile = targetFiles[0];
+            var canonicalTargetFile = targetFiles[0];
 
-        var coverLink = new KifaFile(video.Cover.ToString());
-        var coverFile = canonicalTargetFile.Parent.GetFile(
-            $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.c.{coverLink.Extension}");
-        coverLink.Copy(coverFile);
+            var coverLink = new KifaFile(video.Cover.ToString());
+            var coverFile = canonicalTargetFile.Parent.GetFile(
+                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.c.{coverLink.Extension}");
+            coverLink.Copy(coverFile);
 
-        var trackFiles = new List<KifaFile>();
-        var videoFile = canonicalTargetFile.Parent.GetFile(
-            $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.v.{extension}");
-        Logger.Debug($"Writing video file to {videoFile}...");
-        try {
+            var trackFiles = new List<KifaFile>();
+            var videoFile = canonicalTargetFile.Parent.GetFile(
+                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.v.{extension}");
+            Logger.Debug($"Writing video file to {videoFile}...");
+
             videoFile.Write(videoStreamGetter);
             trackFiles.Add(videoFile);
             Logger.Debug($"Written video file to {videoFile}...");
-        } catch (Exception e) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message = $"Failed to download {videoFile}:\n{e}"
-            };
-        }
 
-        for (var i = 0; i < audioStreamGetters.Count; i++) {
-            var targetFile = canonicalTargetFile.Parent.GetFile(
-                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.a{i}.{extension}");
-            Logger.Debug($"Writing to audio file ({i + 1}): {targetFile}...");
-            try {
+            for (var i = 0; i < audioStreamGetters.Count; i++) {
+                var targetFile = canonicalTargetFile.Parent.GetFile(
+                    $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.a{i}.{extension}");
+                Logger.Debug($"Writing to audio file ({i + 1}): {targetFile}...");
+
                 targetFile.Write(audioStreamGetters[i]);
                 Logger.Debug($"Written to audio file ({i + 1}): {targetFile}.");
-            } catch (Exception e) {
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Error,
-                    Message = $"Failed to download {targetFile}:\n{e}"
-                };
+
+                trackFiles.Add(targetFile);
             }
 
-            trackFiles.Add(targetFile);
-        }
-
-        try {
             Logger.Debug(
                 $"Merging 1 video file and {audioStreamGetters.Count} audio files to {canonicalTargetFile}...");
             canonicalTargetFile.Delete();
@@ -106,15 +94,7 @@ public abstract class DownloadCommand : KifaCommand {
             Logger.Debug("Removed temp files.");
 
             KifaFile.LinkAll(canonicalTargetFile, targetFiles);
-        } catch (Exception e) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message = $"Failed to merge files: \n{e}"
-            };
-        }
-
-        return KifaActionResult.Success;
-    }
+        });
 
     static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
         var result = Executor.Run("ffmpeg",
