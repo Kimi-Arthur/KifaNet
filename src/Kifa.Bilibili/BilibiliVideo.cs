@@ -316,8 +316,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         var p = Pages.First(x => x.Id == pid);
 
         return new List<string> {
-            $"$/{Id}p{pid}.c{p.Cid}.{quality}-{CodecNames[codec]}",
-            $"$/c{p.Cid}.{quality}-{CodecNames[codec]}"
+            $"$/{GetSuffix(Id, pid, p.Cid, quality, codec)}",
+            $"$/{GetSuffix(null, pid, p.Cid, quality, codec)}"
         };
     }
 
@@ -341,11 +341,16 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             Name = Author
         };
 
-        return (alternativeFolder == null
-            ? $"{uploader.Name}-{uploader.Id}".NormalizeFileName()
-            : $"{alternativeFolder}") + (Pages.Count > 1
-            ? $"/{$"{prefix} {title} {pidText} {partName}".NormalizeFileName()}.{Id}p{pid}.c{p.Cid}.{quality}-{CodecNames[codec]}"
-            : $"/{$"{prefix} {title} {partName}".NormalizeFileName()}.{Id}p{pid}.c{p.Cid}.{quality}-{CodecNames[codec]}");
+        var folder = alternativeFolder ?? $"{uploader.Name}-{uploader.Id}".NormalizeFileName();
+        var partString = Pages.Count > 1 ? $"{pidText} {partName}" : partName;
+        return
+            $"{folder}/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
+    }
+
+    static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
+        var codecString = codec == DefaultCodec ? "" : $"-{CodecNames[codec]}";
+        var aidString = aid == null ? "" : $"{aid}p{pid}.";
+        return $"{aidString}c{cid}.{quality}-{codecString}";
     }
 
     public (string extension, int quality, int codec, Func<Stream> videoStreamGetter,
