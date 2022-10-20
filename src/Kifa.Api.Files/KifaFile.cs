@@ -339,14 +339,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             var host = fileInfo.Host;
 
             var thisFolder = FileInformation.Client.ListFolder(path, recursive);
-            if (thisFolder.Count > 0) {
-                multi = 2;
-                files.AddRange(thisFolder.Select(f
-                    => (f.GetNaturalSortKey(), new KifaFile(host + f))));
-            } else {
-                multi++;
-                files.Add((fileInfo.ToString().GetNaturalSortKey(), new KifaFile(host + path)));
-            }
+            multi = 2;
+            files.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), new KifaFile(host + f))));
         }
 
         files.Sort();
