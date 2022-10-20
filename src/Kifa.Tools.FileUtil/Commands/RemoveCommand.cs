@@ -43,26 +43,13 @@ class RemoveCommand : KifaCommand {
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
 
         if (ById) {
-            // We support relative paths or FileInformation ids.
-            var (_, foundFiles) = KifaFile.FindAllFiles(FileNames, fullFile: true);
-            if (foundFiles.Count > 0) {
-                // We will assume relative paths are used here.
-                foreach (var foundFile in foundFiles) {
-                    Console.WriteLine(foundFile.Id);
-                }
-
-                if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
-                    foundFiles.ForEach(f
-                        => ExecuteItem(f.Id, () => RemoveLogicalFile(f.FileInfo!)));
-                    return LogSummary();
-                }
-
-                Logger.Info("Action canceled.");
-                return 2;
-            }
-
             var files = new List<string>();
             foreach (var fileName in FileNames) {
+                if (!fileName.StartsWith('/')) {
+                    files.Clear();
+                    break;
+                }
+
                 files.AddRange(FileInformation.Client.ListFolder(fileName, true));
             }
 
@@ -74,6 +61,24 @@ class RemoveCommand : KifaCommand {
                 if (Confirm($"Confirm deleting the {files.Count} files above{removalText}?")) {
                     files.ForEach(f
                         => ExecuteItem(f, () => RemoveLogicalFile(FileInformation.Client.Get(f)!)));
+                    return LogSummary();
+                }
+
+                Logger.Info("Action canceled.");
+                return 2;
+            }
+
+            // We support relative paths or FileInformation ids.
+            var (_, foundFiles) = KifaFile.FindAllFiles(FileNames, fullFile: true);
+            if (foundFiles.Count > 0) {
+                // We will assume relative paths are used here.
+                foreach (var foundFile in foundFiles) {
+                    Console.WriteLine(foundFile.Id);
+                }
+
+                if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
+                    foundFiles.ForEach(f
+                        => ExecuteItem(f.Id, () => RemoveLogicalFile(f.FileInfo!)));
                     return LogSummary();
                 }
 
