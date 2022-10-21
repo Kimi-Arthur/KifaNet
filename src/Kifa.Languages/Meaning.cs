@@ -4,20 +4,13 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Languages;
 
-public class Example {
-    public string Text { get; set; } = "";
-    public string Translation { get; set; } = "";
+public class TextWithTranslation {
+    public virtual string? Text { get; set; }
+    public virtual string? Translation { get; set; }
 }
 
-public class Meaning {
-    public WordType Type { get; set; }
-    public string? Translation { get; set; }
-    public string? TranslationWithNotes { get; set; }
+public class Meaning : TextWithTranslation {
+    public WordType? Type { get; set; }
 
-    [JsonIgnore]
-    [YamlIgnore]
-    public string? SafeTranslation
-        => string.IsNullOrEmpty(Translation) ? TranslationWithNotes : Translation;
-
-    public List<Example> Examples { get; set; } = new();
+    public List<TextWithTranslation>? Examples { get; set; }
 }

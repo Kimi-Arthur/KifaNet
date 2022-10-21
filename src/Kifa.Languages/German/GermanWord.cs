@@ -201,7 +201,7 @@ public class GermanWord : DataModel<GermanWord> {
 
         Meanings = enWiki.Meanings;
 
-        Meaning ??= Meanings?.FirstOrDefault()?.SafeTranslation;
+        Meaning ??= Meanings?.FirstOrDefault()?.Translation;
         Type ??= Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
         if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
