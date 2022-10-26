@@ -13,7 +13,7 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
     static readonly Regex subElementPattern =
         new(@"\\([^\\(]*(\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!)))?)");
 
-    static readonly Regex valuePattern = new(@"\(|\d|-");
+    static readonly Regex ValuePattern = new(@"\(|\d|-");
 
     public List<AssControlElement> Elements { get; set; } = new();
 
@@ -31,13 +31,13 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
 
         foreach (Match elementMatch in subElementPattern.Matches(content)) {
             var elementContent = elementMatch.Groups[1].Value;
-            string name, valueContent = null;
+            string name, valueContent = "";
             if (elementContent.EndsWith('&')) {
                 var segments = elementContent.Split('&');
                 name = segments[0];
                 valueContent = $"&{segments[1]}&";
             } else {
-                var valueMatch = valuePattern.Match(elementContent);
+                var valueMatch = ValuePattern.Match(elementContent);
                 if (!valueMatch.Success) {
                     if (elementContent.StartsWith("fn")) {
                         name = "fn";
@@ -231,14 +231,18 @@ public abstract class StringElement : AssControlElement {
 }
 
 public abstract class ColorElement : AssControlElement {
-    public Color Value { get; set; }
+    public Color? Value { get; set; }
 
     public override AssControlElement ParseValue(string content) {
-        Value = AssFormatter.ParseColor(content.TrimEnd('&'));
+        Value = content == "" ? null : AssFormatter.ParseColor(content.TrimEnd('&'));
+
         return this;
     }
 
-    public override string ToString() => $"\\{Name}&H{Value.B:X2}{Value.G:X2}{Value.R:X2}&";
+    public override string ToString()
+        => Value == null
+            ? $"\\{Name}"
+            : $"\\{Name}&H{Value.Value.B:X2}{Value.Value.G:X2}{Value.Value.R:X2}&";
 }
 
 public class BoldStyle : BoolElement {
