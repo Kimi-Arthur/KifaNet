@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ToolCommandName>subx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>6.0.3</Version>
+    <Version>6.0.5</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
