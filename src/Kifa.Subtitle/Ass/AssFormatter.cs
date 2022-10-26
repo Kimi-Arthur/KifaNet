@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 
 namespace Kifa.Subtitle.Ass;
@@ -9,15 +10,21 @@ public static class AssFormatter {
     }
 
     public static Color ParseColor(string content) {
+        content = content.TrimStart('H', '&');
         var alpha = 255;
-        if (content.Length == 10) {
-            alpha = 255 - content.Substring(2, 2).ParseHexString()[0];
-            content = content.Substring(2);
+        if (content.Length == 8) {
+            alpha = 255 - content[..2].ParseHexString()[0];
+            content = content[2..];
         }
 
-        return Color.FromArgb(alpha, content.Substring(6, 2).ParseHexString()[0],
-            content.Substring(4, 2).ParseHexString()[0],
-            content.Substring(2, 2).ParseHexString()[0]);
+        if (content.Length != 6) {
+            throw new ArgumentException(
+                $"{content} should be of length 6 after stripping leading characters and alpha channel, but is {content.Length}",
+                content);
+        }
+
+        return Color.FromArgb(alpha, content[4..].ParseHexString()[0],
+            content[2..4].ParseHexString()[0], content[..2].ParseHexString()[0]);
     }
 
     public static string ToAss(this bool b) => b ? "-1" : "0";
