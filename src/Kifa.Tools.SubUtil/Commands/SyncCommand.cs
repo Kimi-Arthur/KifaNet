@@ -54,25 +54,19 @@ public class SyncCommand : KifaCommand {
             var matchedLine = (new List<SubtitleLine> {
                 line
             }, new List<SubtitleLine>(), new List<string>());
-            var matchedWords = IsContentMatch(line, referenceEnumerator.Current);
-            matchedLine.Item3.AddRange(matchedWords);
-            while (hasValue &&
-                   (matchedWords.Count > 0 || referenceEnumerator.Current.End < line.End)) {
+            while (hasValue) {
+                var matchedWords = IsContentMatch(line, referenceEnumerator.Current);
+                matchedLine.Item3.AddRange(matchedWords);
+
                 if (matchedWords.Count > 0) {
                     matchedLine.Item2.Add(referenceEnumerator.Current);
                 }
 
-                if (line.Content.Count == 0) {
+                if (line.Content.Count == 0 || referenceEnumerator.Current.End > line.End) {
                     break;
                 }
 
                 hasValue = referenceEnumerator.MoveNext();
-                if (!hasValue) {
-                    break;
-                }
-
-                matchedWords = IsContentMatch(line, referenceEnumerator.Current);
-                matchedLine.Item3.AddRange(matchedWords);
             }
 
             matchedLines.Add(matchedLine);
