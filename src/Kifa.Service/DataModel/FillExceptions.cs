@@ -1,8 +1,21 @@
-// No details needed in this case.
-
 using System;
 
+namespace Kifa.Service;
+
 public class NoNeedToFillException : Exception {
+}
+
+public class DataIsLinkedException : Exception {
+    #region public late static string TargetId { get; set; }
+
+    static string? targetId;
+
+    public string TargetId {
+        get => Late.Get(targetId);
+        set => Late.Set(ref targetId, value);
+    }
+
+    #endregion
 }
 
 public class UnableToFillException : Exception {

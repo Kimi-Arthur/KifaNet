@@ -6,6 +6,7 @@ using AngleSharp;
 using AngleSharp.Html;
 using HtmlAgilityPack;
 using Kifa.Service;
+using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Languages.Cambridge;
@@ -13,10 +14,14 @@ namespace Kifa.Languages.Cambridge;
 public class CambridgePage : DataModel {
     public const string ModelId = "cambridge/pages";
 
+    public static CambridgePageServiceClient Client { get; set; } =
+        new CambridgePageRestServiceClient();
+
     const string PathPrefix = "/dictionary/";
     const string UrlPrefix = $"https://dictionary.cambridge.org{PathPrefix}";
 
-    public string Url => $"{UrlPrefix}{Id}";
+    [JsonIgnore]
+    public string Url => $"{UrlPrefix}{RealId}";
 
     public string? PageContent { get; set; }
 
@@ -33,9 +38,19 @@ public class CambridgePage : DataModel {
     }
 
     void FillPageContent() {
-        var content = HttpClient.GetStringAsync(Url).Result;
+        var response = HttpClient.SendWithRetry(Url);
+        var actualId =
+            response.RequestMessage!.RequestUri!.ToString().RemoveAfter("?")[UrlPrefix.Length..];
+
+        if (actualId != RealId) {
+            Client.Get(actualId);
+            throw new DataIsLinkedException {
+                TargetId = actualId
+            };
+        }
+
         var doc = new HtmlDocument();
-        doc.LoadHtml(content);
+        doc.LoadHtml(response.GetString());
 
         doc.DocumentNode.SelectNodes("//div[contains(@class, 'am-default')]")
             ?.ForEach(n => n.Remove());

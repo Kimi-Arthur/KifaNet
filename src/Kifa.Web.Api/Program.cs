@@ -1,10 +1,12 @@
 ﻿using Kifa.Apps.MomentCounter;
 using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
+using Kifa.Languages.Cambridge;
 using Kifa.Languages.German;
 using Kifa.Memrise;
 using Kifa.Web.Api.Controllers;
 using Kifa.Web.Api.Controllers.Accounts;
+using Kifa.Web.Api.Controllers.Cambridge;
 using Kifa.Web.Api.Controllers.Goethe;
 using Kifa.Web.Api.Controllers.MomentCounter;
 using Microsoft.AspNetCore;
@@ -38,6 +40,7 @@ public class Program {
         GermanWord.Client = new GermanWordJsonServiceClient();
         MemriseCourse.Client = new MemriseCourseJsonServiceClient();
         MemriseWord.Client = new MemriseWordJsonServiceClient();
+        CambridgePage.Client = new CambridgePageJsonServiceClient();
     }
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args)

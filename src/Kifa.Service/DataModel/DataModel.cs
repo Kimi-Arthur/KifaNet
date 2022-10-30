@@ -23,7 +23,7 @@ public abstract class DataModel {
 
     [JsonIgnore]
     [YamlIgnore]
-    public string? RealId => Metadata?.Linking?.Target ?? Id;
+    public string RealId => Metadata?.Linking?.Target ?? Id;
 
     [JsonProperty("$metadata")]
     [YamlIgnore]

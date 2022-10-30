@@ -68,7 +68,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     // false -> no write needed.
     // true -> rewrite needed.
     bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null, bool refresh = false) {
-        var newData = data ?? new TDataModel {
+        data ??= new TDataModel {
             Id = id,
             Metadata = new DataMetadata {
                 Freshness = new FreshnessMetadata {
@@ -78,41 +78,46 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         };
 
         if (refresh) {
-            newData.Metadata ??= new DataMetadata();
-            newData.Metadata.Freshness = new FreshnessMetadata {
+            data.Metadata ??= new DataMetadata();
+            data.Metadata.Freshness = new FreshnessMetadata {
                 NextRefresh = Date.Zero
             };
         }
 
-        if (newData.NeedRefresh()) {
+        if (data.NeedRefresh()) {
             DateTimeOffset? nextUpdate;
             try {
-                nextUpdate = newData.Fill();
+                nextUpdate = data.Fill();
+            } catch (DataIsLinkedException ex) {
+                Link(ex.TargetId, data.Id);
+
+                data = Retrieve(data.Id);
+                // New data is written in Link. No need to save more.
+                return false;
             } catch (NoNeedToFillException) {
-                if (newData.Metadata?.Freshness != null) {
-                    newData.Metadata.Freshness = null;
+                if (data.Metadata?.Freshness != null) {
+                    data.Metadata.Freshness = null;
                 }
 
                 return false;
             } catch (UnableToFillException ex) {
-                Logger.Error(ex, $"Failed to fill {ModelId}/{newData.Id} with a predefined error.");
+                Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with a predefined error.");
                 throw;
             } catch (Exception ex) {
-                Logger.Error(ex, $"Failed to fill {ModelId}/{newData.Id} with an unexpected error.");
+                Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with an unexpected error.");
                 throw;
             }
 
-            newData.Metadata ??= new DataMetadata();
-            newData.Metadata.Version = newData.CurrentVersion;
+            data.Metadata ??= new DataMetadata();
+            data.Metadata.Version = data.CurrentVersion;
             if (nextUpdate != null) {
-                newData.Metadata.Freshness = new FreshnessMetadata {
+                data.Metadata.Freshness = new FreshnessMetadata {
                     NextRefresh = nextUpdate
                 };
             } else {
-                newData.Metadata.Freshness = null;
+                data.Metadata.Freshness = null;
             }
 
-            data = newData;
             return true;
         }
 
@@ -206,7 +211,6 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 linking.Links = null;
             }
 
-            // This won't be empty due to upstream calling. But will keep for consistency.
             if (linking.VirtualLinks?.Count == 0) {
                 linking.VirtualLinks = null;
             }
