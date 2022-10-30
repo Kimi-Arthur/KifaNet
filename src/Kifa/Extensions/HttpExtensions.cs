@@ -82,6 +82,11 @@ public static class HttpExtensions {
                 return false;
             });
 
+    public static HttpResponseMessage SendWithRetry(this HttpClient client, string url,
+        HttpStatusCode? expectedStatusCode = null)
+        => client.SendWithRetry(() => new HttpRequestMessage(HttpMethod.Get, url),
+            expectedStatusCode);
+
     public static HttpResponseMessage SendWithRetry(this HttpClient client,
         Func<HttpRequestMessage> request, HttpStatusCode? expectedStatusCode = null)
         => Retry.Run(() => {
