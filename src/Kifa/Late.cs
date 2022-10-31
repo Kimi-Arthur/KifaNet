@@ -5,25 +5,24 @@ using System.Linq;
 namespace Kifa;
 
 public static class Late {
-    static readonly int[] CandidateFrames = { 8, 7, 9, 10, 6, 5 };
-
     public static T Get<T>(T? value) {
         if (value != null) {
             return value;
         }
 
+        var stackTrace = new StackTrace();
+
         // Workaround for json.net as it uses the default value
         // when deserializing an object with converter.
-        if (new StackFrame(3).GetMethod()?.DeclaringType?.ToString()
-                .StartsWith("Newtonsoft.Json") == true) {
-            if (CandidateFrames.Any(i => new StackFrame(i).GetMethod()?.Name == "Deserialize")) {
-                return default;
-            }
+        if (stackTrace.GetFrames().Any(frame
+                => frame.GetMethod()?.DeclaringType?.ToString() ==
+                "Newtonsoft.Json.JsonSerializer" && frame.GetMethod()?.Name == "Deserialize")) {
+            return default;
         }
 
         // This may get hit on performance.
         // See https://stackoverflow.com/questions/1348643/how-performant-is-stackframe
-        var method = new StackFrame(1).GetMethod();
+        var method = stackTrace.GetFrame(1)?.GetMethod();
         if (method == null) {
             throw new NullReferenceException(
                 "Unexpectedly failed to find info of getting a null value.");
@@ -38,16 +37,17 @@ public static class Late {
             return value.Value;
         }
 
+        var stackTrace = new StackTrace();
+
         // Workaround for json.net as it uses the default value
         // when deserializing an object with converter.
-        if (new StackFrame(3).GetMethod()?.DeclaringType?.ToString()
-                .StartsWith("Newtonsoft.Json") == true) {
-            if (CandidateFrames.Any(i => new StackFrame(i).GetMethod()?.Name == "Deserialize")) {
-                return default;
-            }
+        if (stackTrace.GetFrames().Any(frame
+                => frame.GetMethod()?.DeclaringType?.ToString() ==
+                "Newtonsoft.Json.JsonSerializer" && frame.GetMethod()?.Name == "Deserialize")) {
+            return default;
         }
 
-        var method = new StackFrame(1).GetMethod();
+        var method = stackTrace.GetFrame(1)?.GetMethod();
         if (method == null) {
             throw new NullReferenceException(
                 "Unexpectedly failed to find info of getting a null value.");
