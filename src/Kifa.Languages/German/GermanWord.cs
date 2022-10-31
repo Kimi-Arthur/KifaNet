@@ -201,7 +201,7 @@ public class GermanWord : DataModel<GermanWord> {
 
         Meanings = enWiki.Meanings;
 
-        Meaning ??= Meanings?.FirstOrDefault()?.SafeTranslation;
+        Meaning ??= Meanings?.FirstOrDefault()?.Translation;
         Type ??= Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
 
         if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
@@ -223,37 +223,6 @@ public class GermanWord : DataModel<GermanWord> {
                 .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden,
                     new HashSet<string>())).Concat(PronunciationAudioLinks.GetValueOrDefault(
                     Source.Wiktionary, new HashSet<string>()));
-}
-
-public class Meaning {
-    public WordType Type { get; set; }
-    public string? Translation { get; set; }
-    public string? TranslationWithNotes { get; set; }
-
-    [JsonIgnore]
-    [YamlIgnore]
-    public string? SafeTranslation
-        => string.IsNullOrEmpty(Translation) ? TranslationWithNotes : Translation;
-
-    public List<Example> Examples { get; set; } = new();
-}
-
-public class Breakdown {
-    #region public late List<Example> Segments { get; set; }
-
-    List<Example>? segments;
-
-    public List<Example> Segments {
-        get => Late.Get(segments);
-        set => Late.Set(ref segments, value);
-    }
-
-    #endregion
-}
-
-public class Example {
-    public string Text { get; set; } = "";
-    public string Translation { get; set; } = "";
 }
 
 public interface GermanWordServiceClient : KifaServiceClient<GermanWord> {

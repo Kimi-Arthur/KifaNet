@@ -3,10 +3,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using MwParserFromScratch;
 using MwParserFromScratch.Nodes;
+using Newtonsoft.Json;
 using NLog;
 using WikiClientLibrary.Client;
 using WikiClientLibrary.Pages;
 using WikiClientLibrary.Sites;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German;
 
@@ -47,7 +49,7 @@ public class EnWiktionaryClient {
         page.RefreshAsync(PageQueryOptions.FetchContent).Wait();
         word.Meanings = new List<Meaning>();
         Meaning? meaning = null;
-        Example? example = null;
+        TextWithTranslation? example = null;
         var parser = new WikitextParser();
         var content = parser.Parse(page.Content);
         var wordType = WordType.Unknown;
@@ -90,6 +92,10 @@ public class EnWiktionaryClient {
                         case "#":
                         case "##":
                             if (meaning != null) {
+                                if (meaning.Examples.Count == 0) {
+                                    meaning.Examples = null;
+                                }
+
                                 word.Meanings.Add(meaning);
                             }
 
@@ -100,16 +106,19 @@ public class EnWiktionaryClient {
                                 continue;
                             }
 
-                            meaning = new Meaning {
+                            meaning = new WikiMeaning {
                                 Type = wordType,
-                                Translation = listContent,
-                                TranslationWithNotes = lineWithNotes
+                                RawTranslation = listContent,
+                                TranslationWithNotes = lineWithNotes,
+                                Examples = new List<TextWithTranslation>()
                             };
                             break;
                         case "#:":
                             if (meaning == null) {
                                 Logger.Warn("Meaning is null unexpectedly,");
-                                meaning = new Meaning();
+                                meaning = new Meaning {
+                                    Examples = new List<TextWithTranslation>()
+                                };
                             }
 
                             if (example != null) {
@@ -119,20 +128,21 @@ public class EnWiktionaryClient {
 
                             if (listContent.Contains(TranslationDivider)) {
                                 var segments = listContent.Split(TranslationDivider);
-                                meaning.Examples.Add(new Example {
+                                meaning.Examples.Add(new TextWithTranslation {
                                     Text = segments[0].Trim(),
                                     Translation = segments[1].Trim()
                                 });
                             } else {
-                                example = new Example {
+                                example = new TextWithTranslation {
                                     Text = listContent.Trim()
                                 };
 
                                 var nodes = listItem.Inlines;
                                 foreach (var node in nodes) {
                                     if (node is Template template &&
-                                        template.Name.ToPlainText() == "ux") {
-                                        meaning.Examples.Add(new Example {
+                                        (template.Name.ToPlainText() == "ux" ||
+                                         template.Name.ToPlainText() == "uxi")) {
+                                        meaning.Examples.Add(new TextWithTranslation {
                                             Text = template.Arguments[2].Value.ToPlainText(),
                                             Translation =
                                                 (template.Arguments[3] ?? template.Arguments["t"] ??
@@ -161,6 +171,10 @@ public class EnWiktionaryClient {
         }
 
         if (meaning != null) {
+            if (meaning.Examples.Count == 0) {
+                meaning.Examples = null;
+            }
+
             word.Meanings.Add(meaning);
         }
 
@@ -200,7 +214,7 @@ public class EnWiktionaryClient {
                 case "n-g":
                 case "ngd":
                     return
-                        $"{string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))}";
+                        $"({string.Join(", ", template.Arguments.Select(a => a.Value.ToPlainText()))})";
                 default:
                     return "";
             }
@@ -231,4 +245,14 @@ public class EnWiktionaryClient {
             "Interfix" => WordType.Interfix,
             _ => WordType.Unknown
         };
+}
+
+public class WikiMeaning : Meaning {
+    public string? RawTranslation { get; set; }
+    public string? TranslationWithNotes { get; set; }
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public override string? Translation
+        => string.IsNullOrEmpty(RawTranslation) ? TranslationWithNotes : RawTranslation;
 }
