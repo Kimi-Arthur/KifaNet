@@ -26,6 +26,13 @@ public static class Late {
             return value.Value;
         }
 
+        // Workaround for json.net as it uses the default value
+        // when deserializing an object with converter.
+        if (new StackFrame(3).GetMethod()?.DeclaringType?.ToString()
+                .StartsWith("Newtonsoft.Json") == true) {
+            return default;
+        }
+
         var method = new StackFrame(1).GetMethod();
         if (method == null) {
             throw new NullReferenceException(

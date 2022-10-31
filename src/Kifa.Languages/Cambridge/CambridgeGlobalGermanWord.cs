@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp;
 using Kifa.Service;
-using NLog;
 
 namespace Kifa.Languages.Cambridge;
 
@@ -11,12 +10,10 @@ namespace Kifa.Languages.Cambridge;
 public class CambridgeGlobalGermanWord : DataModel {
     public const string ModelId = "cambridge/german_words";
 
-    public static CambridgeGermanWordServiceClient Client { get; set; } =
-        new CambridgeGermanWordRestServiceClient();
+    public static CambridgeGlobalGermanWordServiceClient Client { get; set; } =
+        new CambridgeGlobalGermanWordRestServiceClient();
 
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    public List<CambridgeGlobalGermanEntry> Entries { get; set; } = new();
+    public List<CambridgeGlobalGermanEntry> Entries { get; set; }
 
     const string PagePrefix = "german-english";
 
@@ -43,6 +40,8 @@ public class CambridgeGlobalGermanWord : DataModel {
                                             $"normal-entry-body count {bodies.Length}" +
                                             "don't match unexpectedly.");
         }
+
+        Entries = new List<CambridgeGlobalGermanEntry>();
 
         for (var i = 0; i < heads.Length; i++) {
             var head = heads[i];
@@ -84,9 +83,10 @@ public class CambridgeGlobalGermanEntry {
     #endregion
 }
 
-public interface CambridgeGermanWordServiceClient : KifaServiceClient<CambridgeGlobalGermanWord> {
+public interface
+    CambridgeGlobalGermanWordServiceClient : KifaServiceClient<CambridgeGlobalGermanWord> {
 }
 
-public class CambridgeGermanWordRestServiceClient :
-    KifaServiceRestClient<CambridgeGlobalGermanWord>, CambridgeGermanWordServiceClient {
+public class CambridgeGlobalGermanWordRestServiceClient :
+    KifaServiceRestClient<CambridgeGlobalGermanWord>, CambridgeGlobalGermanWordServiceClient {
 }
