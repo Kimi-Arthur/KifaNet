@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Languages\Kifa.Languages.csproj" />
   </ItemGroup>
 
