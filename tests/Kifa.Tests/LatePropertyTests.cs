@@ -59,6 +59,8 @@ public class LateClass {
     public EnumType EnumProperty { get; set; }
 
     public JsonType? JsonProperty { get; set; }
+
+    public string? StringProperty { get; set; }
 }
 
 public class LatePropertyTests {
@@ -70,20 +72,22 @@ public class LatePropertyTests {
                     LateEnumProperty = EnumType.ValueA,
                     LateJsonProperty = new JsonType("bcd"),
                     LateStringProperty = "abc",
-                    JsonProperty = new JsonType("hid")
+                    JsonProperty = new JsonType("hid"),
+                    StringProperty = "ok"
                 },
                 "{\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
                 "\"late_enum_property\":\"value_a\",\"late_json_property\":\"bcd\"," +
-                "\"late_string_property\":\"abc\"}"
+                "\"late_string_property\":\"abc\",\"string_property\":\"ok\"}"
             },
             new object[] {
                 new LateClass {
                     EnumProperty = EnumType.Default,
                     LateJsonProperty = new JsonType(""),
                     LateStringProperty = "",
-                    LateEnumProperty = EnumType.Default
+                    LateEnumProperty = EnumType.Default,
+                    StringProperty = ""
                 },
-                "{\"late_json_property\":\"\",\"late_string_property\":\"\"}"
+                "{\"late_json_property\":\"\",\"late_string_property\":\"\",\"string_property\":\"\"}"
             }
         };
 
