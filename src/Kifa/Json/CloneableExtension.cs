@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 
-namespace Kifa.Service;
+namespace Kifa;
 
 public static class CloneableExtension {
-    public static TDataModel Clone<TDataModel>(this TDataModel data)
-        => JsonConvert.DeserializeObject<TDataModel>(
+    public static T Clone<T>(this T data)
+        => JsonConvert.DeserializeObject<T>(
             JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
             Defaults.JsonSerializerSettings)!;
 }

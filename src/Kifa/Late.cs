@@ -1,12 +1,24 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Kifa;
 
 public static class Late {
+    static readonly int[] CandidateFrames = { 8, 7, 9, 10, 6, 5 };
+
     public static T Get<T>(T? value) {
         if (value != null) {
             return value;
+        }
+
+        // Workaround for json.net as it uses the default value
+        // when deserializing an object with converter.
+        if (new StackFrame(3).GetMethod()?.DeclaringType?.ToString()
+                .StartsWith("Newtonsoft.Json") == true) {
+            if (CandidateFrames.Any(i => new StackFrame(i).GetMethod()?.Name == "Deserialize")) {
+                return default;
+            }
         }
 
         // This may get hit on performance.
@@ -30,7 +42,9 @@ public static class Late {
         // when deserializing an object with converter.
         if (new StackFrame(3).GetMethod()?.DeclaringType?.ToString()
                 .StartsWith("Newtonsoft.Json") == true) {
-            return default;
+            if (CandidateFrames.Any(i => new StackFrame(i).GetMethod()?.Name == "Deserialize")) {
+                return default;
+            }
         }
 
         var method = new StackFrame(1).GetMethod();

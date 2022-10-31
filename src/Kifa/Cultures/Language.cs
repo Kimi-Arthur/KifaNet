@@ -11,7 +11,7 @@ public partial class Language : JsonSerializable {
 
     public string ToJson() => Code;
 
-    Language() {
+    Language() : this("xx") {
     }
 
     public Language(string id) {
