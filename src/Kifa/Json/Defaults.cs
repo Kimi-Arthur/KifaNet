@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -42,12 +40,4 @@ public static class Defaults {
         MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
         ObjectCreationHandling = ObjectCreationHandling.Replace
     };
-}
-
-public class OrderedContractResolver : DefaultContractResolver {
-    protected override IList<JsonProperty> CreateProperties(Type type,
-        MemberSerialization memberSerialization) {
-        return base.CreateProperties(type, memberSerialization).OrderBy(p => p.PropertyName)
-            .ToList();
-    }
 }
