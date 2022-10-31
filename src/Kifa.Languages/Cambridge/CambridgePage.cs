@@ -42,6 +42,10 @@ public class CambridgePage : DataModel {
         var actualId =
             response.RequestMessage!.RequestUri!.ToString().RemoveAfter("?")[UrlPrefix.Length..];
 
+        if (!IsValid(actualId)) {
+            throw new DataNotFoundException("Redirected to an invalid page.");
+        }
+
         if (actualId != RealId) {
             Client.Get(actualId);
             throw new DataIsLinkedException {
@@ -60,6 +64,9 @@ public class CambridgePage : DataModel {
             new MinifyMarkupFormatter {
             });
     }
+
+    static bool IsValid(string id)
+        => id.Split("/", StringSplitOptions.RemoveEmptyEntries).Length == 2;
 
     void FillNeighbouringPages() {
         var doc = new HtmlDocument();
