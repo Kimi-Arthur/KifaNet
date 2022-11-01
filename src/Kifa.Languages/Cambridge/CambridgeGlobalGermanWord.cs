@@ -46,11 +46,11 @@ public class CambridgeGlobalGermanWord : DataModel {
 
         for (var i = 0; i < heads.Length; i++) {
             var head = heads[i];
-            var headWord = head.QuerySelector(".di-title").SafeText();
+            var headWord = head.QuerySelector(".di-title").GetSafeInnerText();
             if (headWord == Id) {
                 var entry = new CambridgeGlobalGermanEntry();
-                entry.WordType = GetWordType(head.QuerySelector(".pos").SafeText(),
-                    head.GetElementsByClassName("gram").Select(e => e.SafeText()));
+                entry.WordType = GetWordType(head.QuerySelector(".pos").GetSafeInnerText(),
+                    head.GetElementsByClassName("gram").Select(e => e.GetSafeInnerText()));
                 entry.Senses = bodies[i].GetElementsByClassName("sense-body")
                     .Select(CambridgeGlobalGermanSense.FromElement).ToList();
                 Entries.Add(entry);
@@ -93,21 +93,29 @@ public class CambridgeGlobalGermanSense {
     public List<CambridgeGlobalGermanPhrase>? Phrases { get; set; }
 
     public static CambridgeGlobalGermanSense FromElement(IElement element) {
+        var definitionElement =
+            element.Children.FirstOrDefault(e => e.ClassList.Contains("def-block"));
         return new CambridgeGlobalGermanSense {
-            Definition =
-                CambridgeGlobalGermanDefinition.FromElement(element
-                    .GetElementsByClassName("def-block").Single()),
-            Phrases = element.GetElementsByClassName("phrase-block")
+            Definition = definitionElement == null
+                ? null
+                : CambridgeGlobalGermanDefinition.FromElement(definitionElement),
+            Phrases = element.QuerySelectorAll(".phrase-block")
                 .Select(CambridgeGlobalGermanPhrase.FromElement).ToList()
         };
     }
 }
 
 public class CambridgeGlobalGermanDefinition : Meaning {
-    public string? Notes { get; set; }
+    public string Notes { get; set; } = "";
 
     public CambridgeGlobalGermanDefinition FillFromElement(IElement element) {
-        var defHead = element.QuerySelector(".def-head > .def").SafeText();
+        Text = element.QuerySelector(".def-head > .def").GetSafeInnerText();
+        Translation = string.Join("",
+            element.QuerySelectorAll(".def-body > .trans").Select(e => e.GetSafeInnerText()));
+        Examples = element.QuerySelectorAll(".examp").Select(div => new TextWithTranslation {
+            Text = div.QuerySelector(".eg").GetSafeInnerText(),
+            Translation = div.QuerySelector(".trans").GetSafeInnerText()
+        }).ToList();
         return this;
     }
 
@@ -120,7 +128,7 @@ public class CambridgeGlobalGermanPhrase : CambridgeGlobalGermanDefinition {
 
     public CambridgeGlobalGermanPhrase FillFromElement(IElement element) {
         base.FillFromElement(element);
-        Phrase = element.QuerySelector(".phrase").SafeText();
+        Phrase = element.QuerySelector(".phrase").GetSafeInnerText();
         return this;
     }
 
@@ -138,6 +146,6 @@ public class CambridgeGlobalGermanWordRestServiceClient :
 }
 
 static class ElementExtensions {
-    public static string SafeText(this INode? element)
-        => element == null ? "" : element.TextContent.Trim();
+    public static string GetSafeInnerText(this INode? element)
+        => element == null ? "" : element.TextContent;
 }
