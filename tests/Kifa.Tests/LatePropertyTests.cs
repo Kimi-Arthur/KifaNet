@@ -61,6 +61,10 @@ public class LateClass {
     public JsonType? JsonProperty { get; set; }
 
     public string? StringProperty { get; set; }
+
+    public List<string> ListProperty { get; set; } = new();
+
+    public Dictionary<string, string> DictProperty { get; set; } = new();
 }
 
 public class LatePropertyTests {
@@ -73,11 +77,19 @@ public class LatePropertyTests {
                     LateJsonProperty = new JsonType("bcd"),
                     LateStringProperty = "abc",
                     JsonProperty = new JsonType("hid"),
-                    StringProperty = "ok"
+                    StringProperty = "ok",
+                    ListProperty = new List<string> {
+                        "a",
+                        "d",
+                        "f"
+                    },
+                    DictProperty = new Dictionary<string, string> {
+                        { "good", "bad" }
+                    }
                 },
-                "{\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
+                "{\"dict_property\":{\"good\":\"bad\"},\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
                 "\"late_enum_property\":\"value_a\",\"late_json_property\":\"bcd\"," +
-                "\"late_string_property\":\"abc\",\"string_property\":\"ok\"}"
+                "\"late_string_property\":\"abc\",\"list_property\":[\"a\",\"d\",\"f\"],\"string_property\":\"ok\"}"
             },
             new object[] {
                 new LateClass {
@@ -85,9 +97,10 @@ public class LatePropertyTests {
                     LateJsonProperty = new JsonType(""),
                     LateStringProperty = "",
                     LateEnumProperty = EnumType.Default,
+                    JsonProperty = new JsonType(""),
                     StringProperty = ""
                 },
-                "{\"late_json_property\":\"\",\"late_string_property\":\"\",\"string_property\":\"\"}"
+                "{\"json_property\":\"\",\"late_json_property\":\"\"}"
             }
         };
 

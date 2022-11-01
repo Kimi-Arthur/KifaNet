@@ -12,6 +12,31 @@ public class CambridgeGlobalGermanWordTests {
 
     public static IEnumerable<object[]> Data
         => new List<object[]> {
+            // Verb.
+            new object[] {
+                "arbeiten",
+                new CambridgeGlobalGermanWord {
+                    Id = "arbeiten",
+                    Entries = new List<CambridgeGlobalGermanEntry> {
+                        new() {
+                            WordType = WordType.Verb
+                        }
+                    }
+                }
+            },
+            // Noun.
+            new object[] {
+                "Frau",
+                new CambridgeGlobalGermanWord {
+                    Id = "Frau",
+                    Entries = new List<CambridgeGlobalGermanEntry> {
+                        new() {
+                            WordType = WordType.Noun
+                        }
+                    }
+                }
+            },
+            // Multiple word types.
             new object[] {
                 "an",
                 new CambridgeGlobalGermanWord {
@@ -26,6 +51,7 @@ public class CambridgeGlobalGermanWordTests {
                     }
                 }
             },
+            // Pronoun.
             new object[] {
                 "jemand",
                 new CambridgeGlobalGermanWord {
@@ -37,6 +63,7 @@ public class CambridgeGlobalGermanWordTests {
                     }
                 }
             },
+            // Article.
             new object[] {
                 "ein",
                 new CambridgeGlobalGermanWord {
@@ -58,7 +85,7 @@ public class CambridgeGlobalGermanWordTests {
 
     [Theory]
     [MemberData(nameof(Data))]
-    public void FillMultipleEntriesTest(string id, CambridgeGlobalGermanWord expectedWord) {
+    public void FillTest(string id, CambridgeGlobalGermanWord expectedWord) {
         var word = new CambridgeGlobalGermanWord {
             Id = id
         };

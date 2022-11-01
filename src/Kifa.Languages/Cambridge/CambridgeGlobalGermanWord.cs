@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AngleSharp;
+using AngleSharp.Dom;
 using Kifa.Service;
 
 namespace Kifa.Languages.Cambridge;
@@ -45,12 +46,13 @@ public class CambridgeGlobalGermanWord : DataModel {
 
         for (var i = 0; i < heads.Length; i++) {
             var head = heads[i];
-            var headWord = head.GetElementsByClassName("di-title")[0].TextContent.Trim();
+            var headWord = head.QuerySelector(".di-title").SafeText();
             if (headWord == Id) {
                 var entry = new CambridgeGlobalGermanEntry();
-                entry.WordType =
-                    GetWordType(head.GetElementsByClassName("pos")[0].TextContent.Trim(),
-                        head.GetElementsByClassName("gram").Select(e => e.TextContent.Trim()));
+                entry.WordType = GetWordType(head.QuerySelector(".pos").SafeText(),
+                    head.GetElementsByClassName("gram").Select(e => e.SafeText()));
+                entry.Senses = bodies[i].GetElementsByClassName("sense-body")
+                    .Select(CambridgeGlobalGermanSense.FromElement).ToList();
                 Entries.Add(entry);
             }
         }
@@ -73,14 +75,58 @@ public class CambridgeGlobalGermanWord : DataModel {
 public class CambridgeGlobalGermanEntry {
     #region public late WordType Type { get; set; }
 
-    WordType? type;
+    WordType? wordType;
 
     public WordType WordType {
-        get => Late.Get(type);
-        set => Late.Set(ref type, value);
+        get => Late.Get(wordType);
+        set => Late.Set(ref wordType, value);
     }
 
     #endregion
+
+    public List<CambridgeGlobalGermanSense>? Senses { get; set; }
+}
+
+public class CambridgeGlobalGermanSense {
+    public CambridgeGlobalGermanDefinition? Definition { get; set; }
+
+    public List<CambridgeGlobalGermanPhrase>? Phrases { get; set; }
+
+    public static CambridgeGlobalGermanSense FromElement(IElement element) {
+        return new CambridgeGlobalGermanSense {
+            Definition =
+                CambridgeGlobalGermanDefinition.FromElement(element
+                    .GetElementsByClassName("def-block").Single()),
+            Phrases = element.GetElementsByClassName("phrase-block")
+                .Select(CambridgeGlobalGermanPhrase.FromElement).ToList()
+        };
+    }
+}
+
+public class CambridgeGlobalGermanDefinition : Meaning {
+    public string? Notes { get; set; }
+
+    public CambridgeGlobalGermanDefinition FillFromElement(IElement element) {
+        var defHead = element.QuerySelector(".def-head > .def").SafeText();
+        return this;
+    }
+
+    public static CambridgeGlobalGermanDefinition FromElement(IElement element)
+        => new CambridgeGlobalGermanDefinition().FillFromElement(element);
+}
+
+public class CambridgeGlobalGermanPhrase : CambridgeGlobalGermanDefinition {
+    public string? Phrase { get; set; }
+
+    public CambridgeGlobalGermanPhrase FillFromElement(IElement element) {
+        base.FillFromElement(element);
+        Phrase = element.QuerySelector(".phrase").SafeText();
+        return this;
+    }
+
+
+    public static CambridgeGlobalGermanPhrase FromElement(IElement element)
+        => new CambridgeGlobalGermanPhrase().FillFromElement(element);
 }
 
 public interface
@@ -89,4 +135,9 @@ public interface
 
 public class CambridgeGlobalGermanWordRestServiceClient :
     KifaServiceRestClient<CambridgeGlobalGermanWord>, CambridgeGlobalGermanWordServiceClient {
+}
+
+static class ElementExtensions {
+    public static string SafeText(this INode? element)
+        => element == null ? "" : element.TextContent.Trim();
 }
