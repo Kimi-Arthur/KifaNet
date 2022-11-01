@@ -14,7 +14,7 @@ public class DataMetadata {
     public FreshnessMetadata? Freshness { get; set; }
 
     // Overrides that will apply after Fill() is called.
-    public Dictionary<string, object>? Overrides { get; set; }
+    public Dictionary<string, object> Overrides { get; set; } = new();
 
     [JsonIgnore]
     [YamlIgnore]
