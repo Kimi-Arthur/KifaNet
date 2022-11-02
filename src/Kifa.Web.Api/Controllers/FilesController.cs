@@ -102,15 +102,18 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
     public List<string> ListFolder(string folder, bool recursive = false) {
         var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
-        Logger.Trace(prefix);
         folder = $"{prefix}/{folder.Trim('/')}";
-        Logger.Trace(folder);
+        Logger.Trace($"Listing items in folder {folder}...");
         if (!Directory.Exists(folder)) {
-            return File.Exists(folder + ".json")
-                ? new List<string> {
+            if (File.Exists(folder + ".json")) {
+                Logger.Trace($"{folder} is actually a file. Return one element instead.");
+                return new List<string> {
                     folder[prefix.Length..]
-                }
-                : new List<string>();
+                };
+            }
+
+            Logger.Trace($"{folder} has no items.");
+            return new List<string>();
         }
 
         var directory = new DirectoryInfo(folder);
