@@ -106,7 +106,7 @@ public class LatePropertyTests {
 
     [Theory]
     [MemberData(nameof(PassingData))]
-    public void LatePropertyCloneTest(LateClass data, string serialized) {
+    public void LatePropertyRoundTripTest(LateClass data, string serialized) {
         var copy = data.Clone();
 
         Assert.Equal(serialized,
@@ -151,8 +151,26 @@ public class LatePropertyTests {
 
     [Theory]
     [MemberData(nameof(FailingData))]
-    public void LatePropertyCloneExceptionTest(LateClass data) {
-        var exception = Assert.Throws<JsonSerializationException>(() => data.Clone());
+    public void
+        LatePropertyWithMissingFieldsShouldThrowWhenSerializingExceptionTest(LateClass data) {
+        var exception = Assert.Throws<JsonSerializationException>(()
+            => JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
         Assert.IsType<NullReferenceException>(exception.InnerException);
+    }
+
+    [Fact]
+    public void LatePropertyDeserializeIsToDefaultTest() {
+        var data = JsonConvert.DeserializeObject<LateClass>("{}");
+        Assert.Empty(data!.ListProperty);
+        Assert.Empty(data.DictProperty);
+
+        Assert.Throws<NullReferenceException>(() => data.LateStringProperty);
+        Assert.Throws<JsonSerializationException>(()
+            => JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+        data.LateStringProperty = "";
+        Assert.Equal("", data.LateStringProperty);
+        data.LateJsonProperty = new JsonType("");
+        data.LateEnumProperty = EnumType.Default;
+        Assert.Equal("{\"late_json_property\":\"\"}", JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
     }
 }
