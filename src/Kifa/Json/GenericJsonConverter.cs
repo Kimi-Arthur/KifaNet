@@ -15,7 +15,3 @@ public class GenericJsonConverter : JsonConverter<JsonSerializable?> {
                Activator.CreateInstance(objectType, (string?) reader.Value) as JsonSerializable;
     }
 }
-
-public interface JsonSerializable {
-    string ToJson();
-}
