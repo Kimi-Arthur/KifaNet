@@ -16,13 +16,15 @@ public class OrderedContractResolver : DefaultContractResolver {
             .ToList();
     }
 
+    static readonly NullabilityInfoContext NullabilityContext = new();
+
     protected override JsonProperty CreateProperty(MemberInfo member,
         MemberSerialization memberSerialization) {
         var property = base.CreateProperty(member, memberSerialization);
 
-        if (member.CustomAttributes.Any(a
-                => a.AttributeType.ToString() ==
-                   "System.Runtime.CompilerServices.NullableAttribute")) {
+        // Reference: https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-7/#getting-top-level-nullability-information
+        if (member is PropertyInfo info &&
+            NullabilityContext.Create(info).WriteState is NullabilityState.Nullable) {
             // Don't do anything special for nullable reference types.
             return property;
         }
