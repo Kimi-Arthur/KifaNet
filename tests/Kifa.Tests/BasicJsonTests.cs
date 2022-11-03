@@ -13,7 +13,7 @@ public class DataClass {
     public Dictionary<MyEnum, string> Dict { get; set; }
 }
 
-public class JsonTests {
+public class BasicJsonTests {
     static readonly DataClass Decoded = new() {
         Dict = new Dictionary<MyEnum, string> {
             { MyEnum.Value1, "a" },
