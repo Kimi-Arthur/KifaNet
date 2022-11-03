@@ -3,15 +3,15 @@ using System.Collections.Generic;
 namespace Kifa;
 
 public partial class Language : JsonSerializable {
-    public string Name { get; set; } = "";
-    public string NativeName { get; set; } = "";
-    public string Code { get; set; } = "";
-    public string Code3 { get; set; }
-    public string Code3T { get; set; }
+    public required string Name { get; init; }
+    public required string NativeName { get; init; }
+    public required string Code { get; init; }
+    public required string Code3 { get; init; }
+    public required string Code3T { get; init; }
 
     public string ToJson() => Code;
 
-    Language() : this("xx") {
+    Language() {
     }
 
     public Language(string id) {
