@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Serialization;
 
 namespace Kifa;
@@ -18,6 +19,13 @@ public class OrderedContractResolver : DefaultContractResolver {
     protected override JsonProperty CreateProperty(MemberInfo member,
         MemberSerialization memberSerialization) {
         var property = base.CreateProperty(member, memberSerialization);
+
+        if (member.CustomAttributes.Any(a
+                => a.AttributeType.ToString() ==
+                   "System.Runtime.CompilerServices.NullableAttribute")) {
+            // Don't do anything special for nullable reference types.
+            return property;
+        }
 
         if (property.PropertyType == typeof(string)) {
             property.DefaultValue = "";
