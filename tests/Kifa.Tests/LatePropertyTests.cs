@@ -34,17 +34,6 @@ public class LateClass {
 
     #endregion
 
-    #region public late string LateStringProperty { get; set; }
-
-    string? lateStringProperty;
-
-    public string LateStringProperty {
-        get => Late.Get(lateStringProperty);
-        set => Late.Set(ref lateStringProperty, value);
-    }
-
-    #endregion
-
     #region public late JsonType LateJsonProperty { get; set; }
 
     JsonType? lateJsonProperty;
@@ -60,7 +49,20 @@ public class LateClass {
 
     public JsonType? JsonProperty { get; set; }
 
-    public string? StringProperty { get; set; }
+    public string StringProperty { get; set; } = "";
+
+    public string? NullableStringProperty { get; set; }
+
+    #region public late string LateStringProperty { get; set; }
+
+    string? lateStringProperty;
+
+    public string LateStringProperty {
+        get => Late.Get(lateStringProperty);
+        set => Late.Set(ref lateStringProperty, value);
+    }
+
+    #endregion
 
     public List<string> ListProperty { get; set; } = new();
 
@@ -77,6 +79,7 @@ public class LatePropertyTests {
                     LateJsonProperty = new JsonType("bcd"),
                     LateStringProperty = "abc",
                     JsonProperty = new JsonType("hid"),
+                    NullableStringProperty = "nullok",
                     StringProperty = "ok",
                     ListProperty = new List<string> {
                         "a",
@@ -89,7 +92,8 @@ public class LatePropertyTests {
                 },
                 "{\"dict_property\":{\"good\":\"bad\"},\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
                 "\"late_enum_property\":\"value_a\",\"late_json_property\":\"bcd\"," +
-                "\"late_string_property\":\"abc\",\"list_property\":[\"a\",\"d\",\"f\"],\"string_property\":\"ok\"}"
+                "\"late_string_property\":\"abc\",\"list_property\":[\"a\",\"d\",\"f\"]," +
+                "\"nullable_string_property\":\"nullok\",\"string_property\":\"ok\"}"
             },
             new object[] {
                 new LateClass {
@@ -98,9 +102,9 @@ public class LatePropertyTests {
                     LateStringProperty = "",
                     LateEnumProperty = EnumType.Default,
                     JsonProperty = new JsonType(""),
-                    StringProperty = ""
+                    NullableStringProperty = ""
                 },
-                "{\"json_property\":\"\",\"late_json_property\":\"\"}"
+                "{\"json_property\":\"\",\"late_json_property\":\"\",\"nullable_string_property\":\"\"}"
             }
         };
 
@@ -171,6 +175,7 @@ public class LatePropertyTests {
         Assert.Equal("", data.LateStringProperty);
         data.LateJsonProperty = new JsonType("");
         data.LateEnumProperty = EnumType.Default;
-        Assert.Equal("{\"late_json_property\":\"\"}", JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+        Assert.Equal("{\"late_json_property\":\"\"}",
+            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
     }
 }
