@@ -61,7 +61,7 @@ class ImportCommand : KifaCommand {
                                  .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
                     var ext = file.Substring(file.LastIndexOf(".") + 1);
                     var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
-                    targetFileName = Confirm($"Confirm importing {file} as", targetFileName);
+                    targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
                     FileInformation.Client.Link(file, targetFileName);
                     Logger.Info($"Successfully linked {file} to {targetFileName}");
                 }
@@ -103,8 +103,7 @@ class ImportCommand : KifaCommand {
                     e => $"{file} => {series.Format(e.Season, e.Episode).NormalizeFilePath()}{suffix}",
                     "mapping", startingIndex: 1, supportsSpecial: true);
                 if (selected.Special) {
-                    var newName = Confirm(
-                        $"Confirm linking {file} to {series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}{suffix}",
+                    var newName = Confirm($"Confirm linking {file} to:",
                         $"{series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}{suffix}");
                     FileInformation.Client.Link(file, newName);
                     if (Confirm(

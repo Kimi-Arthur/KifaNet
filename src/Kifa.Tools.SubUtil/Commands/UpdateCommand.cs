@@ -43,7 +43,7 @@ class TimeShiftAction : Action {
     public override void Update(AssDocument sub) {
         var selectedLines = KifaCommand.SelectMany(
             sub.Sections.OfType<AssEventsSection>().First().Events.ToList());
-        var shift = KifaCommand.Confirm("Input the amount of time to shift ", "10s")
+        var shift = KifaCommand.Confirm("Input the amount of time to shift:", "10s")
             .ParseTimeSpanString();
         ShiftTime(selectedLines, shift);
     }

@@ -9,7 +9,7 @@ public abstract partial class KifaCommand {
     static bool alwaysDefault;
     static int defaultIndex;
 
-    static readonly Regex ChoiceRegex = new Regex(@"(\d*)([as]*)");
+    static readonly Regex ChoiceRegex = new Regex(@"^(\d*)([as]*)$");
 
     public static (TChoice Choice, int Index, bool Special) SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string> choiceToString = null,
@@ -42,8 +42,10 @@ public abstract partial class KifaCommand {
 
         Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
         var match = ChoiceRegex.Match(Console.ReadLine() ?? "");
-        if (!match.Success) {
-            throw new InvalidChoiceException("Doesn't match ChoiceRegex.");
+        while (!match.Success) {
+            Console.WriteLine("Invalid choice. Try again:");
+            Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
+            match = ChoiceRegex.Match(Console.ReadLine() ?? "");
         }
 
         var choiceText = match.Groups[1].Value;
@@ -102,7 +104,7 @@ public abstract partial class KifaCommand {
 
     public static string Confirm(string prefix, string suggested) {
         while (true) {
-            Console.WriteLine($"{prefix} [{suggested}]?");
+            Console.WriteLine($"{prefix}\n\n{suggested}");
 
             var line = Console.ReadLine();
             if (line == "") {
