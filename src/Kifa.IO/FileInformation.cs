@@ -235,6 +235,7 @@ public class FileInformation : DataModel<FileInformation> {
         => ValidProperties.Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
+    // Compares properties with other. The fields not appearing in other won't count.
     public FileProperties CompareProperties(FileInformation? other,
         FileProperties propertiesToCompare) {
         var result = FileProperties.None;
@@ -247,9 +248,11 @@ public class FileInformation : DataModel<FileInformation> {
                 if (p.Value.GetValue(other) != null) {
                     if (p.Value.PropertyType.IsAssignableFrom(typeof(List<string>))) {
                         var olist = p.Value.GetValue(other) as List<string>;
-                        var tlist = p.Value.GetValue(this) as List<string>;
-                        if (!tlist.SequenceEqual(olist)) {
-                            result |= p.Key;
+                        if (olist.Count > 0) {
+                            var tlist = p.Value.GetValue(this) as List<string>;
+                            if (!tlist.SequenceEqual(olist)) {
+                                result |= p.Key;
+                            }
                         }
                     } else if (!Equals(p.Value.GetValue(other), p.Value.GetValue(this))) {
                         result |= p.Key;
