@@ -6,12 +6,12 @@ public partial class Language : JsonSerializable {
     public string Name { get; set; } = "";
     public string NativeName { get; set; } = "";
     public string Code { get; set; } = "";
-    public string Code3 { get; set; }
-    public string Code3T { get; set; }
+    public string Code3 { get; set; } = "";
+    public string Code3T { get; set; } = "";
 
     public string ToJson() => Code;
 
-    Language() : this("xx") {
+    Language() {
     }
 
     public Language(string id) {

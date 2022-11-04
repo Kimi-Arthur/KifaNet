@@ -47,12 +47,12 @@ public class Episode {
 
 public class Crew {
     public string Job { get; set; }
-    public Department? Department { get; set; }
+    public string? Department { get; set; }
     public string CreditId { get; set; }
     public bool Adult { get; set; }
     public long Gender { get; set; }
     public long Id { get; set; }
-    public Department KnownForDepartment { get; set; }
+    public string? KnownForDepartment { get; set; }
     public string Name { get; set; }
     public string OriginalName { get; set; }
     public double Popularity { get; set; }
@@ -60,18 +60,3 @@ public class Crew {
     public string Character { get; set; }
     public long? Order { get; set; }
 }
-
-public enum Department {
-    Acting,
-    Art,
-    Camera,
-    CostumeMakeUp,
-    Crew,
-    Directing,
-    Editing,
-    Lighting,
-    Production,
-    Sound,
-    VisualEffects,
-    Writing
-};

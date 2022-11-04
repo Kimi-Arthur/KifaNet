@@ -10,7 +10,7 @@ namespace Kifa.Infos;
 public class Anime : DataModel<Anime>, Formattable {
     public const string ModelId = "animes";
 
-    static KifaServiceClient<Anime> client;
+    static KifaServiceClient<Anime>? client;
 
     static readonly Language DefaultLanguage = Language.Japanese;
 
