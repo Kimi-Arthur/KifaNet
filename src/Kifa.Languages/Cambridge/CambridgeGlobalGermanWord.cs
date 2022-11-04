@@ -90,17 +90,24 @@ public class CambridgeGlobalGermanEntry {
 public class CambridgeGlobalGermanSense {
     public CambridgeGlobalGermanDefinition? Definition { get; set; }
 
-    public List<CambridgeGlobalGermanPhrase>? Phrases { get; set; }
+    public List<CambridgeGlobalGermanPhrase> Phrases { get; set; } = new();
+
+    public Dictionary<string, string> CrossReferences { get; set; } = new();
 
     public static CambridgeGlobalGermanSense FromElement(IElement element) {
         var definitionElement =
             element.Children.FirstOrDefault(e => e.ClassList.Contains("def-block"));
+
+        var xrefElements = element.QuerySelectorAll(".xref");
+
         return new CambridgeGlobalGermanSense {
             Definition = definitionElement == null
                 ? null
                 : CambridgeGlobalGermanDefinition.FromElement(definitionElement),
             Phrases = element.QuerySelectorAll(".phrase-block")
-                .Select(CambridgeGlobalGermanPhrase.FromElement).ToList()
+                .Select(CambridgeGlobalGermanPhrase.FromElement).ToList(),
+            CrossReferences = xrefElements.ToDictionary(x => x.ClassList[1],
+                x => x.QuerySelector(".x-h").GetSafeInnerText())
         };
     }
 }
@@ -110,12 +117,19 @@ public class CambridgeGlobalGermanDefinition : Meaning {
 
     public CambridgeGlobalGermanDefinition FillFromElement(IElement element) {
         Text = element.QuerySelector(".def-head > .def").GetSafeInnerText();
+        var notesElement = element.QuerySelector(".def-head > .def-info");
+        if (notesElement != null) {
+            notesElement.GetElementsByClassName("freq").ForEach(e => e.Remove());
+            Notes = notesElement.GetSafeInnerText();
+        }
+
         Translation = string.Join("",
             element.QuerySelectorAll(".def-body > .trans").Select(e => e.GetSafeInnerText()));
         Examples = element.QuerySelectorAll(".examp").Select(div => new TextWithTranslation {
             Text = div.QuerySelector(".eg").GetSafeInnerText(),
             Translation = div.QuerySelector(".trans").GetSafeInnerText()
         }).ToList();
+
         return this;
     }
 
@@ -126,7 +140,7 @@ public class CambridgeGlobalGermanDefinition : Meaning {
 public class CambridgeGlobalGermanPhrase : CambridgeGlobalGermanDefinition {
     public string? Phrase { get; set; }
 
-    public CambridgeGlobalGermanPhrase FillFromElement(IElement element) {
+    public new CambridgeGlobalGermanPhrase FillFromElement(IElement element) {
         base.FillFromElement(element);
         Phrase = element.QuerySelector(".phrase").GetSafeInnerText();
         return this;
@@ -147,5 +161,5 @@ public class CambridgeGlobalGermanWordRestServiceClient :
 
 static class ElementExtensions {
     public static string GetSafeInnerText(this INode? element)
-        => element == null ? "" : element.TextContent;
+        => element == null ? "" : element.TextContent.Trim();
 }
