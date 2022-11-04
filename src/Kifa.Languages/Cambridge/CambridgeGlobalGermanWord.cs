@@ -117,8 +117,6 @@ public class CambridgeGlobalGermanDefinition {
 
     public string? Translation { get; set; }
 
-    public WordType? Type { get; set; }
-
     public List<TextWithTranslation> Examples { get; set; } = new();
 
     public string Notes { get; set; } = "";

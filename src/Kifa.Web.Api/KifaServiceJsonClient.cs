@@ -336,7 +336,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     TDataModel? Read(string id) {
         var data = ReadRaw(id);
-        Logger.Trace($"Read: {data}");
+        Logger.Trace($"Read: {data ?? "null"}");
         return data == null
             ? null
             : JsonConvert.DeserializeObject<TDataModel>(data, Defaults.JsonSerializerSettings);
