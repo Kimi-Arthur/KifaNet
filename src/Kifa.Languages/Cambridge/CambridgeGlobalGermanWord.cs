@@ -9,7 +9,7 @@ namespace Kifa.Languages.Cambridge;
 
 // Entries in GLOBAL German–English Dictionary from https://dictionary.cambridge.org/dictionary/german-english/
 public class CambridgeGlobalGermanWord : DataModel {
-    public const string ModelId = "cambridge/german_words";
+    public const string ModelId = "cambridge/german";
 
     public static CambridgeGlobalGermanWordServiceClient Client { get; set; } =
         new CambridgeGlobalGermanWordRestServiceClient();
@@ -112,11 +112,19 @@ public class CambridgeGlobalGermanSense {
     }
 }
 
-public class CambridgeGlobalGermanDefinition : Meaning {
+public class CambridgeGlobalGermanDefinition {
+    public string? Meaning { get; set; }
+
+    public string? Translation { get; set; }
+
+    public WordType? Type { get; set; }
+
+    public List<TextWithTranslation> Examples { get; set; } = new();
+
     public string Notes { get; set; } = "";
 
     public CambridgeGlobalGermanDefinition FillFromElement(IElement element) {
-        Text = element.QuerySelector(".def-head > .def").GetSafeInnerText();
+        Meaning = element.QuerySelector(".def-head > .def").GetSafeInnerText();
         var notesElement = element.QuerySelector(".def-head > .def-info");
         if (notesElement != null) {
             notesElement.GetElementsByClassName("freq").ForEach(e => e.Remove());
