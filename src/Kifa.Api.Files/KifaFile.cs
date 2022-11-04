@@ -503,12 +503,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             var compareResults =
                 partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
-                throw new FileCorruptedException("Quick result differs from old result:\n" +
-                                                 "Expected:\n" +
-                                                 oldInfo.RemoveProperties(FileProperties.All ^
-                                                     compareResults) + "\nActual:\n" +
-                                                 partialInfo.RemoveProperties(FileProperties.All ^
-                                                     compareResults));
+                throw new FileCorruptedException(
+                    $"Quick result differs from old result: {compareResults}\n" + "Expected:\n" +
+                    oldInfo.RemoveProperties(FileProperties.All ^ compareResults) + "\nActual:\n" +
+                    partialInfo.RemoveProperties(FileProperties.All ^ compareResults));
             }
 
             Logger.Debug($"Quick check passed for {file}.");
@@ -529,22 +527,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
 
         if (quickCompareResult != FileProperties.None) {
-            throw new FileCorruptedException("New result differs from quick result:\n" +
-                                             "Expected:\n" +
-                                             quickInfo.RemoveProperties(FileProperties.All ^
-                                                 quickCompareResult) + "\nActual:\n" +
-                                             info.RemoveProperties(FileProperties.All ^
-                                                 quickCompareResult));
+            throw new FileCorruptedException(
+                $"New result differs from quick result: {quickCompareResult}\n" + "Expected:\n" +
+                quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult) +
+                "\nActual:\n" + info.RemoveProperties(FileProperties.All ^ quickCompareResult));
         }
 
         var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
         if (compareResultWithOld != FileProperties.None) {
-            throw new FileCorruptedException("New result differs from old result:\n" +
-                                             "Expected:\n" +
-                                             oldInfo.RemoveProperties(FileProperties.All ^
-                                                 compareResultWithOld) + "\nActual:\n" +
-                                             info.RemoveProperties(FileProperties.All ^
-                                                 compareResultWithOld));
+            throw new FileCorruptedException(
+                $"New result differs from old result: {compareResultWithOld}\n" + "Expected:\n" +
+                oldInfo.RemoveProperties(FileProperties.All ^ compareResultWithOld) +
+                "\nActual:\n" + info.RemoveProperties(FileProperties.All ^ compareResultWithOld));
         }
 
         var client = FileInformation.Client;
@@ -564,12 +558,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             client.Update(info);
             Register(true);
         } else {
-            throw new FileCorruptedException("New result differs from sha256 result:\n" +
-                                             "Expected:\n" +
-                                             sha256Info.RemoveProperties(FileProperties.All ^
-                                                 compareResult) + "\nActual:\n" +
-                                             info.RemoveProperties(FileProperties.All ^
-                                                 compareResult));
+            throw new FileCorruptedException(
+                $"New result differs from sha256 result: {compareResult}\n" + "Expected:\n" +
+                sha256Info.RemoveProperties(FileProperties.All ^ compareResult) + "\nActual:\n" +
+                info.RemoveProperties(FileProperties.All ^ compareResult));
         }
     }
 
