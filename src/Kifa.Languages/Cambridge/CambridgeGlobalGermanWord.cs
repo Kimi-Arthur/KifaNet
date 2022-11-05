@@ -167,5 +167,5 @@ public class CambridgeGlobalGermanWordRestServiceClient :
 
 static class ElementExtensions {
     public static string GetSafeInnerText(this INode? element)
-        => element == null ? "" : element.TextContent.Trim();
+        => element == null ? "" : element.TextContent;
 }
