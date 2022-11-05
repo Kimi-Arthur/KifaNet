@@ -22,9 +22,7 @@ public class OrderedContractResolver : DefaultContractResolver {
         MemberSerialization memberSerialization) {
         var property = base.CreateProperty(member, memberSerialization);
 
-        // Reference: https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-7/#getting-top-level-nullability-information
-        if (member is PropertyInfo info &&
-            NullabilityContext.Create(info).WriteState is NullabilityState.Nullable) {
+        if (IsNullable(member)) {
             // Don't do anything special for nullable reference types.
             return property;
         }
@@ -52,5 +50,14 @@ public class OrderedContractResolver : DefaultContractResolver {
         }
 
         return property;
+    }
+
+    static bool IsNullable(MemberInfo member) {
+        // The lock is needed as `NullabilityContext.Create` is not thread safe.
+        lock (NullabilityContext) {
+            // Reference: https://devblogs.microsoft.com/dotnet/announcing-net-6-preview-7/#getting-top-level-nullability-information
+            return member is PropertyInfo info &&
+                   NullabilityContext.Create(info).WriteState is NullabilityState.Nullable;
+        }
     }
 }
