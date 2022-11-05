@@ -73,7 +73,7 @@ public class CambridgeGlobalGermanWord : DataModel {
 }
 
 public class CambridgeGlobalGermanEntry {
-    #region public late WordType Type { get; set; }
+    #region public late WordType WordType { get; set; }
 
     WordType? wordType;
 

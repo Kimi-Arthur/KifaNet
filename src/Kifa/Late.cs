@@ -43,7 +43,8 @@ public static class Late {
         // when deserializing an object with converter.
         if (stackTrace.GetFrames().Any(frame
                 => frame.GetMethod()?.DeclaringType?.ToString() ==
-                "Newtonsoft.Json.JsonSerializer" && frame.GetMethod()?.Name == "Deserialize")) {
+                   "Newtonsoft.Json.JsonSerializer" &&
+                   frame.GetMethod()?.Name == "DeserializeInternal")) {
             return default;
         }
 
