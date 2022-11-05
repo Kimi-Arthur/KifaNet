@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Kifa.Api.Files;
+using Kifa.Languages.Cambridge;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
@@ -132,11 +133,18 @@ public class MemriseClient : IDisposable {
             };
         }
 
+        var cambridge = CambridgeGlobalGermanWord.Client.Get(word.RootWord);
+        var reference = cambridge == null
+            ? ""
+            : string.Join("; ",
+                cambridge.Entries.SelectMany(e => e.Senses.Select(s => s.Definition?.Translation))
+                    .ExceptNull().Distinct());
+
         Logger.Info($"{word.Id} => {rootWord.Id}");
 
         Logger.Debug($"Adding word in {Course.DatabaseUrl}:\n{word}\n{rootWord}");
 
-        var newData = GetDataFromWord(word, rootWord);
+        var newData = GetDataFromWord(word, rootWord, reference);
 
         var existingRow = Course.Words.GetValueOrDefault(word.Id)?.Data ?? GetExistingRow(word);
 
@@ -374,7 +382,8 @@ public class MemriseClient : IDisposable {
         return normalizedNewValue == normalizedOldValue;
     }
 
-    Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord) {
+    Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord,
+        string reference) {
         var data = new Dictionary<string, string> {
             { Course.Columns["German"], word.Id },
             { Course.Columns["English"], word.Meaning }
@@ -390,6 +399,8 @@ public class MemriseClient : IDisposable {
 
         data[Course.Columns["Pronunciation"]] =
             baseWord?.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
+
+        data[Course.Columns["Reference"]] = reference;
 
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
