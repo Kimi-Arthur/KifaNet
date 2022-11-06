@@ -363,7 +363,8 @@ public class MemriseClient : IDisposable {
     static readonly List<(Regex original, string replacement)> CompatibilityMapping = new() {
         (new Regex("\\s+"), " "), // Spaces used as line breaks.
         (new Regex("^\u00A8"), "\u0308"), // Standalone umlaut character: ¨
-        (new Regex("\u2026"), "...") // Three dots character: …
+        (new Regex("\u2026"), "..."), // Three dots character: …
+        (new Regex("²"), "2") // Superscript: ²
     };
 
     static bool SameText(string? oldValue, string newValue) {
@@ -381,7 +382,25 @@ public class MemriseClient : IDisposable {
             normalizedNewValue = original.Replace(normalizedNewValue, replacement);
         }
 
-        return normalizedNewValue == normalizedOldValue;
+        if (normalizedNewValue == normalizedOldValue) {
+            return true;
+        }
+
+        for (var i = 0; i < Math.Min(normalizedNewValue.Length, normalizedOldValue.Length); i++) {
+            if (normalizedNewValue[i] != normalizedOldValue[i]) {
+                Logger.Debug(
+                    $"Texts differ at character {i}: {normalizedNewValue[i]} != {normalizedOldValue[i]}");
+                Logger.Debug($"New text: {normalizedNewValue}");
+                Logger.Debug($"New text: {normalizedOldValue}");
+                return false;
+            }
+        }
+
+        Logger.Debug(
+            $"Texts have different lengths: {normalizedNewValue.Length} != {normalizedOldValue.Length}");
+        Logger.Debug($"New text: {normalizedNewValue}");
+        Logger.Debug($"New text: {normalizedOldValue}");
+        return false;
     }
 
     Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord,
