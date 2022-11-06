@@ -138,8 +138,9 @@ public class MemriseClient : IDisposable {
         var reference = cambridge == null
             ? ""
             : string.Join("; ",
-                cambridge.Entries.SelectMany(e => e.Senses.Select(s => s.Definition?.Translation))
-                    .ExceptNull().Distinct());
+                cambridge.Entries
+                    .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
+                    .ExceptNull().Where(x => x != "").Distinct());
 
         Logger.Info($"{word.Id} => {rootWord.Id}");
 
