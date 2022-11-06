@@ -147,7 +147,8 @@ public class VerifiableStream : Stream {
                         }
                     }
 
-                    throw new Exception($"Unable to get valid block starting from {pos}");
+                    throw new FileCorruptedException(
+                        $"Unable to get valid block starting from {pos}");
                 }
 
                 Logger.Trace($"[{pos}, {pos + bytesToRead}) got");

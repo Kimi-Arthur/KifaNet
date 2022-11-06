@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
 using Kifa.Api.Files;
 using Kifa.Languages.Cambridge;
 using Kifa.Languages.German;
@@ -232,7 +233,8 @@ public class MemriseClient : IDisposable {
     }
 
     bool UploadAudios(MemriseWord originalWord, GoetheGermanWord word, List<string> audios) {
-        var audioFiles = audios.Select(audio => new KifaFile(audio)).ToList();
+        var audioFiles = audios.Select(audio => new KifaFile(HttpUtility.UrlDecode(audio)))
+            .ToList();
         audioFiles.ForEach(file => file.Add(false));
         var keys = audioFiles.Select(file => (file.FileInfo!.Size!.Value, file.FileInfo.Md5!))
             .ToHashSet();
