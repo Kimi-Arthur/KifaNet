@@ -391,7 +391,7 @@ public class MemriseClient : IDisposable {
                 Logger.Debug(
                     $"Texts differ at character {i}: {normalizedNewValue[i]} != {normalizedOldValue[i]}");
                 Logger.Debug($"New text: {normalizedNewValue}");
-                Logger.Debug($"New text: {normalizedOldValue}");
+                Logger.Debug($"Old text: {normalizedOldValue}");
                 return false;
             }
         }
@@ -399,7 +399,7 @@ public class MemriseClient : IDisposable {
         Logger.Debug(
             $"Texts have different lengths: {normalizedNewValue.Length} != {normalizedOldValue.Length}");
         Logger.Debug($"New text: {normalizedNewValue}");
-        Logger.Debug($"New text: {normalizedOldValue}");
+        Logger.Debug($"Old text: {normalizedOldValue}");
         return false;
     }
 
