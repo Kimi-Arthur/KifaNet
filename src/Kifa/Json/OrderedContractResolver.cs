@@ -33,7 +33,6 @@ public class OrderedContractResolver : DefaultContractResolver {
 
         if (property.PropertyType?.IsGenericType ?? false) {
             if (property.PropertyType.GetGenericTypeDefinition() == typeof(List<>)) {
-                property.DefaultValue = Activator.CreateInstance(property.PropertyType);
                 property.ShouldSerialize = instance
                     => (property.ValueProvider.GetValue(instance) as IList) is {
                         Count: > 0
@@ -41,7 +40,6 @@ public class OrderedContractResolver : DefaultContractResolver {
             }
 
             if (property.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>)) {
-                property.DefaultValue = Activator.CreateInstance(property.PropertyType);
                 property.ShouldSerialize = instance
                     => (property.ValueProvider.GetValue(instance) as IDictionary) is {
                         Count: > 0

@@ -132,7 +132,6 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             };
         }
 
-        file.Locations ??= new Dictionary<string, DateTime?>();
         file.Locations[location] =
             verified ? DateTime.UtcNow : file.Locations.GetValueOrDefault(location);
         return Update(file);
@@ -147,7 +146,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             };
         }
 
-        if (file.Locations?.GetValueOrDefault(location) != null) {
+        if (file.Locations.GetValueOrDefault(location) != null) {
             file.Locations.Remove(location);
             var update = Update(file);
             return new KifaActionResult {
@@ -164,7 +163,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         };
     }
 
-    public string CreateLocation(string id, string type = "google", string format = "v1") {
+    public string? CreateLocation(string id, string type = "google", string format = "v1") {
         var file = Get(id);
 
         if (file.Size == null || file.Sha256 == null) {
@@ -187,7 +186,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
     public KifaApiActionResult MoveServer(string fromServer, string toServer)
         => List().Values.AsParallel().Select(file => {
-            if (file.Locations?.Count > 0) {
+            if (file.Locations.Count > 0) {
                 var locationsFromServer = file.Locations
                     .Where(l => new FileLocation(l.Key).Server == fromServer).ToList();
                 if (locationsFromServer.Count == 0) {

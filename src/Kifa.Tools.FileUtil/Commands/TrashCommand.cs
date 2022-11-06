@@ -59,22 +59,20 @@ class TrashCommand : KifaCommand {
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
             var targetInfo = client.Get(target);
-            if (targetInfo?.Locations != null) {
-                foreach (var location in targetInfo.Locations.Keys) {
-                    var instance = new KifaFile(location);
-                    if (instance.Id == file) {
-                        if (instance.Exists()) {
-                            var targetInstance = new KifaFile(instance.Host + targetInfo.Id);
-                            instance.Move(targetInstance);
-                            Logger.Info($"File {instance} moved to {targetInstance}.");
-                            targetInstance.Add();
-                        } else {
-                            Logger.Warn($"File {instance} not found.");
-                        }
-
-                        client.RemoveLocation(targetInfo.Id, location);
-                        Logger.Info($"Entry {location} removed.");
+            foreach (var location in targetInfo.Locations.Keys) {
+                var instance = new KifaFile(location);
+                if (instance.Id == file) {
+                    if (instance.Exists()) {
+                        var targetInstance = new KifaFile(instance.Host + targetInfo.Id);
+                        instance.Move(targetInstance);
+                        Logger.Info($"File {instance} moved to {targetInstance}.");
+                        targetInstance.Add();
+                    } else {
+                        Logger.Warn($"File {instance} not found.");
                     }
+
+                    client.RemoveLocation(targetInfo.Id, location);
+                    Logger.Info($"Entry {location} removed.");
                 }
             }
 

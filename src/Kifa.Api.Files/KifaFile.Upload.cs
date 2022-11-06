@@ -40,7 +40,7 @@ public partial class KifaFile {
         => FileInfo?.Sha256 == null || FileInfo?.Size == null
             ? throw new UnableToDetermineLocationException(
                 $"Sha256 {FileInfo?.Sha256} or size {FileInfo?.Size} is missing.")
-            : FileInfo.Locations?.Keys.FirstOrDefault(l
+            : FileInfo.Locations.Keys.FirstOrDefault(l
                 => new Regex(
                         $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType.ToString().ToLower()}$")
                     .Match(l).Success) ?? target.ServiceType switch {

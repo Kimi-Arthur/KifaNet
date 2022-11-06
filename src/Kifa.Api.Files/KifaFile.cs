@@ -182,7 +182,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         string? candidate = null;
         var bestScore = 0L;
         var info = FileInformation.Client.Get(id);
-        if (info?.Locations != null) {
+        if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {
                 if (verifyTime != null) {
                     var file = new KifaFile(location, fileInfo: info);
@@ -240,13 +240,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public bool Exists() => Client.Exists(Path);
 
-    public bool ExistsSomewhere() => FileInfo?.Locations?.Values.Any(v => v != null) == true;
+    public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
 
     public long Length() => Client.Length(Path);
 
-    public bool Registered => FileInfo?.Locations?.GetValueOrDefault(ToString(), null) != null;
+    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
 
-    public bool HasEntry => FileInfo?.Locations?.ContainsKey(ToString()) == true;
+    public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
     public FileInformation QuickInfo()
         => FileFormat is RawFileFormat

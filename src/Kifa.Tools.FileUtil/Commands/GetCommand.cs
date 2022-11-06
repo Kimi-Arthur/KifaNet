@@ -38,7 +38,7 @@ class GetCommand : KifaFileCommand {
 
         var info = file.FileInfo;
 
-        if (info?.Locations == null) {
+        if (info == null || info.Locations.Count == 0) {
             Logger.Error($"No instance exists for {file.Id}!");
             return 1;
         }

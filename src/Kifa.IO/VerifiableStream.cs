@@ -190,7 +190,7 @@ public class VerifiableStream : Stream {
             MaxDegreeOfParallelism = 3
         }, transformer => transformer());
 
-        if (info?.BlockMd5 != null) {
+        if (info?.BlockMd5.Count > 0) {
             result = true;
             var expectedMd5 = info.BlockMd5[blockId];
 
@@ -200,7 +200,7 @@ public class VerifiableStream : Stream {
             }
         }
 
-        if (info?.BlockSha1 != null) {
+        if (info?.BlockSha1.Count > 0) {
             result ??= true;
             var expectedSha1 = info.BlockSha1[blockId];
 
@@ -210,7 +210,7 @@ public class VerifiableStream : Stream {
             }
         }
 
-        if (info?.BlockSha256 != null) {
+        if (info?.BlockSha256.Count > 0) {
             result ??= true;
             var expectedSha256 = info.BlockSha256[blockId];
 

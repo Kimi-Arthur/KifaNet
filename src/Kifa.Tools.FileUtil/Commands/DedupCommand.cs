@@ -48,15 +48,13 @@ class DedupCommand : KifaCommand {
 
     void RemoveLogicalFile(FileInformation fileInfo) {
         var id = fileInfo.Id;
-        if (fileInfo.Locations != null) {
-            foreach (var fileName in fileInfo.Locations.Keys) {
-                var file = new KifaFile(fileName);
-                if (file.Id == id) {
-                    Logger.Info($"Removing {file}...");
-                    file.Delete();
-                    Logger.Info($"Removing {file} from locations...");
-                    file.Unregister();
-                }
+        foreach (var fileName in fileInfo.Locations.Keys) {
+            var file = new KifaFile(fileName);
+            if (file.Id == id) {
+                Logger.Info($"Removing {file}...");
+                file.Delete();
+                Logger.Info($"Removing {file} from locations...");
+                file.Unregister();
             }
         }
 

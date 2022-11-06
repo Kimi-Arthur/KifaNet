@@ -108,7 +108,7 @@ class RemoveCommand : KifaCommand {
 
     KifaActionResult RemoveLogicalFile(FileInformation info) {
         var result = new KifaBatchActionResult();
-        if (!RemoveLinkOnly && info.Locations != null) {
+        if (!RemoveLinkOnly) {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
 

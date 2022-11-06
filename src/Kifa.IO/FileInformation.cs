@@ -131,7 +131,6 @@ public class FileInformation : DataModel<FileInformation> {
 
             HashAlgorithm? blockMd5Hasher;
             if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
-                BlockMd5 = new List<string>();
                 blockMd5Hasher = new MD5CryptoServiceProvider();
                 transformers.Add((buffer, readLength)
                     => BlockMd5.Add(blockMd5Hasher.ComputeHash(buffer, 0, readLength)
@@ -140,7 +139,6 @@ public class FileInformation : DataModel<FileInformation> {
 
             HashAlgorithm? blockSha1Hasher;
             if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
-                BlockSha1 = new List<string>();
                 blockSha1Hasher = new SHA1CryptoServiceProvider();
                 transformers.Add((buffer, readLength)
                     => BlockSha1.Add(blockSha1Hasher.ComputeHash(buffer, 0, readLength)
@@ -149,7 +147,6 @@ public class FileInformation : DataModel<FileInformation> {
 
             HashAlgorithm? blockSha256Hasher;
             if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
-                BlockSha256 = new List<string>();
                 blockSha256Hasher = new SHA256CryptoServiceProvider();
                 transformers.Add((buffer, readLength)
                     => BlockSha256.Add(blockSha256Hasher.ComputeHash(buffer, 0, readLength)
