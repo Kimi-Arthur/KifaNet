@@ -17,7 +17,7 @@ public static class Defaults {
             new StringEnumConverter(new SnakeCaseNamingStrategy()),
             new GenericJsonConverter()
         },
-        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+        DefaultValueHandling = DefaultValueHandling.Ignore,
         NullValueHandling = NullValueHandling.Ignore,
         MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
         ObjectCreationHandling = ObjectCreationHandling.Replace
@@ -35,7 +35,7 @@ public static class Defaults {
             new StringEnumConverter(new SnakeCaseNamingStrategy()),
             new GenericJsonConverter()
         },
-        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+        DefaultValueHandling = DefaultValueHandling.Ignore,
         NullValueHandling = NullValueHandling.Ignore,
         MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
         ObjectCreationHandling = ObjectCreationHandling.Replace

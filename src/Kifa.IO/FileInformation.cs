@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,14 +23,19 @@ public class FileInformation : DataModel<FileInformation> {
     static readonly Regex linkIdPattern = new(@"^(http|https|ftp)://([^:#?]*)([#?].*)?$");
     static readonly Regex fileIdPattern = new(@"^[^/]*(/.*?)(\.v\d)?$");
 
-    static readonly Dictionary<FileProperties, PropertyInfo> properties;
+    static readonly Dictionary<FileProperties, PropertyInfo> normalProperties = new();
+    static readonly Dictionary<FileProperties, PropertyInfo> collectionProperties = new();
 
     static FileInformation() {
-        properties = new Dictionary<FileProperties, PropertyInfo>();
         foreach (var prop in typeof(FileInformation).GetProperties(BindingFlags.Instance |
                      BindingFlags.Public)) {
             if (Enum.TryParse(typeof(FileProperties), prop.Name, out var propKey)) {
-                properties[(FileProperties) propKey] = prop;
+                if (prop.PropertyType.IsGenericType) {
+                    collectionProperties[(FileProperties) propKey!] = prop;
+                    continue;
+                }
+
+                normalProperties[(FileProperties) propKey!] = prop;
             }
         }
     }
@@ -206,9 +212,15 @@ public class FileInformation : DataModel<FileInformation> {
     }
 
     public FileInformation RemoveProperties(FileProperties removedProperties) {
-        foreach (var p in properties) {
+        foreach (var p in normalProperties) {
             if (removedProperties.HasFlag(p.Key)) {
                 p.Value.SetValue(this, null);
+            }
+        }
+
+        foreach (var p in collectionProperties) {
+            if (removedProperties.HasFlag(p.Key)) {
+                p.Value.SetValue(this, Activator.CreateInstance(p.Value.PropertyType));
             }
         }
 
@@ -216,7 +228,7 @@ public class FileInformation : DataModel<FileInformation> {
     }
 
     IEnumerable<KeyValuePair<FileProperties, PropertyInfo>> ValidProperties
-        => properties.Where(x => {
+        => normalProperties.Where(x => {
             try {
                 return x.Value.GetValue(this) != null;
             } catch (TargetInvocationException ex) {
@@ -226,7 +238,19 @@ public class FileInformation : DataModel<FileInformation> {
 
                 throw;
             }
-        });
+        }).Concat(collectionProperties.Where(x => {
+            try {
+                return (x.Value.GetValue(this) as ICollection) is {
+                    Count: > 0
+                };
+            } catch (TargetInvocationException ex) {
+                if (ex.InnerException is NullReferenceException) {
+                    return false;
+                }
+
+                throw;
+            }
+        }));
 
     public FileProperties GetProperties()
         => ValidProperties.Select(x => x.Key)
