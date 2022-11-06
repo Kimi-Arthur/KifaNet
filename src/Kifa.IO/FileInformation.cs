@@ -30,7 +30,8 @@ public class FileInformation : DataModel<FileInformation> {
         foreach (var prop in typeof(FileInformation).GetProperties(BindingFlags.Instance |
                      BindingFlags.Public)) {
             if (Enum.TryParse(typeof(FileProperties), prop.Name, out var propKey)) {
-                if (prop.PropertyType.IsGenericType) {
+                if (prop.PropertyType.IsAssignableFrom(typeof(List<string>)) ||
+                    prop.PropertyType.IsAssignableFrom(typeof(Dictionary<string, DateTime?>))) {
                     collectionProperties[(FileProperties) propKey!] = prop;
                     continue;
                 }
