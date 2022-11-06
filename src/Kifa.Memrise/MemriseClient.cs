@@ -386,6 +386,14 @@ public class MemriseClient : IDisposable {
             return true;
         }
 
+        if (normalizedNewValue.Length != normalizedOldValue.Length) {
+            Logger.Debug(
+                $"Texts have different lengths: {normalizedNewValue.Length} != {normalizedOldValue.Length}");
+            Logger.Debug($"New text: {normalizedNewValue}");
+            Logger.Debug($"Old text: {normalizedOldValue}");
+            return false;
+        }
+
         for (var i = 0; i < Math.Min(normalizedNewValue.Length, normalizedOldValue.Length); i++) {
             if (normalizedNewValue[i] != normalizedOldValue[i]) {
                 Logger.Debug(
@@ -396,10 +404,9 @@ public class MemriseClient : IDisposable {
             }
         }
 
-        Logger.Debug(
-            $"Texts have different lengths: {normalizedNewValue.Length} != {normalizedOldValue.Length}");
-        Logger.Debug($"New text: {normalizedNewValue}");
-        Logger.Debug($"Old text: {normalizedOldValue}");
+        Logger.Warn($"Unexpectedly, difference is not found for the two texts:");
+        Logger.Warn($"New text: {normalizedNewValue}");
+        Logger.Warn($"Old text: {normalizedOldValue}");
         return false;
     }
 
