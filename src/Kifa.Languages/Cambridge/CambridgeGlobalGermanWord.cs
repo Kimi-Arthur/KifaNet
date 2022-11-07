@@ -126,7 +126,7 @@ public class CambridgeGlobalGermanDefinition {
         var notesElement = element.QuerySelector(".def-head > .def-info");
         if (notesElement != null) {
             notesElement.GetElementsByClassName("freq").ForEach(e => e.Remove());
-            Notes = notesElement.GetSafeInnerText();
+            Notes = notesElement.GetSafeInnerText().Trim();
         }
 
         Translation = string.Join("",
