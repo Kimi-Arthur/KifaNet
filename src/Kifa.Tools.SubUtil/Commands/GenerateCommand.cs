@@ -27,7 +27,7 @@ class GenerateCommand : KifaFileCommand {
         => files => $"Confirm generating comments for the {files.Count} files above?";
 
     protected override int ExecuteOneKifaFile(KifaFile file) {
-        var actualFile = file.Parent.GetFile($"{file.BaseName}.ass");
+        var actualFile = file.Parent.GetFile($"{file.BaseName}.default.ass");
         var assFile = actualFile.GetFilePrefixed(SubtitlesPrefix);
 
         if (!assFile.Exists() || Force) {
