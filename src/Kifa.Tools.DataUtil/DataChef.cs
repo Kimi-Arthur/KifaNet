@@ -56,8 +56,17 @@ public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataM
     // TODO: Should not rely implementation detail. 
     public string ModelId => Client.ModelId;
 
-    public List<TDataModel> Load(string data)
-        => new Deserializer().Deserialize<List<TDataModel>>(data);
+    static readonly IDeserializer Deserializer =
+        new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
+
+    static readonly ISerializer CompactSerializer = new SerializerBuilder().WithIndentedSequences()
+        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).WithEventEmitter(next
+            => new FlowStyleScalarSequenceEmitter(next)).Build();
+
+    static readonly ISerializer Serializer = new SerializerBuilder().WithIndentedSequences()
+        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+
+    public List<TDataModel> Load(string data) => Deserializer.Deserialize<List<TDataModel>>(data);
 
     public KifaActionResult Import(string data) {
         var items = Load(data);
@@ -67,22 +76,14 @@ public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataM
     }
 
     public string Save(List<TDataModel> items, bool compact) {
-        var serializerBuilder = new SerializerBuilder().WithIndentedSequences()
-            .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull);
-        if (compact) {
-            serializerBuilder =
-                serializerBuilder.WithEventEmitter(next
-                    => new FlowStyleScalarSequenceEmitter(next));
-        }
-
-        var serializer = serializerBuilder.Build();
+        var serializer = compact ? CompactSerializer : Serializer;
 
         return
             $"# {ModelId}\n{string.Join("\n", items.Select(item => serializer.Serialize(new List<TDataModel> { item })))}";
     }
 
     public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
-        var items = new Deserializer().Deserialize<List<TDataModel>>(data).Select(item => item.Id)
+        var items = Deserializer.Deserialize<List<TDataModel>>(data).Select(item => item.Id)
             .ToList();
 
         var updatedItems =

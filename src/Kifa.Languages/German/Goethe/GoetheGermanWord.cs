@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Kifa.Languages.Cambridge;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -13,7 +14,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public const string ModelId = "goethe/words";
-    public override int CurrentVersion => 2;
+    public override int CurrentVersion => 3;
 
     static readonly Regex RootWordPattern =
         new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen)?$");
@@ -32,7 +33,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
 
     public string? Meaning { get; set; }
 
-    public string? WikiMeanings { get; set; }
+    public string? CambridgeMeanings { get; set; }
 
     public List<string>? Examples { get; set; }
 
@@ -48,10 +49,16 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
             return null;
         }
 
-        Form ??= word.KeyForm;
+        Form = word.KeyForm;
         Meaning ??= word.Meaning;
-        WikiMeanings = string.Join("; ",
-            word.Meanings?.Select(meaning => meaning.Translation) ?? Enumerable.Empty<string>());
+
+        var cambridge = CambridgeGlobalGermanWord.Client.Get(RootWord);
+        CambridgeMeanings = cambridge == null
+            ? ""
+            : string.Join("; ",
+                cambridge.Entries
+                    .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
+                    .ExceptNull().Where(x => x != "").Distinct());
 
         return Date.Zero;
     }
