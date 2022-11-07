@@ -14,7 +14,7 @@ public class CambridgeGlobalGermanWord : DataModel {
     public static CambridgeGlobalGermanWordServiceClient Client { get; set; } =
         new CambridgeGlobalGermanWordRestServiceClient();
 
-    public List<CambridgeGlobalGermanEntry> Entries { get; set; }
+    public List<CambridgeGlobalGermanEntry> Entries { get; set; } = new();
 
     const string PagePrefix = "german-english";
 
@@ -84,7 +84,7 @@ public class CambridgeGlobalGermanEntry {
 
     #endregion
 
-    public List<CambridgeGlobalGermanSense>? Senses { get; set; }
+    public List<CambridgeGlobalGermanSense> Senses { get; set; } = new();
 }
 
 public class CambridgeGlobalGermanSense {

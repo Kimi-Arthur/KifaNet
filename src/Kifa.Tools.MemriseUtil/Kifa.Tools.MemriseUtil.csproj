@@ -5,7 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ToolCommandName>memx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>2.2.7</Version>
+    <Version>2.2.8</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
