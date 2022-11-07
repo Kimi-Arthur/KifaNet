@@ -107,7 +107,8 @@ class ImportCommand : KifaCommand {
                         $"{series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}{suffix}");
                     FileInformation.Client.Link(file, newName);
                     if (Confirm(
-                            $"Remove info item {series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}?")) {
+                            $"Remove info item {series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}?",
+                            false)) {
                         MarkMatched(episodes, selected.Choice.Season, selected.Choice.Episode);
                     }
                 } else {
