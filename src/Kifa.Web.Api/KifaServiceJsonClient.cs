@@ -62,7 +62,8 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             WriteTarget(data.Clone());
         }
 
-        return data;
+        // TODO: Not sure...
+        return Retrieve(id);
     }
 
     // false -> no write needed.
