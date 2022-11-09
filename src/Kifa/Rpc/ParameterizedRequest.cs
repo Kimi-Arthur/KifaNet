@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using NLog;
 
 namespace Kifa.Rpc;
@@ -18,6 +20,8 @@ public abstract class ParameterizedRequest {
     public virtual Dictionary<string, Dictionary<string, string>> PartHeaders { get; } = new();
 
     // Different types of content
+    public virtual string? JsonContent => null;
+
     public virtual List<KeyValuePair<string, string>>? FormContent => null;
 
     public virtual List<(string dataKey, string name, string fileName)>? ExtraMultipartContent {
@@ -25,7 +29,9 @@ public abstract class ParameterizedRequest {
     }
 
     protected virtual Dictionary<string, string> parameters { get; set; } = new();
-    protected virtual Dictionary<string, byte[]> byteParameters { get; set; } = new ();
+    protected virtual Dictionary<string, byte[]> byteParameters { get; set; } = new();
+
+    static readonly string ContentHeaderPrefix = "content-";
 
     public HttpRequestMessage GetRequest() {
         var address = UrlPattern.Format(parameters);
@@ -33,11 +39,19 @@ public abstract class ParameterizedRequest {
 
         var request = new HttpRequestMessage(Method, address);
 
-        foreach (var (headerName, value) in Headers.Where(h => !h.Key.StartsWith("Content-"))) {
+        foreach (var (headerName, value) in Headers.Where(h
+                     => !h.Key.ToLower().StartsWith(ContentHeaderPrefix))) {
             request.Headers.Add(headerName, value.Format(parameters));
         }
 
-        if (ExtraMultipartContent != null) {
+        if (JsonContent != null) {
+            var content = new StringContent(JsonContent.Format(parameters)) {
+                Headers = {
+                    ContentType = MediaTypeHeaderValue.Parse("application/json; charset=UTF-8")
+                }
+            };
+            request.Content = content;
+        } else if (ExtraMultipartContent != null) {
             var multipartContent = new MultipartFormDataContent();
             request.Content = multipartContent;
             if (FormContent != null) {
@@ -64,7 +78,8 @@ public abstract class ParameterizedRequest {
         }
 
         if (request.Content != null) {
-            foreach (var (headerName, value) in Headers.Where(h => h.Key.StartsWith("Content-"))) {
+            foreach (var (headerName, value) in Headers.Where(h
+                         => h.Key.ToLower().StartsWith(ContentHeaderPrefix))) {
                 request.Content.Headers.Add(headerName, value.Format(parameters));
             }
         }
