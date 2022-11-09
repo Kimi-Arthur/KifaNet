@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
@@ -7,6 +8,8 @@ namespace Kifa.Bilibili.BilibiliApi;
 public sealed class BilibiliMangaRequest : ParameterizedRequest {
     public override string UrlPattern
         => "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=pc&platform=web";
+
+    public override HttpMethod Method => HttpMethod.Post;
 
     public override string JsonContent => "{\"comic_id\":{comic_id}}";
 
@@ -47,7 +50,7 @@ public class BilibiliMangaData {
     public long ReadEpid { get; set; }
     public DateTime LastReadTime { get; set; }
     public long IsDownload { get; set; }
-    public long ReadShortTitle { get; set; }
+    public string ReadShortTitle { get; set; }
     public Styles2[] Styles2 { get; set; }
     public string RenewalTime { get; set; }
     public long LastShortTitle { get; set; }
