@@ -4,9 +4,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using NLog;
 
-namespace Kifa.Rpc;
+namespace Kifa.Rpc; 
 
-public abstract class ParameterizedRequest {
+public abstract class KifaParameterizedRpc<TResponse> : KifaRpc<TResponse> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public abstract string UrlPattern { get; }
@@ -85,4 +85,6 @@ public abstract class ParameterizedRequest {
 
         return request;
     }
+
+    public abstract TResponse? ParseResponse(HttpResponseMessage responseMessage);
 }

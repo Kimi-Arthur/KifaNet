@@ -6,7 +6,7 @@ namespace Kifa.Bilibili.BiliplusApi;
 public static class BiliplusHttpClient {
     public static string BiliplusCookies { get; set; }
 
-    static HttpClient instance;
+    static HttpClient? instance;
     public static HttpClient Instance => instance ??= GetBiliplusClient();
 
     public static HttpClient GetBiliplusClient() {
