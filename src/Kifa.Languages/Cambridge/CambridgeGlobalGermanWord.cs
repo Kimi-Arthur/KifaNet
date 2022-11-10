@@ -11,8 +11,18 @@ namespace Kifa.Languages.Cambridge;
 public class CambridgeGlobalGermanWord : DataModel {
     public const string ModelId = "cambridge/german";
 
-    public static CambridgeGlobalGermanWordServiceClient Client { get; set; } =
-        new CambridgeGlobalGermanWordRestServiceClient();
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<CambridgeGlobalGermanWord> {
+    }
+
+    public class
+        RestServiceClient : KifaServiceRestClient<CambridgeGlobalGermanWord>, ServiceClient {
+    }
+
+    #endregion
 
     public List<CambridgeGlobalGermanEntry> Entries { get; set; } = new();
 
@@ -155,14 +165,6 @@ public class CambridgeGlobalGermanPhrase : CambridgeGlobalGermanDefinition {
 
     public static CambridgeGlobalGermanPhrase FromElement(IElement element)
         => new CambridgeGlobalGermanPhrase().FillFromElement(element);
-}
-
-public interface
-    CambridgeGlobalGermanWordServiceClient : KifaServiceClient<CambridgeGlobalGermanWord> {
-}
-
-public class CambridgeGlobalGermanWordRestServiceClient :
-    KifaServiceRestClient<CambridgeGlobalGermanWord>, CambridgeGlobalGermanWordServiceClient {
 }
 
 static class ElementExtensions {

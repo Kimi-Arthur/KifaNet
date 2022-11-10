@@ -5,9 +5,9 @@ namespace Kifa.Web.Api.Controllers.Cambridge;
 
 [Route("api/" + CambridgeGlobalGermanWord.ModelId)]
 public class CambridgeGlobalGermanWordsController : KifaDataController<CambridgeGlobalGermanWord,
-    CambridgeGlobalGermanWordJsonServiceClient> {
-}
+    CambridgeGlobalGermanWordsController.JsonServiceClient> {
 
-public class CambridgeGlobalGermanWordJsonServiceClient :
-    KifaServiceJsonClient<CambridgeGlobalGermanWord>, CambridgeGlobalGermanWordServiceClient {
+    public class JsonServiceClient : KifaServiceJsonClient<CambridgeGlobalGermanWord>,
+        CambridgeGlobalGermanWord.ServiceClient {
+    }
 }
