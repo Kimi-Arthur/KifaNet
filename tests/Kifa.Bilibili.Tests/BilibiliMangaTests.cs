@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Configs;
@@ -49,5 +51,32 @@ public class BilibiliMangaTests {
         Assert.Equal(description, manga.Description);
         Assert.Equal(firstEpisodeTitle, manga.Episodes[0].Title);
         Assert.True(manga.Episodes.Count >= minEpisodesCount);
+    }
+
+    public static IEnumerable<object[]> GetImageDownloadTestData
+        => new List<object[]> {
+            new object[] {
+                new List<string> {
+                    "83a74745071184c6d92f813cb15c13cae445af27.jpg",
+                    "98c51036310577a32a488d075bc45103fc32b201.jpg"
+                },
+                new List<long> {
+                    2274543,
+                    2039184
+                }
+            }
+        };
+
+    [Theory]
+    [MemberData(nameof(GetImageDownloadTestData))]
+    public void ImageDownloadTest(List<string> imageIds, List<long> expectedSizes) {
+        var data = HttpClient.Call(new MangaTokenRpc(imageIds))!.Data;
+
+        var imageSizes = data.Select(l
+            => HttpClient.GetByteArrayAsync($"{l.Url}?token={l.Token}").Result.Length).ToList();
+
+        for (var i = 0; i < expectedSizes.Count; i++) {
+            Assert.Equal(expectedSizes[i], imageSizes[i]);
+        }
     }
 }
