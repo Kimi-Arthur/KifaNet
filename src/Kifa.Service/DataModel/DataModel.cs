@@ -104,9 +104,4 @@ public abstract class DataModel {
 public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {
     [JsonProperty("$translations")]
     public Dictionary<string, TDataModel>? Translations { get; set; }
-
-    public TDataModel With(Action<TDataModel> update) {
-        update((this as TDataModel)!);
-        return (this as TDataModel)!;
-    }
 }

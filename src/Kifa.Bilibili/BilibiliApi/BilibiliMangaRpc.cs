@@ -107,7 +107,7 @@ public class AutoPayOrder {
 
 public class EpisodeInfo {
     public long Id { get; set; }
-    public long Ord { get; set; }
+    public double Ord { get; set; }
     public long Read { get; set; }
     public long PayMode { get; set; }
     public bool IsLocked { get; set; }
@@ -126,7 +126,7 @@ public class EpisodeInfo {
     public long ChapterId { get; set; }
     public long Type { get; set; }
     public long Extra { get; set; }
-    public long ImageCount { get; set; }
+    public int ImageCount { get; set; }
 }
 
 public class Styles2 {
