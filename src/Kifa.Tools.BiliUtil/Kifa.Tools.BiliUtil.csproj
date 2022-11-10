@@ -15,20 +15,20 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
-    <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj"/>
-    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
+    <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
+    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-    <PackageReference Include="NLog.Schema" Version="4.6.7"/>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="NLog.Schema" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath=""/>
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="" />
   </ItemGroup>
 </Project>

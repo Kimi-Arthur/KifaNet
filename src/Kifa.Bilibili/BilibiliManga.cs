@@ -11,9 +11,19 @@ using NLog;
 namespace Kifa.Bilibili;
 
 public class BilibiliManga : DataModel {
-    static readonly HttpClient NoAuthClient = new();
-
     public const string ModelId = "bilibili/mangas";
+
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<BilibiliManga> {
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<BilibiliManga>, ServiceClient {
+    }
+
+    #endregion
 
     #region public late string Title { get; set; }
 
@@ -46,6 +56,8 @@ public class BilibiliManga : DataModel {
 
     public List<BilibiliMangaEpisode> Episodes { get; set; } = new();
 
+    static readonly HttpClient NoAuthClient = new();
+
     public override DateTimeOffset? Fill() {
         var data = NoAuthClient.Call(new BilibiliMangaRpc(Id[2..]))!.Data;
 
@@ -76,8 +88,9 @@ public class BilibiliManga : DataModel {
         return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
 
-    public IEnumerable<(string name, string link)> GetDownloadLinksForEpisode(string id)
-        => Episodes.First(ep => ep.Id == id).GetDownloadLinks($"{Title}-{Id}");
+    public IEnumerable<(string name, string link)>
+        GetDownloadLinksForEpisode(BilibiliMangaEpisode episode)
+        => episode.GetDownloadLinks($"{Title}-{Id}");
 }
 
 public class BilibiliMangaEpisode {
@@ -152,9 +165,11 @@ public class BilibiliMangaEpisode {
         var tokens = NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data;
 
         return Pages
-            .Select(
-                p => $"{prefix}/{Id:000} {Title}/{p.Id:00}{p.ImageId[p.ImageId.IndexOf(".")..]}")
-            .Zip(tokens, (name, token) => (name, $"{token.Url}?token={token.Token}"));
+            .Select(p
+                => $"{prefix}/{Id.PadLeft(3, '0')} {Title}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}")
+            .Zip(tokens, (name, token) => (name, $"{token.Url}?token={token.Token}")).Prepend((
+                $"{prefix}/{Id.PadLeft(3, '0')} {Title}/00{Cover[Cover.LastIndexOf(".")..]}",
+                Cover));
     }
 }
 
