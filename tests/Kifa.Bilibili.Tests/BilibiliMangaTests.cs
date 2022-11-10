@@ -1,11 +1,16 @@
 using System.Net.Http;
 using Kifa.Bilibili.BilibiliApi;
+using Kifa.Configs;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests;
 
 public class BilibiliMangaTests {
     static readonly HttpClient HttpClient = new();
+
+    public BilibiliMangaTests() {
+        KifaConfigs.Init();
+    }
 
     [Theory]
     [InlineData("25900", "总之就是非常可爱", "畑健二郎",

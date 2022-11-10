@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Kifa.Bilibili.BilibiliApi;
+using Kifa.Bilibili.BiliplusApi;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -11,7 +12,7 @@ namespace Kifa.Bilibili;
 
 public class BilibiliManga : DataModel {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    static readonly HttpClient NoAuthClient = new HttpClient();
+    static readonly HttpClient NoAuthClient = new();
 
     public const string ModelId = "bilibili/mangas";
 
@@ -71,6 +72,7 @@ public class BilibiliManga : DataModel {
         }
 
         Episodes.AddRange(newEpisodes.Skip(Episodes.Count));
+        Episodes.ForEach(ep => ep.FillPages(Id));
 
         return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
@@ -111,8 +113,26 @@ public class BilibiliMangaEpisode {
 
     public List<BilibiliMangaPage> Pages { get; set; } = new();
 
-    public void FillPages() {
-        // TODO
+    public DateTimeOffset LastRefreshed { get; set; } = Date.Zero;
+
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    static readonly HttpClient BiliplusClient = BiliplusHttpClient.GetBiliplusClient();
+
+    public void FillPages(string mangaId) {
+        if (Pages.Count == PageCount &&
+            DateTimeOffset.Now - LastRefreshed <= TimeSpan.FromDays(365)) {
+            Logger.Debug(
+                $"No need to refresh pages for {mangaId}.{Id}: {epid}. Last refreshed at {LastRefreshed}");
+            return;
+        }
+
+        Pages = BiliplusClient.Call(new BiliplusMangaEpisodeRpc(mangaId[2..], epid)).Select(
+            (p, index) => new BilibiliMangaPage {
+                Id = index + 1,
+                ImageId = p
+            }).ToList();
+        LastRefreshed = DateTimeOffset.Now;
     }
 }
 
