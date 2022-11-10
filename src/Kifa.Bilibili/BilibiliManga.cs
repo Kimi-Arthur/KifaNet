@@ -11,7 +11,6 @@ using NLog;
 namespace Kifa.Bilibili;
 
 public class BilibiliManga : DataModel {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient NoAuthClient = new();
 
     public const string ModelId = "bilibili/mangas";
@@ -63,7 +62,7 @@ public class BilibiliManga : DataModel {
             Cover = ep.Cover,
             PageCount = ep.ImageCount,
             Size = ep.Size
-        }).OrderBy(ep => ep.Id).ToList();
+        }).OrderBy(ep => double.Parse(ep.Id)).ToList();
 
         for (var i = 0; i < Episodes.Count; i++) {
             JsonConvert.PopulateObject(
@@ -76,10 +75,22 @@ public class BilibiliManga : DataModel {
 
         return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
+
+    public IEnumerable<(string name, string link)> GetDownloadLinksForEpisode(string id)
+        => Episodes.First(ep => ep.Id == id).GetDownloadLinks($"{Title}-{Id}");
 }
 
 public class BilibiliMangaEpisode {
-    public double Id { get; set; }
+    #region public late string Id { get; set; }
+
+    string? id;
+
+    public string Id {
+        get => Late.Get(id);
+        set => Late.Set(ref id, value);
+    }
+
+    #endregion
 
     #region public late string Epid { get; set; }
 
@@ -134,10 +145,30 @@ public class BilibiliMangaEpisode {
             }).ToList();
         LastRefreshed = DateTimeOffset.Now;
     }
+
+    static readonly HttpClient NoAuthClient = new();
+
+    public IEnumerable<(string name, string link)> GetDownloadLinks(string prefix) {
+        var tokens = NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data;
+
+        return Pages
+            .Select(
+                p => $"{prefix}/{Id:000} {Title}/{p.Id:00}{p.ImageId[p.ImageId.IndexOf(".")..]}")
+            .Zip(tokens, (name, token) => (name, $"{token.Url}?token={token.Token}"));
+    }
 }
 
 public class BilibiliMangaPage {
     public int Id { get; set; }
 
-    public string? ImageId { get; set; }
+    #region public late string ImageId { get; set; }
+
+    string? imageId;
+
+    public string ImageId {
+        get => Late.Get(imageId);
+        set => Late.Set(ref imageId, value);
+    }
+
+    #endregion
 }
