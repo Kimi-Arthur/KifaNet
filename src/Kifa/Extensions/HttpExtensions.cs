@@ -28,7 +28,7 @@ public static class HttpExtensions {
     public static JToken GetJToken(this HttpResponseMessage response)
         => JToken.Parse(GetString(response));
 
-    static T? GetObject<T>(this HttpResponseMessage response)
+    public static T? GetObject<T>(this HttpResponseMessage response)
         => JsonConvert.DeserializeObject<T>(GetString(response), Defaults.JsonSerializerSettings);
 
     public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request) {
@@ -101,6 +101,10 @@ public static class HttpExtensions {
     public static TResponse? SendWithRetry<TResponse>(this HttpClient client,
         ParameterizedRequest request, HttpStatusCode? expectedStatusCode = null)
         => client.SendWithRetry(request.GetRequest, expectedStatusCode).GetObject<TResponse>();
+
+    public static TResponse? Call<TResponse>(this HttpClient client, KifaRpc<TResponse> rpc,
+        HttpStatusCode? expectedStatusCode = null)
+        => rpc.ParseResponse(client.SendWithRetry(rpc.GetRequest, expectedStatusCode));
 
     static void HandleHttpException(Exception ex, int index) {
         if (index >= 5 || ex is HttpRequestException {

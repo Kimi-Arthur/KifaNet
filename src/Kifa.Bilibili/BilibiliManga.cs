@@ -47,9 +47,7 @@ public class BilibiliManga : DataModel {
     public List<BilibiliMangaEpisode> Episodes { get; set; } = new();
 
     public override DateTimeOffset? Fill() {
-        var data =
-            NoAuthClient.SendWithRetry<BilibiliMangaResponse>(new BilibiliMangaRequest(Id[2..]))!
-                .Data;
+        var data = NoAuthClient.Call(new BilibiliMangaRpc(Id[2..]))!.Data;
 
         Title = data.Title;
         Authors = data.AuthorName;

@@ -5,7 +5,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
 
-public sealed class BilibiliMangaRequest : ParameterizedRequest {
+public sealed class BilibiliMangaRpc : KifaJsonParameterizedRpc<BilibiliMangaResponse> {
     public override string UrlPattern
         => "https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device=pc&platform=web";
 
@@ -13,7 +13,7 @@ public sealed class BilibiliMangaRequest : ParameterizedRequest {
 
     public override string JsonContent => "{\"comic_id\":{comic_id}}";
 
-    public BilibiliMangaRequest(string mangaId) {
+    public BilibiliMangaRpc(string mangaId) {
         parameters = new Dictionary<string, string> {
             { "comic_id", mangaId }
         };
