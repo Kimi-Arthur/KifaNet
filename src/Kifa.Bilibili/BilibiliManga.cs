@@ -65,6 +65,11 @@ public class BilibiliManga : DataModel {
         Authors = data.AuthorName;
         Styles = data.Styles;
         Description = data.Evaluate;
+        Covers = new() {
+            data.VerticalCover,
+            data.HorizontalCover,
+            data.SquareCover
+        };
 
         var newEpisodes = data.EpList.Select(ep => new BilibiliMangaEpisode {
             Id = ep.Ord,
@@ -163,13 +168,14 @@ public class BilibiliMangaEpisode {
 
     static readonly HttpClient NoAuthClient = new();
 
-    public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix)
-        => Pages
-            .Select(p => (
-                $"{prefix}/{Id.PadLeft(3, '0')} {Title}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
-                $"$/{p.ImageId}")).Prepend((
-                $"{prefix}/{Id.PadLeft(3, '0')} {Title}/00{Cover[Cover.LastIndexOf(".")..]}",
+    public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix) {
+        var idSuffix = id.Contains('.') ? id[id.IndexOf(".")..] : "";
+        var episodePrefix = $"{prefix}/{Id.RemoveAfter(".").PadLeft(3, '0')}{idSuffix} {Title}";
+        return Pages
+            .Select(p => ($"{episodePrefix}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
+                $"$/{p.ImageId}")).Prepend(($"{episodePrefix}/00{Cover[Cover.LastIndexOf(".")..]}",
                 $"${Cover[Cover.LastIndexOf("/")..]}"));
+    }
 
     public IEnumerable<string> GetDownloadLinks()
         => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data

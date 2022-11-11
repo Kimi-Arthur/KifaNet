@@ -34,7 +34,9 @@ public class DownloadMangaCommand : KifaCommand {
             return 1;
         }
 
-        DownloadEpisode(manga, manga.Episodes[1]);
+        foreach (var episode in manga.Episodes) {
+            DownloadEpisode(manga, episode);
+        }
 
         return 0;
     }
@@ -61,7 +63,10 @@ public class DownloadMangaCommand : KifaCommand {
         }
 
         foreach (var (desired, canonical) in targetFiles) {
-            canonical.Add(false);
+            if (canonical.Exists()) {
+                canonical.Add(false);
+            }
+
             if (desired.Exists()) {
                 desired.Add(false);
             }
@@ -86,8 +91,13 @@ public class DownloadMangaCommand : KifaCommand {
                 }
             }
 
-            canonical.Copy(desired);
-            desired.Add(false);
+            if (canonical.Exists()) {
+                canonical.Copy(desired);
+                desired.Add(false);
+            } else {
+                FileInformation.Client.Link(canonical.Id, desired.Id);
+            }
+
             Logger.Debug($"Copied {canonical} to {desired}");
         }
     }
