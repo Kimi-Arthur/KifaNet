@@ -88,9 +88,11 @@ public class BilibiliManga : DataModel {
         return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
 
-    public IEnumerable<(string name, string link)>
-        GetDownloadLinksForEpisode(BilibiliMangaEpisode episode)
-        => episode.GetDownloadLinks($"{Title}-{Id}");
+    public IEnumerable<(string desiredName, string canonicalName)>
+        GetNames(BilibiliMangaEpisode episode)
+        => episode.GetNames($"{Title}-{Id}");
+
+    public IEnumerable<string> GetLinks(BilibiliMangaEpisode episode) => episode.GetDownloadLinks();
 }
 
 public class BilibiliMangaEpisode {
@@ -161,16 +163,17 @@ public class BilibiliMangaEpisode {
 
     static readonly HttpClient NoAuthClient = new();
 
-    public IEnumerable<(string name, string link)> GetDownloadLinks(string prefix) {
-        var tokens = NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data;
-
-        return Pages
-            .Select(p
-                => $"{prefix}/{Id.PadLeft(3, '0')} {Title}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}")
-            .Zip(tokens, (name, token) => (name, $"{token.Url}?token={token.Token}")).Prepend((
+    public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix)
+        => Pages
+            .Select(p => (
+                $"{prefix}/{Id.PadLeft(3, '0')} {Title}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
+                $"$/{p.ImageId}")).Prepend((
                 $"{prefix}/{Id.PadLeft(3, '0')} {Title}/00{Cover[Cover.LastIndexOf(".")..]}",
-                Cover));
-    }
+                $"${Cover[Cover.LastIndexOf("/")..]}"));
+
+    public IEnumerable<string> GetDownloadLinks()
+        => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data
+            .Select(token => $"{token.Url}?token={token.Token}").Prepend(Cover);
 }
 
 public class BilibiliMangaPage {

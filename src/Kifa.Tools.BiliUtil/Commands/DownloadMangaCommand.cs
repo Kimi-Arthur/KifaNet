@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using CommandLine;
 using Kifa.Api.Files;
@@ -27,16 +28,67 @@ public class DownloadMangaCommand : KifaCommand {
 
     public override int Execute() {
         var manga = BilibiliManga.Client.Get(mangaId);
-        foreach (var (name, link) in manga.GetDownloadLinksForEpisode(manga.Episodes[0])) {
-            var targetFile = new KifaFile(name);
-            if (targetFile.Exists() || targetFile.ExistsSomewhere()) {
-                Logger.Debug($"{targetFile} already exists.");
+
+        if (manga == null) {
+            Logger.Fatal($"Cannot find manga with id {mangaId}.");
+            return 1;
+        }
+
+        DownloadEpisode(manga, manga.Episodes[1]);
+
+        return 0;
+    }
+
+    void DownloadEpisode(BilibiliManga manga, BilibiliMangaEpisode episode) {
+        var names = manga.GetNames(episode).ToList();
+        var targetFiles = names.Select(name => (Desired: new KifaFile(name.desiredName),
+            Canonical: new KifaFile(name.canonicalName))).ToList();
+
+        if (targetFiles.All(f => f.Canonical.Exists() || f.Canonical.ExistsSomewhere())) {
+            Logger.Debug("All images exist.");
+        } else {
+            var links = manga.GetLinks(episode);
+            foreach (var (name, link) in targetFiles.Zip(links)) {
+                var targetFile = name.Canonical;
+                if (targetFile.Exists() || targetFile.ExistsSomewhere()) {
+                    Logger.Debug($"{targetFile} already exists.");
+                    continue;
+                }
+
+                targetFile.Write(NoAuthClient.GetStreamAsync(link).Result);
+                Logger.Debug($"Downloaded {targetFile}.");
+            }
+        }
+
+        foreach (var (desired, canonical) in targetFiles) {
+            canonical.Add(false);
+            if (desired.Exists()) {
+                desired.Add(false);
+            }
+
+            if (canonical.FileInfo.GetAllLinks().Contains(desired.Id)) {
                 continue;
             }
 
-            targetFile.Write(NoAuthClient.GetStreamAsync(link).Result);
-        }
+            if (desired.Exists()) {
+                if (Confirm($"Confirm removing old version of {desired}?")) {
+                    desired.Delete();
+                    FileInformation.Client.RemoveLocation(desired.Id, desired.ToString());
+                    foreach (var (location, _) in desired.FileInfo.Locations) {
+                        var file = new KifaFile(location);
+                        if (file.Id == desired.Id) {
+                            file.Delete();
+                            FileInformation.Client.RemoveLocation(desired.Id, file.ToString());
+                        }
+                    }
 
-        return 0;
+                    FileInformation.Client.Delete(desired.Id);
+                }
+            }
+
+            canonical.Copy(desired);
+            desired.Add(false);
+            Logger.Debug($"Copied {canonical} to {desired}");
+        }
     }
 }

@@ -365,7 +365,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         if (source.ExistsSomewhere()) {
             Logger.Debug("Source is alreay in system. Will link files virtually.");
             foreach (var link in links) {
-                if (link == source) {
+                if (link.Equals(source)) {
                     continue;
                 }
 
