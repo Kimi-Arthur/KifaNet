@@ -171,15 +171,14 @@ public class BilibiliMangaEpisode {
     public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix) {
         var idSuffix = id.Contains('.') ? id[id.IndexOf(".")..] : "";
         var episodePrefix = $"{prefix}/{Id.RemoveAfter(".").PadLeft(3, '0')}{idSuffix} {Title}";
-        return Pages
-            .Select(p => ($"{episodePrefix}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
-                $"$/{p.ImageId}")).Prepend(($"{episodePrefix}/00{Cover[Cover.LastIndexOf(".")..]}",
-                $"${Cover[Cover.LastIndexOf("/")..]}"));
+        return Pages.Select(p => (
+            $"{episodePrefix}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
+            $"$/{p.ImageId}"));
     }
 
     public IEnumerable<string> GetDownloadLinks()
-        => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data
-            .Select(token => $"{token.Url}?token={token.Token}").Prepend(Cover);
+        => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data.Select(token
+            => $"{token.Url}?token={token.Token}");
 }
 
 public class BilibiliMangaPage {
