@@ -53,7 +53,7 @@ public class BilibiliMangaData {
     public string ReadShortTitle { get; set; }
     public Styles2[] Styles2 { get; set; }
     public string RenewalTime { get; set; }
-    public long LastShortTitle { get; set; }
+    public string LastShortTitle { get; set; }
     public long DiscountType { get; set; }
     public long Discount { get; set; }
     public DateTime DiscountEnd { get; set; }
