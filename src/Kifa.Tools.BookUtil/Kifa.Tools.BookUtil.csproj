@@ -13,20 +13,23 @@
     <Copyright>Copyright © 2015-2020 Kimi Arthur</Copyright>
     <PackageTags>Pimix Apps BookUtil app</PackageTags>
     <Authors>KimiArthur</Authors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PDFSharp.Standard" Version="1.51.12"/>
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1"/>
-    <PackageReference Include="NLog.Schema" Version="4.6.7"/>
+    <PackageReference Include="PDFSharp.Standard" Version="1.51.12" />
+    <PackageReference Include="QuickEPUB" Version="1.0.1" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.7.1" />
+    <PackageReference Include="NLog.Schema" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\resources\NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath=""/>
+    <None Include="..\..\resources\Pimix.png" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
+    <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
   </ItemGroup>
 </Project>
