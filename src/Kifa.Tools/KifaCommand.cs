@@ -18,6 +18,9 @@ public abstract partial class KifaCommand {
     [Option('v', "verbose", HelpText = "Show most detailed log.")]
     public bool Verbose { get; set; } = false;
 
+    [Option('V', "non-verbose", HelpText = "Show least detailed log.")]
+    public bool NonVerbose { get; set; } = false;
+
     public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
         Initialize();
         return parse(args).MapResult<KifaCommand, int>(ExecuteCommand, HandleParseFail);
@@ -26,6 +29,8 @@ public abstract partial class KifaCommand {
     static int ExecuteCommand(KifaCommand command) {
         if (command.Verbose) {
             ConfigureLogger(true);
+        } else if (command.NonVerbose) {
+            ConfigureLogger(false);
         }
 
         try {
@@ -54,11 +59,14 @@ public abstract partial class KifaCommand {
         }
     }
 
-    static void ConfigureLogger(bool fullConsole = false) {
+    static void ConfigureLogger(bool? fullConsole = null) {
         LogManager.Configuration.LoggingRules.Clear();
 
-        if (fullConsole) {
+        if (fullConsole == true) {
             LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "console_full");
+            LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
+        } else if (fullConsole == false) {
+            LogManager.Configuration.AddRule(LogLevel.Info, LogLevel.Fatal, "console");
             LogManager.Configuration.AddRule(LogLevel.Trace, LogLevel.Fatal, "file_full");
         } else {
             foreach (var target in LoggingTargets) {
