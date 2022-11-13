@@ -3,12 +3,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using MwParserFromScratch;
 using MwParserFromScratch.Nodes;
-using Newtonsoft.Json;
 using NLog;
 using WikiClientLibrary.Client;
 using WikiClientLibrary.Pages;
 using WikiClientLibrary.Sites;
-using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German;
 
@@ -244,11 +242,9 @@ public class EnWiktionaryClient {
 }
 
 public class WikiMeaning : Meaning {
-    public string? RawTranslation { get; set; }
-    public string? TranslationWithNotes { get; set; }
-
-    [JsonIgnore]
-    [YamlIgnore]
-    public override string? Translation
+    public override string Translation
         => string.IsNullOrEmpty(RawTranslation) ? TranslationWithNotes : RawTranslation;
+
+    public string RawTranslation { get; set; } = "";
+    public string TranslationWithNotes { get; set; } = "";
 }

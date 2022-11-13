@@ -11,17 +11,17 @@ public class GermanWord : DataModel<GermanWord> {
 
     public const string ModelId = "languages/german/words";
 
-    public override int CurrentVersion => 12;
+    public override int CurrentVersion => 13;
 
     public static GermanWordServiceClient Client { get; set; } = new GermanWordRestServiceClient();
 
     public WordType? Type { get; set; }
 
-    public List<Meaning>? Meanings { get; set; }
+    public List<Meaning> Meanings { get; set; } = new();
 
     public string? Meaning { get; set; }
 
-    public List<string>? Etymology { get; set; }
+    public List<string> Etymology { get; set; } = new();
 
     public string? Pronunciation { get; set; }
 
