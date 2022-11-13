@@ -49,7 +49,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
             return null;
         }
 
-        Form = word.KeyForm;
+        Form ??= word.KeyForm;
         Meaning ??= word.Meaning;
 
         var cambridge = CambridgeGlobalGermanWord.Client.Get(RootWord);
