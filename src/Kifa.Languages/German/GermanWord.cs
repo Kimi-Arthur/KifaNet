@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
-using Newtonsoft.Json;
 using NLog;
-using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German;
 
@@ -110,10 +108,10 @@ public class GermanWord : DataModel<GermanWord> {
     public string GetNounFormWithArticle(Case formCase, Number formNumber)
         => NounForms!.GetValueOrDefault(formCase, new Dictionary<Number, string>())
             .ContainsKey(formNumber)
-            ? $"{GetArticle(Gender!.Value, formCase, formNumber)} {NounForms[formCase][formNumber]}"
+            ? $"{GetArticle(Gender, formCase, formNumber)} {NounForms[formCase][formNumber]}"
             : "-";
 
-    public static string? GetArticle(Gender gender, Case formCase, Number formNumber)
+    public static string? GetArticle(Gender? gender, Case formCase, Number formNumber)
         => formCase switch {
             Case.Nominative => formNumber switch {
                 Number.Singular => gender switch {
@@ -206,11 +204,16 @@ public class GermanWord : DataModel<GermanWord> {
 
         if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
             VerbForms = words.wiki.VerbForms;
+        } else {
+            VerbForms = null;
         }
 
         if (Meanings?.Any(m => m.Type == WordType.Noun) == true) {
             Gender = words.wiki.Gender;
             NounForms = words.wiki.NounForms;
+        } else {
+            Gender = null;
+            NounForms = null;
         }
 
         Etymology ??= dwds.Etymology;

@@ -92,10 +92,6 @@ public class EnWiktionaryClient {
                         case "#":
                         case "##":
                             if (meaning != null) {
-                                if (meaning.Examples.Count == 0) {
-                                    meaning.Examples = null;
-                                }
-
                                 word.Meanings.Add(meaning);
                             }
 

@@ -84,12 +84,13 @@ public class DeWiktionaryClient {
                                 break;
 
                             case WordType.Noun:
-                                word.Gender ??= wordTypeNode.Id.Split(",")[1] switch {
+                                word.Gender ??= wordTypeNode.Id.Split(",")[^1] switch {
                                     "_m" => Gender.Masculine,
                                     "_f" => Gender.Feminine,
                                     "_n" => Gender.Neuter,
-                                    _ => null // Should not happen.
+                                    _ => null // Should be plural.
                                 };
+
                                 break;
                         }
                     }
