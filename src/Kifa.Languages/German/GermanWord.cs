@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa.Languages.Dwds;
 using Kifa.Service;
 using NLog;
 
@@ -156,7 +157,8 @@ public class GermanWord : DataModel<GermanWord> {
             _ => null
         };
 
-    protected (GermanWord wiki, GermanWord enWiki, GermanWord duden, GermanWord dwds) GetWords() {
+    protected (GermanWord wiki, GermanWord enWiki, GermanWord duden, DwdsGermanWord? dwds)
+        GetWords() {
         var wiki = new GermanWord();
         try {
             wiki = new DeWiktionaryClient().GetWord(Id);
@@ -173,7 +175,7 @@ public class GermanWord : DataModel<GermanWord> {
 
         var duden = new DudenClient().GetWord(Id);
 
-        var dwds = new DwdsClient().GetWord(Id);
+        var dwds = DwdsGermanWord.Client.Get(Id);
 
         return (wiki, enWiki, duden, dwds);
     }
@@ -185,17 +187,20 @@ public class GermanWord : DataModel<GermanWord> {
     }
 
     protected void FillWithData(
-        (GermanWord wiki, GermanWord enWiki, GermanWord duden, GermanWord dwds) words) {
+        (GermanWord wiki, GermanWord enWiki, GermanWord duden, DwdsGermanWord? dwds) words) {
         var (wiki, enWiki, duden, dwds) = words;
         Pronunciation = wiki.Pronunciation;
 
         PronunciationAudioLinks = new List<GermanWord> {
                 duden,
-                wiki,
-                dwds
+                wiki
             }.Select(word => word.PronunciationAudioLinks).ExceptNull()
             .SelectMany(pronunciationLinks => pronunciationLinks)
             .ToDictionary(item => item.Key, item => item.Value);
+
+        if (dwds?.AudioLinks is { Count: > 0 }) {
+            PronunciationAudioLinks[Source.Dwds] = dwds.AudioLinks;
+        }
 
         Meanings = enWiki.Meanings;
 
