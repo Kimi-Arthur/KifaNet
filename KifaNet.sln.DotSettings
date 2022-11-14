@@ -52,6 +52,27 @@ public $string$ $PropertyName$ {
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AB0505E8614A3249AF2A2AA87B3D5481/Shortcut/@EntryValue">pron</s:String>
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AB0505E8614A3249AF2A2AA87B3D5481/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AB0505E8614A3249AF2A2AA87B3D5481/Text/@EntryValue">public $TYPE$ $NAME$ { get; set; } = new();</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D315E802A1E90642B856EB95C22D804C/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D315E802A1E90642B856EB95C22D804C/Field/=Container/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D315E802A1E90642B856EB95C22D804C/Field/=Container/Expression/@EntryValue">spacestounderstrokes(Name)</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D315E802A1E90642B856EB95C22D804C/Field/=Container/Order/@EntryValue">1</s:Int64>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D315E802A1E90642B856EB95C22D804C/Field/=Name/Expression/@EntryValue">getFileNameWithoutExtension()</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D315E802A1E90642B856EB95C22D804C/Text/@EntryValue">public class $Name$ : DataModel {
+    public const string ModelId = "$Container$";
+
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient&lt;$Name$&gt; {
+    }
+
+    public class RestServiceClient : KifaServiceRestClient&lt;$Name$&gt;, ServiceClient {
+    }
+
+    #endregion
+
+}</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Kifa/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Memrise/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Pimix/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
