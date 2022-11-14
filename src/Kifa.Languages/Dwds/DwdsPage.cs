@@ -58,11 +58,14 @@ public class DwdsPage : DataModel {
         var doc = new HtmlDocument();
         doc.LoadHtml(response.GetString());
 
+        doc.DocumentNode
+            .SelectNodes("//script | //p[. = 'Weitere Wörterbücher'] | " +
+                         "//p[. = 'Weitere Wörterbücher']/following-sibling::*")
+            ?.ForEach(n => n.Remove());
 
         PageContent = BrowsingContext.New(Configuration.Default).OpenAsync(req
-            => req.Content(doc.DocumentNode.SelectSingleNode("//main").OuterHtml)).Result.ToHtml(
-            new MinifyMarkupFormatter {
-            });
+                => req.Content(doc.DocumentNode.SelectSingleNode("//main").OuterHtml)).Result
+            .ToHtml(new MinifyMarkupFormatter());
     }
 
     void FillNeighbouringPages() {
