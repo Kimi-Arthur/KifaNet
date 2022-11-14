@@ -93,6 +93,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 Link(ex.TargetId, data.Id);
 
                 data = Retrieve(data.Id);
+
                 // New data is written in Link. No need to save more.
                 return false;
             } catch (NoNeedToFillException) {
@@ -103,10 +104,10 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 return false;
             } catch (UnableToFillException ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with a predefined error.");
-                throw;
+                return false;
             } catch (Exception ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with an unexpected error.");
-                throw;
+                return false;
             }
 
             data.Metadata ??= new DataMetadata();
