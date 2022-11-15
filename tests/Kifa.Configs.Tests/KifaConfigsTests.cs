@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Xunit;
+using YamlDotNet.Core;
 
 namespace Kifa.Configs.Tests;
 
@@ -41,6 +42,7 @@ public class KifaConfigsTests {
 
     [Fact]
     public void ConfigureIntListPropertyTest() {
+        Assert.Equal(1, Constants.MajorVersion);
         var properties = KifaConfigs.GetAllProperties();
         var config = @"Kifa.Configs.Tests.KifaConfigsTests:
   IntListConfig:

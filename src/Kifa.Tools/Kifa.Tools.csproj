@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
@@ -9,8 +9,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tools" />
   </ItemGroup>
 </Project>

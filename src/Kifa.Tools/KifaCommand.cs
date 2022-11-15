@@ -52,10 +52,7 @@ public abstract partial class KifaCommand {
     static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
     public static void Initialize() {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
-            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
-
-        KifaConfigs.LoadFromSystemConfigs();
+        KifaConfigs.Init();
     }
 
     static Target ConsoleTarget = new ColoredConsoleTarget("console") {
