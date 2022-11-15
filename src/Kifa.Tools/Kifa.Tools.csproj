@@ -10,4 +10,7 @@
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tools" />
+  </ItemGroup>
 </Project>
