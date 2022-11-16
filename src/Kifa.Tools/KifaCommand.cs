@@ -55,91 +55,95 @@ public abstract partial class KifaCommand {
         KifaConfigs.Init();
     }
 
-    static Target ConsoleTarget = new ColoredConsoleTarget("console") {
-        ErrorStream = true,
-        Layout =
-            @"${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}",
-        RowHighlightingRules = {
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Trace",
-                ForegroundColor = ConsoleOutputColor.Gray
+    static Target ConsoleTarget
+        => new ColoredConsoleTarget("console") {
+            ErrorStream = true,
+            Layout =
+                @"${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}",
+            RowHighlightingRules = {
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Trace",
+                    ForegroundColor = ConsoleOutputColor.Gray
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Debug",
+                    ForegroundColor = ConsoleOutputColor.White
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Info",
+                    ForegroundColor = ConsoleOutputColor.Green
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Warn",
+                    ForegroundColor = ConsoleOutputColor.Yellow
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Error",
+                    ForegroundColor = ConsoleOutputColor.Magenta
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Fatal",
+                    ForegroundColor = ConsoleOutputColor.Red
+                }
             },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Debug",
-                ForegroundColor = ConsoleOutputColor.White
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Info",
-                ForegroundColor = ConsoleOutputColor.Green
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Warn",
-                ForegroundColor = ConsoleOutputColor.Yellow
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Error",
-                ForegroundColor = ConsoleOutputColor.Magenta
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Fatal",
-                ForegroundColor = ConsoleOutputColor.Red
+            WordHighlightingRules = {
+                new ConsoleWordHighlightingRule {
+                    Regex = "^[^ ]* ",
+                    CompileRegex = true,
+                    ForegroundColor = ConsoleOutputColor.DarkGray
+                }
             }
-        },
-        WordHighlightingRules = {
-            new ConsoleWordHighlightingRule {
-                Regex = "^[^ ]* ",
-                CompileRegex = true,
-                ForegroundColor = ConsoleOutputColor.DarkGray
-            }
-        }
-    };
+        };
 
-    static Target ConsoleFullTarget = new ColoredConsoleTarget("console_full") {
-        ErrorStream = true,
-        Layout = @"${pad:padding=1:fixedLength=true:inner=${level}} " +
-                 @"${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${callsite}:${callsite-linenumber} " +
-                 @"${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}",
-        RowHighlightingRules = {
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Trace",
-                ForegroundColor = ConsoleOutputColor.Gray
+    static Target ConsoleFullTarget
+        => new ColoredConsoleTarget("console_full") {
+            ErrorStream = true,
+            Layout = @"${pad:padding=1:fixedLength=true:inner=${level}} " +
+                     @"${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${callsite}:${callsite-linenumber} " +
+                     @"${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}",
+            RowHighlightingRules = {
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Trace",
+                    ForegroundColor = ConsoleOutputColor.Gray
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Debug",
+                    ForegroundColor = ConsoleOutputColor.White
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Info",
+                    ForegroundColor = ConsoleOutputColor.Green
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Warn",
+                    ForegroundColor = ConsoleOutputColor.Yellow
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Error",
+                    ForegroundColor = ConsoleOutputColor.Magenta
+                },
+                new ConsoleRowHighlightingRule {
+                    Condition = "level == LogLevel.Fatal",
+                    ForegroundColor = ConsoleOutputColor.Red
+                }
             },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Debug",
-                ForegroundColor = ConsoleOutputColor.White
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Info",
-                ForegroundColor = ConsoleOutputColor.Green
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Warn",
-                ForegroundColor = ConsoleOutputColor.Yellow
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Error",
-                ForegroundColor = ConsoleOutputColor.Magenta
-            },
-            new ConsoleRowHighlightingRule {
-                Condition = "level == LogLevel.Fatal",
-                ForegroundColor = ConsoleOutputColor.Red
+            WordHighlightingRules = {
+                new ConsoleWordHighlightingRule {
+                    Regex = "^([^ ]* ){3}",
+                    CompileRegex = true,
+                    ForegroundColor = ConsoleOutputColor.DarkGray
+                }
             }
-        },
-        WordHighlightingRules = {
-            new ConsoleWordHighlightingRule {
-                Regex = "^([^ ]* ){3}",
-                CompileRegex = true,
-                ForegroundColor = ConsoleOutputColor.DarkGray
-            }
-        }
-    };
+        };
 
-    static Target FileFullTarget = new FileTarget("file_full") {
-        FileName =
-            LogPath + @"/${appdomain:format={1\}}.${date:format=yyyyMMddHHmmss:cached=true}.log",
-        Layout =
-            @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
-    };
+    static Target FileFullTarget
+        => new FileTarget("file_full") {
+            FileName =
+                LogPath +
+                @"/${appdomain:format={1\}}.${date:format=yyyyMMddHHmmss:cached=true}.log",
+            Layout =
+                @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
+        };
 
     static void ConfigureLogger(bool? fullConsole = null) {
         LogManager.Configuration = new LoggingConfiguration();
