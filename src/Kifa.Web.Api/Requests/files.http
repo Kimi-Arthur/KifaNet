@@ -2,8 +2,8 @@ POST {{server}}/api/files/$list_folder
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
-folder: "/Downloads/bilibili/盖世豪侠段飞-108809784"
-recursive: true
+Folder: "/Anime/名探偵コナン (1996)"
+Recursive: true
 
 ###
 

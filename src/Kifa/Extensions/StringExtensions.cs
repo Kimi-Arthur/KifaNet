@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace Kifa;
 
 public static class StringExtensions {
-    static readonly Regex NumberPattern = new(@"\d+");
+    static readonly Regex NumberPattern = new(@"\d+", RegexOptions.ECMAScript);
 
     static readonly Dictionary<string, long> SymbolMap = "KMGTPEZY".Select(x => x.ToString())
         .Prepend("").Select((value, index) => (value, factor: 1L << (10 * index)))
