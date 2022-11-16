@@ -268,12 +268,14 @@ class GenerateCommand : KifaFileCommand {
 
     static List<(string id, List<AssDialogue> content, List<AssStyle> styles)>
         GetAssSubtitles(KifaFile parent, string baseName)
-        => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass").Select(file => {
-            var document = AssDocument.Parse(file.OpenRead());
-            return (file.BaseName.Substring(baseName.Length + 1),
-                document.Sections.OfType<AssEventsSection>().First().Events.OfType<AssDialogue>()
-                    .ToList(), document.Sections.OfType<AssStylesSection>().First().Styles);
-        }).ToList();
+        => parent.List(ignoreFiles: false, pattern: $"{baseName}.*.ass")
+            .Where(file => !file.BaseName.EndsWith(".default")).Select(file => {
+                var document = AssDocument.Parse(file.OpenRead());
+                return (file.BaseName.Substring(baseName.Length + 1),
+                    document.Sections.OfType<AssEventsSection>().First().Events
+                        .OfType<AssDialogue>().ToList(),
+                    document.Sections.OfType<AssStylesSection>().First().Styles);
+            }).ToList();
 
     static List<(string id, List<AssDialogue> content)> GetBilibiliChats(KifaFile parent,
         string baseName) {
