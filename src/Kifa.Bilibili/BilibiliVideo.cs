@@ -109,18 +109,15 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     public override DateTimeOffset? Fill() {
         try {
-            if (FillWithBilibili()) {
-                return Date.Zero;
-            }
-
-            Logger.Debug($"Unable to find video {Id} from bilibili API.");
+            FillWithBilibili();
+            return DateTimeOffset.Now + TimeSpan.FromDays(365);
         } catch (Exception e) {
             Logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
         }
 
         try {
             if (FillWithBiliplus()) {
-                return Date.Zero;
+                return DateTimeOffset.Now + TimeSpan.FromDays(365);
             }
 
             Logger.Debug($"Unable to find video {Id} from biliplus API.");
@@ -129,9 +126,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
 
         try {
-            if (!FillWithBiliplusCache()) {
-                Logger.Debug($"Unable to find video {Id} from biliplus cache.");
-            }
+            FillWithBiliplusCache();
+            return DateTimeOffset.Now + TimeSpan.FromDays(365);
         } catch (Exception e) {
             Logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
         }
@@ -139,7 +135,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return Date.Zero;
     }
 
-    bool FillWithBilibili() {
+    void FillWithBilibili() {
         var data = new VideoRpc().Invoke(Id).Data;
         var tags = new VideoTagRpc().Invoke(Id).Data;
         Title = data.Title;
@@ -169,8 +165,6 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         Stats.ReplyCount = stat.Reply;
         Stats.ShareCount = stat.Share;
         Stats.LikeCount = stat.Like;
-
-        return true;
     }
 
     bool FillWithBiliplus() {
@@ -247,7 +241,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         return true;
     }
 
-    bool FillWithBiliplusCache() {
+    void FillWithBiliplusCache() {
         var data = new BiliplusVideoCacheRpc().Invoke(Id).Data;
         var info = data.Info;
         Title = info.Title;
@@ -269,8 +263,6 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         Stats.CoinCount = info.Coins;
         Stats.FavoriteCount = info.Favorites;
         Stats.ReplyCount = info.Review;
-
-        return true;
     }
 
     public AssDocument GenerateAssDocument() {
