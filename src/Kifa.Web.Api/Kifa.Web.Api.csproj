@@ -33,16 +33,4 @@
     <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj" />
     <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Update="..\..\resources\NLog.config">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\resources\NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>NLog.config</Link>
-    </None>
-  </ItemGroup>
 </Project>
