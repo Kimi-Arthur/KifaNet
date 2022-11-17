@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Service;
