@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
     <Description>Utility to download from sky.ch.</Description>
-    <Copyright>Copyright © 2022 Kimi Arthur</Copyright>
+    <Copyright>Copyright © 2022 Kimi-Arthur</Copyright>
     <PackageTags>Kifa SkyChDownloader skyx</PackageTags>
     <Authors>Kimi-Arthur</Authors>
     <Nullable>enable</Nullable>

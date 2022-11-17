@@ -9,14 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NLog" Version="4.6.7" />
+    <PackageReference Include="NLog" Version="4.6.7"/>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\resources\NLog.config">
+    <None Update="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>NLog.config</Link>
     </None>
   </ItemGroup>
-
 </Project>

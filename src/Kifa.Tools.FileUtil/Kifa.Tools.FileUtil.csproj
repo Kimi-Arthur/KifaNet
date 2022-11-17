@@ -9,9 +9,9 @@
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
     <Description>Utility to manage files.</Description>
-    <Copyright>Copyright © 2021 Kimi Arthur</Copyright>
-    <PackageTags>Kifa</PackageTags>
-    <Authors>Kimi Arthur</Authors>
+    <Copyright>Copyright © 2021 Kimi-Arthur</Copyright>
+    <PackageTags>Kifa FileUtil filex</PackageTags>
+    <Authors>Kimi-Arthur</Authors>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
