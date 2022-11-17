@@ -1,37 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <ToolCommandName>skyx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>3.0.4</Version>
+    <Version>4.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
-    <Description>Utility to manage get Sky download link.</Description>
+    <Description>Utility to download from sky.ch.</Description>
     <Copyright>Copyright © 2022 Kimi Arthur</Copyright>
-    <PackageTags>Kifa</PackageTags>
-    <Authors>KimiArthur</Authors>
+    <PackageTags>Kifa SkyChDownloader skyx</PackageTags>
+    <Authors>Kimi-Arthur</Authors>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1"/>
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj" />
-    <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj" />
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj"/>
+    <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj"/>
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
   </ItemGroup>
-
   <ItemGroup>
-    <None Include="..\..\resources\NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Link>NLog.config</Link>
-    </None>
-    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
-
 </Project>
