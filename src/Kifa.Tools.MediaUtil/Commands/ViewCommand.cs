@@ -32,14 +32,14 @@ public class ViewCommand : KifaCommand {
     [Option('h', "height", HelpText = "Display height of the view.")]
     public string? Height { get; set; } = DefaultHeight;
 
-    static readonly HashSet<string> ImageExtensions = new() {
+    public static HashSet<string> ImageExtensions { get; set; } = new() {
         "png",
         "jpg",
         "bmp",
         "pdf"
     };
 
-    static readonly HashSet<string> VideoExtensions = new() {
+    public static HashSet<string> VideoExtensions { get; set; } = new() {
         "mp4",
         "mkv",
         "webm",
