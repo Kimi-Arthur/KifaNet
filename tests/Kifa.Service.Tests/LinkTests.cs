@@ -11,15 +11,15 @@ public class LinkTests {
     DataB data = new DataB {
         Id = "id",
         AList = new List<Link<DataA>> {
-            new(new DataA {
+            new DataA {
                 Id = "10",
                 MyValue = "b"
-            }),
-            new("12")
+            },
+            "12"
         },
         AItem = "15",
         ADict = new Dictionary<string, Link<DataA>> {
-            { "very", new Link<DataA>("good") }
+            { "very", "good" }
         }
     };
 

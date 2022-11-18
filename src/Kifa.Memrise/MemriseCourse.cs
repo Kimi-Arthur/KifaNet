@@ -114,7 +114,7 @@ public class MemriseCourse : DataModel<MemriseCourse> {
                         word.FillAudios();
                     }
 
-                    Words.Add(word.Data[Columns["German"]], new Link<MemriseWord>(word));
+                    Words.Add(word.Data[Columns["German"]], word);
                     WordClient.Set(word);
                 }
             }, (ex, index) => {

@@ -188,7 +188,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         => List().Values.AsParallel().Select(file => {
             if (file.Locations.Count > 0) {
                 var locationsFromServer = file.Locations
-                    .Where(l => new FileLocation(l.Key).Server == fromServer).ToList();
+                    .Where(l => ((FileLocation) l.Key).Server == fromServer).ToList();
                 if (locationsFromServer.Count == 0) {
                     return new KifaActionResult {
                         Status = KifaActionStatus.OK,
@@ -197,9 +197,8 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
                 }
 
                 var message = string.Join("\n", locationsFromServer.Select(location => {
-                    var newLocation = new FileLocation(location.Key) {
-                        Server = toServer
-                    };
+                    var newLocation = (FileLocation) location.Key;
+                    newLocation.Server = toServer;
 
                     file.Locations.Remove(location.Key);
                     file.Locations[newLocation.ToString()] = Kifa.Max(location.Value,
