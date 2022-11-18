@@ -11,19 +11,7 @@ public partial class Language : JsonSerializable {
 
     public string ToJson() => Code;
 
-    Language() {
-    }
-
-    public Language(string id) {
-        var lang = All[id];
-        Name = lang.Name;
-        NativeName = lang.NativeName;
-        Code = lang.Code;
-        Code3 = lang.Code3;
-        Code3T = lang.Code3T;
-    }
-
-    public static implicit operator Language(string data) => All.GetValueOrDefault(data, Unknown);
+    public static implicit operator Language(string id) => All.GetValueOrDefault(id, Unknown);
 
     public override int GetHashCode() => Code.GetHashCode();
 

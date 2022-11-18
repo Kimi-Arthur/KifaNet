@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Kifa;
 
 public partial class Region : JsonSerializable {
@@ -6,16 +8,7 @@ public partial class Region : JsonSerializable {
 
     public string ToJson() => Name;
 
-    Region() {
-    }
-
-    public Region(string id) {
-        var region = All[id];
-        Name = region.Name;
-        Code = region.Code;
-    }
-
-    public static implicit operator Region(string data) => All[data];
+    public static implicit operator Region(string id) => All.GetValueOrDefault(id, Unknown);
 
     public override int GetHashCode() => Code.GetHashCode();
 

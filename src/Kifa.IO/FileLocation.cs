@@ -59,19 +59,19 @@ public class FileLocation : JsonSerializable {
 
     static readonly Regex LocationPattern = new(@"^([^:]+):([^/]*)(/.*)$");
 
-    public FileLocation(string id) {
+    public static implicit operator FileLocation(string id) {
         var match = LocationPattern.Match(id);
         if (!match.Success) {
             throw new ArgumentException($"Location id '{id}' not conforming location pattern.",
                 nameof(id));
         }
 
-        ServerType = match.Groups[1].Value;
-        ServerId = match.Groups[2].Value;
-        Path = match.Groups[3].Value;
+        return new FileLocation {
+            ServerType = match.Groups[1].Value,
+            ServerId = match.Groups[2].Value,
+            Path = match.Groups[3].Value
+        };
     }
-
-    public static implicit operator FileLocation(string data) => new(data);
 
     public override string ToString() => ToJson();
 

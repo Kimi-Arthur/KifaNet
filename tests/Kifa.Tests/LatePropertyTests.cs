@@ -8,9 +8,10 @@ namespace Kifa.Tests;
 public class JsonType : JsonSerializable {
     public string Value { get; set; }
 
-    public JsonType(string value) {
-        Value = value;
-    }
+    public static implicit operator JsonType(string value)
+        => new() {
+            Value = value
+        };
 
     public string ToJson() => Value;
 }
@@ -76,9 +77,9 @@ public class LatePropertyTests {
                 new LateClass {
                     EnumProperty = EnumType.ValueA,
                     LateEnumProperty = EnumType.ValueA,
-                    LateJsonProperty = new JsonType("bcd"),
+                    LateJsonProperty = "bcd",
                     LateStringProperty = "abc",
-                    JsonProperty = new JsonType("hid"),
+                    JsonProperty = "hid",
                     NullableStringProperty = "nullok",
                     StringProperty = "ok",
                     ListProperty = new List<string> {
@@ -98,10 +99,10 @@ public class LatePropertyTests {
             new object[] {
                 new LateClass {
                     EnumProperty = EnumType.Default,
-                    LateJsonProperty = new JsonType(""),
+                    LateJsonProperty = "",
                     LateStringProperty = "",
                     LateEnumProperty = EnumType.Default,
-                    JsonProperty = new JsonType(""),
+                    JsonProperty = "",
                     NullableStringProperty = ""
                 },
                 "{\"json_property\":\"\",\"late_json_property\":\"\",\"nullable_string_property\":\"\"}"
@@ -128,8 +129,8 @@ public class LatePropertyTests {
                 new LateClass {
                     EnumProperty = EnumType.Default,
                     LateEnumProperty = EnumType.Default,
-                    // LateJsonProperty = new JsonType(""),
-                    JsonProperty = new JsonType(""),
+                    // LateJsonProperty = "",
+                    JsonProperty = "",
                     LateStringProperty = ""
                 }
             },
@@ -137,8 +138,8 @@ public class LatePropertyTests {
                 new LateClass {
                     EnumProperty = EnumType.Default,
                     // LateEnumProperty = EnumType.Default,
-                    LateJsonProperty = new JsonType(""),
-                    JsonProperty = new JsonType(""),
+                    LateJsonProperty = "",
+                    JsonProperty = "",
                     LateStringProperty = ""
                 }
             },
@@ -146,8 +147,8 @@ public class LatePropertyTests {
                 new LateClass {
                     EnumProperty = EnumType.Default,
                     LateEnumProperty = EnumType.Default,
-                    LateJsonProperty = new JsonType(""),
-                    JsonProperty = new JsonType(""),
+                    LateJsonProperty = "",
+                    JsonProperty = "",
                     // LateStringProperty = ""
                 }
             }
@@ -173,7 +174,7 @@ public class LatePropertyTests {
             => JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
         data.LateStringProperty = "";
         Assert.Equal("", data.LateStringProperty);
-        data.LateJsonProperty = new JsonType("");
+        data.LateJsonProperty = "";
         data.LateEnumProperty = EnumType.Default;
         Assert.Equal("{\"late_json_property\":\"\"}",
             JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
