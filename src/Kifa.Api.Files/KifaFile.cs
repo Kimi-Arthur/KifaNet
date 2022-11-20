@@ -11,7 +11,6 @@ using Kifa.Cloud.Swisscom;
 using Kifa.IO;
 using Kifa.IO.FileFormats;
 using Kifa.IO.StorageClients;
-using Kifa.Service;
 using NLog;
 
 namespace Kifa.Api.Files;
@@ -499,7 +498,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 return;
             }
 
-            var partialInfo = file.CalculateInfo(FileProperties.Size | FileProperties.SliceMd5);
+            var partialInfo = file.CalculateInfo(FileProperties.Size);
             var compareResults =
                 partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
