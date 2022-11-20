@@ -18,7 +18,7 @@ public class VerifiableStream : Stream {
 
     static readonly HashAlgorithm SHA256Hasher = new SHA256CryptoServiceProvider();
 
-    readonly FileInformation info;
+    readonly FileInformation? info;
 
     byte[]? lastBlock;
 
@@ -26,7 +26,7 @@ public class VerifiableStream : Stream {
 
     Stream stream;
 
-    public VerifiableStream(Stream stream, FileInformation info) {
+    public VerifiableStream(Stream stream, FileInformation? info) {
         this.stream = stream;
         this.info = info;
     }
@@ -190,7 +190,7 @@ public class VerifiableStream : Stream {
             MaxDegreeOfParallelism = 3
         }, transformer => transformer());
 
-        if (info?.BlockMd5.Count > 0) {
+        if (info != null && info.BlockMd5.Count > 0) {
             result = true;
             var expectedMd5 = info.BlockMd5[blockId];
 
@@ -200,7 +200,7 @@ public class VerifiableStream : Stream {
             }
         }
 
-        if (info?.BlockSha1.Count > 0) {
+        if (info != null && info?.BlockSha1.Count > 0) {
             result ??= true;
             var expectedSha1 = info.BlockSha1[blockId];
 
@@ -210,7 +210,7 @@ public class VerifiableStream : Stream {
             }
         }
 
-        if (info?.BlockSha256.Count > 0) {
+        if (info != null && info?.BlockSha256.Count > 0) {
             result ??= true;
             var expectedSha256 = info.BlockSha256[blockId];
 

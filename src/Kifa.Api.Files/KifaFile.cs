@@ -62,8 +62,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         return knownClients[spec];
     }
 
-    FileInformation? fileInfo;
-
     public bool SimpleMode { get; set; }
 
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
@@ -117,7 +115,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         }
 
         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
-        this.fileInfo = fileInfo;
+        FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
 
         Client = GetClient(segments[0]);
 
@@ -166,8 +164,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     KifaFileFormat FileFormat { get; }
 
-    public FileInformation? FileInfo
-        => fileInfo ??= SimpleMode ? new FileInformation() : FileInformation.Client.Get(Id);
+    public FileInformation? FileInfo { get; set; }
 
     public bool UseCache { get; set; }
 
@@ -566,12 +563,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public void Register(bool verified = false) {
         FileInformation.Client.AddLocation(Id, ToString(), verified);
-        fileInfo = null;
+        FileInfo = FileInformation.Client.Get(Id);
     }
 
     public void Unregister() {
         FileInformation.Client.RemoveLocation(Id, ToString());
-        fileInfo = null;
+        FileInfo = FileInformation.Client.Get(Id);
     }
 
     public bool IsCompatible(KifaFile other)

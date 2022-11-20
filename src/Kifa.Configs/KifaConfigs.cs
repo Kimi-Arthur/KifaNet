@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using NLog;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 
@@ -149,6 +150,11 @@ public static class KifaConfigs {
     }
 
     public static void Init(bool logEvents = false) {
+        // Workaround that YamlDotNet may fail to initialize Regex in TagDirective.
+        if (Constants.DefaultTagDirectives.Length != 2) {
+            Console.WriteLine("YamlDotNet is Broken.");
+        }
+
         loggingNeeded = logEvents;
         AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
             => LoadFromSystemConfigs(eventArgs.LoadedAssembly);
