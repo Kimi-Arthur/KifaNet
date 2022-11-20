@@ -51,7 +51,7 @@ class ExtractCommand : KifaCommand {
                      (s.Tags?.ContainsKey("title") ?? false ? $": {s.Tags["title"]}" : "") +
                      $" => {GetExtractedSubtitleFile(file, s)}");
 
-            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, selected.Choice));
+            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, selected.Value.Choice));
         }
 
         return LogSummary();

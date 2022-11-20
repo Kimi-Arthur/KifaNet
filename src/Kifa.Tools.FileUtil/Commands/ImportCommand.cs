@@ -102,20 +102,25 @@ class ImportCommand : KifaCommand {
                 var selected = SelectOne(validEpisodes,
                     e => $"{file} => {series.Format(e.Season, e.Episode).NormalizeFilePath()}{suffix}",
                     "mapping", startingIndex: 1, supportsSpecial: true);
-                if (selected.Special) {
+                if (selected == null) {
+                    Logger.Warn($"Ignored {file}.");
+                    continue;
+                }
+
+                var (choice, _, special) = selected.Value;
+                if (special) {
                     var newName = Confirm($"Confirm linking {file} to:",
-                        $"{series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}{suffix}");
+                        $"{series.Format(choice.Season, choice.Episode).NormalizeFilePath()}{suffix}");
                     FileInformation.Client.Link(file, newName);
                     if (Confirm(
-                            $"Remove info item {series.Format(selected.Choice.Season, selected.Choice.Episode).NormalizeFilePath()}?",
+                            $"Remove info item {series.Format(choice.Season, choice.Episode).NormalizeFilePath()}?",
                             false)) {
-                        MarkMatched(episodes, selected.Choice.Season, selected.Choice.Episode);
+                        MarkMatched(episodes, choice.Season, choice.Episode);
                     }
                 } else {
                     FileInformation.Client.Link(file,
-                        series.Format(selected.Choice.Season, selected.Choice.Episode)
-                            .NormalizeFilePath() + suffix);
-                    MarkMatched(episodes, selected.Choice.Season, selected.Choice.Episode);
+                        series.Format(choice.Season, choice.Episode).NormalizeFilePath() + suffix);
+                    MarkMatched(episodes, choice.Season, choice.Episode);
                 }
             } catch (InvalidChoiceException ex) {
                 Logger.Warn(ex, $"File {file} skipped.");

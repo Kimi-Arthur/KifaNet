@@ -9,9 +9,9 @@ public abstract partial class KifaCommand {
     static bool alwaysDefault;
     static int defaultIndex;
 
-    static readonly Regex ChoiceRegex = new Regex(@"^(\d*)([as]*)$");
+    static readonly Regex ChoiceRegex = new Regex(@"^(\d*)([asi]*)$");
 
-    public static (TChoice Choice, int Index, bool Special) SelectOne<TChoice>(
+    public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string> choiceToString = null,
         string choiceName = null, int startingIndex = 0, bool supportsSpecial = false) {
         var choiceStrings = choiceToString == null
@@ -54,6 +54,10 @@ public abstract partial class KifaCommand {
             : int.Parse(choiceText) - startingIndex;
 
         var flags = match.Groups[2].Value;
+
+        if (flags.Contains('i')) {
+            return null;
+        }
 
         if (flags.Contains('a')) {
             alwaysDefault = true;
