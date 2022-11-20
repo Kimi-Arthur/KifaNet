@@ -6,7 +6,7 @@ using Xunit;
 namespace Kifa.Tests;
 
 public class JsonType : JsonSerializable {
-    public string Value { get; set; }
+    public required string Value { get; set; }
 
     public static implicit operator JsonType(string value)
         => new() {
@@ -88,10 +88,10 @@ public class LatePropertyTests {
                         "f"
                     },
                     DictProperty = new Dictionary<string, string> {
-                        { "good", "bad" }
+                        { "Good", "Bad" }
                     }
                 },
-                "{\"dict_property\":{\"good\":\"bad\"},\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
+                "{\"dict_property\":{\"Good\":\"Bad\"},\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
                 "\"late_enum_property\":\"value_a\",\"late_json_property\":\"bcd\"," +
                 "\"late_string_property\":\"abc\",\"list_property\":[\"a\",\"d\",\"f\"]," +
                 "\"nullable_string_property\":\"nullok\",\"string_property\":\"ok\"}"

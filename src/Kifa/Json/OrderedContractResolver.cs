@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Serialization;
 
 namespace Kifa;
@@ -29,6 +28,10 @@ public class OrderedContractResolver : DefaultContractResolver {
 
         if (property.PropertyType == typeof(string)) {
             property.DefaultValue = "";
+        }
+
+        if (property.PropertyType?.IsEnum ?? false) {
+            property.DefaultValue = 0;
         }
 
         if (property.PropertyType?.IsGenericType ?? false) {

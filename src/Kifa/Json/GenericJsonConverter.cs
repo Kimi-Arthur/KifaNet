@@ -10,9 +10,14 @@ public class GenericJsonConverter : JsonConverter<JsonSerializable?> {
     }
 
     public override JsonSerializable? ReadJson(JsonReader reader, Type objectType,
-        JsonSerializable? existingValue, bool hasExistingValue, JsonSerializer serializer)
-        => throw new NotImplementedException();
+        JsonSerializable? existingValue, bool hasExistingValue, JsonSerializer serializer) {
+        var value = (string?) reader.Value;
+        if (value == null) {
+            return null;
+        }
 
-    // We will rely on type's implicit operator to deserialize.
-    public override bool CanRead => false;
+        return existingValue ??
+               objectType.GetMethod("op_Implicit", new[] { typeof(string) })
+                   ?.Invoke(null, new object?[] { value }) as JsonSerializable;
+    }
 }

@@ -25,6 +25,7 @@ public class BasicJsonTests {
 
     [Fact]
     public void EnumDictionaryKeySerializeTest() {
+        // Expected to fail.
         var v = JsonConvert.SerializeObject(Decoded, Defaults.JsonSerializerSettings);
         Assert.Equal(Encoded, v);
     }
