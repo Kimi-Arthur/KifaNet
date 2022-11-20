@@ -33,7 +33,9 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
 
     public string? Meaning { get; set; }
 
-    public string? CambridgeMeanings { get; set; }
+    public string? Cambridge { get; set; }
+
+    public string? Wiki { get; set; }
 
     public List<string>? Examples { get; set; }
 
@@ -53,12 +55,14 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
         Meaning ??= word.Meaning;
 
         var cambridge = CambridgeGlobalGermanWord.Client.Get(RootWord);
-        CambridgeMeanings = cambridge == null
+        Cambridge = cambridge == null
             ? ""
             : string.Join("; ",
                 cambridge.Entries
                     .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
                     .ExceptNull().Where(x => x != "").Distinct());
+
+        Wiki = string.Join("; ", word.Meanings.Select(m => m.Translation));
 
         return Date.Zero;
     }
