@@ -37,7 +37,7 @@ public class GoetheGermanWord : DataModel<GoetheGermanWord> {
 
     public string? Wiki { get; set; }
 
-    public List<string>? Examples { get; set; }
+    public List<string> Examples { get; set; } = new();
 
     [JsonIgnore]
     [YamlIgnore]

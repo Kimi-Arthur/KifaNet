@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using Kifa.Api.Files;
-using Kifa.Languages.Cambridge;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise.Api;
@@ -134,19 +133,11 @@ public class MemriseClient : IDisposable {
             };
         }
 
-        var cambridge = CambridgeGlobalGermanWord.Client.Get(word.RootWord);
-        var reference = cambridge == null
-            ? ""
-            : string.Join("; ",
-                cambridge.Entries
-                    .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
-                    .ExceptNull().Where(x => x != "").Distinct());
-
         Logger.Info($"{word.Id} => {rootWord.Id}");
 
         Logger.Debug($"Adding word in {Course.DatabaseUrl}:\n{word}\n{rootWord}");
 
-        var newData = GetDataFromWord(word, rootWord, reference);
+        var newData = GetDataFromWord(word, rootWord);
 
         var existingRow = Course.Words.GetValueOrDefault(word.Id)?.Data ?? GetExistingRow(word);
 
@@ -411,8 +402,7 @@ public class MemriseClient : IDisposable {
         return false;
     }
 
-    Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord,
-        string reference) {
+    Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord) {
         var data = new Dictionary<string, string> {
             { Course.Columns["German"], word.Id },
             { Course.Columns["English"], word.Meaning }
@@ -429,7 +419,9 @@ public class MemriseClient : IDisposable {
         data[Course.Columns["Pronunciation"]] =
             baseWord?.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
 
-        data[Course.Columns["Reference"]] = reference;
+        data[Course.Columns["Cambridge"]] = word.Cambridge ?? "";
+
+        data[Course.Columns["Wiki"]] = word.Wiki ?? "";
 
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
