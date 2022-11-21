@@ -43,3 +43,14 @@ Content-Type: application/json
   "from_server": "local:exs",
   "to_server": "local:kch"
 }
+
+###
+
+POST {{server}}/api/files/$add_location
+Content-Type: application/json
+
+{
+  "id": "/Downloads/TV Shows/Shitsuren.Chocolatier.1080p.HDTV.x264.AAC-MED/Shitsuren.Chocolatier.Ep01.1080p.HDTV.x264.AAC-MED.mkv",
+  "location": "local:1000",
+  "verified": true
+}

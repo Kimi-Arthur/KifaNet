@@ -40,6 +40,7 @@ public class OrderedContractResolver : DefaultContractResolver {
                     => (property.ValueProvider.GetValue(instance) as IList) is {
                         Count: > 0
                     };
+                property.DefaultValueHandling = DefaultValueHandling.Ignore;
             }
 
             if (property.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>)) {
@@ -47,6 +48,7 @@ public class OrderedContractResolver : DefaultContractResolver {
                     => (property.ValueProvider.GetValue(instance) as IDictionary) is {
                         Count: > 0
                     };
+                property.DefaultValueHandling = DefaultValueHandling.Ignore;
             }
         }
 
