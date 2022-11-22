@@ -4,6 +4,7 @@ using System.Linq;
 using AngleSharp;
 using AngleSharp.Dom;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.Languages.Cambridge;
 
@@ -26,12 +27,15 @@ public class CambridgeGlobalGermanWord : DataModel {
 
     public List<CambridgeGlobalGermanEntry> Entries { get; set; } = new();
 
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     const string PagePrefix = "german-english";
 
     public override DateTimeOffset? Fill() {
         var page = CambridgePage.Client.Get($"{PagePrefix}/{Id}");
         if (page == null) {
-            throw new UnableToFillException($"Raw page not found {PagePrefix}/{Id}.");
+            Logger.Error($"Raw page not found {PagePrefix}/{Id}.");
+            return DateTimeOffset.Now + TimeSpan.FromDays(365);
         }
 
         var document = BrowsingContext.New(Configuration.Default).OpenAsync(req
@@ -40,7 +44,8 @@ public class CambridgeGlobalGermanWord : DataModel {
             .FirstOrDefault(e => e.QuerySelector("#dataset_k-de-en-global") != null);
 
         if (root == null) {
-            throw new UnableToFillException("No GLOBAL element found on page.");
+            Logger.Error("No GLOBAL element found on page.");
+            return DateTimeOffset.Now + TimeSpan.FromDays(365);
         }
 
         var heads = root.GetElementsByClassName("normal-entry");
@@ -67,7 +72,7 @@ public class CambridgeGlobalGermanWord : DataModel {
             }
         }
 
-        return Date.Zero;
+        return DateTimeOffset.Now + TimeSpan.FromDays(365);
     }
 
     static WordType GetWordType(string text, IEnumerable<string> notes) {
