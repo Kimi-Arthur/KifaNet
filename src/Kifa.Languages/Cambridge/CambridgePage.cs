@@ -43,7 +43,8 @@ public class CambridgePage : DataModel {
             response.RequestMessage!.RequestUri!.ToString().RemoveAfter("?")[UrlPrefix.Length..];
 
         if (!IsValid(actualId)) {
-            throw new DataNotFoundException("Redirected to an invalid page.");
+            PageContent = "";
+            return;
         }
 
         if (actualId != RealId) {
