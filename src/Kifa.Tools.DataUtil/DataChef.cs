@@ -29,7 +29,7 @@ public interface DataChef {
             Event.ModelId => new DataChef<Event>(),
             Counter.ModelId => new DataChef<Counter>(),
             SwisscomAccount.ModelId => new DataChef<SwisscomAccount>(),
-            _ => null
+            _ => throw new Exception($"Invalid model id {modelId}")
         };
     }
 
@@ -64,7 +64,8 @@ public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataM
             => new FlowStyleScalarSequenceEmitter(next)).Build();
 
     static readonly ISerializer Serializer = new SerializerBuilder().WithIndentedSequences()
-        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).Build();
+        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull |
+                                        DefaultValuesHandling.OmitEmptyCollections).Build();
 
     public List<TDataModel> Load(string data) => Deserializer.Deserialize<List<TDataModel>>(data);
 
