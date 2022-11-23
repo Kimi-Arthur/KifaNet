@@ -12,6 +12,8 @@ namespace Kifa.Languages.Cambridge;
 public class CambridgeGlobalGermanWord : DataModel {
     public const string ModelId = "cambridge/german";
 
+    public override int CurrentVersion => 1;
+
     #region Clients
 
     public static ServiceClient Client { get; set; } = new RestServiceClient();
@@ -138,6 +140,11 @@ public class CambridgeGlobalGermanDefinition {
     public Dictionary<string, string> CrossReferences { get; set; } = new();
 
     public CambridgeGlobalGermanDefinition FillFromElement(IElement element) {
+        if (!element.ClassList.Contains("def-block")) {
+            throw new ArgumentException(
+                $"{nameof(element)} should be an element of class `def-block`.");
+        }
+
         Meaning = element.QuerySelector(".def-head > .def").GetSafeInnerText();
         var notesElement = element.QuerySelector(".def-head > .def-info");
         if (notesElement != null) {
