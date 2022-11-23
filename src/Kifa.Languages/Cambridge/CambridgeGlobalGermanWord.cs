@@ -59,20 +59,15 @@ public class CambridgeGlobalGermanWord : DataModel {
                                             "don't match unexpectedly.");
         }
 
-        Entries = new List<CambridgeGlobalGermanEntry>();
-
-        for (var i = 0; i < heads.Length; i++) {
-            var head = heads[i];
-            var headWord = head.QuerySelector(".di-title").GetSafeInnerText();
-            if (headWord == Id) {
-                var entry = new CambridgeGlobalGermanEntry();
-                entry.WordType = GetWordType(head.QuerySelector(".pos").GetSafeInnerText(),
-                    head.GetElementsByClassName("gram").Select(e => e.GetSafeInnerText()));
-                entry.Senses = bodies[i].GetElementsByClassName("sense-body")
-                    .Select(CambridgeGlobalGermanSense.FromElement).ToList();
-                Entries.Add(entry);
-            }
-        }
+        Entries = heads.Zip(bodies, (head, body) => (head, body))
+            .Where(entry => entry.head.QuerySelector(".di-title").GetSafeInnerText() == Id).Select(
+                entry => new CambridgeGlobalGermanEntry {
+                    WordType = GetWordType(entry.head.QuerySelector(".pos").GetSafeInnerText(),
+                        entry.head.GetElementsByClassName("gram")
+                            .Select(e => e.GetSafeInnerText())),
+                    Senses = entry.body.GetElementsByClassName("sense-body")
+                        .Select(CambridgeGlobalGermanSense.FromElement).ToList()
+                }).ToList();
 
         return DateTimeOffset.Now + TimeSpan.FromDays(365);
     }

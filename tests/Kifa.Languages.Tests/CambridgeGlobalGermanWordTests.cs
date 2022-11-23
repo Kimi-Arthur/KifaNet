@@ -80,6 +80,12 @@ public class CambridgeGlobalGermanWordTests {
                         }
                     }
                 }
+            },
+            new object[] {
+                "wo",
+                new CambridgeGlobalGermanWord {
+                    Id = "wo"
+                }
             }
         };
 
@@ -90,7 +96,9 @@ public class CambridgeGlobalGermanWordTests {
             Id = id
         };
 
-        Assert.Equal(Date.Zero, word.Fill());
+        word.Fill();
+        expectedWord = CambridgeGlobalGermanWord.Client.Get(id);
+        expectedWord.Metadata = null;
 
         Assert.Equal(expectedWord, word);
     }
