@@ -27,12 +27,9 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     protected BaseKifaServiceClient() {
         var typeInfo = typeof(TDataModel);
         ModelId = (string) typeInfo.GetField("ModelId")?.GetValue(null)!;
-        Properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(property => property.CanRead && property.CanWrite).ToList();
     }
 
     public string ModelId { get; }
-    protected List<PropertyInfo> Properties { get; }
 
     public abstract SortedDictionary<string, TDataModel> List();
     public abstract TDataModel? Get(string id, bool refresh = false);
