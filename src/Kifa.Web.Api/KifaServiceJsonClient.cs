@@ -226,17 +226,17 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Delete(string id) {
         var item = Retrieve(id);
         if (item == null) {
-            return new KifaActionResult {
+            return LogAndReturn(new KifaActionResult {
                 Status = KifaActionStatus.BadRequest,
                 Message = $"Cannot find item {ModelId}/{id}"
-            };
+            });
         }
 
         if (item.IsVirtualItem()) {
-            return new KifaActionResult {
+            return LogAndReturn(new KifaActionResult {
                 Status = KifaActionStatus.BadRequest,
                 Message = $"Cannot delete virtual item {ModelId}/{id}."
-            };
+            });
         }
 
         if (item.Metadata?.Linking != null) {

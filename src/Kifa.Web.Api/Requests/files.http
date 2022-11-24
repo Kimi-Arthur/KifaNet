@@ -54,3 +54,14 @@ Content-Type: application/json
   "location": "local:1000",
   "verified": true
 }
+
+###
+
+DELETE {{server}}/api/files/%2FTV%20Shows%2FCanada%2FMayday%20%282003%29%2FSeason%204%20%282007%29%2FMayday%20S04E01%20Miracle%20Escape%20%28Air%20France%20Flight%20358%29.mp4
+
+### link
+
+POST {{server}}/api/files/%5E
+Content-Type: application/json
+
+["/Downloads/TV Shows/空中浩劫/S04.第四季/S04E01.第1集.法国航空358号.2005[中字].mp4", "abc"]
