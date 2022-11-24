@@ -13,15 +13,22 @@ public abstract partial class KifaCommand {
 
     public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string> choiceToString = null,
-        string choiceName = null, int startingIndex = 0, bool supportsSpecial = false) {
+        string choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
+        bool reverse = false) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
 
         choiceName ??= "items";
 
-        for (var i = 0; i < choices.Count; i++) {
-            Console.WriteLine($"[{i + startingIndex}] {choiceStrings[i]}");
+        if (reverse) {
+            for (var i = choices.Count - 1; i >= 0; i--) {
+                Console.WriteLine($"[{i + startingIndex}] {choiceStrings[i]}");
+            }
+        } else {
+            for (var i = 0; i < choices.Count; i++) {
+                Console.WriteLine($"[{i + startingIndex}] {choiceStrings[i]}");
+            }
         }
 
         Console.WriteLine(

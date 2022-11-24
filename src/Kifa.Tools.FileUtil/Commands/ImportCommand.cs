@@ -101,7 +101,7 @@ class ImportCommand : KifaCommand {
             try {
                 var selected = SelectOne(validEpisodes,
                     e => $"{file} => {series.Format(e.Season, e.Episode).NormalizeFilePath()}{suffix}",
-                    "mapping", startingIndex: 1, supportsSpecial: true);
+                    "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
                 if (selected == null) {
                     Logger.Warn($"Ignored {file}.");
                     continue;
