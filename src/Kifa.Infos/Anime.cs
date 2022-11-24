@@ -49,7 +49,7 @@ public class Anime : DataModel<Anime>, Formattable {
     public (Season Season, Episode Episode)? Parse(string formatted) {
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"/Anime/{Title} \({AirDate.Year}\)/Season (\d+) (.*) (\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+                $@"/Anime/{Title} \({AirDate.Year}\)/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
             "single_season" => $@"/Anime/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
             _ => null
         };

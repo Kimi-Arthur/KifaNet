@@ -101,7 +101,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
     public (Season Season, Episode Episode)? Parse(string formatted) {
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"/TV Shows/{Title} \({AirDate.Year}\)/Season (\d+) (.*) (\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+                $@"/TV Shows/{Title} \({AirDate.Year}\)/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
             "single_season" => $@"/TV Shows/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
             _ => null
         };
