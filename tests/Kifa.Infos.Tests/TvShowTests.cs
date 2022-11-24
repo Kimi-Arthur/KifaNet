@@ -81,11 +81,22 @@ public class TvShowTests {
     }
 
     [Fact]
-    public void Get() {
+    public void GetTest() {
         var show = Client.Get("信長協奏曲");
         var s = JsonConvert.SerializeObject(show, Defaults.JsonSerializerSettings);
         Assert.Equal("信長協奏曲", show.Id);
         Assert.Equal(Region.Japan, show.Region);
         Assert.Equal(Language.Japanese, show.Language);
+    }
+
+    [Fact]
+    public void ParseTest() {
+        var show = Client.Get("Mayday");
+        var parsed =
+            show.Parse(
+                "/TV Shows/Canada/Mayday (2003)/Season 1 (2003)/Mayday S01E01 Racing the storm.mp4");
+
+        Assert.Equal(1, parsed.Value.Season.Id);
+        Assert.Equal(1, parsed.Value.Episode.Id);
     }
 }
