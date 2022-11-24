@@ -1,1 +1,1 @@
-datax sync animes.yaml
+datax sync tv_shows.yaml

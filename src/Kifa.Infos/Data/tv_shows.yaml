@@ -1,6 +1,6 @@
 # tv_shows
 
-- Id: 逃げるは恥だが役に立つ
-  TmdbId: '68293'
-  Language: Japanese
-  PatternId: single_season
+- Id: Mayday
+  TmdbId: '90'
+  Language: English
+  PatternId: multi_season
