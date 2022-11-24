@@ -92,8 +92,8 @@ class GetChatCommand : KifaFileCommand {
         }
 
         var selected = SelectOne(chats,
-            c => $"{file} => {c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
-            "danmaku").Value;
+            c => $"{c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
+            "danmaku", startingIndex: 1, reverse: true).Value;
 
         chats.RemoveAt(selected.Index);
 
