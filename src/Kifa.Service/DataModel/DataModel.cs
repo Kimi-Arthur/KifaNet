@@ -93,7 +93,7 @@ public abstract class DataModel {
     }
 
     public override string ToString()
-        => JsonConvert.SerializeObject(this, Defaults.PrettyJsonSerializerSettings);
+        => JsonConvert.SerializeObject(this, KifaJsonSerializerSettings.Pretty);
 
     public override int GetHashCode() => ToString().GetHashCode();
 

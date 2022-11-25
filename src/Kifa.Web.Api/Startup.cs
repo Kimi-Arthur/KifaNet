@@ -36,7 +36,7 @@ public class Startup {
             options.OutputFormatters.Add(new YamlOutputFormatter(new YamlFormatterOptions()));
 
             var prettyJsonFormatter =
-                new NewtonsoftJsonOutputFormatter(Defaults.PrettyJsonSerializerSettings,
+                new NewtonsoftJsonOutputFormatter(KifaJsonSerializerSettings.Pretty,
                     ArrayPool<char>.Shared, options);
             prettyJsonFormatter.SupportedMediaTypes.Clear();
             prettyJsonFormatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("*/*"));

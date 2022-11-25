@@ -115,11 +115,11 @@ public class LatePropertyTests {
         var copy = data.Clone();
 
         Assert.Equal(serialized,
-            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+            JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default));
         Assert.Equal(serialized,
-            JsonConvert.SerializeObject(copy, Defaults.JsonSerializerSettings));
-        Assert.Equal(JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
-            JsonConvert.SerializeObject(copy, Defaults.JsonSerializerSettings));
+            JsonConvert.SerializeObject(copy, KifaJsonSerializerSettings.Default));
+        Assert.Equal(JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
+            JsonConvert.SerializeObject(copy, KifaJsonSerializerSettings.Default));
     }
 
     public static IEnumerable<object[]> FailingData
@@ -159,7 +159,7 @@ public class LatePropertyTests {
     public void
         LatePropertyWithMissingFieldsShouldThrowWhenSerializingExceptionTest(LateClass data) {
         var exception = Assert.Throws<JsonSerializationException>(()
-            => JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+            => JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default));
         Assert.IsType<NullReferenceException>(exception.InnerException);
     }
 
@@ -171,12 +171,12 @@ public class LatePropertyTests {
 
         Assert.Throws<NullReferenceException>(() => data.LateStringProperty);
         Assert.Throws<JsonSerializationException>(()
-            => JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+            => JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default));
         data.LateStringProperty = "";
         Assert.Equal("", data.LateStringProperty);
         data.LateJsonProperty = "";
         data.LateEnumProperty = EnumType.Default;
         Assert.Equal("{\"late_json_property\":\"\"}",
-            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+            JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default));
     }
 }

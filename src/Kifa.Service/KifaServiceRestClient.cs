@@ -43,7 +43,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             var request = new HttpRequestMessage(new HttpMethod("PATCH"),
                 $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(data.Id)}") {
                 Content = new StringContent(
-                    JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                    JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
                     Encoding.UTF8, "application/json")
             };
 
@@ -56,7 +56,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 var request = new HttpRequestMessage(new HttpMethod("PATCH"),
                     $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                        JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
                         Encoding.UTF8, "application/json")
                 };
 
@@ -72,7 +72,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             var request = new HttpRequestMessage(HttpMethod.Post,
                 $"{KifaServiceRestClient.ServerAddress}/{ModelId}/{Uri.EscapeDataString(data.Id)}") {
                 Content = new StringContent(
-                    JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                    JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
                     Encoding.UTF8, "application/json")
             };
 
@@ -85,7 +85,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 var request = new HttpRequestMessage(HttpMethod.Post,
                     $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings),
+                        JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
                         Encoding.UTF8, "application/json")
                 };
 
@@ -122,7 +122,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                         $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
                         // Not supported by HTTP spec.
                         Content = new StringContent(
-                            JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
+                            JsonConvert.SerializeObject(ids, KifaJsonSerializerSettings.Default),
                             Encoding.UTF8, "application/json")
                     };
 
@@ -140,7 +140,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     Content = new StringContent(JsonConvert.SerializeObject(new List<string> {
                         targetId,
                         linkId
-                    }, Defaults.JsonSerializerSettings), Encoding.UTF8, "application/json")
+                    }, KifaJsonSerializerSettings.Default), Encoding.UTF8, "application/json")
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -163,7 +163,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 var request = new HttpRequestMessage(HttpMethod.Delete,
                     $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
                     Content = new StringContent(
-                        JsonConvert.SerializeObject(ids, Defaults.JsonSerializerSettings),
+                        JsonConvert.SerializeObject(ids, KifaJsonSerializerSettings.Default),
                         Encoding.UTF8, "application/json")
                 };
 
@@ -183,7 +183,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
             if (parameters != null) {
                 request.Content = new StringContent(
-                    JsonConvert.SerializeObject(parameters, Defaults.JsonSerializerSettings),
+                    JsonConvert.SerializeObject(parameters, KifaJsonSerializerSettings.Default),
                     Encoding.UTF8, "application/json");
             }
 

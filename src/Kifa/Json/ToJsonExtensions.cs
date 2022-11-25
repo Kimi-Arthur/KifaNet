@@ -4,5 +4,5 @@ namespace Kifa;
 
 public static class ToJsonExtensions {
     public static string ToPrettyJson<T>(this T data)
-        => JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings);
+        => JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Pretty);
 }

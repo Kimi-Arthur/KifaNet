@@ -80,7 +80,7 @@ public class AnimeTests {
     [Fact]
     public void Get() {
         var show = Client.Get("咲-Saki-");
-        var s = JsonConvert.SerializeObject(show, Defaults.JsonSerializerSettings);
+        var s = JsonConvert.SerializeObject(show, KifaJsonSerializerSettings.Default);
         Assert.Equal("咲-Saki-", show.Id);
         Assert.Equal("全国編", show.Seasons[2].Title);
     }

@@ -83,7 +83,7 @@ public class TvShowTests {
     [Fact]
     public void GetTest() {
         var show = Client.Get("信長協奏曲");
-        var s = JsonConvert.SerializeObject(show, Defaults.JsonSerializerSettings);
+        var s = JsonConvert.SerializeObject(show, KifaJsonSerializerSettings.Default);
         Assert.Equal("信長協奏曲", show.Id);
         Assert.Equal(Region.Japan, show.Region);
         Assert.Equal(Language.Japanese, show.Language);

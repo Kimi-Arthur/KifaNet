@@ -26,13 +26,13 @@ public class LinkTests {
     [Fact]
     public void LinkSerializationTest() {
         Assert.Equal(serialized,
-            JsonConvert.SerializeObject(data, Defaults.JsonSerializerSettings));
+            JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default));
     }
 
     [Fact]
     public void LinkDeserializationTest() {
         Assert.Equal(data,
-            JsonConvert.DeserializeObject<DataB>(serialized, Defaults.JsonSerializerSettings));
+            JsonConvert.DeserializeObject<DataB>(serialized, KifaJsonSerializerSettings.Default));
     }
 
     [Fact]

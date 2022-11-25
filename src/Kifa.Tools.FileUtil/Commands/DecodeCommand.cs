@@ -26,7 +26,7 @@ class DecodeCommand : KifaCommand {
                 var target = file.Parent.GetFile(file.BaseName + ".json");
                 target.Delete();
                 target.Write(JsonConvert.SerializeObject(messages,
-                    Defaults.PrettyJsonSerializerSettings));
+                    KifaJsonSerializerSettings.Pretty));
             }
         }
 

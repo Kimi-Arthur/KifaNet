@@ -37,7 +37,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             .Where(p => !p.FullName.StartsWith(virtualItemPrefix)).AsParallel().Select(i => {
                 using var reader = i.OpenText();
                 return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
-                    Defaults.JsonSerializerSettings);
+                    KifaJsonSerializerSettings.Default);
             }).ExceptNull()
             .Where(i => i.Id != null && !i.Id.StartsWith(DataModel.VirtualItemPrefix))
             .ToDictionary(i => i.Id!, i => i);
@@ -190,6 +190,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             };
 
             data = original.Merge(data);
+
             Fill(ref data);
             WriteTarget(data);
         });
@@ -335,14 +336,14 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         Logger.Trace($"Read: {data ?? "null"}");
         return data == null
             ? null
-            : JsonConvert.DeserializeObject<TDataModel>(data, Defaults.JsonSerializerSettings);
+            : JsonConvert.DeserializeObject<TDataModel>(data, KifaJsonSerializerSettings.Default);
     }
 
     void Write(TDataModel data) {
         var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{data.Id.Trim('/')}.json";
         MakeParent(path);
         File.WriteAllText(path,
-            $"{JsonConvert.SerializeObject(data, Defaults.PrettyJsonSerializerSettings)}\n");
+            $"{JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Pretty)}\n");
     }
 
     void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null) {

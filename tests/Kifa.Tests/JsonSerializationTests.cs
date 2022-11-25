@@ -21,7 +21,7 @@ public class JsonSerializationTests {
     [Fact]
     public void BasicDeserializationTest() {
         var x = JsonConvert.DeserializeObject<Dictionary<string, MyJson>>("{\"good\":\"ok2\"}",
-            Defaults.JsonSerializerSettings);
+            KifaJsonSerializerSettings.Default);
 
         Assert.Equal("ok2", x["good"].Code);
         Assert.Equal("ok", x["good"].Code2);
@@ -32,7 +32,7 @@ public class JsonSerializationTests {
         var x = JsonConvert.SerializeObject(new MyJson {
             Code = "123",
             Code2 = "23"
-        }, Defaults.JsonSerializerSettings);
+        }, KifaJsonSerializerSettings.Default);
 
         Assert.Equal("\"123\"", x);
     }

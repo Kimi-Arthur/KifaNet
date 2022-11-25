@@ -26,13 +26,13 @@ public class BasicJsonTests {
     [Fact]
     public void EnumDictionaryKeySerializeTest() {
         // Expected to fail.
-        var v = JsonConvert.SerializeObject(Decoded, Defaults.JsonSerializerSettings);
+        var v = JsonConvert.SerializeObject(Decoded, KifaJsonSerializerSettings.Default);
         Assert.Equal(Encoded, v);
     }
 
     [Fact]
     public void EnumDictionaryKeyDeserializeTest() {
-        var v = JsonConvert.DeserializeObject<DataClass>(Encoded, Defaults.JsonSerializerSettings);
+        var v = JsonConvert.DeserializeObject<DataClass>(Encoded, KifaJsonSerializerSettings.Default);
         Assert.Equal(2, v.Dict.Count);
     }
 }

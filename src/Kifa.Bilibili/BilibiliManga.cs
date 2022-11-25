@@ -83,8 +83,8 @@ public class BilibiliManga : DataModel {
 
         for (var i = 0; i < Episodes.Count; i++) {
             JsonConvert.PopulateObject(
-                JsonConvert.SerializeObject(newEpisodes[i], Defaults.JsonSerializerSettings),
-                Episodes[i], Defaults.JsonSerializerSettings);
+                JsonConvert.SerializeObject(newEpisodes[i], KifaJsonSerializerSettings.Default),
+                Episodes[i], KifaJsonSerializerSettings.Default);
         }
 
         Episodes.AddRange(newEpisodes.Skip(Episodes.Count));
