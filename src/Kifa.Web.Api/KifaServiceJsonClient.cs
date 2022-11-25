@@ -182,6 +182,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             Logger.Trace($"Update {ModelId}/{data.Id}: {data}");
             // If it's new data, we should try Fill it.
             var original = Retrieve(data.Id) ?? new TDataModel {
+                Id = data.Id,
                 Metadata = new DataMetadata {
                     Freshness = new FreshnessMetadata {
                         NextRefresh = Date.Zero

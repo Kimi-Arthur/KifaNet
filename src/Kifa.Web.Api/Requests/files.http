@@ -64,4 +64,33 @@ DELETE {{server}}/api/files/%2FTV%20Shows%2FCanada%2FMayday%20%282003%29%2FSeaso
 POST {{server}}/api/files/%5E
 Content-Type: application/json
 
-["/Downloads/TV Shows/空中浩劫/S04.第四季/S04E01.第1集.法国航空358号.2005[中字].mp4", "abc"]
+[
+  "/Downloads/TV Shows/空中浩劫/S04.第四季/S04E01.第1集.法国航空358号.2005[中字].mp4",
+  "abc"
+]
+
+### PATCH
+
+PATCH {{server}}/api/files/%2FDownloads%2FAnime%2FDetective%20Conan%20The%20Bride%20of%20Halloween%20%5BBDMV%5D%2F%E5%90%8D%E6%8E%A2%E5%81%B5%E3%82%B3%E3%83%8A%E3%83%B3%20%E3%83%8F%E3%83%AD%E3%82%A6%E3%82%A3%E3%83%B3%E3%81%AE%E8%8A%B1%E5%AB%81%20DISC1%2FBDMV%2FAUXDATA%2Fsound.bdmv
+Content-Type: application/json
+
+{
+  "adler32": "B4900DBE",
+  "block_md5": [
+    "7DFAB6BA795813C068390CCCDBE48FAC"
+  ],
+  "block_sha1": [
+    "80B06E2A3590B90095E8CFE867B4254F02441AF3"
+  ],
+  "block_sha256": [
+    "289A410CC806D6335255CC38059E55FF844B59537F686AA0463406C525FD504C"
+  ],
+  "crc32": "6658C819",
+  "encryption_key": "8A96215A97354D6D8DA300F4897E9F39BFA822B437F1F21C9ADA0282E3FE943A",
+  "id": "/Downloads/Anime/Detective Conan The Bride of Halloween [BDMV]/名探偵コナン ハロウィンの花嫁 DISC1/BDMV/AUXDATA/sound.bdmv",
+  "md5": "7DFAB6BA795813C068390CCCDBE48FAC",
+  "sha1": "80B06E2A3590B90095E8CFE867B4254F02441AF3",
+  "sha256": "289A410CC806D6335255CC38059E55FF844B59537F686AA0463406C525FD504C",
+  "size": 499288,
+  "slice_md5": "9224281C021D49271AF8662A91573766"
+}
