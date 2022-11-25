@@ -87,7 +87,13 @@ public class MemriseClient : IDisposable {
 
     IEnumerable<string> AddWords(IEnumerable<GoetheGermanWord> words) {
         foreach (var word in words) {
-            var addedWord = AddWord(word);
+            var rootWord = WordClient.Get(word.RootWord);
+            if (rootWord == null) {
+                Logger.Warn("Failed to get root word.");
+                continue;
+            }
+
+            var addedWord = AddWord(word, rootWord);
             Logger.LogResult(addedWord, $"Upload word {word}");
             if (addedWord.Status == KifaActionStatus.OK) {
                 var added = addedWord.Response!;
@@ -124,15 +130,7 @@ public class MemriseClient : IDisposable {
             $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordIds)?.Success}");
     }
 
-    public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word) {
-        var rootWord = WordClient.Get(word.RootWord);
-        if (rootWord == null) {
-            return new KifaActionResult<MemriseWord> {
-                Message = "Failed to get root word.",
-                Status = KifaActionStatus.Error
-            };
-        }
-
+    public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, GermanWord rootWord) {
         Logger.Info($"{word.Id} => {rootWord.Id}");
 
         Logger.Debug($"Adding word in {Course.DatabaseUrl}:\n{word}\n{rootWord}");

@@ -14,27 +14,43 @@ public class MemriseClientTests {
         CourseName = "goethe-zertifikat-wortliste",
         DatabaseId = "6985350",
         Levels = new Dictionary<string, string> {
-            { "A1", "13341759" },
+            { "test", "13341759" },
             { "A2", "13341763" },
             { "B1", "13341765" }
+        },
+        Columns = new Dictionary<string, string> {
+            { "German", "1" },
+            { "English", "2" },
+            { "Audios", "7" },
+            { "Etymology", "9" },
+            { "Form", "10" },
+            { "Pronunciation", "11" },
+            { "Cambridge", "12" },
+            { "Examples", "8" },
+            { "Wiki", "13" }
         }
     };
 
     [Test]
     public void AddWordTest() {
         KifaConfigs.LoadFromSystemConfigs();
+        TestCourse.Fill();
         using var client = new MemriseClient {
             Course = TestCourse
         };
+
+        var id = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss");
         var goetheGermanWord = new GoetheGermanWord {
-            Id = "W" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
+            Id = id,
             Meaning = "M" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss"),
             Examples = new List<string> {
                 "abc",
                 "bcd"
             }
         };
+
         var germanWord = new GermanWord {
+            Id = id,
             PronunciationAudioLinks = new Dictionary<Source, HashSet<string>> {
                 {
                     Source.Duden, new HashSet<string> {
@@ -56,16 +72,18 @@ public class MemriseClientTests {
             }
         };
 
-        var result = client.AddWord(goetheGermanWord);
+        var result = client.AddWord(goetheGermanWord, germanWord);
 
         Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
 
-        client.AddWord(goetheGermanWord);
+        client.AddWord(goetheGermanWord, germanWord);
     }
 
     [Test]
     public void UpdateWordTest() {
         KifaConfigs.LoadFromSystemConfigs();
+
+        TestCourse.Fill();
         using var client = new MemriseClient {
             Course = TestCourse
         };
@@ -76,7 +94,11 @@ public class MemriseClientTests {
                 "abc" + new Random().Next(),
                 "bcd" + new Random().Next()
             }
+        }, new GermanWord {
+            Id = "drehen"
         });
+
+        // TODO: Check updated word.
 
         Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
     }
