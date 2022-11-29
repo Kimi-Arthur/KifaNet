@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Kifa.Configs;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
@@ -9,32 +10,15 @@ using NUnit.Framework;
 namespace Kifa.Memrise.Tests;
 
 public class MemriseClientTests {
-    static readonly MemriseCourse TestCourse = new() {
-        CourseId = "5946002",
-        CourseName = "goethe-zertifikat-wortliste",
-        DatabaseId = "6985350",
-        Levels = new Dictionary<string, string> {
-            { "test", "13341759" },
-            { "A2", "13341763" },
-            { "B1", "13341765" }
-        },
-        Columns = new Dictionary<string, string> {
-            { "German", "1" },
-            { "English", "2" },
-            { "Audios", "7" },
-            { "Etymology", "9" },
-            { "Form", "10" },
-            { "Pronunciation", "11" },
-            { "Cambridge", "12" },
-            { "Examples", "8" },
-            { "Wiki", "13" }
-        }
-    };
+    public MemriseCourse TestCourse { get; set; }
+
+    public MemriseClientTests() {
+        KifaConfigs.LoadFromSystemConfigs();
+        TestCourse = MemriseCourse.Client.Get("test-course");
+    }
 
     [Test]
     public void AddWordTest() {
-        KifaConfigs.LoadFromSystemConfigs();
-        TestCourse.Fill();
         using var client = new MemriseClient {
             Course = TestCourse
         };
@@ -81,9 +65,8 @@ public class MemriseClientTests {
 
     [Test]
     public void UpdateWordTest() {
-        KifaConfigs.LoadFromSystemConfigs();
-
-        TestCourse.Fill();
+        var newExample1 = "abc" + new Random().Next();
+        var newExample2 = "bcd" + new Random().Next();
         using var client = new MemriseClient {
             Course = TestCourse
         };
@@ -91,24 +74,26 @@ public class MemriseClientTests {
             Id = "drehen",
             Meaning = "to turn",
             Examples = new List<string> {
-                "abc" + new Random().Next(),
-                "bcd" + new Random().Next()
+                newExample1,
+                newExample2
             }
         }, new GermanWord {
             Id = "drehen"
         });
-
-        // TODO: Check updated word.
-
         Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
+
+        TestCourse.Fill();
+        var word = TestCourse.Words.First(w => w.Key == "drehen").Value;
+        Assert.AreEqual($"1. {newExample1} 2. {newExample2}",
+            word.Data.Data[TestCourse.Columns["Examples"]]);
     }
 
     [Test]
     public void AddWordListTest() {
-        KifaConfigs.LoadFromSystemConfigs();
         using var client = new MemriseClient {
             Course = TestCourse
         };
+
         var result = client.AddWordList(new GoetheWordList {
             Id = "test",
             Words = new List<string> {
@@ -117,12 +102,11 @@ public class MemriseClientTests {
                 "außen"
             }
         });
+        Assert.AreEqual(KifaActionStatus.OK, result.Status, result.Message);
     }
 
     [Test]
     public void GetAllWordsTest() {
-        KifaConfigs.LoadFromSystemConfigs();
-        TestCourse.Fill();
         Assert.NotZero(TestCourse.Words.Count);
     }
 }
