@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using Kifa.Service;
+using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.Japanese;
