@@ -6,6 +6,7 @@ using Kifa.Cloud.Swisscom;
 using Kifa.Infos;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
+using Kifa.Languages.Japanese;
 using Kifa.Memrise;
 using Kifa.Music;
 using Kifa.Service;
@@ -29,6 +30,7 @@ public interface DataChef {
             Event.ModelId => new DataChef<Event>(),
             Counter.ModelId => new DataChef<Counter>(),
             SwisscomAccount.ModelId => new DataChef<SwisscomAccount>(),
+            BiaoriJapaneseWord.ModelId => new DataChef<BiaoriJapaneseWord>(),
             _ => throw new Exception($"Invalid model id {modelId}")
         };
     }
@@ -45,7 +47,7 @@ public interface DataChef {
     KifaActionResult Delete(List<string> ids);
 }
 
-public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataModel>, new() {
+public class DataChef<TDataModel> : DataChef where TDataModel : DataModel, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static KifaServiceClient<TDataModel> client;
@@ -53,7 +55,7 @@ public class DataChef<TDataModel> : DataChef where TDataModel : DataModel<TDataM
     static KifaServiceClient<TDataModel> Client
         => client ??= new KifaServiceRestClient<TDataModel>();
 
-    // TODO: Should not rely implementation detail. 
+    // TODO: Should not rely on implementation detail. 
     public string ModelId => Client.ModelId;
 
     static readonly IDeserializer Deserializer =
