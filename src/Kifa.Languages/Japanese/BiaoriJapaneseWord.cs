@@ -21,7 +21,7 @@ public class BiaoriJapaneseWord : DataModel {
 
     public string Kana { get; set; } = "";
     public string Chinese { get; set; } = "";
-    public WordType Type { get; set; } = WordType.Unknown;
+    public string Type { get; set; } = "/";
 
     public int Book { get; set; }
     public int Unit { get; set; }
