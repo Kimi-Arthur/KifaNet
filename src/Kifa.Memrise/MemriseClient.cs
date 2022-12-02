@@ -330,9 +330,8 @@ public class MemriseClient : IDisposable {
     }
 
     string? FillBasicWord(Dictionary<string, string> newData)
-        => new AddWordRpc {
-            HttpClient = HttpClient
-        }.Invoke(Course.DatabaseId, Course.BaseUrl, newData)?.Thing.Id.ToString();
+        => HttpClient.Call(new AddWordRpc(Course.DatabaseId, Course.BaseUrl, newData))?.Thing.Id
+            .ToString();
 
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
         var updatedFields = 0;

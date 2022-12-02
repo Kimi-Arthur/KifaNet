@@ -11,7 +11,7 @@ public abstract class KifaParameterizedRpc<TResponse> : KifaRpc<TResponse> {
 
     public abstract string UrlPattern { get; }
 
-    public virtual HttpMethod Method { get; } = HttpMethod.Get;
+    public abstract HttpMethod Method { get; }
 
     public virtual Dictionary<string, string> Headers { get; } = new();
 

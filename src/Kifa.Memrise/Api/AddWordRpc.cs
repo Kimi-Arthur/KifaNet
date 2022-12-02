@@ -5,41 +5,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Memrise.Api;
 
-public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
-    public class AddWordResponse {
-        public bool? Success { get; set; }
-        public Thing Thing { get; set; }
-        public string RenderedThing { get; set; }
-    }
-
-    public class Thing {
-        public long Id { get; set; }
-        public long PoolId { get; set; }
-        public Dictionary<string, Column> Columns { get; set; }
-        public Attributes Attributes { get; set; }
-    }
-
-    public class Attributes {
-    }
-
-    public class Column {
-        public List<object> Alts { get; set; }
-        public string Val { get; set; }
-        public List<object> Choices { get; set; }
-        public Distractors Distractors { get; set; }
-        public string Kind { get; set; }
-        public List<string> Accepted { get; set; }
-        public Attributes TypingCorrects { get; set; }
-    }
-
-    public class Distractors {
-        public List<object> Typing { get; set; }
-        public List<object> Tapping { get; set; }
-        public List<object> MultipleChoice { get; set; }
-        public List<object> Audio { get; set; }
-        public List<object> Default { get; set; }
-    }
-
+public class AddWordRpc : KifaJsonParameterizedRpc<AddWordResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {
@@ -53,11 +19,45 @@ public class AddWordRpc : JsonRpc<AddWordRpc.AddWordResponse> {
         new KeyValuePair<string, string>("pool_id", "{databaseId}")
     };
 
-    public AddWordResponse? Invoke(string databaseId, string referer,
-        Dictionary<string, string> data)
-        => Invoke(new Dictionary<string, string> {
+    public AddWordRpc(string databaseId, string referer, Dictionary<string, string> data) {
+        parameters = new Dictionary<string, string> {
             { "databaseId", databaseId },
             { "referer", referer },
             { "data", JsonConvert.SerializeObject(data) }
-        });
+        };
+    }
+}
+
+public class AddWordResponse {
+    public bool? Success { get; set; }
+    public Thing Thing { get; set; }
+    public string RenderedThing { get; set; }
+}
+
+public class Thing {
+    public long Id { get; set; }
+    public long PoolId { get; set; }
+    public Dictionary<string, Column> Columns { get; set; }
+    public Attributes Attributes { get; set; }
+}
+
+public class Attributes {
+}
+
+public class Column {
+    public List<object> Alts { get; set; }
+    public string Val { get; set; }
+    public List<object> Choices { get; set; }
+    public Distractors Distractors { get; set; }
+    public string Kind { get; set; }
+    public List<string> Accepted { get; set; }
+    public Attributes TypingCorrects { get; set; }
+}
+
+public class Distractors {
+    public List<object> Typing { get; set; }
+    public List<object> Tapping { get; set; }
+    public List<object> MultipleChoice { get; set; }
+    public List<object> Audio { get; set; }
+    public List<object> Default { get; set; }
 }
