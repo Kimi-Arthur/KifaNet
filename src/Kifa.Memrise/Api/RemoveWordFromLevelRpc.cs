@@ -4,11 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Memrise.Api;
 
-public class RemoveWordFromLevelRpc : JsonRpc<RemoveWordFromLevelRpc.RemoveWordFromLevelResponse> {
-    public class RemoveWordFromLevelResponse {
-        public bool? Success { get; set; }
-    }
-
+public sealed class RemoveWordFromLevelRpc : KifaJsonParameterizedRpc<RemoveWordFromLevelResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {
@@ -22,10 +18,15 @@ public class RemoveWordFromLevelRpc : JsonRpc<RemoveWordFromLevelRpc.RemoveWordF
         new KeyValuePair<string, string>("thing_id", "{thing_id}")
     };
 
-    public RemoveWordFromLevelResponse? Invoke(string referer, string levelId, string thingId)
-        => Invoke(new Dictionary<string, string> {
+    public RemoveWordFromLevelRpc(string referer, string levelId, string thingId) {
+        parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_id", thingId }
-        });
+        };
+    }
+}
+
+public class RemoveWordFromLevelResponse {
+    public bool? Success { get; set; }
 }

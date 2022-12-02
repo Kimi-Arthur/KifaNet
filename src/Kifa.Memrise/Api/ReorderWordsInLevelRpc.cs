@@ -5,11 +5,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Memrise.Api;
 
-public class ReorderWordsInLevelRpc : JsonRpc<ReorderWordsInLevelRpc.ReorderWordsInLevelResponse> {
-    public class ReorderWordsInLevelResponse {
-        public bool? Success { get; set; }
-    }
-
+public sealed class ReorderWordsInLevelRpc : KifaJsonParameterizedRpc<ReorderWordsInLevelResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {
@@ -23,10 +19,15 @@ public class ReorderWordsInLevelRpc : JsonRpc<ReorderWordsInLevelRpc.ReorderWord
         new KeyValuePair<string, string>("thing_ids", "{thing_ids}")
     };
 
-    public ReorderWordsInLevelResponse? Invoke(string referer, string levelId, List<string> thingIds)
-        => Invoke(new Dictionary<string, string> {
+    public ReorderWordsInLevelRpc(string referer, string levelId, List<string> thingIds) {
+        parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_ids", JsonConvert.SerializeObject(thingIds) }
-        });
+        };
+    }
+}
+
+public class ReorderWordsInLevelResponse {
+    public bool? Success { get; set; }
 }

@@ -4,7 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Memrise.Api;
 
-public class RemoveAudioRpc : JsonRpc<RemoveAudioRpc.RemoveAudioResponse> {
+public sealed class RemoveAudioRpc : KifaJsonParameterizedRpc<RemoveAudioResponse> {
     public override string UrlPattern { get; } =
         "https://app.memrise.com/ajax/thing/column/delete_from/";
 
@@ -21,17 +21,17 @@ public class RemoveAudioRpc : JsonRpc<RemoveAudioRpc.RemoveAudioResponse> {
         new KeyValuePair<string, string>("cell_type", "column")
     };
 
-    public class RemoveAudioResponse {
-        public bool Success { get; set; }
-        public string Rendered { get; set; }
-    }
-
-    public RemoveAudioResponse? Invoke(string referer, string thingId, string audioColumn,
-        string fileId)
-        => Invoke(new Dictionary<string, string> {
+    public RemoveAudioRpc(string referer, string thingId, string audioColumn, string fileId) {
+        parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "thing_id", thingId },
             { "audio_column", audioColumn },
             { "file_id", fileId }
-        });
+        };
+    }
+}
+
+public class RemoveAudioResponse {
+    public bool Success { get; set; }
+    public string Rendered { get; set; }
 }

@@ -4,12 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Memrise.Api;
 
-public class UploadAudioRpc : JsonRpc<UploadAudioRpc.UpdateAudioResponse> {
-    public class UpdateAudioResponse {
-        public bool? Success { get; set; }
-        public string Rendered { get; set; }
-    }
-
+public sealed class UploadAudioRpc : KifaJsonParameterizedRpc<UpdateAudioResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {
@@ -40,14 +35,21 @@ public class UploadAudioRpc : JsonRpc<UploadAudioRpc.UpdateAudioResponse> {
         ("audio", "f", "f.mp3")
     };
 
-    public UpdateAudioResponse? Invoke(string referer, string thingId, string cellId,
-        string csrfToken, byte[] audio)
-        => Invoke(new Dictionary<string, string> {
+    public UploadAudioRpc(string referer, string thingId, string cellId, string csrfToken,
+        byte[] audio) {
+        parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "thing_id", thingId },
             { "cell_id", cellId },
             { "csrf_token", csrfToken }
-        }, new Dictionary<string, byte[]> {
+        };
+        byteParameters = new Dictionary<string, byte[]> {
             { "audio", audio }
-        });
+        };
+    }
+}
+
+public class UpdateAudioResponse {
+    public bool? Success { get; set; }
+    public string Rendered { get; set; }
 }

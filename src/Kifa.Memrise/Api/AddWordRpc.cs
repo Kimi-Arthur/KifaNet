@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Memrise.Api;
 
-public class AddWordRpc : KifaJsonParameterizedRpc<AddWordResponse> {
+public sealed class AddWordRpc : KifaJsonParameterizedRpc<AddWordResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {

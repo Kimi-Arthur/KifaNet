@@ -4,11 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Memrise.Api;
 
-public class UpdateWordRpc : JsonRpc<UpdateWordRpc.UpdateWordResponse> {
-    public class UpdateWordResponse {
-        public bool? Success { get; set; }
-    }
-
+public sealed class UpdateWordRpc : KifaJsonParameterizedRpc<UpdateWordResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {
@@ -24,11 +20,16 @@ public class UpdateWordRpc : JsonRpc<UpdateWordRpc.UpdateWordResponse> {
         new KeyValuePair<string, string>("new_val", "{value}")
     };
 
-    public UpdateWordResponse? Invoke(string referer, string thingId, string cellId, string value)
-        => Invoke(new Dictionary<string, string> {
+    public UpdateWordRpc(string referer, string thingId, string cellId, string value) {
+        parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "thing_id", thingId },
             { "cell_id", cellId },
             { "value", value }
-        });
+        };
+    }
+}
+
+public class UpdateWordResponse {
+    public bool? Success { get; set; }
 }

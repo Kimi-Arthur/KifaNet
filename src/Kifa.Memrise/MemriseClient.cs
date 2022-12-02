@@ -105,9 +105,7 @@ public class MemriseClient : IDisposable {
     }
 
     void AddWordsToLevel(string levelId, List<string> wordIds) {
-        var rendered = new GetLevelRpc {
-            HttpClient = HttpClient
-        }.Invoke(Course.DatabaseUrl, levelId)?.Rendered;
+        var rendered = HttpClient.Call(new GetLevelRpc(Course.DatabaseUrl, levelId))?.Rendered;
         if (rendered == null) {
             throw new Exception($"Failed to get current words in level {levelId}.");
         }
@@ -118,16 +116,16 @@ public class MemriseClient : IDisposable {
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
             Logger.Debug(
-                $"Add word {wordId} to level {levelId}: {new AddWordToLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordId)?.Success}");
+                $"Add word {wordId} to level {levelId}: {HttpClient.Call(new AddWordToLevelRpc(Course.DatabaseUrl, levelId, wordId))?.Success}");
         }
 
         foreach (var wordId in existingThingIds.Except(wordIds)) {
             Logger.Debug(
-                $"Remove word {wordId} from level {levelId}: {new RemoveWordFromLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordId)?.Success}");
+                $"Remove word {wordId} from level {levelId}: {HttpClient.Call(new RemoveWordFromLevelRpc(Course.DatabaseUrl, levelId, wordId))?.Success}");
         }
 
         Logger.Debug(
-            $"Reorder words for {levelId}: {new ReorderWordsInLevelRpc { HttpClient = HttpClient }.Invoke(Course.DatabaseUrl, levelId, wordIds)?.Success}");
+            $"Reorder words for {levelId}: {HttpClient.Call(new ReorderWordsInLevelRpc(Course.DatabaseUrl, levelId, wordIds))?.Success}");
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, GermanWord rootWord) {
@@ -242,10 +240,8 @@ public class MemriseClient : IDisposable {
 
             Logger.Debug(
                 $"Uploading {audioFile} for {originalWord.Data["1"]} ({originalWord.Id}).");
-            new UploadAudioRpc {
-                HttpClient = HttpClient
-            }.Invoke(Course.DatabaseUrl, originalWord.Id, Course.Columns["Audios"], CsrfToken,
-                audioFile.ReadAsBytes());
+            HttpClient.Call(new UploadAudioRpc(Course.DatabaseUrl, originalWord.Id,
+                Course.Columns["Audios"], CsrfToken, audioFile.ReadAsBytes()));
             modified = true;
             Thread.Sleep(TimeSpan.FromSeconds(1));
         }
@@ -309,9 +305,8 @@ public class MemriseClient : IDisposable {
     }
 
     void RemoveAudio(string thingId, int fileId) {
-        var result = new RemoveAudioRpc {
-            HttpClient = HttpClient
-        }.Invoke(Course.BaseUrl, thingId, Course.Columns["Audios"], fileId.ToString())?.Success;
+        var result = HttpClient.Call(new RemoveAudioRpc(Course.BaseUrl, thingId,
+            Course.Columns["Audios"], fileId.ToString()))?.Success;
         Logger.Debug($"Result of removing file {fileId}: {result}");
     }
 
@@ -337,9 +332,8 @@ public class MemriseClient : IDisposable {
         var updatedFields = 0;
         foreach (var (dataKey, newValue) in newData) {
             if (!SameText(originalData.Data.GetValueOrDefault(dataKey), newValue)) {
-                new UpdateWordRpc {
-                    HttpClient = HttpClient
-                }.Invoke(Course.DatabaseUrl, originalData.Id, dataKey, newValue);
+                HttpClient.Call(new UpdateWordRpc(Course.DatabaseUrl, originalData.Id, dataKey,
+                    newValue));
                 updatedFields++;
             }
         }

@@ -4,11 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Memrise.Api;
 
-public class AddWordToLevelRpc : JsonRpc<AddWordToLevelRpc.AddWordToLevelResponse> {
-    public class AddWordToLevelResponse {
-        public bool? Success { get; set; }
-    }
-
+public sealed class AddWordToLevelRpc : KifaJsonParameterizedRpc<AddWordToLevelResponse> {
     public override HttpMethod Method { get; } = HttpMethod.Post;
 
     public override Dictionary<string, string> Headers { get; } = new() {
@@ -22,10 +18,15 @@ public class AddWordToLevelRpc : JsonRpc<AddWordToLevelRpc.AddWordToLevelRespons
         new KeyValuePair<string, string>("copy_thing_id", "{thing_id}")
     };
 
-    public AddWordToLevelResponse? Invoke(string referer, string levelId, string thingId)
-        => Invoke(new Dictionary<string, string> {
+    public AddWordToLevelRpc(string referer, string levelId, string thingId) {
+        parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_id", thingId }
-        });
+        };
+    }
+}
+
+public class AddWordToLevelResponse {
+    public bool? Success { get; set; }
 }
