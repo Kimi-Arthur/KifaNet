@@ -148,7 +148,6 @@ public class BilibiliMangaEpisode {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static readonly HttpClient BiliplusClient = BiliplusHttpClient.GetBiliplusClient();
 
     public void FillPages(string mangaId) {
         if (Pages.Count == PageCount &&
@@ -158,8 +157,8 @@ public class BilibiliMangaEpisode {
             return;
         }
 
-        Pages = BiliplusClient.Call(new BiliplusMangaEpisodeRpc(mangaId[2..], epid)).Select(
-            (p, index) => new BilibiliMangaPage {
+        Pages = HttpClients.BiliplusHttpClient.Call(new BiliplusMangaEpisodeRpc(mangaId[2..], epid))
+            .Select((p, index) => new BilibiliMangaPage {
                 Id = index + 1,
                 ImageId = p
             }).ToList();

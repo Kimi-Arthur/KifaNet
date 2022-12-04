@@ -47,14 +47,10 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static HttpClient? bilibiliClient;
-
     PartModeType partMode;
 
     public static KifaServiceClient<BilibiliVideo> Client
         => client ??= new KifaServiceRestClient<BilibiliVideo>();
-
-    public static string BilibiliCookies { get; set; }
 
     const int DefaultCodec = 7;
 
@@ -136,8 +132,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     void FillWithBilibili() {
-        var data = GetBilibiliClient().Call(new VideoRpc(Id))?.Data;
-        var tags = GetBilibiliClient().Call(new VideoTagRpc(Id))?.Data;
+        var data = HttpClients.BilibiliHttpClient.Call(new VideoRpc(Id))?.Data;
+        var tags = HttpClients.BilibiliHttpClient.Call(new VideoTagRpc(Id))?.Data;
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
@@ -359,7 +355,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         long? length = null;
         foreach (var l in link.links) {
             try {
-                length = GetBilibiliClient().GetContentLength(l);
+                length = HttpClients.BilibiliHttpClient.GetContentLength(l);
             } catch (HttpRequestException ex) {
                 Logger.Warn(ex, $"Not available: {l}");
                 continue;
@@ -393,7 +389,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
                 var request = new HttpRequestMessage(HttpMethod.Get, finalLink);
 
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                using var response = GetBilibiliClient().SendAsync(request).Result;
+                using var response = HttpClients.BilibiliHttpClient.SendAsync(request).Result;
                 response.EnsureSuccessStatusCode();
                 var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                 response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
@@ -410,7 +406,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     static void AddDownloadJob(string aid) {
-        var response = BiliplusHttpClient.Instance
+        var response = HttpClients.BiliplusHttpClient
             .GetAsync($"https://www.biliplus.com/api/saver_add?aid={aid.Substring(2)}&checkall")
             .Result;
         var content = response.GetString();
@@ -418,14 +414,14 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     static void UpdateDownloadStatus(string cid) {
-        var response = BiliplusHttpClient.Instance
+        var response = HttpClients.BiliplusHttpClient
             .GetAsync($"https://bg.biliplus-vid.top/api/saver_status.php?cid={cid}").Result;
         var content = response.GetString();
         Logger.Debug($"Check saver status: {content}");
     }
 
     static DownloadStatus GetDownloadStatus(string aid, int pid) {
-        var response = BiliplusHttpClient.Instance
+        var response = HttpClients.BiliplusHttpClient
             .GetAsync(
                 $"https://www.biliplus.com/api/geturl?bangumi=0&av={aid.Substring(2)}&page={pid}")
             .Result;
@@ -452,8 +448,9 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
             string? preferredCodec = null) {
         var quality = 127;
         return Retry.Run(() => {
-            var response = GetBilibiliClient()
-                .SendWithRetry<VideoUrlResponse>(new VideoUrlRequest(aid, cid, quality));
+            var response =
+                HttpClients.BilibiliHttpClient.SendWithRetry<VideoUrlResponse>(
+                    new VideoUrlRequest(aid, cid, quality));
 
             if (response is not { Code: 0 }) {
                 throw new Exception($"bilibili API error: {response?.Message} ({response?.Code}).");
@@ -517,7 +514,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         => CodecNames.First(c => c.Value == preferredCodec).Key;
 
     static string GetDownloadPage(string cid) {
-        var response = BiliplusHttpClient.Instance
+        var response = HttpClients.BiliplusHttpClient
             .GetAsync($"https://www.biliplus.com/api/video_playurl?cid={cid}&type=mp4").Result;
         var content = response.GetString();
         Logger.Debug($"Downloaded page content: {content}");
@@ -526,7 +523,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     public static string? GetAid(string cid) {
-        var response = BiliplusHttpClient.Instance
+        var response = HttpClients.BiliplusHttpClient
             .GetAsync($"https://www.biliplus.com/api/cidinfo?cid={cid}").Result;
         var content = response.GetString();
         Logger.Debug($"Cid info: {content}");
@@ -538,19 +535,5 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         }
 
         return $"av{data["aid"]}p{data["page"]}";
-    }
-
-    public static HttpClient GetBilibiliClient() {
-        if (bilibiliClient == null) {
-            bilibiliClient = new HttpClient {
-                Timeout = TimeSpan.FromMinutes(10)
-            };
-            bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
-            bilibiliClient.DefaultRequestHeaders.Referrer = new Uri("https://space.bilibili.com/");
-            bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
-        }
-
-        return bilibiliClient;
     }
 }

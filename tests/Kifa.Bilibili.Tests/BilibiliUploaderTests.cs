@@ -13,14 +13,14 @@ public class BilibiliUploaderTests {
 
     [Fact]
     public void VideoRpcTest() {
-        BilibiliVideo.GetBilibiliClient().Call(new UploaderVideoRpc("43536")).Data.List.Vlist
+        HttpClients.BilibiliHttpClient.Call(new UploaderVideoRpc("43536")).Data.List.Vlist
             .Should().HaveCount(50);
     }
 
     [Fact]
     public void InfoRpcTest() {
         Assert.Equal("黑桐谷歌",
-            BilibiliVideo.GetBilibiliClient().Call(new UploaderInfoRpc("43536")).Data.Name);
+            HttpClients.BilibiliHttpClient.Call(new UploaderInfoRpc("43536")).Data.Name);
     }
 
     [Fact]

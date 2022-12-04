@@ -12,7 +12,7 @@ public class BilibiliPlaylistTests {
 
     [Fact]
     public void RpcTest() {
-        BilibiliVideo.GetBilibiliClient().Call(new PlaylistRpc("743911266")).Data.Medias.Should()
+        HttpClients.BilibiliHttpClient.Call(new PlaylistRpc("743911266")).Data.Medias.Should()
             .HaveCount(20);
     }
 

@@ -22,7 +22,7 @@ public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var data = BilibiliVideo.GetBilibiliClient().Call(new PlaylistRpc(Id))?.Data;
+        var data = HttpClients.BilibiliHttpClient.Call(new PlaylistRpc(Id))?.Data;
         if (data == null) {
             throw new DataNotFoundException($"Failed to find playlist ({Id}).");
         }
@@ -32,7 +32,7 @@ public class BilibiliPlaylist : DataModel<BilibiliPlaylist> {
         Videos = data.Medias.Select(m => $"av{m.Id}").ToList();
         var page = 1;
         while (data.HasMore) {
-            data = BilibiliVideo.GetBilibiliClient().Call(new PlaylistRpc(Id, ++page))?.Data;
+            data = HttpClients.BilibiliHttpClient.Call(new PlaylistRpc(Id, ++page))?.Data;
             if (data == null) {
                 throw new DataNotFoundException($"Failed to find playlist ({Id}).");
             }
