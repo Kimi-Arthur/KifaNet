@@ -28,8 +28,9 @@ public static class HttpExtensions {
     public static JToken GetJToken(this HttpResponseMessage response)
         => JToken.Parse(GetString(response));
 
-    public static T? GetObject<T>(this HttpResponseMessage response)
-        => JsonConvert.DeserializeObject<T>(GetString(response), KifaJsonSerializerSettings.Default);
+    public static T? GetObject<T>(this HttpResponseMessage response, bool camelCase = false)
+        => JsonConvert.DeserializeObject<T>(GetString(response),
+            camelCase ? KifaJsonSerializerSettings.CamelCase : KifaJsonSerializerSettings.Default);
 
     public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request) {
         Logger.Trace(request);

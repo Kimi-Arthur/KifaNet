@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using NLog;
 
-namespace Kifa.Rpc; 
+namespace Kifa.Rpc;
 
 public abstract class KifaParameterizedRpc<TResponse> : KifaRpc<TResponse> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();

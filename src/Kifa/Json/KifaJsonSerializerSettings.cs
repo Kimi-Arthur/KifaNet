@@ -6,13 +6,15 @@ using Newtonsoft.Json.Serialization;
 namespace Kifa;
 
 public static class KifaJsonSerializerSettings {
-    static JsonSerializerSettings GetSettings(bool indented = false, bool merge = false)
+    static JsonSerializerSettings GetSettings(bool indented = false, bool merge = false,
+        bool camelCase = false)
         => new() {
             EqualityComparer = ReferenceEqualityComparer.Instance,
             DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             ContractResolver = new OrderedContractResolver {
-                NamingStrategy = new SnakeCaseNamingStrategy()
+                NamingStrategy =
+                    camelCase ? new CamelCaseNamingStrategy() : new SnakeCaseNamingStrategy()
             },
             Converters = new List<JsonConverter> {
                 new StringEnumConverter(new SnakeCaseNamingStrategy()),
@@ -28,6 +30,8 @@ public static class KifaJsonSerializerSettings {
         };
 
     public static readonly JsonSerializerSettings Default = GetSettings();
+
+    public static readonly JsonSerializerSettings CamelCase = GetSettings(camelCase: true);
 
     public static readonly JsonSerializerSettings Pretty = GetSettings(indented: true);
 
