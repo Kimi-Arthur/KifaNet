@@ -81,7 +81,8 @@ static class Helper {
             }
         };
 
-    public static string NormalizeTitle(string title, Language? language = null) {
+    public static string NormalizeTitle(string title, string? prefix = null,
+        Language? language = null) {
         if (string.IsNullOrEmpty(title)) {
             return title;
         }
@@ -91,9 +92,14 @@ static class Helper {
         title = BasePatterns.Aggregate(title,
             (current, pattern) => pattern.pattern.Replace(current, pattern.replacer));
 
-        return LanguagePatterns
+        var name = LanguagePatterns
             .GetValueOrDefault(language, new List<(Regex pattern, MatchEvaluator replacer)>())
             .Aggregate(title,
                 (current, pattern) => pattern.pattern.Replace(current, pattern.replacer));
+        if (prefix != null && name.StartsWith(prefix)) {
+            name = name[prefix.Length..];
+        }
+
+        return name.Trim();
     }
 }

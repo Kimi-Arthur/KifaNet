@@ -65,7 +65,7 @@ public class TvShow : DataModel<TvShow>, Formattable {
 
             var episodes = data.Episodes.Select(episode => new Episode {
                 Id = episode.EpisodeNumber,
-                Title = Helper.NormalizeTitle(episode.Name, Language),
+                Title = Helper.NormalizeTitle(episode.Name, language: Language),
                 AirDate = episode.AirDate,
                 Overview = episode.Overview
             }).ToList();
@@ -102,7 +102,8 @@ public class TvShow : DataModel<TvShow>, Formattable {
         var pattern = PatternId switch {
             "multi_season" =>
                 $@"/TV Shows/{Region}/{Title} \({AirDate.Year}\)/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
-            "single_season" => $@"/TV Shows/{Region}/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
+            "single_season" =>
+                $@"/TV Shows/{Region}/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
             _ => null
         };
 

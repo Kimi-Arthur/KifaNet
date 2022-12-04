@@ -19,14 +19,11 @@ public class TmdbClient {
     static readonly HttpClient HttpClient = new();
 
     public TmdbSeriesResponse? GetSeries(string tmdbId, Language language)
-        => HttpClient.SendWithRetry<TmdbSeriesResponse>(
-            new TmdbSeriesRequest(tmdbId, language, ApiKey));
+        => HttpClient.Call(new TmdbSeriesRpc(tmdbId, language, ApiKey));
 
     public TmdbSeasonResponse? GetSeason(string tmdbId, int seasonNumber, Language language)
-        => HttpClient.SendWithRetry<TmdbSeasonResponse>(
-            new TmdbSeasonRequest(tmdbId, seasonNumber, language, ApiKey));
-    
-    
+        => HttpClient.Call(new TmdbSeasonRpc(tmdbId, seasonNumber, language, ApiKey));
+
     static readonly List<(Regex Pattern, MatchEvaluator Replacement)> SeasonNameReplacements =
         new() {
             (new Regex(@"Season \d+|Staffel \d+|Stagione \d+|シーズン\d+|第[零一二三四五六七八九十百千万]+季"),

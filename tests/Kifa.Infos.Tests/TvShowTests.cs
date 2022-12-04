@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using Kifa.Configs;
-using Kifa.Service;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Kifa.Infos.Tests;
@@ -9,10 +7,7 @@ namespace Kifa.Infos.Tests;
 public class TvShowTests {
     public TvShowTests() {
         KifaConfigs.Init();
-        Client = TvShow.Client;
     }
-
-    public KifaServiceClient<TvShow> Client { get; set; }
 
     [Fact]
     public void FormatMultiSeason() {
@@ -81,9 +76,14 @@ public class TvShowTests {
     }
 
     [Fact]
-    public void GetTest() {
-        var show = Client.Get("信長協奏曲");
-        var s = JsonConvert.SerializeObject(show, KifaJsonSerializerSettings.Default);
+    public void FillTest() {
+        var show = new TvShow {
+            Id = "信長協奏曲",
+            TmdbId = "65200",
+            Language = Language.Japanese
+        };
+
+        show.Fill();
         Assert.Equal("信長協奏曲", show.Id);
         Assert.Equal(Region.Japan, show.Region);
         Assert.Equal(Language.Japanese, show.Language);
@@ -91,7 +91,25 @@ public class TvShowTests {
 
     [Fact]
     public void ParseTest() {
-        var show = Client.Get("Mayday");
+        var show = new TvShow {
+            Id = "Mayday",
+            Title = "Mayday",
+            Region = Region.Canada,
+            AirDate = Date.Parse("2003-09-03"),
+            PatternId = "multi_season",
+            Seasons = new List<Season> {
+                new Season {
+                    Id = 1,
+                    Episodes = new List<Episode> {
+                        new Episode {
+                            Id = 1,
+                            Title = "Racing the storm"
+                        }
+                    }
+                }
+            }
+        };
+
         var parsed =
             show.Parse(
                 "/TV Shows/Canada/Mayday (2003)/Season 1 (2003)/Mayday S01E01 Racing the storm.mp4");

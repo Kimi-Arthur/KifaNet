@@ -102,13 +102,14 @@ public class Anime : DataModel<Anime>, Formattable {
 
             var episodes = data.Episodes.Select(episode => new Episode {
                 Id = episode.EpisodeNumber,
-                Title = Helper.NormalizeTitle(episode.Name, DefaultLanguage),
+                Title = Helper.NormalizeTitle(episode.Name, language: DefaultLanguage),
                 AirDate = episode.AirDate,
                 Overview = episode.Overview
             }).ToList();
 
             if (seasonInfo.SeasonNumber > 0) {
-                var seasonName = Helper.NormalizeTitle(seasonInfo.Name, DefaultLanguage);
+                var seasonName = Helper.NormalizeTitle(seasonInfo.Name, prefix: Title,
+                    language: DefaultLanguage);
                 Seasons.Add(new Season {
                     AirDate = seasonInfo.AirDate,
                     Id = seasonInfo.SeasonNumber,

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
+using FluentAssertions;
 using Kifa.Configs;
-using Kifa.Service;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Kifa.Infos.Tests;
@@ -9,10 +8,7 @@ namespace Kifa.Infos.Tests;
 public class AnimeTests {
     public AnimeTests() {
         KifaConfigs.Init();
-        Client = Anime.Client;
     }
-
-    public KifaServiceClient<Anime> Client { get; set; }
 
     [Fact]
     public void FormatMultiSeason() {
@@ -78,10 +74,18 @@ public class AnimeTests {
     }
 
     [Fact]
-    public void Get() {
-        var show = Client.Get("咲-Saki-");
-        var s = JsonConvert.SerializeObject(show, KifaJsonSerializerSettings.Default);
+    public void FillTest() {
+        var show = new Anime {
+            Id = "咲-Saki-",
+            TmdbId = "29884"
+        };
+        show.Fill();
+
+        // The seasons are not organized correctly:
+        // https://www.themoviedb.org/tv/69038-saki-episode-of-side-a/discuss/63054c4e2e2b2c007a6de3fc
+        show.Seasons.Should().HaveCount(2);
+
         Assert.Equal("咲-Saki-", show.Id);
-        Assert.Equal("全国編", show.Seasons[2].Title);
+        Assert.Equal("全国編", show.Seasons[1].Title);
     }
 }
