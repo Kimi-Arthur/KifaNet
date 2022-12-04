@@ -110,7 +110,7 @@ public class SkyLiveProgram : DataModel<SkyLiveProgram> {
     }
 
     public string? GetVideoLink() {
-        var response = SkyClient.SendWithRetry<PlayerResponse>(new LivePlayerRequest(Id));
+        var response = SkyClient.Call(new LivePlayerRpc(Id));
         if (response == null) {
             throw new Exception("Failed to get player response.");
         }

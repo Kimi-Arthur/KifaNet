@@ -48,9 +48,7 @@ public class DownloadProgramCommand : KifaCommand {
             return 0;
         }
 
-        var response =
-            SkyLiveProgram.SkyClient.SendWithRetry<PlayerResponse>(
-                new ProgramPlayerRequest(programId, eventId));
+        var response = SkyLiveProgram.SkyClient.Call(new ProgramPlayerRpc(programId, eventId));
 
         if (response == null) {
             throw new Exception("Failed to get player response.");
