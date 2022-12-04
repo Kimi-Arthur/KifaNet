@@ -4,7 +4,6 @@ using System.Linq;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
 using Kifa.Configs;
-using Kifa.Service;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests;
@@ -16,14 +15,14 @@ public class BilibiliVideoTests {
 
     [Fact]
     public void BiliplusVideoCacheRpcTest() {
-        var data = new BiliplusVideoCacheRpc().Invoke("av170001").Data;
+        var data = HttpClients.BiliplusHttpClient.Call(new BiliplusVideoCacheRpc("av170001")).Data;
         Assert.Equal(5, data.Parts.Count);
         Assert.Equal("Хоп", data.Parts[0].Part);
     }
 
     [Fact]
     public void BiliplusVideoRpcTest() {
-        var data = new BiliplusVideoRpc().Invoke("av170001");
+        var data = HttpClients.BiliplusHttpClient.Call(new BiliplusVideoRpc("av170001"));
         Assert.Equal(10, data.List.Count);
         Assert.Equal("Хоп", data.List[0].Part);
     }

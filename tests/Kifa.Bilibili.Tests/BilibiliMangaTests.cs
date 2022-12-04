@@ -21,7 +21,7 @@ public class BilibiliMangaTests {
     [InlineData("28284", "迷宫饭", "九井谅子",
         "【此漫画的翻译由版权方提供】探险者莱欧斯一行人在地下迷宫深层遭遇了强大的红龙，因为红龙的袭击，他们失去了金钱和食物。尽管他们想再次挑战探险迷宫，但就这样贸然继续前进，很可能中途就会饿死……这时莱欧斯决定：“我们干脆吃魔物吧！”于是，不论攻打过来的魔物是史莱姆、翼蜥还是恶龙，一行人边把它们做成“魔物餐”，边踏上攻略迷宫的旅程。\n",
         "汤锅", 76)]
-    public void MediaRpcTest(string mangaId, string title, string author, string description,
+    public void MangaRpcTest(string mangaId, string title, string author, string description,
         string firstEpisodeTitle, int minEpisodesCount) {
         var result = HttpClient.Call(new BilibiliMangaRpc(mangaId));
         var data = result.Data;
@@ -39,7 +39,7 @@ public class BilibiliMangaTests {
     [InlineData("mc28284", "迷宫饭", "九井谅子",
         "【此漫画的翻译由版权方提供】探险者莱欧斯一行人在地下迷宫深层遭遇了强大的红龙，因为红龙的袭击，他们失去了金钱和食物。尽管他们想再次挑战探险迷宫，但就这样贸然继续前进，很可能中途就会饿死……这时莱欧斯决定：“我们干脆吃魔物吧！”于是，不论攻打过来的魔物是史莱姆、翼蜥还是恶龙，一行人边把它们做成“魔物餐”，边踏上攻略迷宫的旅程。\n",
         "汤锅", 76)]
-    public void MediaFillTest(string mangaId, string title, string author, string description,
+    public void MangaFillTest(string mangaId, string title, string author, string description,
         string firstEpisodeTitle, int minEpisodesCount) {
         var manga = new BilibiliManga {
             Id = mangaId

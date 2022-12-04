@@ -164,7 +164,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     bool FillWithBiliplus() {
-        var data = new BiliplusVideoRpc().Invoke(Id);
+        var data = HttpClients.BiliplusHttpClient.Call(new BiliplusVideoRpc(Id));
         if (data == null) {
             Logger.Error("Failed to retrieve data for video (Id) from biliplus.");
             return false;
@@ -238,7 +238,11 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     void FillWithBiliplusCache() {
-        var data = new BiliplusVideoCacheRpc().Invoke(Id).Data;
+        var data = HttpClients.BiliplusHttpClient.Call(new BiliplusVideoCacheRpc(Id))?.Data;
+        if (data == null) {
+            throw new DataNotFoundException($"Failed to get cache for {Id}.");
+        }
+
         var info = data.Info;
         Title = info.Title;
         Author = info.Author;

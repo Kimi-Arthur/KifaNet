@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text.RegularExpressions;
+using Kifa.Rpc;
+using Kifa.Service;
 
 namespace Kifa.Bilibili.BiliplusApi;
 
-public class BiliplusVideoCacheRpc : BiliplusRpc<BiliplusVideoCacheRpc.BiliplusVideoCache> {
-    public class BiliplusVideoCache {
+public class BiliplusVideoCacheRpc : KifaJsonParameterizedRpc<BiliplusVideoCacheRpc.Response> {
+    #region BiliplusVideoCacheRpc.Response
+
+    public class Response {
         public long Code { get; set; }
         public Data Data { get; set; }
     }
@@ -42,21 +47,26 @@ public class BiliplusVideoCacheRpc : BiliplusRpc<BiliplusVideoCacheRpc.BiliplusV
         public string Vid { get; set; }
     }
 
+    #endregion
+
     const string CachePagePattern = "https://www.biliplus.com/all/video/{aid}/";
 
     static readonly Regex ApiRegex = new(@".'(/api/view_all.*)'.*");
 
     public override string UrlPattern { get; } = "https://www.biliplus.com{api_path}";
+    public override HttpMethod Method { get; } = HttpMethod.Get;
 
-    public BiliplusVideoCache Invoke(string aid) {
+    public BiliplusVideoCacheRpc(string aid) {
         var url = CachePagePattern.Format(new Dictionary<string, string> {
             { "aid", aid }
         });
-        var match = ApiRegex.Match(HttpClient.GetAsync(url).Result.GetString());
-        return match.Success
-            ? Invoke(new Dictionary<string, string> {
-                { "api_path", match.Groups[1].Value }
-            })
-            : null;
+        var match = ApiRegex.Match(HttpClients.BiliplusHttpClient.GetAsync(url).Result.GetString());
+        if (!match.Success) {
+            throw new DataNotFoundException($"Failed to find cache page url for {aid}.");
+        }
+
+        parameters = new Dictionary<string, string> {
+            { "api_path", match.Groups[1].Value }
+        };
     }
 }

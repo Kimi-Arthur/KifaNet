@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BiliplusApi;
 
-public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoResponse> {
-    public class BiliplusVideoResponse {
+public sealed class BiliplusVideoRpc : KifaJsonParameterizedRpc<BiliplusVideoRpc.Response> {
+    #region BiliplusVideoRpc.Response
+
+    public class Response {
         public long Id { get; set; }
         public long Ver { get; set; }
         public long Aid { get; set; }
@@ -185,10 +189,14 @@ public class BiliplusVideoRpc : BiliplusRpc<BiliplusVideoRpc.BiliplusVideoRespon
         public long Dislike { get; set; }
     }
 
-    public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
+    #endregion
 
-    public BiliplusVideoResponse? Invoke(string aid)
-        => Invoke(new Dictionary<string, string> {
+    public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
+    public override HttpMethod Method { get; } = HttpMethod.Get;
+
+    public BiliplusVideoRpc(string aid) {
+        parameters = new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
-        });
+        };
+    }
 }
