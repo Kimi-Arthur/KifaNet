@@ -453,8 +453,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
         var quality = 127;
         return Retry.Run(() => {
             var response =
-                HttpClients.BilibiliHttpClient.SendWithRetry<VideoUrlResponse>(
-                    new VideoUrlRequest(aid, cid, quality));
+                HttpClients.BilibiliHttpClient.Call(new VideoUrlRpc(aid, cid, quality));
 
             if (response is not { Code: 0 }) {
                 throw new Exception($"bilibili API error: {response?.Message} ({response?.Code}).");

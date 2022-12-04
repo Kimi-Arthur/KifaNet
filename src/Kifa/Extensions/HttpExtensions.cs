@@ -98,10 +98,6 @@ public static class HttpExtensions {
             return response.EnsureSuccessStatusCode();
         }, HandleHttpException);
 
-    public static TResponse? SendWithRetry<TResponse>(this HttpClient client,
-        ParameterizedRequest request, HttpStatusCode? expectedStatusCode = null)
-        => client.SendWithRetry(request.GetRequest, expectedStatusCode).GetObject<TResponse>();
-
     public static TResponse? Call<TResponse>(this HttpClient client, KifaRpc<TResponse> rpc,
         HttpStatusCode? expectedStatusCode = null)
         => rpc.ParseResponse(client.SendWithRetry(rpc.GetRequest, expectedStatusCode));
