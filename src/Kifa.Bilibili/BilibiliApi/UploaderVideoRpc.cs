@@ -1,12 +1,13 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
-using Kifa.Service;
+using System.Net.Http;
+using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
 
-public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoResponse> {
-    public class UploaderVideoResponse {
+public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc.Response> {
+    #region UploaderVideoRpc.Response
+
+    public class Response {
         public long Code { get; set; }
         public string Message { get; set; }
         public long Ttl { get; set; }
@@ -67,25 +68,17 @@ public class UploaderVideoRpc : BilibiliRpc<UploaderVideoRpc.UploaderVideoRespon
         public long Count { get; set; }
     }
 
+    #endregion
+
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=50&pn={page}";
 
-    public UploaderVideoResponse Invoke(string uploaderId) {
-        var result = Invoke(new Dictionary<string, string> {
-            { "id", uploaderId },
-            { "page", "1" }
-        });
-        var allResult = result.Clone();
-        var page = 1;
-        while (result.Data?.Page?.Count > allResult.Data?.List?.Vlist?.Count) {
-            Thread.Sleep(TimeSpan.FromSeconds(1));
-            result = Invoke(new Dictionary<string, string> {
-                { "id", uploaderId },
-                { "page", (++page).ToString() }
-            });
-            allResult.Data.List.Vlist.AddRange(result.Data.List.Vlist);
-        }
+    public override HttpMethod Method { get; } = HttpMethod.Get;
 
-        return allResult;
+    public UploaderVideoRpc(string uploaderId, int page = 1) {
+        parameters = new Dictionary<string, string> {
+            { "id", uploaderId },
+            { "page", page.ToString() }
+        };
     }
 }

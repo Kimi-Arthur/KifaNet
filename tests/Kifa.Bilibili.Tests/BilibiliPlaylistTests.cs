@@ -1,12 +1,19 @@
+using FluentAssertions;
 using Kifa.Bilibili.BilibiliApi;
+using Kifa.Configs;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests;
 
 public class BilibiliPlaylistTests {
+    public BilibiliPlaylistTests() {
+        KifaConfigs.Init();
+    }
+
     [Fact]
     public void RpcTest() {
-        Assert.True(new PlaylistRpc().Invoke("743911266").Data.Medias.Count > 50);
+        BilibiliVideo.GetBilibiliClient().Call(new PlaylistRpc("743911266")).Data.Medias.Should()
+            .HaveCount(20);
     }
 
     [Fact]
@@ -17,6 +24,6 @@ public class BilibiliPlaylistTests {
         playlist.Fill();
         Assert.Equal("🎸", playlist.Title);
         Assert.Equal("斗勇猫晶晶", playlist.Uploader);
-        Assert.True(playlist.Videos.Count > 50);
+        playlist.Videos.Should().HaveCountGreaterThan(50);
     }
 }

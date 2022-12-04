@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
-using Kifa.Service;
+using System.Net.Http;
+using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
 
-public class PlaylistRpc : BilibiliRpc<PlaylistRpc.PlaylistResponse> {
-    public class PlaylistResponse {
+public sealed class PlaylistRpc : KifaJsonParameterizedRpc<PlaylistRpc.Response> {
+    #region PlaylistRpc.Response
+
+    public class Response {
         public long Code { get; set; }
         public string Message { get; set; }
         public long Ttl { get; set; }
@@ -85,24 +88,17 @@ public class PlaylistRpc : BilibiliRpc<PlaylistRpc.PlaylistResponse> {
         public Uri Face { get; set; }
     }
 
+    #endregion
+
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
 
-    public PlaylistResponse Invoke(string playlistId) {
-        var result = Invoke(new Dictionary<string, string> {
-            { "id", playlistId },
-            { "page", "1" }
-        });
-        var allResult = result.Clone();
-        var page = 1;
-        while (result.Data.HasMore) {
-            result = Invoke(new Dictionary<string, string> {
-                { "id", playlistId },
-                { "page", (++page).ToString() }
-            });
-            allResult.Data.Medias.AddRange(result.Data.Medias);
-        }
+    public override HttpMethod Method { get; } = HttpMethod.Get;
 
-        return allResult;
+    public PlaylistRpc(string playlistId, int page = 1) {
+        parameters = new Dictionary<string, string> {
+            { "id", playlistId },
+            { "page", page.ToString() }
+        };
     }
 }

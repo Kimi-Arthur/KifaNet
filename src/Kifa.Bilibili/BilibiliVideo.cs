@@ -47,7 +47,7 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static HttpClient bilibiliClient;
+    static HttpClient? bilibiliClient;
 
     PartModeType partMode;
 
@@ -136,8 +136,8 @@ public class BilibiliVideo : DataModel<BilibiliVideo> {
     }
 
     void FillWithBilibili() {
-        var data = new VideoRpc().Invoke(Id).Data;
-        var tags = new VideoTagRpc().Invoke(Id).Data;
+        var data = GetBilibiliClient().Call(new VideoRpc(Id))?.Data;
+        var tags = GetBilibiliClient().Call(new VideoTagRpc(Id))?.Data;
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();

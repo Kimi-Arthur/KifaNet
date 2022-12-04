@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
 
-public class VideoRpc : BilibiliRpc<VideoRpc.VideoResponse> {
-    public class VideoResponse {
+public sealed class VideoRpc : KifaJsonParameterizedRpc<VideoRpc.Response> {
+    #region VideoRpc.Response
+
+    public class Response {
         public long Code { get; set; }
         public long Message { get; set; }
         public long Ttl { get; set; }
@@ -112,11 +116,16 @@ public class VideoRpc : BilibiliRpc<VideoRpc.VideoResponse> {
         public string UrlImageAniCut { get; set; }
     }
 
+    #endregion
+
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/web-interface/view?aid={aid}";
 
-    public VideoResponse? Invoke(string aid)
-        => Invoke(new Dictionary<string, string> {
+    public override HttpMethod Method { get; } = HttpMethod.Get;
+
+    public VideoRpc(string aid) {
+        parameters = new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
-        });
+        };
+    }
 }

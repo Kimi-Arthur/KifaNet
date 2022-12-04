@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
 
-public class UploaderInfoRpc : BilibiliRpc<UploaderInfoRpc.UploaderInfoResponse> {
-    public class UploaderInfoResponse {
+public sealed class UploaderInfoRpc : KifaJsonParameterizedRpc<UploaderInfoRpc.Response> {
+    #region UploadInfoRpc.Response
+
+    public class Response {
         public long Code { get; set; }
         public long Message { get; set; }
         public long Ttl { get; set; }
@@ -69,11 +73,16 @@ public class UploaderInfoRpc : BilibiliRpc<UploaderInfoRpc.UploaderInfoResponse>
         public string ImageEnhance { get; set; }
     }
 
+    #endregion
+
     public override string UrlPattern { get; } =
         "https://api.bilibili.com/x/space/acc/info?mid={id}";
 
-    public UploaderInfoResponse? Invoke(string uploaderId)
-        => Invoke(new Dictionary<string, string> {
+    public override HttpMethod Method { get; } = HttpMethod.Get;
+
+    public UploaderInfoRpc(string uploaderId) {
+        parameters = new Dictionary<string, string> {
             { "id", uploaderId }
-        });
+        };
+    }
 }

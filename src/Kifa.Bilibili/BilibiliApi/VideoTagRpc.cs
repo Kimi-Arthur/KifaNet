@@ -1,9 +1,13 @@
 using System.Collections.Generic;
+using System.Net.Http;
+using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BilibiliApi;
 
-public class VideoTagRpc : BilibiliRpc<VideoTagRpc.VideoTagResponse> {
-    public class VideoTagResponse {
+public sealed class VideoTagRpc : KifaJsonParameterizedRpc<VideoTagRpc.Response> {
+    #region VideoTagRpc.Response
+
+    public class Response {
         public long Code { get; set; }
         public long Message { get; set; }
         public long Ttl { get; set; }
@@ -36,11 +40,16 @@ public class VideoTagRpc : BilibiliRpc<VideoTagRpc.VideoTagResponse> {
         public long Atten { get; set; }
     }
 
+    #endregion
+
     public override string UrlPattern { get; } =
         "http://api.bilibili.com/x/tag/archive/tags?aid={aid}";
 
-    public VideoTagResponse Invoke(string aid)
-        => Invoke(new Dictionary<string, string> {
-            { "aid", aid.Substring(2) }
-        });
+    public override HttpMethod Method { get; } = HttpMethod.Get;
+
+    public VideoTagRpc(string aid) {
+        parameters = new Dictionary<string, string> {
+            { "aid", aid[2..] }
+        };
+    }
 }

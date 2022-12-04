@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 using NLog;
@@ -24,23 +25,44 @@ public class BilibiliUploader : DataModel<BilibiliUploader> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var info = new UploaderInfoRpc().Invoke(Id)?.Data;
+        var info = BilibiliVideo.GetBilibiliClient().Call(new UploaderInfoRpc(Id))?.Data;
         if (info == null) {
             throw new DataNotFoundException(
                 $"Failed to retrieve data for uploader ({Id}) from bilibili,");
         }
 
         Name = info.Name;
-        var list = new UploaderVideoRpc().Invoke(Id).Data.List.Vlist.Select(v => $"av{v.Aid}")
-            .ToHashSet();
-
+        var list = GetAllVideos(Id);
         var removed = RemovedAids.ToHashSet();
         removed.UnionWith(Aids);
         removed.ExceptWith(list);
 
         RemovedAids = removed.OrderBy(v => long.Parse(v[2..])).ToList();
-        Aids = list.OrderBy(v => long.Parse(v[2..])).ToList();
+        Aids = list;
+        Aids.Reverse();
 
         return Date.Zero;
+    }
+
+    List<string> GetAllVideos(string uploaderId) {
+        var data = BilibiliVideo.GetBilibiliClient().Call(new UploaderVideoRpc(uploaderId))?.Data;
+        if (data == null) {
+            throw new DataNotFoundException($"Cannot find videos uploaded by {uploaderId}.");
+        }
+
+        var page = 1;
+        var list = data.List.Vlist.Select(v => $"av{v.Aid}").ToList();
+        while (data.Page.Count > list.Count) {
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+            data = BilibiliVideo.GetBilibiliClient().Call(new UploaderVideoRpc(uploaderId, ++page))
+                ?.Data;
+            if (data == null) {
+                throw new DataNotFoundException($"Cannot find videos uploaded by {uploaderId}.");
+            }
+
+            list.AddRange(data.List.Vlist.Select(v => $"av{v.Aid}"));
+        }
+
+        return list;
     }
 }
