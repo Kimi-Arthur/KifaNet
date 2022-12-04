@@ -45,7 +45,7 @@ public class SkyProgramTests {
                     Id = "2693487",
                     Type = "Sports event",
                     Title = "Football : UEFA Champions League - Matchday 2",
-                    Subtitle = "Paris Saint-Germain / Manchester City",
+                    Subtitle = "Paris Saint-Germain - Manchester City",
                     AirDateTime = DateTime.Parse("2021-09-28 20:15"),
                     Channel = "Blue Sports 1 HD",
                     Duration = TimeSpan.FromMinutes(165),
