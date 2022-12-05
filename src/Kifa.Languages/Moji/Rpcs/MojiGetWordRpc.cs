@@ -14,7 +14,6 @@ public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Res
     }
 
     public class ResponseResult {
-        public List<object> The1 { get; set; }
         public List<ResultElement> Result { get; set; }
         public long Code { get; set; }
     }
