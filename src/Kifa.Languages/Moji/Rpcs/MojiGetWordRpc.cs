@@ -9,24 +9,24 @@ namespace Kifa.Languages.Moji.Rpcs;
 public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Response> {
     #region MojiGetWordRpc.Response
 
-    public partial class Response {
+    public class Response {
         public ResponseResult Result { get; set; }
     }
 
-    public partial class ResponseResult {
+    public class ResponseResult {
         public List<object> The1 { get; set; }
         public List<ResultElement> Result { get; set; }
         public long Code { get; set; }
     }
 
-    public partial class ResultElement {
+    public class ResultElement {
         public Word Word { get; set; }
         public List<Detail> Details { get; set; }
         public List<Detail> Subdetails { get; set; }
         public List<Example> Examples { get; set; }
     }
 
-    public partial class Detail {
+    public class Detail {
         public string Title { get; set; }
         public long Index { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
@@ -37,7 +37,7 @@ public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Res
         public string DetailsId { get; set; }
     }
 
-    public partial class Example {
+    public class Example {
         public string Title { get; set; }
         public long Index { get; set; }
         public string Trans { get; set; }
@@ -54,7 +54,7 @@ public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Res
         public string NotationTitle { get; set; }
     }
 
-    public partial class Word {
+    public class Word {
         public string Excerpt { get; set; }
         public string Spell { get; set; }
         public string Accent { get; set; }
