@@ -10,7 +10,7 @@ using OpenQA.Selenium.Remote;
 
 namespace Kifa.Cloud.Swisscom;
 
-public class SwisscomAccount : DataModel<SwisscomAccount> {
+public class SwisscomAccount : DataModel {
     public const string ModelId = "accounts/swisscom";
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7);

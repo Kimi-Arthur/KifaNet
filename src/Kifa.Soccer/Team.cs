@@ -2,7 +2,7 @@ using Kifa.Service;
 
 namespace Kifa.Soccer;
 
-public class Team : DataModel<Team> {
+public class Team : DataModel {
     public const string ModelId = "soccer/teams";
 
     // Full names used in English wiki, like "FC Bayern Munich" or "Borussia Mönchengladbach"

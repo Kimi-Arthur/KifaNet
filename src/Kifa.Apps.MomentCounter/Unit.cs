@@ -2,7 +2,7 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter;
 
-public class Unit : DataModel<Unit> {
+public class Unit : DataModel {
     public const string ModelId = "moment_counter/units";
 
     public string Name { get; set; }

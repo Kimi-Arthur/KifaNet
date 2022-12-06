@@ -7,7 +7,7 @@ using NLog;
 
 namespace Kifa.Cloud.Swisscom;
 
-public class SwisscomAccountQuota : DataModel<SwisscomAccountQuota> {
+public class SwisscomAccountQuota : DataModel {
     public const string ModelId = "accounts/swisscom_quotas";
 
     static SwisscomAccountQuotaServiceClient client;

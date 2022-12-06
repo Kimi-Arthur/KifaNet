@@ -3,7 +3,7 @@ using Kifa.Service;
 
 namespace Kifa.Games.BreathOfTheWild;
 
-public class KorokSeed : DataModel<KorokSeed> {
+public class KorokSeed : DataModel {
     public const string ModelId = "botw/seeds";
 
     static KifaServiceClient<KorokSeed> client;

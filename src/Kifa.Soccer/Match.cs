@@ -2,7 +2,7 @@ using Kifa.Service;
 
 namespace Kifa.Soccer;
 
-public class Match : DataModel<Match> {
+public class Match : DataModel {
     public Competition Competition { get; set; }
     public Season Season { get; set; }
     public Round Round { get; set; }

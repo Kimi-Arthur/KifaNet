@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Service.Tests;
 
-class FakeDataModel : DataModel<FakeDataModel> {
+class FakeDataModel : DataModel, Translatable<FakeDataModel> {
     public const string ModelId = "api_test";
 
     static FakeDataModelServiceClient client;
@@ -20,6 +20,8 @@ class FakeDataModel : DataModel<FakeDataModel> {
     public Dictionary<string, string> DictProp { get; set; }
 
     public FakeSubDataModel SubProp { get; set; }
+
+    public Dictionary<string, FakeDataModel>? Translations { get; set; }
 }
 
 class FakeSubDataModel {

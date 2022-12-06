@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -14,9 +15,7 @@ public static class Late {
 
         // Workaround for json.net as it uses the default value
         // when deserializing an object with converter.
-        if (stackTrace.GetFrames().Any(frame
-                => frame.GetMethod()?.DeclaringType?.ToString() ==
-                "Newtonsoft.Json.JsonSerializer" && frame.GetMethod()?.Name == "Deserialize")) {
+        if (ShouldNotThrow(stackTrace)) {
             return default;
         }
 
@@ -41,10 +40,7 @@ public static class Late {
 
         // Workaround for json.net as it uses the default value
         // when deserializing an object with converter.
-        if (stackTrace.GetFrames().Any(frame
-                => frame.GetMethod()?.DeclaringType?.ToString() ==
-                   "Newtonsoft.Json.JsonSerializer" &&
-                   frame.GetMethod()?.Name == "DeserializeInternal")) {
+        if (ShouldNotThrow(stackTrace)) {
             return default;
         }
 
@@ -57,6 +53,16 @@ public static class Late {
         throw new NullReferenceException(
             $"Property {method.Name[4..]} of class {method.DeclaringType} is expected to be non-null, but is actually null.");
     }
+
+    static readonly List<(string Type, string Method)> IgnoredMethods = new() {
+        ("Newtonsoft.Json.JsonSerializer", "Deserialize"),
+        ("Kifa.Service.TranslatableExtension", "GetTranslated")
+    };
+
+    static bool ShouldNotThrow(StackTrace stackTrace)
+        => stackTrace.GetFrames().Any(frame => IgnoredMethods.Any(method
+            => frame.GetMethod()?.DeclaringType?.ToString() == method.Type &&
+               frame.GetMethod()?.Name == method.Method));
 
     public static void Set<T>(ref T field, T? value) {
         if (value == null) {

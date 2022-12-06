@@ -100,8 +100,3 @@ public abstract class DataModel {
     public override bool Equals(object? obj)
         => GetType().IsInstanceOfType(obj) && ToString() == obj?.ToString();
 }
-
-public abstract class DataModel<TDataModel> : DataModel where TDataModel : DataModel {
-    [JsonProperty("$translations")]
-    public Dictionary<string, TDataModel>? Translations { get; set; }
-}

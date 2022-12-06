@@ -7,7 +7,7 @@ using Svg;
 
 namespace Kifa.Music;
 
-public class GuitarChord : DataModel<GuitarChord> {
+public class GuitarChord : DataModel {
     public const string ModelId = "guitar/chords";
 
     static KifaServiceClient<GuitarChord> client;

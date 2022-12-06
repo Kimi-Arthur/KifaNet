@@ -16,6 +16,7 @@ public class DataModelTests {
     [Fact]
     public void TranslateTest() {
         var x = new FakeDataModel {
+            Id = "fake",
             StrProp = "A",
             IntPROP = 123,
             Translations = new Dictionary<string, FakeDataModel> {
