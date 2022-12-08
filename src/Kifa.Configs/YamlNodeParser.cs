@@ -39,7 +39,7 @@ static class YamlNodeToEventStreamConverter {
     }
 
     static IEnumerable<ParsingEvent> ConvertToEventStream(YamlScalarNode scalar) {
-        yield return new Scalar(scalar.Anchor, scalar.Tag, scalar.Value, scalar.Style, false,
+        yield return new Scalar(scalar.Anchor, scalar.Tag, scalar.Value!, scalar.Style, false,
             false);
     }
 

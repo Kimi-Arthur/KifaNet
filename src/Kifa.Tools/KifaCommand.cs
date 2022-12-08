@@ -4,8 +4,6 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Configs;
 using NLog;
-using NLog.Config;
-using NLog.Targets;
 
 namespace Kifa.Tools;
 
@@ -20,12 +18,16 @@ public abstract partial class KifaCommand {
     [Option('V', "non-verbose", HelpText = "Show least detailed log.")]
     public bool NonVerbose { get; set; } = false;
 
+    [Option("config", HelpText = "Use an alternative config file.")]
+    public string? ConfigFile { get; set; }
+
     public static int Run(Func<string[], ParserResult<object>> parse, string[] args) {
-        Initialize();
         return parse(args).MapResult<KifaCommand, int>(ExecuteCommand, HandleParseFail);
     }
 
     static int ExecuteCommand(KifaCommand command) {
+        KifaConfigs.Init(command.ConfigFile);
+
         if (command.Verbose) {
             Logging.ConfigureLogger(true);
         } else if (command.NonVerbose) {
@@ -48,10 +50,6 @@ public abstract partial class KifaCommand {
     }
 
     static int HandleParseFail(IEnumerable<Error> errors) => 2;
-
-    public static void Initialize() {
-        KifaConfigs.Init();
-    }
 
     public abstract int Execute();
 }

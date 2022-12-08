@@ -11,22 +11,22 @@ using YamlDotNet.Serialization;
 namespace Kifa.Configs;
 
 public static class KifaConfigs {
-    static string configFilePath;
+    static string? configFilePath;
 
-    static readonly IDeserializer deserializer = new DeserializerBuilder()
+    static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .IgnoreUnmatchedProperties().Build();
 
-    static string name => AppDomain.CurrentDomain.FriendlyName;
+    static string Name => AppDomain.CurrentDomain.FriendlyName;
 
     static List<string> ConfigFilePaths
         => new() {
-            $"~/.{name}.yaml",
+            $"~/.{Name}.yaml",
             "~/.kimily.yaml",
-            $"/etc/{name}.yaml",
+            $"/etc/{Name}.yaml",
             "/etc/kimily.yaml"
         };
 
-    static string ConfigFilePath {
+    static string? ConfigFilePath {
         get {
             if (configFilePath == null) {
                 configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
@@ -42,9 +42,10 @@ public static class KifaConfigs {
 
             return configFilePath;
         }
+        set => configFilePath = value;
     }
 
-    public static void LoadFromSystemConfigs(Assembly assembly = null) {
+    public static void LoadFromSystemConfigs(Assembly? assembly = null) {
         var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
         var assemblyName = assembly == null
             ? string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(ass => ass.FullName))
@@ -109,7 +110,7 @@ public static class KifaConfigs {
             Log($"Apply config for {id}");
             if (properties.TryGetValue(id, out var prop)) {
                 Log($"Property found for {id}");
-                var value = deserializer.Deserialize(
+                var value = Deserializer.Deserialize(
                     new YamlNodeParser(
                         YamlNodeToEventStreamConverter.ConvertToEventStream(p.Value)),
                     prop.PropertyType);
@@ -149,14 +150,16 @@ public static class KifaConfigs {
         }
     }
 
-    public static void Init(bool logEvents = false) {
+    public static void Init(string? configFile = null, bool logEvents = false) {
+        ConfigFilePath = configFile;
+
         // Workaround that YamlDotNet may fail to initialize Regex in TagDirective.
         if (Constants.DefaultTagDirectives.Length != 2) {
             Console.WriteLine("YamlDotNet is Broken.");
         }
 
         loggingNeeded = logEvents;
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
+        AppDomain.CurrentDomain.AssemblyLoad += (_, eventArgs)
             => LoadFromSystemConfigs(eventArgs.LoadedAssembly);
         LoadFromSystemConfigs();
     }
