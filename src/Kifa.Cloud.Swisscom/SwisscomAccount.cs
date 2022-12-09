@@ -169,10 +169,15 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
             .FindElement(By.CssSelector("button")).Click());
 
-        MaybeSkipPhone(driver);
+        Thread.Sleep(PageLoadWait);
+        var boxes = driver.FindElementsByClassName("checkbox");
+        if (boxes.Count == 0) {
+            MaybeSkipPhone(driver);
+            boxes = Retry.GetItems(() => driver.FindElementsByClassName("checkbox"), Interval,
+                Timeout, noLogging: true);
+        }
 
-        foreach (var checkbox in Retry.GetItems(() => driver.FindElementsByClassName("checkbox"),
-                     Interval, Timeout, noLogging: true)) {
+        foreach (var checkbox in boxes) {
             Run(() => checkbox.Click());
         }
 
