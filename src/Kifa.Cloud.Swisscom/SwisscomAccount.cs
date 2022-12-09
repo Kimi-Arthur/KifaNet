@@ -23,6 +23,10 @@ public class SwisscomAccount : DataModel {
 
     public static string DefaultPassword { get; set; }
 
+    public static string DefaultBirthday { get; set; }
+
+    public static string DefaultAddress { get; set; }
+
     static ChromeOptions GetChromeOptions() {
         var options = new ChromeOptions();
         options.AddArgument(
@@ -95,7 +99,7 @@ public class SwisscomAccount : DataModel {
 
         using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
             WebDriverTimeout);
-        var name = Id;
+        var name = new string(Id[0], 3);
 
         driver.Navigate().GoToUrl("https://registration.scl.swisscom.ch/ui/reg/email-address");
         Thread.Sleep(PageLoadWait);
@@ -105,54 +109,74 @@ public class SwisscomAccount : DataModel {
         usernameField.Clear();
         usernameField.SendKeys(Username);
         driver.FindElementByTagName("sdx-input-item").FindElement(By.CssSelector("input")).Click();
-        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button").GetShadowRoot()
+
+        // Code
+
+        // Password
+        while (driver.FindElementsByCssSelector("sdx-input[data-cy=password-input]").Count == 0) {
+            Thread.Sleep(TimeSpan.FromSeconds(10));
+        }
+
+        driver.FindElementByCssSelector("sdx-input[data-cy=password-input]").GetShadowRoot()
+            .FindElement(By.CssSelector("input")).SendKeys(DefaultPassword);
+        driver.FindElementByCssSelector("sdx-input[data-cy=password-repeat-input]").GetShadowRoot()
+            .FindElement(By.CssSelector("input")).SendKeys(DefaultPassword);
+        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
             .FindElement(By.CssSelector("button")).Click();
 
-        driver.FindElementById("firstName").SendKeys(name);
-        driver.FindElementById("agbPart1").Click();
-        driver.FindElementByCssSelector(".select__button").Click();
-        driver.FindElementByCssSelector(".dropdown-item[data-value=MR]").Click();
-        driver.FindElementById("submitButton").Click();
+        // Fill info
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("sdx-select#selectTitle").Click();
+        driver.FindElementsByTagName("sdx-select-list")[0]
+            .FindElements(By.CssSelector("sdx-select-option"))[0].Click();
+
+        driver.FindElementByCssSelector("sdx-input[data-cy=firstName-input]").GetShadowRoot()
+            .FindElement(By.CssSelector("input")).SendKeys(name);
+        driver.FindElementByCssSelector("sdx-input[data-cy=lastName-input]").GetShadowRoot()
+            .FindElement(By.CssSelector("input")).SendKeys(name);
+        driver.FindElementByCssSelector("sdx-input[data-cy=birth-date-input]").GetShadowRoot()
+            .FindElement(By.CssSelector("input")).SendKeys(DefaultBirthday);
+        var addressInput = driver.FindElementByCssSelector("sdx-select[data-cy=address-input]")
+            .GetShadowRoot().FindElement(By.CssSelector("sdx-input")).GetShadowRoot()
+            .FindElement(By.CssSelector("input"));
+        addressInput.Click();
+        addressInput.SendKeys(DefaultAddress);
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click();
+
+        // Finish
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click();
+
         Thread.Sleep(PageLoadWait);
 
+        // Register for myCloud
+        driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login").Click();
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementById("username").SendKeys(Username);
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("sdx-button#continueButton").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click();
+
+        Thread.Sleep(PageLoadWait);
         driver.FindElementById("password").SendKeys(DefaultPassword);
-        driver.FindElementById("repeat-password").SendKeys(DefaultPassword);
-        driver.FindElementById("captcha-input-field").Click();
-        driver.FindElementById("confirmation-btn").Click();
-        driver.FindElementByCssSelector(".consent-popup .button--primary").Click();
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click();
 
-        /*
-         *     email = account[1]
-    driver = webdriver.Chrome()
-    z = email[0] * 2
-    driver.get('https://registration.scl.swisscom.ch/userinfo-xs')
-    retry(lambda: driver.find_element_by_id('email').send_keys(email))
-    driver.find_element_by_id('lastName').send_keys(z)
-    driver.find_element_by_id('firstName').send_keys(z)
-    driver.find_element_by_id('agbPart1').click()
-    driver.find_elements_by_css_selector('.select__button')[0].click()
-    retry(lambda: driver.find_elements_by_css_selector('.dropdown-item[data-value=MR]')[0].click())
-    driver.find_element_by_id('submitButton').click()
-    retry(lambda: driver.find_element_by_id('password').send_keys(password))
-    driver.find_element_by_id('repeat-password').send_keys(password)
-    driver.find_element_by_id('captcha-input-field').click()
-    retry(lambda: driver.find_element_by_id('confirmation-btn').click())
-    retry(lambda: driver.find_elements_by_css_selector('.consent-popup .button--primary')[0].click())
+        Thread.Sleep(PageLoadWait);
+        foreach (var checkbox in driver.FindElementsByClassName("checkbox")) {
+            checkbox.Click();
+        }
 
-    driver.get('https://www.mycloud.swisscom.ch/login/?type=register')
-    retry(lambda: driver.find_elements_by_css_selector('button[data-test-id=button-use-existing-login]')[0].click())
-    retry(lambda: driver.find_element_by_id('username').send_keys(email))
-    driver.find_element_by_id('continueButton').click()
-    retry(lambda: driver.find_element_by_id('password').send_keys(password))
-    driver.find_element_by_id('submitButton').click()
-    retry(lambda: [box.click() for box in driver.find_elements_by_css_selector('.checkbox')])
-    driver.find_elements_by_css_selector('button[data-test-id=button-use-existing-login]')[0].click()
-    time.sleep(10)
-
-    print(f'{account[0]} done.')
-    driver.quit()
-
-         */
+        Thread.Sleep(PageLoadWait);
+        Thread.Sleep(PageLoadWait);
+        driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]").Click();
+        Thread.Sleep(PageLoadWait);
     }
 }
 

@@ -17,10 +17,11 @@ public partial class AddCommand {
             };
 
             account.Register();
+            SwisscomAccount.Client.Set(account);
             account = SwisscomAccount.Client.Get(account.Id);
             var quota = SwisscomAccountQuota.Client.Get(account.Id);
-            Logger.Info(account);
-            Logger.Info(quota);
+            Logger.Info($"Created: {account}");
+            Logger.Info($"with quota: {quota}");
         }
     }
 
