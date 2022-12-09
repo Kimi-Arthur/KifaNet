@@ -104,8 +104,10 @@ public class SwisscomAccount : DataModel {
             .FindElement(By.CssSelector("input"));
         usernameField.Clear();
         usernameField.SendKeys(Username);
-        driver.FindElementByTagName("sdx-input-item").GetShadowRoot()
-            .FindElement(By.CssSelector("input")).Click();
+        driver.FindElementByTagName("sdx-input-item").FindElement(By.CssSelector("input")).Click();
+        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click();
+
         driver.FindElementById("firstName").SendKeys(name);
         driver.FindElementById("agbPart1").Click();
         driver.FindElementByCssSelector(".select__button").Click();
