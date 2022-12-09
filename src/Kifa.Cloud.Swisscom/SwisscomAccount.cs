@@ -75,9 +75,9 @@ public class SwisscomAccount : DataModel {
             Run(() => driver.FindElementById("submitButton").Click());
             Thread.Sleep(PageLoadWait);
 
-            return Run(() => JToken.Parse(
+            return JToken.Parse(
                 HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token")
-                    .Value)).Value<string>("access_token"));
+                    .Value)).Value<string>("access_token");
         }, (ex, i) => {
             if (i >= 5) {
                 throw ex;
