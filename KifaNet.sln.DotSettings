@@ -74,5 +74,6 @@ public $string$ $PropertyName$ {
 
 }</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Kifa/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Kimily/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Memrise/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Pimix/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
