@@ -60,32 +60,45 @@ public class SwisscomAccount : DataModel {
         var options = GetChromeOptions();
         options.AddArgument("--headless");
 
-        using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
-            WebDriverTimeout);
-
         return Retry.Run(() => {
-            driver.Navigate()
-                .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
-            Run(() => driver
-                .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
-                .Click());
-            Run(() => driver.FindElementById("username").SendKeys(Username));
-            Run(() => driver.FindElementById("continueButton").Click());
-            Run(() => driver.FindElementById("password").SendKeys(Password));
-            Run(() => driver.FindElementById("submitButton").Click());
-            Thread.Sleep(PageLoadWait);
+            using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
+                WebDriverTimeout);
+            try {
+                driver.Navigate()
+                    .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
+                Run(() => driver
+                    .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+                    .Click());
+                Run(() => driver.FindElementById("username").SendKeys(Username));
+                Run(() => driver.FindElementById("continueButton").Click());
+                Run(() => driver.FindElementById("password").SendKeys(Password));
+                Run(() => driver.FindElementById("submitButton").Click());
 
-            return JToken.Parse(
-                HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token")
-                    .Value)).Value<string>("access_token");
+                try {
+                    Thread.Sleep(PageLoadWait);
+                    return JToken.Parse(
+                            HttpUtility.UrlDecode(driver.Manage().Cookies
+                                .GetCookieNamed("mycloud-login_token").Value))
+                        .Value<string>("access_token");
+                } catch (Exception) {
+                    MaybeSkipPhone(driver);
+                }
+
+                Thread.Sleep(PageLoadWait);
+                return JToken.Parse(
+                        HttpUtility.UrlDecode(driver.Manage().Cookies
+                            .GetCookieNamed("mycloud-login_token").Value))
+                    .Value<string>("access_token");
+            } catch (Exception) {
+                Logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
+                throw;
+            }
         }, (ex, i) => {
             if (i >= 5) {
                 throw ex;
             }
 
             Logger.Warn(ex, $"Failed to get token for {Username}...");
-            Logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
-
             Thread.Sleep(TimeSpan.FromSeconds(5));
         });
     }
@@ -156,14 +169,7 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
             .FindElement(By.CssSelector("button")).Click());
 
-        try {
-            Retry.Run(
-                () => driver
-                    .FindElementByCssSelector("a[data-cy=c2f-enter-mobile-screen-skip-button]")
-                    .Click(), Interval, TimeSpan.FromSeconds(15), noLogging: true);
-        } catch (Exception ex) {
-            Logger.Debug("No Skip element found, maybe it's fine. Ignored.");
-        }
+        MaybeSkipPhone(driver);
 
         foreach (var checkbox in Retry.GetItems(() => driver.FindElementsByClassName("checkbox"),
                      Interval, Timeout, noLogging: true)) {
@@ -173,6 +179,17 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
             .Click());
         Thread.Sleep(PageLoadWait);
+    }
+
+    static void MaybeSkipPhone(RemoteWebDriver driver) {
+        try {
+            Retry.Run(
+                () => driver
+                    .FindElementByCssSelector("a[data-cy=c2f-enter-mobile-screen-skip-button]")
+                    .Click(), Interval, TimeSpan.FromSeconds(30), noLogging: true);
+        } catch (Exception ex) {
+            Logger.Debug("No Skip element found, maybe it's fine. Ignored.");
+        }
     }
 
     static void Run(Action action) {
