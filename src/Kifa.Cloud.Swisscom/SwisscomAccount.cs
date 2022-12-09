@@ -98,89 +98,89 @@ public class SwisscomAccount : DataModel {
         var name = new string(Id[0], 3);
 
         driver.Navigate().GoToUrl("https://registration.scl.swisscom.ch/ui/reg/email-address");
-        Thread.Sleep(PageLoadWait);
 
-        var usernameField = driver.FindElementByTagName("sdx-input").GetShadowRoot()
-            .FindElement(By.CssSelector("input"));
-        usernameField.Clear();
-        usernameField.SendKeys(Username);
-        driver.FindElementByTagName("sdx-input-item").FindElement(By.CssSelector("input")).Click();
+        Run(() => driver.FindElementByTagName("sdx-input").GetShadowRoot()
+            .FindElement(By.CssSelector("input")).SendKeys(Username));
+        Run(() => driver.FindElementByTagName("sdx-input-item").FindElement(By.CssSelector("input"))
+            .Click());
 
-        // Code
+        // Code trigger and fill will be handled by user.
+        Retry.Run(
+            () => driver.FindElementByCssSelector("sdx-input[data-cy=email-code-input]")
+                .GetShadowRoot().FindElement(By.CssSelector("input")).Click(), Interval,
+            TimeSpan.FromMinutes(10), noLogging: true);
 
         // Password
-        while (driver.FindElementsByCssSelector("sdx-input[data-cy=password-input]").Count == 0) {
-            Thread.Sleep(TimeSpan.FromSeconds(10));
-        }
-
-        driver.FindElementByCssSelector("sdx-input[data-cy=password-input]").GetShadowRoot()
-            .FindElement(By.CssSelector("input")).SendKeys(DefaultPassword);
-        driver.FindElementByCssSelector("sdx-input[data-cy=password-repeat-input]").GetShadowRoot()
-            .FindElement(By.CssSelector("input")).SendKeys(DefaultPassword);
-        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click();
+        Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=password-input]")
+            .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(DefaultPassword));
+        Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=password-repeat-input]")
+            .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(DefaultPassword));
+        Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]")
+            .GetShadowRoot().FindElement(By.CssSelector("button")).Click());
 
         // Fill info
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("sdx-select#selectTitle").Click();
-        driver.FindElementsByTagName("sdx-select-list")[0]
-            .FindElements(By.CssSelector("sdx-select-option"))[0].Click();
+        Run(() => driver.FindElementByCssSelector("sdx-select#selectTitle").Click());
+        Run(() => driver.FindElementsByTagName("sdx-select-list")[0]
+            .FindElements(By.CssSelector("sdx-select-option"))[0].Click());
 
-        driver.FindElementByCssSelector("sdx-input[data-cy=firstName-input]").GetShadowRoot()
-            .FindElement(By.CssSelector("input")).SendKeys(name);
-        driver.FindElementByCssSelector("sdx-input[data-cy=lastName-input]").GetShadowRoot()
-            .FindElement(By.CssSelector("input")).SendKeys(name);
-        driver.FindElementByCssSelector("sdx-input[data-cy=birth-date-input]").GetShadowRoot()
-            .FindElement(By.CssSelector("input")).SendKeys(DefaultBirthday);
-        var addressInput = driver.FindElementByCssSelector("sdx-select[data-cy=address-input]")
-            .GetShadowRoot().FindElement(By.CssSelector("sdx-input")).GetShadowRoot()
-            .FindElement(By.CssSelector("input"));
-        addressInput.Click();
-        addressInput.SendKeys(DefaultAddress);
+        Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=firstName-input]")
+            .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(name));
+        Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=lastName-input]")
+            .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(name));
+        Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=birth-date-input]")
+            .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(DefaultBirthday));
+        var addressInput = Run(()
+            => driver.FindElementByCssSelector("sdx-select[data-cy=address-input]").GetShadowRoot()
+                .FindElement(By.CssSelector("sdx-input")).GetShadowRoot()
+                .FindElement(By.CssSelector("input")));
+        Run(() => addressInput.Click());
+        Run(() => addressInput.SendKeys(DefaultAddress));
         Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click();
+        Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]")
+            .GetShadowRoot().FindElement(By.CssSelector("button")).Click());
 
         // Finish
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click();
-
+        Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]")
+            .GetShadowRoot().FindElement(By.CssSelector("button")).Click());
         Thread.Sleep(PageLoadWait);
 
         // Register for myCloud
         driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login").Click();
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementById("username").SendKeys(Username);
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("sdx-button#continueButton").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click();
+        Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+            .Click());
+        Run(() => driver.FindElementById("username").SendKeys(Username));
+        Run(() => driver.FindElementByCssSelector("sdx-button#continueButton").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click());
 
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementById("password").SendKeys(DefaultPassword);
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click();
+        Run(() => driver.FindElementById("password").SendKeys(DefaultPassword));
+        Run(() => driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click());
 
-        Thread.Sleep(PageLoadWait);
-        foreach (var checkbox in driver.FindElementsByClassName("checkbox")) {
-            checkbox.Click();
+        try {
+            Retry.Run(
+                () => driver
+                    .FindElementByCssSelector("a[data-cy=c2f-enter-mobile-screen-skip-button]")
+                    .Click(), Interval, TimeSpan.FromSeconds(15), noLogging: true);
+        } catch (Exception ex) {
+            Logger.Debug("No Skip element found, maybe it's fine. Ignored.");
         }
 
-        Thread.Sleep(PageLoadWait);
-        Thread.Sleep(PageLoadWait);
-        driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]").Click();
+        foreach (var checkbox in Retry.GetItems(() => driver.FindElementsByClassName("checkbox"),
+                     Interval, Timeout, noLogging: true)) {
+            Run(() => checkbox.Click());
+        }
+
+        Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+            .Click());
         Thread.Sleep(PageLoadWait);
     }
 
     static void Run(Action action) {
-        Retry.Run(action, Interval, Timeout);
+        Retry.Run(action, Interval, Timeout, noLogging: true);
     }
 
     static T Run<T>(Func<T> action) {
-        return Retry.Run<T>(action, Interval, Timeout);
+        return Retry.Run<T>(action, Interval, Timeout, noLogging: true);
     }
 }
 
