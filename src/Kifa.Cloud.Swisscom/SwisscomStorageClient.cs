@@ -38,7 +38,7 @@ public class SwisscomStorageClient : StorageClient {
     public string AccountId { get; set; }
 
     public override long Length(string path) {
-        using var response = client.SendWithRetry(() => APIList.GetFileInfo.GetRequest(
+        using var response = client.Send(APIList.GetFileInfo.GetRequest(
             new Dictionary<string, string> {
                 ["file_id"] = GetFileId(path),
                 ["access_token"] = Account.AccessToken
