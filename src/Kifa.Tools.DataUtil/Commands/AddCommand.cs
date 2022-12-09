@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CommandLine;
 using Kifa.Cloud.Swisscom;
 using NLog;
@@ -12,12 +13,12 @@ public partial class AddCommand : KifaCommand {
     public string Type { get; set; }
 
     [Value(0, Required = true, HelpText = "Spec for creating items.")]
-    public string Spec { get; set; }
+    public IEnumerable<string> Specs { get; set; }
 
     public override int Execute() {
         switch (Type) {
             case SwisscomAccount.ModelId:
-                CreateSwisscomAccounts(Spec);
+                CreateSwisscomAccounts(Specs);
                 return 0;
             default:
                 Logger.Warn($"No add logic found for {Type}");
