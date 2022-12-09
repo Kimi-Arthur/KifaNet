@@ -1,8 +1,13 @@
 using System;
+using System.Collections;
+using System.Threading;
+using NLog;
 
 namespace Kifa;
 
 public static class Retry {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     /// <summary>
     /// Runs action repeatedly. calls isValid when it gets a result, and calls handleException if it
     /// gets an exception.
@@ -51,6 +56,90 @@ public static class Retry {
                 }
 
                 handleException(ex, i);
+            }
+        }
+    }
+
+    public static void Run(Action action, TimeSpan interval, TimeSpan timeout,
+        TimeSpan? initialWait = null) {
+        if (initialWait != null) {
+            Thread.Sleep(initialWait.Value);
+        }
+
+        var start = DateTime.Now;
+        for (var i = 1;; i++) {
+            try {
+                action();
+                return;
+            } catch (Exception ex) {
+                if (DateTime.Now - start < timeout) {
+                    Logger.Warn(ex, $"Failed to act ({i}). Retrying...");
+                    Thread.Sleep(interval);
+                } else {
+                    throw;
+                }
+            }
+        }
+    }
+
+    public static T Run<T>(Func<T?> action, TimeSpan interval, TimeSpan timeout,
+        TimeSpan? initialWait = null) {
+        if (initialWait != null) {
+            Thread.Sleep(initialWait.Value);
+        }
+
+        var start = DateTime.Now;
+        for (var i = 1;; i++) {
+            try {
+                var result = action();
+                if (result != null) {
+                    return result;
+                }
+
+                if (DateTime.Now - start < timeout) {
+                    Logger.Warn($"Failed to get item ({i}). Retrying...");
+                    Thread.Sleep(interval);
+                } else {
+                    throw new Exception($"Failed to get item after {i} tries.");
+                }
+            } catch (Exception ex) {
+                if (DateTime.Now - start < timeout) {
+                    Logger.Warn(ex, $"Failed to get item ({i}). Retrying...");
+                    Thread.Sleep(interval);
+                } else {
+                    throw;
+                }
+            }
+        }
+    }
+
+    public static T GetItems<T>(Func<T> action, TimeSpan interval, TimeSpan timeout,
+        TimeSpan? initialWait = null) where T : ICollection {
+        if (initialWait != null) {
+            Thread.Sleep(initialWait.Value);
+        }
+
+        var start = DateTime.Now;
+        for (var i = 1;; i++) {
+            try {
+                var result = action();
+                if (result.Count > 0) {
+                    return result;
+                }
+
+                if (DateTime.Now - start < timeout) {
+                    Logger.Warn($"Failed to get items ({i}). Retrying...");
+                    Thread.Sleep(interval);
+                } else {
+                    throw new Exception($"Failed to get items after {i} tries.");
+                }
+            } catch (Exception ex) {
+                if (DateTime.Now - start < timeout) {
+                    Logger.Warn(ex, $"Failed to get items ({i}). Retrying...");
+                    Thread.Sleep(interval);
+                } else {
+                    throw;
+                }
             }
         }
     }

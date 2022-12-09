@@ -21,6 +21,9 @@ public class SwisscomAccount : DataModel {
 
     public static TimeSpan PageLoadWait { get; set; } = TimeSpan.FromSeconds(3);
 
+    public static TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(3);
+    public static TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
+
     public static string DefaultPassword { get; set; }
 
     public static string DefaultBirthday { get; set; }
@@ -63,25 +66,18 @@ public class SwisscomAccount : DataModel {
         return Retry.Run(() => {
             driver.Navigate()
                 .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
+            Run(() => driver
+                .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+                .Click());
+            Run(() => driver.FindElementById("username").SendKeys(Username));
+            Run(() => driver.FindElementById("continueButton").Click());
+            Run(() => driver.FindElementById("password").SendKeys(Password));
+            Run(() => driver.FindElementById("submitButton").Click());
             Thread.Sleep(PageLoadWait);
-            driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
-                .Click();
-            driver.FindElementById("username").SendKeys(Username);
-            driver.FindElementById("continueButton").Click();
-            Thread.Sleep(PageLoadWait);
-            driver.FindElementById("password").SendKeys(Password);
-            driver.FindElementById("submitButton").Click();
-            Thread.Sleep(PageLoadWait);
-            var tcBoxes = driver.FindElementsById("tc-checkbox");
-            if (tcBoxes.Count > 0) {
-                tcBoxes[0].FindElement(By.TagName("span")).Click();
-                driver.FindElementByTagName("sdx-button").Click();
-                Thread.Sleep(PageLoadWait);
-            }
 
-            return JToken.Parse(
+            return Run(() => JToken.Parse(
                 HttpUtility.UrlDecode(driver.Manage().Cookies.GetCookieNamed("mycloud-login_token")
-                    .Value)).Value<string>("access_token");
+                    .Value)).Value<string>("access_token"));
         }, (ex, i) => {
             if (i >= 5) {
                 throw ex;
@@ -177,6 +173,14 @@ public class SwisscomAccount : DataModel {
         Thread.Sleep(PageLoadWait);
         driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]").Click();
         Thread.Sleep(PageLoadWait);
+    }
+
+    static void Run(Action action) {
+        Retry.Run(action, Interval, Timeout);
+    }
+
+    static T Run<T>(Func<T> action) {
+        return Retry.Run<T>(action, Interval, Timeout);
     }
 }
 
