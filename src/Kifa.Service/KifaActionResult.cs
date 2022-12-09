@@ -25,6 +25,8 @@ public class KifaActionResult {
     public static KifaActionResult FromAction(Action action) {
         try {
             action.Invoke();
+        } catch (KifaActionFailedException ex) {
+            return ex.ActionResult;
         } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,

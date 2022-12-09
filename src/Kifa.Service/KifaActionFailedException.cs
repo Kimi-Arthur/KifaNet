@@ -2,7 +2,7 @@
 
 namespace Kifa.Service;
 
-class KifaActionFailedException : Exception {
+public class KifaActionFailedException : Exception {
     public KifaActionResult ActionResult { get; set; }
 
     public KifaActionFailedException(KifaActionResult actionResult) {
