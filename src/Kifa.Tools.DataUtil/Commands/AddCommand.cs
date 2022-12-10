@@ -12,7 +12,7 @@ public partial class AddCommand : KifaCommand {
     [Option('t', "type", HelpText = "Type of data. Allowed values: accounts/swisscom")]
     public string Type { get; set; }
 
-    [Option('p', "threads", Default = 4,
+    [Option('p', "threads", Default = 8,
         HelpText = "Number of parallel threads to use when creating accounts.")]
     public int ParallelThreads { get; set; }
 

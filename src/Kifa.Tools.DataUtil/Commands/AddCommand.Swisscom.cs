@@ -9,8 +9,8 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
-        specs.SelectMany(ExpandAccounts).AsParallel().WithDegreeOfParallelism(ParallelThreads).ForEach(account
-            => ExecuteItem(account.Id, () => {
+        specs.SelectMany(ExpandAccounts).AsParallel().WithDegreeOfParallelism(ParallelThreads)
+            .ForAll(account => ExecuteItem(account.Id, () => {
                 var quota = SwisscomAccountQuota.Client.Get(account.Id, true);
                 if (quota?.TotalQuota > 0) {
                     return new KifaActionResult {
