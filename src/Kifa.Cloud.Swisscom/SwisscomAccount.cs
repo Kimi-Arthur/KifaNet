@@ -66,13 +66,6 @@ public class SwisscomAccount : DataModel {
 
     #endregion
 
-    static ChromeOptions GetChromeOptions() {
-        var options = new ChromeOptions();
-        options.AddArgument(
-            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36");
-        return options;
-    }
-
     static SwisscomAccountServiceClient? client;
 
     public static SwisscomAccountServiceClient Client
@@ -97,12 +90,8 @@ public class SwisscomAccount : DataModel {
     }
 
     string GetToken() {
-        var options = GetChromeOptions();
-        options.AddArgument("--headless");
-
         return Retry.Run(() => {
-            using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
-                WebDriverTimeout);
+            using var driver = GetDriver(true);
             try {
                 driver.Navigate()
                     .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
@@ -145,17 +134,12 @@ public class SwisscomAccount : DataModel {
     }
 
     public void Register() {
-        var options = GetChromeOptions();
-
         switch (GetRegistrationStatus()) {
             case AccountRegistrationStatus.Unexpected:
                 throw new Exception($"Account {Id} in an unexpected registration status.");
             case AccountRegistrationStatus.NotRegistered:
-                using (var driver = new RemoteWebDriver(new Uri(WebDriverUrl),
-                           options.ToCapabilities(), WebDriverTimeout)) {
-                    RegisterSwisscom(driver);
-                    RegisterMyCloud(driver);
-                }
+                RegisterSwisscom();
+                RegisterMyCloud();
 
                 break;
             case AccountRegistrationStatus.Registered:
@@ -164,22 +148,14 @@ public class SwisscomAccount : DataModel {
             case AccountRegistrationStatus.OnlySwisscom:
                 Logger.Debug($"Account {Id} is partially registered. " +
                              $"Registering now for myCloud account.");
-                using (var driver = new RemoteWebDriver(new Uri(WebDriverUrl),
-                           options.ToCapabilities(), WebDriverTimeout)) {
-                    RegisterMyCloud(driver);
-                }
+                RegisterMyCloud();
 
                 break;
         }
     }
 
     AccountRegistrationStatus GetRegistrationStatus() {
-        var options = GetChromeOptions();
-        // options.AddArgument("--headless");
-
-        using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
-            WebDriverTimeout);
-
+        using var driver = GetDriver(true);
         driver.Navigate()
             .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
         Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
@@ -222,7 +198,8 @@ public class SwisscomAccount : DataModel {
             : AccountRegistrationStatus.Unexpected;
     }
 
-    void RegisterSwisscom(RemoteWebDriver driver) {
+    void RegisterSwisscom() {
+        using var driver = GetDriver();
         driver.Navigate().GoToUrl("https://registration.scl.swisscom.ch/ui/reg/email-address");
 
         Run(() => driver.FindElementByTagName("sdx-input").GetShadowRoot()
@@ -272,7 +249,8 @@ public class SwisscomAccount : DataModel {
         Thread.Sleep(PageLoadWait);
     }
 
-    void RegisterMyCloud(RemoteWebDriver driver) {
+    void RegisterMyCloud() {
+        using var driver = GetDriver(true);
         driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
         Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
             .Click());
@@ -318,6 +296,18 @@ public class SwisscomAccount : DataModel {
 
     static T Run<T>(Func<T> action) {
         return Retry.Run(action, Interval, Timeout, noLogging: true);
+    }
+
+    static RemoteWebDriver GetDriver(bool headless = false) {
+        var options = new ChromeOptions();
+        options.AddArgument(
+            "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36");
+        if (headless) {
+            options.AddArgument("--headless");
+        }
+
+        return new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
+            WebDriverTimeout);
     }
 }
 
