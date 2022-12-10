@@ -85,7 +85,7 @@ public static class Retry {
         }
     }
 
-    public static T Run<T>(Func<T?> action, TimeSpan interval, TimeSpan timeout,
+    public static T? Run<T>(Func<T?> action, TimeSpan interval, TimeSpan timeout,
         TimeSpan? initialWait = null, bool noLogging = false) {
         if (initialWait != null) {
             Thread.Sleep(initialWait.Value);
@@ -106,7 +106,8 @@ public static class Retry {
 
                     Thread.Sleep(interval);
                 } else {
-                    throw new Exception($"Failed to get item after {i} tries.");
+                    Logger.Warn(new Exception($"Failed to get item after {i} tries."));
+                    return default;
                 }
             } catch (Exception ex) {
                 if (DateTime.Now - start < timeout) {
@@ -143,7 +144,8 @@ public static class Retry {
 
                     Thread.Sleep(interval);
                 } else {
-                    throw new Exception($"Failed to get items after {i} tries.");
+                    Logger.Warn($"Failed to get items after {i} tries.");
+                    return result;
                 }
             } catch (Exception ex) {
                 if (DateTime.Now - start < timeout) {
