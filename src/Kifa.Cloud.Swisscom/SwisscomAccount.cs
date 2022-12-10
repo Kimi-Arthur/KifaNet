@@ -104,22 +104,15 @@ public class SwisscomAccount : DataModel {
                 Run(() => driver.FindElementById("password").SendKeys(Password));
                 Run(() => driver.FindElementById("submitButton").Click());
 
-                try {
-                    Thread.Sleep(PageLoadWait);
-                    return JToken.Parse(
-                            HttpUtility.UrlDecode(driver.Manage().Cookies
-                                .GetCookieNamed("mycloud-login_token").Value))
-                        .Value<string>("access_token");
-                } catch (Exception) {
-                    Logger.Warn("No cookie found. Maybe need to skip mobile?");
+                var cookie = GetCookieToken(driver);
+                if (cookie != null) {
+                    return cookie;
                 }
 
                 MaybeSkipPhone(driver);
+
                 Thread.Sleep(PageLoadWait);
-                return JToken.Parse(
-                        HttpUtility.UrlDecode(driver.Manage().Cookies
-                            .GetCookieNamed("mycloud-login_token").Value))
-                    .Value<string>("access_token");
+                return GetCookieToken(driver);
             } catch (Exception) {
                 Logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
                 throw;
@@ -131,7 +124,7 @@ public class SwisscomAccount : DataModel {
 
             Logger.Warn(ex, $"Failed to get token for {Username}...");
             Thread.Sleep(TimeSpan.FromSeconds(5));
-        });
+        }, isValid: (value, _) => value != null);
     }
 
     public void Register() {
@@ -167,7 +160,8 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementById("submitButton").Click());
         Thread.Sleep(PageLoadWait);
 
-        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found")) {
+        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
+            driver.Url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
             return AccountRegistrationStatus.OnlySwisscom;
         }
 
@@ -176,27 +170,31 @@ public class SwisscomAccount : DataModel {
             return AccountRegistrationStatus.NotRegistered;
         }
 
-        try {
-            if (JToken.Parse(HttpUtility.UrlDecode(driver.Manage().Cookies
-                    .GetCookieNamed("mycloud-login_token").Value)).Value<string>("access_token") !=
-                null) {
-                return AccountRegistrationStatus.Registered;
-            }
-        } catch (Exception) {
-            Logger.Warn("No cookie found. Maybe need to skip mobile?");
+        if (GetCookieToken(driver) != null) {
+            return AccountRegistrationStatus.Registered;
         }
 
         MaybeSkipPhone(driver);
         Thread.Sleep(PageLoadWait);
 
-        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found")) {
+        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
+            driver.Url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
             return AccountRegistrationStatus.OnlySwisscom;
         }
 
-        return JToken.Parse(HttpUtility.UrlDecode(driver.Manage().Cookies
-            .GetCookieNamed("mycloud-login_token").Value)).Value<string>("access_token") != null
+        return GetCookieToken(driver) != null
             ? AccountRegistrationStatus.Registered
             : AccountRegistrationStatus.Unexpected;
+    }
+
+    static string? GetCookieToken(RemoteWebDriver driver) {
+        try {
+            return JToken.Parse(HttpUtility.UrlDecode(driver.Manage().Cookies
+                .GetCookieNamed("mycloud-login_token").Value)).Value<string>("access_token");
+        } catch (NullReferenceException ex) {
+            Logger.Warn("No cookie found. Maybe need to skip mobile?");
+            return null;
+        }
     }
 
     void RegisterSwisscom() {
