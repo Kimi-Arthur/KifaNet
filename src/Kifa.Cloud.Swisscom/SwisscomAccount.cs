@@ -121,9 +121,10 @@ public class SwisscomAccount : DataModel {
                                 .GetCookieNamed("mycloud-login_token").Value))
                         .Value<string>("access_token");
                 } catch (Exception) {
-                    MaybeSkipPhone(driver);
+                    Logger.Warn("No cookie found. Maybe need to skip mobile?");
                 }
 
+                MaybeSkipPhone(driver);
                 Thread.Sleep(PageLoadWait);
                 return JToken.Parse(
                         HttpUtility.UrlDecode(driver.Manage().Cookies
@@ -146,12 +147,79 @@ public class SwisscomAccount : DataModel {
     public void Register() {
         var options = GetChromeOptions();
 
+        switch (GetRegistrationStatus()) {
+            case AccountRegistrationStatus.Unexpected:
+                throw new Exception($"Account {Id} in an unexpected registration status.");
+            case AccountRegistrationStatus.NotRegistered:
+                using (var driver = new RemoteWebDriver(new Uri(WebDriverUrl),
+                           options.ToCapabilities(), WebDriverTimeout)) {
+                    RegisterSwisscom(driver);
+                    RegisterMyCloud(driver);
+                }
+
+                break;
+            case AccountRegistrationStatus.Registered:
+                Logger.Debug($"Account {Id} is already fully registered.");
+                break;
+            case AccountRegistrationStatus.OnlySwisscom:
+                Logger.Debug($"Account {Id} is partially registered. " +
+                             $"Registering now for myCloud account.");
+                using (var driver = new RemoteWebDriver(new Uri(WebDriverUrl),
+                           options.ToCapabilities(), WebDriverTimeout)) {
+                    RegisterMyCloud(driver);
+                }
+
+                break;
+        }
+    }
+
+    AccountRegistrationStatus GetRegistrationStatus() {
+        var options = GetChromeOptions();
+        // options.AddArgument("--headless");
+
         using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
             WebDriverTimeout);
 
-        RegisterSwisscom(driver);
+        driver.Navigate()
+            .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
+        Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+            .Click());
+        Run(() => driver.FindElementById("username").SendKeys(Username));
+        Run(() => driver.FindElementById("continueButton").Click());
+        Run(() => driver.FindElementById("password").SendKeys(Password));
+        Run(() => driver.FindElementById("submitButton").Click());
+        Thread.Sleep(PageLoadWait);
 
-        RegisterMyCloud(driver);
+        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found")) {
+            return AccountRegistrationStatus.OnlySwisscom;
+        }
+
+        var errorElements = driver.FindElementsByTagName("sdx-validation-message");
+        if (errorElements.Count > 0) {
+            return AccountRegistrationStatus.NotRegistered;
+        }
+
+        try {
+            if (JToken.Parse(HttpUtility.UrlDecode(driver.Manage().Cookies
+                    .GetCookieNamed("mycloud-login_token").Value)).Value<string>("access_token") !=
+                null) {
+                return AccountRegistrationStatus.Registered;
+            }
+        } catch (Exception) {
+            Logger.Warn("No cookie found. Maybe need to skip mobile?");
+        }
+
+        MaybeSkipPhone(driver);
+        Thread.Sleep(PageLoadWait);
+
+        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found")) {
+            return AccountRegistrationStatus.OnlySwisscom;
+        }
+
+        return JToken.Parse(HttpUtility.UrlDecode(driver.Manage().Cookies
+            .GetCookieNamed("mycloud-login_token").Value)).Value<string>("access_token") != null
+            ? AccountRegistrationStatus.Registered
+            : AccountRegistrationStatus.Unexpected;
     }
 
     void RegisterSwisscom(RemoteWebDriver driver) {
@@ -249,7 +317,7 @@ public class SwisscomAccount : DataModel {
     }
 
     static T Run<T>(Func<T> action) {
-        return Retry.Run<T>(action, Interval, Timeout, noLogging: true);
+        return Retry.Run(action, Interval, Timeout, noLogging: true);
     }
 }
 
@@ -258,4 +326,11 @@ public interface SwisscomAccountServiceClient : KifaServiceClient<SwisscomAccoun
 
 public class SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAccount>,
     SwisscomAccountServiceClient {
+}
+
+enum AccountRegistrationStatus {
+    Unexpected,
+    NotRegistered,
+    OnlySwisscom,
+    Registered
 }
