@@ -15,7 +15,16 @@ public class SwisscomAccount : DataModel {
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7);
 
-    public static string WebDriverUrl { get; set; }
+    #region public late static string WebDriverUrl { get; set; }
+
+    static string? webDriverUrl;
+
+    public static string WebDriverUrl {
+        get => Late.Get(webDriverUrl);
+        set => Late.Set(ref webDriverUrl, value);
+    }
+
+    #endregion
 
     public static TimeSpan WebDriverTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
@@ -24,11 +33,38 @@ public class SwisscomAccount : DataModel {
     public static TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(3);
     public static TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
 
-    public static string DefaultPassword { get; set; }
+    #region public late static string DefaultPassword { get; set; }
 
-    public static string DefaultBirthday { get; set; }
+    static string? defaultPassword;
 
-    public static string DefaultAddress { get; set; }
+    public static string DefaultPassword {
+        get => Late.Get(defaultPassword);
+        set => Late.Set(ref defaultPassword, value);
+    }
+
+    #endregion
+
+    #region public late static string DefaultBirthday { get; set; }
+
+    static string? defaultBirthday;
+
+    public static string DefaultBirthday {
+        get => Late.Get(defaultBirthday);
+        set => Late.Set(ref defaultBirthday, value);
+    }
+
+    #endregion
+
+    #region public late static string DefaultAddress { get; set; }
+
+    static string? defaultAddress;
+
+    public static string DefaultAddress {
+        get => Late.Get(defaultAddress);
+        set => Late.Set(ref defaultAddress, value);
+    }
+
+    #endregion
 
     static ChromeOptions GetChromeOptions() {
         var options = new ChromeOptions();
@@ -37,21 +73,25 @@ public class SwisscomAccount : DataModel {
         return options;
     }
 
-    static SwisscomAccountServiceClient client;
+    static SwisscomAccountServiceClient? client;
 
     public static SwisscomAccountServiceClient Client
         => client ??= new SwisscomAccountRestServiceClient();
 
-    public string Username { get; set; }
-    public string Password { get; set; }
+    public string? Username { get; set; }
+    public string? Password { get; set; }
 
-    public string AccessToken { get; set; }
+    public string? AccessToken { get; set; }
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
+        if (Username == null || Password == null) {
+            throw new UnableToFillException($"No account info provided for {Id}.");
+        }
+
         AccessToken = GetToken();
         return DateTimeOffset.UtcNow + TokenValidDuration;
     }

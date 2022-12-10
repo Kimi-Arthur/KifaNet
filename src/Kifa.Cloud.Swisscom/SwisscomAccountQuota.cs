@@ -10,7 +10,7 @@ namespace Kifa.Cloud.Swisscom;
 public class SwisscomAccountQuota : DataModel {
     public const string ModelId = "accounts/swisscom_quotas";
 
-    static SwisscomAccountQuotaServiceClient client;
+    static SwisscomAccountQuotaServiceClient? client;
 
     public static SwisscomAccountQuotaServiceClient Client
         => client ??= new SwisscomAccountQuotaRestServiceClient();
@@ -35,6 +35,10 @@ public class SwisscomAccountQuota : DataModel {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
+        if (AccountClient.Get(Id) == null) {
+            throw new UnableToFillException($"Account {Id} is missing.");
+        }
+
         if (UpdateQuota().Status == KifaActionStatus.OK) {
             return Date.Zero;
         }
@@ -52,12 +56,21 @@ public class SwisscomAccountQuota : DataModel {
 
     KifaActionResult UpdateQuota()
         => KifaActionResult.FromAction(() => {
+            var account = AccountClient.Get(Id);
+            if (account?.AccessToken == null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = $"Unable to get account {Id} unexpectedly."
+                };
+            }
+
             var response = httpClient.FetchJToken(()
                 => SwisscomStorageClient.APIList.Quota.GetRequest(new Dictionary<string, string> {
-                    ["access_token"] = AccountClient.Get(Id!)!.AccessToken
+                    ["access_token"] = account.AccessToken
                 }));
             UsedQuota = response.Value<long>("TotalBytes");
             TotalQuota = response.Value<long>("StorageLimit");
+            return KifaActionResult.Success;
         });
 }
 
