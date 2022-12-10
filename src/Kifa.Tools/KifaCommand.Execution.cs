@@ -8,13 +8,17 @@ namespace Kifa.Tools;
 public abstract partial class KifaCommand {
     List<(string item, KifaActionResult result)> Results { get; set; } = new();
 
-    protected void ExecuteItem(string item, Action action)
-        => Results.Add((item,
+    protected void ExecuteItem(string item, Action action) {
+        Logger.Info($"Action on {item} started.");
+        Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}")));
+    }
 
-    protected void ExecuteItem(string item, Func<KifaActionResult> action)
-        => Results.Add((item,
+    protected void ExecuteItem(string item, Func<KifaActionResult> action) {
+        Logger.Info($"Action on {item} started.");
+        Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}")));
+    }
 
     public int LogSummary() {
         var resultsByStatus = Results.GroupBy(item => item.result.IsAcceptable)
