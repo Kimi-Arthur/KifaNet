@@ -9,7 +9,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
-        specs.SelectMany(GetAccounts).AsParallel().WithDegreeOfParallelism(1).Select(account
+        specs.SelectMany(ExpandAccounts).AsParallel().WithDegreeOfParallelism(1).Select(account
             => KifaActionResult.FromAction(() => {
                 account.Register();
                 SwisscomAccount.Client.Set(account);
@@ -27,7 +27,7 @@ public partial class AddCommand {
             })).ToList();
     }
 
-    IEnumerable<SwisscomAccount> GetAccounts(string spec) {
+    IEnumerable<SwisscomAccount> ExpandAccounts(string spec) {
         var type = spec[..1];
         var count = 1 << 4 * (5 - spec.Length);
         var number = int.Parse(spec[1..], NumberStyles.HexNumber) * count;
