@@ -12,6 +12,10 @@ public partial class AddCommand : KifaCommand {
     [Option('t', "type", HelpText = "Type of data. Allowed values: accounts/swisscom")]
     public string Type { get; set; }
 
+    [Option('p', "threads", Default = 4,
+        HelpText = "Number of parallel threads to use when creating accounts.")]
+    public int ParallelThreads { get; set; }
+
     [Value(0, Required = true, HelpText = "Spec for creating items.")]
     public IEnumerable<string> Specs { get; set; }
 
