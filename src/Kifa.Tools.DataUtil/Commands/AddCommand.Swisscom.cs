@@ -9,22 +9,33 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
-        specs.SelectMany(ExpandAccounts).AsParallel().WithDegreeOfParallelism(1).Select(account
-            => KifaActionResult.FromAction(() => {
+        specs.SelectMany(ExpandAccounts).AsParallel().WithDegreeOfParallelism(1).ForEach(account
+            => ExecuteItem(account.Id, () => {
+                var quota = SwisscomAccountQuota.Client.Get(account.Id, true);
+                if (quota?.TotalQuota > 0) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.OK,
+                        Message = "Account already registered."
+                    };
+                }
+
                 account.Register();
                 SwisscomAccount.Client.Set(account);
                 var accountFromServer = SwisscomAccount.Client.Get(account.Id);
                 if (accountFromServer == null) {
-                    throw new KifaActionFailedException(new KifaActionResult {
+                    return new KifaActionResult {
                         Status = KifaActionStatus.Error,
                         Message = $"Failed to get the account ({account.Id}) from server."
-                    });
+                    };
                 }
 
-                var quota = SwisscomAccountQuota.Client.Get(accountFromServer.Id);
-                Logger.Info($"Created: {accountFromServer}");
-                Logger.Info($"with quota: {quota}");
-            })).ToList();
+                quota = SwisscomAccountQuota.Client.Get(accountFromServer.Id);
+                return new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message =
+                        $"Successfully registered account {accountFromServer}\nwith quota {quota}"
+                };
+            }));
     }
 
     IEnumerable<SwisscomAccount> ExpandAccounts(string spec) {
