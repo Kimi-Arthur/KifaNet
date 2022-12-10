@@ -108,8 +108,13 @@ public class SwisscomAccount : DataModel {
 
         using var driver = new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
             WebDriverTimeout);
-        var name = new string(Id[0], 3);
 
+        RegisterSwisscom(driver);
+
+        RegisterMyCloud(driver);
+    }
+
+    void RegisterSwisscom(RemoteWebDriver driver) {
         driver.Navigate().GoToUrl("https://registration.scl.swisscom.ch/ui/reg/email-address");
 
         Run(() => driver.FindElementByTagName("sdx-input").GetShadowRoot()
@@ -136,6 +141,7 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementsByTagName("sdx-select-list")[0]
             .FindElements(By.CssSelector("sdx-select-option"))[0].Click());
 
+        var name = new string(Id[0], 3);
         Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=firstName-input]")
             .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(name));
         Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=lastName-input]")
@@ -156,8 +162,9 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]")
             .GetShadowRoot().FindElement(By.CssSelector("button")).Click());
         Thread.Sleep(PageLoadWait);
+    }
 
-        // Register for myCloud
+    void RegisterMyCloud(RemoteWebDriver driver) {
         driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
         Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
             .Click());
