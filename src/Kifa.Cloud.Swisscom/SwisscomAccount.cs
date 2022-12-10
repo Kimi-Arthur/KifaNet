@@ -32,6 +32,7 @@ public class SwisscomAccount : DataModel {
 
     public static TimeSpan Interval { get; set; } = TimeSpan.FromSeconds(3);
     public static TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
+    public static TimeSpan LongTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
     #region public late static string DefaultPassword { get; set; }
 
@@ -208,14 +209,15 @@ public class SwisscomAccount : DataModel {
             .Click());
 
         // Code trigger and fill will be handled by user.
-        Retry.Run(
+        Run(
             () => driver.FindElementByCssSelector("sdx-input[data-cy=email-code-input]")
-                .GetShadowRoot().FindElement(By.CssSelector("input")).Click(), Interval,
-            TimeSpan.FromMinutes(10), noLogging: true);
+                .GetShadowRoot().FindElement(By.CssSelector("input")).Click(), waitLong: true);
 
         // Password
-        Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=password-input]")
-            .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(DefaultPassword));
+        Run(
+            () => driver.FindElementByCssSelector("sdx-input[data-cy=password-input]")
+                .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(DefaultPassword),
+            waitLong: true);
         Run(() => driver.FindElementByCssSelector("sdx-input[data-cy=password-repeat-input]")
             .GetShadowRoot().FindElement(By.CssSelector("input")).SendKeys(DefaultPassword));
         Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]")
@@ -290,13 +292,13 @@ public class SwisscomAccount : DataModel {
         }
     }
 
-    static void Run(Action action) {
-        Retry.Run(action, Interval, Timeout, noLogging: true);
-    }
+    static void Run(Action action, bool waitLong = false)
+        => Retry.Run(action, interval: Interval, timeout: waitLong ? LongTimeout : Timeout,
+            noLogging: true);
 
-    static T Run<T>(Func<T> action) {
-        return Retry.Run(action, Interval, Timeout, noLogging: true);
-    }
+    static T Run<T>(Func<T> action, bool waitLong = false)
+        => Retry.Run(action, interval: Interval, timeout: waitLong ? LongTimeout : Timeout,
+            noLogging: true) ?? throw new Exception("Failed to get element.");
 
     static RemoteWebDriver GetDriver(bool headless = false) {
         var options = new ChromeOptions();
