@@ -48,7 +48,7 @@ public partial class KifaFile {
                     $"google:good/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
                 CloudServiceType.Swiss =>
                     // TODO: Use format specific header size.
-                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.Id, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
+                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
                 _ => ""
             };
 
