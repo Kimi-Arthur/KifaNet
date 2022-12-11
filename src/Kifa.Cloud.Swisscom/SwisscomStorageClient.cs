@@ -14,12 +14,9 @@ namespace Kifa.Cloud.Swisscom;
 public class SwisscomStorageClient : StorageClient {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     const int BlockSize = 8 << 20;
-    const long GraceSize = 10 << 20;
     public const long ShardSize = 1 << 30;
 
     public static APIList APIList { get; set; }
-
-    public static List<StorageMapping> StorageMappings { get; set; }
 
     public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId);
 
@@ -172,40 +169,8 @@ public class SwisscomStorageClient : StorageClient {
         return (int) memoryStream.Position;
     }
 
-    // TODO(#2): Should implement in server side.
     public static string FindAccounts(string path, long length) {
-        var candidateAccountIds = StorageMappings
-            .First(mapping => path.StartsWith(mapping.Pattern)).Accounts;
-        var selectedAccounts = new List<string>();
-        for (var i = 0L; i < length; i += ShardSize) {
-            selectedAccounts.Add(FindAccount(candidateAccountIds, Math.Min(ShardSize, length - i)));
-        }
-
-        return string.Join("+", selectedAccounts);
-    }
-
-    public static string FindAccount(List<string> accountIds, long length) {
-        var account = SwisscomAccountQuota.Client.List().Values
-            .Where(account => accountIds.Contains(account.Id)).OrderBy(a => a.LeftQuota)
-            .FirstOrDefault(s => s.LeftQuota >= length + GraceSize);
-        if (account == null) {
-            throw new InsufficientStorageException();
-        }
-
-        // We will assume the quota is up to date here.
-        account = SwisscomAccountQuota.Client.Get(account.Id);
-        if (account.LeftQuota < length + GraceSize) {
-            Logger.Fatal("Unexpectedly, the account doesn't have enough quota.");
-            throw new InsufficientStorageException();
-        }
-
-        var result = SwisscomAccountQuota.Client.ReserveQuota(account.Id, length);
-        if (result.Status != KifaActionStatus.OK) {
-            Logger.Fatal($"Failed to reserve quota {length}B in {account.Id}.");
-            throw new InsufficientStorageException();
-        }
-
-        return account.Id;
+        return SwisscomAccountQuota.FindAccounts(path, length);
     }
 
     static string GetFileId(string path) => $"/Drive{path}".ToBase64();
@@ -220,9 +185,4 @@ public class APIList {
     public Api UploadBlock { get; set; }
     public Api FinishUpload { get; set; }
     public Api Quota { get; set; }
-}
-
-public class StorageMapping {
-    public string Pattern { get; set; }
-    public List<string> Accounts { get; set; }
 }
