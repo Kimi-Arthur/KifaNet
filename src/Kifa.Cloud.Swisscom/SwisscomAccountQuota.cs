@@ -40,6 +40,7 @@ public class SwisscomAccountQuota : DataModel {
         }
 
         if (UpdateQuota().Status == KifaActionStatus.OK) {
+            ReconcileQuota();
             return Date.Zero;
         }
 
@@ -50,8 +51,14 @@ public class SwisscomAccountQuota : DataModel {
             Logger.Warn($"Failed to get quota: {result}.");
         }
 
-        // Quota always needs to be refreshed as it may change any time.
+        ReconcileQuota();
         return Date.Zero;
+    }
+
+    void ReconcileQuota() {
+        if (UsedQuota == ExpectedQuota) {
+            ExpectedQuota = 0;
+        }
     }
 
     KifaActionResult UpdateQuota()
