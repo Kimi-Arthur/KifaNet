@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Service;
 using Newtonsoft.Json;
-using NLog;
 
 namespace Kifa.Cloud.Swisscom;
 
@@ -15,9 +14,6 @@ public class SwisscomAccountQuota : DataModel {
     public static SwisscomAccountQuotaServiceClient Client
         => client ??= new SwisscomAccountQuotaRestServiceClient();
 
-    public static SwisscomAccountServiceClient AccountClient { get; set; } =
-        new SwisscomAccountRestServiceClient();
-
     public long TotalQuota { get; set; }
     public long UsedQuota { get; set; }
 
@@ -28,27 +24,19 @@ public class SwisscomAccountQuota : DataModel {
     // When it is the same as UsedQuota, it can be safely discarded or ignored.
     public long ExpectedQuota { get; set; }
 
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     readonly HttpClient httpClient = new();
 
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        if (AccountClient.Get(Id) == null) {
+        var account = SwisscomAccount.Client.Get(Id);
+        if (account == null) {
             throw new UnableToFillException($"Account {Id} is missing.");
         }
 
-        if (UpdateQuota().Status == KifaActionStatus.OK) {
-            ReconcileQuota();
-            return Date.Zero;
-        }
-
-        Logger.Info("Access token expired.");
-
-        var result = UpdateQuota();
+        var result = UpdateQuota(account);
         if (result.Status != KifaActionStatus.OK) {
-            Logger.Warn($"Failed to get quota: {result}.");
+            throw new UnableToFillException(result.Message!);
         }
 
         ReconcileQuota();
@@ -61,13 +49,12 @@ public class SwisscomAccountQuota : DataModel {
         }
     }
 
-    KifaActionResult UpdateQuota()
+    KifaActionResult UpdateQuota(SwisscomAccount account)
         => KifaActionResult.FromAction(() => {
-            var account = AccountClient.Get(Id);
-            if (account?.AccessToken == null) {
+            if (account.AccessToken == null) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Error,
-                    Message = $"Unable to get account {Id} unexpectedly."
+                    Message = $"Unable to get access token for account {Id} unexpectedly."
                 };
             }
 

@@ -67,10 +67,18 @@ public class SwisscomAccount : DataModel {
 
     #endregion
 
-    static SwisscomAccountServiceClient? client;
 
-    public static SwisscomAccountServiceClient Client
-        => client ??= new SwisscomAccountRestServiceClient();
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<SwisscomAccount> {
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<SwisscomAccount>, ServiceClient {
+    }
+
+    #endregion
 
     public string? Username { get; set; }
     public string? Password { get; set; }
@@ -309,13 +317,6 @@ public class SwisscomAccount : DataModel {
         return new RemoteWebDriver(new Uri(WebDriverUrl), options.ToCapabilities(),
             WebDriverTimeout);
     }
-}
-
-public interface SwisscomAccountServiceClient : KifaServiceClient<SwisscomAccount> {
-}
-
-public class SwisscomAccountRestServiceClient : KifaServiceRestClient<SwisscomAccount>,
-    SwisscomAccountServiceClient {
 }
 
 enum AccountRegistrationStatus {

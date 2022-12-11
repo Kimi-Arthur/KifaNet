@@ -27,7 +27,7 @@ public class Program {
 
     static void RegisterClients() {
         Counter.Client = new CounterJsonServiceClient();
-        SwisscomAccountQuota.AccountClient = new SwisscomAccountJsonServiceClient();
+        SwisscomAccount.Client = new SwisscomAccountJsonServiceClient();
         GermanWord.Client = new GermanWordJsonServiceClient();
         MemriseCourse.Client = new MemriseCourseJsonServiceClient();
         MemriseWord.Client = new MemriseWordJsonServiceClient();

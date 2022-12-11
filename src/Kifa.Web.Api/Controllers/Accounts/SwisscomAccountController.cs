@@ -13,5 +13,5 @@ public class SwisscomAccountController : KifaDataController<SwisscomAccount,
 }
 
 public class SwisscomAccountJsonServiceClient : KifaServiceJsonClient<SwisscomAccount>,
-    SwisscomAccountServiceClient {
+    SwisscomAccount.ServiceClient {
 }
