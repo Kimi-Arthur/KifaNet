@@ -19,7 +19,7 @@ namespace Kifa.IO.FileFormats;
 ///     B16~47: SHA256 (256bit)
 /// </summary>
 public class KifaFileV1Format : KifaFileFormat {
-    static readonly KifaFileV1Format Instance = new();
+    public static readonly KifaFileV1Format Instance = new();
 
     public static KifaFileFormat? Get(string fileUri) {
         if (fileUri.EndsWith(".v1")) {

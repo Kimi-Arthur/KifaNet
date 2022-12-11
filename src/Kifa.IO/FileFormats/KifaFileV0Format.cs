@@ -15,7 +15,7 @@ namespace Kifa.IO.FileFormats;
 ///     We only provide decoder for this format.
 /// </summary>
 public class KifaFileV0Format : KifaFileFormat {
-    static readonly KifaFileV0Format Instance = new();
+    public static readonly KifaFileV0Format Instance = new();
 
     public static KifaFileFormat? Get(string fileSpec) {
         var specs = fileSpec.Split('/').First().Split(';');
