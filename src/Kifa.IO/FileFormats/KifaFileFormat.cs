@@ -3,10 +3,10 @@ using System.IO;
 
 namespace Kifa.IO.FileFormats;
 
-public class KifaFileFormat {
-    public virtual Stream GetEncodeStream(Stream rawStream, FileInformation info)
-        => throw new NotImplementedException();
+public abstract class KifaFileFormat {
+    public abstract long HeaderSize { get; }
 
-    public virtual Stream GetDecodeStream(Stream encodedStream, string? encryptionKey = null)
-        => throw new NotImplementedException();
+    public abstract Stream GetEncodeStream(Stream rawStream, FileInformation info);
+
+    public abstract Stream GetDecodeStream(Stream encodedStream, string? encryptionKey = null);
 }

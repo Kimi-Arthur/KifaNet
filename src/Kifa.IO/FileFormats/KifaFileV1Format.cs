@@ -60,6 +60,8 @@ public class KifaFileV1Format : KifaFileFormat {
         }, decoder, size, true);
     }
 
+    public override long HeaderSize => 0x30;
+
     public override Stream GetEncodeStream(Stream rawStream, FileInformation info) {
         info.AddProperties(rawStream, FileProperties.Size | FileProperties.Sha256);
 

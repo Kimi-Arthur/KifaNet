@@ -42,13 +42,11 @@ public partial class KifaFile {
                 $"Sha256 {FileInfo?.Sha256} or size {FileInfo?.Size} is missing.")
             : FileInfo.Locations.Keys.FirstOrDefault(l
                 => new Regex(
-                        $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType.ToString().ToLower()}$")
+                        $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType}$")
                     .Match(l).Success) ?? target.ServiceType switch {
-                CloudServiceType.Google =>
-                    $"google:good/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
+                CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{target.FormatType}",
                 CloudServiceType.Swiss =>
-                    // TODO: Use format specific header size.
-                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, FileInfo.Size.Value + 0x30)}/$/{FileInfo.Sha256}.{target.FormatType.ToString().ToLower()}",
+                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
                 _ => ""
             };
 

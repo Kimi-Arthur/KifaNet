@@ -4,8 +4,8 @@ using Kifa.IO.FileFormats;
 namespace Kifa.Api.Files;
 
 public class CloudTarget {
-    public CloudServiceType ServiceType { get; set; }
-    public KifaFileFormat FormatType { get; set; }
+    public required CloudServiceType ServiceType { get; set; }
+    public required KifaFileFormat FormatType { get; set; }
 
     // Parses targetSpec like google.v1, swiss.v2 etc.
     public static CloudTarget Parse(string targetSpec) {
@@ -22,5 +22,5 @@ public class CloudTarget {
     }
 
     public override string ToString()
-        => $"{ServiceType.ToString().ToLowerInvariant()}.{FormatType.ToString().ToLowerInvariant()}";
+        => $"{ServiceType.ToString().ToLowerInvariant()}.{FormatType}";
 }

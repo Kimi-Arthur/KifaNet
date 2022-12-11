@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,6 +17,8 @@ namespace Kifa.IO.FileFormats;
 /// </summary>
 public class KifaFileV0Format : KifaFileFormat {
     public static readonly KifaFileV0Format Instance = new();
+
+    public override long HeaderSize => 0x1225;
 
     public static KifaFileFormat? Get(string fileSpec) {
         var specs = fileSpec.Split('/').First().Split(';');
@@ -58,4 +61,7 @@ public class KifaFileV0Format : KifaFileFormat {
             IgnoreBefore = 0x1225
         }, decoder, size, true);
     }
+
+    public override Stream GetEncodeStream(Stream rawStream, FileInformation info)
+        => throw new NotImplementedException();
 }
