@@ -11,8 +11,6 @@ namespace Kifa.Cloud.Swisscom;
 public class SwisscomAccountQuota : DataModel {
     public const string ModelId = "swisscom/quotas";
 
-    const long GraceSize = 10 << 20;
-
     static SwisscomAccountQuotaServiceClient? client;
 
     public static SwisscomAccountQuotaServiceClient Client
@@ -63,18 +61,29 @@ public class SwisscomAccountQuota : DataModel {
     }
 
     public static string FindAccount(List<string> prefixes, long length) {
-        var account = Client.List().Values
-            .Where(account => prefixes.Any(prefix => account.Id.StartsWith(prefix)))
-            .OrderBy(a => a.LeftQuota).FirstOrDefault(s => s.LeftQuota >= length + GraceSize);
+        var lookForAligned = IsAligned(length);
+        var account = Client.List().Values.Where(account
+                => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
+                   IsAligned(account.LeftQuota) == lookForAligned && account.LeftQuota >= length)
+            .MinBy(a => a.LeftQuota);
+
         if (account == null) {
-            throw new InsufficientStorageException();
+            throw new InsufficientStorageException(
+                $"Unable to find a proper account to hold {length}B data.");
         }
 
-        // We will assume the quota is up to date here.
+        // We will assume the quota we get here is up to date.
+        var accountId = account.Id;
         account = Client.Get(account.Id);
-        if (account.LeftQuota < length + GraceSize) {
+
+        if (account == null) {
             throw new InsufficientStorageException(
-                $"Unexpectedly, the account {account.Id} doesn't have enough quota.");
+                $"Unexpectedly, failed to get the account {accountId}.");
+        }
+
+        if (account.LeftQuota < length) {
+            throw new InsufficientStorageException(
+                $"Unexpectedly, the account {account.Id} doesn't have enough quota {account.LeftQuota} < {length}.");
         }
 
         var result = Client.ReserveQuota(account.Id, length);
@@ -86,6 +95,7 @@ public class SwisscomAccountQuota : DataModel {
         return account.Id;
     }
 
+    static bool IsAligned(long length) => length % SwisscomStorageClient.ShardSize == 0;
 
     void ReconcileQuota() {
         if (UsedQuota == ExpectedQuota) {
