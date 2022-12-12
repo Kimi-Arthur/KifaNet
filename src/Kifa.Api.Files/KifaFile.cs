@@ -18,40 +18,34 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static readonly Dictionary<string, StorageClient> knownClients = new();
-
     static StorageClient GetClient(string spec) {
-        if (knownClients.ContainsKey(spec)) {
-            return knownClients[spec];
-        }
-
         var specs = spec.Split(':');
 
         switch (specs[0]) {
             case "baidu":
-                return knownClients[spec] = new BaiduCloudStorageClient {
+                return new BaiduCloudStorageClient {
                     AccountId = specs[1]
                 };
             case "google":
-                return knownClients[spec] = new GoogleDriveStorageClient {
+                return new GoogleDriveStorageClient {
                     AccountId = specs[1]
                 };
             case "mega":
-                return knownClients[spec] = new MegaNzStorageClient {
+                return new MegaNzStorageClient {
                     AccountId = specs[1]
                 };
             case "swiss":
-                return knownClients[spec] = SwisscomStorageClient.Create(specs[1]);
+                return SwisscomStorageClient.Create(specs[1]);
             case "http":
             case "https":
-                return knownClients[spec] = new WebStorageClient {
+                return new WebStorageClient {
                     Protocol = specs[0]
                 };
             case "local":
-                return knownClients[spec] = new FileStorageClient(specs[1]);
+                return new FileStorageClient(specs[1]);
         }
 
-        return knownClients[spec];
+        throw new Exception($"Failed to create client for {spec}");
     }
 
     public bool SimpleMode { get; set; }
