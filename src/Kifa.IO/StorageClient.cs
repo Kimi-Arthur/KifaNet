@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NLog;
 
 namespace Kifa.IO;
 
 public abstract class StorageClient : IDisposable {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     public virtual void Dispose() {
     }
 
