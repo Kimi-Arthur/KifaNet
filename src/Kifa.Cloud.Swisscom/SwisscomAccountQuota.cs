@@ -5,11 +5,14 @@ using System.Net.Http;
 using Kifa.IO;
 using Kifa.Service;
 using Newtonsoft.Json;
+using NLog;
 
 namespace Kifa.Cloud.Swisscom;
 
 public class SwisscomAccountQuota : DataModel {
     public const string ModelId = "swisscom/quotas";
+
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static SwisscomAccountQuotaServiceClient? client;
 
@@ -105,6 +108,24 @@ public class SwisscomAccountQuota : DataModel {
     void ReconcileQuota() {
         if (UsedQuota == ExpectedQuota) {
             ExpectedQuota = 0;
+        }
+
+        var storageClient = SwisscomStorageClient.Create(Id);
+        var fulfilledReservations = new List<string>();
+        foreach (var reservation in Reservations) {
+            var length = storageClient.Length(reservation.Key);
+            if (length == reservation.Value) {
+                Logger.Debug(
+                    $"Reservation for {reservation.Key} ({reservation.Value}) is done in account {Id}.");
+                fulfilledReservations.Add(reservation.Key);
+            } else if (length > 0) {
+                throw new Exception(
+                    $"File size of {reservation.Key} ({length}) is unexpected ({reservation.Value}).");
+            }
+        }
+
+        foreach (var fulfilled in fulfilledReservations) {
+            Reservations.Remove(fulfilled);
         }
     }
 
