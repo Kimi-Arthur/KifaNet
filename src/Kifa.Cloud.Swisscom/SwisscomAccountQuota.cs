@@ -58,7 +58,7 @@ public class SwisscomAccountQuota : DataModel {
             .AccountPrefixes;
         var selectedAccounts = new List<string>();
         for (var i = 0L; i < length; i += SwisscomStorageClient.ShardSize) {
-            // The rule to construct actual path is implicitly related to
+            // The rule to construct the actual path is implicitly related to
             // ShardedStorageClient.GetShards.
             selectedAccounts.Add(FindAccount(prefixes,
                 $"{actualPath}.{i / SwisscomStorageClient.ShardSize}",
@@ -69,6 +69,11 @@ public class SwisscomAccountQuota : DataModel {
     }
 
     public static string FindAccount(List<string> prefixes, string path, long length) {
+        var existingReservation = FindExistingReservation(path, length);
+        if (existingReservation != null) {
+            return existingReservation;
+        }
+
         var lookForAligned = IsAligned(length);
         var account = Client.List().Values.Where(account
                 => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
@@ -77,7 +82,7 @@ public class SwisscomAccountQuota : DataModel {
 
         if (account == null) {
             throw new InsufficientStorageException(
-                $"Unable to find a proper account to hold {length}B data.");
+                $"Unable to find a proper account to hold {length} bytes.");
         }
 
         // We will assume the quota we get here is up to date.
@@ -97,7 +102,24 @@ public class SwisscomAccountQuota : DataModel {
         var result = Client.ReserveQuota(account.Id, path, length);
         if (result.Status != KifaActionStatus.OK) {
             throw new InsufficientStorageException(
-                $"Failed to reserve quota {length}B in {account.Id}.");
+                $"Failed to reserve quota {length} bytes in {account.Id}.");
+        }
+
+        return account.Id;
+    }
+
+    static string? FindExistingReservation(string path, long length) {
+        var account = Client.List().Values
+            .FirstOrDefault(account => account.Reservations.ContainsKey(path));
+        if (account == null) {
+            return null;
+        }
+
+        var reservation = account.Reservations[path];
+        if (reservation != length) {
+            throw new Exception(
+                $"Unexpected length mismatch for reservation of {path} in {account.Id}. " +
+                $"Expected {length}, found {reservation}.");
         }
 
         return account.Id;
