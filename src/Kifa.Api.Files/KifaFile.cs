@@ -29,7 +29,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         if (specs[1].Contains('+')) {
             // Sharded client.
-            return knownClients[spec] = new ShardedStorageClient() {
+            return knownClients[spec] = new ShardedStorageClient {
                 Clients = specs[1].Split("+").Select(s => GetClient($"{specs[0]}:{s}")).ToList(),
                 ShardSize = SwisscomStorageClient.ShardSize
             };
