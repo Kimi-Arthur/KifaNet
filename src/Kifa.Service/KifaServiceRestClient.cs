@@ -201,8 +201,9 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     static void HandleException(Exception ex, int index, string message) {
         if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException &&
-            ex.InnerException is SocketException socketException &&
-            socketException.Message == "Device not configured") {
+            ex.InnerException is SocketException {
+                Message: "Device not configured"
+            }) {
             throw ex;
         }
 
