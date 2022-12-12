@@ -49,7 +49,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                     AccountId = specs[1]
                 };
             case "swiss":
-                return knownClients[spec] = new SwisscomStorageClient(specs[1]);
+                return knownClients[spec] = SwisscomStorageClient.Create(specs[1]);
             case "http":
             case "https":
                 return knownClients[spec] = new WebStorageClient {

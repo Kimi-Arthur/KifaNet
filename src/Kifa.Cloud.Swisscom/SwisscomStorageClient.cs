@@ -11,7 +11,7 @@ using NLog;
 
 namespace Kifa.Cloud.Swisscom;
 
-public class SwisscomStorageClient : StorageClient {
+public class SwisscomStorageClient : StorageClient, CanCreate<SwisscomStorageClient> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     const int BlockSize = 8 << 20;
     public const long ShardSize = 1 << 30;
@@ -28,11 +28,12 @@ public class SwisscomStorageClient : StorageClient {
         Timeout = TimeSpan.FromMinutes(30)
     };
 
-    public SwisscomStorageClient(string accountId = null) {
-        AccountId = accountId;
-    }
+    public required string AccountId { get; set; }
 
-    public string AccountId { get; set; }
+    public static SwisscomStorageClient Create(string spec)
+        => new() {
+            AccountId = spec
+        };
 
     public override long Length(string path) {
         using var response = client.Send(APIList.GetFileInfo.GetRequest(

@@ -5,6 +5,10 @@ using System.Linq;
 
 namespace Kifa.IO;
 
+public interface CanCreate<T> {
+    public static abstract T Create(string spec);
+}
+
 public abstract class StorageClient : IDisposable {
     public virtual void Dispose() {
     }

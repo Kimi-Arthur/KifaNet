@@ -131,11 +131,8 @@ public class SwisscomTests {
     }
 
     static SwisscomStorageClient GetStorageClient() {
-        AppDomain.CurrentDomain.AssemblyLoad += (sender, eventArgs)
-            => KifaConfigs.LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+        KifaConfigs.Init();
 
-        KifaConfigs.LoadFromSystemConfigs();
-
-        return new SwisscomStorageClient("test");
+        return SwisscomStorageClient.Create("test");
     }
 }
