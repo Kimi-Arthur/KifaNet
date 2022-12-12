@@ -12,11 +12,15 @@ public class SwisscomTests {
 
     const string BigFileSHA256 = "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
+    public SwisscomTests() {
+        KifaConfigs.Init();
+    }
+
     [Fact]
     public void LoginTest() {
-        var account = GetStorageClient().Account;
+        var account = (GetStorageClient() as SwisscomStorageClient)!.Account;
 
-        Assert.EndsWith("==", account.AccessToken);
+        Assert.EndsWith("==", account.AccessToken!);
     }
 
     [Fact]
@@ -130,9 +134,7 @@ public class SwisscomTests {
         Assert.NotEqual(0, account.UsedQuota);
     }
 
-    static SwisscomStorageClient GetStorageClient() {
-        KifaConfigs.Init();
-
+    static StorageClient GetStorageClient() {
         return SwisscomStorageClient.Create("test");
     }
 }

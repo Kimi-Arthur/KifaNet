@@ -67,7 +67,6 @@ public class SwisscomAccount : DataModel {
 
     #endregion
 
-
     #region Clients
 
     public static ServiceClient Client { get; set; } = new RestServiceClient();

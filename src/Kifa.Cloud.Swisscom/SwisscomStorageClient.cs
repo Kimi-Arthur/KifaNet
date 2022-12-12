@@ -6,12 +6,13 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Kifa.IO;
+using Kifa.IO.StorageClients;
 using Kifa.Service;
 using NLog;
 
 namespace Kifa.Cloud.Swisscom;
 
-public class SwisscomStorageClient : StorageClient, CanCreate<SwisscomStorageClient> {
+public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     const int BlockSize = 8 << 20;
     public const long ShardSize = 1 << 30;
@@ -30,10 +31,19 @@ public class SwisscomStorageClient : StorageClient, CanCreate<SwisscomStorageCli
 
     public required string AccountId { get; set; }
 
-    public static SwisscomStorageClient Create(string spec)
-        => new() {
+    public static StorageClient Create(string spec) {
+        if (spec.Contains('+')) {
+            // Sharded client.
+            return new ShardedStorageClient {
+                Clients = spec.Split("+").Select(Create).ToList(),
+                ShardSize = ShardSize
+            };
+        }
+
+        return new SwisscomStorageClient {
             AccountId = spec
         };
+    }
 
     public override long Length(string path) {
         using var response = client.Send(APIList.GetFileInfo.GetRequest(

@@ -5,8 +5,8 @@ using System.Linq;
 
 namespace Kifa.IO;
 
-public interface CanCreate<T> {
-    public static abstract T Create(string spec);
+public interface CanCreateStorageClient {
+    public static abstract StorageClient Create(string spec);
 }
 
 public abstract class StorageClient : IDisposable {
