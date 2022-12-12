@@ -12,15 +12,17 @@ public class SwisscomAccountQuotaController : KifaDataController<SwisscomAccount
     SwisscomAccountQuotaJsonServiceClient> {
     [HttpGet("$get_top_accounts")]
     [HttpPost("$get_top_accounts")]
-    public KifaApiActionResult<List<SwisscomAccountQuota>> GetTopAccounts() => Client.GetTopAccounts();
+    public KifaApiActionResult<List<SwisscomAccountQuota>> GetTopAccounts()
+        => Client.GetTopAccounts();
 
     [HttpPost("$reserve_quota")]
     public KifaApiActionResult ReserveQuota([FromBody] ReserveQuotaRequest request)
-        => Client.ReserveQuota(request.Id, request.Length);
+        => Client.ReserveQuota(request.Id, request.Path, request.Length);
 }
 
 public class ReserveQuotaRequest {
     public string Id { get; set; }
+    public string Path { get; set; }
     public long Length { get; set; }
 }
 
@@ -44,8 +46,9 @@ public class SwisscomAccountQuotaJsonServiceClient : KifaServiceJsonClient<Swiss
         return allGoodAccounts.OrderBy(a => -a.LeftQuota).ToList();
     }
 
-    public KifaActionResult ReserveQuota(string id, long length) {
+    public KifaActionResult ReserveQuota(string id, string path, long length) {
         var data = Get(id);
+        data.Reservations.Add(path, length);
         data.ExpectedQuota = Math.Max(data.ExpectedQuota, data.UsedQuota) + length;
         return Update(data);
     }

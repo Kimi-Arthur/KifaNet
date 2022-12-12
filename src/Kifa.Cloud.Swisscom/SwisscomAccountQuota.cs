@@ -28,6 +28,8 @@ public class SwisscomAccountQuota : DataModel {
     // When it is the same as UsedQuota, it can be safely discarded or ignored.
     public long ExpectedQuota { get; set; }
 
+    public Dictionary<string, long> Reservations { get; set; } = new();
+
     readonly HttpClient httpClient = new();
 
     public override bool FillByDefault => true;
@@ -48,19 +50,22 @@ public class SwisscomAccountQuota : DataModel {
     }
 
     // TODO(#2): Should implement in server side.
-    public static string FindAccounts(string path, long length) {
-        var prefixes = StorageMappings.First(mapping => path.StartsWith(mapping.Pattern))
+    public static string FindAccounts(string logicalPath, string actualPath, long length) {
+        var prefixes = StorageMappings.First(mapping => logicalPath.StartsWith(mapping.Pattern))
             .AccountPrefixes;
         var selectedAccounts = new List<string>();
         for (var i = 0L; i < length; i += SwisscomStorageClient.ShardSize) {
+            // The rule to construct actual path is implicitly related to
+            // ShardedStorageClient.GetShards.
             selectedAccounts.Add(FindAccount(prefixes,
+                $"{actualPath}.{i / SwisscomStorageClient.ShardSize}",
                 Math.Min(SwisscomStorageClient.ShardSize, length - i)));
         }
 
         return string.Join("+", selectedAccounts);
     }
 
-    public static string FindAccount(List<string> prefixes, long length) {
+    public static string FindAccount(List<string> prefixes, string path, long length) {
         var lookForAligned = IsAligned(length);
         var account = Client.List().Values.Where(account
                 => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
@@ -86,7 +91,7 @@ public class SwisscomAccountQuota : DataModel {
                 $"Unexpectedly, the account {account.Id} doesn't have enough quota {account.LeftQuota} < {length}.");
         }
 
-        var result = Client.ReserveQuota(account.Id, length);
+        var result = Client.ReserveQuota(account.Id, path, length);
         if (result.Status != KifaActionStatus.OK) {
             throw new InsufficientStorageException(
                 $"Failed to reserve quota {length}B in {account.Id}.");
@@ -124,7 +129,7 @@ public class SwisscomAccountQuota : DataModel {
 
 public interface SwisscomAccountQuotaServiceClient : KifaServiceClient<SwisscomAccountQuota> {
     List<SwisscomAccountQuota> GetTopAccounts();
-    KifaActionResult ReserveQuota(string id, long length);
+    KifaActionResult ReserveQuota(string id, string path, long length);
     KifaActionResult ClearReserve(string id);
 }
 
@@ -133,9 +138,10 @@ public class SwisscomAccountQuotaRestServiceClient : KifaServiceRestClient<Swiss
     public List<SwisscomAccountQuota> GetTopAccounts()
         => Call<List<SwisscomAccountQuota>>("get_top_accounts");
 
-    public KifaActionResult ReserveQuota(string id, long length)
+    public KifaActionResult ReserveQuota(string id, string path, long length)
         => Call("reserve_quota", new Dictionary<string, object> {
             { "id", id },
+            { "path", path },
             { "length", length }
         });
 

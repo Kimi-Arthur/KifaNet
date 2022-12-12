@@ -180,8 +180,8 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
         return (int) memoryStream.Position;
     }
 
-    public static string FindAccounts(string path, long length) {
-        return SwisscomAccountQuota.FindAccounts(path, length);
+    public static string FindAccounts(string logicalPath, string actualPath, long length) {
+        return SwisscomAccountQuota.FindAccounts(logicalPath, actualPath, length);
     }
 
     static string GetFileId(string path) => $"/Drive{path}".ToBase64();
