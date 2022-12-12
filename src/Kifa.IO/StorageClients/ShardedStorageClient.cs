@@ -7,7 +7,7 @@ namespace Kifa.IO.StorageClients;
 
 public class ShardedStorageClient : StorageClient {
     public long ShardSize { get; set; }
-    public List<StorageClient> Clients { get; set; }
+    public required List<StorageClient> Clients { get; set; }
 
     public override string Type => "sharded";
     public override string Id => "";
