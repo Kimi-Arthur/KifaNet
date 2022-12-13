@@ -115,7 +115,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
 
-    public override List<TDataModel> Get(List<string> ids)
+    public override List<TDataModel?> Get(List<string> ids)
         => ids.Any()
             ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
@@ -126,12 +126,11 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                             Encoding.UTF8, "application/json")
                     };
 
-                    return KifaServiceRestClient.Client.GetObject<List<TDataModel>>(request) ??
-                           new List<TDataModel>();
+                    return KifaServiceRestClient.Client.GetObject<List<TDataModel?>>(request)!;
                 },
                 (ex, i) => HandleException(ex, i,
                     $"Failure in GET {ModelId}({string.Join(", ", ids)})"))
-            : new List<TDataModel>();
+            : new List<TDataModel?>();
 
     public override KifaActionResult Link(string targetId, string linkId)
         => KifaActionResult.FromAction(() => Retry.Run(() => {

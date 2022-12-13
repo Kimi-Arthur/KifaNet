@@ -19,8 +19,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     // GET api/values/$
     [HttpGet("$")]
-    public virtual ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids)
-        => ids.Select(id => Client.Get(id)).ToList();
+    public ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids) => Client.Get(ids);
 
     // GET api/values/5
     [HttpGet("{id}")]
