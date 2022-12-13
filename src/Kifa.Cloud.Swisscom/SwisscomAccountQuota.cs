@@ -69,16 +69,17 @@ public class SwisscomAccountQuota : DataModel {
     }
 
     public static string FindAccount(List<string> prefixes, string path, long length) {
-        var existingReservation = FindExistingReservation(path, length);
+        var accounts = Client.List().Values.ToList();
+        var existingReservation = FindExistingReservation(accounts, path, length);
         if (existingReservation != null) {
             return existingReservation;
         }
 
-        var lookForAligned = IsAligned(length);
-        var account = Client.List().Values.Where(account
-                => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
-                   IsAligned(account.LeftQuota) == lookForAligned && account.LeftQuota >= length)
-            .MinBy(a => a.LeftQuota);
+        var account =
+            GetAccount(
+                accounts.Where(account
+                    => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
+                       account.LeftQuota >= length).ToList(), length);
 
         if (account == null) {
             throw new InsufficientStorageException(
@@ -108,9 +109,28 @@ public class SwisscomAccountQuota : DataModel {
         return account.Id;
     }
 
-    static string? FindExistingReservation(string path, long length) {
-        var account = Client.List().Values
-            .FirstOrDefault(account => account.Reservations.ContainsKey(path));
+    static SwisscomAccountQuota? GetAccount(List<SwisscomAccountQuota> accounts, long length) {
+        var lookForAligned = IsAligned(length);
+        var foundAccount = accounts.Where(account => IsAligned(account.LeftQuota) == lookForAligned)
+            .MinBy(a => a.LeftQuota);
+        if (foundAccount != null) {
+            return foundAccount;
+        }
+
+        if (lookForAligned) {
+            // There are no aligned accounts, maybe there are unaligned ones.
+            // Let's find the smallest possible to fit as we treat this as a normal unaligned piece.
+            return accounts.MinBy(account => account.LeftQuota);
+        }
+
+        // For an unaligned piece, we may want to choose a bigger account
+        // so that number of "polluted" accounts is minimized.
+        return accounts.MaxBy(account => account.LeftQuota);
+    }
+
+    static string? FindExistingReservation(List<SwisscomAccountQuota> accounts, string path,
+        long length) {
+        var account = accounts.FirstOrDefault(account => account.Reservations.ContainsKey(path));
         if (account == null) {
             return null;
         }
