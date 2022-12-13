@@ -135,9 +135,7 @@ public class SwisscomAccount : DataModel {
     }
 
     public void Register() {
-        switch (GetRegistrationStatus()) {
-            case AccountRegistrationStatus.Unexpected:
-                throw new Exception($"Account {Id} in an unexpected registration status.");
+        switch (GetRegistrationStatus().Status) {
             case AccountRegistrationStatus.NotRegistered:
                 RegisterSwisscom();
                 RegisterMyCloud();
@@ -155,7 +153,7 @@ public class SwisscomAccount : DataModel {
         }
     }
 
-    AccountRegistrationStatus GetRegistrationStatus() {
+    (AccountRegistrationStatus Status, string? token) GetRegistrationStatus() {
         using var driver = GetDriver(true);
         driver.Navigate()
             .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
@@ -167,18 +165,45 @@ public class SwisscomAccount : DataModel {
         Run(() => driver.FindElementById("submitButton").Click());
         Thread.Sleep(PageLoadWait);
 
-        if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
-            driver.Url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
-            return AccountRegistrationStatus.OnlySwisscom;
+        string? token;
+
+        var url = driver.Url;
+        if (url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
+            url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
+            return (AccountRegistrationStatus.OnlySwisscom, null);
+        }
+
+        if (url.StartsWith("https://identity.scl.swisscom.ch/tc")) {
+            var boxes =
+                Retry.GetItems(() => driver.FindElementsByCssSelector("input[type=checkbox]"),
+                    Interval, Timeout, noLogging: true);
+
+            foreach (var checkbox in boxes) {
+                Run(() => checkbox.Click());
+            }
+
+            Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=tc-continue-button]")
+                .Click());
+
+            Thread.Sleep(PageLoadWait);
+
+            token = GetCookieToken(driver);
+            return token != null
+                ? (AccountRegistrationStatus.Registered, token)
+                : throw new Exception(
+                    $"Account {Id} in an unexpected registration status: {driver.GetScreenshot().AsBase64EncodedString}");
+        }
+
+        if (url.StartsWith("https://www.mycloud.swisscom.ch/")) {
+            token = GetCookieToken(driver);
+            if (token != null) {
+                return (AccountRegistrationStatus.Registered, token);
+            }
         }
 
         var errorElements = driver.FindElementsByTagName("sdx-validation-message");
         if (errorElements.Count > 0) {
-            return AccountRegistrationStatus.NotRegistered;
-        }
-
-        if (GetCookieToken(driver) != null) {
-            return AccountRegistrationStatus.Registered;
+            return (AccountRegistrationStatus.NotRegistered, null);
         }
 
         MaybeSkipPhone(driver);
@@ -186,12 +211,14 @@ public class SwisscomAccount : DataModel {
 
         if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
             driver.Url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
-            return AccountRegistrationStatus.OnlySwisscom;
+            return (AccountRegistrationStatus.OnlySwisscom, null);
         }
 
-        return GetCookieToken(driver) != null
-            ? AccountRegistrationStatus.Registered
-            : AccountRegistrationStatus.Unexpected;
+        token = GetCookieToken(driver);
+        return token != null
+            ? (AccountRegistrationStatus.Registered, token)
+            : throw new Exception(
+                $"Account {Id} in an unexpected registration status: {driver.GetScreenshot().AsBase64EncodedString}");
     }
 
     static string? GetCookieToken(RemoteWebDriver driver) {
@@ -319,7 +346,6 @@ public class SwisscomAccount : DataModel {
 }
 
 enum AccountRegistrationStatus {
-    Unexpected,
     NotRegistered,
     OnlySwisscom,
     Registered
