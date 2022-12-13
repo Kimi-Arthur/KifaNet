@@ -4,6 +4,7 @@ using System.Linq;
 using Kifa.Apps.MomentCounter;
 using Kifa.Cloud.Swisscom;
 using Kifa.Infos;
+using Kifa.IO;
 using Kifa.Languages.German;
 using Kifa.Languages.German.Goethe;
 using Kifa.Languages.Japanese;
@@ -18,6 +19,7 @@ namespace Kifa.Tools.DataUtil;
 public interface DataChef {
     public static DataChef GetChef(string modelId, string content = null) {
         return (modelId ?? GetYamlType(content)) switch {
+            FileInformation.ModelId => new DataChef<FileInformation>(),
             MemriseCourse.ModelId => new DataChef<MemriseCourse>(),
             GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord>(),
             GoetheWordList.ModelId => new DataChef<GoetheWordList>(),
