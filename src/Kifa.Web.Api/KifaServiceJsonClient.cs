@@ -126,7 +126,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         return false;
     }
 
-    public TDataModel? Retrieve(string id) {
+    TDataModel? Retrieve(string id) {
         Logger.Trace($"Get {ModelId}/{id}");
         var data = Read(id);
         if (data == null) {
