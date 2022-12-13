@@ -296,7 +296,6 @@ public class SwisscomAccount : DataModel {
             noLogging: true) ?? throw new Exception("Failed to get element.");
 
     static RemoteWebDriver GetDriver(bool headless = false) {
-        headless = false;
         var options = new ChromeOptions();
         options.AddArgument(
             "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36");
