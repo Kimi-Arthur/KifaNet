@@ -93,45 +93,8 @@ public class SwisscomAccount : DataModel {
             throw new UnableToFillException($"No account info provided for {Id}.");
         }
 
-        AccessToken = GetToken();
+        AccessToken = GetRegistrationStatus().Token;
         return DateTimeOffset.UtcNow + TokenValidDuration;
-    }
-
-    string GetToken() {
-        return Retry.Run(() => {
-            using var driver = GetDriver(true);
-            try {
-                driver.Navigate()
-                    .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
-                Run(() => driver
-                    .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
-                    .Click());
-                Run(() => driver.FindElementById("username").SendKeys(Username));
-                Run(() => driver.FindElementById("continueButton").Click());
-                Run(() => driver.FindElementById("password").SendKeys(Password));
-                Run(() => driver.FindElementById("submitButton").Click());
-
-                var cookie = GetCookieToken(driver);
-                if (cookie != null) {
-                    return cookie;
-                }
-
-                MaybeSkipPhone(driver);
-
-                Thread.Sleep(PageLoadWait);
-                return GetCookieToken(driver);
-            } catch (Exception) {
-                Logger.Warn($"Screenshot: {driver.GetScreenshot().AsBase64EncodedString}");
-                throw;
-            }
-        }, (ex, i) => {
-            if (i >= 5) {
-                throw ex;
-            }
-
-            Logger.Warn(ex, $"Failed to get token for {Username}...");
-            Thread.Sleep(TimeSpan.FromSeconds(5));
-        }, isValid: (value, _) => value != null);
     }
 
     public void Register() {
@@ -153,7 +116,7 @@ public class SwisscomAccount : DataModel {
         }
     }
 
-    (AccountRegistrationStatus Status, string? token) GetRegistrationStatus() {
+    (AccountRegistrationStatus Status, string? Token) GetRegistrationStatus() {
         using var driver = GetDriver(true);
         driver.Navigate()
             .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
@@ -333,6 +296,7 @@ public class SwisscomAccount : DataModel {
             noLogging: true) ?? throw new Exception("Failed to get element.");
 
     static RemoteWebDriver GetDriver(bool headless = false) {
+        headless = false;
         var options = new ChromeOptions();
         options.AddArgument(
             "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36");
