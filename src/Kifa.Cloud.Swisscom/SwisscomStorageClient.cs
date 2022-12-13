@@ -132,6 +132,9 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         FinishUpload(uploadId, path, blockIds);
+
+        // Refresh account quota usage after uploading.
+        SwisscomAccountQuota.Client.Get(Id);
     }
 
     string InitUpload(string path, long length)
