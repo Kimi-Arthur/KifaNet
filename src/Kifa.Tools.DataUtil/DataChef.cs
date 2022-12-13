@@ -30,6 +30,7 @@ public interface DataChef {
             Event.ModelId => new DataChef<Event>(),
             Counter.ModelId => new DataChef<Counter>(),
             SwisscomAccount.ModelId => new DataChef<SwisscomAccount>(),
+            SwisscomAccountQuota.ModelId => new DataChef<SwisscomAccountQuota>(),
             BiaoriJapaneseWord.ModelId => new DataChef<BiaoriJapaneseWord>(),
             _ => throw new Exception($"Invalid model id {modelId}")
         };
