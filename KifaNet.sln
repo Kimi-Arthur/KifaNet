@@ -145,6 +145,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Graphics", "src\Kifa.G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Graphics.Tests", "tests\Kifa.Graphics.Tests\Kifa.Graphics.Tests.csproj", "{0DA49FDB-5702-4974-8C81-6E226537147C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LockExperiments", "Experimental\LockExperiments\LockExperiments.csproj", "{1B2C0C66-3656-4669-8F5F-2BAC01DF2F66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -391,6 +393,10 @@ Global
 		{0DA49FDB-5702-4974-8C81-6E226537147C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DA49FDB-5702-4974-8C81-6E226537147C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DA49FDB-5702-4974-8C81-6E226537147C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B2C0C66-3656-4669-8F5F-2BAC01DF2F66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B2C0C66-3656-4669-8F5F-2BAC01DF2F66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B2C0C66-3656-4669-8F5F-2BAC01DF2F66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B2C0C66-3656-4669-8F5F-2BAC01DF2F66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -452,5 +458,6 @@ Global
 		{92F48950-18F4-4891-8114-47847E0063B4} = {70079503-89E9-45D6-8920-E51DC36392EA}
 		{FDC3D389-C593-4FB0-9CD8-C4EFB359A196} = {70079503-89E9-45D6-8920-E51DC36392EA}
 		{52F95839-91F3-4BB6-948A-4BD4904609DC} = {56D677AD-7D13-440D-BDA0-99CE414955F7}
+		{1B2C0C66-3656-4669-8F5F-2BAC01DF2F66} = {9FD0E697-1A85-4BBE-9481-13527DD26A00}
 	EndGlobalSection
 EndGlobal
