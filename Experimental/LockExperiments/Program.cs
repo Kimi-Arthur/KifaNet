@@ -18,7 +18,7 @@ public class Program {
     static void Work1(string id) {
         lock (GetLock(id)) {
             Console.WriteLine($"Start Work1 ({DateTime.Now}): {id}");
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+            Thread.Sleep(TimeSpan.FromSeconds(5));
             Console.WriteLine($"End Work1 ({DateTime.Now}): {id}");
         }
 
@@ -28,7 +28,7 @@ public class Program {
     static void Work2(string id) {
         lock (GetLock(id)) {
             Console.WriteLine($"Start Work2 ({DateTime.Now}): {id}");
-            Thread.Sleep(TimeSpan.FromSeconds(0.5));
+            Thread.Sleep(TimeSpan.FromSeconds(3));
             Console.WriteLine($"End Work2 ({DateTime.Now}): {id}");
         }
 
@@ -36,10 +36,10 @@ public class Program {
     }
 
     static void Try1() {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var chars = "ABC";
         var random = new Random();
-        Enumerable.Repeat("", 10000).Select<string, string>(_
-                => new string(Enumerable.Repeat(chars, 100).Select(s => s[random.Next(s.Length)])
+        Enumerable.Repeat("", 100).Select<string, string>(_
+                => new string(Enumerable.Repeat(chars, 2).Select(s => s[random.Next(s.Length)])
                     .ToArray())).SelectMany(id => new List<Action> {
                 () => Work1(id),
                 () => Work2(id)
@@ -48,10 +48,10 @@ public class Program {
     }
 
     static void Try2() {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var chars = "ABC";
         var random = new Random();
-        Enumerable.Repeat("", 10000).Select<string, string>(_
-                => new string(Enumerable.Repeat(chars, 100).Select(s => s[random.Next(s.Length)])
+        Enumerable.Repeat("", 100).Select<string, string>(_
+                => new string(Enumerable.Repeat(chars, 2).Select(s => s[random.Next(s.Length)])
                     .ToArray())).SelectMany(id => new List<Action> {
                 () => Work1(id),
                 () => Work2(id)
