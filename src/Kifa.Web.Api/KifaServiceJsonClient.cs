@@ -23,9 +23,9 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     where TDataModel : DataModel, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
+    static ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
 
-    Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
+    static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
 
     public override SortedDictionary<string, TDataModel> List() {
         // No data is gonna change. With no locking, the worst case is data not consistent.
