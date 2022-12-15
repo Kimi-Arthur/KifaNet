@@ -6,6 +6,8 @@ using System.Text;
 using CommandLine;
 using Kifa.Api.Files;
 using QuickEPUB;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace Kifa.Tools.BookUtil.Commands;
 
@@ -15,7 +17,7 @@ public class CreateMangaCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute() {
-        var epub = new Epub($"天才麻将少女 第1卷", "小林立");
+        var epub = new Epub($"迷宫饭 01 汤锅", "九井谅子");
 
         var sb = new StringBuilder();
 
@@ -36,8 +38,15 @@ public class CreateMangaCommand : KifaCommand {
             }
 
             var name = $"{newSection}/{file.Name}";
-            epub.AddResource(name, EpubResourceType.JPEG, file.OpenRead());
-            sb.Append($"<img src=\"{name}\" />");
+            var image = Image.Load(file.GetLocalPath(), out var format);
+
+            image.Mutate(x => x.Rotate(RotateMode.Rotate270));
+            var stream = new MemoryStream();
+            image.Save(stream, format);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            epub.AddResource(name, EpubResourceType.JPEG, stream);
+            sb.Append($"<img src=\"{name}\" />\n");
         }
 
         if (sb.Length > 0) {
