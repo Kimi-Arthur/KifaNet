@@ -17,7 +17,7 @@ public class CreateMangaCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute() {
-        var epub = new Epub($"迷宫饭 01 汤锅", "九井谅子");
+        var epub = new Epub("天才麻将少女 第1话 邂逅", "小林立");
 
         var sb = new StringBuilder();
 
@@ -46,7 +46,7 @@ public class CreateMangaCommand : KifaCommand {
             stream.Seek(0, SeekOrigin.Begin);
 
             epub.AddResource(name, EpubResourceType.JPEG, stream);
-            sb.Append($"<img src=\"{name}\" />\n");
+            sb.Append($"<img src=\"{name}\" style=\"height: 40%\"/>\n");
         }
 
         if (sb.Length > 0) {
@@ -57,7 +57,7 @@ public class CreateMangaCommand : KifaCommand {
         using var memoryStream = new MemoryStream();
         epub.Export(memoryStream);
 
-        var output = new KifaFile("a.epub");
+        var output = new KifaFile("天才麻将少女 第1话 邂逅.epub");
         output.Delete();
         output.Write(memoryStream.ToArray());
 

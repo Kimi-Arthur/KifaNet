@@ -7,5 +7,5 @@ class Program {
     static int Main(string[] args)
         => KifaCommand.Run(
             parameters => Parser.Default.ParseArguments(parameters, typeof(ReorderCommand),
-                typeof(CreateMangaCommand)), args);
+                typeof(CreatePdfMangaCommand), typeof(CreateMangaCommand)), args);
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -22,7 +23,13 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     where TDataModel : DataModel, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
+
+    Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
+    void ReleaseLock(string id) => Locks.Remove(id, out _);
+
     public override SortedDictionary<string, TDataModel> List() {
+        // No data is gonna change. With no locking, the worst case is data not consistent.
         var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
         var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
         if (!Directory.Exists(prefix)) {
@@ -56,14 +63,16 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     public override TDataModel? Get(string id, bool refresh = false) {
-        var data = Retrieve(id);
+        lock (GetLock(id)) {
+            var data = Retrieve(id);
 
-        if (Fill(ref data, id, refresh)) {
-            WriteTarget(data.Clone());
+            if (Fill(ref data, id, refresh)) {
+                WriteTarget(data.Clone());
+            }
+
+            // TODO: Not sure...
+            return Retrieve(id);
         }
-
-        // TODO: Not sure...
-        return Retrieve(id);
     }
 
     // false -> no write needed.
@@ -145,12 +154,14 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public override KifaActionResult Set(TDataModel data)
         => KifaActionResult.FromAction(() => {
-            Logger.Trace($"Set {ModelId}/{data.Id}: {data}");
-            data = data.Clone();
-            // This is new data, we should Fill it.
-            data.ResetRefreshDate();
-            Fill(ref data);
-            WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
+            lock (GetLock(data.Id)) {
+                Logger.Trace($"Set {ModelId}/{data.Id}: {data}");
+                data = data.Clone();
+                // This is new data, we should Fill it.
+                data.ResetRefreshDate();
+                Fill(ref data);
+                WriteTarget(data, Retrieve(data.Id)?.Metadata?.Linking?.VirtualLinks);
+            }
         });
 
     void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks) {
@@ -179,21 +190,23 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => {
-            Logger.Trace($"Update {ModelId}/{data.Id}: {data}");
-            // If it's new data, we should try Fill it.
-            var original = Retrieve(data.Id) ?? new TDataModel {
-                Id = data.Id,
-                Metadata = new DataMetadata {
-                    Freshness = new FreshnessMetadata {
-                        NextRefresh = Date.Zero
+            lock (GetLock(data.Id)) {
+                Logger.Trace($"Update {ModelId}/{data.Id}: {data}");
+                // If it's new data, we should try Fill it.
+                var original = Retrieve(data.Id) ?? new TDataModel {
+                    Id = data.Id,
+                    Metadata = new DataMetadata {
+                        Freshness = new FreshnessMetadata {
+                            NextRefresh = Date.Zero
+                        }
                     }
-                }
-            };
+                };
 
-            data = original.Merge(data);
+                data = original.Merge(data);
 
-            Fill(ref data);
-            WriteTarget(data);
+                Fill(ref data);
+                WriteTarget(data);
+            }
         });
 
     // Cleans up data for writing.
@@ -226,110 +239,118 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     public override KifaActionResult Delete(string id) {
-        var item = Retrieve(id);
-        if (item == null) {
-            return LogAndReturn(new KifaActionResult {
-                Status = KifaActionStatus.BadRequest,
-                Message = $"Cannot find item {ModelId}/{id}"
-            });
-        }
-
-        if (item.IsVirtualItem()) {
-            return LogAndReturn(new KifaActionResult {
-                Status = KifaActionStatus.BadRequest,
-                Message = $"Cannot delete virtual item {ModelId}/{id}."
-            });
-        }
-
-        if (item.Metadata?.Linking != null) {
-            var linking = item.Metadata.Linking;
-            if (linking.Target == null) {
-                if (linking.Links != null) {
-                    // It means there are still real items.
-                    var nextItem = Retrieve(linking.Links!.First());
-                    linking = nextItem!.Metadata!.Linking!;
-
-                    var links = linking.Links!;
-                    links.Remove(nextItem.Id!);
-                    linking.Target = null;
-
-                    WriteTarget(nextItem);
-
-                    foreach (var link in links.Concat(linking.VirtualLinks ??
-                                                      new SortedSet<string>())) {
-                        Write(new TDataModel {
-                            Id = link,
-                            Metadata = new DataMetadata {
-                                Linking = new LinkingMetadata {
-                                    Target = nextItem.Id
-                                }
-                            }
-                        });
-                    }
-                } else {
-                    // All real items are gone. So virtual items should go too.
-                    foreach (var link in linking.VirtualLinks!) {
-                        Remove(link);
-                    }
-                }
-            } else {
-                linking.Links!.Remove(id);
-
-                WriteTarget(item);
-            }
-        }
-
-        Remove(id);
-        return KifaActionResult.Success;
-    }
-
-    public override KifaActionResult Link(string targetId, string linkId) {
-        var target = Retrieve(targetId);
-        var link = Retrieve(linkId);
-
-        if (target == null) {
-            return LogAndReturn(new KifaActionResult {
-                Status = KifaActionStatus.BadRequest,
-                Message = $"Target {targetId} doesn't exist."
-            });
-        }
-
-        var realTargetId = target.RealId;
-
-        if (link != null) {
-            var realLinkId = link.RealId;
-            if (realLinkId == realTargetId) {
+        lock (GetLock(id)) {
+            var item = Retrieve(id);
+            if (item == null) {
                 return LogAndReturn(new KifaActionResult {
-                    Status = KifaActionStatus.OK,
-                    Message =
-                        $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"Cannot find item {ModelId}/{id}"
                 });
             }
 
-            return LogAndReturn(new KifaActionResult {
-                Status = KifaActionStatus.BadRequest,
-                Message =
-                    $"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated."
-            });
-        }
+            if (item.IsVirtualItem()) {
+                return LogAndReturn(new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"Cannot delete virtual item {ModelId}/{id}."
+                });
+            }
 
-        Write(new TDataModel {
-            Id = linkId,
-            Metadata = new DataMetadata {
-                Linking = new LinkingMetadata {
-                    Target = realTargetId
+            if (item.Metadata?.Linking != null) {
+                var linking = item.Metadata.Linking;
+                if (linking.Target == null) {
+                    if (linking.Links != null) {
+                        // It means there are still real items.
+                        var nextItem = Retrieve(linking.Links!.First());
+                        linking = nextItem!.Metadata!.Linking!;
+
+                        var links = linking.Links!;
+                        links.Remove(nextItem.Id!);
+                        linking.Target = null;
+
+                        WriteTarget(nextItem);
+
+                        foreach (var link in links.Concat(linking.VirtualLinks ??
+                                                          new SortedSet<string>())) {
+                            Write(new TDataModel {
+                                Id = link,
+                                Metadata = new DataMetadata {
+                                    Linking = new LinkingMetadata {
+                                        Target = nextItem.Id
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        // All real items are gone. So virtual items should go too.
+                        foreach (var link in linking.VirtualLinks!) {
+                            Remove(link);
+                        }
+                    }
+                } else {
+                    linking.Links!.Remove(id);
+
+                    WriteTarget(item);
                 }
             }
-        });
 
-        target.Metadata ??= new DataMetadata();
-        target.Metadata.Linking ??= new LinkingMetadata();
-        target.Metadata.Linking.Links ??= new SortedSet<string>();
-        target.Metadata.Linking.Links.Add(linkId);
-        target.Id = realTargetId;
-        target.Metadata.Linking.Target = null;
-        Write(target);
-        return KifaActionResult.Success;
+            Remove(id);
+            return KifaActionResult.Success;
+        }
+    }
+
+    public override KifaActionResult Link(string targetId, string linkId) {
+        lock (GetLock(linkId)) {
+            lock (GetLock(targetId)) {
+                var target = Retrieve(targetId);
+                var link = Retrieve(linkId);
+
+                if (target == null) {
+                    return LogAndReturn(new KifaActionResult {
+                        Status = KifaActionStatus.BadRequest,
+                        Message = $"Target {targetId} doesn't exist."
+                    });
+                }
+
+                var realTargetId = target.RealId;
+
+                lock (GetLock(realTargetId)) {
+                    if (link != null) {
+                        var realLinkId = link.RealId;
+                        if (realLinkId == realTargetId) {
+                            return LogAndReturn(new KifaActionResult {
+                                Status = KifaActionStatus.OK,
+                                Message =
+                                    $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
+                            });
+                        }
+
+                        return LogAndReturn(new KifaActionResult {
+                            Status = KifaActionStatus.BadRequest,
+                            Message =
+                                $"Both {linkId} ({realLinkId}) and {targetId} ({realTargetId}) have data populated."
+                        });
+                    }
+
+                    Write(new TDataModel {
+                        Id = linkId,
+                        Metadata = new DataMetadata {
+                            Linking = new LinkingMetadata {
+                                Target = realTargetId
+                            }
+                        }
+                    });
+
+                    target.Metadata ??= new DataMetadata();
+                    target.Metadata.Linking ??= new LinkingMetadata();
+                    target.Metadata.Linking.Links ??= new SortedSet<string>();
+                    target.Metadata.Linking.Links.Add(linkId);
+                    target.Id = realTargetId;
+                    target.Metadata.Linking.Target = null;
+                    Write(target);
+                    return KifaActionResult.Success;
+                }
+            }
+        }
     }
 
     TDataModel? Read(string id) {
