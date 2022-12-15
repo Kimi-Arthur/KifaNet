@@ -21,13 +21,7 @@ namespace Kifa.IO.FileFormats;
 public class KifaFileV1Format : KifaFileFormat {
     public static readonly KifaFileV1Format Instance = new();
 
-    public static KifaFileFormat? Get(string fileUri) {
-        if (fileUri.EndsWith(".v1")) {
-            return Instance;
-        }
-
-        return null;
-    }
+    public static KifaFileFormat? Get(string fileUri) => fileUri.EndsWith(".v1") ? Instance : null;
 
     public override string ToString() => "v1";
 

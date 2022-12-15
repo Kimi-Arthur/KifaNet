@@ -20,16 +20,7 @@ public class KifaFileV0Format : KifaFileFormat {
 
     public override long HeaderSize => 0x1225;
 
-    public static KifaFileFormat? Get(string fileSpec) {
-        var specs = fileSpec.Split('/').First().Split(';');
-        foreach (var spec in specs) {
-            if (spec == "v0") {
-                return Instance;
-            }
-        }
-
-        return null;
-    }
+    public static KifaFileFormat? Get(string fileUri) => fileUri.EndsWith(".v0") ? Instance : null;
 
     public override string ToString() => "v0";
 
