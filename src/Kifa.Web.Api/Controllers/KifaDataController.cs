@@ -11,25 +11,10 @@ using Microsoft.Extensions.Primitives;
 namespace Kifa.Web.Api.Controllers;
 
 [ApiController]
-public abstract class KifaDataController : ControllerBase {
-    public static string DefaultUser { get; set; } = "Kifa";
-    public static Dictionary<string, string> UserFolders { get; set; } = new();
-}
-
-public abstract class KifaDataController<TDataModel, TServiceClient> : KifaDataController
+public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     where TDataModel : DataModel, new()
     where TServiceClient : KifaServiceClient<TDataModel>, new() {
     protected readonly TServiceClient Client = new();
-
-    static readonly Regex NamePattern = new(@",CN=([^,]+),");
-
-    public string AuthenticatedUser {
-        get {
-            var values = Request.Headers.GetValueOrDefault("X-SSL-CERT", StringValues.Empty);
-            var match = NamePattern.Match(values.Count == 0 ? "" : values[0] ?? "");
-            return match.Success ? match.Groups[1].Value : DefaultUser;
-        }
-    }
 
     // GET api/values
     [HttpGet]
