@@ -12,6 +12,7 @@ using Kifa.Web.Api.Controllers.Goethe;
 using Kifa.Web.Api.Controllers.MomentCounter;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using NLog.Web;
 
 namespace Kifa.Web.Api;
 
@@ -39,5 +40,5 @@ public class Program {
     }
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args)
-        => WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
+        => WebHost.CreateDefaultBuilder(args).UseNLog().UseStartup<Startup>();
 }
