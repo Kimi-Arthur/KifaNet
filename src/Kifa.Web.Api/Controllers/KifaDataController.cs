@@ -19,7 +19,6 @@ public abstract class KifaDataController : ControllerBase {
 public abstract class KifaDataController<TDataModel, TServiceClient> : KifaDataController
     where TDataModel : DataModel, new()
     where TServiceClient : KifaServiceClient<TDataModel>, new() {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     protected readonly TServiceClient Client = new();
 
     static readonly Regex NamePattern = new(@",CN=([^,]+),");
