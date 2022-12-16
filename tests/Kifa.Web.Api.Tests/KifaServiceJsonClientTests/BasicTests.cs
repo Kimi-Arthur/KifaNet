@@ -26,7 +26,7 @@ public class BasicTests : IDisposable {
     public BasicTests() {
         folder = $"{Path.GetTempPath()}/{nameof(BasicTests)}_{DateTime.UtcNow:yyyyMMddHHmmss}";
 
-        KifaServiceJsonClient.DataFolder = folder;
+        client.DataFolder = folder;
     }
 
     [Fact]

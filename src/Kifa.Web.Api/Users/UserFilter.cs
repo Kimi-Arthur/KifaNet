@@ -33,15 +33,17 @@ public class UserFilter : ActionFilterAttribute {
             var controllerName = context.Controller.GetType().ToString();
             Logger.Trace($"Configuring for controller {controllerName}.");
 
-            if (!config.AllowedNamespaces.Any(ns => controllerName.StartsWith(ns))) {
+            var matchedFolder = config.AllowedNamespaces.Where(ns => controllerName.StartsWith(ns))
+                .MaxBy(ns => ns.Length);
+
+            if (matchedFolder == null) {
                 Logger.Warn($"Controller {controllerName} not allowed for user {user}.");
                 context.Result = new NotFoundResult();
                 return;
             }
 
-            // The property is essentially thread local, so only affecting current request.
-            KifaServiceJsonClient.DataFolder =
-                config.DataFolder ?? KifaServiceJsonClient.DefaultDataFolder;
+            // The property is essentially thread local, so it only affects current request.
+            KifaServiceJsonClient.DataFolders = config.DataFolders;
         }
     }
 }

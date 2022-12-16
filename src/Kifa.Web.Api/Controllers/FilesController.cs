@@ -97,7 +97,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public List<string> ListFolder(string folder, bool recursive = false) {
-        var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
+        var prefix = $"{DataFolder}/{ModelId}";
         folder = $"{prefix}/{folder.Trim('/')}";
         Logger.Trace($"Listing items in folder {folder}...");
         if (!Directory.Exists(folder)) {

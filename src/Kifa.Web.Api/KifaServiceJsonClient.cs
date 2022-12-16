@@ -22,14 +22,14 @@ public class KifaServiceJsonClient {
 
     #endregion
 
-    #region public late static string DataFolder { get; set; }
+    #region public late static Dictionary<string, string> DataFolders { get; set; }
 
     [ThreadStatic]
-    static string? dataFolder;
+    static Dictionary<string, string>? dataFolders;
 
-    public static string DataFolder {
-        get => dataFolder ?? DefaultDataFolder;
-        set => Late.Set(ref dataFolder, value);
+    public static Dictionary<string, string> DataFolders {
+        get => Late.Get(dataFolders);
+        set => Late.Set(ref dataFolders, value);
     }
 
     #endregion
@@ -39,13 +39,38 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     where TDataModel : DataModel, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    // public string DataFolder { get; set; } = KifaServiceJsonClient.DefaultDataFolder;
+    #region public string DataFolder { get; set; }
+    
+    string? dataFolder;
+    
+    public string DataFolder {
+        get {
+            if (dataFolder != null) {
+                return dataFolder;
+            }
+    
+            var matchedFolder = KifaServiceJsonClient.DataFolders
+                .Where(kv => ModelId.StartsWith(kv.Key)).MaxBy(kv => kv.Key.Length);
+            if (matchedFolder == null) {
+                return dataFolder = KifaServiceJsonClient.DefaultDataFolder;
+            }
+    
+            return dataFolder = matchedFolder.Value.Value;
+        }
+    
+        set => dataFolder = value;
+    }
+    
+    #endregion
+
     static ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
 
     static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
 
     public override SortedDictionary<string, TDataModel> List() {
         // No data is gonna change. With no locking, the worst case is data not consistent.
-        var prefix = $"{KifaServiceJsonClient.DataFolder}/{ModelId}";
+        var prefix = $"{DataFolder}/{ModelId}";
         var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
         if (!Directory.Exists(prefix)) {
             return new SortedDictionary<string, TDataModel>();
@@ -377,7 +402,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     void Write(TDataModel data) {
-        var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{data.Id.Trim('/')}.json";
+        var path = $"{DataFolder}/{ModelId}/{data.Id.Trim('/')}.json";
         MakeParent(path);
         File.WriteAllText(path,
             $"{JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Pretty)}\n");
@@ -392,12 +417,12 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     string? ReadRaw(string id) {
-        var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{id.Trim('/')}.json";
+        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.json";
         return !File.Exists(path) ? null : File.ReadAllText(path);
     }
 
     void Remove(string id) {
-        var path = $"{KifaServiceJsonClient.DataFolder}/{ModelId}/{id.Trim('/')}.json";
+        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.json";
         File.Delete(path);
     }
 

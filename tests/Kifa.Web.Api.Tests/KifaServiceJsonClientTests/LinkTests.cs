@@ -27,7 +27,7 @@ public class LinkTests : IDisposable {
     public LinkTests() {
         folder = $"{Path.GetTempPath()}/{nameof(LinkTest)}_{DateTime.UtcNow:yyyyMMddHHmmss}";
 
-        KifaServiceJsonClient.DataFolder = folder;
+        client.DataFolder = folder;
     }
 
     [Fact]
