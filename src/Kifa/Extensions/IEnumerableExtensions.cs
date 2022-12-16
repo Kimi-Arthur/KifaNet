@@ -13,4 +13,14 @@ public static class IEnumerableExtensions {
             action(item);
         }
     }
+
+    public static TSource? MaxBy<TSource>(this IEnumerable<TSource> source,
+        Func<TSource, long> keySelector) where TSource : struct
+        => source.Select(s => (TSource?) s)
+            .MaxBy(s => s == null ? long.MinValue : keySelector(s.Value));
+
+    public static TSource? MinBy<TSource>(this IEnumerable<TSource> source,
+        Func<TSource, long> keySelector) where TSource : struct
+        => source.Select(s => (TSource?) s)
+            .MinBy(s => s == null ? long.MaxValue : keySelector(s.Value));
 }
