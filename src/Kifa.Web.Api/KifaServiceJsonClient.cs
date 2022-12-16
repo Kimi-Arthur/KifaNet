@@ -11,13 +11,24 @@ using NLog;
 namespace Kifa.Web.Api;
 
 public class KifaServiceJsonClient {
+    #region public late static string DefaultDataFolder { get; set; }
+
+    static string? defaultDataFolder;
+
+    public static string DefaultDataFolder {
+        get => Late.Get(defaultDataFolder);
+        set => Late.Set(ref defaultDataFolder, value);
+    }
+
+    #endregion
+
     #region public late static string DataFolder { get; set; }
 
-    // [ThreadStatic]
+    [ThreadStatic]
     static string? dataFolder;
 
     public static string DataFolder {
-        get => Late.Get(dataFolder);
+        get => dataFolder ?? DefaultDataFolder;
         set => Late.Set(ref dataFolder, value);
     }
 

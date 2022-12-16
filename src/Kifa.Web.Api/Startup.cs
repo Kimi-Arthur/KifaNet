@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using Kifa.Api.Files;
+using Kifa.Web.Api.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -30,6 +31,7 @@ public class Startup {
         services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
 
         services.AddMvc(options => {
+            options.Filters.Add<UserFilter>();
             options.EnableEndpointRouting = false;
 
             options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
