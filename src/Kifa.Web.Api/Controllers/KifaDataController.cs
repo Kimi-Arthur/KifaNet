@@ -7,13 +7,13 @@ using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Primitives;
-using NLog;
 
 namespace Kifa.Web.Api.Controllers;
 
 [ApiController]
 public abstract class KifaDataController : ControllerBase {
     public static string DefaultUser { get; set; } = "Kifa";
+    public static Dictionary<string, string> UserFolders { get; set; } = new();
 }
 
 public abstract class KifaDataController<TDataModel, TServiceClient> : KifaDataController
