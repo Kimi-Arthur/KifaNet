@@ -17,6 +17,7 @@ public static class HttpExtensions {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string GetString(this HttpResponseMessage response) {
+        response.EnsureSuccessStatusCode();
         using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
             Encoding.GetEncoding("UTF-8"));
         var data = sr.ReadToEnd();
