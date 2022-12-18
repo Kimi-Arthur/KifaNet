@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AngleSharp;
 using AngleSharp.Dom;
+using Kifa.Html;
 using Kifa.Service;
 using NLog;
 
@@ -35,13 +35,12 @@ public class CambridgeGlobalGermanWord : DataModel {
 
     public override DateTimeOffset? Fill() {
         var page = CambridgePage.Client.Get($"{PagePrefix}/{Id}");
-        if (page == null) {
+        if (page?.PageContent == null) {
             Logger.Error($"Raw page not found {PagePrefix}/{Id}.");
             return DateTimeOffset.Now + TimeSpan.FromDays(365);
         }
 
-        var document = BrowsingContext.New(Configuration.Default).OpenAsync(req
-            => req.Content(page.PageContent)).Result;
+        var document = page.PageContent.GetDocument();
         var root = document.GetElementsByClassName("dictionary")
             .FirstOrDefault(e => e.QuerySelector("#dataset_k-de-en-global") != null);
 

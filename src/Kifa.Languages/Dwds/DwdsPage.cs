@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Web;
-using AngleSharp;
-using AngleSharp.Html;
 using HtmlAgilityPack;
+using Kifa.Html;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -63,9 +62,7 @@ public class DwdsPage : DataModel {
                          "//p[. = 'Weitere Wörterbücher']/following-sibling::*")
             ?.ForEach(n => n.Remove());
 
-        PageContent = BrowsingContext.New(Configuration.Default).OpenAsync(req
-                => req.Content(doc.DocumentNode.SelectSingleNode("//main").OuterHtml)).Result
-            .ToHtml(new MinifyMarkupFormatter());
+        PageContent = doc.DocumentNode.SelectSingleNode("//main").GetMinified();
     }
 
     void FillNeighbouringPages() {

@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using AngleSharp;
-using AngleSharp.Html;
 using HtmlAgilityPack;
+using Kifa.Html;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -60,10 +59,7 @@ public class CambridgePage : DataModel {
         doc.DocumentNode.SelectNodes("//div[contains(@class, 'am-default')]")
             ?.ForEach(n => n.Remove());
 
-        PageContent = BrowsingContext.New(Configuration.Default).OpenAsync(req
-            => req.Content(doc.DocumentNode.SelectSingleNode("//article").OuterHtml)).Result.ToHtml(
-            new MinifyMarkupFormatter {
-            });
+        PageContent = doc.DocumentNode.SelectSingleNode("//article").GetMinified();
     }
 
     static bool IsValid(string id)
