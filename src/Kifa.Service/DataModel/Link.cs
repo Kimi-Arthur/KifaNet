@@ -36,8 +36,6 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
 
     public string ToJson() => Id;
 
-    public void FromJson(string data) => Id = data;
-
     public bool Equals(Link<TDataModel>? other) {
         if (ReferenceEquals(null, other)) {
             return false;
