@@ -83,17 +83,30 @@ public class KifaActionResult {
 }
 
 public class KifaBatchActionResult : KifaActionResult {
-    public List<KifaActionResult> Results { get; set; } = new();
+    public Dictionary<string, KifaActionResult> Results { get; set; } = new();
 
-    public KifaBatchActionResult Add(KifaActionResult moreResult) {
-        Results.Add(moreResult);
+    public KifaBatchActionResult Add(string item, KifaActionResult moreResult) {
+        Results.Add(item, moreResult);
+        return this;
+    }
+
+    public KifaBatchActionResult
+        AddRange(IEnumerable<(string Item, KifaActionResult Result)> moreResults) {
+        foreach (var result in moreResults) {
+            Results.Add(result.Item, result.Result);
+        }
+
         return this;
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public override KifaActionStatus Status => Results.Max(r => r.Status);
+    public override KifaActionStatus Status
+        => Results.Aggregate(KifaActionStatus.OK, (status, item) => status | item.Value.Status);
 
-    public override string Message => string.Join("\n", Results.Where(r => r.Message != null));
+    public override string Message
+        => string.Join("\n",
+            Results.Where(r => r.Value.Status != KifaActionStatus.OK)
+                .Select(r => $"{r.Key} ({r.Value.Status}): {r.Value.Message}"));
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {

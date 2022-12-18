@@ -1,8 +1,11 @@
-﻿namespace Kifa.Service;
+﻿using System;
 
+namespace Kifa.Service;
+
+[Flags]
 public enum KifaActionStatus {
     OK,
-    Warning,
-    BadRequest,
-    Error
+    BadRequest = 1,
+    Warning = 2,
+    Error = 4
 }

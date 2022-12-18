@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Kifa.Service;
-using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.Primitives;
 
 namespace Kifa.Web.Api.Controllers;
 
@@ -69,11 +66,11 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
 
     [HttpPost("^")]
     public KifaApiActionResult Link([FromBody] List<string> ids)
-        => ids.Skip(1)
-            .Select(id => Client.Link(Uri.UnescapeDataString(ids[0]), Uri.UnescapeDataString(id)))
-            .Aggregate(new KifaBatchActionResult(), (s, x) => s.Add(x));
+        => new KifaBatchActionResult {
+            Results = ids.Skip(1).ToDictionary(id => id, id => Client.Link(ids[0], id))
+        };
 
-    // DELETE api/values/5
+// DELETE api/values/5
     [HttpDelete("{id}")]
     public KifaApiActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
 

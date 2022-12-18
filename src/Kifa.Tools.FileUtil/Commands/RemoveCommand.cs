@@ -118,7 +118,7 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (toRemove) {
-                    result.Add(file.Exists()
+                    result.Add(file.Id, file.Exists()
                         ? new KifaActionResult {
                             Status = KifaActionStatus.OK,
                             Message = $"File {file} deleted."
@@ -130,13 +130,13 @@ class RemoveCommand : KifaCommand {
 
                     file.Delete();
 
-                    result.Add(FileInformation.Client.RemoveLocation(info.Id, location));
+                    result.Add(location, FileInformation.Client.RemoveLocation(info.Id, location));
                 }
             }
         }
 
         // Logical removal.
-        result.Add(FileInformation.Client.Delete(info.Id));
+        result.Add(info.Id, FileInformation.Client.Delete(info.Id));
         return result;
     }
 
@@ -167,7 +167,7 @@ class RemoveCommand : KifaCommand {
 
         if (!RemoveLinkOnly) {
             file.Delete();
-            result.Add(fileExists
+            result.Add(file.Id, fileExists
                 ? new KifaActionResult {
                     Status = KifaActionStatus.OK,
                     Message = $"File {file} deleted."
@@ -178,7 +178,8 @@ class RemoveCommand : KifaCommand {
                 });
         }
 
-        result.Add(FileInformation.Client.RemoveLocation(file.Id, file.ToString()));
+        result.Add(file.ToString(),
+            FileInformation.Client.RemoveLocation(file.Id, file.ToString()));
 
         return result;
     }

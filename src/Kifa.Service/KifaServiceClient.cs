@@ -40,20 +40,23 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     public abstract KifaActionResult Set(TDataModel data);
 
     public virtual KifaActionResult Set(List<TDataModel> data)
-        => data.AsParallel().Select(Set).Aggregate(new KifaBatchActionResult(),
-            (result, actionResult) => result.Add(actionResult));
+        => new KifaBatchActionResult {
+            Results = data.AsParallel().ToDictionary(item => item.Id, Set)
+        };
 
     public abstract KifaActionResult Update(TDataModel data);
 
     public virtual KifaActionResult Update(List<TDataModel> data)
-        => data.AsParallel().Select(Update).Aggregate(new KifaBatchActionResult(),
-            (result, actionResult) => result.Add(actionResult));
+        => new KifaBatchActionResult {
+            Results = data.AsParallel().ToDictionary(item => item.Id, Update)
+        };
 
     public abstract KifaActionResult Delete(string id);
 
     public virtual KifaActionResult Delete(List<string> ids)
-        => ids.AsParallel().Select(Delete).Aggregate(new KifaBatchActionResult(),
-            (result, actionResult) => result.Add(actionResult));
+        => new KifaBatchActionResult {
+            Results = ids.AsParallel().ToDictionary(item => item, Delete)
+        };
 
     public abstract KifaActionResult Link(string targetId, string linkId);
 }
