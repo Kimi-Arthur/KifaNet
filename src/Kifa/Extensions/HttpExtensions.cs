@@ -108,7 +108,7 @@ public static class HttpExtensions {
             return response.EnsureSuccessStatusCode();
         }, HandleHttpException);
 
-    public static TResponse? Call<TResponse>(this HttpClient client, KifaRpc<TResponse> rpc,
+    public static TResponse Call<TResponse>(this HttpClient client, KifaRpc<TResponse> rpc,
         HttpStatusCode? expectedStatusCode = null)
         => rpc.ParseResponse(client.SendWithRetry(rpc.GetRequest, expectedStatusCode));
 
