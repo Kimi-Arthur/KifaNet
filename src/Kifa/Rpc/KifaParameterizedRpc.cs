@@ -86,5 +86,6 @@ public abstract class KifaParameterizedRpc<TResponse> : KifaRpc<TResponse> {
         return request;
     }
 
-    public abstract TResponse? ParseResponse(HttpResponseMessage responseMessage);
+    // It should probably throw if it cannot get a valid response.
+    public abstract TResponse ParseResponse(HttpResponseMessage responseMessage);
 }
