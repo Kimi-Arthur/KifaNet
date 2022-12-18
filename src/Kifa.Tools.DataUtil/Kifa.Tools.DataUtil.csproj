@@ -5,7 +5,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ToolCommandName>datax</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>5.3.1</Version>
+    <Version>5.3.2</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
