@@ -9,6 +9,9 @@ public static class HtmlExtensions {
     public static IDocument GetDocument(this string content)
         => BrowsingContext.New(Configuration.Default).OpenAsync(req => req.Content(content)).Result;
 
+    public static string GetMinified(this IMarkupFormattable html)
+        => html.ToHtml(new MinifyMarkupFormatter());
+
     public static string GetMinified(this string html)
         => html.GetDocument().ToHtml(new MinifyMarkupFormatter());
 
