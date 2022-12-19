@@ -9,7 +9,6 @@
     <ProjectReference Include="..\Kifa.Subtitle\Kifa.Subtitle.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
     <PackageReference Include="Svg" Version="3.2.3" />
     <PackageReference Include="Fizzler" Version="1.2.0" />
   </ItemGroup>
