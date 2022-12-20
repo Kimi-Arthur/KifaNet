@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers;
 
-
 public class TvShowsController : KifaDataController<TvShow, TvShowJsonServiceClient> {
     [HttpGet("$format")]
     [HttpPost("$format")]

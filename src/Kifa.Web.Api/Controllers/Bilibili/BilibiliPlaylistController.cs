@@ -3,7 +3,6 @@ using Kifa.Bilibili;
 
 namespace Kifa.Web.Api.Controllers.Bilibili;
 
-
 public class BilibiliPlaylistController : KifaDataController<BilibiliPlaylist,
     KifaServiceJsonClient<BilibiliPlaylist>> {
 }

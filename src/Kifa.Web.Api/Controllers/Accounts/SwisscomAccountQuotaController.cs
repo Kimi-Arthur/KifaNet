@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Accounts;
 
-
 public class SwisscomAccountQuotaController : KifaDataController<SwisscomAccountQuota,
     SwisscomAccountQuotaJsonServiceClient> {
     [HttpGet("$get_top_accounts")]

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Goethe;
 
-
 public class GoetheGermanWordsController : KifaDataController<GoetheGermanWord,
     GoetheGermanWordJsonServiceClient> {
 }

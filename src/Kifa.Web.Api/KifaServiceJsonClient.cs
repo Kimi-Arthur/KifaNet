@@ -40,28 +40,29 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     // public string DataFolder { get; set; } = KifaServiceJsonClient.DefaultDataFolder;
+
     #region public string DataFolder { get; set; }
-    
+
     string? dataFolder;
-    
+
     public string DataFolder {
         get {
             if (dataFolder != null) {
                 return dataFolder;
             }
-    
+
             var matchedFolder = KifaServiceJsonClient.DataFolders
                 .Where(kv => ModelId.StartsWith(kv.Key)).MaxBy(kv => kv.Key.Length);
             if (matchedFolder == null) {
                 return dataFolder = KifaServiceJsonClient.DefaultDataFolder;
             }
-    
+
             return dataFolder = matchedFolder.Value.Value;
         }
-    
+
         set => dataFolder = value;
     }
-    
+
     #endregion
 
     static ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
