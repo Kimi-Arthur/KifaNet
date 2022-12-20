@@ -11,8 +11,8 @@ using NLog;
 
 namespace Kifa.Languages.Dwds;
 
-public class DwdsPage : DataModel {
-    public const string ModelId = "dwds/pages";
+public class DwdsPage : DataModel, WithModelId {
+    public static string ModelId => "dwds/pages";
 
     #region Clients
 

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Kifa.Service;
+﻿using Kifa.Service;
 
 namespace Kifa.Cloud.OAuth;
 

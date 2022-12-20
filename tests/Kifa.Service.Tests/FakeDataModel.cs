@@ -3,8 +3,8 @@ using Newtonsoft.Json;
 
 namespace Kifa.Service.Tests;
 
-class FakeDataModel : DataModel, Translatable<FakeDataModel> {
-    public const string ModelId = "api_test";
+class FakeDataModel : DataModel, WithModelId, Translatable<FakeDataModel> {
+    public static string ModelId => "api_test";
 
     static FakeDataModelServiceClient client;
 

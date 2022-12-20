@@ -7,8 +7,8 @@ using Kifa.Service;
 
 namespace Kifa.Cloud.BaiduCloud;
 
-public class BaiduAccount : OAuthAccount {
-    public const string ModelId = "accounts/baidu";
+public class BaiduAccount : OAuthAccount, WithModelId {
+    public static string ModelId => "accounts/baidu";
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(30);
 

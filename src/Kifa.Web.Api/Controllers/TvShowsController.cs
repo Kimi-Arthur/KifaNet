@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers;
 
-[Route("api/" + TvShow.ModelId)]
+
 public class TvShowsController : KifaDataController<TvShow, TvShowJsonServiceClient> {
     [HttpGet("$format")]
     [HttpPost("$format")]

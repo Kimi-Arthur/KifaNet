@@ -5,7 +5,7 @@ using NLog;
 
 namespace Kifa.Web.Api.Controllers.MomentCounter;
 
-[Route("api/" + Apps.MomentCounter.User.ModelId)]
+
 public class UserController : KifaDataController<User, UserJsonServiceClient> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 

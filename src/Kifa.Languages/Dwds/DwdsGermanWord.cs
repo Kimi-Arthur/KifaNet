@@ -6,8 +6,8 @@ using Kifa.Service;
 
 namespace Kifa.Languages.Dwds;
 
-public class DwdsGermanWord : DataModel {
-    public const string ModelId = "dwds/words";
+public class DwdsGermanWord : DataModel, WithModelId {
+    public static string ModelId => "dwds/words";
 
     #region Clients
 

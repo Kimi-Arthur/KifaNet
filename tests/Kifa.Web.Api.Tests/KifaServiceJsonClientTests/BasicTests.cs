@@ -9,8 +9,8 @@ using Xunit;
 
 namespace Kifa.Web.Api.Tests;
 
-public class TestDataModel : DataModel {
-    public const string ModelId = "tests";
+public class TestDataModel : DataModel, WithModelId {
+    public static string ModelId => "tests";
 
     public string? Data { get; set; }
 

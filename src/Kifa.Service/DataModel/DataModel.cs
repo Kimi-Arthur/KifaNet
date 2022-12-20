@@ -7,6 +7,10 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
 
+public interface WithModelId {
+    public static abstract string ModelId { get; }
+}
+
 /// <summary>
 /// When used, specify a public const string field named ModelId.
 /// </summary>

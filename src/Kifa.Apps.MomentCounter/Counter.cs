@@ -3,8 +3,8 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter;
 
-public class Counter : DataModel {
-    public const string ModelId = "moment_counter/counters";
+public class Counter : DataModel, WithModelId {
+    public static string ModelId => "moment_counter/counters";
     public static CounterServiceClient Client { get; set; } = new CounterRestServiceClient();
 
     public string? Title { get; set; }

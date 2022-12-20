@@ -10,10 +10,10 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German.Goethe;
 
-public class GoetheGermanWord : DataModel {
+public class GoetheGermanWord : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public const string ModelId = "goethe/words";
+    public static string ModelId => "goethe/words";
     public override int CurrentVersion => 3;
 
     static readonly Regex RootWordPattern =

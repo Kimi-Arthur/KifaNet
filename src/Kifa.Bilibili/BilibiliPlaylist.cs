@@ -6,8 +6,8 @@ using Kifa.Service;
 
 namespace Kifa.Bilibili;
 
-public class BilibiliPlaylist : DataModel {
-    public const string ModelId = "bilibili/playlists";
+public class BilibiliPlaylist : DataModel, WithModelId {
+    public static string ModelId => "bilibili/playlists";
 
     static KifaServiceClient<BilibiliUploader> client;
 

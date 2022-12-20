@@ -27,8 +27,8 @@ public class BilibiliVideoStats {
     public long ShareCount { get; set; }
 }
 
-public class BilibiliVideo : DataModel {
-    public const string ModelId = "bilibili/videos";
+public class BilibiliVideo : DataModel, WithModelId {
+    public static string ModelId => "bilibili/videos";
 
     public enum PartModeType {
         SinglePartMode,

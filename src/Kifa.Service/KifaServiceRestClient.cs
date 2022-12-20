@@ -37,7 +37,7 @@ public class KifaServiceRestClient {
 }
 
 public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataModel>
-    where TDataModel : DataModel, new() {
+    where TDataModel : DataModel, WithModelId, new() {
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => Retry.Run(() => {
             var request = new HttpRequestMessage(new HttpMethod("PATCH"),

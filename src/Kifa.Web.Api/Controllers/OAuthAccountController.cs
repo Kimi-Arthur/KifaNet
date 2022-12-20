@@ -1,5 +1,6 @@
 using System.Net.Http;
 using Kifa.Cloud.OAuth;
+using Kifa.Service;
 using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -8,7 +9,7 @@ namespace Kifa.Web.Api.Controllers;
 
 public abstract class
     OAuthAccountController<TAccount> : KifaDataController<TAccount, OAuthAccountClient<TAccount>>
-    where TAccount : OAuthAccount, new() {
+    where TAccount : OAuthAccount, WithModelId, new() {
     static readonly HttpClient HttpClient = new();
 
     static readonly KifaServiceJsonClient<TAccount> ServiceClient = new();
@@ -42,5 +43,5 @@ public abstract class
 }
 
 public class OAuthAccountClient<TAccount> : KifaServiceJsonClient<TAccount>
-    where TAccount : OAuthAccount, new() {
+    where TAccount : OAuthAccount, WithModelId, new() {
 }

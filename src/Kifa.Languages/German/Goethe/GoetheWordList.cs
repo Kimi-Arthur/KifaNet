@@ -3,8 +3,8 @@ using Kifa.Service;
 
 namespace Kifa.Languages.German.Goethe;
 
-public class GoetheWordList : DataModel {
-    public const string ModelId = "goethe/lists";
+public class GoetheWordList : DataModel, WithModelId {
+    public static string ModelId => "goethe/lists";
 
     public List<string> Words { get; set; } = new();
 }

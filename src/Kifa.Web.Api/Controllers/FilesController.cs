@@ -11,7 +11,7 @@ using NLog;
 
 namespace Kifa.Web.Api.Controllers;
 
-[Route("api/" + FileInformation.ModelId)]
+
 public class
     FilesController : KifaDataController<FileInformation, FileInformationJsonServiceClient> {
     static readonly FileExtensionContentTypeProvider provider = new();

@@ -4,8 +4,8 @@ using Kifa.Service;
 
 namespace Kifa.Games.BreathOfTheWild;
 
-public class Game : DataModel {
-    public const string ModelId = "games/botw";
+public class Game : DataModel, WithModelId {
+    public static string ModelId => "games/botw";
 
     public string Name { get; set; }
     public string Notes { get; set; }

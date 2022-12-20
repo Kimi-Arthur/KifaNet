@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using NLog;
 
 namespace Kifa.Service;
 
-public interface KifaServiceClient<TDataModel> where TDataModel : DataModel {
+public interface KifaServiceClient<TDataModel> where TDataModel : DataModel, WithModelId {
     string ModelId { get; }
 
     SortedDictionary<string, TDataModel> List();
@@ -21,12 +20,12 @@ public interface KifaServiceClient<TDataModel> where TDataModel : DataModel {
 }
 
 public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDataModel>
-    where TDataModel : DataModel {
+    where TDataModel : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     protected BaseKifaServiceClient() {
         var typeInfo = typeof(TDataModel);
-        ModelId = (string) typeInfo.GetField("ModelId")?.GetValue(null)!;
+        ModelId = TDataModel.ModelId;
     }
 
     public string ModelId { get; }

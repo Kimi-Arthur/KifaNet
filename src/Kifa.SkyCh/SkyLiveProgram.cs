@@ -11,10 +11,10 @@ using NLog;
 
 namespace Kifa.SkyCh;
 
-public class SkyLiveProgram : DataModel {
+public class SkyLiveProgram : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public const string ModelId = "sky.ch/lives";
+    public static string ModelId => "sky.ch/lives";
 
     public static string SkyChCookies { get; set; }
 

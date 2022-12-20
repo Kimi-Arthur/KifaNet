@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Soccer;
 
-[Route("api/" + SkyLiveProgram.ModelId)]
+
 public class SkyProgramsController : KifaDataController<SkyLiveProgram, SkyProgramJsonServiceClient> {
     [HttpGet("$add_for_day")]
     public KifaApiActionResult<List<SkyLiveProgram>> AddForDay(int dayOffset)

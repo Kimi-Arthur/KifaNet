@@ -7,8 +7,8 @@ using Kifa.Service;
 
 namespace Kifa.Cloud.Google;
 
-public class GoogleAccount : OAuthAccount {
-    public const string ModelId = "accounts/google";
+public class GoogleAccount : OAuthAccount, WithModelId {
+    public static string ModelId => "accounts/google";
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(1);
 

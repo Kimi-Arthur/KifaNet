@@ -12,7 +12,7 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Memrise;
 
-public class MemriseCourse : DataModel {
+public class MemriseCourse : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static MemriseCourseServiceClient? client;
@@ -24,7 +24,7 @@ public class MemriseCourse : DataModel {
 
     static MemriseWordServiceClient WordClient => MemriseWord.Client;
 
-    public const string ModelId = "memrise/courses";
+    public static string ModelId => "memrise/courses";
 
     public string CourseName { get; set; }
     public string CourseId { get; set; }

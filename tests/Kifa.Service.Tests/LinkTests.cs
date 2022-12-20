@@ -41,11 +41,15 @@ public class LinkTests {
     }
 }
 
-class DataA : DataModel {
+class DataA : DataModel, WithModelId {
+    public static string ModelId => "as";
+
     public string? MyValue { get; set; }
 }
 
-class DataB : DataModel {
+class DataB : DataModel, WithModelId {
+    public static string ModelId => "bs";
+
     public List<Link<DataA>>? AList { get; set; }
     public Dictionary<string, Link<DataA>> ADict { get; set; }
     public Link<DataA>? AItem { get; set; }

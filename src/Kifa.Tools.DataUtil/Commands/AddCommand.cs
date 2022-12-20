@@ -20,13 +20,12 @@ public partial class AddCommand : KifaCommand {
     public IEnumerable<string> Specs { get; set; }
 
     public override int Execute() {
-        switch (Type) {
-            case SwisscomAccount.ModelId:
-                CreateSwisscomAccounts(Specs);
-                return 0;
-            default:
-                Logger.Warn($"No add logic found for {Type}");
-                return 1;
+        if (Type == SwisscomAccount.ModelId) {
+            CreateSwisscomAccounts(Specs);
+            return 0;
         }
+
+        Logger.Warn($"No add logic found for {Type}");
+        return 1;
     }
 }

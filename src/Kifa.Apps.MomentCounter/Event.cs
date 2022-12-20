@@ -4,8 +4,8 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter;
 
-public class Event : DataModel {
-    public const string ModelId = "moment_counter/events";
+public class Event : DataModel, WithModelId {
+    public static string ModelId => "moment_counter/events";
 
     public DateTime DateTime { get; set; }
 

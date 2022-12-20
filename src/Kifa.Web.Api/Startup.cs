@@ -31,6 +31,7 @@ public class Startup {
         services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
 
         services.AddMvc(options => {
+            options.Conventions.Add(new KifaControllerRouteConvention());
             options.Filters.Add<UserFilter>();
             options.EnableEndpointRouting = false;
 

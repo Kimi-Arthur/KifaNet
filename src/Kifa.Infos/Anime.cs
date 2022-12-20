@@ -7,8 +7,8 @@ using Kifa.Service;
 
 namespace Kifa.Infos;
 
-public class Anime : DataModel, Formattable {
-    public const string ModelId = "animes";
+public class Anime : DataModel, WithModelId, Formattable {
+    public static string ModelId => "animes";
 
     static KifaServiceClient<Anime>? client;
 

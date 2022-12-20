@@ -4,7 +4,7 @@ namespace Kifa.Service;
 
 // Unlimited linking not supported now.
 public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
-    where TDataModel : DataModel, new() {
+    where TDataModel : DataModel, WithModelId, new() {
     static KifaServiceClient<TDataModel>? dataClient;
 
     static KifaServiceClient<TDataModel> DataClient

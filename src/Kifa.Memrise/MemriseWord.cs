@@ -4,8 +4,8 @@ using Kifa.Service;
 
 namespace Kifa.Memrise;
 
-public class MemriseWord : DataModel {
-    public const string ModelId = "memrise/words";
+public class MemriseWord : DataModel, WithModelId {
+    public static string ModelId => "memrise/words";
 
     static MemriseWordServiceClient? client;
 

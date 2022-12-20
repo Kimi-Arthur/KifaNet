@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.MomentCounter;
 
-[Route("api/" + Event.ModelId)]
+
 public class EventController : KifaDataController<Event, EventJsonServiceClient> {
 }
 

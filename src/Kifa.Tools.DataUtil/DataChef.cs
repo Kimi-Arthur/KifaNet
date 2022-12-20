@@ -17,26 +17,28 @@ using YamlDotNet.Serialization;
 namespace Kifa.Tools.DataUtil;
 
 public interface DataChef {
-    public static DataChef GetChef(string modelId, string content = null) {
-        return (modelId ?? GetYamlType(content)) switch {
-            FileInformation.ModelId => new DataChef<FileInformation>(),
-            MemriseCourse.ModelId => new DataChef<MemriseCourse>(),
-            GoetheGermanWord.ModelId => new DataChef<GoetheGermanWord>(),
-            GoetheWordList.ModelId => new DataChef<GoetheWordList>(),
-            GermanWord.ModelId => new DataChef<GermanWord>(),
-            GuitarChord.ModelId => new DataChef<GuitarChord>(),
-            TvShow.ModelId => new DataChef<TvShow>(),
-            Anime.ModelId => new DataChef<Anime>(),
-            Unit.ModelId => new DataChef<Unit>(),
-            User.ModelId => new DataChef<User>(),
-            Event.ModelId => new DataChef<Event>(),
-            Counter.ModelId => new DataChef<Counter>(),
-            SwisscomAccount.ModelId => new DataChef<SwisscomAccount>(),
-            SwisscomAccountQuota.ModelId => new DataChef<SwisscomAccountQuota>(),
-            BiaoriJapaneseWord.ModelId => new DataChef<BiaoriJapaneseWord>(),
-            _ => throw new Exception($"Invalid model id {modelId}")
-        };
-    }
+    static readonly Dictionary<string, Lazy<DataChef>> Chefs = new() {
+        { FileInformation.ModelId, new Lazy<DataChef>(() => new DataChef<FileInformation>()) },
+        { MemriseCourse.ModelId, new Lazy<DataChef>(() => new DataChef<MemriseCourse>()) },
+        { GoetheGermanWord.ModelId, new Lazy<DataChef>(() => new DataChef<GoetheGermanWord>()) },
+        { GoetheWordList.ModelId, new Lazy<DataChef>(() => new DataChef<GoetheWordList>()) },
+        { GermanWord.ModelId, new Lazy<DataChef>(() => new DataChef<GermanWord>()) },
+        { GuitarChord.ModelId, new Lazy<DataChef>(() => new DataChef<GuitarChord>()) },
+        { TvShow.ModelId, new Lazy<DataChef>(() => new DataChef<TvShow>()) },
+        { Anime.ModelId, new Lazy<DataChef>(() => new DataChef<Anime>()) },
+        { Unit.ModelId, new Lazy<DataChef>(() => new DataChef<Unit>()) },
+        { User.ModelId, new Lazy<DataChef>(() => new DataChef<User>()) },
+        { Event.ModelId, new Lazy<DataChef>(() => new DataChef<Event>()) },
+        { Counter.ModelId, new Lazy<DataChef>(() => new DataChef<Counter>()) },
+        { SwisscomAccount.ModelId, new Lazy<DataChef>(() => new DataChef<SwisscomAccount>()) }, {
+            SwisscomAccountQuota.ModelId,
+            new Lazy<DataChef>(() => new DataChef<SwisscomAccountQuota>())
+        },
+        { BiaoriJapaneseWord.ModelId, new Lazy<DataChef>(() => new DataChef<BiaoriJapaneseWord>()) }
+    };
+
+    public static DataChef GetChef(string? modelId, string? content = null)
+        => Chefs[modelId ?? GetYamlType(content!)].Value;
 
     static string GetYamlType(string s)
         => s == null || !s.StartsWith("#")
@@ -50,7 +52,7 @@ public interface DataChef {
     KifaActionResult Delete(List<string> ids);
 }
 
-public class DataChef<TDataModel> : DataChef where TDataModel : DataModel, new() {
+public class DataChef<TDataModel> : DataChef where TDataModel : DataModel, WithModelId, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static KifaServiceClient<TDataModel> client;

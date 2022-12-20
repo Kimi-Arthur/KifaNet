@@ -4,8 +4,8 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.Japanese;
 
-public class BiaoriJapaneseWord : DataModel {
-    public const string ModelId = "japanese/biaori/words";
+public class BiaoriJapaneseWord : DataModel, WithModelId {
+    public static string ModelId => "japanese/biaori/words";
 
     #region Clients
 

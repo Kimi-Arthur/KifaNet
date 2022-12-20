@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers;
 
-[Route("api/" + Anime.ModelId)]
+
 public class AnimesController : KifaDataController<Anime, AnimeJsonServiceClient> {
     [HttpGet("$format")]
     public KifaApiActionResult<string?> Format(string id, int seasonId, int episodeId)

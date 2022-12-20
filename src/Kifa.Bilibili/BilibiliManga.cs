@@ -10,8 +10,8 @@ using NLog;
 
 namespace Kifa.Bilibili;
 
-public class BilibiliManga : DataModel {
-    public const string ModelId = "bilibili/mangas";
+public class BilibiliManga : DataModel, WithModelId {
+    public static string ModelId => "bilibili/mangas";
 
     #region Clients
 

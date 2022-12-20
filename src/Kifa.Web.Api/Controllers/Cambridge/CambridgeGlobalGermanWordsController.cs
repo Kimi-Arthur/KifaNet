@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kifa.Web.Api.Controllers.Cambridge;
 
-[Route("api/" + CambridgeGlobalGermanWord.ModelId)]
+
 public class CambridgeGlobalGermanWordsController : KifaDataController<CambridgeGlobalGermanWord,
     CambridgeGlobalGermanWordsController.JsonServiceClient> {
 

@@ -36,7 +36,7 @@ public class KifaServiceJsonClient {
 }
 
 public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataModel>
-    where TDataModel : DataModel, new() {
+    where TDataModel : DataModel, WithModelId, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     // public string DataFolder { get; set; } = KifaServiceJsonClient.DefaultDataFolder;

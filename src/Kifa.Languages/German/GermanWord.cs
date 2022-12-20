@@ -7,10 +7,10 @@ using NLog;
 
 namespace Kifa.Languages.German;
 
-public class GermanWord : DataModel {
+public class GermanWord : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public const string ModelId = "languages/german/words";
+    public static string ModelId => "languages/german/words";
 
     public override int CurrentVersion => 13;
 

@@ -10,8 +10,8 @@ using NLog;
 
 namespace Kifa.Languages.Cambridge;
 
-public class CambridgePage : DataModel {
-    public const string ModelId = "cambridge/pages";
+public class CambridgePage : DataModel, WithModelId {
+    public static string ModelId => "cambridge/pages";
 
     public static CambridgePageServiceClient Client { get; set; } =
         new CambridgePageRestServiceClient();
