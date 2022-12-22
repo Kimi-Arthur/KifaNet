@@ -51,7 +51,8 @@ public class Startup {
             };
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
             options.SerializerSettings.MetadataPropertyHandling = MetadataPropertyHandling.Ignore;
-        });
+        }).ConfigureApplicationPartManager(m
+            => m.FeatureProviders.Add(new KifaDataControllerFeatureProvider()));
     }
 
     // This method gets called by the runtime.

@@ -67,17 +67,8 @@ public class SwisscomAccount : DataModel, WithModelId {
 
     #endregion
 
-    #region Clients
-
-    public static ServiceClient Client { get; set; } = new RestServiceClient();
-
-    public interface ServiceClient : KifaServiceClient<SwisscomAccount> {
-    }
-
-    public class RestServiceClient : KifaServiceRestClient<SwisscomAccount>, ServiceClient {
-    }
-
-    #endregion
+    public static KifaServiceClient<SwisscomAccount> Client { get; set; } =
+        new KifaServiceRestClient<SwisscomAccount>();
 
     public string? Username { get; set; }
     public string? Password { get; set; }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Kifa.Web.Api.Controllers;
 
-public abstract class KifaDataController<TDataModel, TServiceClient> : ControllerBase
+public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     where TDataModel : DataModel, WithModelId, new()
     where TServiceClient : KifaServiceClient<TDataModel>, new() {
     protected readonly TServiceClient Client = new();
@@ -69,7 +69,7 @@ public abstract class KifaDataController<TDataModel, TServiceClient> : Controlle
             Results = ids.Skip(1).ToDictionary(id => id, id => Client.Link(ids[0], id))
         };
 
-// DELETE api/values/5
+    // DELETE api/values/5
     [HttpDelete("{id}")]
     public KifaApiActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
 

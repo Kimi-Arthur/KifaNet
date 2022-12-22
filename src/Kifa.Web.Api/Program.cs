@@ -1,15 +1,12 @@
 ﻿using Kifa.Apps.MomentCounter;
+using Kifa.Cloud.Google;
 using Kifa.Cloud.Swisscom;
 using Kifa.Configs;
 using Kifa.Languages.Cambridge;
 using Kifa.Languages.Dwds;
 using Kifa.Languages.German;
 using Kifa.Memrise;
-using Kifa.Web.Api.Controllers.Accounts;
-using Kifa.Web.Api.Controllers.Cambridge;
-using Kifa.Web.Api.Controllers.German;
 using Kifa.Web.Api.Controllers.Goethe;
-using Kifa.Web.Api.Controllers.MomentCounter;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using NLog.Web;
@@ -27,16 +24,16 @@ public class Program {
     }
 
     static void RegisterClients() {
-        Counter.Client = new CounterJsonServiceClient();
-        SwisscomAccount.Client = new SwisscomAccountJsonServiceClient();
-        GermanWord.Client = new GermanWordJsonServiceClient();
+        Counter.Client = new KifaServiceJsonClient<Counter>();
+        SwisscomAccount.Client = new KifaServiceJsonClient<SwisscomAccount>();
+        GermanWord.Client = new KifaServiceJsonClient<GermanWord>();
         MemriseCourse.Client = new MemriseCourseJsonServiceClient();
-        MemriseWord.Client = new MemriseWordJsonServiceClient();
-        CambridgePage.Client = new CambridgePageJsonServiceClient();
-        CambridgeGlobalGermanWord.Client =
-            new CambridgeGlobalGermanWordsController.JsonServiceClient();
-        DwdsPage.Client = new DwdsPageJsonServiceClient();
-        DwdsGermanWord.Client = new DwdsGermanWordJsonServiceClient();
+        MemriseWord.Client = new KifaServiceJsonClient<MemriseWord>();
+        CambridgePage.Client = new KifaServiceJsonClient<CambridgePage>();
+        CambridgeGlobalGermanWord.Client = new KifaServiceJsonClient<CambridgeGlobalGermanWord>();
+        DwdsPage.Client = new KifaServiceJsonClient<DwdsPage>();
+        DwdsGermanWord.Client = new KifaServiceJsonClient<DwdsGermanWord>();
+        GoogleAccount.Client = new KifaServiceJsonClient<GoogleAccount>();
     }
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args)

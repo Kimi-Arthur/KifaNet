@@ -14,17 +14,8 @@ namespace Kifa.Languages.Dwds;
 public class DwdsPage : DataModel, WithModelId {
     public static string ModelId => "dwds/pages";
 
-    #region Clients
-
-    public static ServiceClient Client { get; set; } = new RestServiceClient();
-
-    public interface ServiceClient : KifaServiceClient<DwdsPage> {
-    }
-
-    public class RestServiceClient : KifaServiceRestClient<DwdsPage>, ServiceClient {
-    }
-
-    #endregion
+    public static KifaServiceClient<DwdsPage> Client { get; set; } =
+        new KifaServiceRestClient<DwdsPage>();
 
     const string PathPrefix = "/wb/";
     const string UrlPrefix = $"https://www.dwds.de{PathPrefix}";

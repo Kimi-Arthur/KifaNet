@@ -22,7 +22,7 @@ public class MemriseCourse : DataModel, WithModelId {
         set => client = value;
     }
 
-    static MemriseWordServiceClient WordClient => MemriseWord.Client;
+    static KifaServiceClient<MemriseWord> WordClient => MemriseWord.Client;
 
     public static string ModelId => "memrise/courses";
 

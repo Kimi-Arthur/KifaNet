@@ -13,8 +13,8 @@ namespace Kifa.Languages.Cambridge;
 public class CambridgePage : DataModel, WithModelId {
     public static string ModelId => "cambridge/pages";
 
-    public static CambridgePageServiceClient Client { get; set; } =
-        new CambridgePageRestServiceClient();
+    public static KifaServiceClient<CambridgePage> Client { get; set; } =
+        new KifaServiceRestClient<CambridgePage>();
 
     const string PathPrefix = "/dictionary/";
     const string UrlPrefix = $"https://dictionary.cambridge.org{PathPrefix}";
@@ -77,11 +77,4 @@ public class CambridgePage : DataModel, WithModelId {
         NeighbouringPages =
             nodes.Select(n => n.Attributes["href"].Value[PathPrefix.Length..]).ToList();
     }
-}
-
-public interface CambridgePageServiceClient : KifaServiceClient<CambridgePage> {
-}
-
-public class CambridgePageRestServiceClient : KifaServiceRestClient<CambridgePage>,
-    CambridgePageServiceClient {
 }

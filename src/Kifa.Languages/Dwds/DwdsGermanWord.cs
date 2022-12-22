@@ -9,17 +9,8 @@ namespace Kifa.Languages.Dwds;
 public class DwdsGermanWord : DataModel, WithModelId {
     public static string ModelId => "dwds/words";
 
-    #region Clients
-
-    public static ServiceClient Client { get; set; } = new RestServiceClient();
-
-    public interface ServiceClient : KifaServiceClient<DwdsGermanWord> {
-    }
-
-    public class RestServiceClient : KifaServiceRestClient<DwdsGermanWord>, ServiceClient {
-    }
-
-    #endregion
+    public static KifaServiceClient<DwdsGermanWord> Client { get; set; } =
+        new KifaServiceRestClient<DwdsGermanWord>();
 
     public HashSet<string> AudioLinks { get; set; } = new();
     public List<string> Etymology { get; set; } = new();

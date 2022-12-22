@@ -12,10 +12,8 @@ public class GoogleAccount : OAuthAccount, WithModelId {
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(1);
 
-    static KifaServiceClient<GoogleAccount>? client;
-
-    public static KifaServiceClient<GoogleAccount> Client
-        => client ??= new KifaServiceRestClient<GoogleAccount>();
+    public static KifaServiceClient<GoogleAccount> Client { get; set; } =
+        new KifaServiceRestClient<GoogleAccount>();
 
     static readonly HttpClient HttpClient = new();
 

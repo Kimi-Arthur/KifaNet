@@ -19,18 +19,18 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
-    <ProjectReference Include="..\Kifa.Apps.MomentCounter\Kifa.Apps.MomentCounter.csproj"/>
-    <ProjectReference Include="..\Kifa.Azure\Kifa.Azure.csproj"/>
-    <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj"/>
-    <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj"/>
-    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
-    <ProjectReference Include="..\Kifa.Games.BreathOfTheWild\Kifa.Games.BreathOfTheWild.csproj"/>
-    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj"/>
-    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj"/>
-    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj"/>
-    <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj"/>
-    <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj"/>
-    <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj"/>
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
+    <ProjectReference Include="..\Kifa.Apps.MomentCounter\Kifa.Apps.MomentCounter.csproj" />
+    <ProjectReference Include="..\Kifa.Azure\Kifa.Azure.csproj" />
+    <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
+    <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
+    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
+    <ProjectReference Include="..\Kifa.Games.BreathOfTheWild\Kifa.Games.BreathOfTheWild.csproj" />
+    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
+    <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj" />
+    <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj" />
+    <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
   </ItemGroup>
 </Project>

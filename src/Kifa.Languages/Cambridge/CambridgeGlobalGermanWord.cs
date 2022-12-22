@@ -14,18 +14,8 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId {
 
     public override int CurrentVersion => 1;
 
-    #region Clients
-
-    public static ServiceClient Client { get; set; } = new RestServiceClient();
-
-    public interface ServiceClient : KifaServiceClient<CambridgeGlobalGermanWord> {
-    }
-
-    public class
-        RestServiceClient : KifaServiceRestClient<CambridgeGlobalGermanWord>, ServiceClient {
-    }
-
-    #endregion
+    public static KifaServiceClient<CambridgeGlobalGermanWord> Client { get; set; } =
+        new KifaServiceRestClient<CambridgeGlobalGermanWord>();
 
     public List<CambridgeGlobalGermanEntry> Entries { get; set; } = new();
 

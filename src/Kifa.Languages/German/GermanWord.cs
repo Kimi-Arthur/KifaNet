@@ -14,7 +14,8 @@ public class GermanWord : DataModel, WithModelId {
 
     public override int CurrentVersion => 13;
 
-    public static GermanWordServiceClient Client { get; set; } = new GermanWordRestServiceClient();
+    public static KifaServiceClient<GermanWord> Client { get; set; } =
+        new KifaServiceRestClient<GermanWord>();
 
     public WordType? Type { get; set; }
 
@@ -231,11 +232,4 @@ public class GermanWord : DataModel, WithModelId {
                 .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden,
                     new HashSet<string>())).Concat(PronunciationAudioLinks.GetValueOrDefault(
                     Source.Wiktionary, new HashSet<string>()));
-}
-
-public interface GermanWordServiceClient : KifaServiceClient<GermanWord> {
-}
-
-public class GermanWordRestServiceClient : KifaServiceRestClient<GermanWord>,
-    GermanWordServiceClient {
 }

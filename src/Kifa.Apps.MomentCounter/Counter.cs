@@ -5,7 +5,9 @@ namespace Kifa.Apps.MomentCounter;
 
 public class Counter : DataModel, WithModelId {
     public static string ModelId => "moment_counter/counters";
-    public static CounterServiceClient Client { get; set; } = new CounterRestServiceClient();
+
+    public static KifaServiceClient<Counter> Client { get; set; } =
+        new KifaServiceRestClient<Counter>();
 
     public string? Title { get; set; }
 
@@ -23,10 +25,4 @@ public class Counter : DataModel, WithModelId {
     public int AverageTarget { get; set; }
 
     public List<Link<Event>> Events { get; set; } = new();
-}
-
-public interface CounterServiceClient : KifaServiceClient<Counter> {
-}
-
-public class CounterRestServiceClient : KifaServiceRestClient<Counter>, CounterServiceClient {
 }
