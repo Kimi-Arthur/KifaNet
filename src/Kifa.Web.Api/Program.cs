@@ -16,6 +16,10 @@ namespace Kifa.Web.Api;
 public class Program {
     public static void Main(string[] args) {
         KifaConfigs.Init();
+        Logging.ConfigureLogger(true);
+        KifaConfigs.LoggerConfigured();
+
+        Assemblies.LoadAll();
         RegisterClients();
         Logging.ConfigureLogger();
         KifaConfigs.LoggerConfigured();
