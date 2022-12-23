@@ -6,4 +6,5 @@ server="kimi@kimily.ch"
 
 ssh -p 2222 -t $server "mkdir /var/www/$version/"
 scp -P 2222 -r web_api/Kifa.Web.Api* $server:/var/www/$version/
+scp -P 2222 -r web_api/*.pdb $server:/var/www/$version/
 ssh -p 2222 -t $server "sudo systemctl stop web_api.service; cp /var/www/$version/* /var/www/; sudo systemctl restart web_api.service"
