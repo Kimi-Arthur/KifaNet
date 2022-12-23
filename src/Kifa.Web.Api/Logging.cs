@@ -4,7 +4,7 @@ using NLog.Targets;
 
 namespace Kifa.Web.Api;
 
-public class Logging {
+public static class Logging {
     public static string LogPath { get; set; } = "/tmp";
 
     static Target ConsoleTarget

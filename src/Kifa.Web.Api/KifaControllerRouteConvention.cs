@@ -19,7 +19,7 @@ public class KifaControllerRouteConvention : IControllerModelConvention {
             typeof(KifaDataController<,>)) {
             var endpoint = (controllerType.GetGenericArguments()[0].GetProperty("ModelId")
                 .GetValue(null) as string)!;
-            Logger.Info($"Found {controllerType}: {endpoint}");
+            Logger.Debug($"Adding endpoint /api/{endpoint} for {controllerType}.");
             controller.Selectors.Add(new SelectorModel {
                 AttributeRouteModel =
                     new AttributeRouteModel(new RouteAttribute("api/" + endpoint)),

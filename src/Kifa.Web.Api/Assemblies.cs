@@ -15,7 +15,16 @@ public static class Assemblies {
     public static void LoadAll() {
         Logger.Trace(
             $"Loading extra assemblies with names starting with {string.Join(", ", Namespaces)} from {AppDomain.CurrentDomain.BaseDirectory}...");
-        foreach (var file in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll")) {
+
+        var loaded = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.Location).ToHashSet();
+
+        Logger.Trace("Already loaded assemblies");
+        foreach (var ass in loaded) {
+            Logger.Trace($"\t{ass}");
+        }
+
+        foreach (var file in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.dll")
+                     .Where(f => !loaded.Contains(f))) {
             var fileName = file[(file.LastIndexOf("/") + 1)..];
             if (Namespaces.Any(ns => fileName.StartsWith(ns + "."))) {
                 Logger.Trace($"Loading assembly {file}...");
