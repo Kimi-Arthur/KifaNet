@@ -24,7 +24,6 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     protected BaseKifaServiceClient() {
-        var typeInfo = typeof(TDataModel);
         ModelId = TDataModel.ModelId;
     }
 
