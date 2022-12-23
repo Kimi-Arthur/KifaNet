@@ -48,7 +48,7 @@ public class ImportWordListCommand : KifaCommand {
         };
 
         foreach (var wordListId in WordListIds) {
-            var wordList = new GoetheWordListRestServiceClient().Get(wordListId);
+            var wordList = GoetheWordList.Client.Get(wordListId);
             memriseClient.AddWordList(wordList);
         }
 

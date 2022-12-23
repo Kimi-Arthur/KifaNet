@@ -10,11 +10,27 @@ namespace Kifa.Infos;
 public class Anime : DataModel, WithModelId, Formattable {
     public static string ModelId => "animes";
 
-    static KifaServiceClient<Anime>? client;
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<Anime> {
+        string? Format(string id, int seasonId, int episodeId);
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<Anime>, ServiceClient {
+        public string? Format(string id, int seasonId, int episodeId)
+            => Call<string?>("format", new Dictionary<string, string> {
+                { "id", id },
+                { "seasonId", seasonId.ToString() },
+                { "episodeId", episodeId.ToString() }
+            });
+    }
+
+    #endregion
+
 
     static readonly Language DefaultLanguage = Language.Japanese;
-
-    public static KifaServiceClient<Anime> Client => client ??= new KifaServiceRestClient<Anime>();
 
     public string? Title { get; set; }
     public Date? AirDate { get; set; }
@@ -124,17 +140,4 @@ public class Anime : DataModel, WithModelId, Formattable {
 
         return Date.Zero;
     }
-}
-
-public interface AnimeServiceClient : KifaServiceClient<Anime> {
-    string? Format(string id, int seasonId, int episodeId);
-}
-
-public class AnimeRestServiceClient : KifaServiceRestClient<Anime>, AnimeServiceClient {
-    public string? Format(string id, int seasonId, int episodeId)
-        => Call<string?>("format", new Dictionary<string, string> {
-            { "id", id },
-            { "seasonId", seasonId.ToString() },
-            { "episodeId", episodeId.ToString() }
-        });
 }

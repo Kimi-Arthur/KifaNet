@@ -12,7 +12,7 @@ public class
 }
 
 public class MemriseCourseJsonServiceClient : KifaServiceJsonClient<MemriseCourse>,
-    MemriseCourseServiceClient {
+    MemriseCourse.ServiceClient {
     public void AddWord(string courseId, MemriseWord word) {
         var course = Get(courseId);
         course.Words[word.Data[course.Columns["German"]]] = word;

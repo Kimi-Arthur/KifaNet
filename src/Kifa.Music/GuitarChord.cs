@@ -12,8 +12,8 @@ public class GuitarChord : DataModel, WithModelId {
 
     static KifaServiceClient<GuitarChord> client;
 
-    public static KifaServiceClient<GuitarChord> Client
-        => client ??= new KifaServiceRestClient<GuitarChord>();
+    public static GuitarChordServiceClient Client { get; set; } =
+        new GuitarChordRestServiceClient();
 
     /// Name of the chord. Can be like, `C`, `Cmaj7`, `Em` etc.
     public string Name { get; set; }

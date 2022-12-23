@@ -41,11 +41,11 @@ public class MemriseClient : IDisposable {
         }
     }
 
-    GoetheGermanWordRestServiceClient GoetheClient = new();
+    KifaServiceClient<GoetheGermanWord> GoetheClient => GoetheGermanWord.Client;
 
     static KifaServiceClient<GermanWord> WordClient => GermanWord.Client;
 
-    MemriseCourseServiceClient CourseClient => MemriseCourse.Client;
+    MemriseCourse.ServiceClient CourseClient => MemriseCourse.Client;
 
     public KifaActionResult AddWordList(GoetheWordList wordList) {
         AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());

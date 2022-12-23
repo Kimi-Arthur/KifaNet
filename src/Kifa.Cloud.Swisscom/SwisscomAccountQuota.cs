@@ -14,10 +14,34 @@ public class SwisscomAccountQuota : DataModel, WithModelId {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static SwisscomAccountQuotaServiceClient? client;
+    #region Clients
 
-    public static SwisscomAccountQuotaServiceClient Client
-        => client ??= new SwisscomAccountQuotaRestServiceClient();
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<SwisscomAccountQuota> {
+        List<SwisscomAccountQuota> GetTopAccounts();
+        KifaActionResult ReserveQuota(string id, string path, long length);
+        KifaActionResult ClearReserve(string id);
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<SwisscomAccountQuota>, ServiceClient {
+        public List<SwisscomAccountQuota> GetTopAccounts()
+            => Call<List<SwisscomAccountQuota>>("get_top_accounts");
+
+        public KifaActionResult ReserveQuota(string id, string path, long length)
+            => Call("reserve_quota", new Dictionary<string, object> {
+                { "id", id },
+                { "path", path },
+                { "length", length }
+            });
+
+        public KifaActionResult ClearReserve(string id)
+            => Call("clear_all_reserves", new Dictionary<string, object> {
+                { "id", id }
+            });
+    }
+
+    #endregion
 
     public static List<StorageMapping> StorageMappings { get; set; }
 
@@ -187,30 +211,6 @@ public class SwisscomAccountQuota : DataModel, WithModelId {
             UsedQuota = response.Value<long>("TotalBytes");
             TotalQuota = response.Value<long>("StorageLimit");
             return KifaActionResult.Success;
-        });
-}
-
-public interface SwisscomAccountQuotaServiceClient : KifaServiceClient<SwisscomAccountQuota> {
-    List<SwisscomAccountQuota> GetTopAccounts();
-    KifaActionResult ReserveQuota(string id, string path, long length);
-    KifaActionResult ClearReserve(string id);
-}
-
-public class SwisscomAccountQuotaRestServiceClient : KifaServiceRestClient<SwisscomAccountQuota>,
-    SwisscomAccountQuotaServiceClient {
-    public List<SwisscomAccountQuota> GetTopAccounts()
-        => Call<List<SwisscomAccountQuota>>("get_top_accounts");
-
-    public KifaActionResult ReserveQuota(string id, string path, long length)
-        => Call("reserve_quota", new Dictionary<string, object> {
-            { "id", id },
-            { "path", path },
-            { "length", length }
-        });
-
-    public KifaActionResult ClearReserve(string id)
-        => Call("clear_all_reserves", new Dictionary<string, object> {
-            { "id", id }
         });
 }
 

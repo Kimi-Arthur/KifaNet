@@ -7,17 +7,8 @@ namespace Kifa.Languages.Japanese;
 public class BiaoriJapaneseWord : DataModel, WithModelId {
     public static string ModelId => "japanese/biaori/words";
 
-    #region Clients
-
-    public static ServiceClient Client { get; set; } = new RestClient();
-
-    public interface ServiceClient : KifaServiceClient<BiaoriJapaneseWord> {
-    }
-
-    public class RestClient : KifaServiceRestClient<BiaoriJapaneseWord>, ServiceClient {
-    }
-
-    #endregion
+    public static KifaServiceClient<BiaoriJapaneseWord> Client { get; set; } =
+        new KifaServiceRestClient<BiaoriJapaneseWord>();
 
     public string Kana { get; set; } = "";
     public string Chinese { get; set; } = "";

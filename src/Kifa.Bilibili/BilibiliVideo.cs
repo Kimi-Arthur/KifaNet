@@ -30,6 +30,9 @@ public class BilibiliVideoStats {
 public class BilibiliVideo : DataModel, WithModelId {
     public static string ModelId => "bilibili/videos";
 
+    public static KifaServiceClient<BilibiliVideo> Client { get; set; } =
+        new KifaServiceRestClient<BilibiliVideo>();
+
     public enum PartModeType {
         SinglePartMode,
         ContinuousPartMode,
@@ -43,14 +46,9 @@ public class BilibiliVideo : DataModel, WithModelId {
         Done
     }
 
-    static KifaServiceClient<BilibiliVideo>? client;
-
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     PartModeType partMode;
-
-    public static KifaServiceClient<BilibiliVideo> Client
-        => client ??= new KifaServiceRestClient<BilibiliVideo>();
 
     const int DefaultCodec = 7;
 
@@ -452,8 +450,7 @@ public class BilibiliVideo : DataModel, WithModelId {
             string? preferredCodec = null) {
         var quality = 127;
         return Retry.Run(() => {
-            var response =
-                HttpClients.BilibiliHttpClient.Call(new VideoUrlRpc(aid, cid, quality));
+            var response = HttpClients.BilibiliHttpClient.Call(new VideoUrlRpc(aid, cid, quality));
 
             if (response is not { Code: 0 }) {
                 throw new Exception($"bilibili API error: {response?.Message} ({response?.Code}).");

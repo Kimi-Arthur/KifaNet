@@ -13,10 +13,8 @@ public class BilibiliUploader : DataModel, WithModelId {
 
     public static string ModelId => "bilibili/uploaders";
 
-    static KifaServiceClient<BilibiliUploader>? client;
-
-    public static KifaServiceClient<BilibiliUploader> Client
-        => client ??= new KifaServiceRestClient<BilibiliUploader>();
+    public static KifaServiceClient<BilibiliUploader> Client { get; set; } =
+        new KifaServiceRestClient<BilibiliUploader>();
 
     public string Name { get; set; }
     public List<string> Aids { get; set; } = new();

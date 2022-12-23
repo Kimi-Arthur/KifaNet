@@ -19,7 +19,6 @@ public class FileInformation : DataModel, WithModelId {
     const int SliceLength = 256 << 10;
 
     public const int BlockSize = 32 << 20;
-    static FileInformationServiceClient? client;
     static readonly Regex linkIdPattern = new(@"^(http|https|ftp)://([^:#?]*)([#?].*)?$");
     static readonly Regex fileIdPattern = new(@"^[^/]*(/.*?)(\.v\d)?$");
 
@@ -41,8 +40,8 @@ public class FileInformation : DataModel, WithModelId {
         }
     }
 
-    public static FileInformationServiceClient Client
-        => client ??= new FileInformationRestServiceClient();
+    public static FileInformationServiceClient Client { get; set; } =
+        new FileInformationRestServiceClient();
 
     public long? Size { get; set; }
 

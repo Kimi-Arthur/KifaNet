@@ -18,7 +18,7 @@ public class
 }
 
 public class SkyProgramJsonServiceClient : KifaServiceJsonClient<SkyLiveProgram>,
-    SkyProgramServiceClient {
+    SkyLiveProgram.ServiceClient {
     static readonly HttpClient NoAuthClient = new();
 
     public List<SkyLiveProgram> AddForDay(int dayOffset)

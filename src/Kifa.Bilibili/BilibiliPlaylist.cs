@@ -9,10 +9,8 @@ namespace Kifa.Bilibili;
 public class BilibiliPlaylist : DataModel, WithModelId {
     public static string ModelId => "bilibili/playlists";
 
-    static KifaServiceClient<BilibiliUploader> client;
-
-    public static KifaServiceClient<BilibiliUploader> Client
-        => client ??= new KifaServiceRestClient<BilibiliUploader>();
+    public static KifaServiceClient<BilibiliPlaylist> Client { get; set; } =
+        new KifaServiceRestClient<BilibiliPlaylist>();
 
     public string Title { get; set; }
     public string Uploader { get; set; }

@@ -10,7 +10,7 @@ public class AnimesController : KifaDataController<Anime, AnimeJsonServiceClient
         => Client.Format(id, seasonId, episodeId);
 }
 
-public class AnimeJsonServiceClient : KifaServiceJsonClient<Anime>, AnimeServiceClient {
+public class AnimeJsonServiceClient : KifaServiceJsonClient<Anime>, Anime.ServiceClient {
     public string? Format(string id, int seasonId, int episodeId) {
         var show = Get(id);
 

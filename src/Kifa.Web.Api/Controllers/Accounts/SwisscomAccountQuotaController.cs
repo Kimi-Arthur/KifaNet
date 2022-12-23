@@ -26,7 +26,7 @@ public class ReserveQuotaRequest {
 }
 
 public class SwisscomAccountQuotaJsonServiceClient : KifaServiceJsonClient<SwisscomAccountQuota>,
-    SwisscomAccountQuotaServiceClient {
+    SwisscomAccountQuota.ServiceClient {
     public List<SwisscomAccountQuota> GetTopAccounts() {
         // 10 MB
         const int limit = 100 << 20;

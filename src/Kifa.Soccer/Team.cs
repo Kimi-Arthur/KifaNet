@@ -5,6 +5,8 @@ namespace Kifa.Soccer;
 public class Team : DataModel, WithModelId {
     public static string ModelId => "soccer/teams";
 
+    public static KifaServiceClient<Team> Client { get; set; } = new KifaServiceRestClient<Team>();
+
     // Full names used in English wiki, like "FC Bayern Munich" or "Borussia Mönchengladbach"
     public string Name { get; set; }
 

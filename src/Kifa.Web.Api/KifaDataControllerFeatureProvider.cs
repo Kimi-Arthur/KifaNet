@@ -6,17 +6,30 @@ using Kifa.Service;
 using Kifa.Web.Api.Controllers;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using NLog;
 
 namespace Kifa.Web.Api;
 
 public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<ControllerFeature> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature) {
         var candidates = GetAllDataModels().ToHashSet();
-        candidates.ExceptWith(GetImplementedDataModels());
+        var implemented = GetImplementedDataModels().ToList();
+        candidates.ExceptWith(implemented.Select(c => c.BaseType.GetGenericArguments()[0]));
+
+        foreach (var controller in implemented.Where(t => !t.IsAbstract)) {
+            controller.BaseType.GetGenericArguments()[0].GetProperty("Client").SetValue(null,
+                Activator.CreateInstance(controller.BaseType.GetGenericArguments()[1]));
+        }
 
         foreach (var candidate in candidates) {
+            Logger.Debug($"Adding client and controller for {candidate}...");
             feature.Controllers.Add(typeof(KifaDataController<,>).MakeGenericType(candidate,
                 typeof(KifaServiceJsonClient<>).MakeGenericType(candidate)).GetTypeInfo());
+            candidate.GetProperty("Client").SetValue(null,
+                Activator.CreateInstance(
+                    typeof(KifaServiceJsonClient<>).MakeGenericType(candidate)));
         }
     }
 
@@ -29,6 +42,6 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
         return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly
             => assembly.GetExportedTypes().Where(x
                 => (x.BaseType?.IsGenericType ?? false) && x.BaseType?.GetGenericTypeDefinition() ==
-                typeof(KifaDataController<,>)).Select(c => c.BaseType.GetGenericArguments()[0]));
+                typeof(KifaDataController<,>)));
     }
 }

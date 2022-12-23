@@ -12,10 +12,8 @@ public class BaiduAccount : OAuthAccount, WithModelId {
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(30);
 
-    static KifaServiceClient<BaiduAccount>? client;
-
-    public static KifaServiceClient<BaiduAccount> Client
-        => client ??= new KifaServiceRestClient<BaiduAccount>();
+    public static KifaServiceClient<BaiduAccount> Client { get; set; } =
+        new KifaServiceRestClient<BaiduAccount>();
 
     static readonly HttpClient HttpClient = new();
 

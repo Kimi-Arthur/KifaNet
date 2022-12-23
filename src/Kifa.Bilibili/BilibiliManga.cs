@@ -13,17 +13,8 @@ namespace Kifa.Bilibili;
 public class BilibiliManga : DataModel, WithModelId {
     public static string ModelId => "bilibili/mangas";
 
-    #region Clients
-
-    public static ServiceClient Client { get; set; } = new RestServiceClient();
-
-    public interface ServiceClient : KifaServiceClient<BilibiliManga> {
-    }
-
-    public class RestServiceClient : KifaServiceRestClient<BilibiliManga>, ServiceClient {
-    }
-
-    #endregion
+    public static KifaServiceClient<BilibiliManga> Client { get; set; } =
+        new KifaServiceRestClient<BilibiliManga>();
 
     #region public late string Title { get; set; }
 

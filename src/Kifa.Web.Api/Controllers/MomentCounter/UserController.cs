@@ -21,7 +21,7 @@ public class UserController : KifaDataController<User, UserJsonServiceClient> {
     }
 }
 
-public class UserJsonServiceClient : KifaServiceJsonClient<User>, UserServiceClient {
+public class UserJsonServiceClient : KifaServiceJsonClient<User>, User.ServiceClient {
     public string AddCounter(User user, Counter counter) {
         counter.Id = $"{user.Id}/{user.Settings.NextCounter++}";
         Counter.Client.Set(counter);

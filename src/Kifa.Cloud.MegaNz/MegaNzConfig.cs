@@ -7,10 +7,8 @@ public class MegaNzConfig : DataModel, WithModelId {
     // TODO(#1): Implement service or remove.
     public static string ModelId => "configs/mega_nz";
 
-    static KifaServiceClient<MegaNzConfig> client;
-
-    public static KifaServiceClient<MegaNzConfig> Client
-        => client ??= new KifaServiceRestClient<MegaNzConfig>();
+    public static KifaServiceClient<MegaNzConfig> Client { get; set; } =
+        new KifaServiceRestClient<MegaNzConfig>();
 
     public Dictionary<string, AccountInfo> Accounts { get; set; }
 }

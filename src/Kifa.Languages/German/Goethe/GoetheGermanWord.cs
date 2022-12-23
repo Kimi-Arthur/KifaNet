@@ -14,6 +14,10 @@ public class GoetheGermanWord : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string ModelId => "goethe/words";
+
+    public static KifaServiceClient<GoetheGermanWord> Client { get; set; } =
+        new KifaServiceRestClient<GoetheGermanWord>();
+
     public override int CurrentVersion => 3;
 
     static readonly Regex RootWordPattern =
@@ -66,11 +70,4 @@ public class GoetheGermanWord : DataModel, WithModelId {
 
         return Date.Zero;
     }
-}
-
-public interface GoetheGermanWordServiceClient : KifaServiceClient<GoetheGermanWord> {
-}
-
-public class GoetheGermanWordRestServiceClient : KifaServiceRestClient<GoetheGermanWord>,
-    GoetheGermanWordServiceClient {
 }

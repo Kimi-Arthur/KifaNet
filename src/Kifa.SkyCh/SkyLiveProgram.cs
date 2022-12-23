@@ -16,6 +16,21 @@ public class SkyLiveProgram : DataModel, WithModelId {
 
     public static string ModelId => "sky.ch/lives";
 
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<SkyLiveProgram> {
+        List<SkyLiveProgram> AddForDay(int dayOffset);
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<SkyLiveProgram>, ServiceClient {
+        public List<SkyLiveProgram> AddForDay(int dayOffset) => throw new NotImplementedException();
+    }
+
+    #endregion
+
+
     public static string SkyChCookies { get; set; }
 
     public string? Title { get; set; }
@@ -121,13 +136,4 @@ public class SkyLiveProgram : DataModel, WithModelId {
 
         return response.Url;
     }
-}
-
-public interface SkyProgramServiceClient : KifaServiceClient<SkyLiveProgram> {
-    List<SkyLiveProgram> AddForDay(int dayOffset);
-}
-
-public class SkyProgramRestServiceClient : KifaServiceRestClient<SkyLiveProgram>,
-    SkyProgramServiceClient {
-    public List<SkyLiveProgram> AddForDay(int dayOffset) => throw new NotImplementedException();
 }

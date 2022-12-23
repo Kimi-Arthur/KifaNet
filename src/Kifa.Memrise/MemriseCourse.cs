@@ -15,12 +15,23 @@ namespace Kifa.Memrise;
 public class MemriseCourse : DataModel, WithModelId {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static MemriseCourseServiceClient? client;
+    #region Clients
 
-    public static MemriseCourseServiceClient Client {
-        get => client ??= new MemriseCourseRestServiceClient();
-        set => client = value;
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<MemriseCourse> {
+        void AddWord(string courseId, MemriseWord word);
     }
+
+    public class RestServiceClient : KifaServiceRestClient<MemriseCourse>, ServiceClient {
+        public void AddWord(string courseId, MemriseWord word)
+            => Call("add_word", new AddWordRequest {
+                Id = courseId,
+                Word = word
+            });
+    }
+
+    #endregion
 
     static KifaServiceClient<MemriseWord> WordClient => MemriseWord.Client;
 
@@ -178,20 +189,7 @@ public class MemriseCourse : DataModel, WithModelId {
     }
 }
 
-public interface MemriseCourseServiceClient : KifaServiceClient<MemriseCourse> {
-    void AddWord(string courseId, MemriseWord word);
-}
-
 public class AddWordRequest {
     public string Id { get; set; }
     public MemriseWord Word { get; set; }
-}
-
-public class MemriseCourseRestServiceClient : KifaServiceRestClient<MemriseCourse>,
-    MemriseCourseServiceClient {
-    public void AddWord(string courseId, MemriseWord word)
-        => Call("add_word", new AddWordRequest {
-            Id = courseId,
-            Word = word
-        });
 }

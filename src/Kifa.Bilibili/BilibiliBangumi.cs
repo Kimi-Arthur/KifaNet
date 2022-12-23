@@ -12,10 +12,8 @@ public class BilibiliBangumi : DataModel, WithModelId {
 
     public static string ModelId => "bilibili/bangumis";
 
-    static KifaServiceClient<BilibiliBangumi> client;
-
-    public static KifaServiceClient<BilibiliBangumi> Client
-        => client ??= new KifaServiceRestClient<BilibiliBangumi>();
+    public static KifaServiceClient<BilibiliBangumi> Client { get; set; } =
+        new KifaServiceRestClient<BilibiliBangumi>();
 
     public string SeasonId { get; set; }
     public string Title { get; set; }

@@ -12,7 +12,7 @@ public class TvShow : DataModel, WithModelId, Formattable {
 
     const string Part1Suffix = " - Part 1";
 
-    public static TvShowServiceClient Client { get; } = new TvShowRestServiceClient();
+    public static TvShowServiceClient Client { get; set; } = new TvShowRestServiceClient();
 
     public string? Title { get; set; }
     public Date? AirDate { get; set; }

@@ -7,6 +7,8 @@ namespace Kifa.Games.BreathOfTheWild;
 public class Game : DataModel, WithModelId {
     public static string ModelId => "games/botw";
 
+    public static KifaServiceClient<Game> Client { get; set; } = new KifaServiceRestClient<Game>();
+
     public string Name { get; set; }
     public string Notes { get; set; }
     public GameMode Mode { get; set; }
