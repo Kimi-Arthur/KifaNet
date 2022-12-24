@@ -20,7 +20,7 @@ namespace Kifa.Bilibili;
 public class BilibiliVideoStats {
     public long PlayCount { get; set; }
     public long DanmakuCount { get; set; }
-    public long CoinCount { get; set; }
+    public double CoinCount { get; set; }
     public long LikeCount { get; set; }
     public long FavoriteCount { get; set; }
     public long ReplyCount { get; set; }
