@@ -14,9 +14,3 @@ public class Team : DataModel, WithModelId {
     // "BMG" for M'gladbach.
     public string Short { get; set; }
 }
-
-public interface TeamServiceClient : KifaServiceClient<Team> {
-}
-
-public class TeamRestServiceClient : KifaServiceRestClient<Team>, TeamServiceClient {
-}
