@@ -13,6 +13,11 @@ public static class Assemblies {
     public static List<string> Namespaces { get; set; } = new();
 
     public static void LoadAll() {
+        if (Namespaces.Count == 0) {
+            Logger.Warn("No extra assemblies requested to be loaded.");
+            return;
+        }
+
         Logger.Trace(
             $"Loading extra assemblies with names starting with {string.Join(", ", Namespaces)} from {AppDomain.CurrentDomain.BaseDirectory}...");
 
