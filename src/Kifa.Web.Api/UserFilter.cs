@@ -1,17 +1,22 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using Kifa.Web.Api.Controllers;
 using Kifa.Web.Api.Extensions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 using NLog;
 
-namespace Kifa.Web.Api.Users;
+namespace Kifa.Web.Api;
 
 public class UserFilter : ActionFilterAttribute {
     public static string DefaultUser { get; set; } = "";
-    public static Dictionary<string, UserConfig> Configs { get; set; } = new();
+
+    // The map from user to its data configs.
+    // The config is a mapping from namespace prefix to the root data folder.
+    // A value of null means using the default data folder.
+    public static Dictionary<string, Dictionary<string, string?>> Configs { get; set; } = new();
 
     static readonly Regex NamePattern = new(@"(,|^)CN=([^,]+)(,|$)");
 
@@ -30,20 +35,11 @@ public class UserFilter : ActionFilterAttribute {
         if (Configs.TryGetValue(user, out var config)) {
             Logger.Trace($"Found config for {user}.");
 
-            var controllerName = context.Controller.GetType().ToString();
-            Logger.Trace($"Configuring for controller {controllerName}.");
-
-            var matchedFolder = config.AllowedNamespaces.Where(ns => controllerName.StartsWith(ns))
-                .MaxBy(ns => ns.Length);
-
-            if (matchedFolder == null) {
-                Logger.Warn($"Controller {controllerName} not allowed for user {user}.");
-                context.Result = new NotFoundResult();
-                return;
-            }
-
             // The property is essentially thread local, so it only affects current request.
-            KifaServiceJsonClient.DataFolders = config.DataFolders;
+            KifaServiceJsonClient.DataFolders = config;
+            return;
         }
+
+        throw new DataModelNotFoundException($"No config found for user {user}.");
     }
 }

@@ -25,9 +25,9 @@ public class KifaServiceJsonClient {
     #region public late static Dictionary<string, string> DataFolders { get; set; }
 
     [ThreadStatic]
-    static Dictionary<string, string>? dataFolders;
+    static Dictionary<string, string?>? dataFolders;
 
-    public static Dictionary<string, string> DataFolders {
+    public static Dictionary<string, string?> DataFolders {
         get => Late.Get(dataFolders);
         set => Late.Set(ref dataFolders, value);
     }
@@ -52,12 +52,15 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             }
 
             var matchedFolder = KifaServiceJsonClient.DataFolders
-                .Where(kv => ModelId.StartsWith(kv.Key)).MaxBy(kv => kv.Key.Length);
+                .Where(kv => typeof(TDataModel).FullName!.StartsWith(kv.Key))
+                .MaxBy(kv => kv.Key.Length);
             if (matchedFolder == null) {
-                return dataFolder = KifaServiceJsonClient.DefaultDataFolder;
+                // This means the user has no access to this data.
+                throw new DataModelNotFoundException();
             }
 
-            return dataFolder = matchedFolder.Value.Value;
+            return dataFolder =
+                matchedFolder.Value.Value ?? KifaServiceJsonClient.DefaultDataFolder;
         }
 
         set => dataFolder = value;

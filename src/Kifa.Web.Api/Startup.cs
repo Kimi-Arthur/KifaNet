@@ -1,7 +1,5 @@
-using System;
 using System.Buffers;
 using Kifa.Api.Files;
-using Kifa.Web.Api.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -18,8 +16,6 @@ using WebApiContrib.Core.Formatter.Yaml;
 namespace Kifa.Web.Api;
 
 public class Startup {
-    static readonly TimeSpan CacheDuration = TimeSpan.FromDays(1);
-
     public Startup(IConfiguration configuration) {
         Configuration = configuration;
     }
@@ -33,6 +29,7 @@ public class Startup {
         services.AddMvc(options => {
             options.Conventions.Add(new KifaControllerRouteConvention());
             options.Filters.Add<UserFilter>();
+            options.Filters.Add<KifaExceptionFilter>();
             options.EnableEndpointRouting = false;
 
             options.InputFormatters.Add(new YamlInputFormatter(new YamlFormatterOptions()));
