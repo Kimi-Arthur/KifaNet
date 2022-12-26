@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using NLog;
 
 namespace Kifa.Web.Api.Controllers;
 
@@ -93,29 +91,8 @@ public class
 
 public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInformation>,
     FileInformationServiceClient {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     public List<string> ListFolder(string folder, bool recursive = false) {
-        var prefix = $"{DataFolder}/{ModelId}";
-        folder = $"{prefix}/{folder.Trim('/')}";
-        Logger.Trace($"Listing items in folder {folder}...");
-        if (!Directory.Exists(folder)) {
-            if (File.Exists(folder + ".json")) {
-                Logger.Trace($"{folder} is actually a file. Return one element instead.");
-                return new List<string> {
-                    folder[prefix.Length..]
-                };
-            }
-
-            Logger.Trace($"{folder} has no items.");
-            return new List<string>();
-        }
-
-        var directory = new DirectoryInfo(folder);
-        var items = directory.GetFiles("*.json",
-            recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        return items.Select(i => i.FullName[prefix.Length..^5]).OrderBy(i => i.GetNaturalSortKey())
-            .ToList();
+        return List(folder.Trim('/'), recursive).Keys.OrderBy(i => i.GetNaturalSortKey()).ToList();
     }
 
     public KifaActionResult AddLocation(string id, string location, bool verified = false) {

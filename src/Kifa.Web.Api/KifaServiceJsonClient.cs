@@ -39,8 +39,6 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
     where TDataModel : DataModel, WithModelId, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    // public string DataFolder { get; set; } = KifaServiceJsonClient.DefaultDataFolder;
-
     #region public string DataFolder { get; set; }
 
     string? dataFolder;
@@ -72,10 +70,12 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
 
-    public override SortedDictionary<string, TDataModel> List() {
+    public override SortedDictionary<string, TDataModel> List() => List("");
+
+    public SortedDictionary<string, TDataModel> List(string folder, bool recursive = false) {
         // No data is gonna change. With no locking, the worst case is data not consistent.
-        var prefix = $"{DataFolder}/{ModelId}";
-        var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
+        var prefix = $"{DataFolder}/{ModelId}/{folder}";
+        var virtualItemPrefix = $"{DataFolder}/{ModelId}{DataModel.VirtualItemPrefix}";
         if (!Directory.Exists(prefix)) {
             return new SortedDictionary<string, TDataModel>();
         }
@@ -83,27 +83,36 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
         var directory = new DirectoryInfo(prefix);
 
         // We actually exclude virtual items twice here.
-        // Supposedly only the first one is used. However, we should not rely everything on file naming.
-        var items = directory.GetFiles("*.json", SearchOption.AllDirectories)
-            .Where(p => !p.FullName.StartsWith(virtualItemPrefix)).AsParallel().Select(i => {
+        // Supposedly only the first one is used. However, we should not rely on file naming. The
+        // first one is only used to speed up query.
+        // If folder is null, we don't skip virtual items as it's either requested or won't be
+        // included.
+        var items = directory
+            .GetFiles("*.json",
+                recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+            .Where(p => folder != "" || !p.FullName.StartsWith(virtualItemPrefix)).AsParallel()
+            .Select(i => {
                 using var reader = i.OpenText();
                 return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
                     KifaJsonSerializerSettings.Default);
             }).ExceptNull()
-            .Where(i => i.Id != null && !i.Id.StartsWith(DataModel.VirtualItemPrefix))
-            .ToDictionary(i => i.Id!, i => i);
+            .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualItemPrefix))
+            .ToDictionary(i => i.Id, i => i);
 
-        return new SortedDictionary<string, TDataModel>(items.ToDictionary(i => i.Key, i => {
-            if (i.Value.Metadata?.Linking?.Target == null) {
-                return i.Value;
-            }
+        return new SortedDictionary<string, TDataModel>(items.AsParallel().ToDictionary(i => i.Key,
+            i => {
+                if (i.Value.Metadata?.Linking?.Target == null) {
+                    return i.Value;
+                }
 
-            var value = items[i.Value.Metadata.Linking.Target].Clone();
-            // source.Metadata.Linking! has to exist, to contain Links at least.
-            value.Metadata!.Linking!.Target = value.Id;
-            value.Id = i.Key;
-            return value;
-        }));
+                var value = items.ContainsKey(i.Value.Metadata.Linking.Target)
+                    ? items[i.Value.Metadata.Linking.Target].Clone()
+                    : Read(i.Value.Metadata.Linking.Target);
+                // source.Metadata.Linking! has to exist, to contain Links at least.
+                value.Metadata!.Linking!.Target = value.Id;
+                value.Id = i.Key;
+                return value;
+            }));
     }
 
     public override TDataModel? Get(string id, bool refresh = false) {
