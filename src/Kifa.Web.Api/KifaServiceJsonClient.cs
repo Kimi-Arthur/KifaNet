@@ -72,7 +72,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public override SortedDictionary<string, TDataModel> List() => List("");
 
-    public SortedDictionary<string, TDataModel> List(string folder, bool recursive = false) {
+    public SortedDictionary<string, TDataModel> List(string folder, bool recursive = true) {
         // No data is gonna change. With no locking, the worst case is data not consistent.
         var prefix = $"{DataFolder}/{ModelId}/{folder}";
         var virtualItemPrefix = $"{DataFolder}/{ModelId}{DataModel.VirtualItemPrefix}";
