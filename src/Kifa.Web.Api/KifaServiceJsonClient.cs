@@ -74,13 +74,14 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public SortedDictionary<string, TDataModel> List(string folder, bool recursive = true) {
         // No data is gonna change. With no locking, the worst case is data not consistent.
-        var prefix = $"{DataFolder}/{ModelId}/{folder}";
-        var virtualItemPrefix = $"{DataFolder}/{ModelId}{DataModel.VirtualItemPrefix}";
-        if (!Directory.Exists(prefix)) {
+        var prefix = $"{DataFolder}/{ModelId}";
+        var subFolder = $"{prefix}/{folder.Trim('/')}";
+        var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
+        if (!Directory.Exists(subFolder)) {
             return new SortedDictionary<string, TDataModel>();
         }
 
-        var directory = new DirectoryInfo(prefix);
+        var directory = new DirectoryInfo(subFolder);
 
         // We actually exclude virtual items twice here.
         // Supposedly only the first one is used. However, we should not rely on file naming. The
@@ -91,11 +92,7 @@ public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataMode
             .GetFiles("*.json",
                 recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
             .Where(p => folder != "" || !p.FullName.StartsWith(virtualItemPrefix)).AsParallel()
-            .Select(i => {
-                using var reader = i.OpenText();
-                return JsonConvert.DeserializeObject<TDataModel>(reader.ReadToEnd(),
-                    KifaJsonSerializerSettings.Default);
-            }).ExceptNull()
+            .Select(i => Read(i.FullName[prefix.Length..^5])).ExceptNull()
             .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualItemPrefix))
             .ToDictionary(i => i.Id, i => i);
 
