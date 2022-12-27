@@ -35,7 +35,7 @@ public class KifaServiceJsonClient {
     #endregion
 }
 
-public class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataModel>
+public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<TDataModel>
     where TDataModel : DataModel, WithModelId, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 

@@ -48,7 +48,7 @@ public abstract class DataModel {
     public virtual DateTimeOffset? Fill() => throw new NoNeedToFillException();
 
     public virtual SortedSet<string> GetVirtualItems() => new();
-    public bool IsVirtualItem() => Id?.StartsWith(VirtualItemPrefix) ?? false;
+    public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
 
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null

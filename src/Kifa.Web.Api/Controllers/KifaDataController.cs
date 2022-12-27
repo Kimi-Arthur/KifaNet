@@ -9,7 +9,7 @@ namespace Kifa.Web.Api.Controllers;
 
 public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     where TDataModel : DataModel, WithModelId, new()
-    where TServiceClient : KifaServiceClient<TDataModel>, new() {
+    where TServiceClient : KifaServiceJsonClient<TDataModel>, new() {
     protected readonly TServiceClient Client = new();
 
     // GET api/values
@@ -76,6 +76,9 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     // DELETE api/values/$
     [HttpDelete("$")]
     public KifaApiActionResult Delete([FromBody] List<string> ids) => Client.Delete(ids);
+
+    [HttpGet("$fix")]
+    public KifaApiActionResult Fix() => KifaActionResult.FromAction(() => Client.FixVirtualLinks());
 }
 
 public class KifaApiActionResult : IConvertToActionResult {
