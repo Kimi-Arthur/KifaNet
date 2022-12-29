@@ -441,7 +441,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     void Remove(string id) {
         var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.json";
-        File.Delete(path);
+        try {
+            File.Delete(path);
+            Logger.Trace($"Deleted {path}");
+        } catch (DirectoryNotFoundException ex) {
+            Logger.Trace(ex, $"Folder not found for {path}. Skipped.");
+        }
     }
 
     static KifaActionResult LogAndReturn(KifaActionResult actionResult) {
