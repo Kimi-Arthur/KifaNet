@@ -77,6 +77,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         var prefix = $"{DataFolder}/{ModelId}";
         var subFolder = $"{prefix}/{folder.Trim('/')}";
         var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
+        if (File.Exists(subFolder + ".json")) {
+            Logger.Trace($"{subFolder} is actually a file. Return one element instead.");
+            var data = Get(subFolder[prefix.Length..]);
+            return new SortedDictionary<string, TDataModel> {
+                { data.Id, data }
+            };
+        }
+
         if (!Directory.Exists(subFolder)) {
             return new SortedDictionary<string, TDataModel>();
         }
