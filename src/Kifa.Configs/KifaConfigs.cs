@@ -45,6 +45,8 @@ public static class KifaConfigs {
         set => configFilePath = value;
     }
 
+    const string LoadPrefix = "# Load ";
+
     public static void LoadFromSystemConfigs(Assembly? assembly = null) {
         var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
         var assemblyName = assembly == null
@@ -56,16 +58,22 @@ public static class KifaConfigs {
         }
 
         if (ConfigFilePath != null) {
-            var localConfig = ConfigFilePath;
-            var remoteConfig = localConfig.Replace(".yaml", ".remote.yaml");
-            if (File.Exists(remoteConfig)) {
-                Log($"Load configs from {remoteConfig}...");
-                LoadFromStream(File.OpenRead(remoteConfig), properties);
+            LoadConfig(ConfigFilePath, properties);
+        }
+    }
+
+    static void LoadConfig(string configPath, Dictionary<string, PropertyInfo> properties) {
+        foreach (var line in File.ReadLines(configPath)) {
+            if (!line.StartsWith(LoadPrefix)) {
+                break;
             }
 
-            Log($"Load configs from {localConfig}...");
-            LoadFromStream(File.OpenRead(localConfig), properties);
+            var path = line[LoadPrefix.Length..];
+            LoadConfig(Path.Combine(Directory.GetParent(configPath)!.FullName, path), properties);
         }
+
+        Log($"Loading configs from {configPath}...");
+        LoadFromStream(File.OpenRead(configPath), properties);
     }
 
     public static void LoadFromStream(Stream stream, Dictionary<string, PropertyInfo> properties) {
