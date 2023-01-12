@@ -1,6 +1,6 @@
 # tv_shows
-
-- Id: The Flight Attendant
-  TmdbId: '93287'
-  Language: English
-  PatternId: multi_season
+- Id: ハケンのキャバ嬢・彩華
+  Title: ハケンのキャバ嬢・彩華
+  TmdbId: 109595
+  Language: ja
+  PatternId: single_season
