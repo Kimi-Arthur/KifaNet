@@ -77,6 +77,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         var prefix = $"{DataFolder}/{ModelId}";
         var subFolder = $"{prefix}/{folder.Trim('/')}";
         var virtualItemPrefix = $"{prefix}{DataModel.VirtualItemPrefix}";
+        if (File.Exists(subFolder + ".json")) {
+            Logger.Trace($"{subFolder} is actually a file. Return one element instead.");
+            var data = Get(subFolder[prefix.Length..]);
+            return new SortedDictionary<string, TDataModel> {
+                { data.Id, data }
+            };
+        }
+
         if (!Directory.Exists(subFolder)) {
             return new SortedDictionary<string, TDataModel>();
         }
@@ -433,7 +441,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     void Remove(string id) {
         var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.json";
-        File.Delete(path);
+        try {
+            File.Delete(path);
+            Logger.Trace($"Deleted {path}");
+        } catch (DirectoryNotFoundException ex) {
+            Logger.Trace(ex, $"Folder not found for {path}. Skipped.");
+        }
     }
 
     static KifaActionResult LogAndReturn(KifaActionResult actionResult) {

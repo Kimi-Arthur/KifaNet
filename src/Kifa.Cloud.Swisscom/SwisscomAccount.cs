@@ -193,6 +193,9 @@ public class SwisscomAccount : DataModel, WithModelId {
             .FindElement(By.CssSelector("input")).SendKeys(Username));
         Run(() => driver.FindElementByTagName("sdx-input-item").FindElement(By.CssSelector("input"))
             .Click());
+        Thread.Sleep(TimeSpan.FromSeconds(1));
+        driver.ExecuteScript(
+            "document.querySelector('sdx-button[data-cy=continue-button]').shadowRoot.querySelector('button').focus()");
 
         // Code trigger and fill will be handled by user.
         Run(
