@@ -159,9 +159,7 @@ public class BilibiliMangaEpisode {
     static readonly HttpClient NoAuthClient = new();
 
     public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix) {
-        var idSuffix = id.Contains('.') ? id[id.IndexOf(".")..] : "";
-        var episodePrefix =
-            $"{prefix}/{Id.RemoveAfter(".").PadLeft(3, '0')}{idSuffix} {ShortTitle} {Title}".Trim();
+        var episodePrefix = $"{prefix}/{Id:000.#} {ShortTitle} {Title}".Trim();
         return Pages.Select(p => (
             $"{episodePrefix}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
             $"$/{p.ImageId}"));
