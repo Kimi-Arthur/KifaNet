@@ -78,6 +78,9 @@ static class Helper {
             [Language.English] = new List<(Regex pattern, MatchEvaluator replacer)> {
                 (new Regex(@" \((\d+)\)"), match => $" - Part {match.Groups[1].Value}"),
                 (new Regex(@""""), _ => "'")
+            },
+            [Language.Chinese] = new List<(Regex pattern, MatchEvaluator replacer)> {
+                (new Regex(@"第\d+集"), _ => ""),
             }
         };
 
