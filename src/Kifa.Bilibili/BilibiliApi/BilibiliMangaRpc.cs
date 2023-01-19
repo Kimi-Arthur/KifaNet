@@ -107,7 +107,7 @@ public class AutoPayOrder {
 
 public class EpisodeInfo {
     public long Id { get; set; }
-    public double Ord { get; set; }
+    public decimal Ord { get; set; }
     public long Read { get; set; }
     public long PayMode { get; set; }
     public bool IsLocked { get; set; }

@@ -19,7 +19,7 @@ public class BilibiliMangaEpisode : DataModel, WithModelId {
 
     public string EpisodeId => Id.Split("/")[1];
 
-    public double Index { get; set; }
+    public decimal Index { get; set; }
 
     public string Title { get; set; } = "";
 
