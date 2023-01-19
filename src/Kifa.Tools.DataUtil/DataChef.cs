@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Apps.MomentCounter;
+using Kifa.Bilibili;
 using Kifa.Cloud.Swisscom;
 using Kifa.Infos;
 using Kifa.IO;
@@ -29,7 +30,10 @@ public interface DataChef {
         { Unit.ModelId, new Lazy<DataChef>(() => new DataChef<Unit>()) },
         { User.ModelId, new Lazy<DataChef>(() => new DataChef<User>()) },
         { Event.ModelId, new Lazy<DataChef>(() => new DataChef<Event>()) },
-        { Counter.ModelId, new Lazy<DataChef>(() => new DataChef<Counter>()) },
+        { Counter.ModelId, new Lazy<DataChef>(() => new DataChef<Counter>()) }, {
+            BilibiliMangaEpisode.ModelId,
+            new Lazy<DataChef>(() => new DataChef<BilibiliMangaEpisode>())
+        },
         { SwisscomAccount.ModelId, new Lazy<DataChef>(() => new DataChef<SwisscomAccount>()) }, {
             SwisscomAccountQuota.ModelId,
             new Lazy<DataChef>(() => new DataChef<SwisscomAccountQuota>())
