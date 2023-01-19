@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Bilibili;
 using PdfSharpCore;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
@@ -28,13 +29,18 @@ public class CreatePdfMangaCommand : KifaCommand {
 
     [Option('d', "double-pages",
         HelpText = "Pages on the right of the double pages, separated by ','.")]
-    public string DoublePages { get; set; }
+    public string DoublePages { get; set; } = "";
+
+    [Option('i', "ignore-double-pages", HelpText = "Ignore double page configs in the system.")]
+    public string IgnoreExistingDoublePages { get; set; } = "";
 
     public override int Execute() {
         var allDoublePages = KifaFile.FindAllFiles(DoublePages.Split(",")).files;
 
         foreach (var folder in Folders) {
-            var title = GetOutputName(new KifaFile(folder).ToString());
+            var folderId = new KifaFile(folder).ToString();
+            var episode = BilibiliMangaEpisode.Parse(folderId);
+            var title = GetOutputName(folderId);
             using var document = new PdfDocument();
             document.Info.Author = Author;
             document.Info.Title = title;

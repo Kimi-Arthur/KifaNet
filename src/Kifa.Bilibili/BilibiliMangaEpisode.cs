@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
 using Kifa.Service;
@@ -66,6 +67,19 @@ public class BilibiliMangaEpisode : DataModel, WithModelId {
     public IEnumerable<string> GetDownloadLinks()
         => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data.Select(token
             => $"{token.Url}?token={token.Token}");
+
+    static readonly Regex EpisodePattern = new(@".*-(mc-\d+)/([0-9.]+) ");
+
+    public static BilibiliMangaEpisode? Parse(string path) {
+        var match = EpisodePattern.Match(path);
+        if (!match.Success) {
+            throw new Exception($"Can't parse bilibili manga path {path}.");
+        }
+
+        var manga = BilibiliManga.Client.Get(match.Groups[1].Value);
+        var index = decimal.Parse(match.Groups[2].Value);
+        return manga.Episodes.FirstOrDefault(ep => ep.Data?.Index == index);
+    }
 
     public KifaActionResult MarkDoublePages(HashSet<int> ids) {
         var count = 0;
