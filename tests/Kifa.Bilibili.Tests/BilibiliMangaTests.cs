@@ -49,7 +49,7 @@ public class BilibiliMangaTests {
         Assert.Equal(title, manga.Title);
         Assert.Equal(author, manga.Authors[0]);
         Assert.Equal(description, manga.Description);
-        Assert.Equal(firstEpisodeTitle, manga.Episodes[0].Title);
+        Assert.Equal(firstEpisodeTitle, manga.Episodes[0].Data!.Title);
         Assert.True(manga.Episodes.Count >= minEpisodesCount);
     }
 

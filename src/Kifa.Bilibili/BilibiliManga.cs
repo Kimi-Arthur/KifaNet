@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using Kifa.Bilibili.BilibiliApi;
-using Kifa.Bilibili.BiliplusApi;
 using Kifa.Service;
 using Newtonsoft.Json;
-using NLog;
 
 namespace Kifa.Bilibili;
 
@@ -45,7 +43,7 @@ public class BilibiliManga : DataModel, WithModelId {
 
     #endregion
 
-    public List<BilibiliMangaEpisode> Episodes { get; set; } = new();
+    public List<Link<BilibiliMangaEpisode>> Episodes { get; set; } = new();
 
     static readonly HttpClient NoAuthClient = new();
 
@@ -62,24 +60,34 @@ public class BilibiliManga : DataModel, WithModelId {
             data.SquareCover
         };
 
-        var newEpisodes = data.EpList.Select(ep => new BilibiliMangaEpisode {
-            Id = ep.Ord,
-            Epid = ep.Id.ToString(),
-            Title = ep.Title.Trim(),
-            ShortTitle = ep.ShortTitle.Trim(),
-            Cover = ep.Cover,
-            PageCount = ep.ImageCount,
-            Size = ep.Size
-        }).OrderBy(ep => double.Parse(ep.Id)).ToList();
+        foreach (var ep in data.EpList) {
+            BilibiliMangaEpisode.Client.Update(new BilibiliMangaEpisode {
+                Index = ep.Ord,
+                Id = $"{Id}/{ep.Id}",
+                Title = ep.Title.Trim(),
+                ShortTitle = ep.ShortTitle.Trim(),
+                Cover = ep.Cover,
+                PageCount = ep.ImageCount,
+                Size = ep.Size
+            });
+        }
+
+        var newEpisodes = BilibiliMangaEpisode.Client
+            .Get(data.EpList.Select(ep => $"{Id}/{ep.Id}").ToList()).ExceptNull()
+            .OrderBy(ep => ep.Index).ToList();
 
         for (var i = 0; i < Episodes.Count; i++) {
+            if (newEpisodes[i].Id != Episodes[i].Id) {
+                throw new UnableToFillException("Episode ids mismatch unexpectedly.");
+            }
+
             JsonConvert.PopulateObject(
                 JsonConvert.SerializeObject(newEpisodes[i], KifaJsonSerializerSettings.Default),
                 Episodes[i], KifaJsonSerializerSettings.Default);
         }
 
-        Episodes.AddRange(newEpisodes.Skip(Episodes.Count));
-        Episodes.ForEach(ep => ep.FillPages(Id));
+        Episodes.AddRange(newEpisodes.Skip(Episodes.Count)
+            .Select(ep => (Link<BilibiliMangaEpisode>) ep));
 
         return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
@@ -89,85 +97,6 @@ public class BilibiliManga : DataModel, WithModelId {
         => episode.GetNames($"{Title}-{Id}");
 
     public IEnumerable<string> GetLinks(BilibiliMangaEpisode episode) => episode.GetDownloadLinks();
-}
-
-public class BilibiliMangaEpisode {
-    #region public late string Id { get; set; }
-
-    string? id;
-
-    public string Id {
-        get => Late.Get(id);
-        set => Late.Set(ref id, value);
-    }
-
-    #endregion
-
-    #region public late string Epid { get; set; }
-
-    string? epid;
-
-    public string Epid {
-        get => Late.Get(epid);
-        set => Late.Set(ref epid, value);
-    }
-
-    #endregion
-
-    public string Title { get; set; } = "";
-
-    public string ShortTitle { get; set; } = "";
-
-    #region public late string Cover { get; set; }
-
-    string? cover;
-
-    public string Cover {
-        get => Late.Get(cover);
-        set => Late.Set(ref cover, value);
-    }
-
-    #endregion
-
-    public long Size { get; set; }
-
-    public int PageCount { get; set; }
-
-    public List<BilibiliMangaPage> Pages { get; set; } = new();
-
-    public DateTimeOffset LastRefreshed { get; set; } = Date.Zero;
-
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-
-    public void FillPages(string mangaId) {
-        if (Pages.Count == PageCount &&
-            DateTimeOffset.Now - LastRefreshed <= TimeSpan.FromDays(365)) {
-            Logger.Debug(
-                $"No need to refresh pages for {mangaId}.{Id}: {epid}. Last refreshed at {LastRefreshed}");
-            return;
-        }
-
-        Pages = HttpClients.BiliplusHttpClient.Call(new BiliplusMangaEpisodeRpc(mangaId[2..], epid))
-            .Select((p, index) => new BilibiliMangaPage {
-                Id = index + 1,
-                ImageId = p
-            }).ToList();
-        LastRefreshed = DateTimeOffset.Now;
-    }
-
-    static readonly HttpClient NoAuthClient = new();
-
-    public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix) {
-        var episodePrefix = $"{prefix}/{Id:000.#} {ShortTitle} {Title}".Trim();
-        return Pages.Select(p => (
-            $"{episodePrefix}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",
-            $"$/{p.ImageId}"));
-    }
-
-    public IEnumerable<string> GetDownloadLinks()
-        => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data.Select(token
-            => $"{token.Url}?token={token.Token}");
 }
 
 public class BilibiliMangaPage {
