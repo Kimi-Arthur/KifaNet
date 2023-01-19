@@ -52,6 +52,11 @@ public class BilibiliMangaEpisode : DataModel, WithModelId {
                     Id = index + 1,
                     ImageId = p
                 }).ToList();
+
+        if (Pages.Count < PageCount) {
+            return Date.Zero;
+        }
+
         return DateTimeOffset.Now + TimeSpan.FromDays(365);
     }
 
