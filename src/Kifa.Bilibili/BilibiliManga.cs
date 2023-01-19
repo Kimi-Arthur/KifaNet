@@ -98,18 +98,3 @@ public class BilibiliManga : DataModel, WithModelId {
 
     public IEnumerable<string> GetLinks(BilibiliMangaEpisode episode) => episode.GetDownloadLinks();
 }
-
-public class BilibiliMangaPage {
-    public int Id { get; set; }
-
-    #region public late string ImageId { get; set; }
-
-    string? imageId;
-
-    public string ImageId {
-        get => Late.Get(imageId);
-        set => Late.Set(ref imageId, value);
-    }
-
-    #endregion
-}

@@ -66,4 +66,41 @@ public class BilibiliMangaEpisode : DataModel, WithModelId {
     public IEnumerable<string> GetDownloadLinks()
         => NoAuthClient.Call(new MangaTokenRpc(Pages.Select(p => p.ImageId)))!.Data.Select(token
             => $"{token.Url}?token={token.Token}");
+
+    public KifaActionResult MarkDoublePages(HashSet<int> ids) {
+        var count = 0;
+        foreach (var page in Pages) {
+            if (ids.Contains(page.Id)) {
+                page.DoublePage = true;
+                count++;
+            }
+        }
+
+        if (count != ids.Count) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Only found {count} pages to mark, instead of {ids.Count}."
+            };
+        }
+
+        Client.Set(this);
+        return KifaActionResult.Success;
+    }
+}
+
+public class BilibiliMangaPage {
+    public int Id { get; set; }
+
+    #region public late string ImageId { get; set; }
+
+    string? imageId;
+
+    public string ImageId {
+        get => Late.Get(imageId);
+        set => Late.Set(ref imageId, value);
+    }
+
+    #endregion
+
+    public bool DoublePage { get; set; }
 }
