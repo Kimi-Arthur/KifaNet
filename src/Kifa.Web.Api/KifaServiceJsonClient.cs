@@ -251,16 +251,16 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             lock (GetLock(data.Id)) {
                 Logger.Trace($"Update {ModelId}/{data.Id}: {data}");
                 // If it's new data, we should try Fill it.
-                var original = Retrieve(data.Id) ?? new TDataModel {
-                    Id = data.Id,
-                    Metadata = new DataMetadata {
+                var original = Retrieve(data.Id);
+                if (original == null) {
+                    data.Metadata = new DataMetadata {
                         Freshness = new FreshnessMetadata {
                             NextRefresh = Date.Zero
                         }
-                    }
-                };
-
-                data = original.Merge(data);
+                    };
+                } else {
+                    data = original.Merge(data);
+                }
 
                 Fill(ref data);
                 WriteTarget(data);
