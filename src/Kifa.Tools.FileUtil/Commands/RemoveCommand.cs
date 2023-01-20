@@ -118,7 +118,7 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (toRemove) {
-                    result.Add(file.Id, file.Exists()
+                    result.Add(file.ToString(), file.Exists()
                         ? new KifaActionResult {
                             Status = KifaActionStatus.OK,
                             Message = $"File {file} deleted."
