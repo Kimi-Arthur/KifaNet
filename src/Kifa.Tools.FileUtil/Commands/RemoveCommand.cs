@@ -118,25 +118,27 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (toRemove) {
-                    result.Add(file.ToString(), file.Exists()
-                        ? new KifaActionResult {
+                    if (file.Exists()) {
+                        file.Delete();
+                        result.Add($"Removal of file instance {file}", new KifaActionResult {
                             Status = KifaActionStatus.OK,
                             Message = $"File {file} deleted."
-                        }
-                        : new KifaActionResult {
+                        });
+                    } else {
+                        result.Add($"Removal of file instance {file}", new KifaActionResult {
                             Status = KifaActionStatus.Warning,
                             Message = $"File {file} not found."
                         });
+                    }
 
-                    file.Delete();
-
-                    result.Add(location, FileInformation.Client.RemoveLocation(info.Id, location));
+                    result.Add($"Removal of location {location}",
+                        FileInformation.Client.RemoveLocation(info.Id, location));
                 }
             }
         }
 
         // Logical removal.
-        result.Add(info.Id, FileInformation.Client.Delete(info.Id));
+        result.Add($"Removal of file info {info.Id}", FileInformation.Client.Delete(info.Id));
         return result;
     }
 
