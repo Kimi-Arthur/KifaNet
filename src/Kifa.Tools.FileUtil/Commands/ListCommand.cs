@@ -1,34 +1,44 @@
 ﻿using System;
+using System.Collections.Generic;
 using CommandLine;
-using Kifa.Api.Files;
-using Kifa.IO;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
-class ListCommand : KifaFileCommand {
-    int counter;
+class ListCommand : KifaCommand {
+    [Option('i', "id", HelpText = "Treat input files as logical ids.")]
+    public virtual bool ById { get; set; } = false;
 
     [Option('l', "long", HelpText = "Long list mode")]
     public bool LongListMode { get; set; } = false;
 
+    [Value(0, Required = true, HelpText = "Target files to list.")]
+    public IEnumerable<string> FileNames { get; set; }
+
     public override int Execute() {
-        var result = base.Execute();
-        Console.WriteLine($"\nIn total, {counter} files in {string.Join(", ", FileNames)}");
-        return result;
-    }
+        if (ById) {
+            ListLogicalFiles();
+        } else {
+            ListFileInstances();
+        }
 
-    protected override int ExecuteOneFileInformation(string file) {
-        counter++;
-        Console.WriteLine(LongListMode
-            ? $"{file}\t{FileInformation.Client.Get(file).Size}\t{FileInformation.Client.Get(file).Sha256}"
-            : file);
         return 0;
     }
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
-        counter++;
-        Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.ToString());
-        return 0;
+    void ListFileInstances() {
+        throw new NotImplementedException();
     }
+
+    void ListLogicalFiles() {
+        // Console.WriteLine(LongListMode
+        //     ? $"{file}\t{FileInformation.Client.Get(file).Size}\t{FileInformation.Client.Get(file).Sha256}"
+        //     : file);
+        // return 0;
+    }
+    //
+    // protected override int ExecuteOneKifaFile(KifaFile file) {
+    //     counter++;
+    //     Console.WriteLine(LongListMode ? $"{file}\t{file.FileInfo.Size}" : file.ToString());
+    //     return 0;
+    // }
 }
