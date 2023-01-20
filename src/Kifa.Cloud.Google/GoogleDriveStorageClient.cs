@@ -194,7 +194,8 @@ public class GoogleDriveStorageClient : StorageClient {
             new Dictionary<string, string> {
                 ["file_id"] = fileId
             }));
-        return long.Parse((string) response["size"]);
+        var sizeString = (string?) response["size"];
+        return sizeString == null ? -1 : long.Parse(sizeString);
     }
 
     static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
