@@ -65,9 +65,8 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
 
     [HttpPost("^")]
     public KifaApiActionResult Link([FromBody] List<string> ids)
-        => new KifaBatchActionResult {
-            Results = ids.Skip(1).ToDictionary(id => id, id => Client.Link(ids[0], id))
-        };
+        => new KifaBatchActionResult().AddRange(ids.Skip(1)
+            .Select(id => (id, Client.Link(ids[0], id))));
 
     // DELETE api/values/5
     [HttpDelete("{id}")]

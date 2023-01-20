@@ -157,41 +157,39 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         => throw new NotImplementedException();
 
     public KifaApiActionResult MoveServer(string fromServer, string toServer)
-        => new KifaBatchActionResult {
-            Results = List().Values.AsParallel().ToDictionary(file => file.Id, file => {
-                if (file.Locations.Count > 0) {
-                    var locationsFromServer = file.Locations
-                        .Where(l => ((FileLocation) l.Key).Server == fromServer).ToList();
-                    if (locationsFromServer.Count == 0) {
-                        return new KifaActionResult {
-                            Status = KifaActionStatus.OK,
-                            Message = $"No files to move for {file.Id}."
-                        };
-                    }
-
-                    var message = string.Join("\n", locationsFromServer.Select(location => {
-                        var newLocation = (FileLocation) location.Key;
-                        newLocation.Server = toServer;
-
-                        file.Locations.Remove(location.Key);
-                        file.Locations[newLocation.ToString()] = Kifa.Max(location.Value,
-                            file.Locations.GetValueOrDefault(newLocation.ToString()));
-                        return $"\tMoved {location.Key} to {newLocation}";
-                    }));
-
-                    Update(file);
-
-                    return new KifaActionResult {
+        => new KifaBatchActionResult().AddRange(List().Values.AsParallel().Select(file => {
+            if (file.Locations.Count > 0) {
+                var locationsFromServer = file.Locations
+                    .Where(l => ((FileLocation) l.Key).Server == fromServer).ToList();
+                if (locationsFromServer.Count == 0) {
+                    return (file.Id, new KifaActionResult {
                         Status = KifaActionStatus.OK,
-                        Message =
-                            $"Moved {locationsFromServer.Count} files to {toServer} for {file.Id}:\n{message}"
-                    };
+                        Message = $"No files to move for {file.Id}."
+                    });
                 }
 
-                return new KifaActionResult {
+                var message = string.Join("\n", locationsFromServer.Select(location => {
+                    var newLocation = (FileLocation) location.Key;
+                    newLocation.Server = toServer;
+
+                    file.Locations.Remove(location.Key);
+                    file.Locations[newLocation.ToString()] = Kifa.Max(location.Value,
+                        file.Locations.GetValueOrDefault(newLocation.ToString()));
+                    return $"\tMoved {location.Key} to {newLocation}";
+                }));
+
+                Update(file);
+
+                return (file.Id, new KifaActionResult {
                     Status = KifaActionStatus.OK,
-                    Message = $"No files to move for {file.Id}."
-                };
-            })
-        };
+                    Message =
+                        $"Moved {locationsFromServer.Count} files to {toServer} for {file.Id}:\n{message}"
+                });
+            }
+
+            return (file.Id, new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"No files to move for {file.Id}."
+            });
+        }));
 }
