@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.Tools;
 
@@ -23,21 +24,22 @@ public abstract partial class KifaCommand {
     public int LogSummary() {
         var resultsByStatus = Results.GroupBy(item => item.result.IsAcceptable)
             .ToDictionary(item => item.Key, item => item.ToList());
-        if (resultsByStatus.ContainsKey(true)) {
-            var items = resultsByStatus[true];
-            Logger.Info($"Successfully acted on the following {items.Count} items:");
-            foreach (var (item, result) in items) {
-                Logger.Info($"{item}:");
+        if (resultsByStatus.TryGetValue(true, out var acceptableItems)) {
+            Logger.Info($"Successfully acted on the following {acceptableItems.Count} items:");
+            foreach (var (item, result) in acceptableItems) {
+                var level = result.Status == KifaActionStatus.Warning
+                    ? LogLevel.Warn
+                    : LogLevel.Info;
+                Logger.Log(level, $"{item}:");
                 foreach (var line in (result.Message ?? "OK").Split("\n")) {
-                    Logger.Info($"\t{line}");
+                    Logger.Log(level, $"\t{line}");
                 }
             }
         }
 
-        if (resultsByStatus.ContainsKey(false)) {
-            var items = resultsByStatus[false];
-            Logger.Error($"Failed to act on the following {items.Count} items:");
-            foreach (var (item, result) in items) {
+        if (resultsByStatus.TryGetValue(false, out var failedItems)) {
+            Logger.Error($"Failed to act on the following {failedItems.Count} items:");
+            foreach (var (item, result) in failedItems) {
                 Logger.Error($"{item} =>");
                 foreach (var line in (result.Message ?? "Unknown error").Split("\n")) {
                     Logger.Error($"\t{line}");
