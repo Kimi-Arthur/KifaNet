@@ -105,8 +105,7 @@ public class KifaBatchActionResult : KifaActionResult {
 
     public override string Message
         => string.Join("\n",
-            Results.Where(r => r.Result.Status != KifaActionStatus.OK).Select(r
-                => $"{r.Item}: ({r.Result.Status}): {r.Result.Message}"));
+            Results.Select(r => $"{r.Item} ({r.Result.Status}): {r.Result.Message}"));
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {
