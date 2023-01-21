@@ -51,9 +51,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public bool SimpleMode { get; set; }
 
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
-        bool simpleMode = false, bool useCache = false) {
+        bool simpleMode = false, bool useCache = false, HashSet<string>? allowedClients = null) {
         SimpleMode = simpleMode;
-        uri ??= GetUri(id ?? fileInfo!.Id!);
+        uri ??= GetUri(id ?? fileInfo!.Id!, allowedClients);
         if (uri == null) {
             throw new FileNotFoundException();
         }
@@ -160,7 +160,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public bool IsLocal => Client is FileStorageClient;
 
-    static string? GetUri(string id) {
+    static string? GetUri(string id, HashSet<string>? allowedClients) {
         string? candidate = null;
         var bestScore = 0L;
         var info = FileInformation.Client.Get(id);
@@ -170,6 +170,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                     var file = new KifaFile(location, fileInfo: info);
                     if (file.Client is FileStorageClient && file.Exists()) {
                         return location;
+                    }
+
+                    // Ignore clients not allowed.
+                    if (allowedClients != null && !allowedClients.Contains(file.Client.Type)) {
+                        continue;
                     }
 
                     var score = file.Client switch {

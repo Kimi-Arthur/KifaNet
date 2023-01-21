@@ -15,6 +15,9 @@ class GetCommand : KifaFileCommand {
     [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
     public bool LightweightOnly { get; set; } = false;
 
+    [Option('c', "allowed-clients", HelpText = "Only get files from the given sources.")]
+    public string? AllowedClients { get; set; }
+
     public override bool Recursive { get; set; } = true;
 
     protected override Func<List<KifaFile>, string> KifaFileConfirmText
@@ -61,7 +64,10 @@ class GetCommand : KifaFileCommand {
             return 1;
         }
 
-        var source = new KifaFile(fileInfo: info);
+        var source = new KifaFile(fileInfo: info,
+            allowedClients: AllowedClients == null
+                ? null
+                : new HashSet<string>(AllowedClients.Split(",")));
         source.Copy(file);
 
         try {
