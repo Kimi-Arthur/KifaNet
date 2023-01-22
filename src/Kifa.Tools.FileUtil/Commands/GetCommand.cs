@@ -18,6 +18,17 @@ class GetCommand : KifaFileCommand {
     [Option('c', "allowed-clients", HelpText = "Only get files from the given sources.")]
     public string? AllowedClients { get; set; }
 
+    [Option('u', "ignore-already-uploaded",
+        HelpText = "Ignores files that are already uploaded to the given sources.")]
+    public string? IgnoreAlreadyUploaded { get; set; }
+
+    HashSet<string>? alreadyUploaded;
+
+    HashSet<string> AlreadyUploaded
+        => alreadyUploaded ??= IgnoreAlreadyUploaded == null
+            ? new HashSet<string>()
+            : new HashSet<string>(IgnoreAlreadyUploaded.Split(","));
+
     public override bool Recursive { get; set; } = true;
 
     protected override Func<List<KifaFile>, string> KifaFileConfirmText
@@ -54,6 +65,12 @@ class GetCommand : KifaFileCommand {
                     linkSource.Copy(file);
                     file.Register(true);
                     Logger.Info($"Got {file} through hard linking to {linkSource}.");
+                    return 0;
+                }
+
+                var spec = location.Split(":")[0];
+                if (AlreadyUploaded.Contains(spec)) {
+                    Logger.Info($"File {file} already uploaded to {spec}.");
                     return 0;
                 }
             }
