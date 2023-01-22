@@ -272,12 +272,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             ? Enumerable.Repeat(this, 1)
             : Client.List(Path, recursive)
                 .Select(info => new KifaFile(Host + info.Id, fileInfo: info)).Where(f
-                    => IsMatch(f.Id, pattern) && (!ignoreFiles ||
-                                                  !IgnoredExtensions.Contains(f.Extension) &&
-                                                  !IgnoredPrefixes.Any(prefix
-                                                      => f.Id[Path.Length..].Split("/").Any(segment
-                                                          => segment.StartsWith(prefix))) &&
-                                                  !IgnoredFiles.IsMatch(f.Id)));
+                    => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path)));
+
+    static bool ShouldIgnore(string logicalPath, string pathPrefix)
+        => IgnoredExtensions.Contains(logicalPath[(logicalPath.LastIndexOf(".") + 1)..]) ||
+           IgnoredPrefixes.Any(prefix
+               => logicalPath[pathPrefix.Length..].Split("/")
+                   .Any(segment => segment.StartsWith(prefix))) ||
+           IgnoredFiles.IsMatch(logicalPath);
 
     public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
         IEnumerable<string> sources, string? prefix = null, bool recursive = true,
