@@ -81,12 +81,16 @@ public class SwisscomAccountQuota : DataModel, WithModelId {
         var prefixes = StorageMappings.First(mapping => logicalPath.StartsWith(mapping.Pattern))
             .AccountPrefixes;
         var selectedAccounts = new List<string>();
-        for (var i = 0L; i < length; i += SwisscomStorageClient.ShardSize) {
-            // The rule to construct the actual path is implicitly related to
-            // ShardedStorageClient.GetShards.
-            selectedAccounts.Add(FindAccount(prefixes,
-                $"{actualPath}.{i / SwisscomStorageClient.ShardSize}",
-                Math.Min(SwisscomStorageClient.ShardSize, length - i)));
+        if (length <= SwisscomStorageClient.ShardSize) {
+            selectedAccounts.Add(FindAccount(prefixes, actualPath, length));
+        } else {
+            for (var i = 0L; i < length; i += SwisscomStorageClient.ShardSize) {
+                // The rule to construct the actual path is implicitly related to
+                // ShardedStorageClient.GetShards.
+                selectedAccounts.Add(FindAccount(prefixes,
+                    $"{actualPath}.{i / SwisscomStorageClient.ShardSize}",
+                    Math.Min(SwisscomStorageClient.ShardSize, length - i)));
+            }
         }
 
         return string.Join("+", selectedAccounts);
