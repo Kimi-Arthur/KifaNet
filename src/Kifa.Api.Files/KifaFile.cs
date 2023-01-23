@@ -53,7 +53,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool simpleMode = false, bool useCache = false, HashSet<string>? allowedClients = null) {
         SimpleMode = simpleMode;
-        uri ??= GetUri(id ?? fileInfo!.Id!, allowedClients);
+        uri ??= GetUri(id ?? fileInfo!.Id, allowedClients);
         if (uri == null) {
             throw new FileNotFoundException();
         }
@@ -283,7 +283,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
         IEnumerable<string> sources, string? prefix = null, bool recursive = true,
-        string pattern = "*", bool fullFile = false) {
+        string pattern = "*", bool fullFile = false, bool ignoreFiles = true) {
         var multi = 0;
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
@@ -296,7 +296,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 multi++;
                 files.Add((file.ToString().GetNaturalSortKey(), file));
             } else {
-                var fileInfos = file.List(recursive, pattern: pattern).ToList();
+                var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
+                    .ToList();
                 multi = 2;
                 files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
             }
@@ -310,9 +311,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public static (bool isMultiple, List<KifaFile> files) FindPotentialFiles(
         IEnumerable<string> sources, string? prefix = null, bool recursive = true,
-        string pattern = "*", bool fullFile = false) {
+        bool fullFile = false, bool ignoreFiles = true) {
         var multi = 0;
-        var files = new List<(string sortKey, KifaFile value)>();
+        var files = new List<(string sortKey, string value)>();
         foreach (var fileName in sources) {
             var fileInfo = new KifaFile(fileName);
             if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
@@ -324,22 +325,23 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
             var thisFolder = FileInformation.Client.ListFolder(path, recursive);
             multi = 2;
-            files.AddRange(thisFolder.Select(f => (f.GetNaturalSortKey(), new KifaFile(host + f))));
+            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, fileInfo.Id))
+                .Select(f => (f.GetNaturalSortKey(), host + f)));
         }
 
         files.Sort();
 
-        return (multi > 1,
-            files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
+        return (multi > 1, files.Select(f => new KifaFile(f.value)).ToList());
     }
 
     public static (bool isMultiple, List<KifaFile> files) FindAllFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, string pattern = "*", bool fullFile = false) {
+        string? prefix = null, bool recursive = true, string pattern = "*", bool fullFile = false,
+        bool ignoreFiles = true) {
         var sourceFiles = sources.ToList();
         var existingFiles = FindExistingFiles(sourceFiles, prefix, recursive, pattern: pattern,
-            fullFile: fullFile);
-        var potentialFiles = FindPotentialFiles(sourceFiles, prefix, recursive, pattern: pattern,
-            fullFile: fullFile);
+            fullFile: fullFile, ignoreFiles: ignoreFiles);
+        var potentialFiles = FindPotentialFiles(sourceFiles, prefix, recursive, fullFile: fullFile,
+            ignoreFiles: ignoreFiles);
         var allFiles = new HashSet<KifaFile>();
         allFiles.UnionWith(existingFiles.files);
         allFiles.UnionWith(potentialFiles.files);

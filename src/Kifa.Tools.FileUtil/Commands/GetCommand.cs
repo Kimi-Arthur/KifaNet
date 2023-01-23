@@ -4,13 +4,17 @@ using System.IO;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("get", HelpText = "Get files.")]
-class GetCommand : KifaFileCommand {
+class GetCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
+    public IEnumerable<string> FileNames { get; set; }
 
     [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
     public bool LightweightOnly { get; set; } = false;
@@ -29,23 +33,38 @@ class GetCommand : KifaFileCommand {
             ? new HashSet<string>()
             : new HashSet<string>(IgnoreAlreadyUploaded.Split(","));
 
-    public override bool Recursive { get; set; } = true;
+    public override int Execute() {
+        var (_, files) = KifaFile.FindPotentialFiles(FileNames);
+        foreach (var file in files) {
+            Console.WriteLine(file);
+        }
 
-    protected override Func<List<KifaFile>, string> KifaFileConfirmText
-        => files => $"Confirm getting the {files.Count} files above?";
+        if (!Confirm($"Confirm getting the {files.Count} files above?")) {
+            Logger.Info("Action canceled.");
+            return -1;
+        }
 
-    protected override bool IterateOverLogicalFiles => true;
+        foreach (var file in files) {
+            ExecuteItem(file.Id, () => GetFile(file));
+        }
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
+        return LogSummary();
+    }
+
+    KifaActionResult GetFile(KifaFile file) {
         try {
             file.Add();
-            Logger.Info("Already got!");
-            return 0;
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = "Already got!"
+            };
         } catch (FileNotFoundException) {
             // File expected to be not found.
         } catch (FileCorruptedException ex) {
-            Logger.Error(ex, "Target exists, but doesn't match.");
-            return 2;
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = "Target exists, but doesn't match."
+            };
         }
 
         file.Unregister();
@@ -53,8 +72,10 @@ class GetCommand : KifaFileCommand {
         var info = file.FileInfo;
 
         if (info == null || info.Locations.Count == 0) {
-            Logger.Error($"No instance exists for {file.Id}!");
-            return 1;
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = "No instance exists."
+            };
         }
 
         foreach (var (location, verifyTime) in info.Locations) {
@@ -64,21 +85,27 @@ class GetCommand : KifaFileCommand {
                 if (linkSource.IsLocal && linkSource.IsCompatible(file) && linkSource.Exists()) {
                     linkSource.Copy(file);
                     file.Register(true);
-                    Logger.Info($"Got {file} through hard linking to {linkSource}.");
-                    return 0;
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.OK,
+                        Message = $"Successfully got file through hard linking to {linkSource}."
+                    };
                 }
 
                 var spec = location.Split(":")[0];
                 if (AlreadyUploaded.Contains(spec)) {
-                    Logger.Info($"File {file} already uploaded to {spec}.");
-                    return 0;
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Warning,
+                        Message = $"File is already uploaded to {spec}."
+                    };
                 }
             }
         }
 
         if (LightweightOnly) {
-            Logger.Warn($"Not getting {file}, which requires downloading.");
-            return 1;
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = "Not getting file, which requires downloading."
+            };
         }
 
         var source = new KifaFile(fileInfo: info,
@@ -91,11 +118,15 @@ class GetCommand : KifaFileCommand {
             Logger.Info($"Verifying destination {file}...");
             file.Add();
             source.Register(true);
-            Logger.Info($"Successfully got destination {file} from {source}!");
-            return 0;
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"Successfully got file from {source}!"
+            };
         } catch (IOException ex) {
-            Logger.Error(ex, $"Failed to get destination {file}.");
-            return 2;
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to get destination: {ex}"
+            };
         }
     }
 }
