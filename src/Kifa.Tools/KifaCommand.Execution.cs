@@ -9,6 +9,16 @@ namespace Kifa.Tools;
 public abstract partial class KifaCommand {
     List<(string item, KifaActionResult result)> Results { get; set; } = new();
 
+    protected List<(string item, KifaActionResult result)> PopPendingResults() {
+        var pendingResults = Results.Where(r => r.result.Status.HasFlag(KifaActionStatus.Pending))
+            .ToList();
+        foreach (var r in pendingResults) {
+            Results.Remove(r);
+        }
+
+        return pendingResults;
+    }
+
     protected void ExecuteItem(string item, Action action) {
         Logger.Info($"Action on {item} started.");
         Results.Add((item,

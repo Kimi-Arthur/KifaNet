@@ -54,61 +54,19 @@ class UploadCommand : KifaCommand {
             Console.ReadLine();
         }
 
-        var allResults = files.Select(f => (f.ToString(), targets,
-            new KifaFile(f.ToString()).Upload(targets, DeleteSource, UseCache, DownloadLocal,
-                QuickMode, true))).ToList();
-        var resultsByFinal = allResults
-            .GroupBy(results => results.Item3.All(result => result.result != null))
-            .ToDictionary(result => result.Key, result => result.ToList());
-        var finalResultsBySuccess = resultsByFinal
-            .GetValueOrDefault(true,
-                new List<(string file, List<CloudTarget> targets,
-                    List<(CloudTarget target, string? destination, bool? result)> results)>())
-            .Concat(resultsByFinal
-                .GetValueOrDefault(false,
-                    new List<(string file, List<CloudTarget> targets,
-                        List<(CloudTarget target, string? destination, bool? result)> results)>())
-                .Select(result => (result.Item1, result.Item2,
-                    new KifaFile(result.Item1).Upload(result.Item2, DeleteSource, UseCache,
-                        DownloadLocal, QuickMode))))
-            .GroupBy(results => results.Item3.All(result => result.result == true))
-            .ToDictionary(result => result.Key, result => result.ToList());
-
-        if (finalResultsBySuccess.ContainsKey(true)) {
-            Logger.Info($"Successfully uploaded {finalResultsBySuccess[true].Count} files to:");
-            foreach (var finalResults in finalResultsBySuccess[true]) {
-                Logger.Info($"{finalResults.Item1} =>");
-                foreach (var result in finalResults.Item3) {
-                    Logger.Info($"\t{result.destination}");
-                }
-            }
+        foreach (var file in files) {
+            ExecuteItem(file.ToString(),
+                () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
+                    DownloadLocal, QuickMode, true));
         }
 
-        if (finalResultsBySuccess.ContainsKey(false)) {
-            Logger.Error($"Failed to upload {finalResultsBySuccess[false].Count} files:");
-            foreach (var finalResults in finalResultsBySuccess[false]) {
-                Logger.Error($"{finalResults.Item1} =>");
-                foreach (var result in finalResults.Item3) {
-                    if (result.result == false) {
-                        Logger.Error($"\t{result.destination ?? result.target.ToString()}");
-                    }
-                }
-            }
-
-            return 1;
+        var pendingFiles = PopPendingResults().Select(item => new KifaFile(item.item));
+        foreach (var file in pendingFiles) {
+            ExecuteItem(file.ToString(),
+                () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode));
         }
 
-        if (QuickMode && finalResultsBySuccess.ContainsKey(true)) {
-            Console.WriteLine("To verify the unverified files:");
-            Console.Write("filex add");
-            foreach (var finalResults in finalResultsBySuccess[true]) {
-                foreach (var result in finalResults.Item3) {
-                    Console.WriteLine("\\");
-                    Console.Write($"  {result.destination}");
-                }
-            }
-        }
-
-        return 0;
+        // TODO: Quick mode hint text is not printed. Maybe a better approach later.
+        return LogSummary();
     }
 }

@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Kifa.Cloud.Swisscom;
 using Kifa.IO;
+using Kifa.Service;
 
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    public List<(CloudTarget target, string? destination, bool? result)> Upload(
-        List<CloudTarget> targets, bool deleteSource = false, bool useCache = false,
-        bool downloadLocal = false, bool skipVerify = false, bool skipRegistered = false) {
+    public KifaActionResult Upload(List<CloudTarget> targets, bool deleteSource = false,
+        bool useCache = false, bool downloadLocal = false, bool skipVerify = false,
+        bool skipRegistered = false) {
         UseCache = useCache | downloadLocal;
 
         try {
@@ -18,22 +19,21 @@ public partial class KifaFile {
             Add(false);
             Logger.Debug($"Checked source {this}: sha256={FileInfo!.Sha256}, size={FileInfo.Size}");
         } catch (IOException ex) {
-            Logger.Error(ex, $"Failed to check source {this}.");
-            return targets
-                .Select<CloudTarget, (CloudTarget, string?, bool?)>(target => (target, null, false))
-                .ToList();
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to check source {this}: {ex}"
+            };
         }
 
-        var results = targets
-            .Select(target => UploadOneFile(target, deleteSource, skipVerify, skipRegistered))
-            .ToList();
+        var result = new KifaBatchActionResult();
+        result.AddRange(targets.Select(target => (target.ToString(),
+            UploadOneFile(target, deleteSource, skipVerify, skipRegistered))));
 
-        CleanupFiles(
-            results.Any(result => result.result == false) ? false :
-            results.Any(result => result.result == null) ? null : true, deleteSource,
-            downloadLocal);
+        if (result.IsAcceptable) {
+            CleanupFiles(deleteSource, downloadLocal);
+        }
 
-        return results;
+        return result;
     }
 
     string CreateLocation(CloudTarget target)
@@ -50,23 +50,27 @@ public partial class KifaFile {
                 _ => ""
             };
 
-    (CloudTarget target, string? destination, bool? result) UploadOneFile(CloudTarget target,
-        bool deleteSource, bool skipVerify, bool skipRegistered) {
+    KifaActionResult UploadOneFile(CloudTarget target, bool deleteSource, bool skipVerify,
+        bool skipRegistered) {
         string destinationLocation;
         try {
             destinationLocation = CreateLocation(target);
         } catch (IOException ex) {
-            Logger.Error(ex, $"Failed to create location to upload {this} as {target}");
-            return (target, null, false);
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to create location to upload {this} to {target}: {ex}"
+            };
         }
 
-        Logger.Debug($"Will upload {this} to {destinationLocation}");
+        Logger.Debug($"Will upload {this} to {destinationLocation}.");
 
         if (!deleteSource && skipRegistered) {
             if (new KifaFile(destinationLocation).Registered) {
-                Logger.Debug($"Skipped uploading of {this} to {destinationLocation} for now " +
-                             "as it's supposed to be already uploaded...");
-                return (target, destinationLocation, null);
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Pending,
+                    Message = $"Skipped uploading of {this} to {destinationLocation} for now " +
+                              "as it's supposed to be already uploaded..."
+                };
             }
         }
 
@@ -78,13 +82,17 @@ public partial class KifaFile {
 
         try {
             CheckDestination(destination, skipVerify);
-            Logger.Debug($"Destination {destination} is already uploaded.");
-            return (target, destinationLocation, true);
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"Destination {destination} is already uploaded."
+            };
         } catch (FileNotFoundException) {
             // Expected not to find the destination.
         } catch (IOException ex) {
-            Logger.Error(ex, $"Failed to check destination {destination}");
-            return (target, destinationLocation, false);
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to check destination {destination}: {ex}"
+            };
         }
 
         Logger.Debug($"Copying from source {this} to destination {destination}...");
@@ -92,15 +100,15 @@ public partial class KifaFile {
 
         try {
             CheckDestination(destination, skipVerify);
-            if (!skipVerify) {
-                Register(true);
-            }
-
-            Logger.Debug($"Checked destination {destination}.");
-            return (target, destinationLocation, true);
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"Uploaded to destination {destination}."
+            };
         } catch (IOException ex) {
-            Logger.Error(ex, $"Failed to check destination {destination} after uploading.");
-            return (target, destinationLocation, false);
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to check destination {destination} after uploading: {ex}"
+            };
         }
     }
 
@@ -117,17 +125,12 @@ public partial class KifaFile {
         destination.Add();
     }
 
-    void CleanupFiles(bool? status, bool deleteSource, bool downloadLocal) {
-        if (status == false) {
-            Logger.Debug("No files are removed since not all uploads are successful.");
-            return;
-        }
-
+    void CleanupFiles(bool deleteSource, bool downloadLocal) {
         if (!downloadLocal) {
             RemoveLocalCacheFile();
         }
 
-        if (deleteSource && status == true) {
+        if (deleteSource) {
             if (IsCloud) {
                 Logger.Warn($"Source {this} is not removed as it's in cloud.");
             } else {
