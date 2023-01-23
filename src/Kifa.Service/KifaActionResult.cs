@@ -146,15 +146,18 @@ public class KifaActionResult<TValue> : KifaActionResult {
 public static class KifaActionResultLogger {
     public static KifaActionResult LogResult(this Logger Logger, KifaActionResult result,
         string action) {
-        Logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn,
-            $"Result of {action}: {result}");
+        Logger.Log(GetLogLevel(result.Status), $"Result of {action}: {result}");
         return result;
     }
 
     public static KifaActionResult<TValue> LogResult<TValue>(this Logger Logger,
         KifaActionResult<TValue> result, string action) {
-        Logger.Log(result.Status == KifaActionStatus.OK ? LogLevel.Info : LogLevel.Warn,
-            $"Result of {action}: {result}");
+        Logger.Log(GetLogLevel(result.Status), $"Result of {action}: {result}");
         return result;
     }
+
+    static LogLevel GetLogLevel(KifaActionStatus status)
+        => status.HasFlag(KifaActionStatus.Error) ? LogLevel.Error :
+            status.HasFlag(KifaActionStatus.Warning) ? LogLevel.Warn :
+            status.HasFlag(KifaActionStatus.Pending) ? LogLevel.Debug : LogLevel.Info;
 }
