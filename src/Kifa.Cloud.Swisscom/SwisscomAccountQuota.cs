@@ -97,44 +97,41 @@ public class SwisscomAccountQuota : DataModel, WithModelId {
     }
 
     public static string FindAccount(List<string> prefixes, string path, long length) {
-        var accounts = Client.List().Values.ToList();
-        var existingReservation = FindExistingReservation(accounts, path, length);
-        if (existingReservation != null) {
-            return existingReservation;
+        while (true) {
+            var accounts = Client.List().Values.ToList();
+            var existingReservation = FindExistingReservation(accounts, path, length);
+            if (existingReservation != null) {
+                return existingReservation;
+            }
+
+            var account =
+                GetAccount(
+                    accounts.Where(account
+                        => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
+                           account.LeftQuota >= length).ToList(), length);
+
+            if (account == null) {
+                throw new InsufficientStorageException(
+                    $"Unable to find a proper account to hold {length} bytes.");
+            }
+
+            // We will assume the quota we get here is up to date.
+            var accountId = account.Id;
+            account = Client.Get(account.Id);
+
+            if (account == null) {
+                throw new InsufficientStorageException(
+                    $"Unexpectedly, failed to get the account {accountId}.");
+            }
+
+            var result = Client.ReserveQuota(account.Id, path, length);
+            if (result.Status != KifaActionStatus.OK) {
+                Logger.LogResult(result, "reserving quota");
+                continue;
+            }
+
+            return account.Id;
         }
-
-        var account =
-            GetAccount(
-                accounts.Where(account
-                    => prefixes.Any(prefix => account.Id.StartsWith(prefix)) &&
-                       account.LeftQuota >= length).ToList(), length);
-
-        if (account == null) {
-            throw new InsufficientStorageException(
-                $"Unable to find a proper account to hold {length} bytes.");
-        }
-
-        // We will assume the quota we get here is up to date.
-        var accountId = account.Id;
-        account = Client.Get(account.Id);
-
-        if (account == null) {
-            throw new InsufficientStorageException(
-                $"Unexpectedly, failed to get the account {accountId}.");
-        }
-
-        if (account.LeftQuota < length) {
-            throw new InsufficientStorageException(
-                $"Unexpectedly, the account {account.Id} doesn't have enough quota {account.LeftQuota} < {length}.");
-        }
-
-        var result = Client.ReserveQuota(account.Id, path, length);
-        if (result.Status != KifaActionStatus.OK) {
-            throw new InsufficientStorageException(
-                $"Failed to reserve quota {length} bytes in {account.Id}.");
-        }
-
-        return account.Id;
     }
 
     static SwisscomAccountQuota? GetAccount(List<SwisscomAccountQuota> accounts, long length) {
