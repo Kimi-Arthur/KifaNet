@@ -18,6 +18,11 @@ public class
         public bool Recursive { get; set; } = false;
     }
 
+    [HttpGet("$get_folder")]
+    public KifaActionResult<List<FolderInfo>> GetFolder(string folder, List<string> targets) {
+        return Client.GetFolder(folder, targets);
+    }
+
     [HttpGet("$list_folder")]
     public KifaApiActionResult<List<string>> ListFolderGet([FromQuery] ListFolderRequest request)
         => Client.ListFolder(request.Folder, request.Recursive);
@@ -91,6 +96,46 @@ public class
 
 public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInformation>,
     FileInformationServiceClient {
+    public List<FolderInfo> GetFolder(string folder, List<string> targets) {
+        if (!folder.EndsWith("/")) {
+            folder += "/";
+        }
+
+        var files = List(folder.Trim('/'));
+        var folders = new Dictionary<string, FolderInfo>();
+        foreach (var file in files.Values) {
+            var folderName = file.Id[..(file.Id + "/").IndexOf('/', folder.Length)];
+            if (!folders.TryGetValue(folderName, out var folderStat)) {
+                folderStat = new FolderInfo {
+                    Folder = folderName,
+                    Stats = new Dictionary<string, FileStat> {
+                        { "", new FileStat() }
+                    }
+                };
+
+                foreach (var target in targets) {
+                    folderStat.Stats.Add(target, new FileStat());
+                }
+
+                folders.Add(folderName, folderStat);
+            }
+
+            if (file.Size == null) {
+                // TODO: Notify or throw here.
+                continue;
+            }
+
+            folderStat.Stats[""].AddFile(file.Size.Value);
+            foreach (var target in targets) {
+                if (file.Locations.Any(kv => kv.Key.StartsWith(target) && kv.Value != null)) {
+                    folderStat.Stats[target].AddFile(file.Size.Value);
+                }
+            }
+        }
+
+        return folders.Values.OrderBy(f => f.Folder.GetNaturalSortKey()).ToList();
+    }
+
     public List<string> ListFolder(string folder, bool recursive = false) {
         return List(folder.Trim('/'), recursive).Keys.OrderBy(i => i.GetNaturalSortKey()).ToList();
     }

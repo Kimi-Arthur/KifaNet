@@ -304,6 +304,7 @@ public class FileInformation : DataModel, WithModelId {
 }
 
 public interface FileInformationServiceClient : KifaServiceClient<FileInformation> {
+    List<FolderInfo> GetFolder(string folder, List<string> targets);
     List<string> ListFolder(string folder, bool recursive = false);
     KifaActionResult AddLocation(string id, string location, bool verified = false);
     KifaActionResult RemoveLocation(string id, string location);
@@ -311,6 +312,13 @@ public interface FileInformationServiceClient : KifaServiceClient<FileInformatio
 
 public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
     FileInformationServiceClient {
+    public List<FolderInfo> GetFolder(string folder, List<string> targets)
+        => Call<List<FolderInfo>>("get_folder", new Dictionary<string, object> {
+            ["folder"] = folder,
+            ["targets"] = targets
+        });
+
+
     public List<string> ListFolder(string folder, bool recursive = false)
         => Call<List<string>>("list_folder", new Dictionary<string, object> {
             ["folder"] = folder,
