@@ -7,7 +7,7 @@ namespace MyNamespace;
 
 class TestModel : DataModel, WithModelId {
     public static string ModelId => "tests";
-    
+
     public string? Value { get; set; }
 }
 
@@ -18,6 +18,7 @@ public class Program {
     static void DeleteLock(string id) => Locks.Remove(id, out _);
 
     static void Work1(string id) {
+        Console.WriteLine($"Before Locking Work1 ({DateTime.Now}): {id}");
         lock (GetLock(id)) {
             Console.WriteLine($"Start Work1 ({DateTime.Now}): {id}");
             Thread.Sleep(TimeSpan.FromSeconds(5));
@@ -26,6 +27,7 @@ public class Program {
     }
 
     static void Work2(string id) {
+        Console.WriteLine($"Before Locking Work2 ({DateTime.Now}): {id}");
         lock (GetLock(id)) {
             Console.WriteLine($"Start Work2 ({DateTime.Now}): {id}");
             Thread.Sleep(TimeSpan.FromSeconds(3));
@@ -34,17 +36,23 @@ public class Program {
     }
 
     static void Work3(string id) {
+        Console.WriteLine($"Before Locking Work3 ({DateTime.Now}): {id}");
         lock (GetLock(id)) {
             Console.WriteLine($"Locked once Work3 ({DateTime.Now}): {id}");
-            lock (GetLock(id)) {
-                Console.WriteLine($"Start Work3 ({DateTime.Now}): {id}");
-                Thread.Sleep(TimeSpan.FromSeconds(2));
-                Console.WriteLine($"End Work3 ({DateTime.Now}): {id}");
-            }
+
+            Work3_1(id);
 
             Thread.Sleep(TimeSpan.FromSeconds(2));
 
             Console.WriteLine($"Unlocked once Work3  ({DateTime.Now}): {id}");
+        }
+    }
+
+    static void Work3_1(string id) {
+        lock (GetLock(id)) {
+            Console.WriteLine($"Start Work3 ({DateTime.Now}): {id}");
+            Thread.Sleep(TimeSpan.FromSeconds(2));
+            Console.WriteLine($"End Work3 ({DateTime.Now}): {id}");
         }
     }
 
