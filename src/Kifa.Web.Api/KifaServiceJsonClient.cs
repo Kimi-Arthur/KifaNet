@@ -68,7 +68,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     static ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
 
-    static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
+    protected static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
 
     public override SortedDictionary<string, TDataModel> List() => List("");
 

@@ -46,10 +46,22 @@ public class SwisscomAccountQuotaJsonServiceClient : KifaServiceJsonClient<Swiss
     }
 
     public KifaActionResult ReserveQuota(string id, string path, long length) {
-        var data = Get(id);
-        data.Reservations.Add(path, length);
-        data.ExpectedQuota = Math.Max(data.ExpectedQuota, data.UsedQuota) + length;
-        return Update(data);
+        lock (GetLock(id)) {
+            var data = Get(id);
+
+            // The given reservation should not already included.
+            if (length > data.LeftQuota) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message =
+                        $"Failed to reserve {length} bytes, the quota left is {data.LeftQuota} bytes."
+                };
+            }
+
+            data.Reservations.Add(path, length);
+            data.ExpectedQuota = Math.Max(data.ExpectedQuota, data.UsedQuota) + length;
+            return Update(data);
+        }
     }
 
     public KifaActionResult ClearReserve(string id) {
