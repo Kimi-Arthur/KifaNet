@@ -8,15 +8,17 @@ public class ConcurrentProcessor<T> {
     ConcurrentQueue<(Func<T> Task, (int RetryCount, DateTimeOffset LastExecution) Status)> Tasks {
         get;
         set;
-    }
+    } = new();
 
-    ConcurrentQueue<T> Results { get; set; }
+    ConcurrentQueue<T> Results { get; set; } = new();
+
+    int RunnerCount { get; set; }
 
     public required Func<T, bool?> Validator { get; init; }
 
     public int TotalRetryCount { get; init; } = 5;
 
-    public TimeSpan WaitDuration { get; init; } = TimeSpan.FromSeconds(10);
+    public TimeSpan WaitDuration { get; init; } = TimeSpan.FromSeconds(2);
 
     bool StopWhenFullyProcessed { get; set; }
 
@@ -25,9 +27,10 @@ public class ConcurrentProcessor<T> {
     }
 
     public void Start(int parallelThreads) {
+        RunnerCount = parallelThreads;
         for (var i = 0; i < parallelThreads; i++) {
             new Thread(() => {
-                while (!StopWhenFullyProcessed) {
+                while (!StopWhenFullyProcessed || !Tasks.IsEmpty) {
                     if (Tasks.TryDequeue(out var task)) {
                         SleepIfNeeded(task.Status.LastExecution);
                         var result = task.Task.Invoke();
@@ -48,6 +51,8 @@ public class ConcurrentProcessor<T> {
                         Thread.Sleep(WaitDuration);
                     }
                 }
+
+                RunnerCount--;
             }).Start();
         }
     }
@@ -61,7 +66,7 @@ public class ConcurrentProcessor<T> {
 
     public void Stop() {
         StopWhenFullyProcessed = true;
-        while (!Tasks.IsEmpty) {
+        while (RunnerCount > 0) {
             Thread.Sleep(WaitDuration);
         }
     }
