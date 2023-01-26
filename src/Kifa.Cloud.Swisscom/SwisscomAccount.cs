@@ -88,22 +88,20 @@ public class SwisscomAccount : DataModel, WithModelId {
         return DateTimeOffset.UtcNow + TokenValidDuration;
     }
 
-    public void Register() {
+    public AccountRegistrationStatus Register() {
         switch (GetRegistrationStatus().Status) {
             case AccountRegistrationStatus.NotRegistered:
                 RegisterSwisscom();
-                RegisterMyCloud();
-
-                break;
+                Logger.Debug($"Registered account {Id} for Swisscom.");
+                return GetRegistrationStatus().Status;
             case AccountRegistrationStatus.Registered:
                 Logger.Debug($"Account {Id} is already fully registered.");
-                break;
+                return AccountRegistrationStatus.Registered;
             case AccountRegistrationStatus.OnlySwisscom:
-                Logger.Debug($"Account {Id} is partially registered. " +
-                             $"Registering now for myCloud account.");
-                RegisterMyCloud();
-
-                break;
+                Logger.Debug($"Account {Id} is partially registered.");
+                return AccountRegistrationStatus.OnlySwisscom;
+            default:
+                return AccountRegistrationStatus.NotRegistered;
         }
     }
 
@@ -240,7 +238,7 @@ public class SwisscomAccount : DataModel, WithModelId {
         Thread.Sleep(PageLoadWait);
     }
 
-    void RegisterMyCloud() {
+    public void RegisterMyCloud() {
         using var driver = GetDriver(true);
         driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
         Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
@@ -302,7 +300,7 @@ public class SwisscomAccount : DataModel, WithModelId {
     }
 }
 
-enum AccountRegistrationStatus {
+public enum AccountRegistrationStatus {
     NotRegistered,
     OnlySwisscom,
     Registered
