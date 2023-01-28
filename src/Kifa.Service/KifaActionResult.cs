@@ -18,6 +18,9 @@ public class KifaActionResult {
         Message = "Unknown Error"
     };
 
+    public static Func<KifaActionResult, bool?> ActionValidator
+        => result => result.Status == KifaActionStatus.Pending ? null : result.IsAcceptable;
+
     [JsonIgnore]
     [YamlIgnore]
     public bool IsAcceptable => Status is KifaActionStatus.OK or KifaActionStatus.Warning;

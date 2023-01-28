@@ -16,9 +16,9 @@ public class ConcurrentProcessor<T> {
 
     public required Func<T, bool?> Validator { get; init; }
 
-    public int TotalRetryCount { get; init; } = 5;
+    public required int TotalRetryCount { get; init; }
 
-    public TimeSpan WaitDuration { get; init; } = TimeSpan.FromSeconds(2);
+    public required TimeSpan WaitDuration { get; init; }
 
     bool StopWhenFullyProcessed { get; set; }
 
