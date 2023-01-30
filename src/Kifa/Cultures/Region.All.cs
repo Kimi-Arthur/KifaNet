@@ -14,6 +14,16 @@ public partial class Region {
         Code = "CN"
     };
 
+    public static readonly Region HongKong = new() {
+        Name = "Hong Kong",
+        Code = "HK"
+    };
+
+    public static readonly Region Taiwan = new() {
+        Name = "Taiwan",
+        Code = "TW"
+    };
+
     public static readonly Region Germany = new() {
         Name = "Germany",
         Code = "DE"
