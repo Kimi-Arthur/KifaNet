@@ -57,7 +57,7 @@ public partial class AddCommand {
             })));
 
         swisscomProcessor.Start(ParallelThreads);
-        myCloudProcessor.Start(ParallelThreads);
+        myCloudProcessor.Start(ParallelThreads * 2);
 
         swisscomProcessor.Stop();
         myCloudProcessor.Stop();
