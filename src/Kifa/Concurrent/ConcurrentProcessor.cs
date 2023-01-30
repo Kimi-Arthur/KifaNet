@@ -15,7 +15,7 @@ public class ConcurrentProcessor<T> {
 
     ConcurrentQueue<T> Results { get; set; } = new();
 
-    int RunnerCount { get; set; }
+    int runnerCount;
 
     public required Func<T, bool?> Validator { get; init; }
 
@@ -34,8 +34,8 @@ public class ConcurrentProcessor<T> {
     }
 
     public void Start(int parallelThreads) {
-        RunnerCount = parallelThreads;
-        Logger.Debug($"Start {RunnerCount} runners to process tasks.");
+        runnerCount = parallelThreads;
+        Logger.Debug($"Start {runnerCount} runners to process tasks.");
         for (var i = 0; i < parallelThreads; i++) {
             new Thread(() => {
                 while (!StopWhenFullyProcessed || !Tasks.IsEmpty) {
@@ -56,6 +56,7 @@ public class ConcurrentProcessor<T> {
                             continue;
                         }
 
+                        Logger.Debug($"Will retry one task. Result: {result}.");
                         Tasks.Enqueue((task.Task,
                             (task.Status.RetryCount + 1, DateTimeOffset.Now)));
                     } else {
@@ -64,7 +65,7 @@ public class ConcurrentProcessor<T> {
                     }
                 }
 
-                RunnerCount--;
+                Interlocked.Decrement(ref runnerCount);
             }).Start();
         }
     }
@@ -79,8 +80,9 @@ public class ConcurrentProcessor<T> {
 
     public void Stop() {
         StopWhenFullyProcessed = true;
-        while (RunnerCount > 0) {
-            Logger.Trace($"Waiting for {RunnerCount} runners to finish. Sleep {IdleDuration}.");
+        Logger.Debug("Waiting for all runners to finish.");
+        while (runnerCount > 0) {
+            Logger.Trace($"Waiting for {runnerCount} runners to finish. Sleep {IdleDuration}.");
             Thread.Sleep(IdleDuration);
         }
 
