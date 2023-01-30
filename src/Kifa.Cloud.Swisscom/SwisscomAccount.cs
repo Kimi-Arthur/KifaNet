@@ -120,9 +120,7 @@ public class SwisscomAccount : DataModel, WithModelId {
         string? token;
 
         var url = driver.Url;
-        if (url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
-            url.StartsWith(
-                "https://recovery.scl.swisscom.ch/capture-second-factor/enterMobileNumber")) {
+        if (url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found")) {
             return (AccountRegistrationStatus.OnlySwisscom, null);
         }
 
