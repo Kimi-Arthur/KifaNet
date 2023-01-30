@@ -85,7 +85,7 @@ public class SwisscomAccount : DataModel, WithModelId {
         }
 
         AccessToken = GetRegistrationStatus().Token;
-        return DateTimeOffset.UtcNow + TokenValidDuration;
+        return AccessToken != null ? DateTimeOffset.UtcNow + TokenValidDuration : Date.Zero;
     }
 
     public AccountRegistrationStatus Register() {
