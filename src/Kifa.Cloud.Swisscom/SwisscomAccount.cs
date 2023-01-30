@@ -117,8 +117,6 @@ public class SwisscomAccount : DataModel, WithModelId {
         Run(() => driver.FindElementById("submitButton").Click());
         Thread.Sleep(PageLoadWait);
 
-        string? token;
-
         var url = driver.Url;
         if (url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found")) {
             return (AccountRegistrationStatus.OnlySwisscom, null);
@@ -135,10 +133,6 @@ public class SwisscomAccount : DataModel, WithModelId {
 
             Run(() => driver.FindElementByCssSelector("sdx-button[data-cy=tc-continue-button]")
                 .Click());
-
-            Thread.Sleep(PageLoadWait);
-
-            return (AccountRegistrationStatus.Registered, GetToken(driver));
         }
 
         if (url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
@@ -154,17 +148,6 @@ public class SwisscomAccount : DataModel, WithModelId {
             Run(() => driver
                 .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
                 .Click());
-
-            Thread.Sleep(PageLoadWait);
-
-            return (AccountRegistrationStatus.Registered, GetToken(driver));
-        }
-
-        if (url.StartsWith("https://www.mycloud.swisscom.ch/")) {
-            token = GetCookieToken(driver);
-            if (token != null) {
-                return (AccountRegistrationStatus.Registered, token);
-            }
         }
 
         var errorElements = driver.FindElementsByTagName("sdx-validation-message");
