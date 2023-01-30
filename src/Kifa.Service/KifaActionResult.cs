@@ -19,7 +19,7 @@ public class KifaActionResult {
     };
 
     public static Func<KifaActionResult, bool?> ActionValidator
-        => result => result.IsAcceptable || result.IsRetryable;
+        => result => result.IsAcceptable ? true : result.IsRetryable ? null : false;
 
     [JsonIgnore]
     [YamlIgnore]
