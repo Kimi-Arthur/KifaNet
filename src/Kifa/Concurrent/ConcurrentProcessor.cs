@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using NLog;
 
 namespace Kifa;
 
 public class ConcurrentProcessor<T> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     ConcurrentQueue<(Func<T> Task, (int RetryCount, DateTimeOffset LastExecution) Status)> Tasks {
         get;
         set;
@@ -18,7 +21,11 @@ public class ConcurrentProcessor<T> {
 
     public required int TotalRetryCount { get; init; }
 
-    public required TimeSpan WaitDuration { get; init; }
+    public required TimeSpan CooldownDuration { get; init; }
+
+    static readonly TimeSpan MinIdleDuration = TimeSpan.FromSeconds(10);
+
+    public TimeSpan IdleDuration => Kifa.Max(CooldownDuration, MinIdleDuration);
 
     bool StopWhenFullyProcessed { get; set; }
 
@@ -28,19 +35,23 @@ public class ConcurrentProcessor<T> {
 
     public void Start(int parallelThreads) {
         RunnerCount = parallelThreads;
+        Logger.Debug($"Start {RunnerCount} runners to process tasks.");
         for (var i = 0; i < parallelThreads; i++) {
             new Thread(() => {
                 while (!StopWhenFullyProcessed || !Tasks.IsEmpty) {
                     if (Tasks.TryDequeue(out var task)) {
+                        Logger.Debug("Processing one task...");
                         SleepIfNeeded(task.Status.LastExecution);
                         var result = task.Task.Invoke();
                         var validation = Validator(result);
                         if (validation == true) {
+                            Logger.Debug($"Finished one task successfully. Result: {result}.");
                             Results.Enqueue(result);
                             continue;
                         }
 
                         if (validation == false || task.Status.RetryCount >= TotalRetryCount) {
+                            Logger.Debug($"Failed one task. Result: {result}.");
                             Results.Enqueue(result);
                             continue;
                         }
@@ -48,7 +59,8 @@ public class ConcurrentProcessor<T> {
                         Tasks.Enqueue((task.Task,
                             (task.Status.RetryCount + 1, DateTimeOffset.Now)));
                     } else {
-                        Thread.Sleep(WaitDuration);
+                        Logger.Trace($"No more tasks to process. Sleep {IdleDuration}.");
+                        Thread.Sleep(IdleDuration);
                     }
                 }
 
@@ -58,8 +70,9 @@ public class ConcurrentProcessor<T> {
     }
 
     void SleepIfNeeded(DateTimeOffset lastExecution) {
-        var target = WaitDuration - (DateTimeOffset.Now - lastExecution);
+        var target = CooldownDuration - (DateTimeOffset.Now - lastExecution);
         if (target > TimeSpan.Zero) {
+            Logger.Trace($"Task needs to cool down for {target}.");
             Thread.Sleep(target);
         }
     }
@@ -67,7 +80,10 @@ public class ConcurrentProcessor<T> {
     public void Stop() {
         StopWhenFullyProcessed = true;
         while (RunnerCount > 0) {
-            Thread.Sleep(WaitDuration);
+            Logger.Trace($"Waiting for {RunnerCount} runners to finish. Sleep {IdleDuration}.");
+            Thread.Sleep(IdleDuration);
         }
+
+        Logger.Debug("All runners finished.");
     }
 }

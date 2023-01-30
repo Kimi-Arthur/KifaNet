@@ -6,7 +6,7 @@ using Kifa.Service;
 var processor = new ConcurrentProcessor<KifaActionResult> {
     Validator = KifaActionResult.ActionValidator,
     TotalRetryCount = 5,
-    WaitDuration = TimeSpan.FromSeconds(2)
+    CooldownDuration = TimeSpan.FromSeconds(2)
 };
 
 processor.Start(8);
