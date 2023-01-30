@@ -256,6 +256,7 @@ public class SwisscomAccount : DataModel, WithModelId {
             var boxes = driver.FindElementsByClassName("checkbox");
             if (boxes.Count == 0) {
                 MaybeSkipPhone(driver);
+                Thread.Sleep(PageLoadWait);
                 boxes = Retry.GetItems(() => driver.FindElementsByClassName("checkbox"), Interval,
                     Timeout, noLogging: true);
             }
