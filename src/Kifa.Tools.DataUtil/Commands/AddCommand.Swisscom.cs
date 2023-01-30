@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Kifa.Cloud.Swisscom;
 using Kifa.Service;
 
@@ -11,10 +10,20 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
-        // var myCloud = new ConcurrentQueue<SwisscomAccount>();
+        var swisscomProcessor = new ConcurrentProcessor<KifaActionResult> {
+            Validator = KifaActionResult.ActionValidator,
+            TotalRetryCount = 3,
+            CooldownDuration = TimeSpan.Zero
+        };
 
-        specs.SelectMany(ExpandAccounts).AsParallel().WithDegreeOfParallelism(ParallelThreads)
-            .ForAll(account => ExecuteItem(account.Id, () => {
+        var myCloudProcessor = new ConcurrentProcessor<KifaActionResult> {
+            Validator = KifaActionResult.ActionValidator,
+            TotalRetryCount = 5,
+            CooldownDuration = TimeSpan.FromSeconds(10)
+        };
+
+        specs.SelectMany(ExpandAccounts).ForEach(account => swisscomProcessor.Add(()
+            => KifaActionResult.FromAction(() => {
                 var quota = SwisscomAccountQuota.Client.Get(account.Id, true);
                 if (quota?.TotalQuota > 0) {
                     return new KifaActionResult {
@@ -29,14 +38,19 @@ public partial class AddCommand {
                         return UploadAccount(account);
 
                     case AccountRegistrationStatus.OnlySwisscom:
-                        // myCloud.Enqueue(account);
-                        // return new KifaActionResult {
-                        //     Status = KifaActionStatus.Pending,
-                        //     Message = "Account needs to be registered for myCloud."
-                        // };
-                        Thread.Sleep(TimeSpan.FromSeconds(5));
-                        account.RegisterMyCloud();
-                        return UploadAccount(account);
+                        myCloudProcessor.Add(() => KifaActionResult.FromAction(() => {
+                            var x = account.RegisterMyCloud();
+                            if (!x.IsAcceptable) {
+                                return x;
+                            }
+
+                            return UploadAccount(account);
+                        }));
+
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.OK
+                        };
+
                     case AccountRegistrationStatus.NotRegistered:
                     default:
                         return new KifaActionResult {
@@ -44,7 +58,13 @@ public partial class AddCommand {
                             Message = "Account NOT registered."
                         };
                 }
-            }));
+            })));
+
+        swisscomProcessor.Start(ParallelThreads);
+        myCloudProcessor.Start(ParallelThreads);
+
+        swisscomProcessor.Stop();
+        myCloudProcessor.Stop();
     }
 
     static KifaActionResult UploadAccount(SwisscomAccount account) {
