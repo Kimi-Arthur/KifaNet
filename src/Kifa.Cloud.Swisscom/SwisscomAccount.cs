@@ -121,7 +121,8 @@ public class SwisscomAccount : DataModel, WithModelId {
 
         var url = driver.Url;
         if (url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
-            url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
+            url.StartsWith(
+                "https://recovery.scl.swisscom.ch/capture-second-factor/enterMobileNumber")) {
             return (AccountRegistrationStatus.OnlySwisscom, null);
         }
 
@@ -139,11 +140,26 @@ public class SwisscomAccount : DataModel, WithModelId {
 
             Thread.Sleep(PageLoadWait);
 
-            token = GetCookieToken(driver);
-            return token != null
-                ? (AccountRegistrationStatus.Registered, token)
-                : throw new Exception(
-                    $"Account {Id} in an unexpected registration status: {driver.GetScreenshot().AsBase64EncodedString}");
+            return (AccountRegistrationStatus.Registered, GetToken(driver));
+        }
+
+        if (url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
+            var boxes =
+                Retry.GetItems(
+                    () => driver.FindElementsByCssSelector("input[type=checkbox] + label"),
+                    Interval, Timeout, noLogging: true);
+
+            foreach (var checkbox in boxes) {
+                Run(() => checkbox.Click());
+            }
+
+            Run(() => driver
+                .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+                .Click());
+
+            Thread.Sleep(PageLoadWait);
+
+            return (AccountRegistrationStatus.Registered, GetToken(driver));
         }
 
         if (url.StartsWith("https://www.mycloud.swisscom.ch/")) {
@@ -166,12 +182,12 @@ public class SwisscomAccount : DataModel, WithModelId {
             return (AccountRegistrationStatus.OnlySwisscom, null);
         }
 
-        token = GetCookieToken(driver);
-        return token != null
-            ? (AccountRegistrationStatus.Registered, token)
-            : throw new Exception(
-                $"Account {Id} in an unexpected registration status: {driver.GetScreenshot().AsBase64EncodedString}");
+        return (AccountRegistrationStatus.Registered, GetToken(driver));
     }
+
+    string GetToken(RemoteWebDriver driver)
+        => GetCookieToken(driver) ?? throw new Exception(
+            $"Account {Id} in an unexpected registration status. Final page ({driver.Url}): {driver.GetScreenshot().AsBase64EncodedString}");
 
     static string? GetCookieToken(RemoteWebDriver driver) {
         try {
@@ -238,41 +254,47 @@ public class SwisscomAccount : DataModel, WithModelId {
         Thread.Sleep(PageLoadWait);
     }
 
-    public void RegisterMyCloud() {
-        using var driver = GetDriver(true);
-        driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
-        Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
-            .Click());
-        Run(() => driver.FindElementById("username").SendKeys(Username));
-        Run(() => driver.FindElementByCssSelector("sdx-button#continueButton").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click());
+    public KifaActionResult RegisterMyCloud()
+        => KifaActionResult.FromAction(() => {
+            using var driver = GetDriver(true);
 
-        Run(() => driver.FindElementById("password").SendKeys(DefaultPassword));
-        Run(() => driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
-            .FindElement(By.CssSelector("button")).Click());
+            driver.Navigate().GoToUrl("https://www.mycloud.swisscom.ch/login/?type=register");
+            Run(() => driver
+                .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+                .Click());
+            Run(() => driver.FindElementById("username").SendKeys(Username));
+            Run(() => driver.FindElementByCssSelector("sdx-button#continueButton").GetShadowRoot()
+                .FindElement(By.CssSelector("button")).Click());
 
-        Thread.Sleep(PageLoadWait);
-        var boxes = driver.FindElementsByClassName("checkbox");
-        if (boxes.Count == 0) {
-            MaybeSkipPhone(driver);
-            boxes = Retry.GetItems(() => driver.FindElementsByClassName("checkbox"), Interval,
-                Timeout, noLogging: true);
-        }
+            Run(() => driver.FindElementById("password").SendKeys(DefaultPassword));
+            Run(() => driver.FindElementByCssSelector("sdx-button#submitButton").GetShadowRoot()
+                .FindElement(By.CssSelector("button")).Click());
 
-        foreach (var checkbox in boxes) {
-            Run(() => checkbox.Click());
-        }
+            Thread.Sleep(PageLoadWait);
 
-        Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
-            .Click());
-        Thread.Sleep(PageLoadWait);
-    }
+            var boxes = driver.FindElementsByClassName("checkbox");
+            if (boxes.Count == 0) {
+                MaybeSkipPhone(driver);
+                boxes = Retry.GetItems(() => driver.FindElementsByClassName("checkbox"), Interval,
+                    Timeout, noLogging: true);
+            }
+
+            foreach (var checkbox in boxes) {
+                Run(() => checkbox.Click());
+            }
+
+            Run(() => driver
+                .FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
+                .Click());
+            Thread.Sleep(PageLoadWait);
+        });
 
     static void MaybeSkipPhone(RemoteWebDriver driver) {
         try {
             Retry.Run(
                 () => driver
-                    .FindElementByCssSelector("a[data-cy=c2f-enter-mobile-screen-skip-button]")
+                    .FindElementByCssSelector(
+                        "a[data-cy=c2f-enter-mobile-screen-skip-button], a[data-cy=c2f-enter-mobile-screen-cancel-button]")
                     .Click(), Interval, TimeSpan.FromSeconds(30), noLogging: true);
         } catch (Exception ex) {
             Logger.Debug("No Skip element found, maybe it's fine. Ignored.");
