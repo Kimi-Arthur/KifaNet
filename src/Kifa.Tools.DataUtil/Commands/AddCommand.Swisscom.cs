@@ -10,6 +10,10 @@ namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
+        if (Verbose) {
+            SwisscomAccount.NoHeadless = true;
+        }
+
         var swisscomProcessor = new ConcurrentProcessor<KifaActionResult> {
             Validator = KifaActionResult.ActionValidator,
             TotalRetryCount = 3,

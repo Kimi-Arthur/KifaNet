@@ -26,6 +26,8 @@ public class SwisscomAccount : DataModel, WithModelId {
 
     #endregion
 
+    public static bool NoHeadless { get; set; }
+
     public static TimeSpan WebDriverTimeout { get; set; } = TimeSpan.FromMinutes(5);
 
     public static TimeSpan PageLoadWait { get; set; } = TimeSpan.FromSeconds(3);
@@ -295,7 +297,7 @@ public class SwisscomAccount : DataModel, WithModelId {
         var options = new ChromeOptions();
         options.AddArgument(
             "--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.41 Safari/537.36");
-        if (headless) {
+        if (headless && !NoHeadless) {
             options.AddArgument("--headless");
         }
 
