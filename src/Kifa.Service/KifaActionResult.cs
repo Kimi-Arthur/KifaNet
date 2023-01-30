@@ -19,7 +19,11 @@ public class KifaActionResult {
     };
 
     public static Func<KifaActionResult, bool?> ActionValidator
-        => result => result.Status == KifaActionStatus.Pending ? null : result.IsAcceptable;
+        => result => result.IsAcceptable || result.IsRetryable;
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public bool IsRetryable => Status is KifaActionStatus.Pending or KifaActionStatus.Error;
 
     [JsonIgnore]
     [YamlIgnore]
