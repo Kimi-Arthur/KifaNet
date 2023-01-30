@@ -40,11 +40,7 @@ public partial class AddCommand {
                     case AccountRegistrationStatus.OnlySwisscom:
                         myCloudProcessor.Add(() => KifaActionResult.FromAction(() => {
                             var x = account.RegisterMyCloud();
-                            if (!x.IsAcceptable) {
-                                return x;
-                            }
-
-                            return UploadAccount(account);
+                            return !x.IsAcceptable ? x : UploadAccount(account);
                         }));
 
                         return new KifaActionResult {
