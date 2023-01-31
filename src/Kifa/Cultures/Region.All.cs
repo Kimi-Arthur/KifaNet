@@ -62,6 +62,8 @@ public partial class Region {
     public static readonly Dictionary<string, Region> All = new List<Region> {
         Canada,
         China,
+        HongKong,
+        Taiwan,
         Germany,
         UnitedKingdom,
         Italy,
