@@ -14,7 +14,6 @@ public class CreatePdfMangaCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to link.")]
     public IEnumerable<string> Folders { get; set; }
 
-
     #region public late string Author { get; set; }
 
     string? author;
