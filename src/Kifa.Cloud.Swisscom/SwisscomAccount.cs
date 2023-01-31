@@ -191,8 +191,11 @@ public class SwisscomAccount : DataModel, WithModelId {
         Run(() => driver.FindElementByTagName("sdx-input-item").FindElement(By.CssSelector("input"))
             .Click());
         Thread.Sleep(TimeSpan.FromSeconds(1));
-        driver.ExecuteScript(
-            "document.querySelector('sdx-button[data-cy=continue-button]').shadowRoot.querySelector('button').focus()");
+
+        // driver.ExecuteScript(
+        //     "document.querySelector('sdx-button[data-cy=continue-button]').shadowRoot.querySelector('button').focus()");
+        driver.FindElementByCssSelector("sdx-button[data-cy=continue-button]").GetShadowRoot()
+            .FindElement(By.CssSelector("button")).Click();
 
         // Code trigger and fill will be handled by user.
         Run(
