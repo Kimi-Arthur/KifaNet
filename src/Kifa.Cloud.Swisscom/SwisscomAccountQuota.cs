@@ -151,8 +151,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId {
         // For an unaligned piece, we may want to choose a bigger account (empty accounts preferred)
         // so that number of "polluted" accounts is minimized.
         // We also prefer accounts with smaller last digit, most probably 0.
-        return accounts.MinBy(
-            account => (-account.LeftQuota, string.Join("", account.Id.Reverse())));
+        return accounts.MinBy(account => (-account.LeftQuota, account.Id[^1], account.Id));
     }
 
     static string? FindExistingReservation(List<SwisscomAccountQuota> accounts, string path,
