@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Kifa.Cloud.Swisscom;
 using Kifa.Service;
 
@@ -26,8 +27,8 @@ public partial class AddCommand {
             CooldownDuration = TimeSpan.FromSeconds(10)
         };
 
-        specs.SelectMany(ExpandAccounts).ForEach(account => swisscomProcessor.Add(()
-            => KifaActionResult.FromAction(() => {
+        foreach (var account in specs.SelectMany(ExpandAccounts)) {
+            swisscomProcessor.Add(() => KifaActionResult.FromAction(() => {
                 var quota = SwisscomAccountQuota.Client.Get(account.Id, true);
                 if (quota?.TotalQuota > 0) {
                     return new KifaActionResult {
@@ -58,7 +59,11 @@ public partial class AddCommand {
                             Message = "Account NOT registered."
                         };
                 }
-            })));
+            }));
+            
+            // Sleep a bit to make the requests in order (hopefully).
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+        }
 
         swisscomProcessor.Start(ParallelThreads);
         myCloudProcessor.Start(ParallelThreads * 2);
