@@ -16,27 +16,14 @@ public static class KifaConfigs {
     static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .IgnoreUnmatchedProperties().Build();
 
-    static string Name => AppDomain.CurrentDomain.FriendlyName;
-
-    static List<string> ConfigFilePaths
-        => new() {
-            $"~/.{Name}.yaml",
-            "~/.kimily.yaml",
-            $"/etc/{Name}.yaml",
-            "/etc/kimily.yaml"
-        };
-
     static string? ConfigFilePath {
         get {
             if (configFilePath == null) {
                 configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
                 if (configFilePath == null) {
-                    foreach (var path in ConfigFilePaths) {
-                        if (File.Exists(path)) {
-                            configFilePath = path;
-                            break;
-                        }
-                    }
+                    Console.WriteLine(
+                        "You should specify your config either with environment variable 'KIFA_CONFIG' or via command line argument '--config'.");
+                    Environment.Exit(1);
                 }
             }
 
