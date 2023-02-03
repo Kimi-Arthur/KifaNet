@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
@@ -91,11 +92,11 @@ class GetCommand : KifaCommand {
                     };
                 }
 
-                var spec = location.Split(":")[0];
-                if (AlreadyUploaded.Contains(spec)) {
+                var spec = location.Split("/")[0];
+                if (AlreadyUploaded.Any(u => spec.StartsWith(u))) {
                     return new KifaActionResult {
                         Status = KifaActionStatus.Warning,
-                        Message = $"File is already uploaded to {spec}."
+                        Message = $"File already exists in {spec} as {location}."
                     };
                 }
             }
