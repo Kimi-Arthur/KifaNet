@@ -121,6 +121,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             }
 
             folderStat.Stats[""].AddFile(file.Size.Value);
+            topFolder.Stats[""].AddFile(file.Size.Value);
             foreach (var target in targets) {
                 if (file.Locations.Any(kv => kv.Key.StartsWith(target) && kv.Value != null)) {
                     folderStat.Stats[target].AddFile(file.Size.Value);
