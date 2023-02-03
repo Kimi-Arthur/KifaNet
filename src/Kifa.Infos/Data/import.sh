@@ -1,1 +1,0 @@
-datax sync tv_shows.yaml

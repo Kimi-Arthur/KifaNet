@@ -1,6 +1,6 @@
 # tv_shows
-- Id: 三体
-#  Title: 苗翠花
-  TmdbId: 204541
-  Language: zh
-  PatternId: single_season
+- Id: The Last of Us
+# Title: 苗翠花
+  TmdbId: 100088
+  Language: en
+  PatternId: multi_season
