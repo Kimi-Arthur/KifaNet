@@ -103,19 +103,14 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
 
         var files = List(folder.Trim('/'));
         var folders = new Dictionary<string, FolderInfo>();
+
+        var topFolder = CreateNewFolder(folder, targets);
+        folders.Add(folder, topFolder);
+
         foreach (var file in files.Values) {
             var folderName = file.Id[..(file.Id + "/").IndexOf('/', folder.Length)];
             if (!folders.TryGetValue(folderName, out var folderStat)) {
-                folderStat = new FolderInfo {
-                    Folder = folderName,
-                    Stats = new Dictionary<string, FileStat> {
-                        { "", new FileStat() }
-                    }
-                };
-
-                foreach (var target in targets) {
-                    folderStat.Stats.Add(target, new FileStat());
-                }
+                folderStat = CreateNewFolder(folderName, targets);
 
                 folders.Add(folderName, folderStat);
             }
@@ -129,11 +124,27 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             foreach (var target in targets) {
                 if (file.Locations.Any(kv => kv.Key.StartsWith(target) && kv.Value != null)) {
                     folderStat.Stats[target].AddFile(file.Size.Value);
+                    topFolder.Stats[target].AddFile(file.Size.Value);
                 }
             }
         }
 
         return folders.Values.OrderBy(f => f.Folder.GetNaturalSortKey()).ToList();
+    }
+
+    static FolderInfo CreateNewFolder(string folderName, List<string> targets) {
+        var folderStat = new FolderInfo {
+            Folder = folderName,
+            Stats = new Dictionary<string, FileStat> {
+                { "", new FileStat() }
+            }
+        };
+
+        foreach (var target in targets) {
+            folderStat.Stats.Add(target, new FileStat());
+        }
+
+        return folderStat;
     }
 
     public List<string> ListFolder(string folder, bool recursive = false) {
