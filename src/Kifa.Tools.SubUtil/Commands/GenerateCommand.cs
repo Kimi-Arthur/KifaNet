@@ -7,6 +7,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using Kifa.IO;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
 
@@ -86,8 +87,17 @@ class GenerateCommand : KifaFileCommand {
             assFile.Write(document.ToString());
         }
 
-        actualFile.Delete();
-        assFile.Copy(actualFile);
+        if (actualFile.Exists()) {
+            if (actualFile.CalculateInfo(FileProperties.Sha256).Sha256 ==
+                assFile.CalculateInfo(FileProperties.Sha256).Sha256) {
+                Logger.Debug($"Target file {actualFile} already linked.");
+            } else {
+                actualFile.Delete();
+                assFile.Copy(actualFile);
+            }
+        } else {
+            assFile.Copy(actualFile);
+        }
 
         return 0;
     }
