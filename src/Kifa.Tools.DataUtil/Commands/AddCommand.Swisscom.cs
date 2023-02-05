@@ -60,9 +60,6 @@ public partial class AddCommand {
                         };
                 }
             }));
-            
-            // Sleep a bit to make the requests in order (hopefully).
-            Thread.Sleep(TimeSpan.FromSeconds(1));
         }
 
         swisscomProcessor.Start(ParallelThreads);
