@@ -16,7 +16,7 @@ public static class KifaConfigs {
     static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .IgnoreUnmatchedProperties().Build();
 
-    static string? ConfigFilePath {
+    static string ConfigFilePath {
         get {
             if (configFilePath == null) {
                 configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
