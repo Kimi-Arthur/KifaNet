@@ -157,8 +157,11 @@ public class SwisscomAccount : DataModel, WithModelId {
             return (AccountRegistrationStatus.NotRegistered, null);
         }
 
-        MaybeSkipPhone(driver);
-        Thread.Sleep(PageLoadWait);
+        if (driver.Url.StartsWith(
+                "https://recovery.scl.swisscom.ch/capture-second-factor/enterMobileNumber")) {
+            SkipPhone(driver);
+            Thread.Sleep(PageLoadWait);
+        }
 
         if (driver.Url.StartsWith("https://login.prod.mdl.swisscom.ch/broker-acct-not-found") ||
             driver.Url.StartsWith("https://login.mycloud.swisscom.ch/broker-terms-conditions")) {
@@ -258,13 +261,14 @@ public class SwisscomAccount : DataModel, WithModelId {
 
             Thread.Sleep(PageLoadWait);
 
-            var boxes = driver.FindElementsByClassName("checkbox");
-            if (boxes.Count == 0) {
-                MaybeSkipPhone(driver);
+            if (driver.Url.StartsWith(
+                    "https://recovery.scl.swisscom.ch/capture-second-factor/enterMobileNumber")) {
+                SkipPhone(driver);
                 Thread.Sleep(PageLoadWait);
-                boxes = Retry.GetItems(() => driver.FindElementsByClassName("checkbox"), Interval,
-                    Timeout, noLogging: true);
             }
+
+            var boxes = Retry.GetItems(() => driver.FindElementsByClassName("checkbox"), Interval,
+                Timeout, noLogging: true);
 
             foreach (var checkbox in boxes) {
                 Run(() => checkbox.Click());
@@ -276,16 +280,12 @@ public class SwisscomAccount : DataModel, WithModelId {
             Thread.Sleep(PageLoadWait);
         });
 
-    static void MaybeSkipPhone(RemoteWebDriver driver) {
-        try {
-            Retry.Run(
-                () => driver
-                    .FindElementByCssSelector(
-                        "a[data-cy=c2f-enter-mobile-screen-skip-button], a[data-cy=c2f-enter-mobile-screen-cancel-button]")
-                    .Click(), Interval, TimeSpan.FromSeconds(30), noLogging: true);
-        } catch (Exception ex) {
-            Logger.Debug("No Skip element found, maybe it's fine. Ignored.");
-        }
+    static void SkipPhone(RemoteWebDriver driver) {
+        Retry.Run(
+            () => driver
+                .FindElementByCssSelector(
+                    "a[data-cy=c2f-enter-mobile-screen-skip-button], a[data-cy=c2f-enter-mobile-screen-cancel-button]")
+                .Click(), Interval, TimeSpan.FromSeconds(30), noLogging: true);
     }
 
     static void Run(Action action, bool waitLong = false)
