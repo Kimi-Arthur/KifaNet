@@ -44,9 +44,7 @@ public static class KifaConfigs {
             Log($"\t{property.Key}");
         }
 
-        if (ConfigFilePath != null) {
-            LoadConfig(ConfigFilePath, properties);
-        }
+        LoadConfig(ConfigFilePath, properties);
     }
 
     static void LoadConfig(string configPath, Dictionary<string, PropertyInfo> properties) {
