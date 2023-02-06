@@ -108,6 +108,13 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
         folders.Add(folder, topFolder);
 
         foreach (var file in files.Values) {
+            var sha256 = file.Sha256;
+            var size = file.Size;
+            if (sha256 == null || size == null) {
+                // TODO: Notify or throw here.
+                continue;
+            }
+
             var folderName = file.Id[..(file.Id + "/").IndexOf('/', folder.Length)];
             if (!folders.TryGetValue(folderName, out var folderStat)) {
                 folderStat = CreateNewFolder(folderName, targets);
@@ -115,17 +122,12 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
                 folders.Add(folderName, folderStat);
             }
 
-            if (file.Size == null) {
-                // TODO: Notify or throw here.
-                continue;
-            }
-
-            folderStat.Stats[""].AddFile(file.Size.Value);
-            topFolder.Stats[""].AddFile(file.Size.Value);
+            folderStat.Stats[""].AddFile(sha256, size.Value);
+            topFolder.Stats[""].AddFile(sha256, size.Value);
             foreach (var target in targets) {
                 if (file.Locations.Any(kv => kv.Key.StartsWith(target) && kv.Value != null)) {
-                    folderStat.Stats[target].AddFile(file.Size.Value);
-                    topFolder.Stats[target].AddFile(file.Size.Value);
+                    folderStat.Stats[target].AddFile(sha256, size.Value);
+                    topFolder.Stats[target].AddFile(sha256, size.Value);
                 }
             }
         }
