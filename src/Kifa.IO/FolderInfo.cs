@@ -15,7 +15,7 @@ public class FolderInfo {
 public class FileStat {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public Dictionary<string, long> Files { get; set; }
+    Dictionary<string, long> Files { get; set; } = new();
     public long TotalSize { get; set; }
     public long FileCount { get; set; }
 
@@ -28,6 +28,8 @@ public class FileStat {
 
             return;
         }
+
+        Files[sha256] = size;
 
         TotalSize += size;
         FileCount++;
