@@ -30,6 +30,9 @@ public class DownloadProgramCommand : KifaCommand {
     [Option('t', "title", Required = true, HelpText = "Descriptive file title.")]
     public string? Title { get; set; }
 
+    [Option('c', "cover", Required = true, HelpText = "Add cover image.")]
+    public string? Cover { get; set; }
+
     [Option('d', "date", Required = true, HelpText = "Date of program.")]
     public string? Date { get; set; }
 
@@ -84,7 +87,7 @@ public class DownloadProgramCommand : KifaCommand {
             }
         });
 
-        MergeParts(parts, targetFile);
+        MergeParts(parts, Cover == null ? null : new KifaFile(Cover), targetFile);
 
         if (KeepTempFiles) {
             Logger.Info("Temp files are kept.");
@@ -99,8 +102,12 @@ public class DownloadProgramCommand : KifaCommand {
         return 0;
     }
 
-    static void MergeParts(List<KifaFile> parts, KifaFile target) {
-        var arguments = $"{string.Join(" ", parts.Select((_, index) => $"-map {index}"))} -c copy";
+    static void MergeParts(List<KifaFile> parts, KifaFile? cover, KifaFile target) {
+        var arguments = cover == null
+            ? $"{string.Join(" ", parts.Select((_, index) => $"-map {index}"))} -c copy"
+            : $"-i \"{cover.GetLocalPath()}\" " +
+              string.Join(" ", parts.Select((_, index) => $"-map {index}")) + " -c copy " +
+              $"-map {parts.Count} -disposition:v:1 attached_pic";
         var result = Executor.Run("ffmpeg",
             string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
             $" {arguments} \"{target.GetLocalPath()}\"");
