@@ -1,0 +1,16 @@
+using System.Net.Http;
+using Kifa.Tencent.Rpcs;
+using Xunit;
+
+namespace Kifa.Tencent.Tests;
+
+public class DanmuTests {
+    HttpClient httpClient = new HttpClient();
+
+    [Fact]
+    public void BaseDanmuRpcTest() {
+        var response = httpClient.Call(new BaseDanmuRpc("i0045u918s5"));
+        Assert.Equal(88, response.SegmentIndex.Count);
+        Assert.Equal("t/v1/2100000/2130000", response.SegmentIndex["2100000"].SegmentName);
+    }
+}
