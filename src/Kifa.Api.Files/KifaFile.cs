@@ -423,7 +423,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         }
     }
 
-    public void CacheFileToLocal() {
+    void CacheFileToLocal() {
         if (!LocalFile.Registered || !LocalFile.Exists()) {
             Logger.Debug($"Caching {this} to {LocalFile}...");
             LocalFile.Write(OpenRead());
@@ -432,7 +432,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         }
     }
 
-    public void RemoveLocalCacheFile() {
+    void RemoveLocalCacheFile() {
         if (UseCache && LocalFile.Exists()) {
             LocalFile.Delete();
             LocalFile.Unregister();
