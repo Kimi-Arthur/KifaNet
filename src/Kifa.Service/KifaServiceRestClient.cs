@@ -23,7 +23,9 @@ public class KifaServiceRestClient {
                 ClientCertificates = {
                     new X509Certificate2(ClientCertPath, ClientCertPassword)
                 }
-            })
+            }) {
+                Timeout = TimeSpan.FromMinutes(10)
+            }
             : new HttpClient();
 
     // Should probably be ending with `/api`.
