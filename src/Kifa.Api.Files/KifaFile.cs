@@ -102,6 +102,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
         FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+        if (UseCache) {
+            LocalFile = FileInfo?.Sha256 != null
+                ? new($"{LocalServer}/$/{FileInfo.Sha256}")
+                : new($"{LocalServer}{Id}");
+        }
 
         Client = GetClient(segments[0]);
 
@@ -133,7 +138,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public KifaFile Parent => new($"{Host}{ParentPath}");
 
-    public KifaFile LocalFile => new($"{LocalServer}{Id}");
+    KifaFile LocalFile { get; }
 
     // TODO: the fields here will bring inconsistency.
     public string BaseName { get; set; }
