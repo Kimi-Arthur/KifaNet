@@ -13,9 +13,9 @@ public class TencentDanmu {
     public required TimeSpan VideoTime { get; set; }
 
     internal static TencentDanmu Parse(SegmentDanmuRpc.Barrage barrage) {
-        var color = barrage.ContentStyle != null
+        var color = string.IsNullOrEmpty(barrage.ContentStyle)
             ? JsonConvert.DeserializeObject<ContentStyle>(barrage.ContentStyle,
-                KifaJsonSerializerSettings.Default)?.Color
+                KifaJsonSerializerSettings.Default)?.GradientColors[0]
             : null;
 
         return new TencentDanmu {
