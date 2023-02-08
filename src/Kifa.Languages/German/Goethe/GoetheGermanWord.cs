@@ -52,7 +52,7 @@ public class GoetheGermanWord : DataModel, WithModelId {
 
         if (word == null) {
             Logger.Warn($"Failed to find root word ({RootWord}) for {Id}.");
-            return null;
+            return Date.Zero;
         }
 
         Form ??= word.KeyForm;
