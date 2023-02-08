@@ -414,9 +414,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     TDataModel? Read(string id) {
         var data = ReadRaw(id);
         Logger.Trace($"Read: {data ?? "null"}");
-        return data == null
-            ? null
-            : JsonConvert.DeserializeObject<TDataModel>(data, KifaJsonSerializerSettings.Default);
+        try {
+            return data == null
+                ? null
+                : JsonConvert.DeserializeObject<TDataModel>(data,
+                    KifaJsonSerializerSettings.Default);
+        } catch (JsonReaderException ex) {
+            Logger.Error(ex, $"Failed to read {ModelId}/{Id}");
+            throw;
+        }
     }
 
     void Write(TDataModel data) {
