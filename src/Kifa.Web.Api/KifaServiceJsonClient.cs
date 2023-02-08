@@ -420,7 +420,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 : JsonConvert.DeserializeObject<TDataModel>(data,
                     KifaJsonSerializerSettings.Default);
         } catch (JsonReaderException ex) {
-            Logger.Error(ex, $"Failed to read {ModelId}/{Id}");
+            Logger.Error(ex, $"Failed to read {ModelId}/{id}");
             throw;
         }
     }
