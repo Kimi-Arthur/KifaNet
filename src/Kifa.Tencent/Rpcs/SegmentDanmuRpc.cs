@@ -6,20 +6,22 @@ sealed class SegmentDanmuRpc : KifaJsonParameterizedRpc<SegmentDanmuRpc.Response
     #region SegmentDanmuRpc.Response
 
     public class Response {
-        public List<BarrageList> BarrageList { get; set; }
+        public List<Barrage> BarrageList { get; set; }
     }
 
-    public class BarrageList {
+    public class Barrage {
         public string Id { get; set; }
         public long IsOp { get; set; }
         public string HeadUrl { get; set; }
-        public string TimeOffset { get; set; }
+        public long TimeOffset { get; set; }
         public string UpCount { get; set; }
         public string BubbleHead { get; set; }
         public string BubbleLevel { get; set; }
         public string BubbleId { get; set; }
         public long RickType { get; set; }
-        public string ContentStyle { get; set; }
+        
+        // Example: {"color":"ffffff","gradient_colors":["CD87FF","CD87FF"],"position":1}
+        public string? ContentStyle { get; set; }
         public long UserVipDegree { get; set; }
         public string CreateTime { get; set; }
         public string Content { get; set; }

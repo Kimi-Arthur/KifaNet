@@ -21,5 +21,8 @@ public class DanmuTests {
         Assert.Equal(600, response.BarrageList.Count);
         Assert.Equal("把心脏起搏器按停了",
             response.BarrageList.First(b => b.Id == "76561198061395137").Content);
+        Assert.Equal(
+            "{\"color\":\"ffffff\",\"gradient_colors\":[\"CD87FF\",\"CD87FF\"],\"position\":1}",
+            response.BarrageList.First(b => b.Id == "76561198061432944").ContentStyle);
     }
 }
