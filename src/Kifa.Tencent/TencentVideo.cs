@@ -12,7 +12,6 @@ public class TencentVideo {
 
         return info.SegmentIndex.Values.OrderBy(segment => int.Parse(segment.SegmentStart))
             .Select(segment => segment.SegmentName).SelectMany(segment => HttpClient
-                .Call(new SegmentDanmuRpc(videoId, segment)).BarrageList
-                .Select(TencentDanmu.Parse));
+                .Call(new SegmentDanmuRpc(videoId, segment)).BarrageList);
     }
 }

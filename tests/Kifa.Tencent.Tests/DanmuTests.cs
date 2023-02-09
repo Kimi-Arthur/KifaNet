@@ -32,20 +32,6 @@ public class DanmuTests {
     }
 
     [Fact]
-    public void ParseTest() {
-        var danmuList = httpClient.Call(new SegmentDanmuRpc("i0045u918s5", "t/v1/210000/240000"))
-            .BarrageList.Select(TencentDanmu.Parse).ToList();
-        Assert.Equal(600, danmuList.Count);
-        var danmu1 = danmuList.First(d => d.Text == "世界属于三体");
-        Assert.Equal("世界属于三体", danmu1.Text);
-        Assert.Equal(TimeSpan.FromSeconds(210), danmu1.VideoTime);
-        Assert.Null(danmu1.TextColor);
-
-        var danmu2 = danmuList.First(d => d.Text == "人类的命运，就在这纤细的两指之上");
-        Assert.Equal(Color.FromArgb(0xE0, 0xFF, 0x53, 0xFD), danmu2.TextColor);
-    }
-
-    [Fact]
     public void GetDanmuListTest() {
         var danmuList = TencentVideo.GetDanmuList("i0045u918s5");
         danmuList.Should().HaveCountGreaterThan(52200);
@@ -54,8 +40,8 @@ public class DanmuTests {
     [Fact]
     public void GenerateAssDialogTest() {
         var danmu1 = new TencentDanmu {
-            Text = "世界属于三体",
-            VideoTime = TimeSpan.FromSeconds(210),
+            Content = "世界属于三体",
+            TimeOffset = 210000,
         };
 
         danmu1.GenerateAssDialogue().Should().BeEquivalentTo(new AssDialogue {
@@ -71,9 +57,10 @@ public class DanmuTests {
             }
         });
         var danmu2 = new TencentDanmu {
-            Text = "人类的命运，就在这纤细的两指之上",
-            VideoTime = TimeSpan.FromSeconds(211),
-            TextColor = Color.FromArgb(0xE0, 0xCD, 0x87, 0xFF)
+            Content = "人类的命运，就在这纤细的两指之上",
+            TimeOffset = 211000,
+            ContentStyle =
+                "{\"color\":\"ffffff\",\"gradient_colors\":[\"cd87ff\",\"cd87ff\"],\"position\":1}"
         };
 
         danmu2.GenerateAssDialogue().Should().BeEquivalentTo(new AssDialogue {
