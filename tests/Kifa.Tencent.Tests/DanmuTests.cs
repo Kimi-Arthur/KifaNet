@@ -42,7 +42,7 @@ public class DanmuTests {
         Assert.Null(danmu1.TextColor);
 
         var danmu2 = danmuList.First(d => d.Text == "人类的命运，就在这纤细的两指之上");
-        Assert.Equal(Color.FromArgb(0xCD, 0x87, 0xFF), danmu2.TextColor);
+        Assert.Equal(Color.FromArgb(0xE0, 0xFF, 0x53, 0xFD), danmu2.TextColor);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class DanmuTests {
         var danmu2 = new TencentDanmu {
             Text = "人类的命运，就在这纤细的两指之上",
             VideoTime = TimeSpan.FromSeconds(211),
-            TextColor = Color.FromArgb(0xD0, 0xCD, 0x87, 0xFF)
+            TextColor = Color.FromArgb(0xE0, 0xCD, 0x87, 0xFF)
         };
 
         danmu2.GenerateAssDialogue().Should().BeEquivalentTo(new AssDialogue {
@@ -85,7 +85,7 @@ public class DanmuTests {
                     new AssDialogueControlTextElement {
                         Elements = new List<AssControlElement> {
                             new PrimaryColourStyle {
-                                Value = Color.FromArgb(0xD0, 0xCD, 0x87, 0xFF)
+                                Value = Color.FromArgb(0xE0, 0xCD, 0x87, 0xFF)
                             }
                         }
                     },
