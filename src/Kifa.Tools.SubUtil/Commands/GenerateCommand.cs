@@ -4,12 +4,14 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Kifa.IO;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
+using Kifa.Tencent;
+using Newtonsoft.Json;
+using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
@@ -68,6 +70,13 @@ class GenerateCommand : KifaFileCommand {
             PositionBottomComments(comments.dialogs
                 .Where(c => c.Style == AssStyle.BottomCommentStyle).OrderBy(c => c.Start).ToList());
             events.Events.AddRange(comments.dialogs);
+
+            var qqChats = GetTencentChats(file.Parent.GetFilePrefixed(SubtitlesPrefix),
+                file.BaseName);
+            if (qqChats.Count > 0) {
+                PositionNormalComments(qqChats[0].content.OrderBy(c => c.Start).ToList());
+                events.Events.AddRange(qqChats[0].content);
+            }
 
             document.Sections.Add(events);
 
@@ -214,7 +223,7 @@ class GenerateCommand : KifaFileCommand {
     static void AddFunction(List<AssDialogue> comments, Func<int, int, double> getOverlap,
         Func<int, int, AssDialogueTextElement> getFunction) {
         var rows = new List<int>();
-        var maxRows = 14;
+        var maxRows = 30;
         for (var i = 0; i < maxRows; i++) {
             rows.Add(-1);
         }
@@ -223,7 +232,7 @@ class GenerateCommand : KifaFileCommand {
         var totalMovement = 0.0;
         var totalBigMove = 0;
         for (var i = 0; i < comments.Count; i++) {
-            var movement = 1000.0;
+            var movement = 100000.0;
             var minRow = -1;
             for (var r = 0; r < maxRows; ++r) {
                 if (rows[r] >= 0) {
@@ -298,5 +307,17 @@ class GenerateCommand : KifaFileCommand {
         }
 
         return result;
+    }
+
+    static List<(string id, List<AssDialogue> content)> GetTencentChats(KifaFile parent,
+        string baseName) {
+        var result = new List<(string id, List<AssDialogue> content)>();
+
+        return parent.List(ignoreFiles: false, pattern: $"{baseName}*.json").Select(file => (
+                file.BaseName.Split('.').Last(),
+                JsonConvert.DeserializeObject<List<TencentDanmu>>(file.ReadAsString(),
+                    KifaJsonSerializerSettings.Default)!.Select(x => x.GenerateAssDialogue())
+                .ToList()))
+            .ToList();
     }
 }
