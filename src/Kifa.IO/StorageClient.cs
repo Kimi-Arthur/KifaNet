@@ -17,7 +17,7 @@ public abstract class StorageClient : IDisposable {
         => Enumerable.Empty<FileInformation>();
 
     public bool Exists(string path, long expectedLength = -1)
-        => expectedLength >= 0 ? Length(path) == 0 : Length(path) > 0;
+        => expectedLength >= 0 ? Length(path) == expectedLength : Length(path) > 0;
 
     public abstract long Length(string path);
 
