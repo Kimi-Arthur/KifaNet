@@ -306,7 +306,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             } else {
                 var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
                     .ToList();
-                Logger.Trace("Found existing files:");
+                Logger.Trace($"Found {fileInfos.Count} existing files:");
                 foreach (var f in fileInfos) {
                     Logger.Trace($"\t{f}");
                 }
