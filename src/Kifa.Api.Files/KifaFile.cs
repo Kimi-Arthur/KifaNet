@@ -300,11 +300,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             }
 
             if (file.Exists()) {
+                Logger.Trace($"Found existing file: {file}");
                 multi++;
                 files.Add((file.ToString().GetNaturalSortKey(), file));
             } else {
                 var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
                     .ToList();
+                Logger.Trace("Found existing files:");
+                foreach (var f in fileInfos) {
+                    Logger.Trace($"\t{f}");
+                }
+
                 multi = 2;
                 files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
             }
