@@ -229,7 +229,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
     public override string ToString() => $"{Host}{Path}";
 
-    public bool Exists() => Client.Exists(Path);
+    public bool Exists()
+        => FileInfo?.Size != null && FileFormat is RawFileFormat
+            ? Client.Exists(Path, FileInfo.Size.Value)
+            : Client.Exists(Path);
 
     public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
 

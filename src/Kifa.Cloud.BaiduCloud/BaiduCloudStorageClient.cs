@@ -411,22 +411,20 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override long Length(string path) {
-        while (true) {
-            try {
-                var responseObject = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
-                    new Dictionary<string, string> {
-                        ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                    }));
+        try {
+            var responseObject = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
+                new Dictionary<string, string> {
+                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
+                }));
 
-                if (responseObject["list"] == null) {
-                    return -1;
-                }
-
-                return (long) responseObject["list"][0]["size"];
-            } catch (Exception ex) {
-                Logger.Debug(ex, "Existence test failed");
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+            if (responseObject["list"] == null) {
+                return -1;
             }
+
+            return (long) responseObject["list"][0]["size"];
+        } catch (Exception ex) {
+            Logger.Debug(ex, "Existence test failed");
+            return -1;
         }
     }
 
