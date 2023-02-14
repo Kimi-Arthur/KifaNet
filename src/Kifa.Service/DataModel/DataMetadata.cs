@@ -44,8 +44,13 @@ public static class FreshnessMetadataExtensions {
         };
     }
 
+    // Cases when refresh is needed:
+    //   1. CurrentVersion < 0 = in development phase
+    //   2. data version is older than code version
+    //   3. FillByDefault and no refresh date set
+    //   4. Now is beyond the set refresh date
     public static bool NeedRefresh(this DataModel data)
-        => data.CurrentVersion > (data.Metadata?.Version ?? 0) ||
+        => data.CurrentVersion < 0 || data.CurrentVersion > (data.Metadata?.Version ?? 0) ||
            data.FillByDefault && data.Metadata?.Freshness?.NextRefresh == null ||
            data.Metadata?.Freshness?.NextRefresh + TimeSpan.FromSeconds(5) < DateTimeOffset.UtcNow;
 }
