@@ -85,7 +85,8 @@ public static class KifaConfigs {
         var properties = new Dictionary<string, PropertyInfo>();
         foreach (var t in assembly.GetTypes()) {
             // TODO: Temp workaround as KifaConfigs itself cannot be properly configured.
-            if (t.Namespace?.StartsWith("Kifa") ?? t.Namespace?.StartsWith("Mito") ?? false) {
+            if ((t.Namespace?.StartsWith("Kifa") ?? false) ||
+                (t.Namespace?.StartsWith("Mito") ?? false)) {
                 foreach (var p in t.GetProperties()) {
                     if (p.GetSetMethod()?.IsStatic == true) {
                         properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
