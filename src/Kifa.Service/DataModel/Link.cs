@@ -2,6 +2,12 @@ using System;
 
 namespace Kifa.Service;
 
+public class Link {
+    public static Link<TDataModel> From<TDataModel>(TDataModel data)
+        where TDataModel : DataModel, WithModelId, new()
+        => data;
+}
+
 // Unlimited linking not supported now.
 public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
     where TDataModel : DataModel, WithModelId, new() {
