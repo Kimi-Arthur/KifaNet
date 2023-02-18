@@ -1,6 +1,6 @@
 # tv_shows
-- Id: 狂飙
+- Id: "The Lord of the Rings: The Rings of Power"
 # Title: 苗翠花
-  TmdbId: 210757
-  Language: zh
-  PatternId: single_season
+  TmdbId: 84773
+  Language: en
+  PatternId: multi_season
