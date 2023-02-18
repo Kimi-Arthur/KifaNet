@@ -16,7 +16,7 @@ public static class StringExtensions {
     static readonly Dictionary<string, string> SafeCharacterMapping = new() {
         ["/"] = "／", // Must come first fot NormalizeFilePath.
         ["\\"] = "＼",
-        [":"] = "：",
+        [": "] = "：",
         ["|"] = "｜",
         ["?"] = "？",
         ["*"] = "＊",
