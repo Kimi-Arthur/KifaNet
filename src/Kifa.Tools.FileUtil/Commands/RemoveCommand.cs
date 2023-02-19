@@ -33,11 +33,6 @@ class RemoveCommand : KifaCommand {
     [Option('l', "link", HelpText = "Remove link only.")]
     public bool RemoveLinkOnly { get; set; }
 
-    [Option('f', "force",
-        HelpText =
-            "Remove all instances of the file, including file with different name and in cloud.")]
-    public bool ForceRemove { get; set; }
-
     public override int Execute() {
         FileNames = FileNames.ToList();
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
@@ -111,9 +106,11 @@ class RemoveCommand : KifaCommand {
         if (!RemoveLinkOnly) {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
+                var links = file.FileInfo.GetAllLinks();
+                var shouldRemoveOtherFiles = links.Count == 1;
 
                 var toRemove = file.Id == info.Id;
-                if (!toRemove && ForceRemove) {
+                if (!toRemove && shouldRemoveOtherFiles) {
                     toRemove = Confirm($"Confirm removing instance {file}, not matching file name");
                 }
 

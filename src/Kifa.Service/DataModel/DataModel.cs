@@ -55,7 +55,7 @@ public abstract class DataModel {
             ? new SortedSet<string> {
                 Id
             }
-            : new SortedSet<string>(Metadata.Linking.Links.Append(RealId!));
+            : new SortedSet<string>(Metadata.Linking.Links.Append(RealId));
 
     // Not finished
     public string Compare<TDataModel>(TDataModel other) {
