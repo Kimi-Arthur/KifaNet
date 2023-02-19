@@ -111,7 +111,9 @@ class RemoveCommand : KifaCommand {
 
                 var toRemove = file.Id == info.Id;
                 if (!toRemove && shouldRemoveOtherFiles) {
-                    toRemove = Confirm($"Confirm removing instance {file}, not matching file name");
+                    toRemove =
+                        Confirm(
+                            $"Confirm removing dangling instance {file}, not matching file name");
                 }
 
                 if (toRemove) {
