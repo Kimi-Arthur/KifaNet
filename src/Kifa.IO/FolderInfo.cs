@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NLog;
 
 namespace Kifa.IO;
@@ -10,6 +11,8 @@ public class FolderInfo {
     // Spec can be either storage client like "swiss", "google", or specific locations like
     // "local:server".
     public Dictionary<string, FileStat> Stats { get; set; } = new();
+
+    public long Missing => Stats[""].TotalSize * Stats.Count - Stats.Sum(s => s.Value.TotalSize);
 }
 
 public class FileStat {
