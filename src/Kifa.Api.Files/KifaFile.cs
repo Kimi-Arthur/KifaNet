@@ -288,10 +288,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                    .Any(segment => segment.StartsWith(prefix))) ||
            IgnoredFiles.IsMatch(logicalPath);
 
-    public static (bool isMultiple, List<KifaFile> files) FindExistingFiles(
-        IEnumerable<string> sources, string? prefix = null, bool recursive = true,
-        string pattern = "*", bool fullFile = false, bool ignoreFiles = true) {
-        var multi = 0;
+    public static List<KifaFile> FindExistingFiles(IEnumerable<string> sources,
+        string? prefix = null, bool recursive = true, string pattern = "*", bool fullFile = false,
+        bool ignoreFiles = true) {
         var files = new List<(string sortKey, KifaFile value)>();
         foreach (var fileName in sources) {
             var file = new KifaFile(fileName, simpleMode: !fullFile);
@@ -301,7 +300,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
 
             if (file.Exists()) {
                 Logger.Trace($"Found existing file: {file}");
-                multi++;
                 files.Add((file.ToString().GetNaturalSortKey(), file));
             } else {
                 var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
@@ -311,21 +309,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                     Logger.Trace($"\t{f}");
                 }
 
-                multi = 2;
                 files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
             }
         }
 
         files.Sort();
 
-        return (multi > 1,
-            files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList());
+        return files.Select(f => fullFile ? new KifaFile(f.value.ToString()) : f.value).ToList();
     }
 
-    public static (bool isMultiple, List<KifaFile> files) FindPotentialFiles(
-        IEnumerable<string> sources, string? prefix = null, bool recursive = true,
-        bool fullFile = false, bool ignoreFiles = true) {
-        var multi = 0;
+    public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
+        string? prefix = null, bool recursive = true, bool fullFile = false,
+        bool ignoreFiles = true) {
         var files = new List<(string sortKey, string value)>();
         foreach (var fileName in sources) {
             var fileInfo = new KifaFile(fileName);
@@ -337,18 +332,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             var host = fileInfo.Host;
 
             var thisFolder = FileInformation.Client.ListFolder(path, recursive);
-            multi = 2;
             files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, fileInfo.Id))
                 .Select(f => (f.GetNaturalSortKey(), host + f)));
         }
 
         files.Sort();
 
-        return (multi > 1, files.Select(f => new KifaFile(f.value)).ToList());
+        return files.Select(f => new KifaFile(f.value)).ToList();
     }
 
-    public static (bool isMultiple, List<KifaFile> files) FindAllFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, string pattern = "*", bool fullFile = false,
+    public static List<KifaFile> FindAllFiles(IEnumerable<string> sources, string? prefix = null,
+        bool recursive = true, string pattern = "*", bool fullFile = false,
         bool ignoreFiles = true) {
         var sourceFiles = sources.ToList();
         var existingFiles = FindExistingFiles(sourceFiles, prefix, recursive, pattern: pattern,
@@ -356,10 +350,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
         var potentialFiles = FindPotentialFiles(sourceFiles, prefix, recursive, fullFile: fullFile,
             ignoreFiles: ignoreFiles);
         var allFiles = new HashSet<KifaFile>();
-        allFiles.UnionWith(existingFiles.files);
-        allFiles.UnionWith(potentialFiles.files);
-        return (existingFiles.isMultiple || potentialFiles.isMultiple,
-            allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList());
+        allFiles.UnionWith(existingFiles);
+        allFiles.UnionWith(potentialFiles);
+        return allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList();
     }
 
     public static KifaFile? FindOne(List<KifaFile> files)

@@ -34,7 +34,7 @@ public class CreatePdfMangaCommand : KifaCommand {
     public string IgnoreExistingDoublePages { get; set; } = "";
 
     public override int Execute() {
-        var allDoublePages = KifaFile.FindAllFiles(DoublePages.Split(",")).files;
+        var allDoublePages = KifaFile.FindAllFiles(DoublePages.Split(","));
 
         foreach (var folder in Folders) {
             var folderId = new KifaFile(folder).ToString();
@@ -45,7 +45,7 @@ public class CreatePdfMangaCommand : KifaCommand {
             document.Info.Title = title;
 
             XImage? doublePage = null;
-            foreach (var file in KifaFile.FindAllFiles(Folders).files) {
+            foreach (var file in KifaFile.FindAllFiles(Folders)) {
                 var image = XImage.FromFile(file.GetLocalPath());
 
                 if (allDoublePages.Contains(file)) {

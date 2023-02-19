@@ -69,7 +69,7 @@ class RemoveCommand : KifaCommand {
             }
 
             // We support relative paths or FileInformation ids.
-            var (_, foundFiles) = KifaFile.FindAllFiles(FileNames, fullFile: true);
+            var foundFiles = KifaFile.FindAllFiles(FileNames, fullFile: true);
             if (foundFiles.Count > 0) {
                 // We will assume relative paths are used here.
                 foreach (var foundFile in foundFiles) {
@@ -90,7 +90,7 @@ class RemoveCommand : KifaCommand {
             return 1;
         }
 
-        var (_, localFiles) = KifaFile.FindExistingFiles(FileNames);
+        var localFiles = KifaFile.FindExistingFiles(FileNames);
 
         foreach (var file in localFiles) {
             Console.WriteLine(file);

@@ -35,7 +35,7 @@ class GetCommand : KifaCommand {
             : new HashSet<string>(IgnoreAlreadyUploaded.Split(","));
 
     public override int Execute() {
-        var (_, files) = KifaFile.FindPotentialFiles(FileNames);
+        var files = KifaFile.FindPotentialFiles(FileNames);
         foreach (var file in files) {
             Console.WriteLine(file);
         }

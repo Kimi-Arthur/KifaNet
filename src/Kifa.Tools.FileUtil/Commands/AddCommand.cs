@@ -21,21 +21,19 @@ class AddCommand : KifaCommand {
     public bool ForceRecheck { get; set; } = false;
 
     public override int Execute() {
-        var (multi, files) = KifaFile.FindExistingFiles(FileNames);
-        if (multi) {
-            foreach (var file in files) {
-                Console.WriteLine(file);
-            }
-
-            Console.Write($"Confirm adding the {files.Count} files above?");
-            Console.ReadLine();
+        var files = KifaFile.FindExistingFiles(FileNames);
+        foreach (var file in files) {
+            Console.WriteLine(file);
         }
+
+        Console.Write($"Confirm adding the {files.Count} files above?");
+        Console.ReadLine();
 
         foreach (var file in files) {
             ExecuteItem(file.ToString(), () => AddFile(new KifaFile(file.ToString())));
         }
 
-        (_, files) = KifaFile.FindPotentialFiles(FileNames);
+        files = KifaFile.FindPotentialFiles(FileNames);
         var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists())
             .ToList();
 

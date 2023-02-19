@@ -22,7 +22,7 @@ class CleanCommand : KifaCommand {
     }
 
     void RemoveMissingFiles() {
-        var (_, files) = KifaFile.FindPotentialFiles(FileNames, fullFile: true);
+        var files = KifaFile.FindPotentialFiles(FileNames, fullFile: true);
         var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
         if (filesToRemove.Count == 0) {
@@ -44,7 +44,7 @@ class CleanCommand : KifaCommand {
     }
 
     void DeduplicateFiles() {
-        var (_, files) = KifaFile.FindExistingFiles(FileNames, fullFile: true);
+        var files = KifaFile.FindExistingFiles(FileNames, fullFile: true);
         foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Sha256}")) {
             var target = sameFiles.First();
             foreach (var file in sameFiles.Skip(1)) {
