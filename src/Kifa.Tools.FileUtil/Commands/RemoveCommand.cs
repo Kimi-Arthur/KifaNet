@@ -107,13 +107,19 @@ class RemoveCommand : KifaCommand {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
                 var links = file.FileInfo.GetAllLinks();
-                var shouldRemoveOtherFiles = links.Count == 1;
+                links.Remove(info.Id);
+                var shouldRemoveOtherFiles = links.Count == 0;
 
                 var toRemove = file.Id == info.Id;
-                if (!toRemove && shouldRemoveOtherFiles) {
-                    toRemove =
-                        Confirm(
-                            $"Confirm removing dangling instance {file}, not matching file name");
+                if (!toRemove) {
+                    if (shouldRemoveOtherFiles) {
+                        toRemove =
+                            Confirm(
+                                $"Confirm removing dangling instance {file}, not matching file name");
+                    } else {
+                        Logger.Debug(
+                            $"File {file} is not removed as there are other file entries, like {links.First()}");
+                    }
                 }
 
                 if (toRemove) {
