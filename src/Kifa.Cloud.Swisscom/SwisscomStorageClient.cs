@@ -19,7 +19,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
 
     public static APIList APIList { get; set; }
 
-    public SwisscomAccount Account => SwisscomAccount.Client.Get(AccountId);
+    public SwisscomAccount? Account => SwisscomAccount.Client.Get(AccountId);
 
     public override string Type => "swiss";
 
@@ -46,10 +46,15 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override long Length(string path) {
+        var account = Account;
+        if (account?.AccessToken == null) {
+            return -1;
+        }
+
         using var response = client.Send(APIList.GetFileInfo.GetRequest(
             new Dictionary<string, string> {
                 ["file_id"] = GetFileId(path),
-                ["access_token"] = Account.AccessToken
+                ["access_token"] = account.AccessToken
             }));
 
         if (response.IsSuccessStatusCode) {
