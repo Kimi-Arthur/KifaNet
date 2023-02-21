@@ -96,16 +96,9 @@ class GenerateCommand : KifaFileCommand {
             assFile.Write(document.ToString());
         }
 
+        // Subtitles are provided in other folders.
         if (actualFile.Exists()) {
-            if (actualFile.CalculateInfo(FileProperties.Sha256).Sha256 ==
-                assFile.CalculateInfo(FileProperties.Sha256).Sha256) {
-                Logger.Debug($"Target file {actualFile} already linked.");
-            } else {
-                actualFile.Delete();
-                assFile.Copy(actualFile);
-            }
-        } else {
-            assFile.Copy(actualFile);
+            actualFile.Delete();
         }
 
         return 0;
