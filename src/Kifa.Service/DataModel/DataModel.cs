@@ -53,7 +53,7 @@ public abstract class DataModel {
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null
             ? new SortedSet<string> {
-                Id
+                RealId
             }
             : new SortedSet<string>(Metadata.Linking.Links.Append(RealId));
 
