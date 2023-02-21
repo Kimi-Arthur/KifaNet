@@ -33,11 +33,6 @@ class RemoveCommand : KifaCommand {
     [Option('l', "link", HelpText = "Remove link only.")]
     public bool RemoveLinkOnly { get; set; }
 
-    [Option('f', "force",
-        HelpText =
-            "Remove all instances of the file, including file with different name and in cloud.")]
-    public bool ForceRemove { get; set; }
-
     public override int Execute() {
         FileNames = FileNames.ToList();
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
@@ -69,7 +64,7 @@ class RemoveCommand : KifaCommand {
             }
 
             // We support relative paths or FileInformation ids.
-            var (_, foundFiles) = KifaFile.FindAllFiles(FileNames, fullFile: true);
+            var foundFiles = KifaFile.FindAllFiles(FileNames, fullFile: true);
             if (foundFiles.Count > 0) {
                 // We will assume relative paths are used here.
                 foreach (var foundFile in foundFiles) {
@@ -90,7 +85,7 @@ class RemoveCommand : KifaCommand {
             return 1;
         }
 
-        var (_, localFiles) = KifaFile.FindExistingFiles(FileNames);
+        var localFiles = KifaFile.FindExistingFiles(FileNames);
 
         foreach (var file in localFiles) {
             Console.WriteLine(file);
@@ -111,10 +106,14 @@ class RemoveCommand : KifaCommand {
         if (!RemoveLinkOnly) {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
+                var links = file.FileInfo.GetAllLinks();
+                var shouldRemoveOtherFiles = links.Count == 1;
 
                 var toRemove = file.Id == info.Id;
-                if (!toRemove && ForceRemove) {
-                    toRemove = Confirm($"Confirm removing instance {file}, not matching file name");
+                if (!toRemove && shouldRemoveOtherFiles) {
+                    toRemove =
+                        Confirm(
+                            $"Confirm removing dangling instance {file}, not matching file name");
                 }
 
                 if (toRemove) {

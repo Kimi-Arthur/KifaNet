@@ -17,7 +17,7 @@ class TrashCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute() {
-        var (_, foundFiles) = KifaFile.FindAllFiles(FileNames);
+        var foundFiles = KifaFile.FindAllFiles(FileNames);
         var fileIds = foundFiles.Select(f => f.Id).ToList();
         foreach (var fileId in fileIds) {
             Console.WriteLine(fileId);

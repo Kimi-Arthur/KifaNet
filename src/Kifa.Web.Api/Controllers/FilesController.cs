@@ -132,7 +132,8 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             }
         }
 
-        return folders.Values.OrderBy(f => f.Folder.GetNaturalSortKey()).ToList();
+        return folders.Values.OrderByDescending(f => f.Missing)
+            .ThenBy(f => f.Folder.GetNaturalSortKey()).ToList();
     }
 
     static FolderInfo CreateNewFolder(string folderName, List<string> targets) {

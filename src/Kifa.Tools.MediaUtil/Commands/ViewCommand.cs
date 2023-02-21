@@ -49,7 +49,7 @@ public class ViewCommand : KifaCommand {
     };
 
     public override int Execute() {
-        var (_, files) = KifaFile.FindExistingFiles(FileNames, recursive: false);
+        var files = KifaFile.FindExistingFiles(FileNames, recursive: false);
         foreach (var file in files.Where(f => ImageExtensions.Contains(f.Extension.ToLower()))) {
             Console.WriteLine(file);
             Console.WriteLine(

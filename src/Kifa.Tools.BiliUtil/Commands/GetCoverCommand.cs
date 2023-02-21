@@ -17,7 +17,7 @@ public class GetCoverCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute() {
-        var (_, foundFiles) = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4");
+        var foundFiles = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4");
         foreach (var file in foundFiles) {
             Console.WriteLine(file);
         }

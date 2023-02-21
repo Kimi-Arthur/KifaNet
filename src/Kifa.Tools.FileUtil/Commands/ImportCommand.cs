@@ -100,8 +100,8 @@ class ImportCommand : KifaCommand {
             var validEpisodes = episodes.Where(e => !e.Matched).ToList();
             try {
                 var selected = SelectOne(validEpisodes,
-                    e => $"{file} => {series.Format(e.Season, e.Episode).NormalizeFilePath()}{suffix}",
-                    "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
+                    e => $"{file} => {series.Format(e.Season, e.Episode)}{suffix}", "mapping",
+                    startingIndex: 1, supportsSpecial: true, reverse: true);
                 if (selected == null) {
                     Logger.Warn($"Ignored {file}.");
                     continue;
@@ -110,16 +110,15 @@ class ImportCommand : KifaCommand {
                 var (choice, _, special) = selected.Value;
                 if (special) {
                     var newName = Confirm($"Confirm linking {file} to:",
-                        $"{series.Format(choice.Season, choice.Episode).NormalizeFilePath()}{suffix}");
+                        $"{series.Format(choice.Season, choice.Episode)}{suffix}");
                     FileInformation.Client.Link(file, newName);
-                    if (Confirm(
-                            $"Remove info item {series.Format(choice.Season, choice.Episode).NormalizeFilePath()}?",
+                    if (Confirm($"Remove info item {series.Format(choice.Season, choice.Episode)}?",
                             false)) {
                         MarkMatched(episodes, choice.Season, choice.Episode);
                     }
                 } else {
                     FileInformation.Client.Link(file,
-                        series.Format(choice.Season, choice.Episode).NormalizeFilePath() + suffix);
+                        series.Format(choice.Season, choice.Episode) + suffix);
                     MarkMatched(episodes, choice.Season, choice.Episode);
                 }
             } catch (InvalidChoiceException ex) {

@@ -32,8 +32,12 @@ class CopyCommand : KifaCommand {
     }
 
     static void LinkLocalFile(KifaFile file1, KifaFile file2) {
+        file1.Add();
         LinkFile(file1.Id, file2.Id);
         file1.Copy(file2);
+
+        // Skip full check if the linking is from local file. 
+        file2.Register(file1.IsLocal);
         file2.Add();
     }
 

@@ -40,19 +40,17 @@ class UploadCommand : KifaCommand {
         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)
             .Select(CloudTarget.Parse).ToList();
 
-        var (multi, files) = KifaFile.FindExistingFiles(FileNames);
-        if (multi) {
-            foreach (var file in files) {
-                Console.WriteLine(file);
-            }
-
-            var verifyText = QuickMode ? " without verification" : "";
-            var downloadText = DownloadLocal ? " and download to local" : "";
-            var removalText = DeleteSource ? " and remove source afterwards" : "";
-            Console.Write(
-                $"Confirm uploading the {files.Count} files above to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?");
-            Console.ReadLine();
+        var files = KifaFile.FindExistingFiles(FileNames);
+        foreach (var file in files) {
+            Console.WriteLine(file);
         }
+
+        var verifyText = QuickMode ? " without verification" : "";
+        var downloadText = DownloadLocal ? " and download to local" : "";
+        var removalText = DeleteSource ? " and remove source afterwards" : "";
+        Console.Write(
+            $"Confirm uploading the {files.Count} files above to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?");
+        Console.ReadLine();
 
         foreach (var file in files) {
             ExecuteItem(file.ToString(),

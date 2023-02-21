@@ -30,7 +30,7 @@ class ExtractCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute() {
-        var (_, foundFiles) = KifaFile.FindExistingFiles(FileNames);
+        var foundFiles = KifaFile.FindExistingFiles(FileNames);
         foundFiles = foundFiles.Where(f => !Common.SubtitleExtensions.Contains(f.Extension))
             .ToList();
 

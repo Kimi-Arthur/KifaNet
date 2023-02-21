@@ -435,6 +435,7 @@ public class BaiduCloudStorageClient : StorageClient {
                     ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
                 })))["list"][0];
             return new FileInformation {
+                Id = path,
                 Size = (long) data["size"]
             };
         } catch (Exception) {

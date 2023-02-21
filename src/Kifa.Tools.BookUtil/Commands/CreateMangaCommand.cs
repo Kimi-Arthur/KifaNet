@@ -24,7 +24,7 @@ public class CreateMangaCommand : KifaCommand {
         var section = "";
         var right = true;
 
-        foreach (var file in KifaFile.FindAllFiles(FileNames).files.Skip(1)) {
+        foreach (var file in KifaFile.FindAllFiles(FileNames).Skip(1)) {
             var newSection =
                 file.Parent.ToString().Split("/", StringSplitOptions.RemoveEmptyEntries)[^1]
                     .Split(" ", 2)[^1];
