@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -34,6 +35,9 @@ class UploadCommand : KifaCommand {
     [Option('l', "download-local", HelpText = "Download the file to local.")]
     public bool DownloadLocal { get; set; } = false;
 
+    [Option('s', "skip-uploaded", HelpText = "Skip potentially uploaded files.")]
+    public bool SkipPotentiallyUploadFiles { get; set; } = false;
+
     public override int Execute() {
         var targetsFromFlag = Targets.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -59,9 +63,18 @@ class UploadCommand : KifaCommand {
         }
 
         var pendingFiles = PopPendingResults().Select(item => new KifaFile(item.item));
-        foreach (var file in pendingFiles) {
-            ExecuteItem(file.ToString(),
-                () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode));
+        if (SkipPotentiallyUploadFiles) {
+            foreach (var file in pendingFiles) {
+                ExecuteItem(file.ToString(), () => new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = "File skipped as it's potentially uploaded."
+                });
+            }
+        } else {
+            foreach (var file in pendingFiles) {
+                ExecuteItem(file.ToString(),
+                    () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode));
+            }
         }
 
         // TODO: Quick mode hint text is not printed. Maybe a better approach later.
