@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Kifa.Cloud.MegaNz;
+using Kifa.Configs;
 using Kifa.IO;
-using Kifa.Service;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Kifa.Cloud.MegaNz.Tests;
 
@@ -82,6 +81,7 @@ public class MegaNzStorageClientTests {
 
     [ClassInitialize]
     public static void ClassInitialize(TestContext ctx) {
+        KifaConfigs.Init();
         DataCleanup();
     }
 
@@ -91,12 +91,12 @@ public class MegaNzStorageClientTests {
     static void DataCleanup() {
         var client = GetStorageClient();
 
-        var files = new[] {
-            "/Test/2010-11-25.bin_bak",
-            "/Test/2010-11-25.bin_1",
-            "/Test/2010-11-25.bin_2",
-            "/Test/new/upload.bin",
-            "/Test/new/"
+        var files = new string[] {
+            // "/Test/2010-11-25.bin_bak",
+            // "/Test/2010-11-25.bin_1",
+            // "/Test/2010-11-25.bin_2",
+            // "/Test/new/upload.bin",
+            // "/Test/new/"
         };
 
         foreach (var f in files) {
