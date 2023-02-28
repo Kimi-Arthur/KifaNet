@@ -2,11 +2,13 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using NLog;
 
 namespace Kifa.IO.StorageClients;
 
 public class WebStorageClient : StorageClient {
     readonly HttpClient httpClient = GetHttpClient();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static HttpClient GetHttpClient() {
         var client = new HttpClient();
@@ -25,7 +27,7 @@ public class WebStorageClient : StorageClient {
         => httpClient.GetContentLength(GetUrl(path)).GetValueOrDefault(0);
 
     public override void Delete(string path) {
-        throw new NotImplementedException();
+        Logger.Warn($"Deleting {path} is ignored.");
     }
 
     public override void Touch(string path) {
