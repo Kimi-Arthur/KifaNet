@@ -206,7 +206,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             data.Id = id;
         }
 
-        Logger.Trace($"Got {data}");
+        Logger.Trace($"Got {ModelId}/{id}");
         return data;
     }
 
@@ -271,7 +271,6 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     // It will convert to the target object to write as the links don't need to be updated anyway.
     // It will also remove the parts that only make sense for the links.
     void CleanupForWriting(TDataModel data) {
-        Logger.Trace($"Before cleanup: {data}");
         data.Id = data.RealId;
         var linking = data.Metadata?.Linking;
         if (linking != null) {
@@ -292,8 +291,6 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         if (data.Metadata?.IsEmpty == true) {
             data.Metadata = null;
         }
-
-        Logger.Trace($"After cleanup: {data}");
     }
 
     public override KifaActionResult Delete(string id) {
