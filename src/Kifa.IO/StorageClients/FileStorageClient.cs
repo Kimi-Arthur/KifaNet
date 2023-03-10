@@ -283,9 +283,18 @@ public class FileStorageClient : StorageClient {
         var blockSize = DefaultBlockSize;
         EnsureParent(tempPath);
 
-        // Workaround as suggested: https://github.com/dotnet/runtime/issues/42790#issuecomment-700362617
-        using (var fs = new FileStream(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite,
-                   FileShare.None)) {
+        var options = !File.Exists(tempPath)
+            ? new FileStreamOptions {
+                Mode = FileMode.CreateNew,
+                Access = FileAccess.Write,
+                PreallocationSize = stream.Length
+            }
+            : new FileStreamOptions {
+                Mode = FileMode.Open,
+                Access = FileAccess.Write
+            };
+
+        using (var fs = new FileStream(tempPath, options)) {
             fs.Seek(fs.Length.RoundDown(blockSize), SeekOrigin.Begin);
             if (fs.Position != 0) {
                 stream.Seek(fs.Position, SeekOrigin.Begin);
