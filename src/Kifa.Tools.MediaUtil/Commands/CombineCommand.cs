@@ -23,6 +23,9 @@ public class CombineCommand : KifaCommand {
     [Option('o', "output", HelpText = "Output file name.")]
     public string? OutputFile { get; set; }
 
+    [Option('f', "first-audio", HelpText = "Only extract first audio track.")]
+    public bool FirstAudio { get; set; } = false;
+
     [Option('m', "add-chapters", HelpText = "Add Chapters.")]
     public bool AddChapters { get; set; } = false;
 
@@ -48,7 +51,10 @@ public class CombineCommand : KifaCommand {
         arguments.AddMetaData(GetMetadata(files));
 
         var processor = arguments.OutputToFile(target.GetLocalPath(), addArguments: options => {
-            options.WithArgument(new CustomArgument("-map 0 -c copy"));
+            options.WithArgument(new CustomArgument(FirstAudio
+                ? "-map 0:v -map 0:a:0 -c copy"
+                : "-map 0 -c copy"));
+
             if (Cover != null) {
                 options.WithCustomArgument("-map 1 -disposition:v:1 attached_pic");
             }
