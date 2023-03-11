@@ -78,33 +78,37 @@ public class GermanWord : DataModel, WithModelId {
             return $"<{original}>";
         }
 
-        if (nounForms[Case.Nominative].TryGetValue(Number.Plural, out var plural)) {
-            if (!nounForms[Case.Nominative].ContainsKey(Number.Singular)) {
-                return "(Pl.)";
-            }
-
-            if (plural.StartsWith(original)) {
-                // Add a suffix.
-                return $"-{plural[original.Length..]}";
-            }
-
-            // Add a suffix and umlaut.
-            var umlaut = ' ';
-            foreach (var (ochar, pchar) in original.Zip(plural)) {
-                if (ochar != pchar) {
-                    if (UmlautMapping.GetValueOrDefault(ochar) != pchar || umlaut != ' ') {
-                        // Only full text in this special case
-                        return plural;
-                    }
-
-                    umlaut = pchar;
-                }
-            }
-
-            return umlaut == ' ' ? plural : $"{umlaut}-{plural[original.Length..]}";
+        if (!nounForms[Case.Nominative].TryGetValue(Number.Plural, out var plural)) {
+            return "(Sg.)";
         }
 
-        return "(Sg.)";
+        if (!nounForms[Case.Nominative].ContainsKey(Number.Singular)) {
+            return "(Pl.)";
+        }
+
+        return SimplifyForm(original, plural!);
+    }
+
+    static string SimplifyForm(string original, string form) {
+        if (form.StartsWith(original)) {
+            // Add a suffix.
+            return $"-{form[original.Length..]}";
+        }
+
+        // Add a suffix and umlaut.
+        var umlaut = ' ';
+        foreach (var (ochar, pchar) in original.Zip(form)) {
+            if (ochar != pchar) {
+                if (UmlautMapping.GetValueOrDefault(ochar) != pchar || umlaut != ' ') {
+                    // Only full text in this special case
+                    return form;
+                }
+
+                umlaut = pchar;
+            }
+        }
+
+        return umlaut == ' ' ? form : $"{umlaut}-{form[original.Length..]}";
     }
 
     public string GetNounFormWithArticle(Case formCase, Number formNumber)
