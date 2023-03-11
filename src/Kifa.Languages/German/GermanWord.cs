@@ -46,10 +46,15 @@ public class GermanWord : DataModel, WithModelId {
 
     public NounForms? NounForms { get; set; }
 
+    public AdjectiveForms? AdjectiveForms { get; set; }
+
     public string? KeyForm
         => Type switch {
             WordType.Verb => VerbForms == null ? null : GetKeyVerbForm(Id, VerbForms),
-            WordType.Noun => NounForms == null ? null : GetSimplifiedPlural(Id, NounForms),
+            WordType.Noun => NounForms == null ? null : GetKeyNounForm(Id, NounForms),
+            WordType.Adjective or WordType.Adverb => AdjectiveForms == null
+                ? null
+                : GetKeyAdjectiveForm(Id, AdjectiveForms),
             _ => null
         };
 
@@ -73,7 +78,7 @@ public class GermanWord : DataModel, WithModelId {
         { 'U', 'Ü' }
     };
 
-    static string GetSimplifiedPlural(string original, NounForms nounForms) {
+    static string GetKeyNounForm(string original, NounForms nounForms) {
         if (!nounForms.ContainsKey(Case.Nominative)) {
             return $"<{original}>";
         }
@@ -87,6 +92,16 @@ public class GermanWord : DataModel, WithModelId {
         }
 
         return SimplifyForm(original, plural!);
+    }
+
+    static string? GetKeyAdjectiveForm(string id, AdjectiveForms forms) {
+        if (forms[AdjectiveFormType.Komparativ] == null ||
+            forms[AdjectiveFormType.Superlativ] == null) {
+            return null;
+        }
+
+        return SimplifyForm(id, forms[AdjectiveFormType.Komparativ]!) + ", am " +
+               SimplifyForm(id, forms[AdjectiveFormType.Superlativ]!);
     }
 
     static string SimplifyForm(string original, string form) {
