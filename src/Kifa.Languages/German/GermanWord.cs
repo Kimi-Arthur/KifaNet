@@ -39,19 +39,19 @@ public class GermanWord : DataModel, WithModelId {
 
     public HashSet<string>? Images { get; set; }
 
-    public string? KeyForm
-        => Type switch {
-            WordType.Verb => VerbForms == null ? null : GetKeyVerbForm(Id, VerbForms),
-            WordType.Noun => NounForms == null ? null : GetSimplifiedPlural(Id, NounForms),
-            _ => null
-        };
-
     // Shared for any meaning.
     public VerbForms? VerbForms { get; set; }
 
     public Gender? Gender { get; set; }
 
     public NounForms? NounForms { get; set; }
+
+    public string? KeyForm
+        => Type switch {
+            WordType.Verb => VerbForms == null ? null : GetKeyVerbForm(Id, VerbForms),
+            WordType.Noun => NounForms == null ? null : GetSimplifiedPlural(Id, NounForms),
+            _ => null
+        };
 
     static string GetKeyVerbForm(string id, VerbForms verbForms) {
         if (!verbForms.ContainsKey(VerbFormType.IndicativePresent) ||
