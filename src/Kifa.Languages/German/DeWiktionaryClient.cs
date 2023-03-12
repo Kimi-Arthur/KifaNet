@@ -114,12 +114,12 @@ public class DeWiktionaryClient {
                         };
 
                         var komparativ = node.SelectNodes(".//tr[2]/td[2]/a[1]");
-                        word.AdjectiveForms[AdjectiveFormType.Komparativ] = komparativ.Count > 0
+                        word.AdjectiveForms[AdjectiveFormType.Komparativ] = komparativ?.Count > 0
                             ? komparativ[0].InnerTextTrimmed()
                             : null;
 
                         var superlativ = node.SelectNodes(".//tr[2]/td[3]/a[1]");
-                        word.AdjectiveForms[AdjectiveFormType.Superlativ] = superlativ.Count > 0
+                        word.AdjectiveForms[AdjectiveFormType.Superlativ] = superlativ?.Count > 0
                             ? superlativ[0].InnerTextTrimmed()
                             : null;
                     }
