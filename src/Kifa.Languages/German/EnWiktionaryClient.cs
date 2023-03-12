@@ -172,10 +172,6 @@ public class EnWiktionaryClient {
             word.Meanings.Add(meaning);
         }
 
-        if (word.Meanings.Count == 0) {
-            word.Meanings = null;
-        }
-
         return word;
     }
 
