@@ -49,7 +49,10 @@ public class GermanWord : DataModel, WithModelId {
     public AdjectiveForms? AdjectiveForms { get; set; }
 
     public string? KeyForm
-        => Type switch {
+        => Meanings.Select(m => GetKeyFormForType(m.Type)).ExceptNull().FirstOrDefault();
+
+    string? GetKeyFormForType(WordType? type)
+        => type switch {
             WordType.Verb => VerbForms == null ? null : GetKeyVerbForm(Id, VerbForms),
             WordType.Noun => NounForms == null ? null : GetKeyNounForm(Id, NounForms),
             WordType.Adjective or WordType.Adverb => AdjectiveForms == null
@@ -239,6 +242,12 @@ public class GermanWord : DataModel, WithModelId {
         } else {
             Gender = null;
             NounForms = null;
+        }
+
+        if (Meanings?.Any(m => m.Type is WordType.Adjective or WordType.Adverb) == true) {
+            AdjectiveForms = words.wiki.AdjectiveForms;
+        } else {
+            AdjectiveForms = null;
         }
 
         Etymology ??= dwds.Etymology;

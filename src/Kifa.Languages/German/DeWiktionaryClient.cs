@@ -105,6 +105,25 @@ public class DeWiktionaryClient {
                         }
                     }
 
+                    if (word.AdjectiveForms == null && node.Name == "table" &&
+                        node.HasClass("wikitable") &&
+                        wordType is WordType.Adjective or WordType.Adverb) {
+                        word.AdjectiveForms = new AdjectiveForms {
+                            [AdjectiveFormType.Positiv] =
+                                node.SelectSingleNode(".//tr[2]/td[1]").InnerText.Trim()
+                        };
+
+                        var komparativ = node.SelectNodes(".//tr[2]/td[2]/a[1]");
+                        word.AdjectiveForms[AdjectiveFormType.Komparativ] = komparativ.Count > 0
+                            ? komparativ[0].InnerTextTrimmed()
+                            : null;
+
+                        var superlativ = node.SelectNodes(".//tr[2]/td[3]/a[1]");
+                        word.AdjectiveForms[AdjectiveFormType.Superlativ] = superlativ.Count > 0
+                            ? superlativ[0].InnerTextTrimmed()
+                            : null;
+                    }
+
                     if (word.NounForms == null && node.Name == "table" &&
                         node.HasClass("wikitable") && wordType == WordType.Noun) {
                         var extraHeaderCount = node.SelectNodes(".//tr[1]/td")?.Count > 0 ? 7 : 0;
