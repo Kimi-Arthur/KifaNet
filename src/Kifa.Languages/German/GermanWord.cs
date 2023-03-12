@@ -12,7 +12,7 @@ public class GermanWord : DataModel, WithModelId {
 
     public static string ModelId => "languages/german/words";
 
-    public override int CurrentVersion => 14;
+    public override int CurrentVersion => 15;
 
     public static KifaServiceClient<GermanWord> Client { get; set; } =
         new KifaServiceRestClient<GermanWord>();
@@ -103,8 +103,7 @@ public class GermanWord : DataModel, WithModelId {
             return null;
         }
 
-        return SimplifyForm(id, forms[AdjectiveFormType.Komparativ]!) + ", am " +
-               SimplifyForm(id, forms[AdjectiveFormType.Superlativ]!);
+        return $"{forms[AdjectiveFormType.Komparativ]}, am {forms[AdjectiveFormType.Superlativ]}";
     }
 
     static string SimplifyForm(string original, string form) {
