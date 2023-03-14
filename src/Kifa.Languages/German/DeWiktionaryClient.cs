@@ -59,7 +59,6 @@ public class DeWiktionaryClient {
         var inDeutsch = false;
         var inSection = false;
         var inAudio = false;
-        var wordType = WordType.Unknown;
         var word = new GermanWord {
             Id = wordId
         };
@@ -74,8 +73,8 @@ public class DeWiktionaryClient {
                     // Word type info here.
                     var wordTypeNode = node.SelectSingleNode(".//span[@class='mw-headline']");
                     if (wordTypeNode != null) {
-                        wordType = ParseWordType(wordTypeNode.Id);
-                        switch (wordType) {
+                        word.Type = ParseWordType(wordTypeNode.Id);
+                        switch (word.Type) {
                             case WordType.Verb:
                                 if (word.VerbForms == null) {
                                     FillVerbForms(word);
@@ -107,7 +106,7 @@ public class DeWiktionaryClient {
 
                     if (word.AdjectiveForms == null && node.Name == "table" &&
                         node.HasClass("wikitable") &&
-                        wordType is WordType.Adjective or WordType.Adverb) {
+                        word.Type is WordType.Adjective or WordType.Adverb) {
                         word.AdjectiveForms = new AdjectiveForms {
                             [AdjectiveFormType.Positiv] =
                                 node.SelectSingleNode(".//tr[2]/td[1]").InnerText.Trim()
@@ -125,7 +124,7 @@ public class DeWiktionaryClient {
                     }
 
                     if (word.NounForms == null && node.Name == "table" &&
-                        node.HasClass("wikitable") && wordType == WordType.Noun) {
+                        node.HasClass("wikitable") && word.Type == WordType.Noun) {
                         var extraHeaderCount = node.SelectNodes(".//tr[1]/td")?.Count > 0 ? 7 : 0;
 
                         var selector = new Func<int, int, string?>((row, column) => {
