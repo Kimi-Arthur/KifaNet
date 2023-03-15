@@ -12,7 +12,7 @@ public class GermanWord : DataModel, WithModelId {
 
     public static string ModelId => "languages/german/words";
 
-    public override int CurrentVersion => 15;
+    public override int CurrentVersion => 16;
 
     public static KifaServiceClient<GermanWord> Client { get; set; } =
         new KifaServiceRestClient<GermanWord>();
