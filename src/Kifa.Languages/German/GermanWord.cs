@@ -12,7 +12,7 @@ public class GermanWord : DataModel, WithModelId {
 
     public static string ModelId => "languages/german/words";
 
-    public override int CurrentVersion => 16;
+    public override int CurrentVersion => 17;
 
     public static KifaServiceClient<GermanWord> Client { get; set; } =
         new KifaServiceRestClient<GermanWord>();
@@ -228,7 +228,7 @@ public class GermanWord : DataModel, WithModelId {
         Meanings = enWiki.Meanings;
 
         Meaning ??= Meanings?.FirstOrDefault()?.Translation;
-        Type ??= Meanings?.FirstOrDefault()?.Type ?? wiki.Type;
+        Type = Meanings?.FirstOrDefault()?.Type ?? wiki.Type;
 
         if (Meanings?.Any(m => m.Type == WordType.Verb) == true || wiki.Type == WordType.Verb) {
             VerbForms = words.wiki.VerbForms;
