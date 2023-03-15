@@ -179,7 +179,7 @@ public class MemriseClient : IDisposable {
         existingRow.FillAudios();
 
         var audios = rootWord.GetTopPronunciationAudioLinks()
-            .Where(link => !WithDifferentArticle(link, word.Id)).Take(3).ToList();
+            .Where(link => !IsApplicable(link, word.Id)).Take(3).ToList();
         Logger.Debug($"Will upload {audios.Count} audios:");
         foreach (var audio in audios) {
             Logger.Debug(audio);
@@ -206,7 +206,11 @@ public class MemriseClient : IDisposable {
     static readonly Regex WordArticlePattern = new Regex("^(der|die|das) .*");
     static readonly Regex LinkArticlePattern = new Regex("/(der|die|das)_.*");
 
-    static bool WithDifferentArticle(string link, string goetheGermanWord) {
+    static bool IsApplicable(string link, string goetheGermanWord) {
+        if (link.Split("/")[^1].StartsWith("De-at-")) {
+            return false;
+        }
+
         var wordArticle = WordArticlePattern.Match(goetheGermanWord);
         if (!wordArticle.Success) {
             return false;
