@@ -12,7 +12,7 @@ public class GermanWord : DataModel, WithModelId {
 
     public static string ModelId => "languages/german/words";
 
-    public override int CurrentVersion => 17;
+    public override int CurrentVersion => 18;
 
     public static KifaServiceClient<GermanWord> Client { get; set; } =
         new KifaServiceRestClient<GermanWord>();
@@ -251,7 +251,9 @@ public class GermanWord : DataModel, WithModelId {
             AdjectiveForms = null;
         }
 
-        Etymology ??= dwds.Etymology;
+        if (Etymology.Count == 0) {
+            Etymology.AddRange(dwds.Etymology);
+        }
     }
 
     public IEnumerable<string> GetTopPronunciationAudioLinks()
