@@ -17,7 +17,7 @@ namespace Kifa.Memrise;
 public class MemriseClient : IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static readonly string LineBreak = new(' ', 100);
+    static readonly string LineBreak = new(' ', 200);
 
     public static string WebDriverUrl { get; set; }
     public static string Cookies { get; set; }
@@ -25,7 +25,7 @@ public class MemriseClient : IDisposable {
 
     // Whether to fill empty fields or not. This is useful to fix column order.
     public bool FillEmpty { get; set; } = false;
-    
+
     public MemriseCourse Course { get; init; }
 
     HttpClient? httpClient;
