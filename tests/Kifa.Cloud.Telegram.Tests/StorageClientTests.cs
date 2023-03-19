@@ -64,6 +64,15 @@ public class StorageClientTests {
         FileInformation.GetInformation(data, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
     }
 
+    [Fact]
+    public void SearchTest() {
+        var client = GetClient();
+        var results = client
+            .Messages_Search<InputMessagesFilterDocument>(InputPeer.Self, "/Test/new/upload.bin")
+            .Result;
+        results.Messages.Should().HaveCount(3);
+    }
+
     static Client GetClient() {
         KifaConfigs.Init();
         var client = new Client(TelegramStorageClient.ApiId, TelegramStorageClient.ApiHash,
