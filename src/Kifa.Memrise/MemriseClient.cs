@@ -24,7 +24,7 @@ public class MemriseClient : IDisposable {
     public static string CsrfToken { get; set; }
 
     // Whether to fill empty fields or not. This is useful to fix column order.
-    public bool FillEmpty { get; set; } = false;
+    public bool FillEmpty { get; set; }
 
     public MemriseCourse Course { get; init; }
 
@@ -338,7 +338,8 @@ public class MemriseClient : IDisposable {
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
         var updatedFields = 0;
         foreach (var (dataKey, newValue) in newData) {
-            if (!SameText(originalData.Data.GetValueOrDefault(dataKey), newValue)) {
+            if (!SameText(originalData.Data.GetValueOrDefault(dataKey), newValue) ||
+                FillEmpty && newValue == "") {
                 HttpClient.Call(new UpdateWordRpc(Course.DatabaseUrl, originalData.Id, dataKey,
                     newValue));
                 updatedFields++;
