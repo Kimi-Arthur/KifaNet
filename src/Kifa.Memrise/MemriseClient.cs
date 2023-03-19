@@ -23,6 +23,9 @@ public class MemriseClient : IDisposable {
     public static string Cookies { get; set; }
     public static string CsrfToken { get; set; }
 
+    // Whether to fill empty fields or not. This is useful to fix column order.
+    public bool FillEmpty { get; set; } = false;
+    
     public MemriseCourse Course { get; init; }
 
     HttpClient? httpClient;

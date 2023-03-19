@@ -34,6 +34,10 @@ public class ImportWordListCommand : KifaCommand {
 
     #endregion
 
+    [Option('f', "fill-empty", Default = false,
+        HelpText = "Whether to force fill empty fields or not. Useful to fix column order.")]
+    public bool FillEmpty { get; set; } = false;
+
     public override int Execute() {
         var memriseCourseClient = MemriseCourse.Client;
         var course = memriseCourseClient.Get(CourseName);
@@ -44,7 +48,8 @@ public class ImportWordListCommand : KifaCommand {
         }
 
         using var memriseClient = new MemriseClient {
-            Course = course
+            Course = course,
+            FillEmpty = FillEmpty
         };
 
         foreach (var wordListId in WordListIds) {
