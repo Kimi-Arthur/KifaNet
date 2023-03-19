@@ -27,4 +27,10 @@
       <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="data.bin">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

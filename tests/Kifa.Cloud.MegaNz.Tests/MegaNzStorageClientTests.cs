@@ -9,7 +9,7 @@ namespace Kifa.Cloud.MegaNz.Tests;
 
 [TestClass]
 public class MegaNzStorageClientTests {
-    readonly string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+    const string FileSha256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
     [TestMethod]
     public void ExistsTest() {
@@ -25,7 +25,7 @@ public class MegaNzStorageClientTests {
         var client = GetStorageClient();
 
         using var s = client.OpenRead("/Test/2010-11-25.bin");
-        Assert.AreEqual(FileSHA256,
+        Assert.AreEqual(FileSha256,
             FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
     }
 
@@ -38,7 +38,7 @@ public class MegaNzStorageClientTests {
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
         using (var s = client.OpenRead("/Test/new/upload.bin")) {
-            Assert.AreEqual(FileSHA256,
+            Assert.AreEqual(FileSha256,
                 FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
@@ -52,7 +52,7 @@ public class MegaNzStorageClientTests {
 
         client.Copy("/Test/2010-11-25.bin", "/Test/2010-11-25.bin_bak");
         using (var s = client.OpenRead("/Test/2010-11-25.bin_bak")) {
-            Assert.AreEqual(FileSHA256,
+            Assert.AreEqual(FileSha256,
                 FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
@@ -72,7 +72,7 @@ public class MegaNzStorageClientTests {
         Assert.IsTrue(client.Exists("/Test/2010-11-25.bin_2"));
 
         using (var s = client.OpenRead("/Test/2010-11-25.bin_2")) {
-            Assert.AreEqual(FileSHA256,
+            Assert.AreEqual(FileSha256,
                 FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 

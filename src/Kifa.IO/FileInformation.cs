@@ -286,7 +286,9 @@ public class FileInformation : DataModel, WithModelId {
     }
 
     public static FileInformation GetInformation(Stream stream, FileProperties requiredProperties)
-        => new FileInformation().AddProperties(stream, requiredProperties);
+        => new FileInformation {
+            Id = ""
+        }.AddProperties(stream, requiredProperties);
 
     public static FileInformation GetInformation(string path, FileProperties requiredProperties)
         => GetInformation(File.OpenRead(path), requiredProperties);
