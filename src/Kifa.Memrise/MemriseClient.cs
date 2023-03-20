@@ -337,7 +337,7 @@ public class MemriseClient : IDisposable {
 
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
         var updatedFields = 0;
-        foreach (var (dataKey, newValue) in newData) {
+        foreach (var (dataKey, newValue) in newData.OrderBy(kv => int.Parse(kv.Key))) {
             var oldValue = originalData.Data.GetValueOrDefault(dataKey);
             if (!SameText(oldValue, newValue) || FillEmpty && newValue == "") {
                 Logger.Debug($"Updating {dataKey} from '{oldValue}' to '{newValue}'");
