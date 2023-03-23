@@ -64,9 +64,9 @@ public class GoetheGermanWord : DataModel, WithModelId {
             : string.Join("; ",
                 cambridge.Entries
                     .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
-                    .ExceptNull().Where(x => x != "").Distinct());
+                    .ExceptNull().Where(x => x != "").Distinct()).Trim();
 
-        Wiki = string.Join("; ", word.Meanings.Select(m => m.Translation));
+        Wiki = string.Join("; ", word.Meanings.Select(m => m.Translation)).Trim();
 
         return Date.Zero;
     }
