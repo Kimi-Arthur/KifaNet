@@ -408,26 +408,26 @@ public class MemriseClient : IDisposable {
             { Course.Columns["English"], word.Meaning }
         };
 
+        data[Course.Columns["Form"]] = word.Form ?? "";
+
         data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
             ? string.Join(LineBreak,
                 baseWord.Etymology.Select(segment
                     => segment + ": " + (WordClient.Get(segment)?.Meaning ?? "<unknown>")))
             : "";
 
-        data[Course.Columns["Form"]] = word.Form ?? "";
-
         data[Course.Columns["Pronunciation"]] =
             baseWord?.Pronunciation != null ? $"[{baseWord.Pronunciation}]" : "";
-
-        data[Course.Columns["Cambridge"]] = word.Cambridge ?? "";
-
-        data[Course.Columns["Wiki"]] = word.Wiki ?? "";
 
         data[Course.Columns["Examples"]] =
             word.Examples?.Count > 0 && !word.Examples[0].StartsWith("example")
                 ? string.Join(LineBreak,
                     word.Examples.Select((example, index) => $"{index + 1}. {example}"))
                 : "";
+
+        data[Course.Columns["Cambridge"]] = word.Cambridge ?? "";
+
+        data[Course.Columns["Wiki"]] = word.Wiki ?? "";
 
         return data;
     }
