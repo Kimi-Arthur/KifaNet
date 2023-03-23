@@ -214,16 +214,16 @@ public class GermanWord : DataModel, WithModelId {
 
         PronunciationAudioLinks.Clear();
 
-        if (duden?.PronunciationAudioLinks is { Count: > 0 }) {
+        if (duden?.PronunciationAudioLinks[Source.Duden].Count > 0) {
             PronunciationAudioLinks[Source.Duden] = duden.PronunciationAudioLinks[Source.Duden];
         }
 
-        if (wiki?.PronunciationAudioLinks is { Count: > 0 }) {
+        if (wiki?.PronunciationAudioLinks.Count > 0) {
             PronunciationAudioLinks[Source.Wiktionary] =
                 wiki.PronunciationAudioLinks[Source.Wiktionary];
         }
 
-        if (dwds?.AudioLinks is { Count: > 0 }) {
+        if (dwds?.AudioLinks.Count > 0) {
             PronunciationAudioLinks[Source.Dwds] = dwds.AudioLinks;
         }
 
