@@ -35,7 +35,7 @@ public class GermanWord : DataModel, WithModelId {
                PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
                PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
 
-    public Dictionary<Source, HashSet<string>>? PronunciationAudioLinks { get; set; }
+    public Dictionary<Source, HashSet<string>> PronunciationAudioLinks { get; set; } = new();
 
     public HashSet<string>? Images { get; set; }
 
@@ -180,7 +180,7 @@ public class GermanWord : DataModel, WithModelId {
             _ => null
         };
 
-    protected (GermanWord wiki, GermanWord enWiki, GermanWord duden, DwdsGermanWord? dwds)
+    protected (GermanWord? wiki, GermanWord? enWiki, GermanWord? duden, DwdsGermanWord? dwds)
         GetWords() {
         var wiki = new GermanWord();
         try {
@@ -210,57 +210,53 @@ public class GermanWord : DataModel, WithModelId {
     }
 
     protected void FillWithData(
-        (GermanWord wiki, GermanWord enWiki, GermanWord duden, DwdsGermanWord? dwds) words) {
+        (GermanWord? wiki, GermanWord? enWiki, GermanWord? duden, DwdsGermanWord? dwds) words) {
         var (wiki, enWiki, duden, dwds) = words;
-        Pronunciation = wiki.Pronunciation;
+        Pronunciation = wiki?.Pronunciation;
 
-        PronunciationAudioLinks = new List<GermanWord> {
-                duden,
-                wiki
-            }.Select(word => word.PronunciationAudioLinks).ExceptNull()
-            .SelectMany(pronunciationLinks => pronunciationLinks)
-            .ToDictionary(item => item.Key, item => item.Value);
+        if (duden?.PronunciationAudioLinks is { Count: > 0 }) {
+            PronunciationAudioLinks[Source.Duden] = duden.PronunciationAudioLinks[Source.Duden];
+        }
+
+        if (wiki?.PronunciationAudioLinks is { Count: > 0 }) {
+            PronunciationAudioLinks[Source.Wiktionary] =
+                wiki.PronunciationAudioLinks[Source.Wiktionary];
+        }
 
         if (dwds?.AudioLinks is { Count: > 0 }) {
             PronunciationAudioLinks[Source.Dwds] = dwds.AudioLinks;
         }
 
-        Meanings = enWiki.Meanings;
+        Meanings = enWiki?.Meanings ?? new List<Meaning>();
 
-        Meaning ??= Meanings?.FirstOrDefault()?.Translation;
-        Type = Meanings?.FirstOrDefault()?.Type ?? wiki.Type;
+        Meaning ??= Meanings.FirstOrDefault()?.Translation;
+        Type = Meanings.FirstOrDefault()?.Type ?? wiki?.Type;
 
-        if (Meanings?.Any(m => m.Type == WordType.Verb) == true || wiki.Type == WordType.Verb) {
-            VerbForms = words.wiki.VerbForms;
-        } else {
-            VerbForms = null;
-        }
+        VerbForms = Meanings.Any(m => m.Type == WordType.Verb) || wiki?.Type == WordType.Verb
+            ? words.wiki?.VerbForms
+            : null;
 
-        if (Meanings?.Any(m => m.Type == WordType.Noun) == true || wiki.Type == WordType.Noun) {
-            Gender = words.wiki.Gender;
-            NounForms = words.wiki.NounForms;
+        if (Meanings.Any(m => m.Type == WordType.Noun) || wiki.Type == WordType.Noun) {
+            Gender = words.wiki?.Gender;
+            NounForms = words.wiki?.NounForms;
         } else {
             Gender = null;
             NounForms = null;
         }
 
-        if (Meanings?.Any(m => m.Type is WordType.Adjective or WordType.Adverb) == true ||
-            wiki.Type is WordType.Adjective or WordType.Adverb) {
-            AdjectiveForms = words.wiki.AdjectiveForms;
-        } else {
-            AdjectiveForms = null;
-        }
+        AdjectiveForms = Meanings.Any(m => m.Type is WordType.Adjective or WordType.Adverb) ||
+                         wiki?.Type is WordType.Adjective or WordType.Adverb
+            ? words.wiki?.AdjectiveForms
+            : null;
 
-        if (Etymology.Count == 0) {
+        if (Etymology.Count == 0 && dwds?.Etymology is { Count: > 0 }) {
             Etymology.AddRange(dwds.Etymology);
         }
     }
 
     public IEnumerable<string> GetTopPronunciationAudioLinks()
-        => PronunciationAudioLinks == null
-            ? Enumerable.Empty<string>()
-            : PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>())
-                .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden,
-                    new HashSet<string>())).Concat(PronunciationAudioLinks.GetValueOrDefault(
-                    Source.Wiktionary, new HashSet<string>()));
+        => PronunciationAudioLinks.GetValueOrDefault(Source.Dwds, new HashSet<string>())
+            .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Duden, new HashSet<string>()))
+            .Concat(PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary,
+                new HashSet<string>()));
 }
