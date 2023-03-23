@@ -283,15 +283,18 @@ public class FileStorageClient : StorageClient {
         var blockSize = DefaultBlockSize;
         EnsureParent(tempPath);
 
+        // FileShare.None is used so that file is locked when writing.
         var options = !File.Exists(tempPath)
             ? new FileStreamOptions {
                 Mode = FileMode.CreateNew,
                 Access = FileAccess.Write,
-                PreallocationSize = stream.Length
+                PreallocationSize = stream.Length,
+                Share = FileShare.None
             }
             : new FileStreamOptions {
                 Mode = FileMode.Open,
-                Access = FileAccess.Write
+                Access = FileAccess.Write,
+                Share = FileShare.None
             };
 
         using (var fs = new FileStream(tempPath, options)) {

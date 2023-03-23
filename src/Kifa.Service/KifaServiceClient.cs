@@ -32,26 +32,22 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     public abstract SortedDictionary<string, TDataModel> List();
     public abstract TDataModel? Get(string id, bool refresh = false);
 
-    public virtual List<TDataModel?> Get(List<string> ids)
-        => ids.AsParallel().Select(id => Get(id)).ToList();
+    public virtual List<TDataModel?> Get(List<string> ids) => ids.Select(id => Get(id)).ToList();
 
     public abstract KifaActionResult Set(TDataModel data);
 
     public virtual KifaActionResult Set(List<TDataModel> data)
-        => new KifaBatchActionResult().AddRange(data.AsParallel()
-            .Select(item => (item.Id, Set(item))));
+        => new KifaBatchActionResult().AddRange(data.Select(item => (item.Id, Set(item))));
 
     public abstract KifaActionResult Update(TDataModel data);
 
     public virtual KifaActionResult Update(List<TDataModel> data)
-        => new KifaBatchActionResult().AddRange(data.AsParallel()
-            .Select(item => (item.Id, Update(item))));
+        => new KifaBatchActionResult().AddRange(data.Select(item => (item.Id, Update(item))));
 
     public abstract KifaActionResult Delete(string id);
 
     public virtual KifaActionResult Delete(List<string> ids)
-        => new KifaBatchActionResult().AddRange(ids.AsParallel()
-            .Select(item => (item, Delete(item))));
+        => new KifaBatchActionResult().AddRange(ids.Select(item => (item, Delete(item))));
 
     public abstract KifaActionResult Link(string targetId, string linkId);
 }

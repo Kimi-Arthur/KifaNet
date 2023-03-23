@@ -17,11 +17,14 @@ namespace Kifa.Memrise;
 public class MemriseClient : IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static readonly string LineBreak = new(' ', 100);
+    static readonly string LineBreak = new(' ', 200);
 
     public static string WebDriverUrl { get; set; }
     public static string Cookies { get; set; }
     public static string CsrfToken { get; set; }
+
+    // Whether to fill empty fields or not. This is useful to fix column order.
+    public bool FillEmpty { get; set; }
 
     public MemriseCourse Course { get; init; }
 
@@ -179,7 +182,7 @@ public class MemriseClient : IDisposable {
         existingRow.FillAudios();
 
         var audios = rootWord.GetTopPronunciationAudioLinks()
-            .Where(link => !WithDifferentArticle(link, word.Id)).Take(3).ToList();
+            .Where(link => !IsApplicable(link, word.Id)).Take(3).ToList();
         Logger.Debug($"Will upload {audios.Count} audios:");
         foreach (var audio in audios) {
             Logger.Debug(audio);
@@ -206,7 +209,11 @@ public class MemriseClient : IDisposable {
     static readonly Regex WordArticlePattern = new Regex("^(der|die|das) .*");
     static readonly Regex LinkArticlePattern = new Regex("/(der|die|das)_.*");
 
-    static bool WithDifferentArticle(string link, string goetheGermanWord) {
+    static bool IsApplicable(string link, string goetheGermanWord) {
+        if (link.Split("/")[^1].StartsWith("De-at-")) {
+            return false;
+        }
+
         var wordArticle = WordArticlePattern.Match(goetheGermanWord);
         if (!wordArticle.Success) {
             return false;
@@ -330,8 +337,10 @@ public class MemriseClient : IDisposable {
 
     int FillRow(MemriseWord originalData, Dictionary<string, string> newData) {
         var updatedFields = 0;
-        foreach (var (dataKey, newValue) in newData) {
-            if (!SameText(originalData.Data.GetValueOrDefault(dataKey), newValue)) {
+        foreach (var (dataKey, newValue) in newData.OrderBy(kv => int.Parse(kv.Key))) {
+            var oldValue = originalData.Data.GetValueOrDefault(dataKey);
+            if (!SameText(oldValue, newValue) || FillEmpty && newValue == "") {
+                Logger.Debug($"Updating {dataKey} from '{oldValue}' to '{newValue}'");
                 HttpClient.Call(new UpdateWordRpc(Course.DatabaseUrl, originalData.Id, dataKey,
                     newValue));
                 updatedFields++;

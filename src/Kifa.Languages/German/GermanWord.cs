@@ -12,7 +12,7 @@ public class GermanWord : DataModel, WithModelId {
 
     public static string ModelId => "languages/german/words";
 
-    public override int CurrentVersion => 15;
+    public override int CurrentVersion => 18;
 
     public static KifaServiceClient<GermanWord> Client { get; set; } =
         new KifaServiceRestClient<GermanWord>();
@@ -49,7 +49,8 @@ public class GermanWord : DataModel, WithModelId {
     public AdjectiveForms? AdjectiveForms { get; set; }
 
     public string? KeyForm
-        => Meanings.Select(m => GetKeyFormForType(m.Type)).ExceptNull().FirstOrDefault();
+        => Meanings.Select(m => GetKeyFormForType(m.Type)).ExceptNull()
+            .FirstOrDefault(GetKeyFormForType(Type));
 
     string? GetKeyFormForType(WordType? type)
         => type switch {
@@ -227,15 +228,15 @@ public class GermanWord : DataModel, WithModelId {
         Meanings = enWiki.Meanings;
 
         Meaning ??= Meanings?.FirstOrDefault()?.Translation;
-        Type ??= Meanings?.FirstOrDefault()?.Type ?? WordType.Unknown;
+        Type = Meanings?.FirstOrDefault()?.Type ?? wiki.Type;
 
-        if (Meanings?.Any(m => m.Type == WordType.Verb) == true) {
+        if (Meanings?.Any(m => m.Type == WordType.Verb) == true || wiki.Type == WordType.Verb) {
             VerbForms = words.wiki.VerbForms;
         } else {
             VerbForms = null;
         }
 
-        if (Meanings?.Any(m => m.Type == WordType.Noun) == true) {
+        if (Meanings?.Any(m => m.Type == WordType.Noun) == true || wiki.Type == WordType.Noun) {
             Gender = words.wiki.Gender;
             NounForms = words.wiki.NounForms;
         } else {
@@ -243,13 +244,16 @@ public class GermanWord : DataModel, WithModelId {
             NounForms = null;
         }
 
-        if (Meanings?.Any(m => m.Type is WordType.Adjective or WordType.Adverb) == true) {
+        if (Meanings?.Any(m => m.Type is WordType.Adjective or WordType.Adverb) == true ||
+            wiki.Type is WordType.Adjective or WordType.Adverb) {
             AdjectiveForms = words.wiki.AdjectiveForms;
         } else {
             AdjectiveForms = null;
         }
 
-        Etymology ??= dwds.Etymology;
+        if (Etymology.Count == 0) {
+            Etymology.AddRange(dwds.Etymology);
+        }
     }
 
     public IEnumerable<string> GetTopPronunciationAudioLinks()
