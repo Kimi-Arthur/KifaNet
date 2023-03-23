@@ -28,12 +28,10 @@ public class GermanWord : DataModel, WithModelId {
     public string? Pronunciation { get; set; }
 
     public string? PronunciationAudioLink
-        => PronunciationAudioLinks == null
-            ? null
-            : (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
-               PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
-               PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
-               PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
+        => (PronunciationAudioLinks.GetValueOrDefault(Source.Dwds) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Duden) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Wiktionary) ??
+            PronunciationAudioLinks.GetValueOrDefault(Source.Pons))?.FirstOrDefault();
 
     public Dictionary<Source, HashSet<string>> PronunciationAudioLinks { get; set; } = new();
 
@@ -213,6 +211,8 @@ public class GermanWord : DataModel, WithModelId {
         (GermanWord? wiki, GermanWord? enWiki, GermanWord? duden, DwdsGermanWord? dwds) words) {
         var (wiki, enWiki, duden, dwds) = words;
         Pronunciation = wiki?.Pronunciation;
+
+        PronunciationAudioLinks.Clear();
 
         if (duden?.PronunciationAudioLinks is { Count: > 0 }) {
             PronunciationAudioLinks[Source.Duden] = duden.PronunciationAudioLinks[Source.Duden];
