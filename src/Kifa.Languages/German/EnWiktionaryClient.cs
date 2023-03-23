@@ -174,7 +174,7 @@ public class EnWiktionaryClient {
     static string GetLineWithoutNotes(Node line) {
         return Normalize(string.Join("",
             line.EnumChildren().Select(c
-                => c is Template template && template.Name.ToPlainText() == "l"
+                => c is Template template && template.Name.ToPlainText() is "l" or "place"
                     ? GetText(c)
                     : c.ToPlainText())));
     }
@@ -190,6 +190,7 @@ public class EnWiktionaryClient {
             var templateName = template.Name.ToPlainText();
             switch (templateName) {
                 case "l":
+                case "place":
                     return template.Arguments.Last().Value.ToPlainText();
                 case "lb":
                     return
