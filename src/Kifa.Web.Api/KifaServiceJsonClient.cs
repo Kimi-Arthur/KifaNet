@@ -122,14 +122,19 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     public override TDataModel? Get(string id, bool refresh = false) {
         lock (GetLock(id)) {
-            var data = Retrieve(id);
+            try {
+                var data = Retrieve(id);
 
-            if (Fill(ref data, id, refresh)) {
-                WriteTarget(data.Clone());
+                if (Fill(ref data, id, refresh)) {
+                    WriteTarget(data.Clone());
+                }
+
+                // TODO: Not sure...
+                return Retrieve(id);
+            } catch (Exception ex) {
+                Logger.Error(ex, $"Failed to get {id}.");
+                return null;
             }
-
-            // TODO: Not sure...
-            return Retrieve(id);
         }
     }
 
