@@ -14,18 +14,6 @@ public class StorageClientTests {
     const string FileSha256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
 
     [Fact]
-    public void SetupSessionTest() {
-        KifaConfigs.Init();
-        var client = new Client(TelegramStorageClient.ApiId, TelegramStorageClient.ApiHash,
-            TelegramStorageClient.SessionFilePath);
-        if (client.Login(TelegramStorageClient.Phone).Result == "verification_code") {
-            client.Login("xxxxx");
-        }
-
-        Assert.Null(client.Login(TelegramStorageClient.Phone).Result);
-    }
-
-    [Fact]
     public void UploadFileTest() {
         var client = GetClient();
 
@@ -75,9 +63,12 @@ public class StorageClientTests {
 
     static Client GetClient() {
         KifaConfigs.Init();
-        var client = new Client(TelegramStorageClient.ApiId, TelegramStorageClient.ApiHash,
-            TelegramStorageClient.SessionFilePath);
-        Assert.Null(client.Login(TelegramStorageClient.Phone).Result);
-        return client;
+        var client = new TelegramStorageClient {
+            CellId = "Test"
+        };
+
+        client.EnsureLoggedIn();
+
+        return client.Client;
     }
 }

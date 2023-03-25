@@ -1,55 +1,27 @@
 ﻿using System;
 using System.IO;
 using Kifa.IO;
+using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
-public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
-    #region public late static long ApiId { get; set; }
+public class TelegramStorageClient : StorageClient {
+    #region public late static string SessionsFolder { get; set; }
 
-    static int? apiId;
+    static string? sessionsFolder;
 
-    public static int ApiId {
-        get => Late.Get(apiId);
-        set => Late.Set(ref apiId, value);
+    public static string SessionsFolder {
+        get => Late.Get(sessionsFolder);
+        set => Late.Set(ref sessionsFolder, value);
     }
 
     #endregion
 
-    #region public late static string ApiHash { get; set; }
+    public required string CellId { get; init; }
 
-    static string? apiHash;
+    public TelegramStorageCell? Cell { get; set; }
 
-    public static string ApiHash {
-        get => Late.Get(apiHash);
-        set => Late.Set(ref apiHash, value);
-    }
-
-    #endregion
-
-    #region public late static string SessionFilePath { get; set; }
-
-    static string? sessionFilePath;
-
-    public static string SessionFilePath {
-        get => Late.Get(sessionFilePath);
-        set => Late.Set(ref sessionFilePath, value);
-    }
-
-    #endregion
-
-    #region public late static string Phone { get; set; }
-
-    static string? phone;
-
-    public static string Phone {
-        get => Late.Get(phone);
-        set => Late.Set(ref phone, value);
-    }
-
-    #endregion
-
-    public static StorageClient Create(string spec) => throw new NotImplementedException();
+    public Client? Client { get; set; }
 
     public override long Length(string path) {
         return 0;
@@ -71,4 +43,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public override string Type { get; }
     public override string Id { get; }
+
+    public void EnsureLoggedIn() {
+        Cell ??= TelegramStorageCell.Client.Get(CellId)!;
+        Client ??= new Client(Cell.ApiId, Cell.ApiHash, $"{SessionsFolder}/{Cell.Id}.session");
+
+        var result = Client.Login(Cell.Phone).Result;
+        if (result != null) {
+            throw new DriveNotFoundException(
+                $"Telegram drive {Cell.Id} is not accessible. Requesting {result}.");
+        }
+    }
 }
