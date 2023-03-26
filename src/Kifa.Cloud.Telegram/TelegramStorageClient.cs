@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Kifa.IO;
+using TL;
 using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
@@ -22,6 +23,8 @@ public class TelegramStorageClient : StorageClient {
     public TelegramStorageCell? Cell { get; set; }
 
     public Client? Client { get; set; }
+
+    public InputPeer? Channel { get; set; }
 
     public override long Length(string path) {
         return 0;
@@ -55,5 +58,7 @@ public class TelegramStorageClient : StorageClient {
             throw new DriveNotFoundException(
                 $"Telegram drive {Cell.Id} is not accessible. Requesting {result}.");
         }
+
+        Channel ??= Client.Messages_GetAllChats().Result.chats[long.Parse(Cell.ChannelId)];
     }
 }

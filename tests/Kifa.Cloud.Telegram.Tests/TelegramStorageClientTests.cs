@@ -32,7 +32,7 @@ public class TelegramStorageClientTests {
 
     [Fact]
     public void UploadFileTest() {
-        var client = GetClient();
+        var (client, channel) = GetClient();
 
         using var data = File.OpenRead("data.bin");
         var part1 = new byte[PartSize];
@@ -41,22 +41,20 @@ public class TelegramStorageClientTests {
         data.Read(part2).Should().Be(PartSize);
 
         var fileId = Random.Shared.NextInt64();
-        // 1781350860424745705
 
         client.Upload_SaveBigFilePart(fileId, 0, 2, part1).Result.Should().BeTrue();
         client.Upload_SaveBigFilePart(fileId, 1, 2, part2).Result.Should().BeTrue();
-        var result = client.SendMediaAsync(InputPeer.Self, "/Test/new/upload.bin",
-            new InputFileBig {
-                id = fileId,
-                parts = 2,
-                name = "/Test/new/upload.bin"
-            }).Result;
+        var result = client.SendMediaAsync(channel, "/Test/new/upload.bin", new InputFileBig {
+            id = fileId,
+            parts = 2,
+            name = "/Test/new/upload.bin"
+        }).Result;
         result.Should().NotBeNull();
     }
 
     [Fact]
     public void DownloadFileTest() {
-        var client = GetClient();
+        var (client, channel) = GetClient();
         var document = new Document {
             access_hash = -3921921075344262639,
             id = 6104841500644870434,
@@ -71,14 +69,13 @@ public class TelegramStorageClientTests {
 
     [Fact]
     public void SearchTest() {
-        var client = GetClient();
+        var (client, channel) = GetClient();
         var results = client
-            .Messages_Search<InputMessagesFilterDocument>(InputPeer.Self, "/Test/new/upload.bin")
-            .Result;
-        results.Messages.Should().HaveCount(3);
+            .Messages_Search<InputMessagesFilterDocument>(channel, "/Test/new/upload.bin").Result;
+        results.Messages.Should().HaveCount(1);
     }
 
-    static Client GetClient() {
+    static (Client Client, InputPeer channel) GetClient() {
         KifaConfigs.Init();
         var client = new TelegramStorageClient {
             CellId = "Test"
@@ -86,6 +83,6 @@ public class TelegramStorageClientTests {
 
         client.EnsureLoggedIn();
 
-        return client.Client.Checked();
+        return (client.Client.Checked(), client.Channel.Checked());
     }
 }
