@@ -9,7 +9,7 @@ using NLog;
 
 namespace Kifa.Cloud.Swisscom;
 
-public class SwisscomAccountQuota : DataModel, WithModelId {
+public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota> {
     public static string ModelId => "swisscom/quotas";
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();

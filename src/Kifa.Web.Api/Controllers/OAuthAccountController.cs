@@ -9,7 +9,7 @@ namespace Kifa.Web.Api.Controllers;
 
 public abstract class
     OAuthAccountController<TAccount> : KifaDataController<TAccount, OAuthAccountClient<TAccount>>
-    where TAccount : OAuthAccount, WithModelId, new() {
+    where TAccount : OAuthAccount, WithModelId<TAccount>, new() {
     static readonly HttpClient HttpClient = new();
 
     static readonly KifaServiceJsonClient<TAccount> ServiceClient = new();
@@ -43,5 +43,5 @@ public abstract class
 }
 
 public class OAuthAccountClient<TAccount> : KifaServiceJsonClient<TAccount>
-    where TAccount : OAuthAccount, WithModelId, new() {
+    where TAccount : OAuthAccount, WithModelId<TAccount>, new() {
 }

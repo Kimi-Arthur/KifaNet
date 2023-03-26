@@ -3,7 +3,7 @@ using Kifa.Service;
 
 namespace Kifa.Reading;
 
-public class BookNote : DataModel, WithModelId {
+public class BookNote : DataModel, WithModelId<BookNote> {
     public static string ModelId => "reading/notes";
 
     public string? Text { get; set; }

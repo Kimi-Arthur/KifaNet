@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Service.Tests;
 
-class FakeDataModel : DataModel, WithModelId, Translatable<FakeDataModel> {
+class FakeDataModel : DataModel, WithModelId<FakeDataModel>, Translatable<FakeDataModel> {
     public static string ModelId => "api_test";
 
     static FakeDataModelServiceClient client;

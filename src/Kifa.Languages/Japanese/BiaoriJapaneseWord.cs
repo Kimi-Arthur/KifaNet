@@ -4,7 +4,7 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.Japanese;
 
-public class BiaoriJapaneseWord : DataModel, WithModelId {
+public class BiaoriJapaneseWord : DataModel, WithModelId<BiaoriJapaneseWord> {
     public static string ModelId => "japanese/biaori/words";
 
     public static KifaServiceClient<BiaoriJapaneseWord> Client { get; set; } =

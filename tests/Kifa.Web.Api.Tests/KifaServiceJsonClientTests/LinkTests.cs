@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Kifa.Web.Api.Tests;
 
-public class TestDataModelWithVirtualLinks : DataModel, WithModelId {
+public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataModelWithVirtualLinks> {
     public static string ModelId => "link_tests";
 
     public string? Data { get; set; }

@@ -12,7 +12,7 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Memrise;
 
-public class MemriseCourse : DataModel, WithModelId {
+public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     #region Clients

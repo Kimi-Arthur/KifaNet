@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.IO;
 
-public class FileInformation : DataModel, WithModelId {
+public class FileInformation : DataModel, WithModelId<FileInformation> {
     public static string ModelId => "files";
 
     const int SliceLength = 256 << 10;

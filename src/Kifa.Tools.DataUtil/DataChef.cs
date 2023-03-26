@@ -56,7 +56,7 @@ public interface DataChef {
     KifaActionResult Delete(List<string> ids);
 }
 
-public class DataChef<TDataModel> : DataChef where TDataModel : DataModel, WithModelId, new() {
+public class DataChef<TDataModel> : DataChef where TDataModel : DataModel, WithModelId<TDataModel>, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static KifaServiceClient<TDataModel> client;

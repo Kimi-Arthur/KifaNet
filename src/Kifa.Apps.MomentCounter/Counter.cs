@@ -3,7 +3,7 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter;
 
-public class Counter : DataModel, WithModelId {
+public class Counter : DataModel, WithModelId<Counter> {
     public static string ModelId => "moment_counter/counters";
 
     public static KifaServiceClient<Counter> Client { get; set; } =

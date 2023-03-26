@@ -4,7 +4,7 @@ using Kifa.Service;
 
 namespace Kifa.Games.BreathOfTheWild;
 
-public class Game : DataModel, WithModelId {
+public class Game : DataModel, WithModelId<Game> {
     public static string ModelId => "games/botw";
 
     public static KifaServiceClient<Game> Client { get; set; } = new KifaServiceRestClient<Game>();

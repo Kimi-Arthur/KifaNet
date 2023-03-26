@@ -27,7 +27,7 @@ public class BilibiliVideoStats {
     public long ShareCount { get; set; }
 }
 
-public class BilibiliVideo : DataModel, WithModelId {
+public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     public static string ModelId => "bilibili/videos";
 
     public static KifaServiceClient<BilibiliVideo> Client { get; set; } =

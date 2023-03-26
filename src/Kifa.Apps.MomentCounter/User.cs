@@ -4,7 +4,7 @@ using Kifa.Service;
 
 namespace Kifa.Apps.MomentCounter;
 
-public class User : DataModel, WithModelId {
+public class User : DataModel, WithModelId<User> {
     public static string ModelId => "moment_counter/users";
 
     #region Clients

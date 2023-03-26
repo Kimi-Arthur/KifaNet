@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace Kifa.Bilibili;
 
-public class BilibiliManga : DataModel, WithModelId {
+public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
     public static string ModelId => "bilibili/mangas";
 
     public static KifaServiceClient<BilibiliManga> Client { get; set; } =

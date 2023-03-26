@@ -5,7 +5,7 @@ using Kifa.Service;
 
 namespace MyNamespace;
 
-class TestModel : DataModel, WithModelId {
+class TestModel : DataModel, WithModelId<TestModel> {
     public static string ModelId => "tests";
 
     public string? Value { get; set; }

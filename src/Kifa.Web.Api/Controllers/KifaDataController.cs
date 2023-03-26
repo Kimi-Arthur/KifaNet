@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Kifa.Web.Api.Controllers;
 
 public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
-    where TDataModel : DataModel, WithModelId, new()
+    where TDataModel : DataModel, WithModelId<TDataModel>, new()
     where TServiceClient : KifaServiceJsonClient<TDataModel>, new() {
     protected readonly TServiceClient Client = new();
 

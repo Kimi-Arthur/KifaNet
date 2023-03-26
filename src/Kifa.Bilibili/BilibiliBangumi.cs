@@ -7,7 +7,7 @@ using NLog;
 
 namespace Kifa.Bilibili;
 
-public class BilibiliBangumi : DataModel, WithModelId {
+public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string ModelId => "bilibili/bangumis";

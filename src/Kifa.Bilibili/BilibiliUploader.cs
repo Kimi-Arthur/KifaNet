@@ -8,7 +8,7 @@ using NLog;
 
 namespace Kifa.Bilibili;
 
-public class BilibiliUploader : DataModel, WithModelId {
+public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string ModelId => "bilibili/uploaders";

@@ -10,7 +10,7 @@ using NLog;
 
 namespace Kifa.Bilibili;
 
-public class BilibiliMangaEpisode : DataModel, WithModelId {
+public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode> {
     public static string ModelId => "bilibili/manga_episodes";
 
     public static KifaServiceClient<BilibiliMangaEpisode> Client { get; set; } =

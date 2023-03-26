@@ -10,7 +10,7 @@ using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.German.Goethe;
 
-public class GoetheGermanWord : DataModel, WithModelId {
+public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string ModelId => "goethe/words";

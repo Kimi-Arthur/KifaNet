@@ -11,7 +11,7 @@ using NLog;
 
 namespace Kifa.SkyCh;
 
-public class SkyLiveProgram : DataModel, WithModelId {
+public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string ModelId => "sky.ch/lives";

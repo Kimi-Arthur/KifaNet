@@ -2,7 +2,7 @@ using Kifa.Service;
 
 namespace Kifa.Soccer;
 
-public class Team : DataModel, WithModelId {
+public class Team : DataModel, WithModelId<Team> {
     public static string ModelId => "soccer/teams";
 
     public static KifaServiceClient<Team> Client { get; set; } = new KifaServiceRestClient<Team>();

@@ -4,24 +4,19 @@ namespace Kifa.Service;
 
 public class Link {
     public static Link<TDataModel> From<TDataModel>(TDataModel data)
-        where TDataModel : DataModel, WithModelId, new()
+        where TDataModel : DataModel, WithModelId<TDataModel>, new()
         => data;
 }
 
 // Unlimited linking not supported now.
 public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
-    where TDataModel : DataModel, WithModelId, new() {
-    static KifaServiceClient<TDataModel>? dataClient;
-
-    static KifaServiceClient<TDataModel> DataClient
-        => dataClient ??= new KifaServiceRestClient<TDataModel>();
-
+    where TDataModel : DataModel, WithModelId<TDataModel>, new() {
     public string Id { get; set; }
 
     TDataModel? data;
 
     public TDataModel? Data {
-        get => data ??= DataClient.Get(Id);
+        get => data ??= TDataModel.Client.Get(Id);
         set => data = value;
     }
 

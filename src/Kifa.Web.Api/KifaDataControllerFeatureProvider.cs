@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Kifa.Service;
 using Kifa.Web.Api.Controllers;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -35,7 +34,9 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
 
     static IEnumerable<Type> GetAllDataModels() {
         return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly
-            => assembly.GetExportedTypes().Where(x => x.GetInterface(nameof(WithModelId)) != null));
+            => assembly.GetExportedTypes().Where(x
+                => x.GetInterfaces().Any(i
+                    => i.FullName?.StartsWith("Kifa.Service.WithModelId`1[") ?? false)));
     }
 
     static IEnumerable<Type> GetImplementedDataModels() {

@@ -4,7 +4,8 @@ using NLog;
 
 namespace Kifa.Service;
 
-public interface KifaServiceClient<TDataModel> where TDataModel : DataModel, WithModelId {
+public interface KifaServiceClient<TDataModel>
+    where TDataModel : DataModel, WithModelId<TDataModel>, new() {
     string ModelId { get; }
 
     SortedDictionary<string, TDataModel> List();
@@ -20,7 +21,7 @@ public interface KifaServiceClient<TDataModel> where TDataModel : DataModel, Wit
 }
 
 public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDataModel>
-    where TDataModel : DataModel, WithModelId {
+    where TDataModel : DataModel, WithModelId<TDataModel>, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     protected BaseKifaServiceClient() {
