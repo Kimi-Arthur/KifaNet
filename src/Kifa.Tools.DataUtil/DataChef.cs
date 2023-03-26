@@ -4,6 +4,7 @@ using System.Linq;
 using Kifa.Apps.MomentCounter;
 using Kifa.Bilibili;
 using Kifa.Cloud.Swisscom;
+using Kifa.Cloud.Telegram;
 using Kifa.Infos;
 using Kifa.IO;
 using Kifa.Languages.German;
@@ -37,6 +38,10 @@ public interface DataChef {
         { SwisscomAccount.ModelId, new Lazy<DataChef>(() => new DataChef<SwisscomAccount>()) }, {
             SwisscomAccountQuota.ModelId,
             new Lazy<DataChef>(() => new DataChef<SwisscomAccountQuota>())
+        },
+        { TelegramAccount.ModelId, new Lazy<DataChef>(() => new DataChef<TelegramAccount>()) }, {
+            TelegramStorageCell.ModelId,
+            new Lazy<DataChef>(() => new DataChef<TelegramStorageCell>())
         },
         { BiaoriJapaneseWord.ModelId, new Lazy<DataChef>(() => new DataChef<BiaoriJapaneseWord>()) }
     };
