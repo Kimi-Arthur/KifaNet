@@ -46,9 +46,11 @@ public class TelegramStorageClient : StorageClient {
 
     public void EnsureLoggedIn() {
         Cell ??= TelegramStorageCell.Client.Get(CellId)!;
-        Client ??= new Client(Cell.ApiId, Cell.ApiHash, $"{SessionsFolder}/{Cell.Id}.session");
+        var account = Cell.Account.Data.Checked();
+        Client ??= new Client(account.ApiId, account.ApiHash,
+            $"{SessionsFolder}/{account.Id}.session");
 
-        var result = Client.Login(Cell.Phone).Result;
+        var result = Client.Login(account.Phone).Result;
         if (result != null) {
             throw new DriveNotFoundException(
                 $"Telegram drive {Cell.Id} is not accessible. Requesting {result}.");

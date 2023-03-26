@@ -9,9 +9,26 @@ using Xunit;
 
 namespace Kifa.Cloud.Telegram.Tests;
 
-public class StorageClientTests {
+public class TelegramStorageClientTests {
     const int PartSize = 1 << 19;
     const string FileSha256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+
+    [Fact]
+    // This test is used to setup accounts to be used as the login process is hard to integrate into
+    // the service.
+    public void SetupSessionTest() {
+        KifaConfigs.Init();
+        var cell = TelegramStorageCell.Client.Get("Test").Checked();
+        var account = cell.Account.Data.Checked();
+        var client = new Client(account.ApiId, account.ApiHash,
+            $"{TelegramStorageClient.SessionsFolder}/{account.Id}.session");
+
+        Assert.Equal("verification_code", client.Login(account.Phone).Result);
+
+        // Manually login with client.Log("xxxxx")
+
+        Assert.Null(client.Login(account.Phone).Result);
+    }
 
     [Fact]
     public void UploadFileTest() {
@@ -69,6 +86,6 @@ public class StorageClientTests {
 
         client.EnsureLoggedIn();
 
-        return client.Client;
+        return client.Client.Checked();
     }
 }

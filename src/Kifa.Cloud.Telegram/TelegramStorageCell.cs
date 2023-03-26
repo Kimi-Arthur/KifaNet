@@ -2,41 +2,19 @@ using Kifa.Service;
 
 namespace Kifa.Cloud.Telegram;
 
-public class TelegramStorageCell : DataModel, WithModelId {
+public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
     public static string ModelId => "telegram/cells";
 
     public static KifaServiceClient<TelegramStorageCell> Client { get; set; } =
         new KifaServiceRestClient<TelegramStorageCell>();
 
-    #region public late long ApiId { get; set; }
+    #region public late Link<TelegramAccount> Account { get; set; }
 
-    int? apiId;
+    Link<TelegramAccount>? account;
 
-    public int ApiId {
-        get => Late.Get(apiId);
-        set => Late.Set(ref apiId, value);
-    }
-
-    #endregion
-
-    #region public late string ApiHash { get; set; }
-
-    string? apiHash;
-
-    public string ApiHash {
-        get => Late.Get(apiHash);
-        set => Late.Set(ref apiHash, value);
-    }
-
-    #endregion
-
-    #region public late string Phone { get; set; }
-
-    string? phone;
-
-    public string Phone {
-        get => Late.Get(phone);
-        set => Late.Set(ref phone, value);
+    public Link<TelegramAccount> Account {
+        get => Late.Get(account);
+        set => Late.Set(ref account, value);
     }
 
     #endregion
