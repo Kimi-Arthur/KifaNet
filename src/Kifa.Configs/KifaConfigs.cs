@@ -67,6 +67,11 @@ public static class KifaConfigs {
             yaml.Load(sr);
         }
 
+        if (yaml.Documents.Count == 0) {
+            Log("No config found.");
+            return;
+        }
+
         Apply((YamlMappingNode) yaml.Documents[0].RootNode, "", properties);
     }
 
