@@ -31,7 +31,7 @@ public class TelegramStorageClientTests {
     }
 
     [Fact]
-    public void EndToEndTest() {
+    public void InnerClientEndToEndTest() {
         var (client, channel) = GetClient();
 
         using var data = File.OpenRead("data.bin");
@@ -51,6 +51,43 @@ public class TelegramStorageClientTests {
             name = fileName
         }).Result;
         uploadResult.Should().NotBeNull();
+
+        var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
+            .Result;
+        searchResults.Messages.Should().HaveCount(1);
+        var message = searchResults.Messages[0] as Message;
+        var document = (message.media as MessageMediaDocument).document as Document;
+
+        var downloadResult =
+            client.Upload_GetFile(document.ToFileLocation(), limit: 1 << 20).Result as Upload_File;
+        downloadResult.bytes.Should().HaveCount(1 << 20);
+        var downloadData = new MemoryStream(downloadResult.bytes);
+        FileInformation.GetInformation(downloadData, FileProperties.Sha256).Sha256.Should()
+            .Be(FileSha256);
+
+        client.DeleteMessages(channel, message.id);
+
+        searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
+            .Result;
+        searchResults.Messages.Should().BeEmpty();
+    }
+
+
+    [Fact]
+    public void EndToEndTest() {
+        KifaConfigs.Init();
+        var storageClient = new TelegramStorageClient {
+            CellId = "test"
+        };
+
+        var client = storageClient.Client;
+        var channel = storageClient.Channel;
+
+        using var data = File.OpenRead("data.bin");
+
+        var fileName = Random.Shared.NextInt64().ToByteArray().ToHexString();
+
+        storageClient.Write(fileName, data);
 
         var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
             .Result;

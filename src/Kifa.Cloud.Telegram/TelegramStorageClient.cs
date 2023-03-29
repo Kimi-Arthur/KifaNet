@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
 using Kifa.IO;
+using NLog;
 using TL;
 using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
 public class TelegramStorageClient : StorageClient {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     #region public late static string SessionsFolder { get; set; }
 
     static string? sessionsFolder;
@@ -40,8 +43,47 @@ public class TelegramStorageClient : StorageClient {
 
     public override Stream OpenRead(string path) => throw new NotImplementedException();
 
+    const int BlockSize = 1 << 19; // 512KB
+
     public override void Write(string path, Stream stream) {
-        throw new NotImplementedException();
+        EnsureLoggedIn();
+        if (Client == null || Channel == null) {
+            throw new Exception(
+                $"Failed to upload {path}, due login issue. client: {Client}, channel: {Channel}");
+        }
+
+        if (Exists(path)) {
+            return;
+        }
+
+        var size = stream.Length;
+        var buffer = new byte[BlockSize];
+
+        // size should be at most 1 << 31.
+        var totalParts = (int) (size - 1) / BlockSize + 1;
+        var fileId = Random.Shared.NextInt64();
+
+        for (var i = 0; (long) i * BlockSize < size; ++i) {
+            var readLength = stream.Read(buffer, 0, BlockSize);
+
+            var partResult = Client.Upload_SaveBigFilePart(fileId, i, totalParts,
+                readLength == BlockSize
+                    ? buffer
+                    : new ArraySegment<byte>(buffer, 0, readLength).ToArray()).Result;
+            if (!partResult) {
+                throw new Exception($"Failed to upload part {i} for {path}.");
+            }
+        }
+
+        var finalResult = Client.SendMediaAsync(Channel, path, new InputFileBig {
+            id = fileId,
+            parts = totalParts,
+            name = path.Split("/")[^1]
+        }).Result;
+
+        if (finalResult == null) {
+            throw new Exception($"Failed to upload {path} in the finalization.");
+        }
     }
 
     public override string Type { get; }
