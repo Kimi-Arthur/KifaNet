@@ -18,7 +18,7 @@ public class TelegramStorageClientTests {
     // the service.
     public void SetupSessionTest() {
         KifaConfigs.Init();
-        var cell = TelegramStorageCell.Client.Get("Test").Checked();
+        var cell = TelegramStorageCell.Client.Get("test").Checked();
         var account = cell.Account.Data.Checked();
         var client = new Client(account.ApiId, account.ApiHash,
             $"{TelegramStorageClient.SessionsFolder}/{account.Id}.session");
@@ -31,7 +31,7 @@ public class TelegramStorageClientTests {
     }
 
     [Fact]
-    public void UploadFileTest() {
+    public void EndToEndTest() {
         var (client, channel) = GetClient();
 
         using var data = File.OpenRead("data.bin");
@@ -41,44 +41,41 @@ public class TelegramStorageClientTests {
         data.Read(part2).Should().Be(PartSize);
 
         var fileId = Random.Shared.NextInt64();
+        var fileName = fileId.ToByteArray().ToHexString();
 
         client.Upload_SaveBigFilePart(fileId, 0, 2, part1).Result.Should().BeTrue();
         client.Upload_SaveBigFilePart(fileId, 1, 2, part2).Result.Should().BeTrue();
-        var result = client.SendMediaAsync(channel, "/Test/new/upload.bin", new InputFileBig {
+        var uploadResult = client.SendMediaAsync(channel, fileName, new InputFileBig {
             id = fileId,
             parts = 2,
-            name = "/Test/new/upload.bin"
+            name = fileName
         }).Result;
-        result.Should().NotBeNull();
-    }
+        uploadResult.Should().NotBeNull();
 
-    [Fact]
-    public void DownloadFileTest() {
-        var (client, channel) = GetClient();
-        var document = new Document {
-            access_hash = -3921921075344262639,
-            id = 6104841500644870434,
-            file_reference = "010000000A64177A411E9A47FE32486F23459028E2DA6FB103".ParseHexString()
-        };
-        var result =
+        var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
+            .Result;
+        searchResults.Messages.Should().HaveCount(1);
+        var message = searchResults.Messages[0] as Message;
+        var document = (message.media as MessageMediaDocument).document as Document;
+
+        var downloadResult =
             client.Upload_GetFile(document.ToFileLocation(), limit: 1 << 20).Result as Upload_File;
-        result.bytes.Should().HaveCount(1 << 20);
-        var data = new MemoryStream(result.bytes);
-        FileInformation.GetInformation(data, FileProperties.Sha256).Sha256.Should().Be(FileSha256);
-    }
+        downloadResult.bytes.Should().HaveCount(1 << 20);
+        var downloadData = new MemoryStream(downloadResult.bytes);
+        FileInformation.GetInformation(downloadData, FileProperties.Sha256).Sha256.Should()
+            .Be(FileSha256);
 
-    [Fact]
-    public void SearchTest() {
-        var (client, channel) = GetClient();
-        var results = client
-            .Messages_Search<InputMessagesFilterDocument>(channel, "/Test/new/upload.bin").Result;
-        results.Messages.Should().HaveCount(1);
+        client.DeleteMessages(channel, message.id);
+
+        searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
+            .Result;
+        searchResults.Messages.Should().BeEmpty();
     }
 
     static (Client Client, InputPeer channel) GetClient() {
         KifaConfigs.Init();
         var client = new TelegramStorageClient {
-            CellId = "Test"
+            CellId = "test"
         };
 
         client.EnsureLoggedIn();
