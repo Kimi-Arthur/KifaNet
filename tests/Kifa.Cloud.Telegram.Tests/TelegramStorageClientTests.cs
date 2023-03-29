@@ -50,7 +50,7 @@ public class TelegramStorageClientTests {
             parts = 2,
             name = fileName
         }).Result;
-        uploadResult.Should().NotBeNull();
+        uploadResult.message.Should().Be(fileName);
 
         var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
             .Result;

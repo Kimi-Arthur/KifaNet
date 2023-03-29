@@ -81,8 +81,9 @@ public class TelegramStorageClient : StorageClient {
             name = path.Split("/")[^1]
         }).Result;
 
-        if (finalResult == null) {
-            throw new Exception($"Failed to upload {path} in the finalization.");
+        if (finalResult?.message != path) {
+            throw new Exception(
+                $"Failed to upload {path} in the finalization step: {finalResult}.");
         }
     }
 
