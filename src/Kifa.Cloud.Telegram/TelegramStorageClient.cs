@@ -8,8 +8,6 @@ using WTelegram;
 namespace Kifa.Cloud.Telegram;
 
 public class TelegramStorageClient : StorageClient {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     #region public late static string SessionsFolder { get; set; }
 
     static string? sessionsFolder;
@@ -87,8 +85,8 @@ public class TelegramStorageClient : StorageClient {
         }
     }
 
-    public override string Type { get; }
-    public override string Id { get; }
+    public override string Type => "tele";
+    public override string Id => Cell.Checked().Id;
 
     public void EnsureLoggedIn() {
         Cell ??= TelegramStorageCell.Client.Get(CellId)!;
