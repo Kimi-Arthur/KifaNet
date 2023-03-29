@@ -41,14 +41,14 @@ public class TelegramStorageClientTests {
         data.Read(part2).Should().Be(PartSize);
 
         var fileId = Random.Shared.NextInt64();
-        var fileName = fileId.ToByteArray().ToHexString();
+        var fileName = $"/Test/{fileId.ToByteArray().ToHexString()}";
 
         client.Upload_SaveBigFilePart(fileId, 0, 2, part1).Result.Should().BeTrue();
         client.Upload_SaveBigFilePart(fileId, 1, 2, part2).Result.Should().BeTrue();
         var uploadResult = client.SendMediaAsync(channel, fileName, new InputFileBig {
             id = fileId,
             parts = 2,
-            name = fileName
+            name = fileName.Split("/")[^1]
         }).Result;
         uploadResult.message.Should().Be(fileName);
 
@@ -65,7 +65,8 @@ public class TelegramStorageClientTests {
         FileInformation.GetInformation(downloadData, FileProperties.Sha256).Sha256.Should()
             .Be(FileSha256);
 
-        client.DeleteMessages(channel, message.id);
+        var deleteResult = client.DeleteMessages(channel, message.id).Result;
+        deleteResult.pts_count.Should().Be(1);
 
         searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
             .Result;
@@ -80,12 +81,14 @@ public class TelegramStorageClientTests {
             CellId = "test"
         };
 
+        storageClient.EnsureLoggedIn();
+
         var client = storageClient.Client;
         var channel = storageClient.Channel;
 
         using var data = File.OpenRead("data.bin");
 
-        var fileName = Random.Shared.NextInt64().ToByteArray().ToHexString();
+        var fileName = $"/Test/{Random.Shared.NextInt64().ToByteArray().ToHexString()}";
 
         storageClient.Write(fileName, data);
 
@@ -102,7 +105,7 @@ public class TelegramStorageClientTests {
         FileInformation.GetInformation(downloadData, FileProperties.Sha256).Sha256.Should()
             .Be(FileSha256);
 
-        client.DeleteMessages(channel, message.id);
+        storageClient.Delete(fileName);
 
         searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
             .Result;

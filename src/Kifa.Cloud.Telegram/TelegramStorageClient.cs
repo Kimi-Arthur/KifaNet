@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Kifa.IO;
 using NLog;
 using TL;
@@ -8,6 +9,8 @@ using WTelegram;
 namespace Kifa.Cloud.Telegram;
 
 public class TelegramStorageClient : StorageClient {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     #region public late static string SessionsFolder { get; set; }
 
     static string? sessionsFolder;
@@ -32,7 +35,16 @@ public class TelegramStorageClient : StorageClient {
     }
 
     public override void Delete(string path) {
-        throw new NotImplementedException();
+        var message = GetMessage(path);
+        if (message == null) {
+            Logger.Debug($"File {path} is not found.");
+            return;
+        }
+
+        var result = Client.Checked().DeleteMessages(Channel, message.id).Result;
+        if (result.pts_count != 1) {
+            Logger.Debug($"Delete of {path} is not successful, but is ignored.");
+        }
     }
 
     public override void Touch(string path) {
@@ -87,6 +99,21 @@ public class TelegramStorageClient : StorageClient {
 
     public override string Type => "tele";
     public override string Id => Cell.Checked().Id;
+
+    Message? GetMessage(string path) {
+        var searchResults = Client.Messages_Search<InputMessagesFilterDocument>(Channel, path)
+            .Result.Messages.Select(m => m as Message).ExceptNull().Where(m => m.message == path)
+            .ToList();
+        if (searchResults.Count != 1) {
+            if (searchResults.Count == 0) {
+                return null;
+            }
+
+            throw new Exception($"{searchResults.Count} files found for {path}");
+        }
+
+        return searchResults.First();
+    }
 
     public void EnsureLoggedIn() {
         Cell ??= TelegramStorageCell.Client.Get(CellId)!;
