@@ -58,6 +58,8 @@ public class TelegramStorageClientTests {
         var message = searchResults.Messages[0] as Message;
         var document = (message.media as MessageMediaDocument).document as Document;
 
+        document.size.Should().Be(1 << 20);
+
         var downloadResult =
             client.Upload_GetFile(document.ToFileLocation(), limit: 1 << 20).Result as Upload_File;
         downloadResult.bytes.Should().HaveCount(1 << 20);

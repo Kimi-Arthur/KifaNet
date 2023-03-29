@@ -31,7 +31,12 @@ public class TelegramStorageClient : StorageClient {
     public InputPeer? Channel { get; set; }
 
     public override long Length(string path) {
-        return 0;
+        var document = GetDocument(path);
+        if (document == null) {
+            return -1;
+        }
+
+        return document.size;
     }
 
     public override void Delete(string path) {
@@ -99,6 +104,12 @@ public class TelegramStorageClient : StorageClient {
 
     public override string Type => "tele";
     public override string Id => Cell.Checked().Id;
+
+    Document? GetDocument(string path) {
+        var message = GetMessage(path);
+
+        return (message?.media as MessageMediaDocument)?.document as Document;
+    }
 
     Message? GetMessage(string path) {
         var searchResults = Client.Messages_Search<InputMessagesFilterDocument>(Channel, path)
