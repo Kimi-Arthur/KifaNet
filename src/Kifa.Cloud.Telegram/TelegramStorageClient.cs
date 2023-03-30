@@ -24,11 +24,17 @@ public class TelegramStorageClient : StorageClient {
 
     public required string CellId { get; init; }
 
-    public TelegramStorageCell? Cell { get; set; }
+    TelegramStorageCell? cell;
+    public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
 
-    public Client? Client { get; set; }
+    Client? client;
+    public Client Client => client ??= GetClient();
 
-    public InputPeer? Channel { get; set; }
+    InputPeer? channel;
+
+    public InputPeer Channel
+        => channel ??= Client.Messages_GetAllChats().Result.chats[long.Parse(Cell.ChannelId)]
+            .Checked();
 
     public override long Length(string path) {
         var document = GetDocument(path);
@@ -81,12 +87,6 @@ public class TelegramStorageClient : StorageClient {
     const int BlockSize = 1 << 19; // 512KB
 
     public override void Write(string path, Stream stream) {
-        EnsureLoggedIn();
-        if (Client == null || Channel == null) {
-            throw new Exception(
-                $"Failed to upload {path}, due login issue. client: {Client}, channel: {Channel}");
-        }
-
         if (Exists(path)) {
             return;
         }
@@ -135,18 +135,17 @@ public class TelegramStorageClient : StorageClient {
         => Client.Messages_Search<InputMessagesFilterDocument>(Channel, path).Result.Messages
             .Select(m => m as Message).SingleOrDefault(m => m?.message == path);
 
-    public void EnsureLoggedIn() {
-        Cell ??= TelegramStorageCell.Client.Get(CellId)!;
+    Client GetClient() {
         var account = Cell.Account.Data.Checked();
-        Client ??= new Client(account.ApiId, account.ApiHash,
+        var client = new Client(account.ApiId, account.ApiHash,
             $"{SessionsFolder}/{account.Id}.session");
 
-        var result = Client.Login(account.Phone).Result;
+        var result = client.Login(account.Phone).Result;
         if (result != null) {
             throw new DriveNotFoundException(
                 $"Telegram drive {Cell.Id} is not accessible. Requesting {result}.");
         }
 
-        Channel ??= Client.Messages_GetAllChats().Result.chats[long.Parse(Cell.ChannelId)];
+        return client;
     }
 }
