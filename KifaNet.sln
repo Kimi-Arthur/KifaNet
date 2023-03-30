@@ -163,6 +163,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Telegram", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.Cloud.Telegram.Tests", "tests\Kifa.Cloud.Telegram.Tests\Kifa.Cloud.Telegram.Tests.csproj", "{12BCA4F4-C6E6-4A3C-AF87-100984E06833}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramExample", "Experimental\TelegramExample\TelegramExample.csproj", "{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -441,6 +443,10 @@ Global
 		{12BCA4F4-C6E6-4A3C-AF87-100984E06833}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12BCA4F4-C6E6-4A3C-AF87-100984E06833}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12BCA4F4-C6E6-4A3C-AF87-100984E06833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -509,5 +515,6 @@ Global
 		{36255DA4-B735-4C4F-A70D-91272A1A3041} = {70079503-89E9-45D6-8920-E51DC36392EA}
 		{64865768-BCEA-4C3A-85AD-2C2EE36AB535} = {2CB6614F-35CE-402D-ADCC-709CDD320D36}
 		{12BCA4F4-C6E6-4A3C-AF87-100984E06833} = {2CB6614F-35CE-402D-ADCC-709CDD320D36}
+		{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC} = {9FD0E697-1A85-4BBE-9481-13527DD26A00}
 	EndGlobalSection
 EndGlobal
