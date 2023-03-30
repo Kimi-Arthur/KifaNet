@@ -56,7 +56,27 @@ public class TelegramStorageClient : StorageClient {
         throw new NotImplementedException();
     }
 
-    public override Stream OpenRead(string path) => throw new NotImplementedException();
+    public override Stream OpenRead(string path) {
+        var document = GetDocument(path).Checked();
+        var fileSize = document.size;
+        return new SeekableReadStream(fileSize,
+            (buffer, bufferOffset, offset, count) => Download(buffer, document.ToFileLocation(),
+                bufferOffset, offset, count));
+    }
+
+    int Download(byte[] buffer, InputDocumentFileLocation location, int bufferOffset, long offset,
+        int count) {
+        if (count < 0) {
+            count = buffer.Length - bufferOffset;
+        }
+
+        var downloadResult =
+            (Client.Upload_GetFile(location, offset: offset, limit: count).Result as Upload_File)
+            .Checked();
+
+        downloadResult.bytes.CopyTo(buffer, bufferOffset);
+        return downloadResult.bytes.Length;
+    }
 
     const int BlockSize = 1 << 19; // 512KB
 
@@ -111,20 +131,9 @@ public class TelegramStorageClient : StorageClient {
         return (message?.media as MessageMediaDocument)?.document as Document;
     }
 
-    Message? GetMessage(string path) {
-        var searchResults = Client.Messages_Search<InputMessagesFilterDocument>(Channel, path)
-            .Result.Messages.Select(m => m as Message).ExceptNull().Where(m => m.message == path)
-            .ToList();
-        if (searchResults.Count != 1) {
-            if (searchResults.Count == 0) {
-                return null;
-            }
-
-            throw new Exception($"{searchResults.Count} files found for {path}");
-        }
-
-        return searchResults.First();
-    }
+    public Message? GetMessage(string path)
+        => Client.Messages_Search<InputMessagesFilterDocument>(Channel, path).Result.Messages
+            .Select(m => m as Message).SingleOrDefault(m => m?.message == path);
 
     public void EnsureLoggedIn() {
         Cell ??= TelegramStorageCell.Client.Get(CellId)!;

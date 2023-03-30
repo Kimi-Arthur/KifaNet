@@ -59,6 +59,7 @@ public class TelegramStorageClientTests {
         var document = (message.media as MessageMediaDocument).document as Document;
 
         document.size.Should().Be(1 << 20);
+        message.message.Should().Be(fileName);
 
         var downloadResult =
             client.Upload_GetFile(document.ToFileLocation(), limit: 1 << 20).Result as Upload_File;
@@ -83,35 +84,21 @@ public class TelegramStorageClientTests {
             CellId = "test"
         };
 
-        storageClient.EnsureLoggedIn();
-
-        var client = storageClient.Client;
-        var channel = storageClient.Channel;
-
         using var data = File.OpenRead("data.bin");
 
         var fileName = $"/Test/{Random.Shared.NextInt64().ToByteArray().ToHexString()}";
 
         storageClient.Write(fileName, data);
 
-        var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
-            .Result;
-        searchResults.Messages.Should().HaveCount(1);
-        var message = searchResults.Messages[0] as Message;
-        var document = (message.media as MessageMediaDocument).document as Document;
+        storageClient.GetMessage(fileName).Should().NotBeNull();
+        storageClient.Exists(fileName).Should().BeTrue();
 
-        var downloadResult =
-            client.Upload_GetFile(document.ToFileLocation(), limit: 1 << 20).Result as Upload_File;
-        downloadResult.bytes.Should().HaveCount(1 << 20);
-        var downloadData = new MemoryStream(downloadResult.bytes);
-        FileInformation.GetInformation(downloadData, FileProperties.Sha256).Sha256.Should()
-            .Be(FileSha256);
+        FileInformation.GetInformation(storageClient.OpenRead(fileName), FileProperties.Sha256)
+            .Sha256.Should().Be(FileSha256);
 
         storageClient.Delete(fileName);
 
-        searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
-            .Result;
-        searchResults.Messages.Should().BeEmpty();
+        storageClient.Exists(fileName).Should().BeFalse();
     }
 
     static (Client Client, InputPeer channel) GetClient() {
