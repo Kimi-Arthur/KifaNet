@@ -87,9 +87,11 @@ public class TelegramStorageClient : StorageClient {
     const int BlockSize = 1 << 19; // 512KB
 
     public override void Write(string path, Stream stream) {
-        if (Exists(path)) {
-            return;
-        }
+        // Due to https://github.com/wiz0u/WTelegramClient/issues/136,
+        // we skip this sanity check for now.
+        // if (Exists(path)) {
+        //     return;
+        // }
 
         var size = stream.Length;
         var buffer = new byte[BlockSize];

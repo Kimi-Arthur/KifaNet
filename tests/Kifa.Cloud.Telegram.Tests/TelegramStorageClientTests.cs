@@ -43,6 +43,11 @@ public class TelegramStorageClientTests {
         var fileId = Random.Shared.NextInt64();
         var fileName = $"/Test/{fileId.ToByteArray().ToHexString()}";
 
+        // This line breaks searching.
+        var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
+            .Result;
+        searchResults.Messages.Should().BeEmpty();
+
         client.Upload_SaveBigFilePart(fileId, 0, 2, part1).Result.Should().BeTrue();
         client.Upload_SaveBigFilePart(fileId, 1, 2, part2).Result.Should().BeTrue();
         var uploadResult = client.SendMediaAsync(channel, fileName, new InputFileBig {
@@ -52,7 +57,7 @@ public class TelegramStorageClientTests {
         }).Result;
         uploadResult.message.Should().Be(fileName);
 
-        var searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
+        searchResults = client.Messages_Search<InputMessagesFilterDocument>(channel, fileName)
             .Result;
         searchResults.Messages.Should().HaveCount(1);
         var message = searchResults.Messages[0] as Message;
@@ -86,30 +91,10 @@ public class TelegramStorageClientTests {
 
         using var data = File.OpenRead("data.bin");
 
-        var part1 = new byte[PartSize];
-        data.Read(part1).Should().Be(PartSize);
-        var part2 = new byte[PartSize];
-        data.Read(part2).Should().Be(PartSize);
+        var fileName = $"/Test/{Random.Shared.NextInt64().ToByteArray().ToHexString()}";
 
-        var fileId = Random.Shared.NextInt64();
-        var fileName = $"/Test/{fileId.ToByteArray().ToHexString()}";
+        storageClient.Write(fileName, data);
 
-        storageClient.Client.Upload_SaveBigFilePart(fileId, 0, 2, part1).Result.Should().BeTrue();
-        storageClient.Client.Upload_SaveBigFilePart(fileId, 1, 2, part2).Result.Should().BeTrue();
-        var uploadResult = storageClient.Client.SendMediaAsync(storageClient.Channel, fileName,
-            new InputFileBig {
-                id = fileId,
-                parts = 2,
-                name = fileName.Split("/")[^1]
-            }).Result;
-        uploadResult.message.Should().Be(fileName);
-
-        //
-        // var fileName = $"/Test/{Random.Shared.NextInt64().ToByteArray().ToHexString()}";
-        //
-        // storageClient.Write(fileName, data);
-
-        storageClient.GetMessage(fileName).Should().NotBeNull();
         storageClient.Exists(fileName).Should().BeTrue();
 
         FileInformation.GetInformation(storageClient.OpenRead(fileName), FileProperties.Sha256)
