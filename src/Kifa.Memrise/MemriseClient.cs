@@ -182,7 +182,7 @@ public class MemriseClient : IDisposable {
         existingRow.FillAudios();
 
         var audios = rootWord.GetTopPronunciationAudioLinks()
-            .Where(link => !IsApplicable(link, word.Id)).Take(3).ToList();
+            .Where(link => IsApplicable(link, word.Id)).Take(3).ToList();
         Logger.Debug($"Will upload {audios.Count} audios:");
         foreach (var audio in audios) {
             Logger.Debug(audio);
@@ -210,21 +210,24 @@ public class MemriseClient : IDisposable {
     static readonly Regex LinkArticlePattern = new Regex("/(der|die|das)_.*");
 
     static bool IsApplicable(string link, string goetheGermanWord) {
-        if (link.Split("/")[^1].StartsWith("De-at-")) {
-            return false;
-        }
+        switch (link.Split("/")[2]) {
+            case "upload.wikimedia.org":
+                return !link.Split("/")[^1].StartsWith("De-at-");
+            case "media.dwds.de":
+                var wordArticle = WordArticlePattern.Match(goetheGermanWord);
+                if (!wordArticle.Success) {
+                    return true;
+                }
 
-        var wordArticle = WordArticlePattern.Match(goetheGermanWord);
-        if (!wordArticle.Success) {
-            return false;
-        }
+                var linkArticle = LinkArticlePattern.Match(link);
+                if (!linkArticle.Success) {
+                    return true;
+                }
 
-        var linkArticle = LinkArticlePattern.Match(link);
-        if (!linkArticle.Success) {
-            return false;
+                return linkArticle.Groups[1].Value == wordArticle.Groups[1].Value;
+            default:
+                return true;
         }
-
-        return linkArticle.Groups[1].Value != wordArticle.Groups[1].Value;
     }
 
     bool UploadAudios(MemriseWord originalWord, GoetheGermanWord word, List<string> audios) {
