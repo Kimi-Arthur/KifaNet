@@ -10,7 +10,7 @@ namespace Kifa.Languages.Cambridge;
 
 // Entries in GLOBAL German–English Dictionary from https://dictionary.cambridge.org/dictionary/german-english/
 public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalGermanWord> {
-    public static string ModelId => "cambridge/german";
+    public static string ModelId => "languages/cambridge/german";
 
     public override int CurrentVersion => 1;
 

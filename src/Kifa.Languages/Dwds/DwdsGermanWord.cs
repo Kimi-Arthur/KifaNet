@@ -7,7 +7,7 @@ using Kifa.Service;
 namespace Kifa.Languages.Dwds;
 
 public class DwdsGermanWord : DataModel, WithModelId<DwdsGermanWord> {
-    public static string ModelId => "dwds/words";
+    public static string ModelId => "languages/dwds/words";
 
     public static KifaServiceClient<DwdsGermanWord> Client { get; set; } =
         new KifaServiceRestClient<DwdsGermanWord>();
