@@ -8,6 +8,7 @@ using Kifa.Cloud.BaiduCloud;
 using Kifa.Cloud.Google;
 using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
+using Kifa.Cloud.Telegram;
 using Kifa.IO;
 using Kifa.IO.FileFormats;
 using Kifa.IO.StorageClients;
@@ -36,6 +37,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
                 };
             case "swiss":
                 return SwisscomStorageClient.Create(specs[1]);
+            case "tele":
+                return new TelegramStorageClient {
+                    CellId = specs[1]
+                };
             case "http":
             case "https":
                 return new WebStorageClient {

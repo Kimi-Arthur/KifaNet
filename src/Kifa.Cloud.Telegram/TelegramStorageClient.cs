@@ -11,6 +11,8 @@ namespace Kifa.Cloud.Telegram;
 public class TelegramStorageClient : StorageClient {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public const long ShardSize = 2 << 30; // 2 GiB
+
     #region public late static string SessionsFolder { get; set; }
 
     static string? sessionsFolder;
@@ -77,8 +79,8 @@ public class TelegramStorageClient : StorageClient {
         }
 
         var downloadResult =
-            (Client.Upload_GetFile(location, offset: offset, limit: count).Result as Upload_File)
-            .Checked();
+            (Client.Upload_GetFile(location, offset: offset, limit: count, precise: true)
+                .Result as Upload_File).Checked();
 
         downloadResult.bytes.CopyTo(buffer, bufferOffset);
         return downloadResult.bytes.Length;

@@ -3,12 +3,24 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Kifa.Cloud.Swisscom;
+using Kifa.Cloud.Telegram;
 using Kifa.IO;
 using Kifa.Service;
 
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
+    #region public late static string TelegramCell { get; set; }
+
+    static string? telegramCell;
+
+    public static string TelegramCell {
+        get => Late.Get(telegramCell);
+        set => Late.Set(ref telegramCell, value);
+    }
+
+    #endregion
+
     public KifaActionResult Upload(List<CloudTarget> targets, bool deleteSource = false,
         bool useCache = false, bool downloadLocal = false, bool skipVerify = false,
         bool skipRegistered = false) {
@@ -47,6 +59,8 @@ public partial class KifaFile {
                 CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{target.FormatType}",
                 CloudServiceType.Swiss =>
                     $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
+                CloudServiceType.Tele =>
+                    $"tele:{Enumerable.Repeat(TelegramCell, (int) ((FileInfo.Size.Value + target.FormatType.HeaderSize - 1) / TelegramStorageClient.ShardSize + 1)).JoinBy("+")}/$/{FileInfo.Sha256}.{target.FormatType}",
                 _ => ""
             };
 

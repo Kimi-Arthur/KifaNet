@@ -8,6 +8,7 @@
     <ProjectReference Include="..\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj" />
+    <ProjectReference Include="..\Kifa.Cloud.Telegram\Kifa.Cloud.Telegram.csproj" />
     <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
   </ItemGroup>
   <ItemGroup>
