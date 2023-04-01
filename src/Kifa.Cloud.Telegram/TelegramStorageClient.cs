@@ -87,11 +87,9 @@ public class TelegramStorageClient : StorageClient {
     const int BlockSize = 1 << 19; // 512KB
 
     public override void Write(string path, Stream stream) {
-        // Due to https://github.com/wiz0u/WTelegramClient/issues/136,
-        // we skip this sanity check for now.
-        // if (Exists(path)) {
-        //     return;
-        // }
+        if (Exists(path)) {
+            return;
+        }
 
         var size = stream.Length;
         var buffer = new byte[BlockSize];
@@ -133,9 +131,31 @@ public class TelegramStorageClient : StorageClient {
         return (message?.media as MessageMediaDocument)?.document as Document;
     }
 
-    public Message? GetMessage(string path)
-        => Client.Messages_Search<InputMessagesFilterDocument>(Channel, path).Result.Messages
-            .Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+    static readonly TimeSpan SearchDelay = TimeSpan.FromMinutes(30);
+
+    public Message? GetMessage(string path) {
+        var message = Client.Messages_Search<InputMessagesFilterDocument>(Channel, path).Result
+            .Messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+        if (message != null) {
+            return message;
+        }
+
+        var messages = client.Messages_GetHistory(Channel).Result.Messages;
+        while (messages?.Length > 0) {
+            message = messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+            if (message != null) {
+                return message;
+            }
+
+            if (messages[^1].Date < DateTime.UtcNow - SearchDelay) {
+                break;
+            }
+
+            messages = client.Messages_GetHistory(Channel, messages[^1].ID).Result.Messages;
+        }
+
+        return null;
+    }
 
     Client GetClient() {
         var account = Cell.Account.Data.Checked();
