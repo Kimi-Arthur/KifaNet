@@ -64,29 +64,7 @@ public class TelegramStorageClient : StorageClient {
         throw new NotImplementedException();
     }
 
-    public override Stream OpenRead(string path) {
-        var document = GetDocument(path).Checked();
-        var fileSize = document.size;
-        return new SeekableReadStream(fileSize,
-            (buffer, bufferOffset, offset, count) => Download(buffer, document.ToFileLocation(),
-                bufferOffset, offset, count));
-    }
-
-    int Download(byte[] buffer, InputDocumentFileLocation location, int bufferOffset, long offset,
-        int count) {
-        if (count < 0) {
-            count = buffer.Length - bufferOffset;
-        }
-
-        var downloadResult =
-            (Client.Upload_GetFile(location, offset: offset, limit: count, precise: true)
-                .Result as Upload_File).Checked();
-
-        downloadResult.bytes.CopyTo(buffer, bufferOffset);
-        return downloadResult.bytes.Length;
-    }
-
-    const int BlockSize = 1 << 19; // 512KB
+    const int BlockSize = 1 << 19; // 512KiB
 
     public override void Write(string path, Stream stream) {
         if (Exists(path)) {
@@ -122,6 +100,77 @@ public class TelegramStorageClient : StorageClient {
             throw new Exception(
                 $"Failed to upload {path} in the finalization step: {finalResult}.");
         }
+    }
+
+    public override Stream OpenRead(string path) {
+        var document = GetDocument(path).Checked();
+        var fileSize = document.size;
+        return new SeekableReadStream(fileSize,
+            (buffer, bufferOffset, offset, count) => Download(buffer, document.ToFileLocation(),
+                bufferOffset, offset, count, fileSize));
+    }
+
+    const int DownloadBlockSize = 1 << 20; // 1 MiB
+    byte[]? lastBlock;
+    long lastBlockStart = -1;
+
+    int Download(byte[] buffer, InputDocumentFileLocation location, int bufferOffset, long offset,
+        int count, long fileSize) {
+        // TODO: When will this happen?
+        if (count < 0) {
+            count = buffer.Length - bufferOffset;
+        }
+
+        lastBlock ??= new byte[DownloadBlockSize];
+
+        var totalRead = 0;
+
+        if (lastBlockStart >= 0 && offset >= lastBlockStart &&
+            offset < lastBlockStart + DownloadBlockSize) {
+            // Something can be read from lastBlock.
+            var copySize = (int) Math.Min(count, lastBlockStart + DownloadBlockSize - offset);
+            Array.Copy(lastBlock, offset - lastBlockStart, buffer, bufferOffset, copySize);
+            count -= copySize;
+            offset += copySize;
+            bufferOffset += copySize;
+            totalRead += copySize;
+        }
+
+        if (count == 0) {
+            // Even though the next loop can handle this, return early so we don't mess lastBlock.
+            return totalRead;
+        }
+
+        // From https://core.telegram.org/api/files#downloading-files
+        // limit is at most 1 MiB and offset should align 1 MiB block boundary.
+        Upload_File? downloadResult = null;
+        while (count > 0) {
+            var requestStart = offset.RoundDown(DownloadBlockSize);
+            lastBlockStart = requestStart;
+            var requestCount = DownloadBlockSize;
+            var effectiveReadCound = (int) Math.Min(count, BlockSize - offset % BlockSize);
+            // var requestCount = (int) Math.Min(offset + count - requestStart, DownloadBlockSize);
+
+            Logger.Trace(
+                $"To request {requestCount} from {requestStart} for final target {count} bytes from {offset}.");
+
+            downloadResult =
+                (Client.Upload_GetFile(location, offset: requestStart, limit: DownloadBlockSize)
+                    .Result as Upload_File).Checked();
+
+            Array.Copy(downloadResult.bytes, offset - requestStart, buffer, bufferOffset,
+                effectiveReadCound);
+            count -= effectiveReadCound;
+            offset += effectiveReadCound;
+            bufferOffset += effectiveReadCound;
+            totalRead += effectiveReadCound;
+        }
+
+        // Keep the last block no matter if it's fully used or not as we normally will keep the
+        // 512KB array there.
+        downloadResult.Checked().bytes.CopyTo(lastBlock, 0);
+
+        return totalRead;
     }
 
     public override string Type => "tele";
