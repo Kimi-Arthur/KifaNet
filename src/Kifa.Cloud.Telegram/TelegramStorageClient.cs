@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using Kifa.IO;
+using Kifa.IO.StorageClients;
 using NLog;
 using TL;
 using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
-public class TelegramStorageClient : StorageClient {
+public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public const long ShardSize = 2L << 30; // 2 GiB
+    public const long ShardSize = 4000L * BlockSize; // 2 GB
 
     #region public late static string SessionsFolder { get; set; }
 
@@ -37,6 +39,33 @@ public class TelegramStorageClient : StorageClient {
     public InputPeer Channel
         => channel ??= Client.Messages_GetAllChats().Result.chats[long.Parse(Cell.ChannelId)]
             .Checked();
+
+    TelegramStorageClient() {
+    }
+
+    public static StorageClient Create(string spec) {
+        if (spec.Contains('*')) {
+            var segments = spec.Split("*");
+            var client = Create(segments[0]);
+            // Sharded client.
+            return new ShardedStorageClient {
+                Clients = Enumerable.Repeat(client, int.Parse(segments[1])).ToList(),
+                ShardSize = ShardSize
+            };
+        }
+
+        return new TelegramStorageClient {
+            CellId = spec
+        };
+    }
+
+    public static string CreateLocation(FileInformation info, string cell, long encodedSize) {
+        // Assume sha256 is present.
+        var shardCount = (encodedSize - 1) / ShardSize + 1;
+        return shardCount > 1
+            ? $"tele:{cell}*{shardCount}/$/{info.Sha256}"
+            : $"tele:{cell}/$/{info.Sha256}";
+    }
 
     public override long Length(string path) {
         var document = GetDocument(path);
@@ -64,7 +93,7 @@ public class TelegramStorageClient : StorageClient {
         throw new NotImplementedException();
     }
 
-    const int BlockSize = 1 << 19; // 512KiB
+    const int BlockSize = 1 << 19; // 512 KiB
 
     public override void Write(string path, Stream stream) {
         if (Exists(path)) {
@@ -81,6 +110,7 @@ public class TelegramStorageClient : StorageClient {
         for (var i = 0; (long) i * BlockSize < size; ++i) {
             var readLength = stream.Read(buffer, 0, BlockSize);
 
+            Logger.Trace($"Uploading part {i} of {totalParts} for {path}...");
             var partResult = Client.Upload_SaveBigFilePart(fileId, i, totalParts,
                 readLength == BlockSize
                     ? buffer
@@ -208,17 +238,20 @@ public class TelegramStorageClient : StorageClient {
         return null;
     }
 
-    Client GetClient() {
-        var account = Cell.Account.Data.Checked();
-        var client = new Client(account.ApiId, account.ApiHash,
-            $"{SessionsFolder}/{account.Id}.session");
+    static readonly ConcurrentDictionary<string, Client> AllClients = new();
 
-        var result = client.Login(account.Phone).Result;
-        if (result != null) {
-            throw new DriveNotFoundException(
-                $"Telegram drive {Cell.Id} is not accessible. Requesting {result}.");
-        }
+    Client GetClient()
+        => AllClients.GetOrAdd(CellId, (_, tele) => {
+            var account = tele.Cell.Account.Data.Checked();
+            var client = new Client(account.ApiId, account.ApiHash,
+                $"{SessionsFolder}/{account.Id}.session");
 
-        return client;
-    }
+            var result = client.Login(account.Phone).Result;
+            if (result != null) {
+                throw new DriveNotFoundException(
+                    $"Telegram drive {tele.Cell.Id} is not accessible. Requesting {result}.");
+            }
+
+            return client;
+        }, this);
 }

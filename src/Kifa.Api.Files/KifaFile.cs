@@ -38,9 +38,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
             case "swiss":
                 return SwisscomStorageClient.Create(specs[1]);
             case "tele":
-                return new TelegramStorageClient {
-                    CellId = specs[1]
-                };
+                return TelegramStorageClient.Create(specs[1]);
             case "http":
             case "https":
                 return new WebStorageClient {

@@ -48,21 +48,26 @@ public partial class KifaFile {
         return result;
     }
 
-    string CreateLocation(CloudTarget target)
-        => FileInfo?.Sha256 == null || FileInfo?.Size == null
-            ? throw new UnableToDetermineLocationException(
-                $"Sha256 {FileInfo?.Sha256} or size {FileInfo?.Size} is missing.")
-            : FileInfo.Locations.Keys.FirstOrDefault(l
-                => new Regex(
-                        $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType}$")
-                    .Match(l).Success) ?? target.ServiceType switch {
-                CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{target.FormatType}",
-                CloudServiceType.Swiss =>
-                    $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
-                CloudServiceType.Tele =>
-                    $"tele:{Enumerable.Repeat(TelegramCell, (int) ((FileInfo.Size.Value + target.FormatType.HeaderSize - 1) / TelegramStorageClient.ShardSize + 1)).JoinBy("+")}/$/{FileInfo.Sha256}.{target.FormatType}",
-                _ => ""
-            };
+    string CreateLocation(CloudTarget target) {
+        if (FileInfo?.Sha256 == null || FileInfo?.Size == null) {
+            throw new UnableToDetermineLocationException(
+                $"Sha256 {FileInfo?.Sha256} or size {FileInfo?.Size} is missing.");
+        }
+
+        var encodedSize = FileInfo.Size.Value + target.FormatType.HeaderSize;
+
+        return FileInfo.Locations.Keys.FirstOrDefault(l
+            => new Regex(
+                    $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType}$")
+                .Match(l).Success) ?? target.ServiceType switch {
+            CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{target.FormatType}",
+            CloudServiceType.Swiss =>
+                $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
+            CloudServiceType.Tele => TelegramStorageClient.CreateLocation(FileInfo, telegramCell,
+                encodedSize),
+            _ => ""
+        };
+    }
 
     KifaActionResult UploadOneFile(CloudTarget target, bool deleteSource, bool skipVerify,
         bool skipRegistered) {

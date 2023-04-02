@@ -85,9 +85,7 @@ public class TelegramStorageClientTests {
     [Fact]
     public void EndToEndTest() {
         KifaConfigs.Init();
-        var storageClient = new TelegramStorageClient {
-            CellId = "test"
-        };
+        var storageClient = TelegramStorageClient.Create("test");
 
         using var data = File.OpenRead("data.bin");
 
@@ -107,9 +105,7 @@ public class TelegramStorageClientTests {
 
     static (Client Client, InputPeer channel) GetClient() {
         KifaConfigs.Init();
-        var client = new TelegramStorageClient {
-            CellId = "test"
-        };
+        var client = (TelegramStorageClient.Create("test") as TelegramStorageClient).Checked();
 
         return (client.Client, client.Channel);
     }
