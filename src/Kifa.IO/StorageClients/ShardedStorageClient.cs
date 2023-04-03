@@ -12,8 +12,29 @@ public class ShardedStorageClient : StorageClient {
     public override string Type => "sharded";
     public override string Id => "";
 
-    public override string ToString()
-        => $"{Clients.First().Type}:{string.Join("+", Clients.Select(c => c.Id))}";
+    public override string ToString() {
+        var specs = new List<string>();
+        var lastId = "";
+        var lastIdCount = 0;
+        foreach (var id in Clients.Select(c => c.Id)) {
+            if (lastId != id) {
+                if (lastIdCount > 0) {
+                    specs.Add(lastId + (lastIdCount > 1 ? $"*{lastIdCount}" : ""));
+                }
+
+                lastId = id;
+                lastIdCount = 0;
+            }
+
+            lastIdCount++;
+        }
+
+        if (lastIdCount > 0) {
+            specs.Add(lastId + (lastIdCount > 1 ? $"*{lastIdCount}" : ""));
+        }
+
+        return $"{Clients.First().Type}:{string.Join("+", specs)}";
+    }
 
     public override long Length(string path) {
         var lengths = GetShards(path).Select(shard => shard.client.Length(shard.path)).ToList();
