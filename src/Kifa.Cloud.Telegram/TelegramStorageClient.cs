@@ -136,16 +136,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var document = GetDocument(path).Checked();
         var fileSize = document.size;
         return new SeekableReadStream(fileSize,
-            (buffer, bufferOffset, offset, count) => Download(buffer, document.ToFileLocation(),
-                bufferOffset, offset, count, fileSize));
+            (buffer, bufferOffset, offset, count) => Download(buffer, path,
+                bufferOffset, offset, count));
     }
 
     const int DownloadBlockSize = 1 << 20; // 1 MiB
     byte[]? lastBlock;
     long lastBlockStart = -1;
 
-    int Download(byte[] buffer, InputDocumentFileLocation location, int bufferOffset, long offset,
-        int count, long fileSize) {
+    int Download(byte[] buffer, string path, int bufferOffset, long offset, int count) {
         // TODO: When will this happen?
         if (count < 0) {
             count = buffer.Length - bufferOffset;
@@ -174,6 +173,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // From https://core.telegram.org/api/files#downloading-files
         // limit is at most 1 MiB and offset should align 1 MiB block boundary.
         Upload_File? downloadResult = null;
+
+        // Workaround for expiration of document with a bit overhead.
+        // This solution generally works if the next loop isn't taking too long. Performance wise,
+        // this should serve for quite some versions. May need to revise if the next loop finishes
+        // too quick.
+        var location = GetDocument(path).Checked().ToFileLocation();
         while (count > 0) {
             var requestStart = offset.RoundDown(DownloadBlockSize);
             lastBlockStart = requestStart;
