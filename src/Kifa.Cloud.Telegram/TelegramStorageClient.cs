@@ -252,10 +252,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // caveats.
         if (wTelegramLogger == null) {
             wTelegramLogger = LogManager.GetLogger("WTelegram");
-            
-            // Their Debug message is too noisy.
+
             Helpers.Log = (level, message)
-                => wTelegramLogger.Log(LogLevel.FromOrdinal(level == 1 ? 0 : level), message);
+                => wTelegramLogger.Log(LogLevel.FromOrdinal(level == 0 ? 0 : level - 1), message);
         }
 
         return AllClients.GetOrAdd(CellId, (_, tele) => {
