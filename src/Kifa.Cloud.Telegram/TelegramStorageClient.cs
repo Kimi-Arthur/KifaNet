@@ -245,8 +245,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     static readonly ConcurrentDictionary<string, Client> AllClients = new();
 
-    Client GetClient()
-        => AllClients.GetOrAdd(CellId, (_, tele) => {
+    static Logger? wTelegramLogger;
+
+    Client GetClient() {
+        // Race condition should be OK here. Calling twice the clause shouldn't have visible
+        // caveats.
+        if (wTelegramLogger == null) {
+            wTelegramLogger = LogManager.GetLogger("WTelegram");
+            Helpers.Log = (level, message)
+                => wTelegramLogger.Log(LogLevel.FromOrdinal(level), message);
+        }
+
+        return AllClients.GetOrAdd(CellId, (_, tele) => {
             var account = tele.Cell.Account.Data.Checked();
             var client = new Client(account.ApiId, account.ApiHash,
                 $"{SessionsFolder}/{account.Id}.session");
@@ -259,4 +269,5 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             return client;
         }, this);
+    }
 }
