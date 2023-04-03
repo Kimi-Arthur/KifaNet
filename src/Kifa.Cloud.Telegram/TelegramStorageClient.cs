@@ -254,7 +254,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             wTelegramLogger = LogManager.GetLogger("WTelegram");
 
             Helpers.Log = (level, message)
-                => wTelegramLogger.Log(LogLevel.FromOrdinal(level == 0 ? 0 : level - 1), message);
+                => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
         }
 
         return AllClients.GetOrAdd(CellId, (_, tele) => {
