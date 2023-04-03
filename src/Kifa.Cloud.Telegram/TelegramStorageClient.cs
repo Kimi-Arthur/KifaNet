@@ -182,23 +182,21 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         while (count > 0) {
             var requestStart = offset.RoundDown(DownloadBlockSize);
             lastBlockStart = requestStart;
-            var requestCount = DownloadBlockSize;
-            var effectiveReadCound = (int) Math.Min(count, BlockSize - offset % BlockSize);
-            // var requestCount = (int) Math.Min(offset + count - requestStart, DownloadBlockSize);
+            var effectiveReadCount = (int) Math.Min(count, BlockSize - offset % BlockSize);
 
             Logger.Trace(
-                $"To request {requestCount} from {requestStart} for final target {count} bytes from {offset}.");
+                $"To request {DownloadBlockSize} from {requestStart} for final target {count} bytes from {offset}.");
 
             downloadResult =
                 (Client.Upload_GetFile(location, offset: requestStart, limit: DownloadBlockSize)
                     .Result as Upload_File).Checked();
 
             Array.Copy(downloadResult.bytes, offset - requestStart, buffer, bufferOffset,
-                effectiveReadCound);
-            count -= effectiveReadCound;
-            offset += effectiveReadCound;
-            bufferOffset += effectiveReadCound;
-            totalRead += effectiveReadCound;
+                effectiveReadCount);
+            count -= effectiveReadCount;
+            offset += effectiveReadCount;
+            bufferOffset += effectiveReadCount;
+            totalRead += effectiveReadCount;
         }
 
         // Keep the last block no matter if it's fully used or not as we normally will keep the
