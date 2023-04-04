@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Threading;
+using System.Threading.Tasks;
 using NLog;
 
 namespace Kifa;
@@ -24,6 +25,25 @@ public static class Retry {
         for (var i = 1;; i++) {
             try {
                 var result = action();
+                if (isValid == null || isValid(result, i)) {
+                    return result;
+                }
+            } catch (Exception ex) {
+                while (ex is AggregateException) {
+                    // AggregateException should have inner exception.
+                    ex = ex.InnerException!;
+                }
+
+                handleException(ex, i);
+            }
+        }
+    }
+
+    public static async Task<T> Run<T>(Func<Task<T>> action, Action<Exception, int> handleException,
+        Func<T, int, bool>? isValid = null) {
+        for (var i = 1;; i++) {
+            try {
+                var result = await action();
                 if (isValid == null || isValid(result, i)) {
                     return result;
                 }

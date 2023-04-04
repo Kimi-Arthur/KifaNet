@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
 using NLog;
@@ -101,30 +103,57 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         var size = stream.Length;
-        var buffer = new byte[BlockSize];
 
         // size should be at most 1 << 31.
         var totalParts = (int) (size - 1) / BlockSize + 1;
         var fileId = Random.Shared.NextInt64();
 
+        var sem = new SemaphoreSlim(32);
+        var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
-            var readLength = stream.Read(buffer, 0, BlockSize);
-
-            Logger.Trace($"Uploading part {i} of {totalParts} for {path}...");
-            var partResult = Client.Upload_SaveBigFilePart(fileId, i, totalParts,
-                readLength == BlockSize
-                    ? buffer
-                    : new ArraySegment<byte>(buffer, 0, readLength).ToArray()).Result;
-            if (!partResult) {
-                throw new Exception($"Failed to upload part {i} for {path}.");
+            var toRead = (int) Math.Min(size - i * BlockSize, BlockSize);
+            var buffer = new byte[toRead];
+            var readLength = stream.Read(buffer);
+            if (readLength != toRead) {
+                throw new Exception($"Unexpected read length {readLength}, expecting {toRead}");
             }
+
+            async Task UploadOneBlock(object state) {
+                var index = (int) state;
+                Logger.Trace(
+                    $"Waiting for semaphore to uploading part {index} of {totalParts} for {path}...");
+                await sem.WaitAsync();
+                Logger.Trace($"Uploading part {index} of {totalParts} for {path}...");
+                try {
+                    var partResult = await Retry.Run(
+                        async () => await Client.Upload_SaveBigFilePart(fileId, index, totalParts,
+                            buffer), (ex, i) => {
+                            Logger.Warn(ex, "It's ok");
+                            Thread.Sleep(TimeSpan.FromMinutes(1));
+                        });
+
+
+                    if (!partResult) {
+                        throw new Exception($"Failed to upload part {index} for {path}.");
+                    }
+
+                    Logger.Trace(
+                        $"Successfully uploaded part {index} of {totalParts} for {path}...");
+                } finally {
+                    sem.Release();
+                }
+            }
+
+            tasks[i] = UploadOneBlock(i);
         }
+
+        Task.WhenAll(tasks).GetAwaiter().GetResult();
 
         var finalResult = Client.SendMediaAsync(Channel, path, new InputFileBig {
             id = fileId,
             parts = totalParts,
             name = path.Split("/")[^1]
-        }).Result;
+        }).GetAwaiter().GetResult();
 
         if (finalResult?.message != path) {
             throw new Exception(
