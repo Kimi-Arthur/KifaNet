@@ -108,7 +108,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var totalParts = (int) (size - 1) / BlockSize + 1;
         var fileId = Random.Shared.NextInt64();
 
-        var sem = new SemaphoreSlim(32);
+        var sem = new SemaphoreSlim(16);
         var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
             var toRead = (int) Math.Min(size - i * BlockSize, BlockSize);
@@ -278,6 +278,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // Race condition should be OK here. Calling twice the clause shouldn't have visible
         // caveats.
         if (wTelegramLogger == null) {
+            ThreadPool.SetMinThreads(100, 100);
             wTelegramLogger = LogManager.GetLogger("WTelegram");
 
             Helpers.Log = (level, message)
