@@ -63,8 +63,8 @@ public partial class KifaFile {
             CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{target.FormatType}",
             CloudServiceType.Swiss =>
                 $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
-            CloudServiceType.Tele => TelegramStorageClient.CreateLocation(FileInfo, telegramCell,
-                encodedSize),
+            CloudServiceType.Tele => $"{TelegramStorageClient.CreateLocation(FileInfo, telegramCell,
+                encodedSize)}.{target.FormatType}",
             _ => ""
         };
     }
