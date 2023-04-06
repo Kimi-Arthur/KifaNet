@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -204,9 +205,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             return totalRead;
         }
 
-        // From https://core.telegram.org/api/files#downloading-files
-        // limit is at most 1 MiB and offset should align 1 MiB block boundary.
-        Upload_File? downloadResult = null;
+        var downloadTasks = new List<Task>();
+
+        var sem = new SemaphoreSlim(4);
 
         // Workaround for expiration of document with a bit overhead.
         // This solution generally works if the next loop isn't taking too long. Performance wise,
@@ -215,27 +216,48 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var location = GetDocument(path).Checked().ToFileLocation();
         while (count > 0) {
             var requestStart = offset.RoundDown(DownloadBlockSize);
-            state.lastBlockStart = requestStart;
             var effectiveReadCount = (int) Math.Min(count, BlockSize - offset % BlockSize);
 
             Logger.Trace(
                 $"To request {DownloadBlockSize} from {requestStart} for final target {count} bytes from {offset}.");
 
-            downloadResult =
-                (Client.Upload_GetFile(location, offset: requestStart, limit: DownloadBlockSize)
-                    .Result as Upload_File).Checked();
+            async Task DownloadBlock(bool isLastBlock, long offset, int bufferOffset) {
+                Logger.Trace($"Waiting for semaphore to get block from {offset} for {path}...");
+                await sem.WaitAsync();
+                Logger.Trace($"Getting block from {offset} for {path}...");
 
-            Array.Copy(downloadResult.bytes, offset - requestStart, buffer, bufferOffset,
-                effectiveReadCount);
+                try {
+                    // From https://core.telegram.org/api/files#downloading-files
+                    // limit is at most 1 MiB and offset should align 1 MiB block boundary.
+                    var downloadResult = await Client.Upload_GetFile(location, offset: requestStart,
+                        limit: DownloadBlockSize);
+                    if (downloadResult is not Upload_File uploadFile) {
+                        throw new Exception($"Response is not {nameof(Upload_File)}");
+                    }
+
+                    Array.Copy(uploadFile.bytes, offset - requestStart, buffer, bufferOffset,
+                        effectiveReadCount);
+
+                    // Keep the last block no matter if it's fully used or not as we normally will keep the
+                    // 512KB array there.
+                    if (isLastBlock) {
+                        state.lastBlockStart = requestStart;
+                        uploadFile.bytes.CopyTo(state.lastBlock, 0);
+                    }
+                } finally {
+                    sem.Release();
+                }
+            }
+
+            downloadTasks.Add(DownloadBlock(count <= DownloadBlockSize, offset, bufferOffset));
+
             count -= effectiveReadCount;
             offset += effectiveReadCount;
             bufferOffset += effectiveReadCount;
             totalRead += effectiveReadCount;
         }
 
-        // Keep the last block no matter if it's fully used or not as we normally will keep the
-        // 512KB array there.
-        downloadResult.Checked().bytes.CopyTo(state.lastBlock, 0);
+        Task.WhenAll(downloadTasks).GetAwaiter().GetResult();
 
         return totalRead;
     }
