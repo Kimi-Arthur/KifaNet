@@ -7,8 +7,7 @@ using NLog;
 namespace Kifa.IO;
 
 public class SeekableReadStream : Stream {
-    public delegate int Reader(byte[] buffer, int bufferOffset = 0, long offset = 0,
-        int count = -1);
+    public delegate int Reader(byte[] buffer, int bufferOffset, long offset, int count);
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -122,4 +121,24 @@ public class SeekableReadStream : Stream {
 
     public override void Write(byte[] buffer, int offset, int count)
         => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+}
+
+public class SeekableReadStream<TState> : SeekableReadStream {
+    public delegate int ReaderWithState(byte[] buffer, int bufferOffset, long offset, int count,
+        TState state);
+
+    public SeekableReadStream(long length, ReaderWithState readerWithState, TState downloadState,
+        int maxChunkSize = int.MaxValue, int threadCount = 1) : base(length,
+        (buffer, bufferOffset, offset, count)
+            => readerWithState(buffer, bufferOffset, offset, count, downloadState), maxChunkSize,
+        threadCount) {
+    }
+
+    public SeekableReadStream(Func<long> lengthGetter, ReaderWithState readerWithState,
+        TState downloadState, int maxChunkSize = Int32.MaxValue, int threadCount = 1) : base(
+        lengthGetter,
+        (buffer, bufferOffset, offset, count)
+            => readerWithState(buffer, bufferOffset, offset, count, downloadState), maxChunkSize,
+        threadCount) {
+    }
 }

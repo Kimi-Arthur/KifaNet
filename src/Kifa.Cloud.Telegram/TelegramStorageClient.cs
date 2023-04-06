@@ -164,30 +164,35 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public override Stream OpenRead(string path) {
         var document = GetDocument(path).Checked();
         var fileSize = document.size;
-        return new SeekableReadStream(fileSize,
-            (buffer, bufferOffset, offset, count) => Download(buffer, path,
-                bufferOffset, offset, count));
+        return new SeekableReadStream<DownloadState>(fileSize,
+            (buffer, bufferOffset, offset, count, state) => Download(buffer, path,
+                bufferOffset, offset, count, state), new DownloadState());
     }
 
     const int DownloadBlockSize = 1 << 20; // 1 MiB
-    byte[]? lastBlock;
-    long lastBlockStart = -1;
 
-    int Download(byte[] buffer, string path, int bufferOffset, long offset, int count) {
+    class DownloadState {
+        public byte[]? lastBlock;
+        public long lastBlockStart = -1;
+    }
+
+    int Download(byte[] buffer, string path, int bufferOffset, long offset, int count,
+        DownloadState state) {
         // TODO: When will this happen?
         if (count < 0) {
             count = buffer.Length - bufferOffset;
         }
 
-        lastBlock ??= new byte[DownloadBlockSize];
+        state.lastBlock ??= new byte[DownloadBlockSize];
 
         var totalRead = 0;
 
-        if (lastBlockStart >= 0 && offset >= lastBlockStart &&
-            offset < lastBlockStart + DownloadBlockSize) {
+        if (state.lastBlockStart >= 0 && offset >= state.lastBlockStart &&
+            offset < state.lastBlockStart + DownloadBlockSize) {
             // Something can be read from lastBlock.
-            var copySize = (int) Math.Min(count, lastBlockStart + DownloadBlockSize - offset);
-            Array.Copy(lastBlock, offset - lastBlockStart, buffer, bufferOffset, copySize);
+            var copySize = (int) Math.Min(count, state.lastBlockStart + DownloadBlockSize - offset);
+            Array.Copy(state.lastBlock, offset - state.lastBlockStart, buffer, bufferOffset,
+                copySize);
             count -= copySize;
             offset += copySize;
             bufferOffset += copySize;
@@ -210,7 +215,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var location = GetDocument(path).Checked().ToFileLocation();
         while (count > 0) {
             var requestStart = offset.RoundDown(DownloadBlockSize);
-            lastBlockStart = requestStart;
+            state.lastBlockStart = requestStart;
             var effectiveReadCount = (int) Math.Min(count, BlockSize - offset % BlockSize);
 
             Logger.Trace(
@@ -230,7 +235,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         // Keep the last block no matter if it's fully used or not as we normally will keep the
         // 512KB array there.
-        downloadResult.Checked().bytes.CopyTo(lastBlock, 0);
+        downloadResult.Checked().bytes.CopyTo(state.lastBlock, 0);
 
         return totalRead;
     }
