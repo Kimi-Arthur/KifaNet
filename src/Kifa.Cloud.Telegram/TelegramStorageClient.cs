@@ -109,7 +109,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var totalParts = (int) (size - 1) / BlockSize + 1;
         var fileId = Random.Shared.NextInt64();
 
-        var sem = new SemaphoreSlim(16);
+        var sem = new SemaphoreSlim(8);
         var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
             var toRead = (int) Math.Min(size - i * BlockSize, BlockSize);
@@ -207,7 +207,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         var downloadTasks = new List<Task>();
 
-        var sem = new SemaphoreSlim(4);
+        var sem = new SemaphoreSlim(6);
 
         // Workaround for expiration of document with a bit overhead.
         // This solution generally works if the next loop isn't taking too long. Performance wise,
