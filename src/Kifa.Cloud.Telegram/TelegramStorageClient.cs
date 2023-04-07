@@ -163,7 +163,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override Stream OpenRead(string path) {
-        var document = GetDocument(path).Checked();
+        var document = GetDocument(path);
+        if (document == null) {
+            throw new FileNotFoundException(
+                $"{path} is not found in {this} because the document is not found in search.");
+        }
+
         var fileSize = document.size;
         return new SeekableReadStream<DownloadState>(fileSize,
             (buffer, bufferOffset, offset, count, state) => Download(buffer, path,
@@ -216,7 +221,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var location = GetDocument(path).Checked().ToFileLocation();
         while (count > 0) {
             var requestStart = offset.RoundDown(DownloadBlockSize);
-            var effectiveReadCount = (int) Math.Min(count, DownloadBlockSize - offset % DownloadBlockSize);
+            var effectiveReadCount =
+                (int) Math.Min(count, DownloadBlockSize - offset % DownloadBlockSize);
 
             Logger.Trace(
                 $"To request {DownloadBlockSize} from {requestStart} for final target {count} bytes from {offset}.");
