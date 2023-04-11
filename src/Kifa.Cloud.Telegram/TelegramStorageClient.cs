@@ -128,11 +128,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 try {
                     var partResult = await Retry.Run(
                         async () => await Client.Upload_SaveBigFilePart(fileId, index, totalParts,
-                            buffer), (ex, i) => {
-                            Logger.Warn(ex, "It's ok");
-                            Thread.Sleep(TimeSpan.FromMinutes(1));
-                        });
-
+                            buffer), HandleFloodException);
 
                     if (!partResult) {
                         throw new Exception($"Failed to upload part {index} for {path}.");
@@ -160,6 +156,21 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             throw new Exception(
                 $"Failed to upload {path} in the finalization step: {finalResult}.");
         }
+    }
+
+    static void HandleFloodException(Exception ex, int i) {
+        if (ex is not RpcException {
+                Code: 420
+            } rpcException) {
+            throw ex;
+        }
+
+        if (i >= 10) {
+            throw ex;
+        }
+
+        Logger.Warn(ex, $"Sleeping {rpcException.X} as requested by Telegram API ({i})...");
+        Thread.Sleep(TimeSpan.FromSeconds(rpcException.X));
     }
 
     public override Stream OpenRead(string path) {
