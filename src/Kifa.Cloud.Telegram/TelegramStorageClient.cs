@@ -260,8 +260,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         try {
             // From https://core.telegram.org/api/files#downloading-files
             // limit is at most 1 MiB and offset should align 1 MiB block boundary.
-            var downloadResult = await Client.Upload_GetFile(location, offset: requestStart,
-                limit: DownloadBlockSize);
+            var downloadResult = await Retry.Run(
+                async () => await Client.Upload_GetFile(location, offset: requestStart,
+                    limit: DownloadBlockSize), HandleFloodException);
+
             if (downloadResult is not Upload_File uploadFile) {
                 throw new Exception($"Response is not {nameof(Upload_File)}");
             }
