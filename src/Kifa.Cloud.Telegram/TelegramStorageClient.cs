@@ -189,8 +189,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     const int DownloadBlockSize = 1 << 20; // 1 MiB
 
     class DownloadState {
-        public byte[]? lastBlock;
-        public long lastBlockStart = -1;
+        public byte[]? LastBlock;
+        public long LastBlockStart = -1;
     }
 
     int Download(byte[] buffer, string path, int bufferOffset, long offset, int count,
@@ -200,15 +200,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             count = buffer.Length - bufferOffset;
         }
 
-        state.lastBlock ??= new byte[DownloadBlockSize];
+        state.LastBlock ??= new byte[DownloadBlockSize];
 
         var totalRead = 0;
 
-        if (state.lastBlockStart >= 0 && offset >= state.lastBlockStart &&
-            offset < state.lastBlockStart + DownloadBlockSize) {
+        if (state.LastBlockStart >= 0 && offset >= state.LastBlockStart &&
+            offset < state.LastBlockStart + DownloadBlockSize) {
             // Something can be read from lastBlock.
-            var copySize = (int) Math.Min(count, state.lastBlockStart + DownloadBlockSize - offset);
-            Array.Copy(state.lastBlock, offset - state.lastBlockStart, buffer, bufferOffset,
+            var copySize = (int) Math.Min(count, state.LastBlockStart + DownloadBlockSize - offset);
+            Array.Copy(state.LastBlock, offset - state.LastBlockStart, buffer, bufferOffset,
                 copySize);
             count -= copySize;
             offset += copySize;
@@ -258,8 +258,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     // Keep the last block no matter if it's fully used or not as we normally will keep the
                     // 512KB array there.
                     if (isLastBlock) {
-                        state.lastBlockStart = requestStart;
-                        uploadFile.bytes.CopyTo(state.lastBlock, 0);
+                        state.LastBlockStart = requestStart;
+                        uploadFile.bytes.CopyTo(state.LastBlock, 0);
                     }
                 } finally {
                     sem.Release();
