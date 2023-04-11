@@ -189,7 +189,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     const int DownloadBlockSize = 1 << 20; // 1 MiB
 
     class DownloadState {
-        public byte[]? LastBlock;
+        public readonly byte[] LastBlock = new byte[DownloadBlockSize];
         public long LastBlockStart = -1;
     }
 
@@ -199,8 +199,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         if (count < 0) {
             count = buffer.Length - bufferOffset;
         }
-
-        state.LastBlock ??= new byte[DownloadBlockSize];
 
         var totalRead = 0;
 
@@ -223,50 +221,20 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         var downloadTasks = new List<Task>();
 
-        var sem = new SemaphoreSlim(6);
+        var semaphore = new SemaphoreSlim(6);
 
         // Workaround for expiration of document with a bit overhead.
         // This solution generally works if the next loop isn't taking too long. Performance wise,
         // this should serve for quite some versions. May need to revise if the next loop finishes
         // too quick.
         var location = GetDocument(path).Checked().ToFileLocation();
+        Logger.Trace($"Getting {count} bytes from {offset} of {path}...");
         while (count > 0) {
-            var requestStart = offset.RoundDown(DownloadBlockSize);
             var effectiveReadCount =
                 (int) Math.Min(count, DownloadBlockSize - offset % DownloadBlockSize);
 
-            Logger.Trace(
-                $"To request {DownloadBlockSize} from {requestStart} for final target {count} bytes from {offset}.");
-
-            async Task DownloadBlock(bool isLastBlock, long offset, int bufferOffset) {
-                Logger.Trace($"Waiting for semaphore to get block from {offset} for {path}...");
-                await sem.WaitAsync();
-                Logger.Trace($"Getting block from {offset} for {path}...");
-
-                try {
-                    // From https://core.telegram.org/api/files#downloading-files
-                    // limit is at most 1 MiB and offset should align 1 MiB block boundary.
-                    var downloadResult = await Client.Upload_GetFile(location, offset: requestStart,
-                        limit: DownloadBlockSize);
-                    if (downloadResult is not Upload_File uploadFile) {
-                        throw new Exception($"Response is not {nameof(Upload_File)}");
-                    }
-
-                    Array.Copy(uploadFile.bytes, offset - requestStart, buffer, bufferOffset,
-                        effectiveReadCount);
-
-                    // Keep the last block no matter if it's fully used or not as we normally will keep the
-                    // 512KB array there.
-                    if (isLastBlock) {
-                        state.LastBlockStart = requestStart;
-                        uploadFile.bytes.CopyTo(state.LastBlock, 0);
-                    }
-                } finally {
-                    sem.Release();
-                }
-            }
-
-            downloadTasks.Add(DownloadBlock(count <= DownloadBlockSize, offset, bufferOffset));
+            downloadTasks.Add(DownloadOneBlock(location, count <= DownloadBlockSize, offset,
+                effectiveReadCount, buffer, bufferOffset, state, semaphore));
 
             count -= effectiveReadCount;
             offset += effectiveReadCount;
@@ -277,6 +245,39 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         Task.WhenAll(downloadTasks).GetAwaiter().GetResult();
 
         return totalRead;
+    }
+
+    async Task DownloadOneBlock(InputDocumentFileLocation location, bool isLastBlock, long offset,
+        int effectiveReadCount, byte[] buffer, int bufferOffset, DownloadState downloadState,
+        SemaphoreSlim semaphore) {
+        var requestStart = offset.RoundDown(DownloadBlockSize);
+        Logger.Trace($"To request {DownloadBlockSize} from {requestStart}.");
+
+        Logger.Trace($"Waiting for semaphore to get block from {offset}...");
+        await semaphore.WaitAsync();
+        Logger.Trace($"Getting block from {offset}...");
+
+        try {
+            // From https://core.telegram.org/api/files#downloading-files
+            // limit is at most 1 MiB and offset should align 1 MiB block boundary.
+            var downloadResult = await Client.Upload_GetFile(location, offset: requestStart,
+                limit: DownloadBlockSize);
+            if (downloadResult is not Upload_File uploadFile) {
+                throw new Exception($"Response is not {nameof(Upload_File)}");
+            }
+
+            Array.Copy(uploadFile.bytes, offset - requestStart, buffer, bufferOffset,
+                effectiveReadCount);
+
+            // Keep the last block no matter if it's fully used or not as we normally will keep the
+            // 512KB array there.
+            if (isLastBlock) {
+                downloadState.LastBlockStart = requestStart;
+                uploadFile.bytes.CopyTo(downloadState.LastBlock, 0);
+            }
+        } finally {
+            semaphore.Release();
+        }
     }
 
     public override string Type => "tele";
