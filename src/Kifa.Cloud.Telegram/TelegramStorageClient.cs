@@ -108,8 +108,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // size should be at most 1 << 31.
         var totalParts = (int) (size - 1) / BlockSize + 1;
         var fileId = Random.Shared.NextInt64();
+        Logger.Debug($"Uploading {path} with temp file id {fileId}...");
 
-        var sem = new SemaphoreSlim(8);
+        var semaphore = new SemaphoreSlim(8);
         var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
             var toRead = (int) Math.Min(size - i * BlockSize, BlockSize);
@@ -119,29 +120,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 throw new Exception($"Unexpected read length {readLength}, expecting {toRead}");
             }
 
-            async Task UploadOneBlock(object state) {
-                var index = (int) state;
-                Logger.Trace(
-                    $"Waiting for semaphore to uploading part {index} of {totalParts} for {path}...");
-                await sem.WaitAsync();
-                Logger.Trace($"Uploading part {index} of {totalParts} for {path}...");
-                try {
-                    var partResult = await Retry.Run(
-                        async () => await Client.Upload_SaveBigFilePart(fileId, index, totalParts,
-                            buffer), HandleFloodException);
-
-                    if (!partResult) {
-                        throw new Exception($"Failed to upload part {index} for {path}.");
-                    }
-
-                    Logger.Trace(
-                        $"Successfully uploaded part {index} of {totalParts} for {path}...");
-                } finally {
-                    sem.Release();
-                }
-            }
-
-            tasks[i] = UploadOneBlock(i);
+            tasks[i] = UploadOneBlock(fileId, totalParts, i, buffer, semaphore);
         }
 
         Task.WhenAll(tasks).GetAwaiter().GetResult();
@@ -155,6 +134,27 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         if (finalResult?.message != path) {
             throw new Exception(
                 $"Failed to upload {path} in the finalization step: {finalResult}.");
+        }
+    }
+
+    async Task UploadOneBlock(long fileId, int partIndex, int totalParts, byte[] buffer,
+        SemaphoreSlim semaphore) {
+        Logger.Trace(
+            $"Waiting for semaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
+        await semaphore.WaitAsync();
+        Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
+        try {
+            var partResult = await Retry.Run(
+                async () => await Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
+                    buffer), HandleFloodException);
+
+            if (!partResult) {
+                throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
+            }
+
+            Logger.Trace($"Successfully uploaded part {partIndex} of {totalParts} for {fileId}...");
+        } finally {
+            semaphore.Release();
         }
     }
 
