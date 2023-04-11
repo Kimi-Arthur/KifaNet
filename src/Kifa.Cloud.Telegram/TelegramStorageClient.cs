@@ -40,8 +40,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     InputPeer? channel;
 
     public InputPeer Channel
-        => channel ??= Client.Messages_GetAllChats().Result.chats[long.Parse(Cell.ChannelId)]
-            .Checked();
+        => channel ??= Retry
+            .Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(), HandleFloodException)
+            .chats[long.Parse(Cell.ChannelId)].Checked();
 
     TelegramStorageClient() {
     }
@@ -86,7 +87,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             return;
         }
 
-        var result = Client.Checked().DeleteMessages(Channel, message.id).Result;
+        var result =
+            Retry.Run(
+                () => Client.Checked().DeleteMessages(Channel, message.id).GetAwaiter().GetResult(),
+                HandleFloodException);
         if (result.pts_count != 1) {
             Logger.Debug($"Delete of {path} is not successful, but is ignored.");
         }
@@ -125,13 +129,13 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         Task.WhenAll(tasks).GetAwaiter().GetResult();
 
-        var finalResult = Client.SendMediaAsync(Channel, path, new InputFileBig {
+        var finalResult = Retry.Run(() => Client.SendMediaAsync(Channel, path, new InputFileBig {
             id = fileId,
             parts = totalParts,
             name = path.Split("/")[^1]
-        }).GetAwaiter().GetResult();
+        }).GetAwaiter().GetResult(), HandleFloodException);
 
-        if (finalResult?.message != path) {
+        if (finalResult.message != path) {
             throw new Exception(
                 $"Failed to upload {path} in the finalization step: {finalResult}.");
         }
@@ -294,13 +298,17 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     static readonly TimeSpan SearchDelay = TimeSpan.FromMinutes(30);
 
     public Message? GetMessage(string path) {
-        var message = Client.Messages_Search<InputMessagesFilterDocument>(Channel, path).Result
-            .Messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+        var message = Retry
+            .Run(
+                () => Client.Messages_Search<InputMessagesFilterDocument>(Channel, path)
+                    .GetAwaiter().GetResult(), HandleFloodException).Messages
+            .Select(m => m as Message).SingleOrDefault(m => m?.message == path);
         if (message != null) {
             return message;
         }
 
-        var messages = client.Messages_GetHistory(Channel).Result.Messages;
+        var messages = Retry.Run(() => client.Messages_GetHistory(Channel).GetAwaiter().GetResult(),
+            HandleFloodException).Messages;
         while (messages?.Length > 0) {
             message = messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
             if (message != null) {
@@ -311,7 +319,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 break;
             }
 
-            messages = client.Messages_GetHistory(Channel, messages[^1].ID).Result.Messages;
+            messages = Retry
+                .Run(
+                    () => client.Messages_GetHistory(Channel, messages[^1].ID).GetAwaiter()
+                        .GetResult(), HandleFloodException).Messages;
         }
 
         return null;
@@ -337,7 +348,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             var client = new Client(account.ApiId, account.ApiHash,
                 $"{SessionsFolder}/{account.Id}.session");
 
-            var result = client.Login(account.Phone).Result;
+            var result = Retry.Run(() => client.Login(account.Phone).GetAwaiter().GetResult(),
+                HandleFloodException);
             if (result != null) {
                 throw new DriveNotFoundException(
                     $"Telegram drive {tele.Cell.Id} is not accessible. Requesting {result}.");
