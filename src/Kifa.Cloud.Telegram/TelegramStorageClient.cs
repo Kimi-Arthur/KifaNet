@@ -137,7 +137,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
-    async Task UploadOneBlock(long fileId, int partIndex, int totalParts, byte[] buffer,
+    async Task UploadOneBlock(long fileId, int totalParts, int partIndex, byte[] buffer,
         SemaphoreSlim semaphore) {
         Logger.Trace(
             $"Waiting for semaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
