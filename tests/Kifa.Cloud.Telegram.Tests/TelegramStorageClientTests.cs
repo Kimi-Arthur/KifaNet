@@ -25,7 +25,7 @@ public class TelegramStorageClientTests {
 
         Assert.Equal("verification_code", client.Login(account.Phone).Result);
 
-        // Manually login with client.Log("xxxxx")
+        // Manually login with client.Login("xxxxx")
 
         Assert.Null(client.Login(account.Phone).Result);
     }

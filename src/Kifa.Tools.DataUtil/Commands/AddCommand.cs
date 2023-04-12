@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CommandLine;
 using Kifa.Cloud.Swisscom;
+using Kifa.Cloud.Telegram;
 using NLog;
 
 namespace Kifa.Tools.DataUtil.Commands;
@@ -22,6 +23,11 @@ public partial class AddCommand : KifaCommand {
     public override int Execute() {
         if (Type == SwisscomAccount.ModelId) {
             CreateSwisscomAccounts(Specs);
+            return 0;
+        }
+
+        if (Type == TelegramAccount.ModelId) {
+            CreateTelegramAccount(Specs);
             return 0;
         }
 

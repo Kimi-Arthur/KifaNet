@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,7 +34,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
 
     Client? client;
-    public Client Client => client ??= GetClient();
+    public Client Client => client ??= Cell.Account.Data.Checked().GetClient();
 
     InputPeer? channel;
 
@@ -162,7 +161,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
-    static void HandleFloodException(Exception ex, int i) {
+    public static void HandleFloodException(Exception ex, int i) {
         if (ex is not RpcException {
                 Code: 420
             } rpcException) {
@@ -326,36 +325,5 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         return null;
-    }
-
-    static readonly ConcurrentDictionary<string, Client> AllClients = new();
-
-    static Logger? wTelegramLogger;
-
-    Client GetClient() {
-        // Race condition should be OK here. Calling twice the clause shouldn't have visible
-        // caveats.
-        if (wTelegramLogger == null) {
-            ThreadPool.SetMinThreads(100, 100);
-            wTelegramLogger = LogManager.GetLogger("WTelegram");
-
-            Helpers.Log = (level, message)
-                => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
-        }
-
-        return AllClients.GetOrAdd(CellId, (_, tele) => {
-            var account = tele.Cell.Account.Data.Checked();
-            var client = new Client(account.ApiId, account.ApiHash,
-                $"{SessionsFolder}/{account.Id}.session");
-
-            var result = Retry.Run(() => client.Login(account.Phone).GetAwaiter().GetResult(),
-                HandleFloodException);
-            if (result != null) {
-                throw new DriveNotFoundException(
-                    $"Telegram drive {tele.Cell.Id} is not accessible. Requesting {result}.");
-            }
-
-            return client;
-        }, this);
     }
 }

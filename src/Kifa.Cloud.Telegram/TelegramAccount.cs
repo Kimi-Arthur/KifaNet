@@ -1,4 +1,10 @@
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Threading;
 using Kifa.Service;
+using NLog;
+using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
@@ -40,4 +46,47 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     }
 
     #endregion
+
+    public byte[] Session { get; set; } = Array.Empty<byte>();
+
+    static Logger? wTelegramLogger;
+
+    static readonly ConcurrentDictionary<string, Client> AllClients = new();
+
+    public Client GetClient() {
+        // Race condition should be OK here. Calling twice the clause shouldn't have visible
+        // caveats.
+        if (wTelegramLogger == null) {
+            ThreadPool.SetMinThreads(100, 100);
+            wTelegramLogger = LogManager.GetLogger("WTelegram");
+
+            Helpers.Log = (level, message)
+                => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
+        }
+
+        return AllClients.GetOrAdd(Id, CreateClient, this);
+    }
+
+    Client CreateClient(string _, TelegramAccount tele) {
+        var sessionStream = new MemoryStream();
+        sessionStream.Write(Session);
+        sessionStream.Seek(0, SeekOrigin.Begin);
+        var client = new Client(ConfigProvider, sessionStream);
+
+        var result = Retry.Run(() => client.Login(Phone).GetAwaiter().GetResult(),
+            TelegramStorageClient.HandleFloodException);
+        if (result != null) {
+            throw new DriveNotFoundException(
+                $"Telegram drive {Id} is not accessible. Requesting {result}.");
+        }
+
+        return client;
+    }
+
+    public string? ConfigProvider(string configKey)
+        => configKey switch {
+            "api_id" => ApiId.ToString(),
+            "api_hash" => ApiHash,
+            _ => null
+        };
 }
