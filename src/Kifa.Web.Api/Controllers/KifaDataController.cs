@@ -100,6 +100,11 @@ public class KifaApiActionResult<TValue> : IConvertToActionResult {
             ActionResult = new KifaActionResult<TValue>(value)
         };
 
+    public static implicit operator KifaApiActionResult<TValue>(KifaActionResult<TValue> response)
+        => new() {
+            ActionResult = response
+        };
+
     public IActionResult Convert()
         => ((IConvertToActionResult) new ActionResult<KifaActionResult<TValue>>(ActionResult))
             .Convert();

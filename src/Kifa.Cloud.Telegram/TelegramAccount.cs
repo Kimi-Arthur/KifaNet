@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Kifa.Service;
 using NLog;
@@ -19,6 +18,9 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     public interface ServiceClient : KifaServiceClient<TelegramAccount> {
         KifaActionResult AddSession(string accountId, byte[] sessionData);
+        public KifaActionResult<TelegramSession> ObtainSession(string accountId);
+        public KifaActionResult RenewSession(string accountId, int sessionId);
+        public KifaActionResult ReleaseSession(string accountId, int sessionId);
     }
 
     public class AddSessionRequest {
@@ -26,11 +28,42 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         public required byte[] SessionData { get; set; }
     }
 
+    public class ObtainSessionRequest {
+        public required string AccountId { get; set; }
+    }
+
+    public class RenewSessionRequest {
+        public required string AccountId { get; set; }
+        public required int SessionId { get; set; }
+    }
+
+    public class ReleaseSessionRequest {
+        public required string AccountId { get; set; }
+        public required int SessionId { get; set; }
+    }
+
     public class RestServiceClient : KifaServiceRestClient<TelegramAccount>, ServiceClient {
         public KifaActionResult AddSession(string accountId, byte[] sessionData)
             => Call("add_session", new AddSessionRequest {
                 AccountId = accountId,
                 SessionData = sessionData
+            });
+
+        public KifaActionResult<TelegramSession> ObtainSession(string accountId)
+            => Call<TelegramSession>("obtain_session", new ObtainSessionRequest {
+                AccountId = accountId
+            });
+
+        public KifaActionResult RenewSession(string accountId, int sessionId)
+            => Call("renew_session", new RenewSessionRequest {
+                AccountId = accountId,
+                SessionId = sessionId
+            });
+
+        public KifaActionResult ReleaseSession(string accountId, int sessionId)
+            => Call("release_session", new ReleaseSessionRequest {
+                AccountId = accountId,
+                SessionId = sessionId
             });
     }
 
@@ -72,39 +105,6 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public byte[] Session { get; set; } = Array.Empty<byte>();
 
     public List<TelegramSession> Sessions { get; set; } = new();
-
-    public TelegramSession? ObtainSession() {
-        lock (Sessions) {
-            var any = Sessions.MinBy(s => s.Reserved);
-            if (any != null) {
-                any.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromHours(1);
-            }
-
-            return any;
-        }
-    }
-
-    public bool RenewSession(string sessionId) {
-        lock (Sessions) {
-            var any = Sessions.FirstOrDefault(s => s.Id == sessionId);
-            if (any != null) {
-                any.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromHours(1);
-            }
-
-            return any != null;
-        }
-    }
-
-    public bool ReleaseSession(string sessionId) {
-        lock (Sessions) {
-            var any = Sessions.FirstOrDefault(s => s.Id == sessionId);
-            if (any != null) {
-                any.Reserved = Date.Zero;
-            }
-
-            return any != null;
-        }
-    }
 
     static Logger? wTelegramLogger;
 

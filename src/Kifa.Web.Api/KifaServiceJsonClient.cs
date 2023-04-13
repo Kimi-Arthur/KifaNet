@@ -49,16 +49,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return dataFolder;
             }
 
-            var matchedFolder = KifaServiceJsonClient.DataFolders
-                .Where(kv => typeof(TDataModel).FullName!.StartsWith(kv.Key))
-                .MaxBy(kv => kv.Key.Length);
-            if (matchedFolder == null) {
+            var matchedFolders = KifaServiceJsonClient.DataFolders
+                .Where(kv => typeof(TDataModel).FullName!.StartsWith(kv.Key)).ToList();
+            if (matchedFolders.Count == 0) {
                 // This means the user has no access to this data.
                 throw new DataModelNotFoundException();
             }
 
-            return dataFolder =
-                matchedFolder.Value.Value ?? KifaServiceJsonClient.DefaultDataFolder;
+            return dataFolder = matchedFolders.MaxBy(kv => kv.Key.Length).Value ??
+                                KifaServiceJsonClient.DefaultDataFolder;
         }
 
         set => dataFolder = value;
