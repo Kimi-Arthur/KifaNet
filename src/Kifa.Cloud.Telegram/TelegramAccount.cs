@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
+using Kifa.IO;
 using Kifa.Service;
 using NLog;
 using WTelegram;
@@ -124,9 +126,24 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         return AllClients.GetOrAdd(Id, CreateClient, this);
     }
 
+    async Task KeepSessionRefreshed(int sessionId) {
+        while (true) {
+            Client.RenewSession(Id, sessionId);
+            await Task.Delay(TimeSpan.FromMinutes(30));
+        }
+    }
+
     Client CreateClient(string _, TelegramAccount tele) {
+        var response = Client.ObtainSession(Id);
+        if (response.Status != KifaActionStatus.OK) {
+            throw new InsufficientStorageException(
+                $"Failed to locate a session to use: {response.Message}");
+        }
+
+        var session = response.Response.Checked();
+
         var sessionStream = new MemoryStream();
-        sessionStream.Write(Session);
+        sessionStream.Write(session.Data);
         sessionStream.Seek(0, SeekOrigin.Begin);
         var client = new Client(ConfigProvider, sessionStream);
 
@@ -136,6 +153,8 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             throw new DriveNotFoundException(
                 $"Telegram drive {Id} is not accessible. Requesting {result}.");
         }
+
+        KeepSessionRefreshed(session.Id);
 
         return client;
     }
