@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Kifa.Cloud.Telegram;
+using Kifa.Service;
 using WTelegram;
 
 namespace Kifa.Tools.DataUtil.Commands;
@@ -11,18 +11,10 @@ public partial class AddCommand {
         foreach (var accountSpec in specs) {
             var segments = accountSpec.Split(":");
             var accountId = segments[0];
-            if (TelegramAccount.Client.Get(accountId) != null) {
-                if (Confirm($"Account {accountId} already exists. Skip")) {
-                    Console.WriteLine($"Skipped adding account {accountId}.");
-                    continue;
-                }
-
-                Console.WriteLine($"Will overwrite account {accountId}.");
-            }
-
             var phone = segments[1];
             var apiId = segments[2];
             var apiHash = segments[3];
+            var sessionCount = int.Parse(segments[4]);
 
             var account = new TelegramAccount {
                 Id = accountId,
@@ -31,22 +23,30 @@ public partial class AddCommand {
                 ApiHash = apiHash
             };
 
-            var sessionStream = new MemoryStream();
-            sessionStream.Write(account.Session);
-            var client = new Client(account.ConfigProvider, sessionStream);
+            TelegramAccount.Client.Update(account);
+            Logger.Info($"Updated account config for {accountId}.");
 
-            var result = Retry.Run(() => client.Login(account.Phone).GetAwaiter().GetResult(),
-                TelegramStorageClient.HandleFloodException);
-            while (result != null) {
-                var code = Confirm($"Telegram asked for {result}:", "");
-                result = Retry.Run(() => client.Login(code).GetAwaiter().GetResult(),
-                    TelegramStorageClient.HandleFloodException);
+            if (!Confirm($"Will continue to add {sessionCount} sessions to account {accountId}")) {
+                continue;
             }
 
-            account.Session = sessionStream.ToArray();
-            Logger.Info($"Successfully login with account {accountId}. Uploading...");
-            TelegramAccount.Client.Update(account);
-            Logger.Info($"Successfully uploaded account {accountId}.");
+            for (var i = 0; i < sessionCount; i++) {
+                var sessionStream = new MemoryStream();
+                sessionStream.Write(account.Session);
+                var client = new Client(account.ConfigProvider, sessionStream);
+
+                var result = Retry.Run(() => client.Login(account.Phone).GetAwaiter().GetResult(),
+                    TelegramStorageClient.HandleFloodException);
+                while (result != null) {
+                    var code = Confirm($"Telegram asked for {result}:", "");
+                    result = Retry.Run(() => client.Login(code).GetAwaiter().GetResult(),
+                        TelegramStorageClient.HandleFloodException);
+                }
+
+                Logger.LogResult(
+                    TelegramAccount.Client.AddSession(accountId, sessionStream.ToArray()),
+                    "add new session");
+            }
         }
     }
 }

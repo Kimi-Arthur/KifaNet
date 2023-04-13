@@ -13,8 +13,23 @@ namespace Kifa.Cloud.Telegram;
 public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public static string ModelId => "telegram/accounts";
 
-    public static KifaServiceClient<TelegramAccount> Client { get; set; } =
-        new KifaServiceRestClient<TelegramAccount>();
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<TelegramAccount> {
+        KifaActionResult AddSession(string accountId, byte[] sessionData);
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<TelegramAccount>, ServiceClient {
+        public KifaActionResult AddSession(string accountId, byte[] sessionData)
+            => Call("add_session", new Dictionary<string, object?> {
+                { "account_id", accountId },
+                { "session_data", sessionData }
+            });
+    }
+
+    #endregion
 
     #region public late long ApiId { get; set; }
 
