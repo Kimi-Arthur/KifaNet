@@ -9,16 +9,18 @@ public class
     TelegramAccountController : KifaDataController<TelegramAccount,
         TelegramAccountJsonServiceClient> {
     [HttpPost("$add_session")]
-    public KifaApiActionResult AddSession(string accountId, byte[] sessionData)
-        => Client.AddSession(accountId, sessionData);
+    public KifaApiActionResult AddSession([FromBody] TelegramAccount.AddSessionRequest request)
+        => Client.AddSession(request.AccountId, request.SessionData);
 }
 
 public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAccount>,
     TelegramAccount.ServiceClient {
     public KifaActionResult AddSession(string accountId, byte[] sessionData) {
+        Console.WriteLine(
+            $"Add session for account {accountId} with {sessionData.Length} bytes of data." + $"");
         var account = Get(accountId).Checked();
         account.Sessions.Add(new TelegramSession {
-            Id = DateTimeOffset.UtcNow.ToString(),
+            Id = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.ffffff"),
             Data = sessionData,
             Reserved = Date.Zero
         });

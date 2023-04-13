@@ -21,11 +21,16 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         KifaActionResult AddSession(string accountId, byte[] sessionData);
     }
 
+    public class AddSessionRequest {
+        public required string AccountId { get; set; }
+        public required byte[] SessionData { get; set; }
+    }
+
     public class RestServiceClient : KifaServiceRestClient<TelegramAccount>, ServiceClient {
         public KifaActionResult AddSession(string accountId, byte[] sessionData)
-            => Call("add_session", new Dictionary<string, object?> {
-                { "account_id", accountId },
-                { "session_data", sessionData }
+            => Call("add_session", new AddSessionRequest {
+                AccountId = accountId,
+                SessionData = sessionData
             });
     }
 
