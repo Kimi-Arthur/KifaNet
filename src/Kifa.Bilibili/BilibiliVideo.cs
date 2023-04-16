@@ -513,7 +513,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     const string BadCdnSuffix = "mcdn.bilivideo.cn";
 
-    static bool IsValidLink(string url) => url.Contains(BadCdnSuffix);
+    static bool IsValidLink(string url) => !url.Contains(BadCdnSuffix);
 
     static int GetCodecId(string preferredCodec)
         => CodecNames.First(c => c.Value == preferredCodec).Key;
