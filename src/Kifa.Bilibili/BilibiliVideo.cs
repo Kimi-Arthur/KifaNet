@@ -495,11 +495,12 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
                 : video.Bandwidth * data.Dash.Duration / 8;
 
             return (video.MimeType.Split("/").Last(), receivedQuality, codec,
-                ((video.BackupUrl ?? Enumerable.Empty<string>()).Prepend(video.BaseUrl).ToList(),
+                ((video.BackupUrl ?? Enumerable.Empty<string>()).Prepend(video.BaseUrl).Where(IsValidLink).ToList(),
                     videoSize),
                 audios.Select(audio => (
-                    (audio.BackupUrl ?? Enumerable.Empty<string>()).Prepend(audio.BaseUrl).ToList(),
-                    audio.Bandwidth * data.Dash.Duration / 8)).ToList());
+                        (audio.BackupUrl ?? Enumerable.Empty<string>()).Prepend(audio.BaseUrl)
+                        .Where(IsValidLink).ToList(), audio.Bandwidth * data.Dash.Duration / 8))
+                    .ToList());
         }, (ex, index) => {
             if (index > 5) {
                 throw ex;
@@ -509,6 +510,10 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             Thread.Sleep(TimeSpan.FromSeconds(10));
         });
     }
+
+    const string BadCdnSuffix = "mcdn.bilivideo.cn";
+
+    static bool IsValidLink(string url) => url.Contains(BadCdnSuffix);
 
     static int GetCodecId(string preferredCodec)
         => CodecNames.First(c => c.Value == preferredCodec).Key;
