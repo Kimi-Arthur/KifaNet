@@ -113,17 +113,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var fileId = Random.Shared.NextInt64();
         Logger.Debug($"Uploading {path} with temp file id {fileId}...");
 
-        var semaphore = new SemaphoreSlim(8);
+        var uploadSemaphore = new SemaphoreSlim(8);
+        var readSemaphore = new SemaphoreSlim(1);
         var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
-            var toRead = (int) Math.Min(size - i * BlockSize, BlockSize);
-            var buffer = new byte[toRead];
-            var readLength = stream.Read(buffer);
-            if (readLength != toRead) {
-                throw new Exception($"Unexpected read length {readLength}, expecting {toRead}");
-            }
-
-            tasks[i] = UploadOneBlock(fileId, totalParts, i, buffer, semaphore);
+            tasks[i] = UploadOneBlock(fileId, totalParts, i, stream, i * BlockSize,
+                (int) Math.Min(size - i * BlockSize, BlockSize), readSemaphore, uploadSemaphore);
         }
 
         Task.WhenAll(tasks).GetAwaiter().GetResult();
@@ -140,13 +135,26 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
-    async Task UploadOneBlock(long fileId, int totalParts, int partIndex, byte[] buffer,
-        SemaphoreSlim semaphore) {
+    async Task UploadOneBlock(long fileId, int totalParts, int partIndex, Stream stream,
+        long fromPosition, int length, SemaphoreSlim readSemaphore, SemaphoreSlim uploadSemaphore) {
         Logger.Trace(
-            $"Waiting for semaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
-        await semaphore.WaitAsync();
-        Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
+            $"Waiting for uploadSemaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
+        await uploadSemaphore.WaitAsync();
         try {
+            var buffer = new byte[length];
+
+            await readSemaphore.WaitAsync();
+            try {
+                stream.Seek(fromPosition, SeekOrigin.Begin);
+                var readLength = await stream.ReadAsync(buffer);
+                if (readLength != length) {
+                    throw new Exception($"Unexpected read length {readLength}, expecting {length}");
+                }
+            } finally {
+                readSemaphore.Release();
+            }
+
+            Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
             var partResult = await Retry.Run(
                 async () => await Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
                     buffer), HandleFloodException);
@@ -157,7 +165,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             Logger.Trace($"Successfully uploaded part {partIndex} of {totalParts} for {fileId}...");
         } finally {
-            semaphore.Release();
+            uploadSemaphore.Release();
         }
     }
 
