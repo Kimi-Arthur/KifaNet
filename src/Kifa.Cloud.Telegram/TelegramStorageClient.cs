@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -115,13 +116,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         var uploadSemaphore = new SemaphoreSlim(8);
         var readSemaphore = new SemaphoreSlim(1);
+        var exceptions = new ConcurrentBag<Exception>();
         var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
             tasks[i] = UploadOneBlock(fileId, totalParts, i, stream, i * BlockSize,
-                (int) Math.Min(size - i * BlockSize, BlockSize), readSemaphore, uploadSemaphore);
+                (int) Math.Min(size - i * BlockSize, BlockSize), readSemaphore, uploadSemaphore,
+                exceptions);
         }
 
         Task.WhenAll(tasks).GetAwaiter().GetResult();
+        if (exceptions.TryPeek(out var ex)) {
+            throw ex;
+        }
 
         var finalResult = Retry.Run(() => Client.SendMediaAsync(Channel, path, new InputFileBig {
             id = fileId,
@@ -136,7 +142,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     async Task UploadOneBlock(long fileId, int totalParts, int partIndex, Stream stream,
-        long fromPosition, int length, SemaphoreSlim readSemaphore, SemaphoreSlim uploadSemaphore) {
+        long fromPosition, int length, SemaphoreSlim readSemaphore, SemaphoreSlim uploadSemaphore,
+        ConcurrentBag<Exception> exceptions) {
         Logger.Trace(
             $"Waiting for uploadSemaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
         await uploadSemaphore.WaitAsync();
@@ -144,14 +151,29 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             var buffer = new byte[length];
 
             await readSemaphore.WaitAsync();
+
+            if (!exceptions.IsEmpty) {
+                Logger.Debug("Other task already failed. Fail fast.");
+                return;
+            }
+
             try {
                 stream.Seek(fromPosition, SeekOrigin.Begin);
                 var readLength = await stream.ReadAsync(buffer);
                 if (readLength != length) {
-                    throw new Exception($"Unexpected read length {readLength}, expecting {length}");
+                    throw new FileCorruptedException(
+                        $"Unexpected read length {readLength}, expecting {length}");
                 }
+            } catch (IOException ex) {
+                exceptions.Add(ex);
+                return;
             } finally {
                 readSemaphore.Release();
+            }
+
+            if (!exceptions.IsEmpty) {
+                Logger.Debug("Other task already failed. Fail fast.");
+                return;
             }
 
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
@@ -164,6 +186,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
 
             Logger.Trace($"Successfully uploaded part {partIndex} of {totalParts} for {fileId}...");
+        } catch (Exception ex) {
+            exceptions.Add(ex);
         } finally {
             uploadSemaphore.Release();
         }
