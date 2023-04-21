@@ -24,8 +24,6 @@ public class DownloadMangaCommand : KifaCommand {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static readonly HttpClient NoAuthClient = new();
-
     public override int Execute() {
         var manga = BilibiliManga.Client.Get(mangaId);
 
@@ -57,7 +55,7 @@ public class DownloadMangaCommand : KifaCommand {
                     continue;
                 }
 
-                targetFile.Write(NoAuthClient.GetStreamAsync(link).Result);
+                targetFile.Write(new KifaFile(link).OpenRead());
                 Logger.Debug($"Downloaded {targetFile}.");
             }
         }
