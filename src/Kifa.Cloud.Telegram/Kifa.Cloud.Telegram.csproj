@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="WTelegramClient" Version="3.4.1" />
+      <PackageReference Include="WTelegramClient" Version="3.4.2" />
     </ItemGroup>
 
 </Project>
