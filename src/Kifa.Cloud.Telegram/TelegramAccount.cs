@@ -104,8 +104,6 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     #endregion
 
-    public byte[] Session { get; set; } = Array.Empty<byte>();
-
     public List<TelegramSession> Sessions { get; set; } = new();
 
     static Logger? wTelegramLogger;
