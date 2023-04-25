@@ -58,7 +58,7 @@ public class PatchedStream : Stream {
             var streamCount = (int) Math.Min(count - readCount,
                 Length - BufferAfter.Length - Position);
             stream.Seek(Position - BufferBefore.Length + IgnoreBefore, SeekOrigin.Begin);
-            stream.Read(buffer, offset + readCount, streamCount);
+            stream.ReadExactly(buffer, offset + readCount, streamCount);
             Position += streamCount;
             readCount += streamCount;
 
