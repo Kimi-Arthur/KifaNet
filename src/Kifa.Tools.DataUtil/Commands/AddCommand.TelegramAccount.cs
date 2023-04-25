@@ -16,15 +16,20 @@ public partial class AddCommand {
             var apiHash = segments[3];
             var sessionCount = int.Parse(segments[4]);
 
-            var account = new TelegramAccount {
-                Id = accountId,
-                Phone = phone,
-                ApiId = int.Parse(apiId),
-                ApiHash = apiHash
-            };
+            TelegramAccount account;
+            if (phone + apiId + apiHash != "") {
+                account = new TelegramAccount {
+                    Id = accountId,
+                    Phone = phone,
+                    ApiId = int.Parse(apiId),
+                    ApiHash = apiHash
+                };
 
-            TelegramAccount.Client.Update(account);
-            Logger.Info($"Updated account config for {accountId}.");
+                TelegramAccount.Client.Update(account);
+                Logger.Info($"Updated account config for {accountId}.");
+            } else {
+                account = TelegramAccount.Client.Get(accountId).Checked();
+            }
 
             if (!Confirm($"Will continue to add {sessionCount} sessions to account {accountId}")) {
                 continue;
