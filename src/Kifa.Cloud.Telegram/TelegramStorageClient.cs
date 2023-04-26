@@ -152,12 +152,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             await readSemaphore.WaitAsync();
 
-            if (!exceptions.IsEmpty) {
-                Logger.Debug("Other task already failed. Fail fast.");
-                return;
-            }
-
             try {
+                if (!exceptions.IsEmpty) {
+                    Logger.Debug("Other task already failed. Fail fast.");
+                    return;
+                }
+
                 stream.Seek(fromPosition, SeekOrigin.Begin);
                 var readLength = await stream.ReadAsync(buffer);
                 if (readLength != length) {
