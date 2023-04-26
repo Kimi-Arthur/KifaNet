@@ -88,7 +88,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         var result =
             Retry.Run(
-                () => Client.Checked().DeleteMessages(Channel, message.id).GetAwaiter().GetResult(),
+                () => Client.DeleteMessages(Channel, message.id).GetAwaiter().GetResult(),
                 HandleFloodException);
         if (result.pts_count != 1) {
             Logger.Debug($"Delete of {path} is not successful, but is ignored.");
