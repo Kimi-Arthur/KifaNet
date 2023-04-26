@@ -154,7 +154,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             try {
                 if (!exceptions.IsEmpty) {
-                    Logger.Debug("Other task already failed. Fail fast.");
+                    Logger.Trace("Other task already failed. Fail fast.");
                     return;
                 }
 
