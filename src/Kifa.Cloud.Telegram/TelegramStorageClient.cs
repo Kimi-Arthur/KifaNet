@@ -34,8 +34,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     TelegramStorageCell? cell;
     public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
 
-    Client? client;
-    public Client Client => client ??= Cell.Account.Data.Checked().GetClient();
+    public Client Client => Cell.Account.Data.Checked().GetClient();
 
     InputPeer? channel;
 
@@ -338,7 +337,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             return message;
         }
 
-        var messages = Retry.Run(() => client.Messages_GetHistory(Channel).GetAwaiter().GetResult(),
+        var messages = Retry.Run(() => Client.Messages_GetHistory(Channel).GetAwaiter().GetResult(),
             HandleFloodException).Messages;
         while (messages?.Length > 0) {
             message = messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
@@ -350,9 +349,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 break;
             }
 
+            var lastMessageId = messages[^1].ID;
             messages = Retry
                 .Run(
-                    () => client.Messages_GetHistory(Channel, messages[^1].ID).GetAwaiter()
+                    () => Client.Messages_GetHistory(Channel, lastMessageId).GetAwaiter()
                         .GetResult(), HandleFloodException).Messages;
         }
 

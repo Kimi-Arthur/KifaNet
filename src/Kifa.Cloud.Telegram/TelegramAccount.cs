@@ -121,7 +121,10 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
                 => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
         }
 
-        return AllClients.GetOrAdd(Id, CreateClient, this);
+        var client = AllClients.GetOrAdd(Id, CreateClient, this);
+        EnsureLoggedIn(client);
+
+        return client;
     }
 
     async Task KeepSessionRefreshed(int sessionId) {
@@ -145,16 +148,19 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         sessionStream.Seek(0, SeekOrigin.Begin);
         var client = new Client(ConfigProvider, sessionStream);
 
+        EnsureLoggedIn(client);
+        KeepSessionRefreshed(session.Id);
+
+        return client;
+    }
+
+    void EnsureLoggedIn(Client client) {
         var result = Retry.Run(() => client.Login(Phone).GetAwaiter().GetResult(),
             TelegramStorageClient.HandleFloodException);
         if (result != null) {
             throw new DriveNotFoundException(
                 $"Telegram drive {Id} is not accessible. Requesting {result}.");
         }
-
-        KeepSessionRefreshed(session.Id);
-
-        return client;
     }
 
     public string? ConfigProvider(string configKey)
