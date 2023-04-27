@@ -1,5 +1,5 @@
-using System.IO;
 using Kifa.Service;
+using Newtonsoft.Json;
 using TL;
 using WTelegram;
 
@@ -35,10 +35,12 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
 
     Client? telegramClient;
 
+    [JsonIgnore]
     public Client TelegramClient => telegramClient ??= Account.Data.Checked().GetClient();
 
     InputPeer? channel;
 
+    [JsonIgnore]
     public InputPeer Channel
         => channel ??= Retry
             .Run(() => TelegramClient.Messages_GetAllChats().GetAwaiter().GetResult(),
