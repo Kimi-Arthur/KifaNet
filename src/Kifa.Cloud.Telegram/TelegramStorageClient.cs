@@ -34,7 +34,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     TelegramStorageCell? cell;
     public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
 
-    public Client Client => Cell.Account.Data.Checked().GetClient();
+    Client? client;
+    public Client Client => client ??= Cell.Account.Data.Checked().GetClient();
 
     public InputPeer Channel
         => Retry.Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
@@ -84,8 +85,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         var result =
-            Retry.Run(
-                () => Client.DeleteMessages(Channel, message.id).GetAwaiter().GetResult(),
+            Retry.Run(() => Client.DeleteMessages(Channel, message.id).GetAwaiter().GetResult(),
                 HandleFloodException);
         if (result.pts_count != 1) {
             Logger.Debug($"Delete of {path} is not successful, but is ignored.");
@@ -110,14 +110,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var fileId = Random.Shared.NextInt64();
         Logger.Debug($"Uploading {path} with temp file id {fileId}...");
 
-        var client = Client;
-
         var uploadSemaphore = new SemaphoreSlim(8);
         var readSemaphore = new SemaphoreSlim(1);
         var exceptions = new ConcurrentBag<Exception>();
         var tasks = new Task[totalParts];
         for (var i = 0; (long) i * BlockSize < size; ++i) {
-            tasks[i] = UploadOneBlock(client, fileId, totalParts, i, stream, i * BlockSize,
+            tasks[i] = UploadOneBlock(fileId, totalParts, i, stream, i * BlockSize,
                 (int) Math.Min(size - i * BlockSize, BlockSize), readSemaphore, uploadSemaphore,
                 exceptions);
         }
@@ -127,7 +125,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             throw ex;
         }
 
-        var finalResult = Retry.Run(() => client.SendMediaAsync(Channel, path, new InputFileBig {
+        var finalResult = Retry.Run(() => Client.SendMediaAsync(Channel, path, new InputFileBig {
             id = fileId,
             parts = totalParts,
             name = path.Split("/")[^1]
@@ -139,9 +137,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
-    static async Task UploadOneBlock(Client client, long fileId, int totalParts, int partIndex,
-        Stream stream, long fromPosition, int length, SemaphoreSlim readSemaphore,
-        SemaphoreSlim uploadSemaphore, ConcurrentBag<Exception> exceptions) {
+    async Task UploadOneBlock(long fileId, int totalParts, int partIndex, Stream stream,
+        long fromPosition, int length, SemaphoreSlim readSemaphore, SemaphoreSlim uploadSemaphore,
+        ConcurrentBag<Exception> exceptions) {
         Logger.Trace(
             $"Waiting for uploadSemaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
         await uploadSemaphore.WaitAsync();
@@ -176,7 +174,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
             var partResult = await Retry.Run(
-                async () => await client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
+                async () => await Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
                     buffer), HandleFloodException);
 
             if (!partResult) {
