@@ -9,7 +9,7 @@ public sealed class VideoTagRpc : KifaJsonParameterizedRpc<VideoTagRpc.Response>
 
     public class Response {
         public long Code { get; set; }
-        public long Message { get; set; }
+        public string Message { get; set; }
         public long Ttl { get; set; }
         public List<Tag> Data { get; set; }
     }

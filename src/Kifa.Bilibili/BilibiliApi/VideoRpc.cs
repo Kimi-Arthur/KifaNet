@@ -10,7 +10,7 @@ public sealed class VideoRpc : KifaJsonParameterizedRpc<VideoRpc.Response> {
 
     public class Response {
         public long Code { get; set; }
-        public long Message { get; set; }
+        public string Message { get; set; }
         public long Ttl { get; set; }
         public Data Data { get; set; }
     }

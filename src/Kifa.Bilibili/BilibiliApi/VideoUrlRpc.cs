@@ -21,7 +21,7 @@ public sealed class VideoUrlRpc : KifaJsonParameterizedRpc<VideoUrlResponse> {
 
 public class VideoUrlResponse {
     public long Code { get; set; }
-    public long Message { get; set; }
+    public string Message { get; set; }
     public long Ttl { get; set; }
     public Data? Data { get; set; }
 }
