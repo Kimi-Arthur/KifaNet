@@ -190,8 +190,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 throw ex;
             }
 
-            Logger.Warn(ex, $"Sleeping 10s for unexpected exception ({i})...");
-            Thread.Sleep(TimeSpan.FromSeconds(10));
+            Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
+            Thread.Sleep(TimeSpan.FromSeconds(30));
             return;
         }
 
