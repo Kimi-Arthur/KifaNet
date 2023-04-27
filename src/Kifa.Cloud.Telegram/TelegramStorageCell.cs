@@ -1,4 +1,7 @@
+using System.IO;
 using Kifa.Service;
+using TL;
+using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
@@ -29,4 +32,38 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
     }
 
     #endregion
+
+    bool toRefresh = true;
+    Client? telegramClient;
+
+    public Client TelegramClient {
+        get {
+            telegramClient ??= Account.Data.Checked().GetClient();
+            if (toRefresh) {
+                RefreshClient();
+                toRefresh = false;
+            }
+
+            return telegramClient;
+        }
+    }
+
+    public InputPeer Channel
+        => Retry.Run(() => TelegramClient.Messages_GetAllChats().GetAwaiter().GetResult(),
+            TelegramStorageClient.HandleFloodException).chats[long.Parse(ChannelId)].Checked();
+
+    public void ResetClient() {
+        toRefresh = true;
+    }
+
+    void RefreshClient() {
+        var result =
+            Retry.Run(
+                () => telegramClient.Checked().Login(Account.Data.Checked().Phone).GetAwaiter()
+                    .GetResult(), TelegramStorageClient.HandleFloodException);
+        if (result != null) {
+            throw new DriveNotFoundException(
+                $"Telegram drive {Id} is not accessible. Requesting {result}.");
+        }
+    }
 }

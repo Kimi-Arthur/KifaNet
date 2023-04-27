@@ -9,7 +9,6 @@ using Kifa.IO;
 using Kifa.IO.StorageClients;
 using NLog;
 using TL;
-using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
@@ -33,13 +32,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     TelegramStorageCell? cell;
     public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
-
-    Client? client;
-    public Client Client => client ??= Cell.Account.Data.Checked().GetClient();
-
-    public InputPeer Channel
-        => Retry.Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
-            HandleFloodException).chats[long.Parse(Cell.ChannelId)].Checked();
 
     TelegramStorageClient() {
     }
@@ -85,8 +77,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         var result =
-            Retry.Run(() => Client.DeleteMessages(Channel, message.id).GetAwaiter().GetResult(),
-                HandleFloodException);
+            Retry.Run(
+                () => Cell.TelegramClient.DeleteMessages(Cell.Channel, message.id).GetAwaiter()
+                    .GetResult(), HandleFloodException);
         if (result.pts_count != 1) {
             Logger.Debug($"Delete of {path} is not successful, but is ignored.");
         }
@@ -99,6 +92,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     const int BlockSize = 1 << 19; // 512 KiB
 
     public override void Write(string path, Stream stream) {
+        Cell.ResetClient();
         if (Exists(path)) {
             return;
         }
@@ -125,11 +119,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             throw ex;
         }
 
-        var finalResult = Retry.Run(() => Client.SendMediaAsync(Channel, path, new InputFileBig {
-            id = fileId,
-            parts = totalParts,
-            name = path.Split("/")[^1]
-        }).GetAwaiter().GetResult(), HandleFloodException);
+        var finalResult = Retry.Run(() => Cell.TelegramClient.SendMediaAsync(Cell.Channel, path,
+            new InputFileBig {
+                id = fileId,
+                parts = totalParts,
+                name = path.Split("/")[^1]
+            }).GetAwaiter().GetResult(), HandleFloodException);
 
         if (finalResult.message != path) {
             throw new Exception(
@@ -174,8 +169,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
             var partResult = await Retry.Run(
-                async () => await Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
-                    buffer), HandleFloodException);
+                async () => await Cell.TelegramClient.Upload_SaveBigFilePart(fileId, partIndex,
+                    totalParts, buffer), HandleFloodException);
 
             if (!partResult) {
                 throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
@@ -205,6 +200,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override Stream OpenRead(string path) {
+        Cell.ResetClient();
         var document = GetDocument(path);
         if (document == null) {
             throw new FileNotFoundException(
@@ -292,7 +288,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             // From https://core.telegram.org/api/files#downloading-files
             // limit is at most 1 MiB and offset should align 1 MiB block boundary.
             var downloadResult = await Retry.Run(
-                async () => await Client.Upload_GetFile(location, offset: requestStart,
+                async () => await Cell.TelegramClient.Upload_GetFile(location, offset: requestStart,
                     limit: DownloadBlockSize), HandleFloodException);
 
             if (downloadResult is not Upload_File uploadFile) {
@@ -327,15 +323,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public Message? GetMessage(string path) {
         var message = Retry
             .Run(
-                () => Client.Messages_Search<InputMessagesFilterDocument>(Channel, path)
-                    .GetAwaiter().GetResult(), HandleFloodException).Messages
-            .Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+                () => Cell.TelegramClient
+                    .Messages_Search<InputMessagesFilterDocument>(Cell.Channel, path).GetAwaiter()
+                    .GetResult(), HandleFloodException).Messages.Select(m => m as Message)
+            .SingleOrDefault(m => m?.message == path);
         if (message != null) {
             return message;
         }
 
-        var messages = Retry.Run(() => Client.Messages_GetHistory(Channel).GetAwaiter().GetResult(),
-            HandleFloodException).Messages;
+        var messages = Retry
+            .Run(
+                () => Cell.TelegramClient.Messages_GetHistory(Cell.Channel).GetAwaiter()
+                    .GetResult(), HandleFloodException).Messages;
         while (messages?.Length > 0) {
             message = messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
             if (message != null) {
@@ -349,8 +348,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             var lastMessageId = messages[^1].ID;
             messages = Retry
                 .Run(
-                    () => Client.Messages_GetHistory(Channel, lastMessageId).GetAwaiter()
-                        .GetResult(), HandleFloodException).Messages;
+                    () => Cell.TelegramClient.Messages_GetHistory(Cell.Channel, lastMessageId)
+                        .GetAwaiter().GetResult(), HandleFloodException).Messages;
         }
 
         return null;

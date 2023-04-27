@@ -107,6 +107,6 @@ public class TelegramStorageClientTests {
         KifaConfigs.Init();
         var client = (TelegramStorageClient.Create("test") as TelegramStorageClient).Checked();
 
-        return (client.Client, client.Channel);
+        return (client.Cell.TelegramClient, client.Cell.Channel);
     }
 }
