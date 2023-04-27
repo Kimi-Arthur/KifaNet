@@ -34,11 +34,12 @@ public class CreatePdfMangaCommand : KifaCommand {
     public string IgnoreExistingDoublePages { get; set; } = "";
 
     public override int Execute() {
-        var allDoublePages = KifaFile.FindAllFiles(DoublePages.Split(","));
+        var allDoublePages =
+            KifaFile.FindAllFiles(DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries));
 
         foreach (var folder in Folders) {
             var folderId = new KifaFile(folder).ToString();
-            var episode = BilibiliMangaEpisode.Parse(folderId);
+            // var episode = BilibiliMangaEpisode.Parse(folderId);
             var title = GetOutputName(folderId);
             using var document = new PdfDocument();
             document.Info.Author = Author;
