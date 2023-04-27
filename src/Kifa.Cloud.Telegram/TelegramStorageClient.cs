@@ -185,18 +185,29 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public static void HandleFloodException(Exception ex, int i) {
-        if (ex is not RpcException {
+        if (ex is IOException) {
+            if (i >= 5) {
+                throw ex;
+            }
+
+            Logger.Warn(ex, $"Sleeping 10s for unexpected exception ({i})...");
+            Thread.Sleep(TimeSpan.FromSeconds(10));
+            return;
+        }
+
+        if (ex is RpcException {
                 Code: 420
             } rpcException) {
-            throw ex;
+            if (i >= 10) {
+                throw ex;
+            }
+
+            Logger.Warn(ex, $"Sleeping {rpcException.X} as requested by Telegram API ({i})...");
+            Thread.Sleep(TimeSpan.FromSeconds(rpcException.X));
+            return;
         }
 
-        if (i >= 10) {
-            throw ex;
-        }
-
-        Logger.Warn(ex, $"Sleeping {rpcException.X} as requested by Telegram API ({i})...");
-        Thread.Sleep(TimeSpan.FromSeconds(rpcException.X));
+        throw ex;
     }
 
     public override Stream OpenRead(string path) {
