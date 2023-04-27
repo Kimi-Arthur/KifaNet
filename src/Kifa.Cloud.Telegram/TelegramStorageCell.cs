@@ -33,37 +33,19 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
 
     #endregion
 
-    bool toRefresh = true;
     Client? telegramClient;
 
-    public Client TelegramClient {
-        get {
-            telegramClient ??= Account.Data.Checked().GetClient();
-            if (toRefresh) {
-                RefreshClient();
-                toRefresh = false;
-            }
+    public Client TelegramClient => telegramClient ??= Account.Data.Checked().GetClient();
 
-            return telegramClient;
-        }
-    }
+    InputPeer? channel;
 
     public InputPeer Channel
-        => Retry.Run(() => TelegramClient.Messages_GetAllChats().GetAwaiter().GetResult(),
-            TelegramStorageClient.HandleFloodException).chats[long.Parse(ChannelId)].Checked();
+        => channel ??= Retry
+            .Run(() => TelegramClient.Messages_GetAllChats().GetAwaiter().GetResult(),
+                TelegramStorageClient.HandleFloodException).chats[long.Parse(ChannelId)].Checked();
 
     public void ResetClient() {
-        toRefresh = true;
-    }
-
-    void RefreshClient() {
-        var result =
-            Retry.Run(
-                () => telegramClient.Checked().Login(Account.Data.Checked().Phone).GetAwaiter()
-                    .GetResult(), TelegramStorageClient.HandleFloodException);
-        if (result != null) {
-            throw new DriveNotFoundException(
-                $"Telegram drive {Id} is not accessible. Requesting {result}.");
-        }
+        telegramClient = null;
+        channel = null;
     }
 }

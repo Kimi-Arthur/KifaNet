@@ -121,7 +121,15 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
                 => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
         }
 
-        return AllClients.GetOrAdd(Id, CreateClient, this);
+        var client = AllClients.GetOrAdd(Id, CreateClient, this);
+        var result = Retry.Run(() => client.Checked().Login(Phone).GetAwaiter().GetResult(),
+            TelegramStorageClient.HandleFloodException);
+        if (result != null) {
+            throw new DriveNotFoundException(
+                $"Telegram drive {Id} is not accessible. Requesting {result}.");
+        }
+
+        return client;
     }
 
     async Task KeepSessionRefreshed(int sessionId) {
