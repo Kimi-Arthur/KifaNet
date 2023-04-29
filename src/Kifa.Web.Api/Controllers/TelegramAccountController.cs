@@ -34,6 +34,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
             account.Sessions.Add(new TelegramSession {
+                Id = Random.Shared.Next(),
                 Data = sessionData,
                 Reserved = Date.Zero
             });
@@ -42,14 +43,13 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     }
 
     public KifaActionResult<TelegramSession> ObtainSession(string accountId) {
-        Console.WriteLine($"account id is {accountId}");
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
             var coldestSession = account.Sessions.MinBy(s => s.Reserved);
             if (coldestSession?.Reserved < DateTimeOffset.UtcNow) {
                 coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromHours(1);
+                coldestSession.Id = Random.Shared.Next();
                 Update(account);
-                coldestSession.Id = account.Sessions.IndexOf(coldestSession);
                 return coldestSession;
             }
 
@@ -65,16 +65,16 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     public KifaActionResult RenewSession(string accountId, int sessionId) {
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
-            if (sessionId < 0 || sessionId >= account.Sessions.Count) {
+            var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
+            if (session == null) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
-                    Message =
-                        $"Session id {sessionId} is out of range [0, {account.Sessions.Count})"
+                    Message = $"Session {sessionId} is not found."
                 };
             }
 
-            var newLease = DateTimeOffset.UtcNow + TimeSpan.FromHours(1);
-            account.Sessions[sessionId].Reserved = newLease;
+            var newLease = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(5);
+            session.Reserved = newLease;
             Update(account);
 
             return new KifaActionResult {
@@ -87,20 +87,21 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     public KifaActionResult ReleaseSession(string accountId, int sessionId) {
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
-            if (sessionId < 0 || sessionId >= account.Sessions.Count) {
+            var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
+            if (session == null) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Warning,
-                    Message =
-                        $"Session id {sessionId} is out of range [0, {account.Sessions.Count})"
+                    Message = $"Session {sessionId} is not found."
                 };
             }
 
-            account.Sessions[sessionId].Reserved = Date.Zero;
+            session.Reserved = Date.Zero;
+            session.Id = Random.Shared.Next();
             Update(account);
 
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
-                Message = $"Session released."
+                Message = $"Session {sessionId} is released."
             };
         }
     }

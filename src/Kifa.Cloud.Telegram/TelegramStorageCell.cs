@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Kifa.Service;
 using Newtonsoft.Json;
 using TL;
@@ -36,7 +38,19 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
     Client? telegramClient;
 
     [JsonIgnore]
-    public Client TelegramClient => telegramClient ??= Account.Data.Checked().GetClient();
+    public Client TelegramClient {
+        get {
+            if (telegramClient == null) {
+                (telegramClient, SessionId) = Account.Data.Checked().CreateClient();
+                KeepSessionRefreshed(SessionId);
+            }
+
+            return telegramClient;
+        }
+    }
+
+    [JsonIgnore]
+    public int SessionId { get; set; }
 
     InputPeer? channel;
 
@@ -46,7 +60,18 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
             .Run(() => TelegramClient.Messages_GetAllChats().GetAwaiter().GetResult(),
                 TelegramStorageClient.HandleFloodException).chats[long.Parse(ChannelId)].Checked();
 
+    async Task KeepSessionRefreshed(int sessionId) {
+        while (true) {
+            if (!TelegramAccount.Client.RenewSession(Account.Id, sessionId).IsAcceptable) {
+                break;
+            }
+
+            await Task.Delay(TimeSpan.FromMinutes(1));
+        }
+    }
+
     public void ResetClient() {
+        TelegramAccount.Client.ReleaseSession(Account.Id, SessionId);
         telegramClient = null;
         channel = null;
     }

@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Kifa.IO;
 using Kifa.Service;
 using NLog;
@@ -110,7 +108,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     static readonly ConcurrentDictionary<string, Client> AllClients = new();
 
-    public Client GetClient() {
+    public (Client Client, int SessionId) CreateClient() {
         // Race condition should be OK here. Calling twice the clause shouldn't have visible
         // caveats.
         if (wTelegramLogger == null) {
@@ -121,25 +119,6 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
                 => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
         }
 
-        var client = AllClients.GetOrAdd(Id, CreateClient, this);
-        var result = Retry.Run(() => client.Checked().Login(Phone).GetAwaiter().GetResult(),
-            TelegramStorageClient.HandleFloodException);
-        if (result != null) {
-            throw new DriveNotFoundException(
-                $"Telegram drive {Id} is not accessible. Requesting {result}.");
-        }
-
-        return client;
-    }
-
-    async Task KeepSessionRefreshed(int sessionId) {
-        while (true) {
-            Client.RenewSession(Id, sessionId);
-            await Task.Delay(TimeSpan.FromMinutes(30));
-        }
-    }
-
-    Client CreateClient(string _, TelegramAccount tele) {
         var response = Client.ObtainSession(Id);
         if (response.Status != KifaActionStatus.OK) {
             throw new InsufficientStorageException(
@@ -153,9 +132,14 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         sessionStream.Seek(0, SeekOrigin.Begin);
         var client = new Client(ConfigProvider, sessionStream);
 
-        KeepSessionRefreshed(session.Id);
+        var result = Retry.Run(() => client.Checked().Login(Phone).GetAwaiter().GetResult(),
+            TelegramStorageClient.HandleFloodException);
+        if (result != null) {
+            throw new DriveNotFoundException(
+                $"Telegram drive {Id} is not accessible. Requesting {result}.");
+        }
 
-        return client;
+        return (client, session.Id);
     }
 
     public string? ConfigProvider(string configKey)
