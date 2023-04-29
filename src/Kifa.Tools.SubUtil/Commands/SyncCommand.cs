@@ -26,13 +26,13 @@ public class SyncCommand : KifaCommand {
     public bool ContentMatch { get; set; } = true;
 
     public override int Execute() {
-        var file = new KifaFile(FileName, simpleMode: true);
+        var file = new KifaFile(FileName);
         if (file.Extension != "ass") {
             Logger.Fatal("Only ass files are supported.");
             return 1;
         }
 
-        var sourceFile = new KifaFile(Source, simpleMode: true);
+        var sourceFile = new KifaFile(Source);
         if (sourceFile.Extension != "ass" && sourceFile.Extension != "srt") {
             Logger.Fatal("Reference source must be ass or srt file.");
             return 1;

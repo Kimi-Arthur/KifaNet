@@ -17,7 +17,7 @@ public class FillCommand : KifaCommand {
     public string FileUri { get; set; }
 
     public override int Execute() {
-        var noteFile = new KifaFile(FileUri, simpleMode: true);
+        var noteFile = new KifaFile(FileUri);
         using var sr = new StreamReader(noteFile.OpenRead());
         var state = ParsingState.New;
         var lines = new List<string>();

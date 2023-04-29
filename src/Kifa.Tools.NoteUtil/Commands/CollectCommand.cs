@@ -18,8 +18,8 @@ public class CollectCommand : KifaCommand {
     public string BookUri { get; set; }
 
     public override int Execute() {
-        var source = new KifaFile(FileUri, simpleMode: true);
-        var destination = new KifaFile(BookUri, simpleMode: true);
+        var source = new KifaFile(FileUri);
+        var destination = new KifaFile(BookUri);
         var wordsSections = new Dictionary<string, WordsSection>();
 
         using var sr = new StreamReader(source.OpenRead());
