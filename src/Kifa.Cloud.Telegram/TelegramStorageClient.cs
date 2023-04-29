@@ -365,4 +365,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         return null;
     }
+
+    public override void Dispose() {
+        Cell.TelegramClient.Dispose();
+        Cell.ResetClient();
+    }
 }

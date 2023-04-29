@@ -16,7 +16,7 @@ using NLog;
 
 namespace Kifa.Api.Files;
 
-public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
+public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static StorageClient GetClient(string spec) {
@@ -632,4 +632,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile> {
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
     public static KifaFile GetLocal(string path) => new($"{LocalServer}{path}");
+
+    public void Dispose() {
+        Client.Dispose();
+    }
 }
