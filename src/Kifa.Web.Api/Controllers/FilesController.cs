@@ -59,6 +59,15 @@ public class
     public KifaApiActionResult MoveServer([FromBody] MoveServerRequest request)
         => Client.MoveServer(request.FromServer, request.ToServer);
 
+    public class DeleteServerRequest {
+        public string? ServerName { get; set; }
+        public string? ServerType { get; set; }
+    }
+
+    [HttpPost("$delete_server")]
+    public KifaApiActionResult DeleteServer([FromBody] DeleteServerRequest request)
+        => Client.DeleteServer(request.ServerName, request.ServerType);
+
     public class AddLocationRequest {
         public string Id { get; set; }
         public string Location { get; set; }
@@ -250,6 +259,38 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             return (file.Id, new KifaActionResult {
                 Status = KifaActionStatus.OK,
                 Message = $"No files to move for {file.Id}."
+            });
+        }));
+
+    public KifaApiActionResult DeleteServer(string? serverName, string? serverType)
+        => new KifaBatchActionResult().AddRange(List().Values.AsParallel().Select(file => {
+            if (file.Locations.Count > 0) {
+                var locationsOnServer = file.Locations.Where(l
+                    => ((FileLocation) l.Key).Server == serverName ||
+                       ((FileLocation) l.Key).ServerType == serverType).ToList();
+                if (locationsOnServer.Count == 0) {
+                    return (file.Id, new KifaActionResult {
+                        Status = KifaActionStatus.OK,
+                        Message = $"No files to move for {file.Id}."
+                    });
+                }
+
+                var message = string.Join("\n", locationsOnServer.Select(location => {
+                    file.Locations.Remove(location.Key);
+                    return $"\tRemoved {location.Key}.";
+                }));
+
+                Update(file);
+
+                return (file.Id, new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"Removed {locationsOnServer.Count} files for {file.Id}:\n{message}"
+                });
+            }
+
+            return (file.Id, new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"No files to remove for {file.Id}."
             });
         }));
 }
