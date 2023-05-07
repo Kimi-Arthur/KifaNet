@@ -220,8 +220,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public KifaFile GetFile(string name) => new($"{Host}{Path}/{name}");
 
-    public KifaFile GetFilePrefixed(string prefix)
-        => prefix == null ? this : new KifaFile($"{Host}{prefix}{Path}");
+    public KifaFile GetFilePrefixed(string prefix) => new($"{Host}{prefix}{Path}");
 
     public KifaFile GetIgnoredFile(string type)
         => Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}");

@@ -15,6 +15,8 @@ namespace Kifa.Tools.BiliUtil.Commands;
 class GetChatCommand : KifaFileCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    const string SubtitlesPrefix = "/Subtitles";
+
     [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
     public string? Cid { get; set; }
 
@@ -116,7 +118,7 @@ class GetChatCommand : KifaFileCommand {
         var segments = rawFile.ToString().Split(".");
         var skippedSegments = segments[segments.Length - 2] == suffix ? 2 : 1;
         var targetUri = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
-        var target = new KifaFile(targetUri).GetFilePrefixed("/Subtitles");
+        var target = new KifaFile(targetUri).GetFilePrefixed(SubtitlesPrefix);
         target.Delete();
         target.Write(memoryStream);
 
