@@ -20,6 +20,9 @@ class GetCommand : KifaCommand {
     [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
     public bool LightweightOnly { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('c', "allowed-clients", HelpText = "Only get files from the given sources.")]
     public string? AllowedClients { get; set; }
 
@@ -35,7 +38,7 @@ class GetCommand : KifaCommand {
             : new HashSet<string>(IgnoreAlreadyUploaded.Split(","));
 
     public override int Execute() {
-        var files = KifaFile.FindPotentialFiles(FileNames);
+        var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
         foreach (var file in files) {
             Console.WriteLine(file);
         }
