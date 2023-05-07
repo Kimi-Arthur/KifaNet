@@ -43,6 +43,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public FileInformation? FileInfo { get; set; }
 
+    StorageClient Client { get; set; }
+
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
         uri ??= GetUri(id ?? fileInfo!.Id, allowedClients);
@@ -124,13 +126,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public string Host => Client.ToString();
 
-    StorageClient Client { get; set; }
-
     KifaFileFormat FileFormat { get; }
 
-    public bool UseCache { get; set; }
+    bool UseCache { get; set; }
 
-    public bool IsCloud
+    bool IsCloud
         => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
            FileFormat is KifaFileV1Format or KifaFileV2Format;
 
