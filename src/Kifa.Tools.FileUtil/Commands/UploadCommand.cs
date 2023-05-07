@@ -38,6 +38,9 @@ class UploadCommand : KifaCommand {
     [Option('s', "skip-uploaded", HelpText = "Skip potentially uploaded files.")]
     public bool SkipPotentiallyUploadFiles { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered.")]
+    public bool IncludeAll { get; set; } = false;
+
     public override int Execute() {
         var targetsFromFlag = Targets.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -45,6 +48,11 @@ class UploadCommand : KifaCommand {
             .Select(CloudTarget.Parse).ToList();
 
         var files = KifaFile.FindExistingFiles(FileNames);
+        if (IncludeAll) {
+            files.AddRange(KifaFile.FindPotentialFiles(FileNames, ignoreFiles: false)
+                .Where(f => f.Exists()));
+        }
+
         foreach (var file in files) {
             Console.WriteLine(file);
         }
