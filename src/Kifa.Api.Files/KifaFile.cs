@@ -573,7 +573,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public override int GetHashCode() => ToString()?.GetHashCode() ?? 0;
 
-    public bool Equals(KifaFile other) {
+    public bool Equals(KifaFile? other) {
         if (ReferenceEquals(null, other)) {
             return false;
         }
