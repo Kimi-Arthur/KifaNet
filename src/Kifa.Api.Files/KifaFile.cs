@@ -39,7 +39,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     #endregion
 
-    public string Id { get; set; }
+    public string Path { get; set; }
 
     public FileInformation? FileInfo { get; set; }
 
@@ -94,11 +94,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             Extension = name.Substring(lastDot + 1);
         }
 
-        Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
-        FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+        Path = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
+        FileInfo = fileInfo ?? FileInformation.Client.Get(Path);
         LocalFilePath = FileInfo?.Sha256 != null
             ? $"{LocalServer}/$/{FileInfo.Sha256}"
-            : $"{LocalServer}{Id}";
+            : $"{LocalServer}{Path}";
 
         Client = GetClient(segments[0]);
 
@@ -121,8 +121,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public string Extension { get; set; }
 
     public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
-
-    public string Path => $"{ParentPath}{Name}";
 
     public string Host => Client.ToString();
 
@@ -216,12 +214,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         => FileFormat is RawFileFormat
             ? Client.QuickInfo(Path)
             : new FileInformation {
-                Id = Id
+                Id = Path
             };
 
     public Stream OpenRead()
         => new VerifiableStream(
-            FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
+            FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey),
+            FileInfo);
 
     public void Write(Stream stream)
         => Client.Write(Path, FileFormat.GetEncodeStream(stream, FileInfo));
@@ -249,7 +248,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             ? Enumerable.Repeat(this, 1)
             : Client.List(Path, recursive)
                 .Select(info => new KifaFile(Host + info.Id, fileInfo: info)).Where(f
-                    => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path)));
+                    => IsMatch(f.Path, pattern) &&
+                       (!ignoreFiles || !ShouldIgnore(f.Path, Path)));
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
         => IgnoredExtensions.Contains(logicalPath[(logicalPath.LastIndexOf(".") + 1)..]) ||
@@ -301,7 +301,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             var host = fileInfo.Host;
 
             var thisFolder = FileInformation.Client.ListFolder(path, recursive);
-            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, fileInfo.Id))
+            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, fileInfo.Path))
                 .Select(f => (f.GetNaturalSortKey(), host + f)));
         }
 
@@ -334,8 +334,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     continue;
                 }
 
-                FileInformation.Client.Link(source.Id, link.Id);
-                Logger.Debug($"Linked {link.Id} => {source.Id}.");
+                FileInformation.Client.Link(source.Path, link.Path);
+                Logger.Debug($"Linked {link.Path} => {source.Path}.");
             }
 
             return;
@@ -416,7 +416,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public FileInformation CalculateInfo(FileProperties properties) {
         var info = FileInfo.Clone() ?? new FileInformation {
-            Id = Id
+            Id = Path
         };
         info.RemoveProperties(
             (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
@@ -531,13 +531,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Register(bool verified = false) {
-        FileInformation.Client.AddLocation(Id, ToString(), verified);
-        FileInfo = FileInformation.Client.Get(Id);
+        FileInformation.Client.AddLocation(Path, ToString(), verified);
+        FileInfo = FileInformation.Client.Get(Path);
     }
 
     public void Unregister() {
-        FileInformation.Client.RemoveLocation(Id, ToString());
-        FileInfo = FileInformation.Client.Get(Id);
+        FileInformation.Client.RemoveLocation(Path, ToString());
+        FileInfo = FileInformation.Client.Get(Path);
     }
 
     public bool IsCompatible(KifaFile other)

@@ -57,8 +57,8 @@ class ImportCommand : KifaCommand {
             case "soccer":
                 foreach (var file in FileNames.SelectMany(path
                              => FileInformation.Client
-                                 .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
-                                 .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
+                                 .ListFolder(ById ? path : new KifaFile(path).Path, Recursive)
+                                 .DefaultIfEmpty(ById ? path : new KifaFile(path).Path))) {
                     var ext = file.Substring(file.LastIndexOf(".") + 1);
                     var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
                     targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
@@ -73,7 +73,7 @@ class ImportCommand : KifaCommand {
         }
 
         var files = FileNames.SelectMany(path
-                => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
+                => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Path,
                     Recursive))
             .Select(f => (File: f, Matched: false)).ToList();
 

@@ -49,7 +49,7 @@ class DedupCommand : KifaCommand {
         var id = fileInfo.Id;
         foreach (var fileName in fileInfo.Locations.Keys) {
             var file = new KifaFile(fileName);
-            if (file.Id == id) {
+            if (file.Path == id) {
                 Logger.Info($"Removing {file}...");
                 file.Delete();
                 Logger.Info($"Removing {file} from locations...");

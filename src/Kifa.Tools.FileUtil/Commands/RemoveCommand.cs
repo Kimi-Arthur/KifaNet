@@ -68,12 +68,12 @@ class RemoveCommand : KifaCommand {
             if (foundFiles.Count > 0) {
                 // We will assume relative paths are used here.
                 foreach (var foundFile in foundFiles) {
-                    Console.WriteLine(foundFile.Id);
+                    Console.WriteLine(foundFile.Path);
                 }
 
                 if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
                     foundFiles.ForEach(f
-                        => ExecuteItem(f.Id, () => RemoveLogicalFile(f.FileInfo!)));
+                        => ExecuteItem(f.Path, () => RemoveLogicalFile(f.FileInfo!)));
                     return LogSummary();
                 }
 
@@ -110,7 +110,7 @@ class RemoveCommand : KifaCommand {
                 links.Remove(info.RealId);
                 var shouldRemoveOtherFiles = links.Count == 0;
 
-                var toRemove = file.Id == info.Id;
+                var toRemove = file.Path == info.Id;
                 if (!toRemove) {
                     if (shouldRemoveOtherFiles) {
                         toRemove =
@@ -174,7 +174,7 @@ class RemoveCommand : KifaCommand {
 
         if (!RemoveLinkOnly) {
             file.Delete();
-            result.Add(file.Id, fileExists
+            result.Add(file.Path, fileExists
                 ? new KifaActionResult {
                     Status = KifaActionStatus.OK,
                     Message = $"File {file} deleted."
@@ -186,7 +186,7 @@ class RemoveCommand : KifaCommand {
         }
 
         result.Add(file.ToString(),
-            FileInformation.Client.RemoveLocation(file.Id, file.ToString()));
+            FileInformation.Client.RemoveLocation(file.Path, file.ToString()));
 
         return result;
     }
