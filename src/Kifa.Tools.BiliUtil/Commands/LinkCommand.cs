@@ -73,7 +73,7 @@ public class LinkCommand : KifaCommand {
                 continue;
             }
 
-            if (canonicalFile.Exists() && canonicalFile.Length() == file.Length()) {
+            if (canonicalFile.Exists() && canonicalFile.Length == file.Length) {
                 Logger.Info(
                     $"Source file is not canonical file, but canonical file {canonicalFile} exists too. Skipped.");
                 linkedFiles.Add($"{canonicalFile} exists.");

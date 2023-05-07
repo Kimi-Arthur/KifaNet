@@ -19,37 +19,29 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static StorageClient GetClient(string spec) {
-        var specs = spec.Split(':');
+    #region Configs
 
-        switch (specs[0]) {
-            case "baidu":
-                return new BaiduCloudStorageClient {
-                    AccountId = specs[1]
-                };
-            case "google":
-                return new GoogleDriveStorageClient {
-                    AccountId = specs[1]
-                };
-            case "mega":
-                return new MegaNzStorageClient {
-                    AccountId = specs[1]
-                };
-            case "swiss":
-                return SwisscomStorageClient.Create(specs[1]);
-            case "tele":
-                return TelegramStorageClient.Create(specs[1]);
-            case "http":
-            case "https":
-                return new WebStorageClient {
-                    Protocol = specs[0]
-                };
-            case "local":
-                return new FileStorageClient(specs[1]);
-        }
+    public static string LocalServer { get; set; }
 
-        throw new Exception($"Failed to create client for {spec}");
-    }
+    public static string DefaultIgnoredPrefix { get; set; } = "@";
+
+    public static HashSet<string> IgnoredPrefixes { get; set; } = new() {
+        DefaultIgnoredPrefix
+    };
+
+    public static HashSet<string> IgnoredExtensions { get; set; } = new();
+
+    public static string IgnoredPattern { get; set; } = "$^";
+
+    static Regex? ignoredFiles;
+
+    static Regex IgnoredFiles => ignoredFiles ??= new Regex(IgnoredPattern, RegexOptions.Compiled);
+
+    #endregion
+
+    public string Id { get; set; }
+
+    public FileInformation? FileInfo { get; set; }
 
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
@@ -113,24 +105,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         UseCache = useCache;
     }
 
-    public static string LocalServer { get; set; }
-
-    public static string DefaultIgnoredPrefix { get; set; } = "@";
-
-    public static HashSet<string> IgnoredPrefixes { get; set; } = new() {
-        DefaultIgnoredPrefix
-    };
-
-    public static HashSet<string> IgnoredExtensions { get; set; } = new();
-
-    public static string IgnoredPattern { get; set; } = "$^";
-
-    static Regex? ignoredFiles;
-
-    static Regex IgnoredFiles => ignoredFiles ??= new Regex(IgnoredPattern, RegexOptions.Compiled);
-
-    public string Id { get; set; }
-
     // Ends with a slash.
     string ParentPath { get; }
 
@@ -148,13 +122,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public string Path => $"{ParentPath}{Name}";
 
-    public string Host => Client?.ToString();
+    public string Host => Client.ToString();
 
     StorageClient Client { get; set; }
 
     KifaFileFormat FileFormat { get; }
-
-    public FileInformation? FileInfo { get; set; }
 
     public bool UseCache { get; set; }
 
@@ -163,6 +135,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
            FileFormat is KifaFileV1Format or KifaFileV2Format;
 
     public bool IsLocal => Client is FileStorageClient;
+
+    public long Length => Client.Length(Path);
+
+    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
+
+    public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {
         string? candidate = null;
@@ -208,7 +186,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         foreach (var p in FileStorageClient.ServerConfigs.Keys) {
             var location = $"local:{p}{id}";
-            var score = new KifaFile(location).Length();
+            var score = new KifaFile(location).Length;
             if (score > bestScore) {
                 bestScore = score;
                 candidate = location;
@@ -233,12 +211,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             : Client.Exists(Path);
 
     public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
-
-    public long Length() => Client.Length(Path);
-
-    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
-
-    public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
     public FileInformation QuickInfo()
         => FileFormat is RawFileFormat
@@ -615,6 +587,38 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public byte[] ReadAsBytes() => OpenRead().ToByteArray();
+
+    static StorageClient GetClient(string spec) {
+        var specs = spec.Split(':');
+
+        switch (specs[0]) {
+            case "baidu":
+                return new BaiduCloudStorageClient {
+                    AccountId = specs[1]
+                };
+            case "google":
+                return new GoogleDriveStorageClient {
+                    AccountId = specs[1]
+                };
+            case "mega":
+                return new MegaNzStorageClient {
+                    AccountId = specs[1]
+                };
+            case "swiss":
+                return SwisscomStorageClient.Create(specs[1]);
+            case "tele":
+                return TelegramStorageClient.Create(specs[1]);
+            case "http":
+            case "https":
+                return new WebStorageClient {
+                    Protocol = specs[0]
+                };
+            case "local":
+                return new FileStorageClient(specs[1]);
+        }
+
+        throw new Exception($"Failed to create client for {spec}");
+    }
 
     public string GetLocalPath()
         => Client is FileStorageClient fileClient
