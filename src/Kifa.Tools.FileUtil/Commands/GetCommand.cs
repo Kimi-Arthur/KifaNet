@@ -49,7 +49,7 @@ class GetCommand : KifaCommand {
         }
 
         foreach (var file in files) {
-            ExecuteItem(file.Path, () => GetFile(file));
+            ExecuteItem(file.Id, () => GetFile(file));
         }
 
         return LogSummary();

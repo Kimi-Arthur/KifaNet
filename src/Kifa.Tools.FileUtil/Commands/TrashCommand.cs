@@ -18,7 +18,7 @@ class TrashCommand : KifaCommand {
 
     public override int Execute() {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
-        var fileIds = foundFiles.Select(f => f.Path).ToList();
+        var fileIds = foundFiles.Select(f => f.Id).ToList();
         foreach (var fileId in fileIds) {
             Console.WriteLine(fileId);
         }
@@ -61,7 +61,7 @@ class TrashCommand : KifaCommand {
             var targetInfo = client.Get(target);
             foreach (var location in targetInfo.Locations.Keys) {
                 var instance = new KifaFile(location);
-                if (instance.Path == file) {
+                if (instance.Id == file) {
                     if (instance.Exists()) {
                         var targetInstance = new KifaFile(instance.Host + targetInfo.Id);
                         instance.Move(targetInstance);

@@ -45,7 +45,7 @@ public abstract class DownloadCommand : KifaCommand {
 
             if (found != null) {
                 var message = found.ExistsSomewhere()
-                    ? $"{found.Path} exists in the system"
+                    ? $"{found.Id} exists in the system"
                     : $"{found} exists locally";
                 Logger.Info($"Found {message}. Will link instead.");
                 KifaFile.LinkAll(found, targetFiles);

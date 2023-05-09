@@ -46,7 +46,7 @@ public abstract partial class KifaFileCommand : KifaCommand {
                         host = f.Host;
                     }
 
-                    path = f.Path;
+                    path = f.Id;
                 }
 
                 path = Prefix == null ? path : $"{Prefix}{path}";

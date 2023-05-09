@@ -66,9 +66,9 @@ public class GetCoverCommand : KifaCommand {
                 return file.Parent.GetFile($"{file.BaseName}.{foundCoverExtension}");
             }
 
-            var video = BilibiliVideo.Parse(file.Path);
+            var video = BilibiliVideo.Parse(file.Id);
             if (video.video == null) {
-                throw new Exception($"Video not found for {file.Path}.");
+                throw new Exception($"Video not found for {file.Id}.");
             }
 
             var coverLink = video.video.Cover.ToString();

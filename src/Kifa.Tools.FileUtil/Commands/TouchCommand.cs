@@ -17,7 +17,7 @@ class TouchCommand : KifaCommand {
     public override int Execute() {
         var target = new KifaFile(FileUri);
 
-        var files = FileInformation.Client.ListFolder(target.Path, true);
+        var files = FileInformation.Client.ListFolder(target.Id, true);
         if (files.Count > 0) {
             foreach (var file in files) {
                 Console.WriteLine(file);

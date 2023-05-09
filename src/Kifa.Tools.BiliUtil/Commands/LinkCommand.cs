@@ -55,7 +55,7 @@ public class LinkCommand : KifaCommand {
     }
 
     KifaActionResult<List<string>> LinkFile(KifaFile file) {
-        var video = BilibiliVideo.Parse(file.Path);
+        var video = BilibiliVideo.Parse(file.Id);
         if (video.video == null) {
             return new KifaActionResult<List<string>> {
                 Status = KifaActionStatus.Error,

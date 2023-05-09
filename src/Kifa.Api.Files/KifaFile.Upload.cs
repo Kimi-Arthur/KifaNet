@@ -154,7 +154,7 @@ public partial class KifaFile {
                 Logger.Warn($"Source {this} is not removed as it's in cloud.");
             } else {
                 Delete();
-                FileInformation.Client.RemoveLocation(Path, ToString());
+                FileInformation.Client.RemoveLocation(Id, ToString());
                 Logger.Debug($"Source {this} is removed since upload is successful.");
             }
         }

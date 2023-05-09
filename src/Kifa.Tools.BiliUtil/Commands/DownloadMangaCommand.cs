@@ -69,23 +69,23 @@ public class DownloadMangaCommand : KifaCommand {
                 desired.Add(false);
             }
 
-            if (canonical.FileInfo.GetAllLinks().Contains(desired.Path)) {
+            if (canonical.FileInfo.GetAllLinks().Contains(desired.Id)) {
                 continue;
             }
 
             if (desired.Exists()) {
                 if (Confirm($"Confirm removing old version of {desired}?")) {
                     desired.Delete();
-                    FileInformation.Client.RemoveLocation(desired.Path, desired.ToString());
+                    FileInformation.Client.RemoveLocation(desired.Id, desired.ToString());
                     foreach (var (location, _) in desired.FileInfo.Locations) {
                         var file = new KifaFile(location);
-                        if (file.Path == desired.Path) {
+                        if (file.Id == desired.Id) {
                             file.Delete();
-                            FileInformation.Client.RemoveLocation(desired.Path, file.ToString());
+                            FileInformation.Client.RemoveLocation(desired.Id, file.ToString());
                         }
                     }
 
-                    FileInformation.Client.Delete(desired.Path);
+                    FileInformation.Client.Delete(desired.Id);
                 }
             }
 
@@ -93,7 +93,7 @@ public class DownloadMangaCommand : KifaCommand {
                 canonical.Copy(desired);
                 desired.Add(false);
             } else {
-                FileInformation.Client.Link(canonical.Path, desired.Path);
+                FileInformation.Client.Link(canonical.Id, desired.Id);
             }
 
             Logger.Debug($"Copied {canonical} to {desired}");
