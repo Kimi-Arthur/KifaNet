@@ -32,7 +32,8 @@ public abstract class StorageClient : IDisposable {
     public abstract void Touch(string path);
 
     public virtual void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
-        Write(destinationPath, OpenRead(sourcePath));
+        using var stream = OpenRead(sourcePath);
+        Write(destinationPath, stream);
     }
 
     public virtual void Move(string sourcePath, string destinationPath) {
