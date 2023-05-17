@@ -14,15 +14,16 @@ class DecodeCommand : KifaCommand {
 
     public override int Execute() {
         foreach (var file in FileNames.SelectMany(path => new KifaFile(path).List())) {
+            using var stream = file.OpenRead();
             var folder = file.Parent.GetFile(file.BaseName);
             if (file.Extension == "lzs") {
-                foreach (var (name, data) in LzssFile.GetFiles(file.OpenRead())) {
+                foreach (var (name, data) in LzssFile.GetFiles(stream)) {
                     var target = folder.GetFile(name);
                     target.Delete();
                     target.Write(data);
                 }
             } else if (file.Name.StartsWith("msg_") && file.Extension == "bin") {
-                var messages = MsgBinFile.GetMessages(file.OpenRead());
+                var messages = MsgBinFile.GetMessages(stream);
                 var target = file.Parent.GetFile(file.BaseName + ".json");
                 target.Delete();
                 target.Write(JsonConvert.SerializeObject(messages,

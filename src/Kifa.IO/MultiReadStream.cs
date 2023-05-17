@@ -126,4 +126,10 @@ public class MultiReadStream : Stream {
 
     public override void Write(byte[] buffer, int offset, int count)
         => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+
+    protected override void Dispose(bool disposing) {
+        foreach (var stream in streams) {
+            stream.Dispose();
+        }
+    }
 }

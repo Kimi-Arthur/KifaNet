@@ -55,7 +55,8 @@ public class DownloadMangaCommand : KifaCommand {
                     continue;
                 }
 
-                targetFile.Write(new KifaFile(link).OpenRead());
+                using var stream = new KifaFile(link).OpenRead();
+                targetFile.Write(stream);
                 Logger.Debug($"Downloaded {targetFile}.");
             }
         }

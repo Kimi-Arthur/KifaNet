@@ -378,7 +378,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (IsCompatible(destination)) {
             Client.Copy(Path, destination.Path, neverLink);
         } else {
-            destination.Write(OpenRead());
+            using var stream = OpenRead();
+            destination.Write(stream);
         }
     }
 
@@ -400,7 +401,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     void CacheFileToLocal() {
         if (!LocalFile.Registered || !LocalFile.Exists()) {
             Logger.Debug($"Caching {this} to {LocalFile}...");
-            LocalFile.Write(OpenRead());
+            using var stream = OpenRead();
+            LocalFile.Write(stream);
             LocalFile.Add();
             Register(true);
         }
@@ -421,9 +423,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         info.RemoveProperties(
             (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
-        using (var stream = OpenRead()) {
-            info.AddProperties(stream, properties);
-        }
+        using var stream = OpenRead();
+        info.AddProperties(stream, properties);
 
         return info;
     }
