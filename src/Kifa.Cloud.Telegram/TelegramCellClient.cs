@@ -52,6 +52,9 @@ public class TelegramCellClient : IDisposable {
                 $"Telegram drive {account.Id} is not accessible. Requesting {result}.");
         }
 
+        // At this stage the data should be refreshed if needed.
+        TelegramAccount.Client.UpdateSession(AccountId, SessionId, sessionStream.ToArray());
+
         Channel = Retry
             .Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
                 TelegramStorageClient.HandleFloodException).chats[long.Parse(channelId)].Checked();
