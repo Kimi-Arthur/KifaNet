@@ -26,6 +26,11 @@ public class
     public KifaApiActionResult
         ReleaseSession([FromBody] TelegramAccount.ReleaseSessionRequest request)
         => Client.ReleaseSession(request.AccountId, request.SessionId);
+
+    [HttpPost("$update_session")]
+    public KifaApiActionResult
+        UpdateSession([FromBody] TelegramAccount.UpdateSessionRequest request)
+        => Client.UpdateSession(request.AccountId, request.SessionId, request.SessionData);
 }
 
 public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAccount>,
@@ -101,6 +106,27 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
                 Message = $"Session {sessionId} is released."
+            };
+        }
+    }
+
+    public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData) {
+        lock (GetLock(accountId)) {
+            var account = Get(accountId).Checked();
+            var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
+            if (session == null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = $"Session {sessionId} is not found."
+                };
+            }
+
+            session.Data = sessionData;
+            Update(account);
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"Session {sessionId} is updated."
             };
         }
     }

@@ -15,6 +15,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         public KifaActionResult<TelegramSession> ObtainSession(string accountId);
         public KifaActionResult RenewSession(string accountId, int sessionId);
         public KifaActionResult ReleaseSession(string accountId, int sessionId);
+        public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData);
     }
 
     public class AddSessionRequest {
@@ -34,6 +35,12 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     public class ReleaseSessionRequest {
         public required string AccountId { get; set; }
         public required int SessionId { get; set; }
+    }
+
+    public class UpdateSessionRequest {
+        public required string AccountId { get; set; }
+        public required int SessionId { get; set; }
+        public required byte[] SessionData { get; set; }
     }
 
     public class RestServiceClient : KifaServiceRestClient<TelegramAccount>, ServiceClient {
@@ -58,6 +65,13 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             => Call("release_session", new ReleaseSessionRequest {
                 AccountId = accountId,
                 SessionId = sessionId
+            });
+
+        public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData)
+            => Call("update_session", new UpdateSessionRequest {
+                AccountId = accountId,
+                SessionId = sessionId,
+                SessionData = sessionData
             });
     }
 
