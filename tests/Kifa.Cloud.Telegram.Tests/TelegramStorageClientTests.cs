@@ -95,8 +95,10 @@ public class TelegramStorageClientTests {
 
         storageClient.Exists(fileName).Should().BeTrue();
 
-        FileInformation.GetInformation(storageClient.OpenRead(fileName), FileProperties.Sha256)
-            .Sha256.Should().Be(FileSha256);
+        using (var stream = storageClient.OpenRead(fileName)) {
+            FileInformation.GetInformation(stream, FileProperties.Sha256).Sha256.Should()
+                .Be(FileSha256);
+        }
 
         storageClient.Delete(fileName);
 
@@ -105,8 +107,9 @@ public class TelegramStorageClientTests {
 
     static (Client Client, InputPeer channel) GetClient() {
         KifaConfigs.Init();
-        var client = (TelegramStorageClient.Create("test") as TelegramStorageClient).Checked();
+        var client = (TelegramStorageClient.Create("test") as TelegramStorageClient).Checked().Cell
+            .CreateClient();
 
-        return (client.Cell.TelegramClient, client.Cell.Channel);
+        return (client.Client, client.Channel);
     }
 }
