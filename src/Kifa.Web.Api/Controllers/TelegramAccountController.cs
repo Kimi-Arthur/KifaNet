@@ -47,7 +47,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             var account = Get(accountId).Checked();
             var coldestSession = account.Sessions.MinBy(s => s.Reserved);
             if (coldestSession?.Reserved < DateTimeOffset.UtcNow) {
-                coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromHours(1);
+                coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
                 coldestSession.Id = Random.Shared.Next();
                 Update(account);
                 return coldestSession;
@@ -73,13 +73,12 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 };
             }
 
-            var newLease = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(5);
-            session.Reserved = newLease;
+            session.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
             Update(account);
 
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
-                Message = $"Session renewed to {newLease}"
+                Message = $"Session renewed to {session.Reserved}"
             };
         }
     }
