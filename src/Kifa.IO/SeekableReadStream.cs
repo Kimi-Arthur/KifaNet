@@ -14,21 +14,24 @@ public class SeekableReadStream : Stream {
     readonly Reader reader;
     readonly int maxChunkSize;
     readonly int threadCount;
+    readonly Action? disposer;
 
     public SeekableReadStream(long length, Reader reader, int maxChunkSize = int.MaxValue,
-        int threadCount = 1) {
+        int threadCount = 1, Action? disposer = null) {
         this.length = length;
         this.reader = reader;
         this.maxChunkSize = maxChunkSize;
         this.threadCount = threadCount;
+        this.disposer = disposer;
     }
 
     public SeekableReadStream(Func<long> lengthGetter, Reader reader,
-        int maxChunkSize = int.MaxValue, int threadCount = 1) {
+        int maxChunkSize = int.MaxValue, int threadCount = 1, Action? disposer = null) {
         this.reader = reader;
         this.lengthGetter = lengthGetter;
         this.maxChunkSize = maxChunkSize;
         this.threadCount = threadCount;
+        this.disposer = disposer;
     }
 
     public override bool CanRead => true;
@@ -121,6 +124,10 @@ public class SeekableReadStream : Stream {
 
     public override void Write(byte[] buffer, int offset, int count)
         => throw new NotSupportedException($"{nameof(SeekableReadStream)} is not writable.");
+
+    protected override void Dispose(bool disposing) {
+        disposer?.Invoke();
+    }
 }
 
 public class SeekableReadStream<TState> : SeekableReadStream {
@@ -128,17 +135,18 @@ public class SeekableReadStream<TState> : SeekableReadStream {
         TState state);
 
     public SeekableReadStream(long length, ReaderWithState readerWithState, TState downloadState,
-        int maxChunkSize = int.MaxValue, int threadCount = 1) : base(length,
+        int maxChunkSize = int.MaxValue, int threadCount = 1, Action? disposer = null) : base(
+        length,
         (buffer, bufferOffset, offset, count)
             => readerWithState(buffer, bufferOffset, offset, count, downloadState), maxChunkSize,
-        threadCount) {
+        threadCount, disposer) {
     }
 
     public SeekableReadStream(Func<long> lengthGetter, ReaderWithState readerWithState,
-        TState downloadState, int maxChunkSize = Int32.MaxValue, int threadCount = 1) : base(
-        lengthGetter,
+        TState downloadState, int maxChunkSize = Int32.MaxValue, int threadCount = 1,
+        Action? disposer = null) : base(lengthGetter,
         (buffer, bufferOffset, offset, count)
             => readerWithState(buffer, bufferOffset, offset, count, downloadState), maxChunkSize,
-        threadCount) {
+        threadCount, disposer) {
     }
 }
