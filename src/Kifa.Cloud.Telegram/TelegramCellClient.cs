@@ -44,17 +44,23 @@ public class TelegramCellClient : IDisposable {
         sessionStream.Write(session.Data);
         sessionStream.Seek(0, SeekOrigin.Begin);
         Client = new Client(account.ConfigProvider, sessionStream);
-        
-        var result = Retry.Run(() => Client.Checked().Login(account.Phone).GetAwaiter().GetResult(),
-            TelegramStorageClient.HandleFloodException);
-        if (result != null) {
-            throw new DriveNotFoundException(
-                $"Telegram drive {account.Id} is not accessible. Requesting {result}.");
-        }
 
-        Channel = Retry
-            .Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
-                TelegramStorageClient.HandleFloodException).chats[long.Parse(channelId)].Checked();
+        try {
+            var result = Retry.Run(() => Client.Login(account.Phone).GetAwaiter().GetResult(),
+                TelegramStorageClient.HandleFloodException);
+            if (result != null) {
+                throw new DriveNotFoundException(
+                    $"Telegram drive {account.Id} is not accessible. Requesting {result}.");
+            }
+
+            Channel = Retry
+                .Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
+                    TelegramStorageClient.HandleFloodException).chats[long.Parse(channelId)]
+                .Checked();
+        } catch (WTException) {
+            Dispose();
+            throw;
+        }
     }
 
     // TODO: Find a better way to keep the session.
@@ -70,8 +76,8 @@ public class TelegramCellClient : IDisposable {
     }
 
     public void Dispose() {
-        Client.Dispose();
         TelegramAccount.Client.ReleaseSession(AccountId.Checked(), SessionId);
+        Client.Dispose();
         AccountId = null;
     }
 }
