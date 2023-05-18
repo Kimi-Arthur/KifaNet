@@ -20,6 +20,7 @@ public static class ByteArrayExtensions {
     // Will close the stream after reading.
     public static byte[] ToByteArray(this Stream input) {
         using var memoryStream = new MemoryStream();
+        input.Seek(0, SeekOrigin.Begin);
         input.CopyTo(memoryStream);
         input.Dispose();
         return memoryStream.ToArray();
