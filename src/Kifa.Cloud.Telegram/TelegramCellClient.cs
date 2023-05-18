@@ -38,7 +38,7 @@ public class TelegramCellClient : IDisposable {
 
         var session = response.Response.Checked();
         SessionId = session.Id;
-        KeepSessionRefreshed(SessionId);
+        KeepSessionReserved(SessionId);
 
         var sessionStream = new MemoryStream();
         sessionStream.Write(session.Data);
@@ -64,7 +64,7 @@ public class TelegramCellClient : IDisposable {
     }
 
     // TODO: Find a better way to keep the session.
-    async Task KeepSessionRefreshed(int sessionId) {
+    async Task KeepSessionReserved(int sessionId) {
         while (true) {
             await Task.Delay(TimeSpan.FromMinutes(5));
 
