@@ -34,20 +34,24 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
 
     TelegramStorageClient() {
+        Logger.Warn("TBR: Client created");
     }
 
     int currentHolders;
     TelegramCellClient? sharedCellClient;
 
     TelegramCellClient ObtainCellClient() {
+        Logger.Warn("TBR: Client obtained");
         sharedCellClient ??= Cell.CreateClient();
         currentHolders++;
         return sharedCellClient;
     }
 
     void ReturnCellClient() {
+        Logger.Warn("TBR: Client returned");
         currentHolders--;
         if (currentHolders == 0) {
+            Logger.Warn("TBR: Client released");
             sharedCellClient?.Dispose();
             sharedCellClient = null;
         }
@@ -401,5 +405,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         } finally {
             ReturnCellClient();
         }
+    }
+
+    public override void Dispose() {
+        sharedCellClient?.Dispose();
+        sharedCellClient = null;
+
+        Logger.Warn($"TBR: Client created.");
     }
 }
