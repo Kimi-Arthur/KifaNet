@@ -125,7 +125,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
     static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(1);
 
     public void RefreshIfNeeded(TelegramSession session) {
-        if (session.Refreshed + RefreshInterval < DateTimeOffset.UtcNow) {
+        if (DateTimeOffset.UtcNow < session.Refreshed + RefreshInterval) {
             return;
         }
 
@@ -142,5 +142,6 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         }
 
         session.Data = sessionStream.ToByteArray();
+        session.Refreshed = DateTimeOffset.UtcNow;
     }
 }
