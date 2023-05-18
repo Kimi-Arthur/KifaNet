@@ -8,4 +8,6 @@ public class TelegramSession {
     public byte[] Data { get; set; } = Array.Empty<byte>();
 
     public DateTimeOffset Reserved { get; set; } = Date.Zero;
+
+    public DateTimeOffset Refreshed { get; set; } = Date.Zero;
 }

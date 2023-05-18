@@ -45,16 +45,6 @@ public class TelegramCellClient : IDisposable {
         sessionStream.Seek(0, SeekOrigin.Begin);
         Client = new Client(account.ConfigProvider, sessionStream);
 
-        var result = Retry.Run(() => Client.Checked().Login(account.Phone).GetAwaiter().GetResult(),
-            TelegramStorageClient.HandleFloodException);
-        if (result != null) {
-            throw new DriveNotFoundException(
-                $"Telegram drive {account.Id} is not accessible. Requesting {result}.");
-        }
-
-        // At this stage the data should be refreshed if needed.
-        TelegramAccount.Client.UpdateSession(AccountId, SessionId, sessionStream.ToArray());
-
         Channel = Retry
             .Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
                 TelegramStorageClient.HandleFloodException).chats[long.Parse(channelId)].Checked();

@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using Kifa.Service;
+using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
@@ -118,4 +121,26 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             "api_hash" => ApiHash,
             _ => null
         };
+
+    static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(1);
+
+    public void RefreshIfNeeded(TelegramSession session) {
+        if (session.Refreshed + RefreshInterval < DateTimeOffset.UtcNow) {
+            return;
+        }
+
+        var sessionStream = new MemoryStream();
+        sessionStream.Write(session.Data);
+        sessionStream.Seek(0, SeekOrigin.Begin);
+        using var client = new Client(ConfigProvider, sessionStream);
+
+        var result = Retry.Run(() => client.Checked().Login(Phone).GetAwaiter().GetResult(),
+            TelegramStorageClient.HandleFloodException);
+        if (result != null) {
+            throw new DriveNotFoundException(
+                $"Telegram drive {Id} is not accessible. Requesting {result}.");
+        }
+
+        session.Data = sessionStream.ToByteArray();
+    }
 }

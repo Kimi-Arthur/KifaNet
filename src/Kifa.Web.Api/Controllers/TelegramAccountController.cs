@@ -54,6 +54,8 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             if (coldestSession?.Reserved < DateTimeOffset.UtcNow) {
                 coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
                 coldestSession.Id = Random.Shared.Next();
+                account.RefreshIfNeeded(coldestSession);
+
                 Update(account);
                 return coldestSession;
             }
