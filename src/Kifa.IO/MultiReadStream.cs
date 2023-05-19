@@ -8,7 +8,6 @@ namespace Kifa.IO;
 public class MultiReadStream : Stream {
     public MultiReadStream(List<Stream> streams) {
         this.streams = streams;
-        streamCount = streams.Count;
         lengths = this.streams.Select(s => s.Length).ToList();
         offsets = new List<long> {
             0
@@ -24,7 +23,6 @@ public class MultiReadStream : Stream {
     readonly List<Stream> streams;
     readonly List<long> lengths;
     readonly List<long> offsets;
-    int streamCount;
 
     int currentStream = -1;
     long positionInCurrentStream = -1;
