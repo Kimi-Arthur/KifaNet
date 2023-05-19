@@ -11,8 +11,8 @@ public class PatchedStreamTests {
             data[i] = (byte) i;
         }
 
-        var ms = new MemoryStream(data);
-        var ps = new PatchedStream(ms) {
+        using var ms = new MemoryStream(data);
+        using var ps = new PatchedStream(ms) {
             IgnoreBefore = 12,
             IgnoreAfter = 24,
             BufferBefore = new byte[] { 0x12, 0x25 },

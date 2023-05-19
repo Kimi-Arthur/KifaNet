@@ -58,10 +58,11 @@ public class ShardedStorageClient : StorageClient {
     public override void Write(string path, Stream stream) {
         var length = stream.Length;
         foreach (var (client, p, index) in GetShards(path)) {
-            client.Write(p, new PatchedStream(stream) {
+            using var partStream = new PatchedStream(stream) {
                 IgnoreBefore = ShardSize * index,
                 IgnoreAfter = Math.Max(length - ShardSize * index - ShardSize, 0)
-            });
+            };
+            client.Write(p, partStream);
         }
     }
 
