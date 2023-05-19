@@ -206,11 +206,11 @@ public class FileStorageClient : StorageClient {
 
     public override long Length(string path) {
         if (Server == null) {
-            return -1;
+            throw new FileNotFoundException();
         }
 
         var info = new FileInfo(Server.GetPath(path));
-        return info.Exists ? info.Length : -1;
+        return info.Exists ? info.Length : throw new FileNotFoundException();
     }
 
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {

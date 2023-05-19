@@ -53,7 +53,8 @@ public class MegaNzStorageClient : StorageClient {
         throw new NotImplementedException();
     }
 
-    public override long Length(string path) => GetNode(path)?.Size ?? -1;
+    public override long Length(string path)
+        => GetNode(path)?.Size ?? throw new FileNotFoundException();
 
     public override Stream OpenRead(string path) => Client.Download(GetNode(path));
 

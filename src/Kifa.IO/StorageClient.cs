@@ -16,8 +16,13 @@ public abstract class StorageClient : IDisposable {
     public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
         => Enumerable.Empty<FileInformation>();
 
-    public bool Exists(string path, long expectedLength = -1)
-        => expectedLength == 0 ? Length(path) >= 0 : Length(path) > 0;
+    public bool Exists(string path, long expectedLength = -1) {
+        try {
+            return expectedLength == 0 ? Length(path) >= 0 : Length(path) > 0;
+        } catch (FileNotFoundException) {
+            return false;
+        }
+    }
 
     public abstract long Length(string path);
 

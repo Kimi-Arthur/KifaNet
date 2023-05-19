@@ -418,13 +418,13 @@ public class BaiduCloudStorageClient : StorageClient {
                 }));
 
             if (responseObject["list"] == null) {
-                return -1;
+                throw new FileNotFoundException();
             }
 
             return (long) responseObject["list"][0]["size"];
         } catch (Exception ex) {
             Logger.Debug(ex, "Existence test failed");
-            return -1;
+            throw new FileNotFoundException();
         }
     }
 

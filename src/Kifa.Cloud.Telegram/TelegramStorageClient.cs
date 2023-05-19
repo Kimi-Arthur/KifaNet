@@ -84,7 +84,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public override long Length(string path) {
         var document = GetDocument(path);
         if (document == null) {
-            return -1;
+            throw new FileNotFoundException();
         }
 
         return document.size;

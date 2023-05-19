@@ -48,7 +48,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
     public override long Length(string path) {
         var account = Account;
         if (account?.AccessToken == null) {
-            return -1;
+            throw new FileNotFoundException();
         }
 
         using var response = client.Send(APIList.GetFileInfo.GetRequest(
@@ -65,7 +65,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
             Logger.Debug($"Get length failed for {path}, status: {response.StatusCode}");
         }
 
-        return response.StatusCode == HttpStatusCode.NotFound ? 0 : -1;
+        throw new FileNotFoundException();
     }
 
     public override void Delete(string path) {

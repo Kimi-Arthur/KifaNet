@@ -196,9 +196,9 @@ public class GoogleDriveStorageClient : StorageClient {
         return (int) memoryStream.Position;
     }
 
-    long GetFileSize(string fileId) {
+    long GetFileSize(string? fileId) {
         if (fileId == null) {
-            return -1;
+            throw new FileNotFoundException();
         }
 
         var response = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,

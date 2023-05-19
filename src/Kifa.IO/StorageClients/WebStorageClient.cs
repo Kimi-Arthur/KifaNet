@@ -24,7 +24,7 @@ public class WebStorageClient : StorageClient {
     public string Protocol { get; set; }
 
     public override long Length(string path)
-        => httpClient.GetContentLength(GetUrl(path)).GetValueOrDefault(0);
+        => httpClient.GetContentLength(GetUrl(path)) ?? throw new FileNotFoundException();
 
     public override void Delete(string path) {
         Logger.Warn($"Deleting {path} is ignored.");
