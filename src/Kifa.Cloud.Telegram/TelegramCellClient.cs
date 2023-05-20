@@ -18,7 +18,7 @@ public class TelegramCellClient : IDisposable {
 
     static Logger? wTelegramLogger;
 
-    public TelegramCellClient(TelegramAccount account, string channelId) {
+    public TelegramCellClient(TelegramAccount account, string channelId, TelegramSession session) {
         // Race condition should be OK here. Calling twice the clause shouldn't have visible
         // caveats.
         if (wTelegramLogger == null) {
@@ -30,13 +30,6 @@ public class TelegramCellClient : IDisposable {
         }
 
         AccountId = account.Id;
-        var response = TelegramAccount.Client.ObtainSession(AccountId);
-        if (response.Status != KifaActionStatus.OK) {
-            throw new InsufficientStorageException(
-                $"Failed to locate a session to use: {response.Message}");
-        }
-
-        var session = response.Response.Checked();
         SessionId = session.Id;
         KeepSessionReserved(SessionId);
 
