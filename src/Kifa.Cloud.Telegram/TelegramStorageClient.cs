@@ -28,10 +28,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     #endregion
 
+    static readonly ConcurrentDictionary<string, TelegramStorageCell> AllCells = new();
+
     public required string CellId { get; init; }
 
-    TelegramStorageCell? cell;
-    public TelegramStorageCell Cell => cell ??= TelegramStorageCell.Client.Get(CellId).Checked();
+    public TelegramStorageCell Cell
+        => AllCells.GetOrAdd(CellId, cellId => TelegramStorageCell.Client.Get(cellId).Checked());
 
     TelegramStorageClient() {
         Logger.Warn("TBR: Client created");

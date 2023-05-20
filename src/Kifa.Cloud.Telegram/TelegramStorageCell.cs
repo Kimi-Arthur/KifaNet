@@ -1,9 +1,4 @@
-using System;
-using System.Threading.Tasks;
 using Kifa.Service;
-using Newtonsoft.Json;
-using TL;
-using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
