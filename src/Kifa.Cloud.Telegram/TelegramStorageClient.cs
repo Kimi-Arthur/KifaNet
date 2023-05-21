@@ -54,7 +54,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         currentHolders--;
         if (currentHolders == 0) {
             Logger.Warn("TBR: Client released");
-            sharedCellClient?.Dispose();
+            sharedCellClient?.Release();
             sharedCellClient = null;
         }
     }
