@@ -16,7 +16,7 @@ public class
     [HttpPost("$obtain_session")]
     public KifaApiActionResult<TelegramSession> ObtainSession(
         [FromBody] TelegramAccount.ObtainSessionRequest request)
-        => Client.ObtainSession(request.AccountId);
+        => Client.ObtainSession(request.AccountId, request.SessionId);
 
     [HttpPost("$renew_session")]
     public KifaApiActionResult RenewSession([FromBody] TelegramAccount.RenewSessionRequest request)
@@ -47,9 +47,18 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
         }
     }
 
-    public KifaActionResult<TelegramSession> ObtainSession(string accountId) {
+    public KifaActionResult<TelegramSession> ObtainSession(string accountId, int? sessionId) {
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
+            if (sessionId != null) {
+                var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
+                if (matchedSession != null && DateTimeOffset.UtcNow >= matchedSession.Reserved) {
+                    account.RefreshIfNeeded(matchedSession);
+                    Update(account);
+                    return matchedSession;
+                }
+            }
+
             var coldestSession = account.Sessions.MinBy(s => s.Reserved);
             if (coldestSession?.Reserved < DateTimeOffset.UtcNow) {
                 coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);

@@ -15,7 +15,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     public interface ServiceClient : KifaServiceClient<TelegramAccount> {
         KifaActionResult AddSession(string accountId, byte[] sessionData);
-        public KifaActionResult<TelegramSession> ObtainSession(string accountId);
+        public KifaActionResult<TelegramSession> ObtainSession(string accountId, int? sessionId);
         public KifaActionResult RenewSession(string accountId, int sessionId);
         public KifaActionResult ReleaseSession(string accountId, int sessionId);
         public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData);
@@ -28,6 +28,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     public class ObtainSessionRequest {
         public required string AccountId { get; set; }
+        public required int? SessionId { get; set; }
     }
 
     public class RenewSessionRequest {
@@ -53,9 +54,10 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
                 SessionData = sessionData
             });
 
-        public KifaActionResult<TelegramSession> ObtainSession(string accountId)
+        public KifaActionResult<TelegramSession> ObtainSession(string accountId, int? sessionId)
             => Call<TelegramSession>("obtain_session", new ObtainSessionRequest {
-                AccountId = accountId
+                AccountId = accountId,
+                SessionId = sessionId
             });
 
         public KifaActionResult RenewSession(string accountId, int sessionId)
@@ -122,7 +124,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             _ => null
         };
 
-    static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(1);
+    static readonly TimeSpan RefreshInterval = TimeSpan.FromDays(30);
 
     public void RefreshIfNeeded(TelegramSession session) {
         if (DateTimeOffset.UtcNow < session.Refreshed + RefreshInterval) {
