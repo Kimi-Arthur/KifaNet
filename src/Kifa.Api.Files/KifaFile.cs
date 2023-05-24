@@ -52,8 +52,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             throw new FileNotFoundException();
         }
 
-        Logger.Warn($"TBR: File {uri} created.");
-
         // Example uri:
         //   baidu:Pimix_1/a/b/c/d.txt.v1
         //   mega:0z/a/b/c/d.txt
@@ -635,6 +633,5 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public void Dispose() {
         Client.Dispose();
-        Logger.Warn($"TBR: File {Path} disposed.");
     }
 }
