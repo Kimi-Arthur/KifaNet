@@ -117,7 +117,6 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             }
 
             session.Reserved = Date.Zero;
-            session.Id = Random.Shared.Next();
             Update(account);
 
             return new KifaActionResult {
