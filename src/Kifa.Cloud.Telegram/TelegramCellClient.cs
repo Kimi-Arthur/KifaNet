@@ -26,6 +26,7 @@ public class TelegramCellClient : IDisposable {
     public TelegramCellClient(TelegramAccount account, string channelId, TelegramSession session) {
         // Race condition should be OK here. Calling twice the clause shouldn't have visible
         // caveats.
+        Logger.Warn($"TBR: Client with session id {session.Id} is created.");
         if (wTelegramLogger == null) {
             ThreadPool.SetMinThreads(100, 100);
             wTelegramLogger = LogManager.GetLogger("WTelegram");
@@ -84,6 +85,7 @@ public class TelegramCellClient : IDisposable {
 
     public void Dispose() {
         disposed = true;
+        Logger.Warn($"TBR: Client with session id {SessionId} is disposed.");
         Client.Dispose();
     }
 }
