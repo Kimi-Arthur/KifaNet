@@ -3,20 +3,28 @@ using System.Linq;
 using Kifa.Cloud.Telegram;
 using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 
 namespace Kifa.Web.Api.Controllers;
 
 public class
     TelegramAccountController : KifaDataController<TelegramAccount,
         TelegramAccountJsonServiceClient> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     [HttpPost("$add_session")]
     public KifaApiActionResult AddSession([FromBody] TelegramAccount.AddSessionRequest request)
         => Client.AddSession(request.AccountId, request.SessionData);
 
     [HttpPost("$obtain_session")]
     public KifaApiActionResult<TelegramSession> ObtainSession(
-        [FromBody] TelegramAccount.ObtainSessionRequest request)
-        => Client.ObtainSession(request.AccountId, request.SessionId);
+        [FromBody] TelegramAccount.ObtainSessionRequest request) {
+        Logger.Trace($"Got request: obtain_session({request.ToJson()})");
+        var result = Client.ObtainSession(request.AccountId, request.SessionId);
+        Logger.Trace($"Processed request: {result.Response.ToJson()}");
+
+        return result;
+    }
 
     [HttpPost("$renew_session")]
     public KifaApiActionResult RenewSession([FromBody] TelegramAccount.RenewSessionRequest request)
