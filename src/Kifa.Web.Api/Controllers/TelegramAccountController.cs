@@ -60,21 +60,19 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             }
 
             var coldestSession = account.Sessions.MinBy(s => s.Reserved);
-            if (coldestSession?.Reserved < DateTimeOffset.UtcNow) {
-                coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
-                coldestSession.Id = Random.Shared.Next();
-                account.RefreshIfNeeded(coldestSession);
-
-                Update(account);
-                return coldestSession;
+            if (!(coldestSession?.Reserved < DateTimeOffset.UtcNow)) {
+                return new KifaActionResult<TelegramSession> {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"All {account.Sessions.Count} sessions are reserved."
+                };
             }
 
-            return new KifaActionResult<TelegramSession> {
-                Status = KifaActionStatus.BadRequest,
-                Message = account.Sessions.Count == 0
-                    ? "No sessions available."
-                    : $"All {account.Sessions.Count} sessions are reserved."
-            };
+            coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
+            coldestSession.Id = Random.Shared.Next();
+            account.RefreshIfNeeded(coldestSession);
+
+            Update(account);
+            return coldestSession;
         }
     }
 
