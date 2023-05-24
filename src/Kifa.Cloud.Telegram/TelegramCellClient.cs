@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Kifa.Service;
 using NLog;
 using TL;
 using WTelegram;
@@ -9,6 +10,8 @@ using WTelegram;
 namespace Kifa.Cloud.Telegram;
 
 public class TelegramCellClient : IDisposable {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     string AccountId { get; set; }
     int SessionId { get; set; }
     public Client Client { get; set; }
@@ -16,6 +19,7 @@ public class TelegramCellClient : IDisposable {
 
     // TODO: More captured way to control this.
     public bool Reserved = true;
+    bool disposed;
 
     static Logger? wTelegramLogger;
 
@@ -62,9 +66,13 @@ public class TelegramCellClient : IDisposable {
         while (true) {
             await Task.Delay(TimeSpan.FromMinutes(5));
 
-            if (!Reserved ||
-                !TelegramAccount.Client.RenewSession(AccountId, sessionId).IsAcceptable) {
+            if (disposed) {
                 break;
+            }
+
+            if (Reserved) {
+                Logger.LogResult(TelegramAccount.Client.RenewSession(AccountId, sessionId),
+                    $"reserving session {sessionId}", defaultLevel: LogLevel.Trace);
             }
         }
     }
@@ -75,6 +83,7 @@ public class TelegramCellClient : IDisposable {
     }
 
     public void Dispose() {
+        disposed = true;
         Client.Dispose();
     }
 }
