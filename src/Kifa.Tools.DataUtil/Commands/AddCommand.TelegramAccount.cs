@@ -11,13 +11,13 @@ public partial class AddCommand {
         foreach (var accountSpec in specs) {
             var segments = accountSpec.Split(":");
             var accountId = segments[0];
-            var phone = segments[1];
-            var apiId = segments[2];
-            var apiHash = segments[3];
-            var sessionCount = int.Parse(segments[4]);
+            var sessionCount = int.Parse(segments[^1]);
 
             TelegramAccount account;
-            if (phone + apiId + apiHash != "") {
+            if (segments.Length == 5) {
+                var phone = segments[1];
+                var apiId = segments[2];
+                var apiHash = segments[3];
                 account = new TelegramAccount {
                     Id = accountId,
                     Phone = phone,
