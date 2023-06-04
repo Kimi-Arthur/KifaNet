@@ -404,7 +404,7 @@ public class MemriseClient : IDisposable {
             { Course.Columns["English"], word.Meaning }
         };
 
-        data[Course.Columns["Form"]] = word.Form ?? "";
+        data[Course.Columns["Note"]] = $"{word.Form ?? ""}\n{word.Usage ?? ""}".Trim();
 
         data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
             ? string.Join(LineBreak,
