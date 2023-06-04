@@ -146,6 +146,13 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
         }
     }
 
+    public IEnumerable<string> GetUnusedWords() {
+        var usedWords = Levels.Values.SelectMany(l => LevelClient.Get($"{Id}/{l}").Checked().Words)
+            .ToHashSet();
+
+        return Words.Values.Select(w => w.Id).Except(usedWords);
+    }
+
     public IEnumerable<MemriseWord> GetPotentialExistingRows(string searchQuery)
         => Retry.Run(() => {
             WebDriver.GoToUrl(DatabaseUrl);

@@ -14,7 +14,7 @@ public class MemriseClientTests {
 
     public MemriseClientTests() {
         KifaConfigs.LoadFromSystemConfigs();
-        TestCourse = MemriseCourse.Client.Get("test-course");
+        TestCourse = MemriseCourse.Client.Get("test-course", true);
     }
 
     [Test]
@@ -117,5 +117,10 @@ public class MemriseClientTests {
         };
         level.Fill();
         Assert.NotZero(level.Words.Count);
+    }
+
+    [Test]
+    public void UnusedWordsTest() {
+        Assert.AreEqual(8, TestCourse.GetUnusedWords().Count());
     }
 }
