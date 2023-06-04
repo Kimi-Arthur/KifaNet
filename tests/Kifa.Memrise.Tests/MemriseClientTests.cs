@@ -109,4 +109,13 @@ public class MemriseClientTests {
     public void GetAllWordsTest() {
         Assert.NotZero(TestCourse.Words.Count);
     }
+
+    [Test]
+    public void GetLevelTest() {
+        var level = new MemriseLevel {
+            Id = TestCourse.Levels["test"]
+        };
+        level.FillLevel(TestCourse.Id);
+        Assert.NotZero(level.Words.Count);
+    }
 }
