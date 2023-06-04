@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -44,9 +43,9 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
     public Dictionary<string, string> Columns { get; set; }
 
     // Map from level name to its id. The name doesn't have to comply with the actual level name.
-    public Dictionary<string, string> Levels { get; set; }
+    public Dictionary<string, string> Levels { get; set; } = new();
 
-    public Dictionary<string, Link<MemriseWord>> Words { get; set; }
+    public Dictionary<string, Link<MemriseWord>> Words { get; set; } = new();
 
     [JsonIgnore]
     [YamlIgnore]
@@ -101,8 +100,7 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
         var totalPageNumber = elements.Where(element => element.GetDomAttribute("href") != "#")
             .Select(element => int.Parse(element.GetDomAttribute("href")[6..])).Max();
 
-        // Should reuse the previous words maybe.
-        Words = new Dictionary<string, Link<MemriseWord>>();
+        Words.Clear();
 
         for (var i = 0; i < totalPageNumber; i++) {
             Logger.Debug($"Filling page {i + 1}...");
