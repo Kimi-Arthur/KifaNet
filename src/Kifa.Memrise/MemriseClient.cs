@@ -142,7 +142,9 @@ public class MemriseClient : IDisposable {
 
         Logger.Debug(
             $"Reorder words for {levelId}: {HttpClient.Call(new ReorderWordsInLevelRpc(Course.DatabaseUrl, levelId, wordIds))?.Success}");
-        MemriseLevel.Client.Get($"{Course.Id}/{levelId}");
+
+        Logger.Debug(
+            $"Updated level's word list: {MemriseLevel.Client.Get($"{Course.Id}/{levelId}")}");
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, GermanWord rootWord) {
