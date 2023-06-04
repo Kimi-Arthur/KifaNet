@@ -147,8 +147,8 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
     }
 
     public IEnumerable<MemriseWord> GetUnusedWords() {
-        var usedWords = Levels.Values.SelectMany(l => LevelClient.Get($"{Id}/{l}").Checked().Words)
-            .ToHashSet();
+        var usedWords = Levels.Where(l => l.Key != "All")
+            .SelectMany(l => LevelClient.Get($"{Id}/{l.Value}").Checked().Words).ToHashSet();
 
         return WordClient.Get(Words.Values.Select(w => w.Id).Except(usedWords).ToList())
             .Select(w => w.Checked());
