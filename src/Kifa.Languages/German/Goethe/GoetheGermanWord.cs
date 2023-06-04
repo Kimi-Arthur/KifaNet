@@ -18,6 +18,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     public static KifaServiceClient<GoetheGermanWord> Client { get; set; } =
         new KifaServiceRestClient<GoetheGermanWord>();
 
+    public override bool FillByDefault => true;
     public override int CurrentVersion => 3;
 
     static readonly Regex RootWordPattern =
@@ -53,7 +54,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
 
         if (word == null) {
             Logger.Warn($"Failed to find root word ({RootWord}) for {Id}.");
-            return Date.Zero;
+            return null;
         }
 
         Form ??= word.KeyForm;
@@ -69,6 +70,6 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
 
         Wiki = string.Join("; ", word.Meanings.Select(m => m.Translation)).Trim();
 
-        return Date.Zero;
+        return null;
     }
 }
