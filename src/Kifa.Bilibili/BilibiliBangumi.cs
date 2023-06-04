@@ -30,14 +30,14 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
         Type = mediaData.Media.TypeName;
         var seasonData = HttpClients.BilibiliHttpClient.Call(new MediaSeasonRpc(SeasonId))?.Result;
         if (seasonData == null) {
-            Logger.Error($"Failed to get data for season ({SeasonId}) from Bilibili.");
-            return Date.Zero;
+            throw new UnableToFillException(
+                $"Failed to get data for season ({SeasonId}) from Bilibili.");
         }
 
         Aids = seasonData.MainSection.Episodes.Select(e => $"av{e.Aid}").ToList();
         ExtraAids = seasonData.Section.SelectMany(s => s.Episodes.Select(e => $"av{e.Aid}"))
             .ToList();
 
-        return Date.Zero;
+        return null;
     }
 }

@@ -39,6 +39,6 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
         }
 
         Videos.Reverse();
-        return Date.Zero;
+        return null;
     }
 }

@@ -39,7 +39,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         Aids = list;
         Aids.Reverse();
 
-        return Date.Zero;
+        return null;
     }
 
     List<string> GetAllVideos(string uploaderId) {

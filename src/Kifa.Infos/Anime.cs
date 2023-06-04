@@ -29,6 +29,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable {
 
     #endregion
 
+    public override bool FillByDefault => true;
 
     static readonly Language DefaultLanguage = Language.Japanese;
 
@@ -138,6 +139,6 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable {
             }
         }
 
-        return Date.Zero;
+        return null;
     }
 }

@@ -43,8 +43,6 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
 
     public List<BilibiliMangaPage> Pages { get; set; } = new();
 
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
     public override DateTimeOffset? Fill() {
         Pages = HttpClients.BiliplusHttpClient
             .Call(new BiliplusMangaEpisodeRpc(MangaId[2..], EpisodeId)).Select((p, index)

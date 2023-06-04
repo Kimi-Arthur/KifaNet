@@ -31,8 +31,6 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable {
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
-    public override bool FillByDefault => true;
-
     public override DateTimeOffset? Fill() {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
                               0 + Specials?.Count ?? 0;
@@ -89,8 +87,10 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable {
 
     // TODO: Always refresh for now.
     // It should determine how frequent it's published and last updated episode to predict.
+    public override bool FillByDefault => true;
+
     DateTimeOffset? GetNextEpisodeDate() {
-        return Date.Zero;
+        return null;
     }
 
     public string? Format(Season season, Episode episode)

@@ -73,7 +73,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
         }
 
         ReconcileQuota();
-        return Date.Zero;
+        return null;
     }
 
     // TODO(#2): Should implement in server side.
