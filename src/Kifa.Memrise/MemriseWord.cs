@@ -14,7 +14,7 @@ public class MemriseWord : DataModel, WithModelId<MemriseWord> {
 
     public List<MemriseAudio>? Audios { get; set; }
 
-    HttpClient httpClient;
+    HttpClient? httpClient;
 
     HttpClient HttpClient {
         get {
@@ -23,7 +23,6 @@ public class MemriseWord : DataModel, WithModelId<MemriseWord> {
                 httpClient.DefaultRequestHeaders.Add("cookie", MemriseClient.Cookies);
                 httpClient.DefaultRequestHeaders.Add("x-csrftoken", MemriseClient.CsrfToken);
                 httpClient.DefaultRequestHeaders.Add("x-requested-with", "XMLHttpRequest");
-                // httpClient.DefaultRequestHeaders.Add("referer", BaseUrl);
             }
 
             return httpClient;
