@@ -189,7 +189,7 @@ public class MemriseClient : IDisposable {
 
         var needsRetrieval = FillRow(existingRow, newData) > 0;
 
-        if (rootWord.PronunciationAudioLinks == null) {
+        if (rootWord.PronunciationAudioLinks.Count == 0) {
             return new KifaActionResult<MemriseWord>(existingRow);
         }
 
