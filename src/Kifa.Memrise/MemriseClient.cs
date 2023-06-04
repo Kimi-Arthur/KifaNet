@@ -108,14 +108,8 @@ public class MemriseClient : IDisposable {
     }
 
     void AddWordsToLevel(string levelId, List<string> wordIds) {
-        var rendered = HttpClient.Call(new GetLevelRpc(Course.DatabaseUrl, levelId))?.Rendered;
-        if (rendered == null) {
-            throw new Exception($"Failed to get current words in level {levelId}.");
-        }
-
-        var thingIdReg = new Regex(@"data-thing-id=""(\d+)""");
-        var existingThingIds =
-            thingIdReg.Matches(rendered).Select(m => m.Groups[1].Value).ToHashSet();
+        var level = MemriseLevel.Client.Get($"{Course.Id}/{levelId}").Checked();
+        var existingThingIds = level.Words.ToHashSet();
 
         foreach (var wordId in wordIds.Except(existingThingIds)) {
             Logger.Debug(
@@ -129,6 +123,7 @@ public class MemriseClient : IDisposable {
 
         Logger.Debug(
             $"Reorder words for {levelId}: {HttpClient.Call(new ReorderWordsInLevelRpc(Course.DatabaseUrl, levelId, wordIds))?.Success}");
+        MemriseLevel.Client.Get($"{Course.Id}/{levelId}");
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, GermanWord rootWord) {
