@@ -220,8 +220,8 @@ public class MemriseClient : IDisposable {
         return new KifaActionResult<MemriseWord>(existingRow);
     }
 
-    static readonly Regex WordArticlePattern = new Regex("^(der|die|das) .*");
-    static readonly Regex LinkArticlePattern = new Regex("/(der|die|das)_.*");
+    static readonly Regex WordArticlePattern = new("^(der|die|das) .*");
+    static readonly Regex LinkArticlePattern = new("/(der|die|das)_.*");
 
     static bool IsApplicable(string link, string goetheGermanWord) {
         switch (link.Split("/")[2]) {
