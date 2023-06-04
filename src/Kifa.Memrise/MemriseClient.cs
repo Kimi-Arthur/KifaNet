@@ -116,7 +116,7 @@ public class MemriseClient : IDisposable {
             }
 
             var addedWord = AddWord(word, rootWord);
-            Logger.LogResult(addedWord, $"Upload word {word}");
+            Logger.LogResult(addedWord, $"upload word {word}");
             if (addedWord.Status == KifaActionStatus.OK) {
                 var added = addedWord.Response!;
                 Logger.Debug($"Update Memrise record: {added}.");
