@@ -56,6 +56,21 @@ public class MemriseClient : IDisposable {
         return KifaActionResult.Success;
     }
 
+    public KifaActionResult RemoveWords(List<MemriseWord> words) {
+        var results = new KifaBatchActionResult();
+        foreach (var word in words) {
+            results.Add(word.Id, KifaActionResult.FromAction(()
+                => HttpClient.Call(new RemoveWordRpc(Course.DatabaseUrl, word.Id)).Success ?? false
+                    ? KifaActionResult.Success
+                    : new KifaActionResult {
+                        Status = KifaActionStatus.Error,
+                        Message = $"Failed to remove word {word.Id}"
+                    }));
+        }
+
+        return results;
+    }
+
     IEnumerable<GoetheGermanWord> ExpandWords(IEnumerable<string> words) {
         foreach (var word in words) {
             var expandedWords = new Queue<GoetheGermanWord>();

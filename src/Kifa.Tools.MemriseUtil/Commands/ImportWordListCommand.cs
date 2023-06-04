@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.MemriseUtil.Commands;
@@ -55,6 +58,19 @@ public class ImportWordListCommand : KifaCommand {
         foreach (var wordListId in WordListIds) {
             var wordList = GoetheWordList.Client.Get(wordListId);
             memriseClient.AddWordList(wordList);
+        }
+
+        var unusedWords = course.GetUnusedWords().ToList();
+        if (unusedWords.Count > 0) {
+            foreach (var w in unusedWords) {
+                Console.WriteLine(w);
+            }
+
+            if (Confirm($"Found {unusedWords.Count} words not used by any level")) {
+                Logger.LogResult(memriseClient.RemoveWords(unusedWords), "removing words");
+                course = MemriseCourse.Client.Get(course.Id, true).Checked();
+                Logger.Info($"After refreshing, {course.GetUnusedWords().Count()} are found.");
+            }
         }
 
         return 0;

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
-using Newtonsoft.Json;
 
 namespace Kifa.Memrise.Api;
 
@@ -18,9 +17,10 @@ public sealed class RemoveWordRpc : KifaJsonParameterizedRpc<RemoveWordResponse>
         new KeyValuePair<string, string>("thing_id", "{thingId}")
     };
 
-    public RemoveWordRpc(string thingId) {
+    public RemoveWordRpc(string referer, string thingId) {
         parameters = new Dictionary<string, string> {
             { "thingId", thingId },
+            { "referer", referer }
         };
     }
 }
