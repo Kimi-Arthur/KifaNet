@@ -21,7 +21,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     public override int CurrentVersion => 3;
 
     static readonly Regex RootWordPattern =
-        new(@"^(das |der |die |\(.*\) |sich )?(.+?)(-$| \(.*\)| sein| gehen)?$");
+        new(@"^(das |der |die |\(.*\) |sich |der/die )?(.+?)(-$| \(.*\)| sein| gehen)?$");
 
     public string? Level { get; set; }
     public string? Form { get; set; }
