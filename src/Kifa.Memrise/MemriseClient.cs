@@ -353,8 +353,6 @@ public class MemriseClient : IDisposable {
         return updatedFields;
     }
 
-    static readonly Regex Spaces = new("\\s+");
-
     static readonly List<(Regex original, string replacement)> CompatibilityMapping = new() {
         (new Regex("\\s+"), " "), // Spaces used as line breaks.
         (new Regex("^\u00A8"), "\u0308"), // Standalone umlaut character: ¨
