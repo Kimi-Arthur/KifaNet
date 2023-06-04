@@ -56,7 +56,7 @@ public class MemriseClient : IDisposable {
         return KifaActionResult.Success;
     }
 
-    public IEnumerable<GoetheGermanWord> ExpandWords(IEnumerable<string> words) {
+    IEnumerable<GoetheGermanWord> ExpandWords(IEnumerable<string> words) {
         foreach (var word in words) {
             var expandedWords = new Queue<GoetheGermanWord>();
             var originalWord = GoetheClient.Get(word);
