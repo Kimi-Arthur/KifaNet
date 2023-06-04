@@ -60,7 +60,9 @@ public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
 
         var nodes = doc.DocumentNode.SelectNodes("//tr[@data-thing-id]");
         Words.Clear();
-        Words.AddRange(nodes.Select(n => n.Attributes["data-thing-id"].Value));
+        if (nodes != null) {
+            Words.AddRange(nodes.Select(n => n.Attributes["data-thing-id"].Value));
+        }
 
         return null;
     }
