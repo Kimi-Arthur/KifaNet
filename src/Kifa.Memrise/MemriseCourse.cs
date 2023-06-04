@@ -34,6 +34,8 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
 
     static KifaServiceClient<MemriseWord> WordClient => MemriseWord.Client;
 
+    static KifaServiceClient<MemriseLevel> LevelClient => MemriseLevel.Client;
+
     public static string ModelId => "memrise/courses";
 
     public string CourseName { get; set; }
@@ -137,6 +139,13 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
     }
 
     void FillLevels() {
+        foreach (var levelId in Levels.Values) {
+            var level = new MemriseLevel {
+                Id = levelId
+            };
+            level.FillLevel(DatabaseUrl);
+            LevelClient.Set(level);
+        }
     }
 
     public IEnumerable<MemriseWord> GetPotentialExistingRows(string searchQuery)
