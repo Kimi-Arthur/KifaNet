@@ -56,6 +56,10 @@ public class MemriseClient : IDisposable {
         return KifaActionResult.Success;
     }
 
+    public KifaActionResult AddWordListAll()
+        => KifaActionResult.FromAction(()
+            => AddWordsToLevel(Course.Levels["All"], Course.GetUsedWords().ToList()));
+
     public KifaActionResult RemoveWords(List<MemriseWord> words) {
         var results = new KifaBatchActionResult();
         foreach (var word in words) {

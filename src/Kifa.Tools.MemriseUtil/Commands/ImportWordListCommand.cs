@@ -60,6 +60,8 @@ public class ImportWordListCommand : KifaCommand {
             memriseClient.AddWordList(wordList);
         }
 
+        Logger.LogResult(memriseClient.AddWordListAll(), "adding all words to All Words Level");
+
         var unusedWords = course.GetUnusedWords().ToList();
         if (unusedWords.Count > 0) {
             foreach (var w in unusedWords) {
