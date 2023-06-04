@@ -140,11 +140,9 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
 
     void FillLevels() {
         foreach (var levelId in Levels.Values) {
-            var level = new MemriseLevel {
-                Id = levelId
-            };
-            level.FillLevel(DatabaseUrl);
-            LevelClient.Set(level);
+            LevelClient.Set(new MemriseLevel {
+                Id = $"{Id}/{levelId}"
+            });
         }
     }
 

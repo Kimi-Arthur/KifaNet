@@ -113,9 +113,9 @@ public class MemriseClientTests {
     [Test]
     public void GetLevelTest() {
         var level = new MemriseLevel {
-            Id = TestCourse.Levels["test"]
+            Id = $"{TestCourse.Id}/{TestCourse.Levels["test"]}"
         };
-        level.FillLevel(TestCourse.Id);
+        level.Fill();
         Assert.NotZero(level.Words.Count);
     }
 }

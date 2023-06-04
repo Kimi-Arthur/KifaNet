@@ -5,11 +5,15 @@ using System.Net.Http;
 using HtmlAgilityPack;
 using Kifa.Memrise.Api;
 using Kifa.Service;
+using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Memrise;
 
 public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
     public static string ModelId => "memrise/levels";
+
+    public override bool FillByDefault => true;
 
     public static KifaServiceClient<MemriseLevel> Client { get; set; } =
         new KifaServiceRestClient<MemriseLevel>();
@@ -29,14 +33,22 @@ public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
         }
     }
 
+    [JsonIgnore]
+    [YamlIgnore]
+    string DatabaseUrl => MemriseCourse.Client.Get(Id.Split("/")[0]).Checked().DatabaseUrl;
+
+    [JsonIgnore]
+    [YamlIgnore]
+    string LevelId => Id.Split("/")[1];
+
     public string? Title { get; set; }
     public List<string> Words { get; set; } = new();
 
-    public void FillLevel(string databaseUrl) {
-        var rendered = HttpClient.Call(new GetLevelRpc(databaseUrl, Id))?.Rendered;
+    public override DateTimeOffset? Fill() {
+        var rendered = HttpClient.Call(new GetLevelRpc(DatabaseUrl, LevelId)).Rendered;
 
         if (rendered == null) {
-            throw new Exception($"Failed to get current words in level {Id}.");
+            throw new Exception($"Failed to get current words in level {LevelId}.");
         }
 
         var doc = new HtmlDocument();
@@ -49,5 +61,7 @@ public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
         var nodes = doc.DocumentNode.SelectNodes("//tr[@data-thing-id]");
         Words.Clear();
         Words.AddRange(nodes.Select(n => n.Attributes["data-thing-id"].Value));
+
+        return null;
     }
 }
