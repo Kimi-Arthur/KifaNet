@@ -70,8 +70,6 @@ public class ImportWordListCommand : KifaCommand {
 
             if (Confirm($"Found {unusedWords.Count} words not used by any level")) {
                 Logger.LogResult(memriseClient.RemoveWords(unusedWords), "removing words");
-                course = MemriseCourse.Client.Get(course.Id, true).Checked();
-                Logger.Info($"After refreshing, {course.GetUnusedWords().Count()} are found.");
             }
         }
 

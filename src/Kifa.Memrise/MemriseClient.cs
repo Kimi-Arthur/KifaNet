@@ -63,13 +63,17 @@ public class MemriseClient : IDisposable {
     public KifaActionResult RemoveWords(List<MemriseWord> words) {
         var results = new KifaBatchActionResult();
         foreach (var word in words) {
-            results.Add(word.Id, KifaActionResult.FromAction(()
-                => HttpClient.Call(new RemoveWordRpc(Course.DatabaseUrl, word.Id)).Success ?? false
-                    ? KifaActionResult.Success
-                    : new KifaActionResult {
+            results.Add(word.Id, KifaActionResult.FromAction(() => {
+                var result = HttpClient.Call(new RemoveWordRpc(Course.DatabaseUrl, word.Id));
+                if (!(result.Success ?? false)) {
+                    return new KifaActionResult {
                         Status = KifaActionStatus.Error,
                         Message = $"Failed to remove word {word.Id}"
-                    }));
+                    };
+                }
+
+                return CourseClient.RemoveWord(Course.Id, word.Id);
+            }));
         }
 
         return results;

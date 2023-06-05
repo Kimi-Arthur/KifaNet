@@ -20,11 +20,18 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
 
     public interface ServiceClient : KifaServiceClient<MemriseCourse> {
         void AddWord(string courseId, MemriseWord word);
+        KifaActionResult RemoveWord(string courseId, string word);
     }
 
     public class RestServiceClient : KifaServiceRestClient<MemriseCourse>, ServiceClient {
         public void AddWord(string courseId, MemriseWord word)
             => Call("add_word", new AddWordRequest {
+                Id = courseId,
+                Word = word
+            });
+
+        public KifaActionResult RemoveWord(string courseId, string word)
+            => Call("remove_word", new RemoveWordRequest {
                 Id = courseId,
                 Word = word
             });
@@ -208,4 +215,9 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
 public class AddWordRequest {
     public string Id { get; set; }
     public MemriseWord Word { get; set; }
+}
+
+public class RemoveWordRequest {
+    public string Id { get; set; }
+    public string Word { get; set; }
 }
