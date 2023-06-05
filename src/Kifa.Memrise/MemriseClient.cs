@@ -72,7 +72,7 @@ public class MemriseClient : IDisposable {
                     };
                 }
 
-                return CourseClient.RemoveWord(Course.Id, word.Id);
+                return CourseClient.RemoveWord(Course.Id, word);
             }));
         }
 

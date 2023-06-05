@@ -24,12 +24,12 @@ public class MemriseCourseJsonServiceClient : KifaServiceJsonClient<MemriseCours
         MemriseCourse.Client.Update(course);
     }
 
-    public KifaActionResult RemoveWord(string courseId, string word) {
+    public KifaActionResult RemoveWord(string courseId, MemriseWord word) {
         return KifaActionResult.FromAction(() => {
             lock (GetLock(courseId)) {
                 var course = Get(courseId).Checked();
-                course.Words.Remove(word);
-                MemriseWord.Client.Delete(word);
+                course.Words.Remove(word.Data[course.Columns["German"]]);
+                MemriseWord.Client.Delete(word.Id);
                 MemriseCourse.Client.Update(course);
             }
         });
