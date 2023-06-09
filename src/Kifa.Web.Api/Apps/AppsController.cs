@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Kifa.Service;
 using Kifa.Web.Api.Controllers;
@@ -31,6 +32,7 @@ public class AppsController : ControllerBase {
         [FromBody] Dictionary<string, object> data) {
         return client.Set(new AppData {
             Id = $"{app}/{user}",
+            LastUpdate = DateTimeOffset.UtcNow,
             Data = data
         });
     }
