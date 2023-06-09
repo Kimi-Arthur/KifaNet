@@ -22,7 +22,8 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
                 Activator.CreateInstance(controller.BaseType.GetGenericArguments()[1]));
         }
 
-        foreach (var candidate in candidates) {
+        foreach (var candidate in candidates.Where(t => t.CustomAttributes.All(a
+                     => a.AttributeType != typeof(SkipControllerAttribute)))) {
             Logger.Debug($"Adding client and controller for {candidate}...");
             feature.Controllers.Add(typeof(KifaDataController<,>).MakeGenericType(candidate,
                 typeof(KifaServiceJsonClient<>).MakeGenericType(candidate)).GetTypeInfo());
