@@ -90,13 +90,13 @@ public sealed class PlaylistRpc : KifaJsonParameterizedRpc<PlaylistRpc.Response>
 
     #endregion
 
-    public override string UrlPattern { get; } =
-        "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
+    protected override string Url
+        => "https://api.bilibili.com/x/v3/fav/resource/list?media_id={id}&pn={page}&ps=20";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public PlaylistRpc(string playlistId, int page = 1) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "id", playlistId },
             { "page", page.ToString() }
         };

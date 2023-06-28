@@ -11,13 +11,13 @@ sealed class SegmentDanmuRpc : KifaJsonParameterizedRpc<SegmentDanmuRpc.Response
 
     #endregion
 
-    public override string UrlPattern
+    protected override string Url
         => "https://dm.video.qq.com/barrage/segment/{video_id}/{segment_id}";
 
-    public override HttpMethod Method => HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     internal SegmentDanmuRpc(string videoId, string segmentId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "video_id", videoId },
             { "segment_id", segmentId }
         };

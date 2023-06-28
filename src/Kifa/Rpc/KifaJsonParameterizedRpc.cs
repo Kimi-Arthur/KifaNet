@@ -4,7 +4,7 @@ namespace Kifa.Rpc;
 
 public abstract class
     KifaJsonParameterizedRpc<TResponse> : KifaParameterizedRpc, KifaRpc<TResponse> {
-    public virtual bool CamelCase { get; set; } = false;
+    protected virtual bool CamelCase => false;
 
     public TResponse ParseResponse(HttpResponseMessage responseMessage)
         => responseMessage.GetObject<TResponse>(camelCase: CamelCase)!;

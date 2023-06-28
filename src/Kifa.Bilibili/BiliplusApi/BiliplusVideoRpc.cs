@@ -191,11 +191,12 @@ public sealed class BiliplusVideoRpc : KifaJsonParameterizedRpc<BiliplusVideoRpc
 
     #endregion
 
-    public override string UrlPattern { get; } = "https://www.biliplus.com/api/view?id={aid}";
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override string Url => "https://www.biliplus.com/api/view?id={aid}";
+
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public BiliplusVideoRpc(string aid) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "aid", aid.Substring(2) }
         };
     }

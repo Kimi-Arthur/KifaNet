@@ -31,14 +31,13 @@ public sealed class MojiSearchRpc : KifaJsonParameterizedRpc<MojiSearchRpc.Respo
 
     #endregion
 
-    public override string UrlPattern { get; } =
-        "https://api.mojidict.com/parse/functions/search_v3";
+    protected override string Url => "https://api.mojidict.com/parse/functions/search_v3";
 
-    public override HttpMethod Method { get; } = HttpMethod.Post;
+    protected override HttpMethod Method => HttpMethod.Post;
 
-    public override bool CamelCase { get; set; } = true;
+    protected override bool CamelCase => true;
 
-    public override string? JsonContent { get; } = JsonConvert.SerializeObject(
+    protected override string? JsonContent => JsonConvert.SerializeObject(
         new Dictionary<string, string> {
             { "searchText", "{word}" },
             { "langEnv", "zh-CN_ja" },
@@ -47,7 +46,7 @@ public sealed class MojiSearchRpc : KifaJsonParameterizedRpc<MojiSearchRpc.Respo
         });
 
     public MojiSearchRpc(string word) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "word", word }
         };
     }

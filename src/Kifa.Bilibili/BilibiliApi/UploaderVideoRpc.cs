@@ -70,13 +70,13 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
 
     #endregion
 
-    public override string UrlPattern { get; } =
-        "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=50&pn={page}";
+    protected override string Url
+        => "https://api.bilibili.com/x/space/arc/search?mid={id}&ps=50&pn={page}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public UploaderVideoRpc(string uploaderId, int page = 1) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "id", uploaderId },
             { "page", page.ToString() }
         };

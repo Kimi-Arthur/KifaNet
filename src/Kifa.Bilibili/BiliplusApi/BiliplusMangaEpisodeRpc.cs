@@ -7,13 +7,13 @@ using Kifa.Rpc;
 namespace Kifa.Bilibili.BiliplusApi;
 
 public class BiliplusMangaEpisodeRpc : KifaParameterizedRpc, KifaRpc<List<string>> {
-    public override string UrlPattern
+    protected override string Url
         => "https://www.biliplus.com/manga/?act=read&mangaid={manga_id}&epid={epid}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public BiliplusMangaEpisodeRpc(string mangaId, string epid) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "manga_id", mangaId },
             { "epid", epid }
         };

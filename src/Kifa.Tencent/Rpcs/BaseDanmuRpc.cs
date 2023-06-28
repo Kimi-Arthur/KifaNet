@@ -39,11 +39,12 @@ sealed class BaseDanmuRpc : KifaJsonParameterizedRpc<BaseDanmuRpc.Response> {
 
     #endregion
 
-    public override string UrlPattern => "https://dm.video.qq.com/barrage/base/{video_id}";
-    public override HttpMethod Method => HttpMethod.Get;
+    protected override string Url => "https://dm.video.qq.com/barrage/base/{video_id}";
+
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public BaseDanmuRpc(string videoId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "video_id", videoId }
         };
     }

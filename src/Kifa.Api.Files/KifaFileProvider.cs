@@ -24,10 +24,10 @@ class KifaFileInfo : IFileInfo {
 
     public bool Exists => file.Exists();
     public long Length => file.Length;
-    public string PhysicalPath => null;
+    public string? PhysicalPath => null;
     public string Name => file.BaseName;
 
-    public DateTimeOffset LastModified { get; } = DateTimeOffset.Parse("2010-11-25 00:00:00Z");
+    public DateTimeOffset LastModified => DateTimeOffset.Parse("2010-11-25 00:00:00Z");
 
     public bool IsDirectory => file.Exists();
 }

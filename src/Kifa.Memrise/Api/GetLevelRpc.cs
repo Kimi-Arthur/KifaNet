@@ -5,17 +5,18 @@ using Kifa.Rpc;
 namespace Kifa.Memrise.Api;
 
 public sealed class GetLevelRpc : KifaJsonParameterizedRpc<GetLevelResponse> {
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override string Url
+        => "https://app.memrise.com/ajax/level/editing_html/?level_id={level_id}";
 
-    public override Dictionary<string, string> Headers { get; } = new() {
-        { "referer", "{referer}" }
-    };
+    protected override HttpMethod Method => HttpMethod.Get;
 
-    public override string UrlPattern { get; } =
-        "https://app.memrise.com/ajax/level/editing_html/?level_id={level_id}";
+    protected override Dictionary<string, string> Headers
+        => new() {
+            { "referer", "{referer}" }
+        };
 
     public GetLevelRpc(string referer, string levelId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "referer", referer },
             { "level_id", levelId }
         };

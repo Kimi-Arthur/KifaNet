@@ -75,13 +75,12 @@ public sealed class UploaderInfoRpc : KifaJsonParameterizedRpc<UploaderInfoRpc.R
 
     #endregion
 
-    public override string UrlPattern { get; } =
-        "https://api.bilibili.com/x/space/acc/info?mid={id}";
+    protected override string Url => "https://api.bilibili.com/x/space/acc/info?mid={id}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public UploaderInfoRpc(string uploaderId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "id", uploaderId }
         };
     }

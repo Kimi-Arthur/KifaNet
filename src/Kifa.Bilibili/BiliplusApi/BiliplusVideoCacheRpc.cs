@@ -49,12 +49,13 @@ public class BiliplusVideoCacheRpc : KifaJsonParameterizedRpc<BiliplusVideoCache
 
     #endregion
 
+    protected override string Url => "https://www.biliplus.com{api_path}";
+
+    protected override HttpMethod Method => HttpMethod.Get;
+
     const string CachePagePattern = "https://www.biliplus.com/all/video/{aid}/";
 
     static readonly Regex ApiRegex = new(@".'(/api/view_all.*)'.*");
-
-    public override string UrlPattern { get; } = "https://www.biliplus.com{api_path}";
-    public override HttpMethod Method { get; } = HttpMethod.Get;
 
     public BiliplusVideoCacheRpc(string aid) {
         var url = CachePagePattern.Format(new Dictionary<string, string> {
@@ -65,7 +66,7 @@ public class BiliplusVideoCacheRpc : KifaJsonParameterizedRpc<BiliplusVideoCache
             throw new DataNotFoundException($"Failed to find cache page url for {aid}.");
         }
 
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "api_path", match.Groups[1].Value }
         };
     }

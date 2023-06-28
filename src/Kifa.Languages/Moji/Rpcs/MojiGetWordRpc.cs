@@ -73,12 +73,12 @@ public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Res
 
     #endregion
 
-    public override string UrlPattern { get; } =
-        "https://api.mojidict.com/parse/functions/nlt-fetchManyLatestWords";
+    protected override string Url
+        => "https://api.mojidict.com/parse/functions/nlt-fetchManyLatestWords";
 
-    public override HttpMethod Method { get; } = HttpMethod.Post;
+    protected override HttpMethod Method => HttpMethod.Post;
 
-    public override string? JsonContent { get; } = JsonConvert.SerializeObject(
+    protected override string? JsonContent => JsonConvert.SerializeObject(
         new Dictionary<string, object> {
             {
                 "itemsJson", new List<Dictionary<string, string>> {
@@ -92,10 +92,10 @@ public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Res
             { "_ApplicationId", Configs.ApplicationId }
         });
 
-    public override bool CamelCase { get; set; } = true;
+    protected override bool CamelCase => true;
 
     public MojiGetWordRpc(string wordId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "word_id", wordId }
         };
     }

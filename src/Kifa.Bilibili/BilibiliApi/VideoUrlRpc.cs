@@ -5,13 +5,13 @@ using Kifa.Rpc;
 namespace Kifa.Bilibili.BilibiliApi;
 
 public sealed class VideoUrlRpc : KifaJsonParameterizedRpc<VideoUrlResponse> {
-    public override string UrlPattern
+    protected override string Url
         => "https://api.bilibili.com/x/player/playurl?cid={cid}&avid={aid}&qn={quality}&fnval=4048&fourk=1";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public VideoUrlRpc(string aid, string cid, int quality) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "aid", aid.Substring(2) },
             { "cid", cid },
             { "quality", quality.ToString() }

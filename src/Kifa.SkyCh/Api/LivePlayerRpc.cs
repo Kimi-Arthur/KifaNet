@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -6,17 +5,18 @@ using Kifa.Rpc;
 namespace Kifa.SkyCh.Api;
 
 public sealed class LivePlayerRpc : KifaJsonParameterizedRpc<PlayerResponse> {
-    public override string UrlPattern { get; } =
-        "https://sport.sky.ch/en/SkyPlayerAjax/SkyPlayer?id={live_id}&contentType=8";
+    protected override string Url
+        => "https://sport.sky.ch/en/SkyPlayerAjax/SkyPlayer?id={live_id}&contentType=8";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
-    public override Dictionary<string, string> Headers { get; } = new() {
-        { "x-requested-with", "XMLHttpRequest" }
-    };
+    protected override Dictionary<string, string> Headers
+        => new() {
+            { "x-requested-with", "XMLHttpRequest" }
+        };
 
     public LivePlayerRpc(string liveId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "live_id", liveId }
         };
     }

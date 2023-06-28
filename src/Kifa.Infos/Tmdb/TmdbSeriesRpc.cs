@@ -6,18 +6,19 @@ using Kifa.Rpc;
 namespace Kifa.Infos.Tmdb;
 
 public sealed class TmdbSeriesRpc : KifaJsonParameterizedRpc<TmdbSeriesResponse> {
-    public override string UrlPattern
+    protected override string Url
         => "https://api.themoviedb.org/3/tv/{sid}?api_key={api_key}&language={lang}&random={random}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
-    static readonly Random random = new Random();
+    static readonly Random Random = new();
+
     public TmdbSeriesRpc(string sid, Language language, string apiKey) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "sid", sid },
             { "api_key", apiKey },
             { "lang", language.Code },
-            { "random", random.Next().ToString() }
+            { "random", Random.Next().ToString() }
         };
     }
 }

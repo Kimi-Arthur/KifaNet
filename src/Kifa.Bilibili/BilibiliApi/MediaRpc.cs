@@ -6,13 +6,12 @@ using Kifa.Rpc;
 namespace Kifa.Bilibili.BilibiliApi;
 
 public sealed class MediaRpc : KifaJsonParameterizedRpc<MediaResponse> {
-    public override string UrlPattern { get; } =
-        "https://api.bilibili.com/pgc/review/user?media_id={id}";
+    protected override string Url => "https://api.bilibili.com/pgc/review/user?media_id={id}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public MediaRpc(string mediaId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "id", mediaId[2..] }
         };
     }

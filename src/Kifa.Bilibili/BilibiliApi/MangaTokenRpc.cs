@@ -6,15 +6,15 @@ using Kifa.Rpc;
 namespace Kifa.Bilibili.BilibiliApi;
 
 public sealed class MangaTokenRpc : KifaJsonParameterizedRpc<MangaTokenResponse> {
-    public override string UrlPattern
+    protected override string Url
         => "https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device=pc&platform=web";
 
-    public override HttpMethod Method => HttpMethod.Post;
+    protected override HttpMethod Method => HttpMethod.Post;
 
-    public override string JsonContent => "{\"urls\":\"[{urls}]\"}";
+    protected override string JsonContent => "{\"urls\":\"[{urls}]\"}";
 
     public MangaTokenRpc(IEnumerable<string> imageIds) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "urls", string.Join(",", imageIds.Select(id => $"\\\"/bfs/manga/{id}\\\"")) }
         };
     }

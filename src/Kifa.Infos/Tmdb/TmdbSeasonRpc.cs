@@ -5,13 +5,13 @@ using Kifa.Rpc;
 namespace Kifa.Infos.Tmdb;
 
 public sealed class TmdbSeasonRpc : KifaJsonParameterizedRpc<TmdbSeasonResponse> {
-    public override string UrlPattern
+    protected override string Url
         => "https://api.themoviedb.org/3/tv/{sid}/season/{season}?api_key={api_key}&language={lang}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public TmdbSeasonRpc(string sid, int seasonId, Language language, string apiKey) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "sid", sid },
             { "season", seasonId.ToString() },
             { "lang", language.Code },

@@ -7,13 +7,13 @@ using Kifa.Rpc;
 namespace Kifa.Bilibili.BilibiliApi;
 
 public sealed class MediaSeasonRpc : KifaJsonParameterizedRpc<MediaSeasonResponse> {
-    public override string UrlPattern { get; } =
-        "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
+    protected override string Url
+        => "https://api.bilibili.com/pgc/web/season/section?season_id={id}";
 
-    public override HttpMethod Method { get; } = HttpMethod.Get;
+    protected override HttpMethod Method => HttpMethod.Get;
 
     public MediaSeasonRpc(string seasonId) {
-        parameters = new Dictionary<string, string> {
+        Parameters = new Dictionary<string, string> {
             { "id", seasonId[2..] }
         };
     }
