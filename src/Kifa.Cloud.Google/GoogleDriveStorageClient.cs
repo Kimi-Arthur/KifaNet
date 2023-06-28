@@ -104,16 +104,10 @@ public class GoogleDriveStorageClient : StorageClient {
     }
 
     public override void Write(string path, Stream input) {
-        var folderId = GetFileId(path.Substring(0, path.LastIndexOf('/')), true);
+        var folderId = GetFileId(path[..path.LastIndexOf('/')], true).Checked();
 
-        Uri uploadUri;
-        using var uriResponse = client.SendWithRetry(() => GetRequest(APIList.CreateFile,
-            new Dictionary<string, string> {
-                ["parent_id"] = folderId,
-                ["name"] = path.Substring(path.LastIndexOf('/') + 1)
-            }));
-
-        uploadUri = uriResponse.Headers.Location;
+        var uploadUri = client.Call(new CreateFileRpc(parentId: folderId,
+            name: path[(path.LastIndexOf('/') + 1)..], Account.AccessToken));
 
         var size = input.Length;
         var buffer = new byte[BlockSize];
