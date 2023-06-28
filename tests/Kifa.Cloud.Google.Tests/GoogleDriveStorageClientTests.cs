@@ -9,7 +9,7 @@ namespace Kifa.Cloud.Google.Tests;
 
 public class GoogleDriveStorageClientTests {
     public GoogleDriveStorageClientTests() {
-        GetStorageClient().Delete("/Test/big.bin");
+        GetStorageClient().Delete("/Test/test.bin");
     }
 
     const string FileSHA256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
@@ -55,15 +55,15 @@ public class GoogleDriveStorageClientTests {
 
         var dataStream = new MemoryStream(data);
 
-        client.Write("/Test/big.bin", dataStream);
+        client.Write("/Test/test.bin", dataStream);
 
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
-        using (var s = client.OpenRead("/Test/big.bin")) {
+        using (var s = client.OpenRead("/Test/test.bin")) {
             Assert.Equal(BigFileSHA256,
                 FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
-        client.Delete("/Test/big.bin");
+        client.Delete("/Test/test.bin");
     }
 }

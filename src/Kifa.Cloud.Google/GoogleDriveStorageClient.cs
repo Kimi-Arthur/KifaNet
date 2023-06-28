@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using Kifa.Cloud.Google.Rpcs;
 using Kifa.IO;
 using Kifa.Service;
 using Newtonsoft.Json.Linq;
@@ -86,13 +87,7 @@ public class GoogleDriveStorageClient : StorageClient {
     public override void Delete(string path) {
         var fileId = GetFileId(path);
         if (fileId != null) {
-            using var response = client.SendWithRetry(() => GetRequest(APIList.DeleteFile,
-                new Dictionary<string, string> {
-                    ["file_id"] = fileId
-                }));
-            if (!response.IsSuccessStatusCode) {
-                throw new Exception("Delete is not successful.");
-            }
+            client.Call(new DeleteFileRpc(fileId, Account.AccessToken));
         }
     }
 

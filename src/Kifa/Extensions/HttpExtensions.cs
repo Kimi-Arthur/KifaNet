@@ -112,6 +112,10 @@ public static class HttpExtensions {
         HttpStatusCode? expectedStatusCode = null)
         => rpc.ParseResponse(client.SendWithRetry(rpc.GetRequest, expectedStatusCode));
 
+    public static void Call(this HttpClient client, KifaRpc rpc,
+        HttpStatusCode? expectedStatusCode = null)
+        => client.SendWithRetry(rpc.GetRequest, expectedStatusCode);
+
     static void HandleHttpException(Exception ex, int index) {
         if (index >= 5 || ex is HttpRequestException {
                 InnerException: SocketException {

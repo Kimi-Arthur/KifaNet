@@ -6,7 +6,7 @@ using NLog;
 
 namespace Kifa.Rpc;
 
-public abstract class KifaParameterizedRpc<TResponse> : KifaRpc<TResponse> {
+public abstract class KifaParameterizedRpc : KifaRpc {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public abstract string UrlPattern { get; }
@@ -85,7 +85,4 @@ public abstract class KifaParameterizedRpc<TResponse> : KifaRpc<TResponse> {
 
         return request;
     }
-
-    // It should probably throw if it cannot get a valid response.
-    public abstract TResponse ParseResponse(HttpResponseMessage responseMessage);
 }

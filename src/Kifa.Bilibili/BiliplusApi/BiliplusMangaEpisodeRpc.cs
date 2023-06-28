@@ -6,7 +6,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Bilibili.BiliplusApi;
 
-public class BiliplusMangaEpisodeRpc : KifaParameterizedRpc<List<string>> {
+public class BiliplusMangaEpisodeRpc : KifaParameterizedRpc, KifaRpc<List<string>> {
     public override string UrlPattern
         => "https://www.biliplus.com/manga/?act=read&mangaid={manga_id}&epid={epid}";
 
@@ -21,7 +21,7 @@ public class BiliplusMangaEpisodeRpc : KifaParameterizedRpc<List<string>> {
 
     static readonly Regex ImageLinkPattern = new(@"bfs/manga/([^@]*)@");
 
-    public override List<string> ParseResponse(HttpResponseMessage responseMessage) {
+    public List<string> ParseResponse(HttpResponseMessage responseMessage) {
         var matches = ImageLinkPattern.Matches(responseMessage.GetString());
         return matches.Select(m => m.Groups[1].Value).ToList();
     }
