@@ -45,6 +45,13 @@ public class GoogleDriveStorageClientTests {
     }
 
     [Fact]
+    public void ListTest() {
+        var client = GetStorageClient();
+
+        Assert.Single(client.List("/Test"));
+    }
+
+    [Fact]
     public void UploadTest() {
         var client = GetStorageClient();
         var data = new byte[34 << 20];
