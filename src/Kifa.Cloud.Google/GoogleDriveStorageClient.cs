@@ -226,23 +226,11 @@ public class GoogleDriveStorageClient : StorageClient {
     }
 
     string? FetchFileId(string segment, string fileId) {
-        var token = client.FetchJToken(() => GetRequest(APIList.FindFile,
-            new Dictionary<string, string> {
-                ["name"] = segment,
-                ["parent_id"] = fileId
-            }), t => t["error"] == null);
-        var files = token["files"];
-        if (files == null) {
-            return null;
-        }
+        var response =
+            client.Call(new FindFileRpc(parentId: fileId, name: segment, Account.AccessToken));
 
-        foreach (var file in files) {
-            if ((string) file["name"] == segment) {
-                return (string) file["id"];
-            }
-        }
-
-        return null;
+        return response.Files.Where(file => file.Name == segment).Select(file => file.Id)
+            .FirstOrDefault();
     }
 
     string CreateFolder(string parentId, string name) {
