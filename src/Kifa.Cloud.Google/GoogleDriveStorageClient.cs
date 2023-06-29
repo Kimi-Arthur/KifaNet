@@ -158,16 +158,12 @@ public class GoogleDriveStorageClient : StorageClient {
             count = buffer.Length - bufferOffset;
         }
 
-        using var response = client.SendWithRetry(() => {
-            var request = GetRequest(APIList.DownloadFile, new Dictionary<string, string> {
-                ["file_id"] = fileId
-            });
+        using var stream =
+            client.Call(
+                new DownloadFileRpc(fileId, offset, offset + count - 1, Account.AccessToken));
 
-            request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-            return request;
-        });
         var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-        response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
+        stream.CopyTo(memoryStream, count);
         return (int) memoryStream.Position;
     }
 
