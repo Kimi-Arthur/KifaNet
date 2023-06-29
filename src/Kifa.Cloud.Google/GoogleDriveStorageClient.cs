@@ -19,8 +19,6 @@ public class GoogleDriveStorageClient : StorageClient {
 
     public static string RootFolder { get; set; }
 
-    public static APIList APIList { get; set; }
-
     readonly HttpClient client = new(new HttpClientHandler {
         AllowAutoRedirect = false
     }) {
@@ -222,15 +220,4 @@ public class GoogleDriveStorageClient : StorageClient {
     public override void Dispose() {
         client?.Dispose();
     }
-}
-
-public class APIList {
-    public Api ListFiles { get; set; }
-    public Api DeleteFile { get; set; }
-    public Api CreateFile { get; set; }
-    public Api DownloadFile { get; set; }
-    public Api GetFileInfo { get; set; }
-    public Api FindFile { get; set; }
-    public Api CreateFolder { get; set; }
-    public Api OauthRefresh { get; set; }
 }
