@@ -172,12 +172,7 @@ public class GoogleDriveStorageClient : StorageClient {
             throw new FileNotFoundException();
         }
 
-        var response = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
-            new Dictionary<string, string> {
-                ["file_id"] = fileId
-            }));
-        var sizeString = (string?) response["size"];
-        return sizeString == null ? -1 : long.Parse(sizeString);
+        return client.Call(new GetFileInfoRpc(fileId, Account.AccessToken)).Size;
     }
 
     static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
