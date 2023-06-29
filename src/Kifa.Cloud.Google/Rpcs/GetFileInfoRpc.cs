@@ -4,7 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Cloud.Google.Rpcs;
 
-public class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Response> {
+class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Response> {
     public class Response {
         public long Size { get; set; }
     }
@@ -18,6 +18,8 @@ public class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Response> 
         => new() {
             { "Authorization", "Bearer {access_token}" }
         };
+
+    protected override bool CamelCase => true;
 
     public GetFileInfoRpc(string fileId, string accessToken) {
         Parameters = new Dictionary<string, string> {

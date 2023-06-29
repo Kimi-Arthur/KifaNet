@@ -210,14 +210,8 @@ public class GoogleDriveStorageClient : StorageClient {
             .FirstOrDefault();
     }
 
-    string CreateFolder(string parentId, string name) {
-        var token = client.FetchJToken(() => GetRequest(APIList.CreateFolder,
-            new Dictionary<string, string> {
-                ["parent_id"] = parentId,
-                ["name"] = name
-            }));
-        return (string) token["id"];
-    }
+    string CreateFolder(string parentId, string name)
+        => client.Call(new CreateFolderRpc(parentId: parentId, name: name, Account.AccessToken)).Id;
 
     HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters) {
         parameters["access_token"] = Account.AccessToken;

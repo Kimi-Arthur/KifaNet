@@ -4,7 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Cloud.Google.Rpcs;
 
-sealed class CreateFileRpc : KifaParameterizedRpc, KifaRpc<string> {
+class CreateFileRpc : KifaParameterizedRpc, KifaRpc<string> {
     protected override string Url
         => "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable";
 
@@ -19,8 +19,8 @@ sealed class CreateFileRpc : KifaParameterizedRpc, KifaRpc<string> {
 
     public CreateFileRpc(string parentId, string name, string accessToken) {
         Parameters = new Dictionary<string, string> {
-            { "name", name },
             { "parent_id", parentId },
+            { "name", name },
             { "access_token", accessToken },
         };
     }

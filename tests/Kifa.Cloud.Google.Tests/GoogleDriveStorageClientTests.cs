@@ -65,15 +65,15 @@ public class GoogleDriveStorageClientTests {
 
         var dataStream = new MemoryStream(data);
 
-        client.Write("/Test/big.bin", dataStream);
+        client.Write("/Test/temp2/big.bin", dataStream);
 
         Thread.Sleep(TimeSpan.FromSeconds(1));
 
-        using (var s = client.OpenRead("/Test/big.bin")) {
+        using (var s = client.OpenRead("/Test/temp2/big.bin")) {
             Assert.Equal(BigFileSHA256,
                 FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
         }
 
-        client.Delete("/Test/big.bin");
+        client.Delete("/Test/temp2/big.bin");
     }
 }

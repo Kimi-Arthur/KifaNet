@@ -4,7 +4,7 @@ using Kifa.Rpc;
 
 namespace Kifa.Cloud.Google.Rpcs;
 
-sealed class DeleteFileRpc : KifaParameterizedRpc {
+class DeleteFileRpc : KifaParameterizedRpc {
     protected override string Url => "https://www.googleapis.com/drive/v3/files/{file_id}";
 
     protected override HttpMethod Method => HttpMethod.Delete;
