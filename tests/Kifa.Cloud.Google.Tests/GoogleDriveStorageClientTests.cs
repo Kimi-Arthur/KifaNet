@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using FluentAssertions;
 using Kifa.Configs;
 using Kifa.IO;
 using Xunit;
@@ -48,7 +49,9 @@ public class GoogleDriveStorageClientTests {
     public void ListTest() {
         var client = GetStorageClient();
 
-        Assert.Single(client.List("/Test"));
+        client.List("/Test").Should().HaveCount(2);
+        client.List("/Test/Empty").Should().HaveCount(0);
+        client.List("/Test/NoFolder").Should().HaveCount(0);
     }
 
     [Fact]

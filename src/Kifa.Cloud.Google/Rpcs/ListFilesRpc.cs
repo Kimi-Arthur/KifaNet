@@ -4,22 +4,19 @@ using Kifa.Rpc;
 
 namespace Kifa.Cloud.Google.Rpcs;
 
-class FindFileRpc : KifaJsonParameterizedRpc<FindFileRpc.Response> {
+public class ListFilesRpc : KifaJsonParameterizedRpc<ListFilesRpc.Response> {
     public class Response {
-        public string? Kind { get; set; }
-        public bool IncompleteSearch { get; set; }
-        public List<File> Files { get; set; } = new();
+        public string? NextPageToken { get; set; }
+        public required List<File> Files { get; set; }
     }
 
     public class File {
-        public string? Kind { get; set; }
-        public string? MimeType { get; set; }
-        public string? Id { get; set; }
-        public string? Name { get; set; }
+        public long Size { get; set; }
+        public required string Name { get; set; }
     }
 
     protected override string Url
-        => "https://www.googleapis.com/drive/v3/files?q=name = '{name}' and '{parent_id}' in parents";
+        => "https://www.googleapis.com/drive/v3/files?pageSize=1000&fields=nextPageToken,files/size,files/name&pageToken={page_token}&orderBy=folder,name&q='{parent_id}' in parents";
 
     protected override HttpMethod Method => HttpMethod.Get;
 
@@ -30,10 +27,10 @@ class FindFileRpc : KifaJsonParameterizedRpc<FindFileRpc.Response> {
 
     protected override bool CamelCase => true;
 
-    public FindFileRpc(string parentId, string name, string accessToken) {
+    public ListFilesRpc(string parentId, string pageToken, string accessToken) {
         Parameters = new Dictionary<string, string> {
             { "parent_id", parentId },
-            { "name", name },
+            { "page_token", pageToken },
             { "access_token", accessToken }
         };
     }

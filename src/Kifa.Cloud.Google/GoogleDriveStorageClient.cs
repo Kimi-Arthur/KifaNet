@@ -9,7 +9,6 @@ using System.Threading;
 using Kifa.Cloud.Google.Rpcs;
 using Kifa.IO;
 using Kifa.Service;
-using Newtonsoft.Json.Linq;
 using NLog;
 
 namespace Kifa.Cloud.Google;
@@ -56,27 +55,14 @@ public class GoogleDriveStorageClient : StorageClient {
         var pageToken = "";
 
         while (pageToken != null) {
-            JToken token;
-            while (true) {
-                try {
-                    token = client.FetchJToken(() => GetRequest(APIList.ListFiles,
-                        new Dictionary<string, string> {
-                            ["parent_id"] = fileId,
-                            ["page_token"] = pageToken
-                        }));
-                    break;
-                } catch (HttpRequestException ex) {
-                    Logger.Warn(ex, "Failed to list folder.");
-                    Thread.Sleep(TimeSpan.FromMinutes(5));
-                }
-            }
+            var response = client.Call(new ListFilesRpc(parentId: fileId, pageToken: pageToken,
+                Account.AccessToken));
 
-            pageToken = token.Value<string>("nextPageToken");
-
-            foreach (var fileToken in token["files"]) {
+            pageToken = response.NextPageToken;
+            foreach (var file in response.Files) {
                 yield return new FileInformation {
-                    Id = $"{path}/{(string) fileToken["name"]}",
-                    Size = long.Parse((string) fileToken["size"])
+                    Id = $"{path}/{file.Name}",
+                    Size = file.Size
                 };
             }
         }
