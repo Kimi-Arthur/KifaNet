@@ -173,20 +173,13 @@ public class GoogleDriveStorageClient : StorageClient {
         return client.Call(new GetFileInfoRpc(fileId, Account.AccessToken)).Size;
     }
 
-    static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
-
     string? GetFileId(string path, bool createParents = false) {
         var fileId = "root";
         foreach (var segment in $"{RootFolder}{path}".Split('/',
                      StringSplitOptions.RemoveEmptyEntries)) {
-            if (KnownFileIdCache.ContainsKey((segment, fileId))) {
-                fileId = KnownFileIdCache[(segment, fileId)];
-                continue;
-            }
-
             var newFileId = FetchFileId(segment, fileId);
             if (newFileId != null) {
-                fileId = KnownFileIdCache[(segment, fileId)] = newFileId;
+                fileId = newFileId;
                 continue;
             }
 
@@ -194,7 +187,7 @@ public class GoogleDriveStorageClient : StorageClient {
                 return null;
             }
 
-            fileId = KnownFileIdCache[(segment, fileId)] = CreateFolder(fileId, segment);
+            fileId = CreateFolder(fileId, segment);
         }
 
         return fileId;
