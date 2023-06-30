@@ -6,11 +6,12 @@ namespace Kifa.Cloud.Google.Rpcs;
 
 class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Response> {
     public class Response {
+        public required List<string> Parents { get; set; }
         public long Size { get; set; }
     }
 
     protected override string Url
-        => "https://www.googleapis.com/drive/v3/files/{file_id}?fields=size";
+        => "https://www.googleapis.com/drive/v3/files/{file_id}?fields=size,parents";
 
     protected override HttpMethod Method => HttpMethod.Get;
 
