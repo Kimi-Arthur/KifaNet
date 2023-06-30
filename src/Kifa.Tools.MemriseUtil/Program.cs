@@ -5,6 +5,8 @@ namespace Kifa.Tools.MemriseUtil;
 
 class Program {
     static int Main(string[] args)
-        => KifaCommand.Run(Parser.Default.ParseArguments<GenerateWordListsCommand, ImportWordListCommand>,
-            args);
+        => KifaCommand.Run(
+            Parser.Default
+                .ParseArguments<GenerateWordListsCommand, ImportWordListCommand,
+                    ClearWordListCommand>, args);
 }

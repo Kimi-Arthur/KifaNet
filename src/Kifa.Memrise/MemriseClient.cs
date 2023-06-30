@@ -457,4 +457,13 @@ public class MemriseClient : IDisposable {
     public void Dispose() {
         httpClient?.Dispose();
     }
+
+    public void ClearWordList(string wordListId) {
+        var levelId = Course.Levels[wordListId];
+
+        foreach (var wordId in MemriseLevel.Client.Get($"{Course.Id}/{levelId}").Checked().Words) {
+            Logger.Debug(
+                $"Remove word {wordId} from level {levelId}: {HttpClient.Call(new RemoveWordFromLevelRpc(Course.DatabaseUrl, levelId, wordId)).Success}");
+        }
+    }
 }

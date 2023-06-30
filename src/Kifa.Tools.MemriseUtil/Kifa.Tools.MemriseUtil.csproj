@@ -5,7 +5,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ToolCommandName>memx</ToolCommandName>
     <PackAsTool>true</PackAsTool>
-    <Version>3.1.14</Version>
+    <Version>4.0.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
     <PackageIcon>Kifa.png</PackageIcon>
@@ -17,13 +17,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj"/>
-    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj"/>
-    <ProjectReference Include="..\Kifa.Tools.DataUtil\Kifa.Tools.DataUtil.csproj"/>
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
+    <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj" />
+    <ProjectReference Include="..\Kifa.Tools.DataUtil\Kifa.Tools.DataUtil.csproj" />
+    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
