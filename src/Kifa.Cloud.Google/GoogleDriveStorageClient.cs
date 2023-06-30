@@ -8,7 +8,6 @@ using System.Net.Http.Headers;
 using System.Threading;
 using Kifa.Cloud.Google.Rpcs;
 using Kifa.IO;
-using Kifa.Service;
 using NLog;
 
 namespace Kifa.Cloud.Google;
@@ -73,6 +72,20 @@ public class GoogleDriveStorageClient : StorageClient {
         if (fileId != null) {
             client.Call(new DeleteFileRpc(fileId, Account.AccessToken));
         }
+    }
+
+    public override void Move(string sourcePath, string destinationPath) {
+        var folderId = GetFileId(destinationPath[..destinationPath.LastIndexOf('/')], true)
+            .Checked();
+
+        var fileName = destinationPath[(destinationPath.LastIndexOf('/') + 1)..];
+
+        var sourceId = GetFileId(sourcePath);
+        if (sourceId == null) {
+            throw new ArgumentException($"Source {sourcePath} doesn't exist.");
+        }
+
+        client.Call(new MoveFileRpc(sourceId, fileName, folderId, Account.AccessToken));
     }
 
     public override void Touch(string path) {

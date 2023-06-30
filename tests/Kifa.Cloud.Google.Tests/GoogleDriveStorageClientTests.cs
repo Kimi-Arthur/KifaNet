@@ -49,7 +49,7 @@ public class GoogleDriveStorageClientTests {
     public void ListTest() {
         var client = GetStorageClient();
 
-        client.List("/Test").Should().HaveCount(2);
+        client.List("/Test").Should().HaveCountGreaterThan(1);
         client.List("/Test/Empty").Should().HaveCount(0);
         client.List("/Test/NoFolder").Should().HaveCount(0);
     }
@@ -75,5 +75,20 @@ public class GoogleDriveStorageClientTests {
         }
 
         client.Delete("/Test/temp2/big.bin");
+    }
+
+    [Fact]
+    public void CopyTest() {
+        var client = GetStorageClient();
+        client.Delete("/Test/copy");
+
+        Assert.False(client.Exists("/Test/copy/a/a.bin"));
+        Assert.False(client.Exists("/Test/copy/b/b.bin"));
+        client.Copy("/Test/2010-11-25.bin", "/Test/copy/a/a.bin");
+        Assert.True(client.Exists("/Test/copy/a/a.bin"));
+        Assert.False(client.Exists("/Test/copy/b/b.bin"));
+        client.Move("/Test/copy/a/a.bin", "/Test/copy/b/b.bin");
+        Assert.True(client.Exists("/Test/copy/b/b.bin"));
+        Assert.False(client.Exists("/Test/copy/a/a.bin"));
     }
 }

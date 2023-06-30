@@ -41,6 +41,7 @@ public abstract class StorageClient : IDisposable {
         Write(destinationPath, stream);
     }
 
+    // No need to check existence status.
     public virtual void Move(string sourcePath, string destinationPath) {
         Copy(sourcePath, destinationPath);
         Delete(sourcePath);

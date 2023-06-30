@@ -384,6 +384,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Move(KifaFile destination) {
+        if (destination.Exists()) {
+            throw new ArgumentException($"Destination {destination} already exists.");
+        }
+
         if (UseCache) {
             CacheFileToLocal();
             LocalFile.Move(destination);
