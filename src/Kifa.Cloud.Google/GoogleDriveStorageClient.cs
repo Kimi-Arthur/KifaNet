@@ -211,12 +211,6 @@ public class GoogleDriveStorageClient : StorageClient {
     string CreateFolder(string parentId, string name)
         => client.Call(new CreateFolderRpc(parentId: parentId, name: name, Account.AccessToken)).Id;
 
-    HttpRequestMessage GetRequest(Api api, Dictionary<string, string> parameters) {
-        parameters["access_token"] = Account.AccessToken;
-
-        return api.GetRequest(parameters);
-    }
-
     public override void Dispose() {
         client?.Dispose();
     }
