@@ -78,7 +78,7 @@ public class GoogleDriveStorageClientTests {
     }
 
     [Fact]
-    public void CopyTest() {
+    public void MoveTest() {
         var client = GetStorageClient();
         client.Delete("/Test/copy");
 
