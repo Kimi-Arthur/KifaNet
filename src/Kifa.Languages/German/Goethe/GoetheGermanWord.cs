@@ -26,7 +26,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
 
     public string? Level { get; set; }
     public string? Form { get; set; }
-    public string? Usage { get; set; }
+    public List<string> Usages { get; set; } = new();
 
     // A synonym text like: (CH) = (D, A) Hausmeister
     public string? Synonym { get; set; }

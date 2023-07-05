@@ -426,11 +426,11 @@ public class MemriseClient : IDisposable {
     Dictionary<string, string> GetDataFromWord(GoetheGermanWord word, GermanWord? baseWord) {
         var data = new Dictionary<string, string> {
             { Course.Columns["German"], word.Id },
-            { Course.Columns["English"], word.Meaning }
+            { Course.Columns["English"], word.Meaning.Checked() }
         };
 
-        data[Course.Columns["Note"]] = string.Join("; ",
-            new[] { word.Form, word.Usage }.Where(t => !string.IsNullOrEmpty(t))).Trim();
+        data[Course.Columns["Note"]] = string.Join(LineBreak,
+            word.Usages.Prepend(word.Form).Where(t => !string.IsNullOrEmpty(t))).Trim();
 
         data[Course.Columns["Etymology"]] = baseWord?.Etymology != null
             ? string.Join(LineBreak,
