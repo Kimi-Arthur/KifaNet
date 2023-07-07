@@ -26,18 +26,6 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         Timeout = TimeSpan.FromMinutes(30)
     };
 
-    GoogleAccount? account;
-
-    string? accountId;
-
-    public string AccountId {
-        get => accountId;
-        set {
-            accountId = value;
-            account = null;
-        }
-    }
-
     // Always a fresh account. The server will determine whether refresh is needed.
     public GoogleAccount Account => Cell.Data.Checked().Account.Data.Checked();
 
@@ -45,7 +33,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
     public override string Type => "google";
 
-    public override string Id => AccountId;
+    public override string Id => Cell;
 
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
         var fileId = GetFileId(path);
