@@ -8,15 +8,17 @@ using System.Net.Http.Headers;
 using System.Threading;
 using Kifa.Cloud.Google.Rpcs;
 using Kifa.IO;
+using Kifa.IO.FileFormats;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Cloud.Google;
 
-public class GoogleDriveStorageClient : StorageClient {
+public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     const int BlockSize = 32 << 20;
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static string RootFolder { get; set; }
+    public static string? DefaultCell { get; set; }
 
     readonly HttpClient client = new(new HttpClientHandler {
         AllowAutoRedirect = false
@@ -37,7 +39,9 @@ public class GoogleDriveStorageClient : StorageClient {
     }
 
     // Always a fresh account. The server will determine whether refresh is needed.
-    public GoogleAccount Account => GoogleAccount.Client.Get(accountId);
+    public GoogleAccount Account => Cell.Data.Checked().Account.Data.Checked();
+
+    Link<GoogleDriveStorageCell> Cell { get; set; }
 
     public override string Type => "google";
 
@@ -187,9 +191,8 @@ public class GoogleDriveStorageClient : StorageClient {
     }
 
     string? GetFileId(string path, bool createParents = false) {
-        var fileId = "root";
-        foreach (var segment in $"{RootFolder}{path}".Split('/',
-                     StringSplitOptions.RemoveEmptyEntries)) {
+        var fileId = Cell.Data.Checked().RootId;
+        foreach (var segment in path.Split('/', StringSplitOptions.RemoveEmptyEntries)) {
             var newFileId = FetchFileId(segment, fileId);
             if (newFileId != null) {
                 fileId = newFileId;
@@ -220,4 +223,13 @@ public class GoogleDriveStorageClient : StorageClient {
     public override void Dispose() {
         client?.Dispose();
     }
+
+    public static string CreateLocation(FileInformation fileInfo, KifaFileFormat format) {
+        return $"google:{DefaultCell.Checked()}/$/{fileInfo.Sha256}.{format}";
+    }
+
+    public static StorageClient Create(string spec)
+        => new GoogleDriveStorageClient {
+            Cell = spec
+        };
 }

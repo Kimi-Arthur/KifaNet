@@ -602,9 +602,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     AccountId = specs[1]
                 };
             case "google":
-                return new GoogleDriveStorageClient {
-                    AccountId = specs[1]
-                };
+                return GoogleDriveStorageClient.Create(specs[1]);
             case "mega":
                 return new MegaNzStorageClient {
                     AccountId = specs[1]

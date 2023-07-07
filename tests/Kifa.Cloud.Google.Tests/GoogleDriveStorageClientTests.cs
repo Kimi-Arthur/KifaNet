@@ -17,12 +17,10 @@ public class GoogleDriveStorageClientTests {
 
     const string BigFileSHA256 = "C15129F8F953AF57948FBC05863C42E16A8362BD5AEC9F88C566998D1CED723A";
 
-    static GoogleDriveStorageClient GetStorageClient() {
+    static StorageClient GetStorageClient() {
         KifaConfigs.Init();
 
-        return new GoogleDriveStorageClient {
-            AccountId = "good"
-        };
+        return GoogleDriveStorageClient.Create("test");
     }
 
     [Fact]

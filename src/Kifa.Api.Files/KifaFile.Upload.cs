@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Kifa.Cloud.Google;
 using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
 using Kifa.IO;
@@ -60,7 +61,7 @@ public partial class KifaFile {
             => new Regex(
                     $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType}$")
                 .Match(l).Success) ?? target.ServiceType switch {
-            CloudServiceType.Google => $"google:good/$/{FileInfo.Sha256}.{target.FormatType}",
+            CloudServiceType.Google => GoogleDriveStorageClient.CreateLocation(FileInfo, target.FormatType),
             CloudServiceType.Swiss =>
                 $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
             CloudServiceType.Tele => $"{TelegramStorageClient.CreateLocation(FileInfo, TelegramCell,
