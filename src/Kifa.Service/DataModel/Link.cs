@@ -2,12 +2,6 @@ using System;
 
 namespace Kifa.Service;
 
-public class Link {
-    public static Link<TDataModel> From<TDataModel>(TDataModel data)
-        where TDataModel : DataModel, WithModelId<TDataModel>, new()
-        => data;
-}
-
 // Unlimited linking not supported now.
 public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
     where TDataModel : DataModel, WithModelId<TDataModel> {
@@ -16,7 +10,13 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
     TDataModel? data;
 
     public TDataModel? Data {
-        get => data ??= TDataModel.Client.Get(Id);
+        get {
+            if (data == null || data.NeedRefresh()) {
+                data = TDataModel.Client.Get(Id);
+            }
+
+            return data;
+        }
         set => data = value;
     }
 
