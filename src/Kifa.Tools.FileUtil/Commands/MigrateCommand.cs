@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using CommandLine;
+using Kifa.Api.Files;
 using Kifa.Cloud.Google;
 using Kifa.IO;
 
@@ -28,8 +29,11 @@ public class MigrateCommand : KifaCommand {
                 continue;
             }
 
+            Console.WriteLine($"Processing {file}...");
+
+            var targetCell = GoogleDriveStorageClient.DefaultCell;
             var source = $"google:good/$/{info.Sha256}.v1";
-            var target = $"google:{GoogleDriveStorageClient.DefaultCell}/$/{info.Sha256}.v1";
+            var target = $"google:{targetCell}/$/{info.Sha256}.v1";
 
             bool? foundSource = null, foundTarget = null;
 
@@ -53,6 +57,11 @@ public class MigrateCommand : KifaCommand {
                 if (DryRun) {
                     Console.WriteLine($"{file}:(0) to move.");
                 } else if (QuietMode || Confirm($"Confirm migrating {source} to {target}")) {
+                    var f = new KifaFile(source);
+                    f.Move(f.GetFilePrefixed("/" + targetCell));
+                    var t = new KifaFile(target);
+                    t.Add();
+                    f.Unregister();
                     Console.WriteLine($"{file}:(+) moved.");
                 } else {
                     Console.WriteLine($"{file}:(-) skipped.");
