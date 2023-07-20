@@ -65,7 +65,7 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
     public string? EncryptionKey { get; set; }
 
-    public Dictionary<string, DateTime?> Locations { get; set; } = new();
+    public SortedDictionary<string, DateTime?> Locations { get; set; } = new();
 
     public override SortedSet<string> GetVirtualItems()
         => Sha256 != null
