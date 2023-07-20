@@ -18,7 +18,16 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     const int BlockSize = 32 << 20;
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static string? DefaultCell { get; set; }
+    #region public late static string DefaultCell { get; set; }
+
+    static string? defaultCell;
+
+    public static string DefaultCell {
+        get => Late.Get(defaultCell);
+        set => Late.Set(ref defaultCell, value);
+    }
+
+    #endregion
 
     readonly HttpClient client = new(new HttpClientHandler {
         AllowAutoRedirect = false
@@ -213,7 +222,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public static string CreateLocation(FileInformation fileInfo, KifaFileFormat format) {
-        return $"google:{DefaultCell.Checked()}/$/{fileInfo.Sha256}.{format}";
+        return $"google:{DefaultCell}/$/{fileInfo.Sha256}.{format}";
     }
 
     public static StorageClient Create(string spec)
