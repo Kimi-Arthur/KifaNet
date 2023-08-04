@@ -1,8 +1,9 @@
 using System;
+using System.IO;
 
-namespace Kifa.GameHacking.Files;
+namespace Kifa.GameHacking;
 
-public class DecodeException : Exception {
+public class DecodeException : IOException {
     public DecodeException() {
     }
 
