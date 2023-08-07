@@ -35,17 +35,17 @@ public class OrderedContractResolver : DefaultContractResolver {
         }
 
         if (property.PropertyType?.IsGenericType ?? false) {
-            if (property.PropertyType.GetGenericTypeDefinition() == typeof(List<>)) {
+            if (property.PropertyType.GetInterface(typeof(IList<>).Name) != null) {
                 property.ShouldSerialize = instance
-                    => (property.ValueProvider.GetValue(instance) as IList) is {
+                    => (property.ValueProvider?.GetValue(instance) as IList) is {
                         Count: > 0
                     };
                 property.DefaultValueHandling = DefaultValueHandling.Ignore;
             }
 
-            if (property.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>)) {
+            if (property.PropertyType.GetInterface(typeof(IDictionary<,>).Name) != null) {
                 property.ShouldSerialize = instance
-                    => (property.ValueProvider.GetValue(instance) as IDictionary) is {
+                    => (property.ValueProvider?.GetValue(instance) as IDictionary) is {
                         Count: > 0
                     };
                 property.DefaultValueHandling = DefaultValueHandling.Ignore;
