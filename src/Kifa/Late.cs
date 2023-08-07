@@ -16,7 +16,7 @@ public static class Late {
         // Workaround for json.net as it uses the default value
         // when deserializing an object with converter.
         if (ShouldNotThrow(stackTrace)) {
-            return default;
+            return default!;
         }
 
         // This may get hit on performance.
