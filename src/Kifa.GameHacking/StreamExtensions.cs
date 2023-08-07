@@ -30,7 +30,7 @@ public static class StreamExtensions {
         where T : IBinaryInteger<T> {
         var zero = T.Zero;
         var bytes = new byte[zero.GetByteCount()];
-        var isUnsigned = typeof(T).GetInterface("IUnsignedNumber`1") != null;
+        var isUnsigned = typeof(T).GetInterface(typeof(IUnsignedNumber<>).Name) != null;
         stream.ReadExactly(bytes);
         return bigEndian
             ? T.ReadBigEndian(bytes, isUnsigned)
