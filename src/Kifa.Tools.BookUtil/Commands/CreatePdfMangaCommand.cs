@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Bilibili;
 using PdfSharpCore;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
@@ -12,7 +11,7 @@ namespace Kifa.Tools.BookUtil.Commands;
 [Verb("pdf", HelpText = "Generate Pdf book based on Manga chapters.")]
 public class CreatePdfMangaCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to link.")]
-    public IEnumerable<string> Folders { get; set; }
+    public string Folder { get; set; }
 
     #region public late string Author { get; set; }
 
@@ -34,37 +33,34 @@ public class CreatePdfMangaCommand : KifaCommand {
     public string IgnoreExistingDoublePages { get; set; } = "";
 
     public override int Execute() {
-        var allDoublePages =
-            KifaFile.FindAllFiles(DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries));
+        var allDoublePages = DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var folder in Folders) {
-            var folderId = new KifaFile(folder).ToString();
-            // var episode = BilibiliMangaEpisode.Parse(folderId);
-            var title = GetOutputName(folderId);
-            using var document = new PdfDocument();
-            document.Info.Author = Author;
-            document.Info.Title = title;
+        var folderId = new KifaFile(Folder).ToString();
+        // var episode = BilibiliMangaEpisode.Parse(folderId);
+        var title = GetOutputName(folderId);
+        using var document = new PdfDocument();
+        document.Info.Author = Author;
+        document.Info.Title = title;
 
-            XImage? doublePage = null;
-            foreach (var file in KifaFile.FindAllFiles(Folders)) {
-                var image = XImage.FromFile(file.GetLocalPath());
+        XImage? doublePage = null;
+        foreach (var file in KifaFile.FindAllFiles(new[] { Folder })) {
+            var image = XImage.FromFile(file.GetLocalPath());
 
-                if (allDoublePages.Contains(file)) {
-                    doublePage = image;
-                    continue;
-                }
-
-                var page = document.AddPage();
-                if (doublePage != null) {
-                    DrawDoublePage(page, doublePage, image);
-                    doublePage = null;
-                } else {
-                    DrawSinglePage(page, image);
-                }
+            if (allDoublePages.Contains(file.BaseName)) {
+                doublePage = image;
+                continue;
             }
 
-            document.Save($"{title}.pdf");
+            var page = document.AddPage();
+            if (doublePage != null) {
+                DrawDoublePage(page, doublePage, image);
+                doublePage = null;
+            } else {
+                DrawSinglePage(page, image);
+            }
         }
+
+        document.Save($"{title}.pdf");
 
         return 0;
     }
@@ -88,6 +84,7 @@ public class CreatePdfMangaCommand : KifaCommand {
         page.Orientation = PageOrientation.Landscape;
         page.Width = leftImage.PointWidth + rightImage.PointWidth;
         page.Height = Math.Max(leftImage.PointHeight, rightImage.PointHeight);
+        page.Rotate = 270;
         gfx.DrawImage(leftImage, 0, 0);
         gfx.DrawImage(rightImage, leftImage.PointWidth, 0);
     }
