@@ -288,6 +288,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return files.Select(f => f.File).ToList();
     }
 
+    public static List<KifaFile> FindPhantomFiles(IEnumerable<string> sources,
+        string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
+        var files = FindPotentialFiles(sources, prefix, recursive, ignoreFiles);
+        return files.Where(f => f.Registered && !f.Exists()).ToList();
+    }
+
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
         var files = new List<(string sortKey, string value)>();

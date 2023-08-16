@@ -87,18 +87,36 @@ class RemoveCommand : KifaCommand {
 
         var localFiles = KifaFile.FindExistingFiles(FileNames);
 
-        foreach (var file in localFiles) {
-            Console.WriteLine(file);
-        }
+        if (localFiles.Count > 0) {
+            foreach (var file in localFiles) {
+                Console.WriteLine(file);
+            }
 
-        if (Confirm(
-                $"Confirm deleting the {localFiles.Count} file instances above{removalText}?")) {
+            if (!Confirm(
+                    $"Confirm deleting the {localFiles.Count} file instances above{removalText}?")) {
+                Logger.Info("Action canceled.");
+                return 2;
+            }
+
             localFiles.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
-            return LogSummary();
         }
 
-        Logger.Info("Action canceled.");
-        return 2;
+        var phantomFiles = KifaFile.FindPhantomFiles(FileNames);
+        if (phantomFiles.Count > 0) {
+            foreach (var file in phantomFiles) {
+                Console.WriteLine(file);
+            }
+
+            if (!Confirm(
+                    $"Confirm deleting the {phantomFiles.Count} phantom files above{removalText}?")) {
+                Logger.Info("Action canceled.");
+                return 2;
+            }
+
+            phantomFiles.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+        }
+
+        return LogSummary();
     }
 
     KifaActionResult RemoveLogicalFile(FileInformation info) {
@@ -150,7 +168,7 @@ class RemoveCommand : KifaCommand {
     KifaActionResult RemoveFileInstance(KifaFile file) {
         var result = new KifaBatchActionResult();
 
-        bool fileExists = file.Exists();
+        var fileExists = file.Exists();
         if (!file.Registered) {
             if (RemoveLinkOnly) {
                 return new KifaActionResult {
