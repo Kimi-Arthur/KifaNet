@@ -30,15 +30,15 @@ class ImportCommand : KifaCommand {
     public override int Execute() {
         var segments = SourceId.Split('/');
         var type = segments[0];
-        var id = segments.Length > 1 ? segments[1] : "";
-        var seasonId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
-        var episodeId = segments.Length > 3 ? int.Parse(segments[3]) : 0;
 
         List<(Season Season, Episode Episode, bool Matched)> episodes;
         Formattable series;
 
         switch (type) {
-            case "tv_shows":
+            case "tv_shows": {
+                var id = segments.Length > 1 ? segments[1] : "";
+                var seasonId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
+                var episodeId = segments.Length > 3 ? int.Parse(segments[3]) : 0;
                 var tvShow = TvShow.Client.Get(id);
                 series = tvShow;
                 episodes = tvShow.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
@@ -46,7 +46,11 @@ class ImportCommand : KifaCommand {
                         (season, episode) => (season, episode, false)).Where(item
                         => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
-            case "animes":
+            }
+            case "animes": {
+                var id = segments.Length > 1 ? segments[1] : "";
+                var seasonId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
+                var episodeId = segments.Length > 3 ? int.Parse(segments[3]) : 0;
                 var anime = Anime.Client.Get(id);
                 series = anime;
                 episodes = anime.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
@@ -54,6 +58,7 @@ class ImportCommand : KifaCommand {
                         (season, episode) => (season, episode, false)).Where(item
                         => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
+            }
             case "soccer":
                 foreach (var file in FileNames.SelectMany(path
                              => FileInformation.Client
