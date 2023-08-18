@@ -59,7 +59,7 @@ class ImportCommand : KifaCommand {
                              => FileInformation.Client
                                  .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
                                  .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
-                    var ext = file.Substring(file.LastIndexOf(".") + 1);
+                    var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
                     targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
                     FileInformation.Client.Link(file, targetFileName);
@@ -68,7 +68,36 @@ class ImportCommand : KifaCommand {
 
                 return 0;
             default:
-                Console.WriteLine($"Cannot find resource type {type}");
+                SourceId = SourceId.TrimEnd('/');
+                if (!SourceId.StartsWith('/')) {
+                    SourceId = $"/{SourceId}";
+                }
+
+                Console.WriteLine($"Type {type} is unknown. Will treat it like base folder");
+                var baseName = SourceId[(SourceId.LastIndexOf("/") + 1)..];
+                string? fileVersion = null;
+
+                var dotIndex = baseName.IndexOf('.');
+                if (dotIndex >= 0) {
+                    fileVersion = baseName[(dotIndex + 1)..];
+                    baseName = baseName[..dotIndex];
+                }
+
+                var counter = 'A';
+                foreach (var file in FileNames.SelectMany(path
+                             => FileInformation.Client
+                                 .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
+                                 .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
+                    var ext = file[(file.LastIndexOf(".") + 1)..];
+                    var targetFileName = fileVersion != null
+                        ? $"{SourceId}/{baseName}-{counter}.{fileVersion}.{ext}"
+                        : $"{SourceId}/{baseName}-{counter}.{ext}";
+                    targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
+                    FileInformation.Client.Link(file, targetFileName);
+                    Logger.Info($"Successfully linked {file} to {targetFileName}");
+                    counter++;
+                }
+
                 return 1;
         }
 
