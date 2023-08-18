@@ -103,7 +103,7 @@ class ImportCommand : KifaCommand {
                     counter++;
                 }
 
-                return 1;
+                return 0;
         }
 
         var files = FileNames.SelectMany(path
