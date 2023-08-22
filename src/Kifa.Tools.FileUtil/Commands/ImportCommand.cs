@@ -78,8 +78,11 @@ class ImportCommand : KifaCommand {
                     SourceId = $"/{SourceId}";
                 }
 
-                Console.WriteLine($"Type {type} is unknown. Will treat it like base folder");
-                var baseName = SourceId[(SourceId.LastIndexOf("/") + 1)..];
+                Console.WriteLine(
+                    $"{SourceId} doesn't have a known type. Will treat it like base folder");
+                var lastSlash = SourceId.LastIndexOf("/");
+                var folder = SourceId[..lastSlash];
+                var baseName = SourceId[(lastSlash + 1)..];
                 string? fileVersion = null;
 
                 var dotIndex = baseName.IndexOf('.');
@@ -95,8 +98,8 @@ class ImportCommand : KifaCommand {
                                  .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
                     var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = fileVersion != null
-                        ? $"{SourceId}/{baseName}-{counter}.{fileVersion}.{ext}"
-                        : $"{SourceId}/{baseName}-{counter}.{ext}";
+                        ? $"{folder}/{baseName}/{baseName}-{counter}.{fileVersion}.{ext}"
+                        : $"{folder}/{baseName}/{baseName}-{counter}.{ext}";
                     targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
                     FileInformation.Client.Link(file, targetFileName);
                     Logger.Info($"Successfully linked {file} to {targetFileName}");
