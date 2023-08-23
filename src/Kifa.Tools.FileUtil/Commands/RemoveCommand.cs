@@ -125,7 +125,7 @@ class RemoveCommand : KifaCommand {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
                 var links = file.FileInfo.GetAllLinks();
-                links.Remove(info.RealId);
+                links.Remove(info.Id);
                 var shouldRemoveOtherFiles = links.Count == 0;
 
                 var toRemove = file.Id == info.Id;
