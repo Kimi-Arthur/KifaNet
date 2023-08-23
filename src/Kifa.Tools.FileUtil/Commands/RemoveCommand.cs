@@ -119,12 +119,12 @@ class RemoveCommand : KifaCommand {
     }
 
     KifaActionResult RemoveLogicalFile(string filePath) {
-        var info = FileInformation.Client.Get(filePath);
+        var info = FileInformation.Client.Get(filePath).Checked();
         var result = new KifaBatchActionResult();
         if (!RemoveLinkOnly) {
             foreach (var location in info.Locations.Keys) {
-                var file = new KifaFile(location);
-                var links = file.FileInfo.GetAllLinks();
+                var file = new KifaFile(location, fileInfo: info);
+                var links = info.GetAllLinks();
                 links.Remove(info.Id);
                 var shouldRemoveOtherFiles = links.Count == 0;
 
