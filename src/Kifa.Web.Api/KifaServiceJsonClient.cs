@@ -93,7 +93,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         // We actually exclude virtual items twice here.
         // Supposedly only the first one is used. However, we should not rely on file naming. The
         // first one is only used to speed up query.
-        // If folder is null, we don't skip virtual items as it's either requested or won't be
+        // If folder is not null, we don't skip virtual items as it's either requested or won't be
         // included.
         var items = directory
             .GetFiles("*.json",
@@ -109,11 +109,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     return i.Value;
                 }
 
-                var value = items.ContainsKey(i.Value.Metadata.Linking.Target)
-                    ? items[i.Value.Metadata.Linking.Target].Clone()
-                    : Read(i.Value.Metadata.Linking.Target);
-                // source.Metadata.Linking! has to exist, to contain Links at least.
-                value.Metadata!.Linking!.Target = value.Id;
+                var target = i.Value.Metadata.Linking.Target;
+                Logger.Debug($"Looking for item {target} for {i.Key}.");
+
+                var value = items.TryGetValue(target, out var item)
+                    ? item.Clone()
+                    : Read(target).Checked();
+
+                // source.Metadata.Linking has to exist, to contain Links at least.
+                value.Metadata.Checked().Linking.Checked().Target = value.Id;
                 value.Id = i.Key;
                 return value;
             }));
