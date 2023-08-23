@@ -91,11 +91,25 @@ class ImportCommand : KifaCommand {
                     baseName = baseName[..dotIndex];
                 }
 
+                var sourceFiles = FileNames.SelectMany(path
+                    => FileInformation.Client
+                        .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
+                        .DefaultIfEmpty(ById ? path : new KifaFile(path).Id)).ToList();
+                if (sourceFiles.Count == 1) {
+                    var file = sourceFiles.Single();
+                    var ext = file[(file.LastIndexOf(".") + 1)..];
+                    var targetFileName = fileVersion != null
+                        ? $"{folder}/{baseName}/{baseName}.{fileVersion}.{ext}"
+                        : $"{folder}/{baseName}/{baseName}.{ext}";
+                    targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
+                    FileInformation.Client.Link(file, targetFileName);
+                    Logger.Info($"Successfully linked {file} to {targetFileName}");
+
+                    return 0;
+                }
+
                 var counter = 'A';
-                foreach (var file in FileNames.SelectMany(path
-                             => FileInformation.Client
-                                 .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
-                                 .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
+                foreach (var file in sourceFiles) {
                     var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = fileVersion != null
                         ? $"{folder}/{baseName}/{baseName}-{counter}.{fileVersion}.{ext}"
