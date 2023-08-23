@@ -128,7 +128,7 @@ class RemoveCommand : KifaCommand {
                 links.Remove(info.Id);
                 var shouldRemoveOtherFiles = links.Count == 0;
 
-                var toRemove = file.Id == info.Id;
+                var toRemove = location == info.Id;
                 if (!toRemove) {
                     if (shouldRemoveOtherFiles) {
                         toRemove =
