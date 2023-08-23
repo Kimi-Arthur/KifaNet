@@ -54,8 +54,7 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (Confirm($"Confirm deleting the {files.Count} files above{removalText}?")) {
-                    files.ForEach(f
-                        => ExecuteItem(f, () => RemoveLogicalFile(FileInformation.Client.Get(f)!)));
+                    files.ForEach(f => ExecuteItem(f, () => RemoveLogicalFile(f)));
                     return LogSummary();
                 }
 
@@ -72,8 +71,8 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
-                    foundFiles.ForEach(f
-                        => ExecuteItem(f.Id, () => RemoveLogicalFile(f.FileInfo!)));
+                    foundFiles.ForEach(
+                        f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.ToString())));
                     return LogSummary();
                 }
 
@@ -119,7 +118,8 @@ class RemoveCommand : KifaCommand {
         return LogSummary();
     }
 
-    KifaActionResult RemoveLogicalFile(FileInformation info) {
+    KifaActionResult RemoveLogicalFile(string filePath) {
+        var info = FileInformation.Client.Get(filePath);
         var result = new KifaBatchActionResult();
         if (!RemoveLinkOnly) {
             foreach (var location in info.Locations.Keys) {
