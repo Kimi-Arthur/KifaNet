@@ -81,7 +81,7 @@ public class MigrateCommand : KifaCommand {
 
                         var f = new KifaFile(source);
                         f.Unregister();
-                        Console.WriteLine($"{file}:(*) moved.");
+                        Console.WriteLine($"{file}:(*) already moved, link fixed.");
                     }
                 }
 
