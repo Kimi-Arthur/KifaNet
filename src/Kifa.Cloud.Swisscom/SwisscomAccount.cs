@@ -13,7 +13,7 @@ namespace Kifa.Cloud.Swisscom;
 public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
     public static string ModelId => "swisscom/accounts";
 
-    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7);
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7) - TimeSpan.FromHours(1);
 
     #region public late static string WebDriverUrl { get; set; }
 

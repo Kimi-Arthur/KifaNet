@@ -10,7 +10,7 @@ namespace Kifa.Cloud.Google;
 public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
     public static string ModelId => "accounts/google";
 
-    static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(1);
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromHours(1) - TimeSpan.FromMinutes(5);
 
     public static KifaServiceClient<GoogleAccount> Client { get; set; } =
         new KifaServiceRestClient<GoogleAccount>();

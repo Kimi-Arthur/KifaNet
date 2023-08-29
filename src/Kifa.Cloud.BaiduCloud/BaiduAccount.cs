@@ -10,7 +10,7 @@ namespace Kifa.Cloud.BaiduCloud;
 public class BaiduAccount : OAuthAccount, WithModelId<BaiduAccount> {
     public static string ModelId => "accounts/baidu";
 
-    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(30);
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(30) - TimeSpan.FromHours(1);
 
     public static KifaServiceClient<BaiduAccount> Client { get; set; } =
         new KifaServiceRestClient<BaiduAccount>();
