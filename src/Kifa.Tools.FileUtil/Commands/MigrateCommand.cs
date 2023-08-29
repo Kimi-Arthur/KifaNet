@@ -35,36 +35,54 @@ public class MigrateCommand : KifaCommand {
             var source = $"google:good/$/{info.Sha256}.v1";
             var target = $"google:{targetCell}/$/{info.Sha256}.v1";
 
-            bool? foundSource = null, foundTarget = null;
+            bool? sourceRegistered = null, targetRegistered = null;
 
             foreach (var (location, upload) in info.Locations) {
                 if (location == source) {
-                    foundSource = upload != null;
+                    sourceRegistered = upload != null;
                 }
 
                 if (location == target) {
-                    foundTarget = upload != null;
+                    targetRegistered = upload != null;
                 }
             }
 
-            if (foundTarget == true && foundSource == null) {
+            if (targetRegistered == true && sourceRegistered == null) {
                 Console.WriteLine($"{file}:(1) already moved.");
                 processed.Add(info.Sha256, info.Id);
                 continue;
             }
 
-            if (foundSource == true && foundTarget == null) {
-                if (DryRun) {
-                    Console.WriteLine($"{file}:(0) to move.");
-                } else if (QuietMode || Confirm($"Confirm migrating {source} to {target}")) {
-                    var f = new KifaFile(source);
-                    f.Move(f.GetFilePrefixed("/" + targetCell));
-                    var t = new KifaFile(target);
-                    t.Add();
-                    f.Unregister();
-                    Console.WriteLine($"{file}:(+) moved.");
-                } else {
-                    Console.WriteLine($"{file}:(-) skipped.");
+            if (sourceRegistered == true && targetRegistered == null) {
+                var sourceFound = new KifaFile(source).Exists();
+                var targetFound = new KifaFile(target).Exists();
+
+                if (sourceFound && !targetFound) {
+                    if (DryRun) {
+                        Console.WriteLine($"{file}:(0) to move.");
+                    } else if (QuietMode || Confirm($"Confirm migrating {source} to {target}")) {
+                        var f = new KifaFile(source);
+                        f.Move(f.GetFilePrefixed("/" + targetCell));
+                        var t = new KifaFile(target);
+                        t.Add();
+                        f.Unregister();
+                        Console.WriteLine($"{file}:(+) moved.");
+                    } else {
+                        Console.WriteLine($"{file}:(-) skipped.");
+                    }
+                }
+
+                if (!sourceFound && targetFound) {
+                    if (DryRun) {
+                        Console.WriteLine($"{file}:(0) file moved, but linking needs fixing.");
+                    } else {
+                        var t = new KifaFile(target);
+                        t.Add();
+
+                        var f = new KifaFile(source);
+                        f.Unregister();
+                        Console.WriteLine($"{file}:(*) moved.");
+                    }
                 }
 
                 processed.Add(info.Sha256, info.Id);
@@ -72,7 +90,7 @@ public class MigrateCommand : KifaCommand {
             }
 
             Console.WriteLine(
-                $"{file}:(!) error as source is {foundSource} and target is {foundTarget}");
+                $"{file}:(!) error as source is {sourceRegistered} and target is {targetRegistered}");
             processed.Add(info.Sha256, info.Id);
         }
 
