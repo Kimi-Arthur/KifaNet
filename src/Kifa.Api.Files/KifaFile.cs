@@ -140,14 +140,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public bool Registered {
         get {
-            var locations = FileInfo?.Locations;
+            var locations = FileInfo.Checked().Locations;
             var location = ToString();
             var result = locations.GetValueOrDefault(location, null) != null;
             foreach (var locationPair in locations) {
-                Logger.Debug($"{locationPair.Key}: {locationPair.Value}");
+                Logger.Trace($"{locationPair.Key}: {locationPair.Value}");
             }
 
-            Logger.Debug($"Result of looking for {location} above: {result}");
+            Logger.Trace($"Result of looking for {location} above: {result}");
             return result;
         }
     }
