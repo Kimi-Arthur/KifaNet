@@ -8,7 +8,6 @@ public class GoogleDriveStorageCell : DataModel, WithModelId<GoogleDriveStorageC
     public static KifaServiceClient<GoogleDriveStorageCell> Client { get; set; } =
         new KifaServiceRestClient<GoogleDriveStorageCell>();
 
-    // TODO: Account should be auto refreshed. Maybe solve in Link<>.
     public required Link<GoogleAccount> Account { get; set; }
     public required string RootId { get; set; }
 }
