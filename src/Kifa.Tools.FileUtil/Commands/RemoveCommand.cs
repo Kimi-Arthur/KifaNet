@@ -128,7 +128,8 @@ class RemoveCommand : KifaCommand {
                 links.Remove(info.Id);
                 var shouldRemoveOtherFiles = links.Count == 0;
 
-                var toRemove = file.Id == info.Id;
+                // Do not auto remove remote file no matter what.
+                var toRemove = file.Path == info.Id && file.IsLocal;
                 if (!toRemove) {
                     if (shouldRemoveOtherFiles) {
                         toRemove =
