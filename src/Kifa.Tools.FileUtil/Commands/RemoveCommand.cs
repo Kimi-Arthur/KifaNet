@@ -131,10 +131,10 @@ class RemoveCommand : KifaCommand {
                 // Do not auto remove remote file no matter what.
                 var toRemove = file.Path == info.Id && file.IsLocal;
                 if (!toRemove) {
-                    if (shouldRemoveOtherFiles) {
+                    if (shouldRemoveOtherFiles || file.Path == info.Id) {
                         toRemove =
                             Confirm(
-                                $"Confirm removing dangling instance {file}, not matching file name");
+                                $"Confirm removing dangling instance {file}, not matching file name or not local");
                     } else {
                         Logger.Debug(
                             $"File {file} is not removed as there are other file entries, like {links.First()}");
