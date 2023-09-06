@@ -187,7 +187,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             };
         }
 
-        if (file.Locations.GetValueOrDefault(location) != null) {
+        if (file.Locations.ContainsKey(location)) {
             file.Locations.Remove(location);
             var update = Update(file);
             return new KifaActionResult {
