@@ -152,6 +152,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
+    public bool Allocated => FileInfo.Checked().Locations.ContainsKey(ToString());
+
     public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {

@@ -171,9 +171,17 @@ class RemoveCommand : KifaCommand {
         var fileExists = file.Exists();
         if (!file.Registered) {
             if (RemoveLinkOnly) {
+                if (file.Allocated) {
+                    FileInformation.Client.RemoveLocation(file.Id, file.ToString());
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Warning,
+                        Message = $"Unverified file link {file} removed."
+                    };
+                }
+
                 return new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
-                    Message = "File not registered and only link is asked to be removed."
+                    Message = $"File link {file} not found."
                 };
             }
 
