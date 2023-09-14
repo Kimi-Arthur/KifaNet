@@ -26,16 +26,17 @@ class GetCommand : KifaCommand {
     [Option('c', "allowed-clients", HelpText = "Only get files from the given sources.")]
     public string? AllowedClients { get; set; }
 
-    [Option('u', "ignore-already-uploaded",
-        HelpText = "Ignores files that are already uploaded to the given sources.")]
-    public string? IgnoreAlreadyUploaded { get; set; }
+    [Option('i', "ignore",
+        HelpText =
+            "Ignores files that are already located in the given locations. Locations are given as prefixes and separated by '|'.")]
+    public string? IgnoreAlreadyThere { get; set; }
 
-    HashSet<string>? alreadyUploaded;
+    List<string>? ignoreLocations;
 
-    HashSet<string> AlreadyUploaded
-        => alreadyUploaded ??= IgnoreAlreadyUploaded == null
-            ? new HashSet<string>()
-            : new HashSet<string>(IgnoreAlreadyUploaded.Split(","));
+    IEnumerable<string> IgnoreLocations
+        => ignoreLocations ??= IgnoreAlreadyThere == null
+            ? new List<string>()
+            : IgnoreAlreadyThere.Split("|").ToList();
 
     public override int Execute() {
         var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
@@ -82,6 +83,16 @@ class GetCommand : KifaCommand {
             };
         }
 
+        var foundInstance = info.Locations.FirstOrDefault(l
+            => l.Value != null && IgnoreLocations.Any(u => l.Key.StartsWith(u))).Key;
+
+        if (foundInstance != null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Warning,
+                Message = $"File already exists in {foundInstance}."
+            };
+        }
+
         foreach (var (location, verifyTime) in info.Locations) {
             if (verifyTime != null) {
                 var linkSource = new KifaFile(location);
@@ -92,14 +103,6 @@ class GetCommand : KifaCommand {
                     return new KifaActionResult {
                         Status = KifaActionStatus.OK,
                         Message = $"Successfully got file through hard linking to {linkSource}."
-                    };
-                }
-
-                var spec = location.Split("/")[0];
-                if (AlreadyUploaded.Any(u => spec.StartsWith(u))) {
-                    return new KifaActionResult {
-                        Status = KifaActionStatus.Warning,
-                        Message = $"File already exists in {spec} as {location}."
                     };
                 }
             }
