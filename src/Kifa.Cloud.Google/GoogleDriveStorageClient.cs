@@ -74,6 +74,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             client.Call(new DeleteFileRpc(fileId, Account.AccessToken));
 
             KnownFileIdCache.Remove(KnownFileIdCache.First(cache => cache.Value == fileId).Key);
+            KnownFileSizeCache.Remove(fileId);
         }
     }
 
@@ -91,6 +92,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         client.Call(new MoveFileRpc(sourceId, fileName, folderId, Account.AccessToken));
 
         KnownFileIdCache.Remove(KnownFileIdCache.First(cache => cache.Value == sourceId).Key);
+        // File size cache doesn't have to be removed since it's still the same file.
     }
 
     public override void Touch(string path) {
@@ -183,12 +185,19 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         return (int) memoryStream.Position;
     }
 
+    static readonly Dictionary<string, long> KnownFileSizeCache = new();
+
     long GetFileSize(string? fileId) {
         if (fileId == null) {
             throw new FileNotFoundException();
         }
 
-        return client.Call(new GetFileInfoRpc(fileId, Account.AccessToken)).Size;
+        if (KnownFileSizeCache.TryGetValue(fileId, out var size)) {
+            return size;
+        }
+
+        return KnownFileSizeCache[fileId] =
+            client.Call(new GetFileInfoRpc(fileId, Account.AccessToken)).Size;
     }
 
     static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
