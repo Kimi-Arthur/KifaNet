@@ -138,19 +138,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public long Length => Client.Length(Path);
 
-    public bool Registered {
-        get {
-            var locations = FileInfo.Checked().Locations;
-            var location = ToString();
-            var result = locations.GetValueOrDefault(location, null) != null;
-            foreach (var locationPair in locations) {
-                Logger.Trace($"{locationPair.Key}: {locationPair.Value}");
-            }
-
-            Logger.Trace($"Result of looking for {location} above: {result}");
-            return result;
-        }
-    }
+    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
 
     public bool Allocated => FileInfo.Checked().Locations.ContainsKey(ToString());
 

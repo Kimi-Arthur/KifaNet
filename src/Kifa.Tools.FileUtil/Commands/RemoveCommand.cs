@@ -97,7 +97,8 @@ class RemoveCommand : KifaCommand {
                 return 2;
             }
 
-            localFiles.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+            localFiles.ForEach(f
+                => ExecuteItem(f.ToString(), () => RemoveFileInstance(new KifaFile(f.ToString()))));
         }
 
         var phantomFiles = KifaFile.FindPhantomFiles(FileNames);
