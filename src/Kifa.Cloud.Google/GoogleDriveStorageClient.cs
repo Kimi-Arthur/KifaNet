@@ -72,6 +72,8 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         var fileId = GetFileId(path);
         if (fileId != null) {
             client.Call(new DeleteFileRpc(fileId, Account.AccessToken));
+
+            KnownFileIdCache.Remove(KnownFileIdCache.First(cache => cache.Value == fileId).Key);
         }
     }
 
@@ -87,6 +89,8 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         client.Call(new MoveFileRpc(sourceId, fileName, folderId, Account.AccessToken));
+
+        KnownFileIdCache.Remove(KnownFileIdCache.First(cache => cache.Value == sourceId).Key);
     }
 
     public override void Touch(string path) {
@@ -187,12 +191,19 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         return client.Call(new GetFileInfoRpc(fileId, Account.AccessToken)).Size;
     }
 
+    static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
+
     string? GetFileId(string path, bool createParents = false) {
         var fileId = Cell.Data.Checked().RootId;
         foreach (var segment in path.Split('/', StringSplitOptions.RemoveEmptyEntries)) {
+            if (KnownFileIdCache.ContainsKey((segment, fileId))) {
+                fileId = KnownFileIdCache[(segment, fileId)];
+                continue;
+            }
+
             var newFileId = FetchFileId(segment, fileId);
             if (newFileId != null) {
-                fileId = newFileId;
+                fileId = KnownFileIdCache[(segment, fileId)] = newFileId;
                 continue;
             }
 
@@ -200,7 +211,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
                 return null;
             }
 
-            fileId = CreateFolder(fileId, segment);
+            fileId = KnownFileIdCache[(segment, fileId)] = CreateFolder(fileId, segment);
         }
 
         return fileId;
