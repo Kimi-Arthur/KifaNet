@@ -129,4 +129,21 @@ public class BilibiliVideoTests {
         Assert.Equal(cid, result.video.Pages[pid - 1].Cid);
         Assert.Equal(quality, result.quality);
     }
+
+    [Theory]
+    [InlineData("av600682474", 1, 127, 12)]
+    [InlineData("av600682474", 1, 127, 13, 127, "av1")]
+    [InlineData("av600682474", 1, 120, 12, 120)]
+    [InlineData("av600682474", 1, 112, 12, 119)]
+    [InlineData("av528641404", 1, 125, 12)]
+    [InlineData("av528641404", 1, 116, 12, 119)]
+    [InlineData("av528641404", 1, 116, 13, 119, "av1")]
+    [InlineData("av528641404", 1, 116, 7, 119, "avc")]
+    public void QualityTest(string id, int p, int expectedQuality, int expectedCodec,
+        int maxQuality = 127, string? codec = null) {
+        var video = BilibiliVideo.Client.Get(id).Checked();
+        var result = video.GetStreams(p, maxQuality, preferredCodec: codec);
+        Assert.Equal(expectedQuality, result.quality);
+        Assert.Equal(expectedCodec, result.codec);
+    }
 }

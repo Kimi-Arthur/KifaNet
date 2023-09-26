@@ -19,6 +19,9 @@ public abstract class DownloadCommand : KifaCommand {
         HelpText = "Codec preferred to download. Supported: avc, hevc, av1. Default is hevc.")]
     public string? PreferredCodec { get; set; }
 
+    [Option('q', "max-quality", HelpText = "Max quality to download. 120: 4K.")]
+    public int MaxQuality { get; set; }
+
     [Option('o', "output-folder",
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
@@ -32,7 +35,7 @@ public abstract class DownloadCommand : KifaCommand {
             };
 
             var (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
-                video.GetStreams(pid, PreferredCodec);
+                video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
 
             var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
             var desiredName =
