@@ -200,7 +200,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
             var partResult = await Retry.Run(
                 async () => await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex,
-                    totalParts, buffer), HandleFloodException);
+                    totalParts, buffer), HandleFloodException, isValid: ((result, i) => result));
 
             if (!partResult) {
                 throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
