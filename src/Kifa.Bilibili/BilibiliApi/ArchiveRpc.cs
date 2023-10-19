@@ -11,7 +11,7 @@ public class ArchiveRpc : KifaJsonParameterizedRpc<ArchiveRpc.Response> {
         public long Code { get; set; }
         public string? Message { get; set; }
         public long Ttl { get; set; }
-        public required Data Data { get; set; }
+        public Data? Data { get; set; }
     }
 
     public class Data {
