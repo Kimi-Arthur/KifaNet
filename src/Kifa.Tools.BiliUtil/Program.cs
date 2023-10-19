@@ -9,5 +9,5 @@ class Program {
             Parser.Default
                 .ParseArguments<GetChatCommand, DownloadVideoCommand, DownloadUploaderCommand,
                     DownloadBangumiCommand, GetCoverCommand, LinkCommand, DownloadMangaCommand,
-                    GetTencentChatCommand>, args);
+                    GetTencentChatCommand, DownloadArchiveCommand>, args);
 }
