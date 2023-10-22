@@ -309,13 +309,14 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         };
     }
 
-    public string GetDesiredName(int pid, int quality, int codec, string? alternativeFolder = null,
-        bool prefixDate = false, BilibiliUploader? uploader = null) {
+    public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
+        string? alternativeFolder = null, bool prefixDate = false,
+        BilibiliUploader? uploader = null) {
         var p = Pages.First(x => x.Id == pid);
 
         var partName = p.Title.NormalizeFileName();
         var title = Title.NormalizeFileName();
-        if (title.Contains(partName)) {
+        if (!includePageTitle || title.Contains(partName)) {
             partName = "";
         } else if (partName.StartsWith(title)) {
             partName = partName[title.Length..].Trim();

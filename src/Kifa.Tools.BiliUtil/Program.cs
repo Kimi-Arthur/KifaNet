@@ -6,7 +6,7 @@ namespace Kifa.Tools.BiliUtil;
 class Program {
     static int Main(string[] args)
         => KifaCommand.Run(
-            Parser.Default
+            new Parser(settings => { settings.CaseInsensitiveEnumValues = true; })
                 .ParseArguments<GetChatCommand, DownloadVideoCommand, DownloadUploaderCommand,
                     DownloadBangumiCommand, GetCoverCommand, LinkCommand, DownloadMangaCommand,
                     GetTencentChatCommand, DownloadArchiveCommand>, args);

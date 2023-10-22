@@ -26,6 +26,11 @@ public abstract class DownloadCommand : KifaCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
+    [Option('p', "include-page-title",
+        HelpText =
+            "Whether to include page title. Possible values: OnlyMultiplePage (default), Never, Always.")]
+    public PageTitleOption IncludePageTitle { get; set; } = PageTitleOption.OnlyMultiplePage;
+
     public KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null)
         => KifaActionResult.FromAction(() => {
@@ -38,8 +43,17 @@ public abstract class DownloadCommand : KifaCommand {
                 video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
 
             var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
-            var desiredName =
-                $"{video.GetDesiredName(pid, quality, codec, alternativeFolder: alternativeFolder, prefixDate: PrefixDate, uploader: uploader)}";
+            var includePageTitle = IncludePageTitle switch {
+                PageTitleOption.Never => false,
+                PageTitleOption.Always => true,
+                PageTitleOption.OnlyMultiplePage => video.Pages.Count > 1,
+                _ => throw new ArgumentOutOfRangeException(nameof(IncludePageTitle),
+                    "Unexpected PageTitleOption")
+            };
+
+            var desiredName = video.GetDesiredName(pid, quality, codec,
+                includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
+                prefixDate: PrefixDate, uploader: uploader);
             var canonicalNames = video.GetCanonicalNames(pid, quality, codec);
 
             var targetFiles = canonicalNames.Append(desiredName)
@@ -111,4 +125,10 @@ public abstract class DownloadCommand : KifaCommand {
             throw new Exception("Merging files failed.");
         }
     }
+}
+
+public enum PageTitleOption {
+    OnlyMultiplePage,
+    Never,
+    Always
 }
