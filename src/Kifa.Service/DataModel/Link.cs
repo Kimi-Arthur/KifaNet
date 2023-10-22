@@ -20,8 +20,8 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
         set => data = value;
     }
 
-    public static implicit operator Link<TDataModel>(string id)
-        => new() {
+    public static implicit operator Link<TDataModel>?(string? id)
+        => id == null ? null : new() {
             Id = id
         };
 
