@@ -236,9 +236,20 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             return;
         }
 
-        originalVirtualLinks.Except(virtualLinks).ForEach(Remove);
+        var toAddLinks = virtualLinks.Except(originalVirtualLinks).ToList();
+        var toRemoveLinks = originalVirtualLinks.Except(virtualLinks);
 
-        virtualLinks.Except(originalVirtualLinks).ForEach(item => Write(new TDataModel {
+        toRemoveLinks.ForEach(Remove);
+
+        // We should make sure each virtual link only links to one item.
+        var alreadyLinkedItems = toAddLinks
+            .Where(item => Read(item)?.Metadata?.Linking?.Target != data.RealId).ToList();
+        if (alreadyLinkedItems.Count > 0) {
+            throw new DataCorruptedException(
+                $"Some virtual links already exist: {alreadyLinkedItems.JoinBy(", ")}");
+        }
+
+        toAddLinks.ForEach(item => Write(new TDataModel {
             Id = item,
             Metadata = new DataMetadata {
                 Linking = new LinkingMetadata {
