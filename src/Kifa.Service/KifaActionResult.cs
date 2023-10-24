@@ -152,14 +152,25 @@ public class KifaActionResult<TValue> : KifaActionResult {
 
 public static class KifaActionResultLogger {
     public static KifaActionResult LogResult(this Logger Logger, KifaActionResult result,
-        string action, LogLevel? defaultLevel = null) {
-        Logger.Log(GetLogLevel(result.Status, defaultLevel), $"Result of {action}: {result}");
+        string action, LogLevel? defaultLevel = null, bool throwIfError = false) {
+        var level = GetLogLevel(result.Status, defaultLevel);
+        Logger.Log(level, $"Result of {action}: {result}");
+        if (throwIfError && level >= LogLevel.Error) {
+            throw new KifaActionFailedException(result);
+        }
+
         return result;
     }
 
     public static KifaActionResult<TValue> LogResult<TValue>(this Logger Logger,
-        KifaActionResult<TValue> result, string action, LogLevel? defaultLevel = null) {
-        Logger.Log(GetLogLevel(result.Status, defaultLevel), $"Result of {action}: {result}");
+        KifaActionResult<TValue> result, string action, LogLevel? defaultLevel = null,
+        bool throwIfError = false) {
+        var level = GetLogLevel(result.Status, defaultLevel);
+        Logger.Log(level, $"Result of {action}: {result}");
+        if (throwIfError && level >= LogLevel.Error) {
+            throw new KifaActionFailedException(result);
+        }
+
         return result;
     }
 

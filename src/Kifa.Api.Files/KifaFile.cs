@@ -12,6 +12,7 @@ using Kifa.Cloud.Telegram;
 using Kifa.IO;
 using Kifa.IO.FileFormats;
 using Kifa.IO.StorageClients;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Api.Files;
@@ -524,7 +525,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var sha256Info = client.Get($"/$/{info.Sha256}");
 
         if (sha256Info != null && sha256Info.Sha256 == info.Sha256) {
-            client.Link(sha256Info.Id, info.Id);
+            Logger.LogResult(client.Link(sha256Info.Id, info.Id), "Linking file",
+                throwIfError: true);
         }
 
         var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
