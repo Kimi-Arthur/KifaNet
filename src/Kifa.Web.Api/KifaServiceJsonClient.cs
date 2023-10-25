@@ -243,10 +243,11 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
         // We should make sure each virtual link only links to one item.
         var alreadyLinkedItems = toAddLinks
-            .Where(item => Read(item)?.Metadata?.Linking?.Target != data.RealId).ToList();
+            .Select(item => (Item: item, Read(item)?.Metadata?.Linking?.Target))
+            .Where(item => item.Target != null && item.Target != data.RealId).ToList();
         if (alreadyLinkedItems.Count > 0) {
             throw new DataCorruptedException(
-                $"Some virtual links already exist: {alreadyLinkedItems.JoinBy(", ")}");
+                $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
         }
 
         toAddLinks.ForEach(item => Write(new TDataModel {
