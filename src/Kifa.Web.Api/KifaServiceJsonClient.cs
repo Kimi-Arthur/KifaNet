@@ -246,7 +246,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             .Select(item => (Item: item, Read(item)?.Metadata?.Linking?.Target))
             .Where(item => item.Target != null && item.Target != data.RealId).ToList();
         if (alreadyLinkedItems.Count > 0) {
-            throw new DataCorruptedException(
+            throw new VirtualItemAlreadyLinkedException(
                 $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
         }
 

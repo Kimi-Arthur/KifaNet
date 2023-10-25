@@ -77,7 +77,9 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     public KifaApiActionResult Delete([FromBody] List<string> ids) => Client.Delete(ids);
 
     [HttpGet("$fix")]
-    public KifaApiActionResult Fix() => KifaActionResult.FromAction(() => Client.FixVirtualLinks());
+    [HttpPost("$fix")]
+    public KifaApiActionResult Fix([FromBody] FixOptions? options)
+        => KifaActionResult.FromAction(() => Client.FixVirtualLinks(options));
 }
 
 public class KifaApiActionResult : IConvertToActionResult {
