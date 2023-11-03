@@ -48,6 +48,17 @@ Content-Type: application/json
 
 ###
 
+POST {{server}}/api/files/$fix
+Content-Type: application/json
+
+{
+  "fields_to_merge": [
+    "Locations"
+  ]
+}
+
+###
+
 POST {{server}}/api/files/$add_location
 Content-Type: application/json
 

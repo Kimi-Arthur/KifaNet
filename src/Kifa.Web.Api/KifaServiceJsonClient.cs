@@ -110,7 +110,6 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
 
                 var target = i.Value.Metadata.Linking.Target;
-                Logger.Debug($"Looking for item {target} for {i.Key}.");
 
                 var value = items.TryGetValue(target, out var item)
                     ? item.Clone()
