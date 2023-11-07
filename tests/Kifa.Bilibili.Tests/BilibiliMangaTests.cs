@@ -23,7 +23,7 @@ public class BilibiliMangaTests {
         "汤锅", 76)]
     public void MangaRpcTest(string mangaId, string title, string author, string description,
         string firstEpisodeTitle, int minEpisodesCount) {
-        var result = HttpClient.Call(new BilibiliMangaRpc(mangaId));
+        var result = HttpClient.Call(new MangaRpc(mangaId));
         var data = result.Data;
         Assert.Equal(title, data.Title);
         Assert.Equal(author, data.AuthorName[0]);

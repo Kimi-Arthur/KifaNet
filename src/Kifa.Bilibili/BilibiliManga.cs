@@ -48,7 +48,7 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
     static readonly HttpClient NoAuthClient = new();
 
     public override DateTimeOffset? Fill() {
-        var data = NoAuthClient.Call(new BilibiliMangaRpc(Id[2..]))!.Data;
+        var data = NoAuthClient.Call(new MangaRpc(Id[2..]))!.Data;
 
         Title = data.Title;
         Authors = data.AuthorName;
