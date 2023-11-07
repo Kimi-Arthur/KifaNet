@@ -7,7 +7,7 @@ using Kifa.Service;
 
 namespace Kifa.Infos;
 
-public class TvShow : DataModel, WithModelId<TvShow>, Formattable {
+public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInfo {
     public static string ModelId => "tv_shows";
 
     const string Part1Suffix = " - Part 1";

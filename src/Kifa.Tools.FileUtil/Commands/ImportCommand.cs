@@ -28,14 +28,28 @@ class ImportCommand : KifaCommand {
     public bool Recursive { get; set; }
 
     public override int Execute() {
-        var segments = SourceId.Split('/');
+        var segments = SourceId.Trim('/').Split('/');
         var type = segments[0];
 
         List<(Season Season, Episode Episode, bool Matched)> episodes;
         Formattable series;
 
         switch (type) {
-            case "tv_shows": {
+            case "Gaming": {
+                // Example:
+                // Gaming/黑桐谷歌/漫威蜘蛛侠2 -> /Gaming/黑桐谷歌/漫威蜘蛛侠2/漫威蜘蛛侠2 EP01 表面张力.mp4
+                var id = segments[1];
+                series = new Gaming {
+                    Id = segments[1..].JoinBy("/")
+                };
+                episodes = Enumerable.Range(1, 100).Select(i => (new Season {
+                    Id = 1
+                }, new Episode {
+                    Id = i
+                }, false)).ToList();
+                break;
+            }
+            case "TV Shows": {
                 var id = segments.Length > 1 ? segments[1] : "";
                 var seasonId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
                 var episodeId = segments.Length > 3 ? int.Parse(segments[3]) : 0;
@@ -47,7 +61,7 @@ class ImportCommand : KifaCommand {
                         => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             }
-            case "animes": {
+            case "Anime": {
                 var id = segments.Length > 1 ? segments[1] : "";
                 var seasonId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
                 var episodeId = segments.Length > 3 ? int.Parse(segments[3]) : 0;
@@ -59,7 +73,7 @@ class ImportCommand : KifaCommand {
                         => episodeId <= 0 || episodeId == item.episode.Id).ToList();
                 break;
             }
-            case "soccer":
+            case "Soccer":
                 foreach (var file in FileNames.SelectMany(path
                              => FileInformation.Client
                                  .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
@@ -183,7 +197,8 @@ class ImportCommand : KifaCommand {
     static void MarkMatched(List<(Season Season, Episode Episode, bool Matched)> episodes,
         Season matchSeason, Episode matchEpisode) {
         for (var i = 0; i < episodes.Count; i++) {
-            if (episodes[i].Season == matchSeason && episodes[i].Episode == matchEpisode) {
+            if (episodes[i].Season.Id == matchSeason.Id &&
+                episodes[i].Episode.Id == matchEpisode.Id) {
                 episodes[i] = (episodes[i].Season, episodes[i].Episode, true);
             }
         }

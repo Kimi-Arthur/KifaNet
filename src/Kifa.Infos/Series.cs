@@ -47,7 +47,7 @@ public class SpecialEpisode : Episode {
     public string? Episode { get; set; }
 }
 
-public interface Formattable : WithFormatInfo {
+public interface Formattable {
     string? Format(Season season, Episode episode);
     (Season Season, Episode Episode)? Parse(string formatted);
 }
