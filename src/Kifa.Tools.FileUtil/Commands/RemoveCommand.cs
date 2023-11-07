@@ -72,7 +72,7 @@ class RemoveCommand : KifaCommand {
 
                 if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
                     foundFiles.ForEach(
-                        f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.ToString())));
+                        f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
                     return LogSummary();
                 }
 
