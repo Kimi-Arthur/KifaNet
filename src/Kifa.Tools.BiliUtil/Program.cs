@@ -9,5 +9,5 @@ class Program {
             new Parser(settings => { settings.CaseInsensitiveEnumValues = true; })
                 .ParseArguments<GetChatCommand, DownloadVideoCommand, DownloadUploaderCommand,
                     DownloadBangumiCommand, GetCoverCommand, LinkCommand, DownloadMangaCommand,
-                    GetTencentChatCommand, DownloadArchiveCommand>, args);
+                    GetTencentChatCommand, DownloadArchiveCommand, ShadowCommand>, args);
 }

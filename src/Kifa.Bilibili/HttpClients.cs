@@ -1,10 +1,15 @@
 using System;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace Kifa.Bilibili;
 
 public class HttpClients {
     public static string BilibiliCookies { get; set; }
+
+    static readonly Regex BiliJctPattern = new(@"bili_jct=([^;]*);");
+
+    public static string BilibiliCsrfToken => BiliJctPattern.Match(BilibiliCookies).Groups[1].Value;
 
     public static string BiliplusCookies { get; set; }
 
