@@ -525,7 +525,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var sha256Info = client.Get($"/$/{info.Sha256}");
 
         if (sha256Info != null && sha256Info.Sha256 == info.Sha256) {
-            Logger.LogResult(client.Link(sha256Info.Id, info.Id), "Linking file",
+            Logger.LogResult(client.Link(sha256Info.Id, info.Id), "linking file",
                 throwIfError: true);
         }
 

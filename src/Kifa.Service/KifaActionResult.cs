@@ -178,5 +178,5 @@ public static class KifaActionResultLogger {
         => status.HasFlag(KifaActionStatus.Error) ? LogLevel.Error :
             status.HasFlag(KifaActionStatus.Warning) ? LogLevel.Warn :
             status.HasFlag(KifaActionStatus.Pending) ? LogLevel.Debug :
-            defaultLevel ?? LogLevel.Info;
+            defaultLevel ?? LogLevel.Debug;
 }
