@@ -4,7 +4,7 @@
 
 When uploading a large number of small files, overhead of each file can be a big issue. For tele: targets, it takes 4.5
 seconds upload a file of 100 KB (22.2KB/s), while it takes 7 minutes to upload a file of size 1.41GB (3.3MB/s).
-Downloading has a similar pattern with 3.6s (27.7KB/s) and 1min32s (15.2MB/s). So it's about 150 times and > 500 times.
+Downloading has a similar pattern with 10s (10KB/s) and 2min28ss (9.5MB/s). So it's about 150 times and 1000 times.
 
 ## Idea
 
