@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Kifa.Service;
 
@@ -20,10 +21,13 @@ public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
         set => data = value;
     }
 
+    [return: NotNullIfNotNull(nameof(id))]
     public static implicit operator Link<TDataModel>?(string? id)
-        => id == null ? null : new() {
-            Id = id
-        };
+        => id == null
+            ? null
+            : new Link<TDataModel> {
+                Id = id
+            };
 
     public static implicit operator Link<TDataModel>(TDataModel data)
         => new() {
