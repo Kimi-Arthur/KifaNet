@@ -133,9 +133,9 @@ class RemoveCommand : KifaCommand {
                 var toRemove = file.Path == info.Id && file.IsLocal;
                 if (!toRemove) {
                     if (shouldRemoveOtherFiles || file.Path == info.Id) {
-                        toRemove =
-                            Confirm(
-                                $"Confirm removing dangling instance {file}, not matching file name or not local");
+                        toRemove = file.Exists() ||
+                                   Confirm(
+                                       $"Confirm removing dangling instance {file}, not matching file name or not local");
                     } else {
                         Logger.Debug(
                             $"File {file} is not removed as there are other file entries, like {links.First()}");
