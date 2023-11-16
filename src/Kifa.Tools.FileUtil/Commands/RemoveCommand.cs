@@ -71,8 +71,7 @@ class RemoveCommand : KifaCommand {
                 }
 
                 if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
-                    foundFiles.ForEach(
-                        f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
+                    foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
                     return LogSummary();
                 }
 
@@ -133,7 +132,7 @@ class RemoveCommand : KifaCommand {
                 var toRemove = file.Path == info.Id && file.IsLocal;
                 if (!toRemove) {
                     if (shouldRemoveOtherFiles || file.Path == info.Id) {
-                        toRemove = file.Exists() ||
+                        toRemove = !file.Exists() ||
                                    Confirm(
                                        $"Confirm removing dangling instance {file}, not matching file name or not local");
                     } else {
