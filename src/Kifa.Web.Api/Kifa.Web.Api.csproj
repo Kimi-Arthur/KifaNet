@@ -32,6 +32,7 @@
     <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj" />
     <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj" />
     <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj" />
+    <ProjectReference Include="..\..\Kifa.YouTube\Kifa.YouTube.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.Telegram\Kifa.Cloud.Telegram.csproj" />
   </ItemGroup>
 </Project>

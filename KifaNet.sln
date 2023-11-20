@@ -167,6 +167,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramExample", "Experime
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.GamingHacking.Tests", "tests\Kifa.GamingHacking.Tests\Kifa.GamingHacking.Tests.csproj", "{91D63875-FFB3-47F8-93F8-EA727DF21253}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kifa.YouTube", "Kifa.YouTube\Kifa.YouTube.csproj", "{AB7F2771-0A26-4F7A-93D1-D902FF21AF2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -453,6 +455,10 @@ Global
 		{91D63875-FFB3-47F8-93F8-EA727DF21253}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91D63875-FFB3-47F8-93F8-EA727DF21253}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91D63875-FFB3-47F8-93F8-EA727DF21253}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB7F2771-0A26-4F7A-93D1-D902FF21AF2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB7F2771-0A26-4F7A-93D1-D902FF21AF2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB7F2771-0A26-4F7A-93D1-D902FF21AF2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB7F2771-0A26-4F7A-93D1-D902FF21AF2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -523,5 +529,6 @@ Global
 		{12BCA4F4-C6E6-4A3C-AF87-100984E06833} = {2CB6614F-35CE-402D-ADCC-709CDD320D36}
 		{6479D0A2-B20E-46FE-9ACB-8D4AA4595DDC} = {9FD0E697-1A85-4BBE-9481-13527DD26A00}
 		{91D63875-FFB3-47F8-93F8-EA727DF21253} = {DBB9235C-CC78-4236-9039-00D2C9816AB3}
+		{AB7F2771-0A26-4F7A-93D1-D902FF21AF2F} = {70079503-89E9-45D6-8920-E51DC36392EA}
 	EndGlobalSection
 EndGlobal
