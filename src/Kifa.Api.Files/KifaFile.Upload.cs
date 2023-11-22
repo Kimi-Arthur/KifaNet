@@ -55,7 +55,8 @@ public partial class KifaFile {
                 $"Sha256 {FileInfo?.Sha256} or size {FileInfo?.Size} is missing.");
         }
 
-        var encodedSize = FileInfo.Size.Value + target.FormatType.HeaderSize;
+        var encodedSize = Length + target.FormatType.HeaderSize;
+        Logger.Debug($"Supposed upload size is {encodedSize}.");
 
         return FileInfo.Locations.Keys.FirstOrDefault(l
             => new Regex(
