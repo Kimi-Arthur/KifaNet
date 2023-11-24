@@ -137,7 +137,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public bool IsLocal => Client is FileStorageClient;
 
-    public long Length => Client.Length(Path);
+    public long Length {
+        get {
+            using var s = OpenRead();
+            return s.Length;
+        }
+    }
 
     public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
 

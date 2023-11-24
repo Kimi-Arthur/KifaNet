@@ -55,15 +55,17 @@ public partial class KifaFile {
                 $"Sha256 {FileInfo?.Sha256} or size {FileInfo?.Size} is missing.");
         }
 
-        var encodedSize = FileInfo.Size.Value + target.FormatType.HeaderSize;
+        var encodedSize = Length + target.FormatType.HeaderSize;
+        Logger.Debug($"Supposed upload size is {encodedSize}.");
 
         return FileInfo.Locations.Keys.FirstOrDefault(l
             => new Regex(
                     $@"^{target.ServiceType.ToString().ToLower()}:[^/]+/\$/{FileInfo.Sha256}\.{target.FormatType}$")
                 .Match(l).Success) ?? target.ServiceType switch {
-            CloudServiceType.Google => GoogleDriveStorageClient.CreateLocation(FileInfo, target.FormatType),
+            CloudServiceType.Google => GoogleDriveStorageClient.CreateLocation(FileInfo,
+                target.FormatType),
             CloudServiceType.Swiss =>
-                $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", FileInfo.Size.Value + target.FormatType.HeaderSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
+                $"swiss:{SwisscomStorageClient.FindAccounts(FileInfo.RealId, $"/$/{FileInfo.Sha256}.{target.FormatType}", encodedSize)}/$/{FileInfo.Sha256}.{target.FormatType}",
             CloudServiceType.Tele => $"{TelegramStorageClient.CreateLocation(FileInfo, TelegramCell,
                 encodedSize)}.{target.FormatType}",
             _ => ""
