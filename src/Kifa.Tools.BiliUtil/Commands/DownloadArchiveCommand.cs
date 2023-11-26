@@ -1,4 +1,3 @@
-using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 using NLog;
@@ -26,6 +25,8 @@ public class DownloadArchiveCommand : DownloadCommand {
                 Logger.Error($"Cannot find video ({videoId}). Skipping.");
                 continue;
             }
+
+            Logger.Trace($"To download video {video}");
 
             foreach (var page in video.Pages) {
                 Download(video, page.Id, alternativeFolder: archive.GetBaseFolder());

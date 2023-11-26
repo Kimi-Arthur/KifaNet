@@ -34,11 +34,6 @@ public abstract class DownloadCommand : KifaCommand {
     public KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null)
         => KifaActionResult.FromAction(() => {
-            uploader ??= new BilibiliUploader {
-                Id = video.AuthorId,
-                Name = video.Author
-            };
-
             var (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
                 video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
 
