@@ -17,6 +17,10 @@ public static class AssFormatter {
             content = content[2..];
         }
 
+        if (content.Length % 2 == 0) {
+            content = content.PadLeft(6, '0');
+        }
+
         if (content.Length != 6) {
             throw new ArgumentException(
                 $"{content} should be of length 6 after stripping leading characters and alpha channel, but is {content.Length}",
