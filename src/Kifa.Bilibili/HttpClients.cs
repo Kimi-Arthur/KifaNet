@@ -1,10 +1,13 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace Kifa.Bilibili;
 
 public class HttpClients {
+    public static string? BilibiliProxy { get; set; }
+
     public static string BilibiliCookies { get; set; }
 
     static readonly Regex BiliJctPattern = new(@"bili_jct=([^;]*);");
@@ -18,9 +21,12 @@ public class HttpClients {
     public static HttpClient BilibiliHttpClient {
         get {
             if (bilibiliClient == null) {
-                bilibiliClient = new HttpClient {
-                    Timeout = TimeSpan.FromMinutes(10)
-                };
+                bilibiliClient = BilibiliProxy == null
+                    ? new HttpClient()
+                    : new HttpClient(new HttpClientHandler {
+                        Proxy = new WebProxy(BilibiliProxy)
+                    });
+                bilibiliClient.Timeout = TimeSpan.FromMinutes(10);
                 bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
                 bilibiliClient.DefaultRequestHeaders.Referrer =
                     new Uri("https://space.bilibili.com/");
