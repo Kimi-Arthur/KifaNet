@@ -13,8 +13,8 @@ public class BilibiliUploaderTests {
 
     [Fact]
     public void VideoRpcTest() {
-        HttpClients.BilibiliHttpClient.Call(new UploaderVideoRpc("43536")).Data.List.Vlist
-            .Should().HaveCount(50);
+        HttpClients.BilibiliHttpClient.Call(new UploaderVideoRpc("43536")).Data.Cards.Should()
+            .HaveCount(20);
     }
 
     [Fact]

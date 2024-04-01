@@ -49,16 +49,18 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         }
 
         var page = 1;
-        var list = data.List.Vlist.Select(v => $"av{v.Aid}").ToList();
-        while (data.Page.Count > list.Count) {
+        var list = data.Cards.Where(card => !string.IsNullOrEmpty(card.Desc.Bvid))
+            .Select(card => $"av{card.Desc.Rid}").ToList();
+        while (data.HasMore > 0) {
             Thread.Sleep(TimeSpan.FromSeconds(1));
-            data = HttpClients.BilibiliHttpClient.Call(new UploaderVideoRpc(uploaderId, ++page))
-                ?.Data;
+            data = HttpClients.BilibiliHttpClient
+                .Call(new UploaderVideoRpc(uploaderId, data.NextOffset))?.Data;
             if (data == null) {
                 throw new DataNotFoundException($"Cannot find videos uploaded by {uploaderId}.");
             }
 
-            list.AddRange(data.List.Vlist.Select(v => $"av{v.Aid}"));
+            list.AddRange(data.Cards.Where(card => !string.IsNullOrEmpty(card.Desc.Bvid))
+                .Select(card => $"av{card.Desc.Rid}"));
         }
 
         return list;

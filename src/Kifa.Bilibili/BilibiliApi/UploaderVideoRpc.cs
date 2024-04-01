@@ -18,7 +18,7 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
         public long HasMore { get; set; }
         public Attentions Attentions { get; set; }
         public List<CardElement> Cards { get; set; }
-        public double NextOffset { get; set; }
+        public long NextOffset { get; set; }
         public long Gt { get; set; }
     }
 
@@ -38,17 +38,17 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
     public class Desc {
         public long Uid { get; set; }
         public long Type { get; set; }
-        public double Rid { get; set; }
+        public long Rid { get; set; }
         public long Acl { get; set; }
         public long View { get; set; }
         public long Repost { get; set; }
         public long? Comment { get; set; }
         public long Like { get; set; }
         public long IsLiked { get; set; }
-        public double DynamicId { get; set; }
+        public long DynamicId { get; set; }
         public long Timestamp { get; set; }
-        public double PreDyId { get; set; }
-        public double OrigDyId { get; set; }
+        public long PreDyId { get; set; }
+        public long OrigDyId { get; set; }
         public long? OrigType { get; set; }
         public UserProfile UserProfile { get; set; }
         public long UidType { get; set; }
@@ -174,10 +174,10 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
 
     protected override HttpMethod Method => HttpMethod.Get;
 
-    public UploaderVideoRpc(string uploaderId, int page = 1) {
+    public UploaderVideoRpc(string uploaderId, long offset = 0) {
         Parameters = new Dictionary<string, string> {
             { "id", uploaderId },
-            { "page", page.ToString() }
+            { "offset", offset.ToString() }
         };
     }
 }
