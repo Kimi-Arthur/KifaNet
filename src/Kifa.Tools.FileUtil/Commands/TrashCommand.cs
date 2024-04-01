@@ -23,11 +23,7 @@ class TrashCommand : KifaCommand {
             Console.WriteLine(fileId);
         }
 
-        var trashFolder =
-            Confirm($"Confirm trashing the {fileIds.Count} files above to the .Trash/ folder in:",
-                fileIds[0][..fileIds[0].LastIndexOf('/')]);
-
-        var fileIdsByResult = fileIds.Select(fileId => (fileId, result: Trash(fileId, trashFolder)))
+        var fileIdsByResult = fileIds.Select(fileId => (fileId, result: Trash(fileId)))
             .GroupBy(item => item.result.Status == KifaActionStatus.OK)
             .ToDictionary(item => item.Key, item => item.ToList());
         if (fileIdsByResult.ContainsKey(true)) {
@@ -51,14 +47,14 @@ class TrashCommand : KifaCommand {
         return 0;
     }
 
-    static KifaActionResult Trash(string file, string trashFolder)
+    static KifaActionResult Trash(string file)
         => KifaActionResult.FromAction(() => {
             var client = FileInformation.Client;
-            var target = trashFolder + "/.Trash" + file[trashFolder.Length..];
+            var target = $"/Trash{file}";
             client.Link(file, target);
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
-            var targetInfo = client.Get(target);
+            var targetInfo = client.Get(target).Checked();
             foreach (var location in targetInfo.Locations.Keys) {
                 var instance = new KifaFile(location);
                 if (instance.Id == file) {
