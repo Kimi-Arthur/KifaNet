@@ -15,6 +15,9 @@ public class DownloadBangumiCommand : DownloadCommand {
         set => Late.Set(ref bangumiId, value);
     }
 
+    [Option('e', "include-extras", HelpText = "Include extra video files.")]
+    public bool IncludeExtras { get; set; } = false;
+
     string? bangumiId;
 
     public override int Execute() {
@@ -33,6 +36,22 @@ public class DownloadBangumiCommand : DownloadCommand {
 
             foreach (var page in video.Pages) {
                 Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}");
+            }
+        }
+
+        if (IncludeExtras) {
+            Logger.Info("Download extra video files.");
+
+            foreach (var videoId in bangumi.ExtraAids.Distinct()) {
+                var video = BilibiliVideo.Client.Get(videoId);
+                if (video == null) {
+                    Logger.Error($"Cannot find video ({videoId}). Skipping.");
+                    continue;
+                }
+
+                foreach (var page in video.Pages) {
+                    Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}/Extras");
+                }
             }
         }
 
