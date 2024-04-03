@@ -104,7 +104,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     public override DateTimeOffset? Fill() {
         try {
             FillWithBilibili();
-            return DateTimeOffset.Now + TimeSpan.FromDays(1);
+            return DateTimeOffset.Now + TimeSpan.FromDays(365);
         } catch (Exception e) {
             Logger.Debug(e, $"Unable to find video {Id} from bilibili API.");
         }
@@ -121,7 +121,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
         try {
             FillWithBiliplusCache();
-            return DateTimeOffset.Now + TimeSpan.FromDays(1);
+            return DateTimeOffset.Now + TimeSpan.FromDays(365);
         } catch (Exception e) {
             Logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
         }
