@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using Kifa.Bilibili.BilibiliApi;
 using Kifa.Service;
 using NLog;
 
@@ -34,8 +36,20 @@ public abstract class DownloadCommand : KifaCommand {
     public KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null)
         => KifaActionResult.FromAction(() => {
-            var (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
-                video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
+            string? extension;
+            int quality;
+            int codec;
+            Func<Stream>? videoStreamGetter;
+            List<Func<Stream>>? audioStreamGetters;
+            try {
+                (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
+                    video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
+            } catch (BilibiliVideoNotFoundException ex) {
+                Logger.Warn("Video not found. Maybe data needs to be updated.");
+                video = BilibiliVideo.Client.Get(video.Id, true).Checked();
+                (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
+                    video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
+            }
 
             var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
             var includePageTitle = IncludePageTitle switch {
