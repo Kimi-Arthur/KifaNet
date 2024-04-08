@@ -21,15 +21,12 @@ public class HttpClients {
     public static HttpClient BilibiliHttpClient {
         get {
             if (bilibiliClient == null) {
-                bilibiliClient = BilibiliProxy == null
-                    ? new HttpClient()
-                    : new HttpClient(new HttpClientHandler {
-                        Proxy = new WebProxy(BilibiliProxy)
-                    });
+                bilibiliClient = new HttpClient(new HttpClientHandler {
+                    Proxy = new WebProxy(BilibiliProxy)
+                });
                 bilibiliClient.Timeout = TimeSpan.FromMinutes(10);
                 bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
-                bilibiliClient.DefaultRequestHeaders.Referrer =
-                    new Uri("https://m.bilibili.com/");
+                bilibiliClient.DefaultRequestHeaders.Referrer = new Uri("https://m.bilibili.com/");
                 bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
             }
