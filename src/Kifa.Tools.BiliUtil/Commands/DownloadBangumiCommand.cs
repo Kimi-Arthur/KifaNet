@@ -35,8 +35,11 @@ public class DownloadBangumiCommand : DownloadCommand {
             }
 
             foreach (var page in video.Pages) {
-                Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}");
+                ExecuteItem(video.Title,
+                    () => Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}"));
             }
+
+            LogSummary();
         }
 
         if (IncludeExtras) {
