@@ -35,7 +35,8 @@ public class DownloadBangumiCommand : DownloadCommand {
             }
 
             foreach (var page in video.Pages) {
-                Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}");
+                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                    () => Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}"));
             }
         }
 
@@ -50,11 +51,13 @@ public class DownloadBangumiCommand : DownloadCommand {
                 }
 
                 foreach (var page in video.Pages) {
-                    Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}/Extras");
+                    ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                        () => Download(video, page.Id, $"{bangumi.Title}-{bangumi.Id}/Extras"));
                 }
             }
         }
 
+        LogSummary();
         return 0;
     }
 }
