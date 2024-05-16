@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -62,11 +64,21 @@ public static class HttpExtensions {
         });
     }
 
+    public static List<string> SkipHeadDomains = new();
+
     public static long? GetContentLength(this HttpClient client, string url) {
         Logger.Trace($"Get content length of {url}...");
-        var length =
-            client.SendWithRetry(() => new HttpRequestMessage(HttpMethod.Head, url)).Content.Headers
-                .ContentLength ?? GetHeaders(client, url).Content.Headers.ContentRange?.Length;
+        var domain = new Uri(url).Host;
+        long? length = null;
+        if (SkipHeadDomains.Any(d => domain.EndsWith(d))) {
+            Logger.Trace($"Skipped HEAD request as domain is {domain}");
+        } else {
+            length = client.SendWithRetry(() => new HttpRequestMessage(HttpMethod.Head, url))
+                .Content.Headers.ContentLength;
+        }
+
+        length ??= GetHeaders(client, url).Content.Headers.ContentRange?.Length;
+
         Logger.Trace($"{url}: {length}");
         return length;
     }
