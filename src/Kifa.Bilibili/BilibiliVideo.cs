@@ -370,8 +370,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             }
 
             if (length * 2 < link.size) {
-                throw new FileCorruptedException(
-                    $"Content length ({length}) is too much smaller than ({link.size}).");
+                Logger.Warn($"Content length ({length}) is too much smaller than ({link.size}).");
             }
 
             finalLink = l;
