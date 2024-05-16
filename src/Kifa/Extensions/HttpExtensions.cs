@@ -64,7 +64,7 @@ public static class HttpExtensions {
         });
     }
 
-    public static List<string> SkipHeadDomains = new();
+    public static List<string> SkipHeadDomains { get; set; }= new();
 
     public static long? GetContentLength(this HttpClient client, string url) {
         Logger.Trace($"Get content length of {url}...");
