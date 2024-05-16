@@ -36,6 +36,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo 
     public string? Title { get; set; }
     public Date? AirDate { get; set; }
     public string? TmdbId { get; set; }
+    public Language? Language { get; set; }
     public List<Season>? Seasons { get; set; }
     public List<Episode>? Specials { get; set; }
 
@@ -102,8 +103,10 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo 
             throw new UnableToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
         }
 
+        Language ??= DefaultLanguage;
+        
         var tmdb = new TmdbClient();
-        var series = tmdb.GetSeries(TmdbId, DefaultLanguage);
+        var series = tmdb.GetSeries(TmdbId, Language);
         if (series == null) {
             throw new UnableToFillException($"Failed to find series with {TmdbId}.");
         }
@@ -115,18 +118,18 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo 
         Seasons = new List<Season>();
 
         foreach (var seasonInfo in series.Seasons) {
-            var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, DefaultLanguage);
+            var data = tmdb.GetSeason(TmdbId, seasonInfo.SeasonNumber, Language);
 
             var episodes = data.Episodes.Select(episode => new Episode {
                 Id = episode.EpisodeNumber,
-                Title = Helper.NormalizeTitle(episode.Name, language: DefaultLanguage),
+                Title = Helper.NormalizeTitle(episode.Name, language: Language),
                 AirDate = episode.AirDate,
                 Overview = episode.Overview
             }).ToList();
 
             if (seasonInfo.SeasonNumber > 0) {
                 var seasonName = Helper.NormalizeTitle(seasonInfo.Name, prefix: Title,
-                    language: DefaultLanguage);
+                    language: Language);
                 Seasons.Add(new Season {
                     AirDate = seasonInfo.AirDate,
                     Id = seasonInfo.SeasonNumber,
