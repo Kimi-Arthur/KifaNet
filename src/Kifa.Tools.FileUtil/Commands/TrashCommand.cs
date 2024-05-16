@@ -19,25 +19,26 @@ class TrashCommand : KifaCommand {
     public override int Execute() {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
         var fileIds = foundFiles.Select(f => f.Id).ToList();
-        foreach (var fileId in fileIds) {
-            Console.WriteLine(fileId);
-        }
 
-        var fileIdsByResult = fileIds.Select(fileId => (fileId, result: Trash(fileId)))
+        var selectedFileIds = SelectMany(fileIds);
+
+        var extraFileIds = foundFiles.SelectMany(f => f.FileInfo.Checked().GetAllLinks()).ToList();
+        var selectedExtraFileIds = SelectMany(extraFileIds);
+        
+        var fileIdsByResult = selectedFileIds.Concat(selectedExtraFileIds).Select(fileId => (fileId, result: Trash(fileId)))
             .GroupBy(item => item.result.Status == KifaActionStatus.OK)
             .ToDictionary(item => item.Key, item => item.ToList());
-        if (fileIdsByResult.ContainsKey(true)) {
-            var files = fileIdsByResult[true];
-            Logger.Info($"Successfully trashed the following {files.Count} files:");
-            foreach (var (file, _) in files) {
+
+        if (fileIdsByResult.TryGetValue(true, out var succeededFiles)) {
+            Logger.Info($"Successfully trashed the following {succeededFiles.Count} files:");
+            foreach (var (file, _) in succeededFiles) {
                 Logger.Info($"\t{file}");
             }
         }
 
-        if (fileIdsByResult.ContainsKey(false)) {
-            var files = fileIdsByResult[false];
-            Logger.Info($"Failed to trash the following {files.Count} files:");
-            foreach (var (file, result) in files) {
+        if (fileIdsByResult.TryGetValue(false, out var failedFiles)) {
+            Logger.Info($"Failed to trash the following {failedFiles.Count} files:");
+            foreach (var (file, result) in failedFiles) {
                 Logger.Info($"\t{file}: {result.Message}");
             }
 

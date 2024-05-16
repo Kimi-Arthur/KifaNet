@@ -88,7 +88,7 @@ public abstract partial class KifaCommand {
     }
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
-        Func<TChoice, string> choiceToString = null, string choiceName = null) {
+        Func<TChoice, string>? choiceToString = null, string? choiceName = null) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
