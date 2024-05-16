@@ -64,7 +64,7 @@ public static class HttpExtensions {
         });
     }
 
-    public static List<string> SkipHeadDomains { get; set; }= new();
+    public static List<string> SkipHeadDomains { get; set; } = new();
 
     public static long? GetContentLength(this HttpClient client, string url) {
         Logger.Trace($"Get content length of {url}...");
@@ -73,8 +73,12 @@ public static class HttpExtensions {
         if (SkipHeadDomains.Any(d => domain.EndsWith(d))) {
             Logger.Trace($"Skipped HEAD request as domain is {domain}");
         } else {
-            length = client.SendWithRetry(() => new HttpRequestMessage(HttpMethod.Head, url))
-                .Content.Headers.ContentLength;
+            try {
+                length = client.SendWithRetry(() => new HttpRequestMessage(HttpMethod.Head, url))
+                    .Content.Headers.ContentLength;
+            } catch (HttpRequestException ex) {
+                Logger.Warn(ex, "Failed when trying to get content length with HEAD request.");
+            }
         }
 
         length ??= GetHeaders(client, url).Content.Headers.ContentRange?.Length;
