@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
@@ -22,10 +21,12 @@ class TrashCommand : KifaCommand {
 
         var selectedFileIds = SelectMany(fileIds);
 
-        var extraFileIds = foundFiles.SelectMany(f => f.FileInfo.Checked().GetAllLinks()).ToList();
+        var extraFileIds =
+            foundFiles.SelectMany(f => f.FileInfo.Checked().GetOtherLinks()).ToList();
         var selectedExtraFileIds = SelectMany(extraFileIds);
-        
-        var fileIdsByResult = selectedFileIds.Concat(selectedExtraFileIds).Select(fileId => (fileId, result: Trash(fileId)))
+
+        var fileIdsByResult = selectedFileIds.Concat(selectedExtraFileIds)
+            .Select(fileId => (fileId, result: Trash(fileId)))
             .GroupBy(item => item.result.Status == KifaActionStatus.OK)
             .ToDictionary(item => item.Key, item => item.ToList());
 
