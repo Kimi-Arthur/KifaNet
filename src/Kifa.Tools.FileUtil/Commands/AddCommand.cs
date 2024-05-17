@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using NLog;
+using OpenQA.Selenium.DevTools;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -34,7 +35,15 @@ class AddCommand : KifaCommand {
             file.Dispose();
         }
 
-        files = KifaFile.FindPotentialFiles(FileNames);
+        Logger.Debug("Looking for potential non-existing files to remove.");
+
+        try {
+            files = KifaFile.FindPotentialFiles(FileNames);
+        } catch (Exception ex) {
+            Logger.Error(ex, "Failed to find potential non-existing files to remove.");
+            return LogSummary();
+        }
+
         var filesToRemove = files.Where(file => file.HasEntry && !file.Registered && !file.Exists())
             .ToList();
 
