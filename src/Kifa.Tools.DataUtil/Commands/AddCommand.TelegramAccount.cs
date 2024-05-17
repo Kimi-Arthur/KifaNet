@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Kifa.Cloud.Telegram;
 using Kifa.Service;
+using NLog;
 using WTelegram;
 
 namespace Kifa.Tools.DataUtil.Commands;
@@ -58,7 +59,7 @@ public partial class AddCommand {
 
                 Logger.LogResult(
                     TelegramAccount.Client.AddSession(accountId, sessionStream.ToArray()),
-                    "add new session");
+                    "add new session", LogLevel.Info);
             }
         }
     }

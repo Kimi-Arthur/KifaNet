@@ -33,7 +33,7 @@ public class SyncCommand : KifaCommand {
             return 1;
         }
 
-        var importResult = Logger.LogResult(chef.Import(content), "importing data");
+        var importResult = Logger.LogResult(chef.Import(content), "importing data", LogLevel.Info);
         if (importResult.Status != KifaActionStatus.OK) {
             Logger.Error($"Failed to import data for {chef.ModelId}.");
             return (int) importResult.Status;

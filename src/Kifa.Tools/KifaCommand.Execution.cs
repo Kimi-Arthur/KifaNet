@@ -22,13 +22,13 @@ public abstract partial class KifaCommand {
     protected void ExecuteItem(string item, Action action) {
         Logger.Info($"Action on {item} started.");
         Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}")));
+            Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}", LogLevel.Info)));
     }
 
     protected void ExecuteItem(string item, Func<KifaActionResult> action) {
         Logger.Info($"Action on {item} started.");
         Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}")));
+            Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}", LogLevel.Info)));
     }
 
     public int LogSummary() {

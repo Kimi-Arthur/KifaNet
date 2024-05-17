@@ -25,7 +25,7 @@ public class LinkCommand : KifaCommand {
             return 1;
         }
 
-        return (int) Logger.LogResult(chef.Link(Target, Link), "linking data").Status;
+        return (int) Logger.LogResult(chef.Link(Target, Link), "linking data", LogLevel.Info).Status;
         ;
     }
 }
