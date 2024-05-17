@@ -34,7 +34,7 @@ public abstract partial class KifaCommand {
         if (defaultIndex >= choices.Count) {
             defaultIndex = 0;
         }
-        
+
         Console.WriteLine(
             $"\nDefault [{defaultIndex + startingIndex}]: {choiceStrings[defaultIndex]}\n");
 
