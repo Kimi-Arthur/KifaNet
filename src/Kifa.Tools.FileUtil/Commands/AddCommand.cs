@@ -35,7 +35,7 @@ class AddCommand : KifaCommand {
             file.Dispose();
         }
 
-        Logger.Debug("Looking for potential non-existing files to remove.");
+        Logger.Info("Looking for potential non-existing files to remove.");
 
         try {
             files = KifaFile.FindPotentialFiles(FileNames);
