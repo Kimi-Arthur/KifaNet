@@ -19,7 +19,7 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
     public string Title { get; set; }
     public string Type { get; set; }
     public List<string> Aids { get; set; }
-    public List<string> ExtraAids { get; set; }
+    public List<string> ExtraAids { get; set; } = new();
 
     public override bool FillByDefault => true;
 
