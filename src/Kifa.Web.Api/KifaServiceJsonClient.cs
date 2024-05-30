@@ -7,6 +7,7 @@ using System.Linq;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
+using NLog.Fluent;
 
 namespace Kifa.Web.Api;
 
@@ -110,6 +111,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
 
                 var target = i.Value.Metadata.Linking.Target;
+
+                Logger.Trace($"Get value for {target}");
 
                 var value = items.TryGetValue(target, out var item)
                     ? item.Clone()
