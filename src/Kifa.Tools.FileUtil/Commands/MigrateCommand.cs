@@ -35,17 +35,12 @@ public class MigrateCommand : KifaCommand {
             var source = $"google:good/$/{info.Sha256}.v1";
             var target = $"google:{targetCell}/$/{info.Sha256}.v1";
 
-            bool? sourceRegistered = null, targetRegistered = null;
-
-            foreach (var (location, upload) in info.Locations) {
-                if (location == source) {
-                    sourceRegistered = upload != null;
-                }
-
-                if (location == target) {
-                    targetRegistered = upload != null;
-                }
-            }
+            bool? sourceRegistered = info.Locations.TryGetValue(source, out var sourceTime)
+                ? sourceTime != null
+                : null;
+            bool? targetRegistered = info.Locations.TryGetValue(target, out var targetTime)
+                ? targetTime != null
+                : null;
 
             if (targetRegistered == true && sourceRegistered == null) {
                 Console.WriteLine($"{file}:(1) already moved.");
@@ -61,15 +56,25 @@ public class MigrateCommand : KifaCommand {
                     if (DryRun) {
                         Console.WriteLine($"{file}:(0) to move.");
                     } else if (QuietMode || Confirm($"Confirm migrating {source} to {target}")) {
+                        // Using new KifaFile instances (especially the target one) so that it
+                        // reflects after-move state.
                         var f = new KifaFile(source);
                         f.Move(f.GetFilePrefixed("/" + targetCell));
                         var t = new KifaFile(target);
-                        t.Add();
-                        f.Unregister();
-                        Console.WriteLine($"{file}:(+) moved.");
+                        if (!t.Exists() || f.Exists()) {
+                            Console.WriteLine(
+                                $"{file}:(!) error, file {t} should exist ({t.Exists()}, while file {f} should not ({f.Exists()}.");
+                        } else {
+                            t.Add();
+                            f.Unregister();
+                            Console.WriteLine($"{file}:(+) moved.");
+                        }
                     } else {
                         Console.WriteLine($"{file}:(-) skipped.");
                     }
+
+                    processed.Add(info.Sha256, info.Id);
+                    continue;
                 }
 
                 if (!sourceFound && targetFound) {
@@ -83,14 +88,19 @@ public class MigrateCommand : KifaCommand {
                         f.Unregister();
                         Console.WriteLine($"{file}:(*) already moved, link fixed.");
                     }
+
+                    processed.Add(info.Sha256, info.Id);
+                    continue;
                 }
 
+                Console.WriteLine(
+                    $"{file}:(!) error, as source is found {sourceFound} and target is found {targetFound}. It should be different.");
                 processed.Add(info.Sha256, info.Id);
                 continue;
             }
 
             Console.WriteLine(
-                $"{file}:(!) error as source is {sourceRegistered} and target is {targetRegistered}");
+                $"{file}:(!) error, as source is registered {sourceRegistered} and target is registered {targetRegistered}. It should be different.");
             processed.Add(info.Sha256, info.Id);
         }
 
