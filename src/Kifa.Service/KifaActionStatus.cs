@@ -12,6 +12,8 @@ public enum KifaActionStatus {
     Warning = 2,
     // Request is processed unsuccessfully. But retry will help.
     Error = 4,
+    // No real action actaully happened.
+    Skipped = 8,
     // The final state is yet to be determined.
-    Pending = 8
+    Pending = 16
 }

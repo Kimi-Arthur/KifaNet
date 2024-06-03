@@ -27,7 +27,8 @@ public class KifaActionResult {
 
     [JsonIgnore]
     [YamlIgnore]
-    public bool IsAcceptable => Status is KifaActionStatus.OK or KifaActionStatus.Warning;
+    public bool IsAcceptable
+        => Status is KifaActionStatus.OK or KifaActionStatus.Warning or KifaActionStatus.Skipped;
 
     public static KifaActionResult FromAction(Action action) {
         try {
