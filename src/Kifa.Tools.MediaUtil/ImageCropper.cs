@@ -49,35 +49,36 @@ public class ImageCropper {
 
     // Gets the images with cropped with presets in base64 encoded formats.
     public static List<string> Crop(KifaFile sourceFile) {
-        using var image = Image.Load(sourceFile.GetLocalPath(), out var format);
+        using var image = Image.Load(sourceFile.GetLocalPath());
+        var format = image.Metadata.DecodedImageFormat.Checked();
 
-        return new List<string> {
+        return [
             CropMiddle(image).ToBase64String(format),
             CropLeft(image).ToBase64String(format),
             CropRight(image).ToBase64String(format),
             CropDeep(sourceFile, image).ToBase64String(format)
-        };
+        ];
     }
 
-    public static Image CropMiddle(Image image) {
-        var (width, height) = image.Size();
+    static Image CropMiddle(Image image) {
+        var (width, height) = image.Size;
 
         return image.Clone(p => p.Crop(new Rectangle((width - height) / 2, 0, height, height)));
     }
 
-    public static Image CropLeft(Image image) {
-        var (_, height) = image.Size();
+    static Image CropLeft(Image image) {
+        var (_, height) = image.Size;
 
         return image.Clone(p => p.Crop(new Rectangle(0, 0, height, height)));
     }
 
-    public static Image CropRight(Image image) {
-        var (width, height) = image.Size();
+    static Image CropRight(Image image) {
+        var (width, height) = image.Size;
 
         return image.Clone(p => p.Crop(new Rectangle(width - height, 0, height, height)));
     }
 
-    public static Image CropDeep(KifaFile sourceFile, Image image) {
+    static Image CropDeep(KifaFile sourceFile, Image image) {
         var remoteFile = new KifaFile($"{RemoteServer}{sourceFile.Path}");
         sourceFile.Copy(remoteFile);
 
@@ -85,13 +86,13 @@ public class ImageCropper {
             { "image_path", remoteFile.GetLocalPath() }
         });
         Logger.Trace($"Executing: {CropCommand} {arguments}");
-        using var proc = new Process {
-            StartInfo = {
-                FileName = CropCommand,
-                Arguments = arguments
-            }
-        };
+        using var proc = new Process();
+
+        // It's safer to init fields within using statement for cleanup.
+        proc.StartInfo.FileName = CropCommand;
+        proc.StartInfo.Arguments = arguments;
         proc.StartInfo.RedirectStandardOutput = true;
+
         proc.Start();
         proc.WaitForExit();
         if (proc.ExitCode != 0) {
@@ -107,7 +108,7 @@ public class ImageCropper {
     }
 
     static Image CropToRectangle(Image image, double x0, double y0, double x1, double y1) {
-        var originalSize = image.Size();
+        var originalSize = image.Size;
 
         return image.Clone(p => p.Crop(new Rectangle((originalSize.Width * x0).Round(),
             (originalSize.Height * y0).Round(), (originalSize.Width * (x1 - x0)).Round(),
