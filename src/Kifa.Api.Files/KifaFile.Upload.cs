@@ -98,10 +98,6 @@ public partial class KifaFile {
 
         var destination = new KifaFile(destinationLocation);
 
-        // Register the destination location so that it will go to the same place if retried in
-        // another invocation.
-        destination.Register();
-
         try {
             CheckDestination(destination, skipVerify);
             return new KifaActionResult {
@@ -116,6 +112,12 @@ public partial class KifaFile {
                 Message = $"Failed to check destination {destination}: {ex}"
             };
         }
+
+        // Register the destination location so that it will go to the same place if retried in
+        // another invocation. Unregister first as the existing entry is probably phantom as the
+        // last step isn't enough to convince otherwise.
+        destination.Unregister();
+        destination.Register();
 
         Logger.Debug($"Copying from source {this} to destination {destination}...");
         Copy(destination);
@@ -134,7 +136,7 @@ public partial class KifaFile {
         }
     }
 
-    void CheckDestination(KifaFile destination, bool skipVerify) {
+    static void CheckDestination(KifaFile destination, bool skipVerify) {
         // We still need to check whether file exists or not even if we skipVerify.
         if (!destination.Exists()) {
             throw new FileNotFoundException($"Unable to find destination {destination}.");
