@@ -467,11 +467,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var oldInfo = FileInfo;
 
         if (UseCache) {
-            var cacheQuickInfo = LocalFile.QuickInfo();
-            if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) ==
-                FileProperties.None) {
-                file = LocalFile;
-                Logger.Debug($"Use local file {file} instead.");
+            try {
+                var cacheQuickInfo = LocalFile.QuickInfo();
+                if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) ==
+                    FileProperties.None) {
+                    file = LocalFile;
+                    Logger.Debug($"Use local file {file} instead.");
+                }
+            } catch (FileNotFoundException) {
+                // Expected to find no cached file.
             }
         }
 
