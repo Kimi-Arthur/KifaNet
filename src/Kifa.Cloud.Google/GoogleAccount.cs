@@ -62,6 +62,10 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
+        if (string.IsNullOrEmpty(RefreshToken)) {
+            throw new DataNotFoundException("No refresh token found.");
+        }
+
         var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
             { "client_id", GoogleCloudConfig.ClientId },
             { "client_secret", GoogleCloudConfig.ClientSecret },
