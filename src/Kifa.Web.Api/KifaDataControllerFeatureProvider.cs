@@ -22,7 +22,7 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
         var implemented = GetImplementedDataModels().ToList();
         Logger.Trace("Implemented data models:");
         foreach (var imp in implemented) {
-            Logger.Trace($"\t{imp.FullName}");
+            Logger.Trace($"\t{imp.BaseType.GetGenericArguments()[0].FullName}");
         }
 
         candidates.ExceptWith(implemented.Select(c => c.BaseType.GetGenericArguments()[0]));
