@@ -14,12 +14,27 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
 
     public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature) {
         var candidates = GetAllDataModels().ToHashSet();
+        Logger.Trace("Candidate data models:");
+        foreach (var candidate in candidates) {
+            Logger.Trace($"\t{candidate.FullName}");
+        }
+
         var implemented = GetImplementedDataModels().ToList();
+        Logger.Trace("Implemented data models:");
+        foreach (var imp in implemented) {
+            Logger.Trace($"\t{imp.FullName}");
+        }
+
         candidates.ExceptWith(implemented.Select(c => c.BaseType.GetGenericArguments()[0]));
 
         foreach (var controller in implemented.Where(t => !t.IsAbstract)) {
             controller.BaseType.GetGenericArguments()[0].GetProperty("Client").SetValue(null,
                 Activator.CreateInstance(controller.BaseType.GetGenericArguments()[1]));
+        }
+
+        Logger.Trace("To be added data models:");
+        foreach (var candidate in candidates) {
+            Logger.Trace($"\t{candidate.FullName}");
         }
 
         foreach (var candidate in candidates.Where(t => t.CustomAttributes.All(a
