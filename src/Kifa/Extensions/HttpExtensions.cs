@@ -87,10 +87,12 @@ public static class HttpExtensions {
         return length;
     }
 
-    public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> request,
+    public static JToken FetchJToken(this HttpClient client, Func<HttpRequestMessage> getRequest,
         Func<JToken, bool>? validate = null)
         => Retry.Run(() => {
-            var response = client.Send(request());
+            var request = getRequest();
+            Logger.Trace($"Fetch JToken for {request}");
+            var response = client.Send(request);
             response.EnsureSuccessStatusCode();
             return response.GetJToken();
         }, HandleHttpException, validate == null
@@ -114,9 +116,11 @@ public static class HttpExtensions {
             expectedStatusCode);
 
     public static HttpResponseMessage SendWithRetry(this HttpClient client,
-        Func<HttpRequestMessage> request, HttpStatusCode? expectedStatusCode = null)
+        Func<HttpRequestMessage> getRequest, HttpStatusCode? expectedStatusCode = null)
         => Retry.Run(() => {
-            var response = client.Send(request());
+            var request = getRequest();
+            Logger.Trace($"SendWithRetry: {request}");
+            var response = client.Send(request);
             if (expectedStatusCode != null && expectedStatusCode == response.StatusCode) {
                 return response;
             }
