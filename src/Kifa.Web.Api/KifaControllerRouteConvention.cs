@@ -1,5 +1,6 @@
 using System.Reflection;
 using Kifa.Web.Api.Controllers;
+using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using NLog;
@@ -10,20 +11,17 @@ public class KifaControllerRouteConvention : IControllerModelConvention {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public void Apply(ControllerModel controller) {
-        var controllerType = controller.ControllerType;
-        if (controllerType.BaseType?.IsGenericType ?? false) {
-            controllerType = controllerType.BaseType.GetTypeInfo();
+        Logger.Debug($"Adding route for {controller.ControllerType.FullName}.");
+        var controllerType = controller.ControllerType.GetDataControllerType();
+        if (controllerType == null) {
+            return;
         }
 
-        if (controllerType.IsGenericType && controllerType.GetGenericTypeDefinition() ==
-            typeof(KifaDataController<,>)) {
-            var endpoint = (controllerType.GetGenericArguments()[0].GetProperty("ModelId")
-                .GetValue(null) as string)!;
-            Logger.Debug($"Adding endpoint /api/{endpoint} for {controllerType}.");
-            controller.Selectors.Add(new SelectorModel {
-                AttributeRouteModel =
-                    new AttributeRouteModel(new RouteAttribute("api/" + endpoint)),
-            });
-        }
+        var endpoint = (controllerType.GetGenericArguments()[0].GetProperty("ModelId")
+            .GetValue(null) as string)!;
+        Logger.Debug($"Adding endpoint /api/{endpoint} for {controllerType}.");
+        controller.Selectors.Add(new SelectorModel {
+            AttributeRouteModel = new AttributeRouteModel(new RouteAttribute("api/" + endpoint)),
+        });
     }
 }

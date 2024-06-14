@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Kifa.Web.Api.Controllers;
+using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NLog;
@@ -14,27 +15,28 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
 
     public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature) {
         var candidates = GetAllDataModels().ToHashSet();
-        Logger.Trace("Candidate data models:");
+        Logger.Debug($"Candidate data models ({candidates.Count}):");
         foreach (var candidate in candidates) {
-            Logger.Trace($"\t{candidate.FullName}");
+            Logger.Debug($"\t{candidate.FullName}");
         }
 
-        var implemented = GetImplementedDataModels().ToList();
-        Logger.Trace("Implemented data models:");
+        var implemented = GetImplementingControllers().ToList();
+        Logger.Debug($"Implemented data models ({implemented.Count}):");
         foreach (var imp in implemented) {
-            Logger.Trace($"\t{imp.BaseType.GetGenericArguments()[0].FullName}");
+            Logger.Debug($"\t{imp.GetGenericArguments()[0]}: {imp.GetGenericArguments()[1]}");
         }
 
-        candidates.ExceptWith(implemented.Select(c => c.BaseType.GetGenericArguments()[0]));
+        candidates.ExceptWith(implemented.Select(c => c.GetGenericArguments()[0]));
 
-        foreach (var controller in implemented.Where(t => !t.IsAbstract)) {
-            controller.BaseType.GetGenericArguments()[0].GetProperty("Client").SetValue(null,
-                Activator.CreateInstance(controller.BaseType.GetGenericArguments()[1]));
+        foreach (var controller in implemented) {
+            Logger.Debug($"Processing {controller.FullName}");
+            controller.GetGenericArguments()[0].GetProperty("Client").SetValue(null,
+                Activator.CreateInstance(controller.GetGenericArguments()[1]));
         }
 
-        Logger.Trace("To be added data models:");
+        Logger.Debug($"To be added data models ({candidates.Count}):");
         foreach (var candidate in candidates) {
-            Logger.Trace($"\t{candidate.FullName}");
+            Logger.Debug($"\t{candidate.FullName}");
         }
 
         foreach (var candidate in candidates.Where(t => t.CustomAttributes.All(a
@@ -55,10 +57,8 @@ public class KifaDataControllerFeatureProvider : IApplicationFeatureProvider<Con
                     => i.FullName?.StartsWith("Kifa.Service.WithModelId`1[") ?? false)));
     }
 
-    static IEnumerable<Type> GetImplementedDataModels() {
-        return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly
-            => assembly.GetExportedTypes().Where(x
-                => (x.BaseType?.IsGenericType ?? false) && x.BaseType?.GetGenericTypeDefinition() ==
-                typeof(KifaDataController<,>)));
+    static IEnumerable<Type> GetImplementingControllers() {
+        return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly
+            .GetExportedTypes().Select(x => x.GetDataControllerType())).ExceptNull();
     }
 }
