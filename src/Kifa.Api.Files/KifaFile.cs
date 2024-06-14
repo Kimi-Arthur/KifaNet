@@ -97,9 +97,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
         FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
-        LocalFilePath = FileInfo?.Sha256 != null
-            ? $"{LocalServer}/$/{FileInfo.Sha256}"
-            : $"{LocalServer}{Id}";
+        // Always store with its id makes more sense to me.
+        LocalFilePath = $"{LocalServer}{Id}";
 
         Client = GetClient(segments[0]);
 
