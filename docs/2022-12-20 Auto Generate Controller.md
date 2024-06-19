@@ -17,7 +17,8 @@ public class SomeInfoController : KifaDataController<SomeInfo,
 
 where, `ModelId` is either a const or static property of class `SomeInfo`.
 
-We need a `IControllerModelConvention` to route the requests based on information other than the `Route` attributes (like `ModelId` inside the `DataModel` classes). This applies to both basic and complete `Controller` classes.
+We need a `IControllerModelConvention` to route the requests based on information other than the `Route` attributes (
+like `ModelId` inside the `DataModel` classes). This applies to both basic and complete `Controller` classes.
 
 *Done in [f346b06](https://github.com/Kimi-Arthur/KifaNet/commit/f346b06991c3dda7c808fd18a29ec08179c440f3).*
 
@@ -31,11 +32,17 @@ public class SomeInfoController : KifaDataController<SomeInfo,
 }
 ```
 
-We'd like to replace this with reflection. Note that we cannot do this for a complete `Controller` class, where custom action methods are implemented.
+We'd like to replace this with reflection. Note that we cannot do this for a complete `Controller` class, where custom
+action methods are implemented.
 
-We need to first locate proper `DataModel` implementations that don't have corresponding controllers and create for them. We don't need to mingle with `Route` attributes as they would be generated automatically in Milestone 1.
+We need to first locate proper `DataModel` implementations that don't have corresponding controllers and create for
+them. We don't need to mingle with `Route` attributes as they would be generated automatically in Milestone 1.
 
-*Done in [afc3ede](https://github.com/Kimi-Arthur/KifaNet/commit/afc3edec228c999eb1a5c90769b7661b1527656a), [0ce9c30](https://github.com/Kimi-Arthur/KifaNet/commit/0ce9c30e300f1d656b5bce50273c30ee328bab99)*.
+*Done
+in [afc3ede](https://github.com/Kimi-Arthur/KifaNet/commit/afc3edec228c999eb1a5c90769b7661b1527656a), [0ce9c30](https://github.com/Kimi-Arthur/KifaNet/commit/0ce9c30e300f1d656b5bce50273c30ee328bab99).*
+
+*Fixed a big issue causing generic controllers to be not loaded
+in [8c85d9d](https://github.com/Kimi-Arthur/KifaNet/commit/8c85d9d171e836253b28def73058b1b347ad0704).*
 
 ### *3. (optional) Generate complete `Controller` classes*
 
@@ -58,17 +65,24 @@ public void AddWord(string courseId, MemriseWord word) {
 }
 ```
 
-The main problem here would be to generate actions for custom methods implemented, which can be with different parameters and return types (not only JSON). This will complicate (or simplify) existing RPC implementations (where and how).
+The main problem here would be to generate actions for custom methods implemented, which can be with different
+parameters and return types (not only JSON). This will complicate (or simplify) existing RPC implementations (where and
+how).
 
-One solution can be that we have a catch-all action defined in `KifaDataController` where we catch anything starting the `$` sign and route it to different methods. It may be a problem if we need to do reflection every time a request comes in. So route caching or other tricks may be needed.
+One solution can be that we have a catch-all action defined in `KifaDataController` where we catch anything starting
+the `$` sign and route it to different methods. It may be a problem if we need to do reflection every time a request
+comes in. So route caching or other tricks may be needed.
 
-However, as an MVP. this is by no means a blocking issue as quite some `DataModel` classes we will need to load in Milestone 4 would need a basic `Controller`.
+However, as an MVP. this is by no means a blocking issue as quite some `DataModel` classes we will need to load in
+Milestone 4 would need a basic `Controller`.
 
 ### 4. Load external assemblies
 
-This would allow us to load `DataModel` classes without making it known by `Kifa.Web.Api` beforehand. Providers will only need to implement a proper `DataModel` class and specify the assemblies to be loaded in the config.
+This would allow us to load `DataModel` classes without making it known by `Kifa.Web.Api` beforehand. Providers will
+only need to implement a proper `DataModel` class and specify the assemblies to be loaded in the config.
 
-*Done in [98644eb](https://github.com/Kimi-Arthur/KifaNet/commit/98644eb8da331b385c8e2b27a1da86c23114e3ad), [82f50d8](https://github.com/Kimi-Arthur/KifaNet/commit/82f50d889e34352417b1d624d2bde220794183b5).*
+*Done
+in [98644eb](https://github.com/Kimi-Arthur/KifaNet/commit/98644eb8da331b385c8e2b27a1da86c23114e3ad), [82f50d8](https://github.com/Kimi-Arthur/KifaNet/commit/82f50d889e34352417b1d624d2bde220794183b5).*
 
 ## References
 
