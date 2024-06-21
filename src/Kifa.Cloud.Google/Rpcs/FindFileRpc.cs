@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Web;
 using Kifa.Rpc;
 
 namespace Kifa.Cloud.Google.Rpcs;
@@ -33,7 +34,7 @@ class FindFileRpc : KifaJsonParameterizedRpc<FindFileRpc.Response> {
     public FindFileRpc(string parentId, string name, string accessToken) {
         Parameters = new Dictionary<string, string> {
             { "parent_id", parentId },
-            { "name", name },
+            { "name", HttpUtility.UrlEncode(name) },
             { "access_token", accessToken }
         };
     }
