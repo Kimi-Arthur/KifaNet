@@ -93,6 +93,11 @@ public static class HttpExtensions {
             var request = getRequest();
             Logger.Trace($"Fetch JToken for {request}");
             var response = client.Send(request);
+            // TODO: make these share code.
+            using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
+                Encoding.GetEncoding("UTF-8"));
+            var data = sr.ReadToEnd();
+            Logger.Trace($"Response ({response.StatusCode:D}): {data}");
             response.EnsureSuccessStatusCode();
             return response.GetJToken();
         }, HandleHttpException, validate == null
