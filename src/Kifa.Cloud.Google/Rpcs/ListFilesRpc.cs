@@ -12,11 +12,12 @@ public class ListFilesRpc : KifaJsonParameterizedRpc<ListFilesRpc.Response> {
 
     public class File {
         public long Size { get; set; }
+        public string Id { get; set; }
         public required string Name { get; set; }
     }
 
     protected override string Url
-        => "https://www.googleapis.com/drive/v3/files?pageSize=1000&fields=nextPageToken,files/size,files/name&pageToken={page_token}&orderBy=folder,name&q='{parent_id}' in parents";
+        => "https://www.googleapis.com/drive/v3/files?pageSize=1000&fields=nextPageToken,files/size,files/name,files/id&pageToken={page_token}&orderBy=folder,name&q='{parent_id}' in parents";
 
     protected override HttpMethod Method => HttpMethod.Get;
 

@@ -47,9 +47,14 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
         var fileId = GetFileId(path);
         if (fileId == null) {
-            yield break;
+            return [];
         }
 
+        return ListWithFileId(path, fileId, recursive);
+    }
+
+    public IEnumerable<FileInformation> ListWithFileId(string path, string fileId,
+        bool recursive = false) {
         var pageToken = "";
 
         while (pageToken != null) {
@@ -58,10 +63,17 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
             pageToken = response.NextPageToken;
             foreach (var file in response.Files) {
-                yield return new FileInformation {
-                    Id = $"{path}/{file.Name}",
-                    Size = file.Size
-                };
+                if (file.Size > 0) {
+                    yield return new FileInformation {
+                        Id = $"{path}/{file.Name}",
+                        Size = file.Size
+                    };
+                } else if (recursive) {
+                    foreach (var innerFile in ListWithFileId($"{path}/{file.Name}", file.Id,
+                                 recursive)) {
+                        yield return innerFile;
+                    }
+                }
             }
         }
     }

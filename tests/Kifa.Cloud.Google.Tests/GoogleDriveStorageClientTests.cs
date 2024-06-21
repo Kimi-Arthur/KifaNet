@@ -47,7 +47,7 @@ public class GoogleDriveStorageClientTests {
     public void ListTest() {
         var client = GetStorageClient();
 
-        client.List("/Test").Should().HaveCountGreaterThan(1);
+        client.List("/Test").Should().HaveCount(1);
         client.List("/Test/Empty").Should().HaveCount(0);
         client.List("/Test/NoFolder").Should().HaveCount(0);
     }
