@@ -17,9 +17,7 @@ public abstract class
     static readonly KifaServiceJsonClient<TAccount> ServiceClient = new();
 
     public override ActionResult<TAccount?> Get(string id, bool refresh = false) {
-        Logger.Trace("Before Get");
         var result = base.Get(id, refresh);
-        Logger.Trace($"Got OAuth account: {result.Value}");
         return result.Value != null ? result : AccountAdd(id);
     }
 
