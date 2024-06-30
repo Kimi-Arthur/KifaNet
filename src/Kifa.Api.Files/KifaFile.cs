@@ -130,7 +130,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     bool UseCache { get; set; }
 
-    bool IsCloud
+    public bool IsCloud
         => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
            FileFormat is KifaFileV1Format or KifaFileV2Format;
 
