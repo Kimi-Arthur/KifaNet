@@ -33,6 +33,11 @@ class RemoveCommand : KifaCommand {
     [Option('l', "link", HelpText = "Remove link only.")]
     public bool RemoveLinkOnly { get; set; }
 
+    [Option('f', "force",
+        HelpText =
+            "Force remove files even if no other instances exist. Only use when a file is actually removed.")]
+    public bool Force { get; set; }
+
     public override int Execute() {
         FileNames = FileNames.ToList();
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
@@ -121,17 +126,25 @@ class RemoveCommand : KifaCommand {
     KifaActionResult RemoveLogicalFile(string filePath) {
         var info = FileInformation.Client.Get(filePath).Checked();
         var result = new KifaBatchActionResult();
+        var links = info.GetAllLinks();
+        links.Remove(info.Id);
+        var onlyFile = links.Count == 0;
+        if (onlyFile && !Force &&
+            !Confirm($"{filePath} is the last instance. Should it be removed?")) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"Since {filePath} is the last instance, we skipped removing it."
+            };
+        }
+
         if (!RemoveLinkOnly) {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
-                var links = info.GetAllLinks();
-                links.Remove(info.Id);
-                var shouldRemoveOtherFiles = links.Count == 0;
 
                 // Do not auto remove remote file no matter what.
                 var toRemove = file.Path == info.Id && !file.IsCloud;
                 if (!toRemove) {
-                    if (shouldRemoveOtherFiles || file.Path == info.Id) {
+                    if (onlyFile || file.Path == info.Id) {
                         toRemove = !file.Exists() ||
                                    Confirm(
                                        $"Confirm removing dangling instance {file}, not matching file name or not local");
