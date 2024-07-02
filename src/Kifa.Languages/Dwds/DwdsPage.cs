@@ -23,10 +23,10 @@ public class DwdsPage : DataModel, WithModelId<DwdsPage> {
     [JsonIgnore]
     public string Url => $"{UrlPrefix}{RealId}";
 
-    public string? PageContent { get; set; }
-
     public List<string> PagesBefore { get; set; } = [];
     public List<string> PagesAfter { get; set; } = [];
+
+    public string? PageContent { get; set; }
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient HttpClient = new();
