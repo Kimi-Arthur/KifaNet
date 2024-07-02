@@ -21,6 +21,7 @@ public abstract class DataModel {
     public const string VirtualItemPrefix = "/$/";
 
     [YamlMember(Order = -1)]
+    [JsonProperty(Order = -2)]
     public string Id {
         get => Late.Get(id);
         set => Late.Set(ref id, value);
@@ -32,7 +33,7 @@ public abstract class DataModel {
     [YamlIgnore]
     public string RealId => Metadata?.Linking?.Target ?? Id;
 
-    [JsonProperty("$metadata")]
+    [JsonProperty("$metadata", Order = -3)]
     [YamlIgnore]
     public DataMetadata? Metadata { get; set; }
 
