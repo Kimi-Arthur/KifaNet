@@ -55,13 +55,13 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
     public string? Adler32 { get; set; }
 
+    public string? SliceMd5 { get; set; }
+
     public List<string> BlockMd5 { get; set; } = new();
 
     public List<string> BlockSha1 { get; set; } = new();
 
     public List<string> BlockSha256 { get; set; } = new();
-
-    public string? SliceMd5 { get; set; }
 
     public string? EncryptionKey { get; set; }
 
