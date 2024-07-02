@@ -24,7 +24,8 @@ public class CambridgePage : DataModel, WithModelId<CambridgePage> {
 
     public string? PageContent { get; set; }
 
-    public List<string>? NeighbouringPages { get; set; }
+    public List<string> PagesBefore { get; set; } = [];
+    public List<string> PagesAfter { get; set; } = [];
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient HttpClient = new();
@@ -68,13 +69,18 @@ public class CambridgePage : DataModel, WithModelId<CambridgePage> {
     void FillNeighbouringPages() {
         var doc = new HtmlDocument();
         doc.LoadHtml(PageContent);
-        var nodes = doc.DocumentNode.SelectNodes("//div[contains(@class, 'dbrowse')]//a");
+        var nodes = doc.DocumentNode.SelectNodes("//div[contains(@class, 'dbrowse')]//div");
         if (nodes == null) {
-            Logger.Warn("No neibouring pages found.");
+            Logger.Warn("No neighbouring pages found.");
             return;
         }
 
-        NeighbouringPages =
-            nodes.Select(n => n.Attributes["href"].Value[PathPrefix.Length..]).ToList();
+        var pages = nodes.Select(n => {
+            var anchors = n.SelectNodes(".//a");
+            return anchors?[0].Attributes["href"].Value[PathPrefix.Length..];
+        }).ToList();
+        var thisPageIndex = pages.IndexOf(null);
+        PagesBefore = pages[..thisPageIndex].OnlyNonNull().ToList();
+        PagesAfter = pages[(thisPageIndex + 1)..].OnlyNonNull().ToList();
     }
 }
