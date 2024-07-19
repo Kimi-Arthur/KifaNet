@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
@@ -11,23 +13,24 @@ namespace Kifa.Tools.FileUtil.Commands;
 class CopyCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Value(0, MetaName = "FILE1", MetaValue = "STRING", Required = true,
-        HelpText = "File to copy from.")]
-    public string Target { get; set; }
+    [Value(0, Min = 2, MetaName = "FILES", MetaValue = "STRING", Required = true,
+        HelpText =
+            "Files to copy, the last one is the new link name or folder (ending with a slash.")]
+    public List<string> Files { get; set; }
 
-    [Value(1, MetaName = "FILE2", MetaValue = "STRING", Required = true,
-        HelpText = "File to copy to.")]
-    public string LinkName { get; set; }
+    public IEnumerable<string> Targets => Files.SkipLast(1);
+
+    public string LinkName => Files.Last();
 
     [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
     public bool ById { get; set; } = false;
 
     public override int Execute() {
         if (ById) {
-            return LinkFile(Target.TrimEnd('/'), LinkName.TrimEnd('/'));
+            return LinkFile(Targets.First().TrimEnd('/'), LinkName.TrimEnd('/'));
         }
 
-        LinkLocalFile(new KifaFile(Target), new KifaFile(LinkName));
+        LinkLocalFile(new KifaFile(Targets.First()), new KifaFile(LinkName));
         return 0;
     }
 
