@@ -11,8 +11,7 @@ namespace Kifa;
 public class OrderedContractResolver : DefaultContractResolver {
     protected override IList<JsonProperty> CreateProperties(Type type,
         MemberSerialization memberSerialization) {
-        return base.CreateProperties(type, memberSerialization).OrderBy(p => p.PropertyName)
-            .ToList();
+        return base.CreateProperties(type, memberSerialization).ToList();
     }
 
     static readonly NullabilityInfoContext NullabilityContext = new();

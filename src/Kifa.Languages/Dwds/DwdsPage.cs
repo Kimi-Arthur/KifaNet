@@ -23,9 +23,10 @@ public class DwdsPage : DataModel, WithModelId<DwdsPage> {
     [JsonIgnore]
     public string Url => $"{UrlPrefix}{RealId}";
 
-    public string? PageContent { get; set; }
+    public List<string> PagesBefore { get; set; } = [];
+    public List<string> PagesAfter { get; set; } = [];
 
-    public List<string>? NeighbouringPages { get; set; }
+    public string? PageContent { get; set; }
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient HttpClient = new();
@@ -61,13 +62,16 @@ public class DwdsPage : DataModel, WithModelId<DwdsPage> {
         doc.LoadHtml(PageContent);
 
         // Or 'alphabetisch nachfolgend'
-        var nodes = doc.DocumentNode.SelectNodes("//th[. = 'alphabetisch vorangehend']/../..//a");
+        var nodes = doc.DocumentNode.SelectNodes("//th[. = 'alphabetisch vorangehend']/../..//td");
         if (nodes == null) {
-            Logger.Warn("No neibouring pages found.");
+            Logger.Warn("No neighbouring pages found.");
             return;
         }
 
-        NeighbouringPages = nodes.Select(n
-            => HttpUtility.UrlDecode(n.Attributes["href"].Value[PathPrefix.Length..])).ToList();
+        PagesBefore = nodes[0].SelectNodes(".//a").Select(SelectLink).ToList();
+        PagesAfter = nodes[1].SelectNodes(".//a").Select(SelectLink).ToList();
     }
+
+    static string SelectLink(HtmlNode node)
+        => HttpUtility.UrlDecode(node.Attributes["href"].Value[PathPrefix.Length..]);
 }
