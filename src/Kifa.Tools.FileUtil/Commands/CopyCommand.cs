@@ -36,8 +36,8 @@ class CopyCommand : KifaCommand {
         LinkFile(file1.Id, file2.Id);
         file1.Copy(file2);
 
-        // Skip full check if the linking is from local file. 
-        file2.Register(file1.IsLocal);
+        // Skip the full check if the linking is from local file and in the same cell.
+        file2.Register(file1.IsCompatible(file2) && file2.IsLocal);
         file2.Add();
     }
 

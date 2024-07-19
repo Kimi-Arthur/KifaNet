@@ -147,7 +147,7 @@ class RemoveCommand : KifaCommand {
                     if (onlyFile || file.Path == info.Id) {
                         toRemove = !file.Exists() ||
                                    Confirm(
-                                       $"Confirm removing dangling instance {file}, not matching file name or not local");
+                                       $"Confirm removing dangling instance {file}, not matching file name and in cloud");
                     } else {
                         Logger.Debug(
                             $"File {file} is not removed as there are other file entries, like {links.First()}");
