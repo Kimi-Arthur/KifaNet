@@ -33,27 +33,8 @@ class TrashCommand : KifaCommand {
                 choiceName: "extra versions of trashed files to trash"));
         }
 
-        var fileIdsByResult = selectedFileIds.Select(fileId => (fileId, result: Trash(fileId)))
-            .GroupBy(item => item.result.Status == KifaActionStatus.OK)
-            .ToDictionary(item => item.Key, item => item.ToList());
-
-        if (fileIdsByResult.TryGetValue(true, out var succeededFiles)) {
-            Logger.Info($"Successfully trashed the following {succeededFiles.Count} files:");
-            foreach (var (file, _) in succeededFiles) {
-                Logger.Info($"\t{file}");
-            }
-        }
-
-        if (fileIdsByResult.TryGetValue(false, out var failedFiles)) {
-            Logger.Info($"Failed to trash the following {failedFiles.Count} files:");
-            foreach (var (file, result) in failedFiles) {
-                Logger.Info($"\t{file}: {result.Message}");
-            }
-
-            return 1;
-        }
-
-        return 0;
+        selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId)));
+        return LogSummary();
     }
 
     static KifaActionResult Trash(string file)
