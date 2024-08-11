@@ -15,18 +15,25 @@ class TrashCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to trash.")]
     public IEnumerable<string> FileNames { get; set; }
 
+    [Option('w', "reason",
+        HelpText =
+            "Attach reason to the trashed files after the top datetime folder. No space should be here.")]
+    public virtual string? Reason { get; set; }
+
     public override int Execute() {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
         var fileIds = foundFiles.Select(f => f.Id).ToList();
 
-        var selectedFileIds = SelectMany(fileIds);
+        var selectedFileIds = SelectMany(fileIds, choiceName: "files to trash");
 
         var extraFileIds =
             foundFiles.SelectMany(f => f.FileInfo.Checked().GetOtherLinks()).ToList();
-        var selectedExtraFileIds = SelectMany(extraFileIds);
+        if (extraFileIds.Count > 0) {
+            selectedFileIds.AddRange(SelectMany(extraFileIds,
+                choiceName: "extra versions of trashed files to trash"));
+        }
 
-        var fileIdsByResult = selectedFileIds.Concat(selectedExtraFileIds)
-            .Select(fileId => (fileId, result: Trash(fileId)))
+        var fileIdsByResult = selectedFileIds.Select(fileId => (fileId, result: Trash(fileId)))
             .GroupBy(item => item.result.Status == KifaActionStatus.OK)
             .ToDictionary(item => item.Key, item => item.ToList());
 
