@@ -21,21 +21,29 @@ class TrashCommand : KifaCommand {
             "Attach reason to the trashed files after the top datetime folder. No space should be here.")]
     public virtual string? Reason { get; set; }
 
+    [Option('r', "restore", HelpText = "Restore trashed files")]
+    public bool Restore { get; set; } = false;
+
     public override int Execute() {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
         var fileIds = foundFiles.Select(f => f.Id).ToList();
 
-        var selectedFileIds = SelectMany(fileIds, choiceName: "files to trash");
+        if (Restore) {
+            var selectedFileIds = SelectMany(fileIds, choiceName: "files to restore");
+            Logger.Info("Should restore the files above.");
+        } else {
+            var selectedFileIds = SelectMany(fileIds, choiceName: "files to trash");
 
-        var extraFileIds =
-            foundFiles.SelectMany(f => f.FileInfo.Checked().GetOtherLinks()).ToList();
-        if (extraFileIds.Count > 0) {
-            selectedFileIds.AddRange(SelectMany(extraFileIds,
-                choiceName: "extra versions of trashed files to trash"));
+            var extraFileIds = foundFiles.SelectMany(f => f.FileInfo.Checked().GetOtherLinks())
+                .ToList();
+            if (extraFileIds.Count > 0) {
+                selectedFileIds.AddRange(SelectMany(extraFileIds,
+                    choiceName: "extra versions of trashed files to trash"));
+            }
+
+            selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId)));
+            return LogSummary();
         }
-
-        selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId)));
-        return LogSummary();
     }
 
     KifaActionResult Trash(string file)
