@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
@@ -37,10 +38,10 @@ class TrashCommand : KifaCommand {
         return LogSummary();
     }
 
-    static KifaActionResult Trash(string file)
+    KifaActionResult Trash(string file)
         => KifaActionResult.FromAction(() => {
             var client = FileInformation.Client;
-            var target = $"/Trash{file}";
+            var target = $"/Trash/{GetReasonPath()}{file}";
             client.Link(file, target);
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
@@ -48,10 +49,11 @@ class TrashCommand : KifaCommand {
             foreach (var location in targetInfo.Locations.Keys) {
                 var instance = new KifaFile(location);
                 if (instance.Id == file) {
-                    if (instance.Exists()) {
+                    if (instance.IsLocal && instance.Exists()) {
                         var targetInstance = new KifaFile(instance.Host + targetInfo.Id);
                         instance.Move(targetInstance);
                         Logger.Info($"File {instance} moved to {targetInstance}.");
+                        targetInstance.Register(true);
                         targetInstance.Add();
                     } else {
                         Logger.Warn($"File {instance} not found.");
@@ -65,4 +67,9 @@ class TrashCommand : KifaCommand {
             client.Delete(file);
             Logger.Info($"Original FileInfo {file} removed.");
         });
+
+    string GetReasonPath() {
+        var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
+        return Reason == null ? dateString : $"{dateString}_{Reason}";
+    }
 }
