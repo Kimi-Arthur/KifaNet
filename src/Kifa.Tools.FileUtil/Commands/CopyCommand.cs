@@ -16,7 +16,7 @@ class CopyCommand : KifaCommand {
     [Value(0, Min = 2, MetaName = "FILES", MetaValue = "STRING", Required = true,
         HelpText =
             "Files to copy, the last one is the new link name or folder (ending with a slash.")]
-    public List<string> Files { get; set; }
+    public IEnumerable<string> Files { get; set; }
 
     public IEnumerable<string> Targets => Files.SkipLast(1);
 
