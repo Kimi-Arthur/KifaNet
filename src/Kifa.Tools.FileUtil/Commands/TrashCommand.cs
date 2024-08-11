@@ -31,7 +31,13 @@ class TrashCommand : KifaCommand {
         if (Restore) {
             var selectedFileIds = SelectMany(fileIds, choiceName: "files to restore");
             Logger.Info("Should restore the files above.");
+            return 1;
         } else {
+            if (fileIds.Count == 0) {
+                Logger.Error("No files found.");
+                return 1;
+            }
+
             var selectedFileIds = SelectMany(fileIds, choiceName: "files to trash");
 
             var extraFileIds = foundFiles.SelectMany(f => f.FileInfo.Checked().GetOtherLinks())
