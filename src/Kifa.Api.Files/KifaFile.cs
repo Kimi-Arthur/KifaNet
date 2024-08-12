@@ -275,19 +275,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 file = file.GetFilePrefixed(prefix);
             }
 
-            if (file.Exists()) {
-                Logger.Trace($"Found existing file: {file}");
-                files.Add((file.ToString().GetNaturalSortKey(), file));
-            } else {
-                var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
-                    .ToList();
-                Logger.Trace($"Found {fileInfos.Count} existing files:");
-                foreach (var f in fileInfos) {
-                    Logger.Trace($"\t{f}");
-                }
-
-                files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
+            var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
+                .ToList();
+            Logger.Trace($"Found {fileInfos.Count} existing files:");
+            foreach (var f in fileInfos) {
+                Logger.Trace($"\t{f}");
             }
+
+            files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
         }
 
         files.Sort();
