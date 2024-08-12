@@ -40,6 +40,7 @@ class CopyCommand : KifaCommand {
         file1.Copy(file2);
 
         // Skip the full check if the linking is from local file and in the same cell.
+        // Caveat: It's only inferred that it used hard linking.
         file2.Register(file1.IsCompatible(file2) && file2.IsLocal);
         file2.Add();
     }

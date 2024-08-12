@@ -46,14 +46,18 @@ class CleanCommand : KifaCommand {
     void DeduplicateFiles() {
         var files = KifaFile.FindExistingFiles(FileNames);
         foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Checked().Sha256}")) {
-            var target = sameFiles.First();
-            foreach (var file in sameFiles.Skip(1)) {
-                Logger.Info($"Removing {file} and linking it to {target}...");
-                file.Delete();
-                file.Unregister();
-                target.Copy(file);
-                file.Add();
-                Logger.Info($"Linked {file} to {target}.");
+            var source = sameFiles.First();
+            foreach (var target in sameFiles.Skip(1)) {
+                Logger.Info($"Removing {target} and linking it to {source}...");
+                target.Delete();
+                target.Unregister();
+                source.Copy(target);
+
+                // Skip the full check if the linking is from local file and in the same cell.
+                // Caveat: It's only inferred that it used hard linking.
+                target.Register(source.IsCompatible(target) && target.IsLocal);
+                target.Add();
+                Logger.Info($"Linked {target} to {source}.");
             }
         }
     }
