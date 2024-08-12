@@ -250,13 +250,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public void Touch() => Client.Touch(Path);
 
-    public IEnumerable<KifaFile>
-        List(bool recursive = false, bool ignoreFiles = true, string pattern = "*")
-        => Exists()
-            ? Enumerable.Repeat(this, 1)
-            : Client.List(Path, recursive)
-                .Select(info => new KifaFile(Host + info.Id, fileInfo: info)).Where(f
-                    => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path)));
+    public IEnumerable<KifaFile> List(bool recursive = false, bool ignoreFiles = true,
+        string pattern = "*") {
+        if (Exists()) {
+            return Enumerable.Repeat(this, 1);
+        }
+
+        var files = Client.List(Path, recursive).Where(f
+            => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path))).ToList();
+        var fileInfos = FileInformation.Client.Get(files.Select(f => f.Id).ToList());
+        return files.Zip(fileInfos)
+            .Select(item => new KifaFile(Host + item.First.Id, fileInfo: item.Second));
+    }
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
         => IgnoredExtensions.Contains(logicalPath[(logicalPath.LastIndexOf(".") + 1)..]) ||
