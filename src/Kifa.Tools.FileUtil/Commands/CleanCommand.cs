@@ -45,7 +45,7 @@ class CleanCommand : KifaCommand {
 
     void DeduplicateFiles() {
         var files = KifaFile.FindExistingFiles(FileNames);
-        foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Sha256}")) {
+        foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Checked().Sha256}")) {
             var target = sameFiles.First();
             foreach (var file in sameFiles.Skip(1)) {
                 Logger.Info($"Removing {file} and linking it to {target}...");
