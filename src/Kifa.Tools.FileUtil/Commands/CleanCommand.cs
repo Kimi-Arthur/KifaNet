@@ -4,12 +4,16 @@ using System.Linq;
 using CommandLine;
 using NLog;
 using Kifa.Api.Files;
+using OpenQA.Selenium.DevTools;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("clean", HelpText = "Clean file entries.")]
 class CleanCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    [Option('q', "quiet", HelpText = "Quiet mode, no confirmation is requested.")]
+    public bool QuietMode { get; set; } = false;
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -45,15 +49,30 @@ class CleanCommand : KifaCommand {
 
     void DeduplicateFiles() {
         var files = KifaFile.FindExistingFiles(FileNames);
-        foreach (var sameFiles in files.GroupBy(f => $"{f.Host}/{f.FileInfo.Sha256}")) {
-            var target = sameFiles.First();
-            foreach (var file in sameFiles.Skip(1)) {
-                Logger.Info($"Removing {file} and linking it to {target}...");
-                file.Delete();
-                file.Unregister();
-                target.Copy(file);
-                file.Add();
-                Logger.Info($"Linked {file} to {target}.");
+        foreach (var sameFiles in files.Where(f => f.FileInfo.Checked().Sha256 != null)
+                     .GroupBy(f => $"{f.Host}/{f.FileInfo.Checked().Sha256}")) {
+            var source = sameFiles.First();
+            foreach (var target in sameFiles.Skip(1)) {
+                if (target.IsLocal && target.IsCompatible(source)) {
+                    Logger.Warn(
+                        $"File {target} is not in the same local cell as file {source}. Skipped.");
+                    continue;
+                }
+
+                if (!QuietMode && !Confirm($"Removing {target} and linking it to {source}...")) {
+                    continue;
+                }
+
+                Logger.Info($"Removing {target} and linking it to {source}...");
+                target.Delete();
+                target.Unregister();
+                source.Copy(target);
+
+                // Skip the full check if the linking is from local file and in the same cell.
+                // Caveat: It's only inferred that it used hard linking.
+                target.Register(source.IsCompatible(target) && target.IsLocal);
+                target.Add();
+                Logger.Info($"Linked {target} to {source}.");
             }
         }
     }
