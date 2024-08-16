@@ -46,7 +46,7 @@ class CopyCommand : KifaCommand {
     }
 
     static int LinkFile(string target, string linkName) {
-        if (!target.StartsWith("/") || !linkName.StartsWith("/")) {
+        if (!target.StartsWith('/') || !linkName.StartsWith('/')) {
             Logger.Error("You should use absolute file path for the two arguments.");
             return 1;
         }
@@ -67,15 +67,17 @@ class CopyCommand : KifaCommand {
                 $"linking {linkName} => {target}!");
         } else {
             foreach (var file in files) {
-                var linkFile = linkName + file.Substring(target.Length);
+                var linkFile = linkName + file[target.Length..];
                 Console.WriteLine($"{linkFile} => {file}");
             }
 
-            Console.Write($"Confirm the {files.Count} linkings above?");
-            Console.ReadLine();
+            if (!Confirm($"Confirm linking the {files.Count} above?")) {
+                Logger.Info("Linking cancelled.");
+                return -1;
+            }
 
             foreach (var file in files) {
-                var linkFile = linkName + file.Substring(target.Length);
+                var linkFile = linkName + file[target.Length..];
                 if (FileInformation.Client.Get(file) == null) {
                     Logger.Warn($"Target {file} not found.");
                     continue;
