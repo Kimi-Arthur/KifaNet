@@ -96,7 +96,9 @@ class RemoveCommand : KifaCommand {
             }
 
             if (!Confirm(
-                    $"Confirm deleting the {localFiles.Count} file instances above{removalText}?")) {
+                    $"Confirm deleting the {localFiles.Count} file instances above{removalText}?") ||
+                Force && !Confirm(
+                    "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
                 Logger.Info("Action canceled.");
                 return 2;
             }
@@ -112,9 +114,7 @@ class RemoveCommand : KifaCommand {
             }
 
             if (!Confirm(
-                    $"Confirm deleting the {phantomFiles.Count} phantom files above{removalText}?") ||
-                (Force && !Confirm(
-                    "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?"))) {
+                    $"Confirm deleting the {phantomFiles.Count} phantom files above{removalText}?")) {
                 Logger.Info("Action canceled.");
                 return 2;
             }
