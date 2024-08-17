@@ -58,13 +58,15 @@ class RemoveCommand : KifaCommand {
                     Console.WriteLine(file);
                 }
 
-                if (Confirm($"Confirm deleting the {files.Count} files above{removalText}?")) {
-                    files.ForEach(f => ExecuteItem(f, () => RemoveLogicalFile(f)));
-                    return LogSummary();
+                if (!Confirm($"Confirm deleting the {files.Count} files above{removalText}?") ||
+                    Force && !Confirm(
+                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
+                    Logger.Info("Action canceled.");
+                    return 2;
                 }
 
-                Logger.Info("Action canceled.");
-                return 2;
+                files.ForEach(f => ExecuteItem(f, () => RemoveLogicalFile(f)));
+                return LogSummary();
             }
 
             // We support relative paths or FileInformation ids.
@@ -96,9 +98,7 @@ class RemoveCommand : KifaCommand {
             }
 
             if (!Confirm(
-                    $"Confirm deleting the {localFiles.Count} file instances above{removalText}?") ||
-                Force && !Confirm(
-                    "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
+                    $"Confirm deleting the {localFiles.Count} file instances above{removalText}?")) {
                 Logger.Info("Action canceled.");
                 return 2;
             }
