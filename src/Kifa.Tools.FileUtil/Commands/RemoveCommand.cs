@@ -72,18 +72,20 @@ class RemoveCommand : KifaCommand {
             // We support relative paths or FileInformation ids.
             var foundFiles = KifaFile.FindAllFiles(FileNames);
             if (foundFiles.Count > 0) {
-                // We will assume relative paths are used here.
                 foreach (var foundFile in foundFiles) {
                     Console.WriteLine(foundFile.Id);
                 }
 
-                if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
-                    foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
-                    return LogSummary();
+                if (!Confirm(
+                        $"Confirm deleting the {foundFiles.Count} files above{removalText}?") ||
+                    Force && !Confirm(
+                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
+                    Logger.Info("Action canceled.");
+                    return 2;
                 }
 
-                Logger.Info("Action canceled.");
-                return 2;
+                foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
+                return LogSummary();
             }
 
             Logger.Fatal("No files found!");
