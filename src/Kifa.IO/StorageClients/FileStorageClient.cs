@@ -101,25 +101,20 @@ public class RemoteServerConfig {
     }
 }
 
-public class FileStorageClient : StorageClient {
+public class FileStorageClient(string serverId) : StorageClient {
     const int DefaultBlockSize = 32 << 20;
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
 
-    string ServerId { get; }
+    string ServerId { get; } = serverId;
 
-    ServerConfig? Server { get; }
+    ServerConfig? Server { get; } = ServerConfigs.GetValueOrDefault(serverId);
 
     static bool IsUnixLike
         => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
            RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-
-    public FileStorageClient(string serverId) {
-        ServerId = serverId;
-        Server = ServerConfigs.GetValueOrDefault(serverId);
-    }
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         if (Server == null) {
