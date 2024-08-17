@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Budaisoft.FileSystem;
 using NLog;
+using NLog.Fluent;
 using Renci.SshNet;
 
 namespace Kifa.IO.StorageClients;
@@ -323,5 +325,11 @@ public class FileStorageClient(string serverId) : StorageClient {
     public string GetLocalPath(string path) {
         return Server?.GetPath(path) ??
                throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+    }
+
+    public ulong GetLocalFileId(string path) {
+        var id = FileID.GetUniqueFileID(GetLocalPath(path));
+        Logger.Trace($"{path} has inode of {id}");
+        return id;
     }
 }

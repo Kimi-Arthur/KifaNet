@@ -49,13 +49,25 @@ class CleanCommand : KifaCommand {
 
     void DeduplicateFiles() {
         var files = KifaFile.FindExistingFiles(FileNames);
+        if (files.Any(f => !f.IsLocal)) {
+            Logger.Warn("The following files are not local. Aborted." + string.Join("\n\t",
+                files.Where(f => !f.IsLocal)));
+            // Error
+            return;
+        }
+
         foreach (var sameFiles in files.Where(f => f.FileInfo.Checked().Sha256 != null)
                      .GroupBy(f => $"{f.Host}/{f.FileInfo.Checked().Sha256}")) {
             var source = sameFiles.First();
             foreach (var target in sameFiles.Skip(1)) {
-                if (target.IsLocal && target.IsCompatible(source)) {
+                if (!target.IsCompatible(source)) {
                     Logger.Warn(
                         $"File {target} is not in the same local cell as file {source}. Skipped.");
+                    continue;
+                }
+
+                if (target.IsSameLocalFile(source)) {
+                    Logger.Info($"File {target} is the same file as {source}. Skipped.");
                     continue;
                 }
 
