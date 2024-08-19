@@ -264,7 +264,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
-        => IgnoredExtensions.Contains(logicalPath[(logicalPath.LastIndexOf(".") + 1)..]) ||
+        => IgnoredExtensions.Any(ext => logicalPath.EndsWith($".{ext}")) ||
            IgnoredPrefixes.Any(prefix
                => logicalPath[pathPrefix.Length..].Split("/")
                    .Any(segment => segment.StartsWith(prefix))) ||
