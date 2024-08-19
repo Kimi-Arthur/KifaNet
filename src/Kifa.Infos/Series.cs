@@ -68,12 +68,13 @@ static class Helper {
             [Language.Japanese] = new List<(Regex pattern, MatchEvaluator replacer)> {
                 (new Regex(@" *\([ぁ-ヿ･-ﾟ]+\) *"), _ => ""),
                 (new Regex(@" *\[[ぁ-ヿ･-ﾟ]+\] *"), _ => ""),
-                (new Regex(@"\""(.+)\"""), match => $"“{match.Groups[1].Value}”"),
+                (new Regex(@"""(.+)"""), match => $"“{match.Groups[1].Value}”"),
                 (new Regex(@" *\((.+)\) *"), match => $"（{match.Groups[1].Value}）"),
                 (new Regex(@", "), _ => "、"),
-                (new Regex(@"\? *"), _ => "？"),
-                (new Regex(@"! *"), _ => "！"),
-                (new Regex(@"… *"), _ => "…")
+                (new Regex(@"[\?] *"), _ => "？"),
+                (new Regex(@"[!] *"), _ => "！"),
+                (new Regex(@"･"), _ => "・"),
+                (new Regex(@"([…の？！]) *"), match => $"{match.Groups[1].Value}")
             },
             [Language.English] = new List<(Regex pattern, MatchEvaluator replacer)> {
                 (new Regex(@" \((\d+)\)"), match => $" - Part {match.Groups[1].Value}"),
