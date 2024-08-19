@@ -150,8 +150,8 @@ public class FileStorageClient(string serverId) : StorageClient {
             StartInfo = {
                 FileName = IsUnixLike ? "ln" : "cmd.exe",
                 Arguments = IsUnixLike
-                    ? $"\"{actualSourcePath}\" \"{actualDestinationPath}\""
-                    : $"/c mklink /h \"{actualDestinationPath}\" \"{actualSourcePath}\"",
+                    ? $"\"{EscapeQuote(actualSourcePath)}\" \"{EscapeQuote(actualDestinationPath)}\""
+                    : $"/c mklink /h \"{EscapeQuote(actualDestinationPath)}\" \"{EscapeQuote(actualSourcePath)}\"",
                 UseShellExecute = false
             }
         };
@@ -166,6 +166,8 @@ public class FileStorageClient(string serverId) : StorageClient {
             throw new Exception("Local link command failed");
         }
     }
+
+    static string EscapeQuote(string s) => s.Replace("\"", "\\\"");
 
     public override void Delete(string path) {
         if (Server == null) {
