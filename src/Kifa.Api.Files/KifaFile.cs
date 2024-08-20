@@ -264,7 +264,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
-        => IgnoredExtensions.Contains(logicalPath[(logicalPath.LastIndexOf(".") + 1)..]) ||
+        => IgnoredExtensions.Any(ext => logicalPath.EndsWith($".{ext}")) ||
            IgnoredPrefixes.Any(prefix
                => logicalPath[pathPrefix.Length..].Split("/")
                    .Any(segment => segment.StartsWith(prefix))) ||
@@ -647,11 +647,23 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
 
+    public ulong GetLocalFileId()
+        => Client is FileStorageClient fileClient
+            ? fileClient.GetLocalFileId(Path)
+            : throw new FileNotFoundException(
+                "Should not try to get a local file id with a non FileStorageClient.");
+
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
     public static KifaFile GetLocal(string path) => new($"{LocalServer}{path}");
 
     public void Dispose() {
         Client.Dispose();
+    }
+
+    public bool IsSameLocalFile(KifaFile source) {
+        // Assumed the files are local and in the same cell.
+        // So it's only necessary to compare inode/FileId.
+        return GetLocalFileId() == source.GetLocalFileId();
     }
 }

@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Budaisoft.FileSystem.FileID" Version="1.0.6" />
     <PackageReference Include="NLog" Version="4.6.7" />
     <PackageReference Include="NStratis.HashLib" Version="1.0.0.1" />
     <PackageReference Include="SSH.NET" Version="2020.0.2" />

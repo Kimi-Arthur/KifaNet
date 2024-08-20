@@ -58,30 +58,34 @@ class RemoveCommand : KifaCommand {
                     Console.WriteLine(file);
                 }
 
-                if (Confirm($"Confirm deleting the {files.Count} files above{removalText}?")) {
-                    files.ForEach(f => ExecuteItem(f, () => RemoveLogicalFile(f)));
-                    return LogSummary();
+                if (!Confirm($"Confirm deleting the {files.Count} files above{removalText}?") ||
+                    Force && !Confirm(
+                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
+                    Logger.Info("Action canceled.");
+                    return 2;
                 }
 
-                Logger.Info("Action canceled.");
-                return 2;
+                files.ForEach(f => ExecuteItem(f, () => RemoveLogicalFile(f)));
+                return LogSummary();
             }
 
             // We support relative paths or FileInformation ids.
             var foundFiles = KifaFile.FindAllFiles(FileNames);
             if (foundFiles.Count > 0) {
-                // We will assume relative paths are used here.
                 foreach (var foundFile in foundFiles) {
                     Console.WriteLine(foundFile.Id);
                 }
 
-                if (Confirm($"Confirm deleting the {foundFiles.Count} files above{removalText}?")) {
-                    foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
-                    return LogSummary();
+                if (!Confirm(
+                        $"Confirm deleting the {foundFiles.Count} files above{removalText}?") ||
+                    Force && !Confirm(
+                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
+                    Logger.Info("Action canceled.");
+                    return 2;
                 }
 
-                Logger.Info("Action canceled.");
-                return 2;
+                foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
+                return LogSummary();
             }
 
             Logger.Fatal("No files found!");
@@ -141,8 +145,9 @@ class RemoveCommand : KifaCommand {
             foreach (var location in info.Locations.Keys) {
                 var file = new KifaFile(location);
 
-                // Do not auto remove remote file no matter what.
-                var toRemove = file.Path == info.Id && !file.IsCloud;
+                // Do not auto remove remote file unless it's the last instance and force is
+                // requested.
+                var toRemove = file.Path == info.Id && !file.IsCloud || onlyFile && Force;
                 if (!toRemove) {
                     if (onlyFile || file.Path == info.Id) {
                         toRemove = !file.Exists() ||

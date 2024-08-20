@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Budaisoft.FileSystem;
 using NLog;
+using NLog.Fluent;
 using Renci.SshNet;
 
 namespace Kifa.IO.StorageClients;
@@ -101,25 +103,20 @@ public class RemoteServerConfig {
     }
 }
 
-public class FileStorageClient : StorageClient {
+public class FileStorageClient(string serverId) : StorageClient {
     const int DefaultBlockSize = 32 << 20;
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static Dictionary<string, ServerConfig> ServerConfigs { get; set; } = new();
 
-    string ServerId { get; }
+    string ServerId { get; } = serverId;
 
-    ServerConfig? Server { get; }
+    ServerConfig? Server { get; } = ServerConfigs.GetValueOrDefault(serverId);
 
     static bool IsUnixLike
         => RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
            RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-
-    public FileStorageClient(string serverId) {
-        ServerId = serverId;
-        Server = ServerConfigs.GetValueOrDefault(serverId);
-    }
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         if (Server == null) {
@@ -153,8 +150,8 @@ public class FileStorageClient : StorageClient {
             StartInfo = {
                 FileName = IsUnixLike ? "ln" : "cmd.exe",
                 Arguments = IsUnixLike
-                    ? $"\"{actualSourcePath}\" \"{actualDestinationPath}\""
-                    : $"/c mklink /h \"{actualDestinationPath}\" \"{actualSourcePath}\"",
+                    ? $"\"{EscapeQuote(actualSourcePath)}\" \"{EscapeQuote(actualDestinationPath)}\""
+                    : $"/c mklink /h \"{EscapeQuote(actualDestinationPath)}\" \"{EscapeQuote(actualSourcePath)}\"",
                 UseShellExecute = false
             }
         };
@@ -169,6 +166,8 @@ public class FileStorageClient : StorageClient {
             throw new Exception("Local link command failed");
         }
     }
+
+    static string EscapeQuote(string s) => s.Replace("\"", "\\\"");
 
     public override void Delete(string path) {
         if (Server == null) {
@@ -328,5 +327,11 @@ public class FileStorageClient : StorageClient {
     public string GetLocalPath(string path) {
         return Server?.GetPath(path) ??
                throw new FileNotFoundException($"Server {ServerId} is not found in config.");
+    }
+
+    public ulong GetLocalFileId(string path) {
+        var id = FileID.GetUniqueFileID(GetLocalPath(path));
+        Logger.Trace($"{path} has inode of {id}");
+        return id;
     }
 }
