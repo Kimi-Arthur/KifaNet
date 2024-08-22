@@ -92,7 +92,7 @@ public class Logging {
         => new FileTarget("file_full") {
             FileName =
                 LogPath +
-                @"/${appdomain:format={1\}}.${date:format=yyyyMMddHHmmss:cached=true}.log",
+                @"/${appdomain:format={1\}}.${date:format=yyyyMMddHHmmss:cached=true}.${processid}.log",
             Layout =
                 @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
         };
