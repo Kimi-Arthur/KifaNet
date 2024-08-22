@@ -90,9 +90,11 @@ public static class Logging {
 
     static Target FileFullTarget
         => new FileTarget("file_full") {
-            FileName =
-                LogPath +
-                @"/${appdomain:format={1\}}.${date:format=yyyyMMddHHmmss:cached=true}.log",
+            FileName = LogPath + @"/${appdomain:format={1\}}.log",
+            ArchiveFileName = LogPath + @"/${appdomain:format={1\}}.{#}.log",
+            ArchiveEvery = FileArchivePeriod.Hour,
+            ArchiveNumbering = ArchiveNumberingMode.Date,
+            ArchiveDateFormat = "yyyyMMddHHmmss",
             Layout =
                 @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${threadid} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
         };
