@@ -330,10 +330,10 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             Name = Author
         };
 
-        var folder = alternativeFolder ?? $"{uploader.Name}-{uploader.Id}".NormalizeFileName();
+        var folder = alternativeFolder ?? $"{uploader.Name}.{uploader.Id}".NormalizeFileName();
         var partString = Pages.Count > 1 ? $"{pidText} {partName}" : partName;
         return
-            $"{folder}.bili/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
+            $"{folder}.bilibili/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
