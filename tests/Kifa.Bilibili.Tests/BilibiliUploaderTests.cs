@@ -20,7 +20,7 @@ public class BilibiliUploaderTests {
     [Fact]
     public void InfoRpcTest() {
         Assert.Equal("黑桐谷歌",
-            HttpClients.BilibiliHttpClient.Call(new UploaderInfoRpc("43536")).Data.Checked().Name);
+            HttpClients.BilibiliHttpClient.Call(new UploaderInfoWebRpc("43536")).Space.Info.Name);
     }
 
     [Fact]
