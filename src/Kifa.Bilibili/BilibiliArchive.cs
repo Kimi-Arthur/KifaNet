@@ -23,7 +23,7 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var ids = Id.Split("/");
+        var ids = Id.Split("-");
         AuthorId = ids[0];
         SeasonId = ids[1];
 
