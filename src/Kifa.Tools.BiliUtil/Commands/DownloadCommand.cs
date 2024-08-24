@@ -61,10 +61,11 @@ public abstract class DownloadCommand : BiliCommand {
         var desiredName = video.GetDesiredName(pid, quality, codec,
             includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
             prefixDate: PrefixDate, uploader: uploader);
+        var desiredFile = outputFolder.GetFile($"{desiredName}.mp4");
         var targetFiles = video.GetCanonicalNames(pid, quality, codec)
-            .Select(f => GetCanonicalFile($"{f}.mp4")).ToList();
+            .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
+            .ToList();
 
-        targetFiles.Append(outputFolder.GetFile($"{desiredName}.mp4"));
         var found = KifaFile.FindOne(targetFiles);
 
         if (found != null) {

@@ -66,7 +66,8 @@ public class LinkCommand : BiliCommand {
         var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality, video.codec);
         var linkedFiles = new List<string>();
         foreach (var canonicalName in canonicalNames) {
-            var canonicalFile = GetCanonicalFile($"{canonicalName}.{file.Extension}");
+            var canonicalFile =
+                GetCanonicalFile(CurrentFolder.Host, $"{canonicalName}.{file.Extension}");
             if (canonicalFile.Equals(file)) {
                 Logger.Info($"Skipped {canonicalFile} as it's the source file.");
                 linkedFiles.Add($"{canonicalFile} is source file.");
