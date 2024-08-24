@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -128,7 +129,7 @@ public static class HttpExtensions {
             return response.EnsureSuccessStatusCode();
         }, HandleHttpException);
 
-    public static TResponse Call<TResponse>(this HttpClient client, KifaRpc<TResponse> rpc,
+    public static TResponse? Call<TResponse>(this HttpClient client, KifaRpc<TResponse> rpc,
         HttpStatusCode? expectedStatusCode = null)
         => rpc.ParseResponse(client.SendWithRetry(rpc.GetRequest, expectedStatusCode));
 
@@ -146,6 +147,7 @@ public static class HttpExtensions {
         }
 
         Logger.Warn(ex, $"HTTP request failed ({index})");
+        Logger.Warn($"When called from:\n{new StackTrace()}");
         Thread.Sleep(TimeSpan.FromSeconds(5));
     }
 }
