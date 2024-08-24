@@ -27,13 +27,13 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
         AuthorId = ids[0];
         SeasonId = ids[1];
 
-        var info = HttpClients.BilibiliHttpClient.Call(new UploaderInfoRpc(AuthorId)).Data;
+        var info = HttpClients.BilibiliHttpClient.Call(new UploaderInfoWebRpc(AuthorId));
         if (info == null) {
             throw new DataNotFoundException(
                 $"Failed to retrieve data for uploader ({Id}) from bilibili,");
         }
 
-        Author = info.Name;
+        Author = info.Space.Info.Name;
         var data = HttpClients.BilibiliHttpClient
             .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId)).Data;
         if (data == null) {

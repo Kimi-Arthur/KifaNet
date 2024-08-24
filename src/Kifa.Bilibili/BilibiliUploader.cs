@@ -23,13 +23,13 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var info = HttpClients.BilibiliHttpClient.Call(new UploaderInfoRpc(Id))?.Data;
+        var info = HttpClients.BilibiliHttpClient.Call(new UploaderInfoWebRpc(Id));
         if (info == null) {
             throw new DataNotFoundException(
                 $"Failed to retrieve data for uploader ({Id}) from bilibili,");
         }
 
-        Name = info.Name;
+        Name = info.Space.Info.Name;
         var list = GetAllVideos(Id);
         var removed = RemovedAids.ToHashSet();
         removed.UnionWith(Aids);

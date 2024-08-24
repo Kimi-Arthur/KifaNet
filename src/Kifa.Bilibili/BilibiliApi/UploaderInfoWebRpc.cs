@@ -385,11 +385,10 @@ public sealed class
     const string JsonPrefix = "__INITIAL_STATE__=";
     const string JsonSuffix = ";";
 
-    public Response ParseResponse(HttpResponseMessage responseMessage) {
+    public Response? ParseResponse(HttpResponseMessage responseMessage) {
         var html = responseMessage.GetString();
         html = html[(html.IndexOf(JsonPrefix) + JsonPrefix.Length)..];
         var json = html[..html.IndexOf(JsonSuffix)];
-        return JsonConvert.DeserializeObject<Response>(json, KifaJsonSerializerSettings.Default)
-            .Checked();
+        return JsonConvert.DeserializeObject<Response>(json, KifaJsonSerializerSettings.Default);
     }
 }
