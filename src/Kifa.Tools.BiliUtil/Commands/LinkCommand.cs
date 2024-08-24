@@ -10,7 +10,7 @@ using NLog;
 namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("link", HelpText = "Link bilibili files to proper places.")]
-public class LinkCommand : KifaCommand {
+public class LinkCommand : BiliCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target files to link.")]
@@ -66,7 +66,7 @@ public class LinkCommand : KifaCommand {
         var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality, video.codec);
         var linkedFiles = new List<string>();
         foreach (var canonicalName in canonicalNames) {
-            var canonicalFile = CurrentFolder.GetFile($"{canonicalName}.{file.Extension}");
+            var canonicalFile = GetCanonicalFile($"{canonicalName}.{file.Extension}");
             if (canonicalFile.Equals(file)) {
                 Logger.Info($"Skipped {canonicalFile} as it's the source file.");
                 linkedFiles.Add($"{canonicalFile} is source file.");

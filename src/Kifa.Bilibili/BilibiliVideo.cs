@@ -304,8 +304,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         var p = Pages.First(x => x.Id == pid);
 
         return new List<string> {
-            $"$/{GetSuffix(Id, pid, p.Cid, quality, codec)}",
-            $"$/{GetSuffix(null, pid, p.Cid, quality, codec)}"
+            $"{GetSuffix(Id, pid, p.Cid, quality, codec)}",
+            $"{GetSuffix(null, pid, p.Cid, quality, codec)}"
         };
     }
 
@@ -333,7 +333,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         var folder = alternativeFolder ?? $"{uploader.Name}-{uploader.Id}".NormalizeFileName();
         var partString = Pages.Count > 1 ? $"{pidText} {partName}" : partName;
         return
-            $"{folder}/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
+            $"{folder}.bili/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {

@@ -10,7 +10,7 @@ using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
 
-public abstract class DownloadCommand : KifaCommand {
+public abstract class DownloadCommand : BiliCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
@@ -61,10 +61,10 @@ public abstract class DownloadCommand : KifaCommand {
         var desiredName = video.GetDesiredName(pid, quality, codec,
             includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
             prefixDate: PrefixDate, uploader: uploader);
-        var canonicalNames = video.GetCanonicalNames(pid, quality, codec);
+        var targetFiles = video.GetCanonicalNames(pid, quality, codec)
+            .Select(f => GetCanonicalFile($"{f}.mp4")).ToList();
 
-        var targetFiles = canonicalNames.Append(desiredName)
-            .Select(name => outputFolder.GetFile($"{name}.mp4")).ToList();
+        targetFiles.Append(outputFolder.GetFile($"{desiredName}.mp4"));
         var found = KifaFile.FindOne(targetFiles);
 
         if (found != null) {
