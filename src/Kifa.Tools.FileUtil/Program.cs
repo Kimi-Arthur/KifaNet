@@ -11,5 +11,5 @@ class Program {
                 typeof(UploadCommand), typeof(AddCommand), typeof(GetCommand), typeof(TouchCommand),
                 typeof(NormalizeCommand), typeof(ImportCommand), typeof(TrashCommand),
                 typeof(RemoveEmptyCommand), typeof(DecodeCommand), typeof(DedupCommand),
-                typeof(MigrateCommand)), args);
+                typeof(MigrateCommand), typeof(LinkCommand)), args);
 }
