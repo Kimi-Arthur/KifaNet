@@ -15,16 +15,13 @@ public class LinkCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target $ folder(s) to link.")]
     public IEnumerable<string> Folders { get; set; }
 
-    public static Dictionary<string, string> FolderServices { get; set; } = new() {
-        ["JAV"] = "jav/videos"
-    };
+    public static Dictionary<string, string> FolderServices { get; set; } = new();
 
     public override int Execute() {
-        // Must be inside /JAV folder. => last segment is category
-        // /JAV/$/SSNI-071
-        // => /JAV/SSNI-071 xxxx
-        // => JAV (service) + SSNI-071 (id) => SSNI-071 xxxx
-        // ln -s $/SSNI-071 "SSNI-071 xxxx"
+        // Precondition: Must be inside /CAT folder. => last segment is category
+        // Goal: /CAT/$/SOME-ID => /CAT/SOME-ID Some Name
+        // Info: CAT (service => some/service) + SOME-ID (id) => SOME-ID Some Name (FolderLinks)
+        // Action: ln -s $/SOME-ID "SOME-ID (id) => SOME-ID Some Name"
         var category = CurrentFolder.Name;
         if (!FolderServices.ContainsKey(category)) {
             Logger.Error($"Category {category} not found. Exit.");
