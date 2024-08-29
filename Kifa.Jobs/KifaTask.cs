@@ -1,15 +1,21 @@
 using System.Collections.Generic;
+using Kifa.Service;
 using Newtonsoft.Json;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Jobs;
 
-public class KifaTask {
+public class KifaTask : DataModel, WithModelId<KifaTask> {
+    public static string ModelId => "jobs/tasks";
+
+    public static KifaServiceClient<KifaTask> Client { get; set; } =
+        new KifaServiceRestClient<KifaTask>();
+
     public string? Name { get; set; }
 
     public List<KifaTask> CompletedSubTasks { get; set; } = [];
 
-    public KifaTask? CurrentTask { get; set; }
+    public Link<KifaTask>? CurrentTask { get; set; }
 
     public List<KifaTask> NextSubTasks { get; set; } = [];
 

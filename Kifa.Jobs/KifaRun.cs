@@ -25,14 +25,14 @@ public class KifaRun : DataModel, WithModelId<KifaRun> {
     public string? LogFilePath { get; set; }
 
     // Progress. Maybe we should make this class a KifaTask by itself.
-    public KifaTask Task { get; set; } = new();
+    public Link<KifaTask> Task { get; set; } = new();
 
     public IEnumerable<KifaTask> CurrentTasks {
         get {
-            var currentTask = Task;
+            var currentTask = Task.Data.Checked();
             yield return currentTask;
             while (currentTask.CurrentTask != null) {
-                currentTask = currentTask.CurrentTask;
+                currentTask = currentTask.CurrentTask.Data.Checked();
                 yield return currentTask;
             }
         }
