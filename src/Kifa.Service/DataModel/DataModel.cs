@@ -10,6 +10,7 @@ namespace Kifa.Service;
 public interface WithModelId<T> where T : DataModel, WithModelId<T> {
     public static abstract string ModelId { get; }
 
+    // This is a useful fallback used in Link.Data.get.
     public static virtual KifaServiceClient<T> Client { get; set; } =
         new KifaServiceRestClient<T>();
 }
