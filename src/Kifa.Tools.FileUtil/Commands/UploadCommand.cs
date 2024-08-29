@@ -85,7 +85,7 @@ class UploadCommand : KifaCommand {
             }
         }
 
-        // TODO: Quick mode hint text is not printed. Maybe a better approach later.
+        // TODO: Need to print recheck command for QuickMode.
         return LogSummary();
     }
 }
