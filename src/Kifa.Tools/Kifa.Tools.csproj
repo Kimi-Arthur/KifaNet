@@ -8,6 +8,7 @@
     <PackageReference Include="NLog" Version="4.6.7" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj" />
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
   </ItemGroup>
