@@ -9,9 +9,6 @@ namespace Kifa.Service;
 
 public interface WithModelId<T> where T : DataModel, WithModelId<T> {
     public static abstract string ModelId { get; }
-
-    public static virtual KifaServiceClient<T> Client { get; set; } =
-        new KifaServiceRestClient<T>();
 }
 
 /// <summary>
