@@ -110,17 +110,18 @@ class GetChatCommand : KifaFileCommand {
         };
         chat.RawDocument.Save(writer);
 
-        // Append a line break to be consist with other files.
-        memoryStream.Write(new[] { Convert.ToByte('\n') });
-
-        memoryStream.Seek(0, SeekOrigin.Begin);
+        // Append a line break to be consistent with other files.
+        memoryStream.Write([Convert.ToByte('\n')]);
 
         var suffix = Group != null ? $"c{chat.Cid}-{Group}" : $"c{chat.Cid}";
-        var segments = rawFile.ToString().Split(".");
-        var skippedSegments = segments[segments.Length - 2] == suffix ? 2 : 1;
-        var targetUri = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
-        var target = new KifaFile(targetUri).GetFilePrefixed(SubtitlesPrefix);
+        var segments = rawFile.Name.Split(".");
+        var skippedSegments = segments[^2] == suffix ? 2 : 1;
+        var chatFileName = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
+
+        var target = rawFile.Parent.GetFile(chatFileName).GetFilePrefixed(SubtitlesPrefix);
         target.Delete();
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
         target.Write(memoryStream);
 
         memoryStream.Dispose();
