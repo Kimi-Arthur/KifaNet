@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Media.MpegDash;
 using Kifa.SkyCh;
 using Kifa.SkyCh.Api;
@@ -39,7 +40,7 @@ public class DownloadProgramCommand : KifaCommand {
     [Option('k', "keep", HelpText = "Keep temp files.")]
     public bool KeepTempFiles { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var segments = ProgramId.Split("/");
         var programId = segments[0];
         var eventId = segments[1];

@@ -7,6 +7,7 @@ using System.Xml;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -33,7 +34,7 @@ class GetChatCommand : KifaFileCommand {
 
     List<(BilibiliVideo video, BilibiliChat chat)> chats = new();
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         if (Cid != null) {
             var video = BilibiliVideo.Client.Get(BilibiliVideo.GetAid(Cid));
             if (video == null) {

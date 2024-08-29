@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Languages.German;
 using NLog;
 
@@ -16,7 +17,7 @@ public class FillCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file to rename.")]
     public string FileUri { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask task = null) {
         var noteFile = new KifaFile(FileUri);
         using var sr = new StreamReader(noteFile.OpenRead());
         var state = ParsingState.New;

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
 using NLog;
@@ -25,7 +26,7 @@ public class SyncCommand : KifaCommand {
         HelpText = "Whether two subtitle files share part of the content.")]
     public bool ContentMatch { get; set; } = true;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var file = new KifaFile(FileName);
         if (file.Extension != "ass") {
             Logger.Fatal("Only ass files are supported.");

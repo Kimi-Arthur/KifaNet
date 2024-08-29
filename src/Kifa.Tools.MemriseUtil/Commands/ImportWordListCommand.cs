@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
+using Kifa.Jobs;
 using Kifa.Languages.German.Goethe;
 using Kifa.Memrise;
 using Kifa.Service;
@@ -41,7 +42,7 @@ public class ImportWordListCommand : KifaCommand {
         HelpText = "Whether to force fill empty fields or not. Useful to fix column order.")]
     public bool FillEmpty { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var memriseCourseClient = MemriseCourse.Client;
         var course = memriseCourseClient.Get(CourseName);
 

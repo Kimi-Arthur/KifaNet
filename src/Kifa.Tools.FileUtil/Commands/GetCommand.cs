@@ -5,6 +5,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -38,7 +39,7 @@ class GetCommand : KifaCommand {
             ? new List<string>()
             : IgnoreAlreadyThere.Split("|").ToList();
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
         foreach (var file in files) {
             Console.WriteLine(file);

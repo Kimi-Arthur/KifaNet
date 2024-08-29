@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using FFMpegCore;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -29,7 +30,7 @@ class ExtractCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Files to combine.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var foundFiles = KifaFile.FindExistingFiles(FileNames);
         foundFiles = foundFiles.Where(f => !Common.SubtitleExtensions.Contains(f.Extension))
             .ToList();

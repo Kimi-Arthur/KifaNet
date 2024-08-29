@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using CommandLine;
+using Kifa.Jobs;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -15,7 +16,7 @@ class ListCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to list.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         if (ById) {
             ListLogicalFiles();
         } else {

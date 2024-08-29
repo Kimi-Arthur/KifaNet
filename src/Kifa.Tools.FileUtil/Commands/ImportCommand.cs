@@ -5,6 +5,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Infos;
 using Kifa.IO;
+using Kifa.Jobs;
 using Kifa.Soccer;
 using NLog;
 using Season = Kifa.Infos.Season;
@@ -27,7 +28,7 @@ class ImportCommand : KifaCommand {
     [Option('r', "recursive", HelpText = "Whether to list folder recursively.")]
     public bool Recursive { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var segments = SourceId.Trim('/').Split('/');
         var type = segments[0];
 

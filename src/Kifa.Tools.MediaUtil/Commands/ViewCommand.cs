@@ -6,6 +6,7 @@ using CommandLine;
 using FFMpegCore;
 using Kifa.Api.Files;
 using Kifa.Graphics;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.MediaUtil.Commands;
@@ -48,7 +49,7 @@ public class ViewCommand : KifaCommand {
         "flv"
     };
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames, recursive: false);
         foreach (var file in files.Where(f => ImageExtensions.Contains(f.Extension.ToLower()))) {
             Console.WriteLine(file);

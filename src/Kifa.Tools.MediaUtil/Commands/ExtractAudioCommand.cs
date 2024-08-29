@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Graphics;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -26,7 +27,7 @@ public class ExtractAudioCommand : KifaCommand {
 
     IEnumerable<string>? fileNames;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames, recursive: false);
         files = files.Where(file => file.Extension != "m4a").ToList();
         foreach (var file in files) {

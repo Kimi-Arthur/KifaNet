@@ -4,6 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Kifa.IO;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -24,7 +25,7 @@ public class DownloadMangaCommand : KifaCommand {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var manga = BilibiliManga.Client.Get(mangaId);
 
         if (manga == null) {

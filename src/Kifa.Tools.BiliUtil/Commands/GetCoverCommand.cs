@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -16,7 +17,7 @@ public class GetCoverCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to download cover images for.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var foundFiles = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4");
         foreach (var file in foundFiles) {
             Console.WriteLine(file);

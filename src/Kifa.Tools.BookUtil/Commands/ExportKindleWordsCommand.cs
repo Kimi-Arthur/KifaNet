@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CommandLine;
+using Kifa.Jobs;
 
 namespace Kifa.Tools.BookUtil.Commands; 
 
@@ -30,7 +31,7 @@ public class ExportKindleWordsCommand : KifaCommand {
 
     #endregion
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         
         return 0;
     }

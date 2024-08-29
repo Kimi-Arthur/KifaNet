@@ -1,5 +1,6 @@
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -22,7 +23,7 @@ public class SyncCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "File to export data from.")]
     public string File { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var file = new KifaFile(File);
         var content = file.ReadAsString();
 

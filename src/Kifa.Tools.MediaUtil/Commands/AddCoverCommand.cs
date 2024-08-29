@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -18,7 +19,7 @@ public class AddCoverCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4", recursive: false);
         var filesWithImages = files.Select(source
             => (source, cover: GetImageFile(source), target: GetTargetFile(source))).ToList();

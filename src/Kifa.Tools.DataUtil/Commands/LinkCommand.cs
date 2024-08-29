@@ -1,4 +1,5 @@
 using CommandLine;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -17,7 +18,7 @@ public class LinkCommand : KifaCommand {
     [Option('t', "type", HelpText = "Type of data. For supported types, type `datax help`.")]
     public string Type { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var chef = DataChef.GetChef(Type);
 
         if (chef == null) {

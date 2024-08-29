@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Subtitle.Ass;
 using NLog;
 
@@ -16,7 +17,7 @@ class UpdateCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file to update.")]
     public string FileUri { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var target = new KifaFile(FileUri);
         if (!target.Path.StartsWith(SubtitlesPrefix)) {
             target = target.GetFilePrefixed(SubtitlesPrefix);

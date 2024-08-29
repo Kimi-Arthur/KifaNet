@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -41,7 +42,7 @@ class UploadCommand : KifaCommand {
     [Option('a', "include-all", HelpText = "Include all files already registered.")]
     public bool IncludeAll { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var targetsFromFlag = Targets.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
 
         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)

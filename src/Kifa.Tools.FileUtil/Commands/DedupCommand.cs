@@ -3,6 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -19,7 +20,7 @@ class DedupCommand : KifaCommand {
             "Files to be deleted don't need to have a name sequence containing the base file.")]
     public bool Unsafe { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindPotentialFiles(FileNames).Select(f => f.FileInfo);
         var filesToDelete = new List<(string truth, FileInformation toDelete)>();
         foreach (var sameFiles in files.GroupBy(f => f.Sha256)) {

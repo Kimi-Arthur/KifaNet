@@ -2,8 +2,8 @@
 using System.IO;
 using System.Linq;
 using CommandLine;
+using Kifa.Jobs;
 using NLog;
-using Kifa.Api.Files;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -14,7 +14,7 @@ public class RemoveEmptyCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Folders to be removed.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         foreach (var fileName in FileNames) {
             RecursivelyRemoveEmptyFolders(fileName);
         }

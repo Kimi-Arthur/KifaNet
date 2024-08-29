@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using CommandLine;
 using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.DataUtil.Commands;
@@ -20,7 +21,7 @@ public partial class AddCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Spec for creating items.")]
     public IEnumerable<string> Specs { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         if (Type == SwisscomAccount.ModelId) {
             CreateSwisscomAccounts(Specs);
             return 0;

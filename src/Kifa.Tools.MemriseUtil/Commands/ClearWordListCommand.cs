@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
+using Kifa.Jobs;
 using Kifa.Memrise;
 using Kifa.Service;
 using NLog;
@@ -36,7 +37,7 @@ public class ClearWordListCommand : KifaCommand {
 
     #endregion
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var memriseCourseClient = MemriseCourse.Client;
         var course = memriseCourseClient.Get(CourseName);
 

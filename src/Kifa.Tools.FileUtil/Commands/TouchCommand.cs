@@ -3,6 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -14,7 +15,7 @@ class TouchCommand : KifaCommand {
     [Value(0, Required = true, MetaName = "File URL")]
     public string FileUri { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var target = new KifaFile(FileUri);
 
         var files = FileInformation.Client.ListFolder(target.Id, true);

@@ -1,6 +1,7 @@
 using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -12,7 +13,7 @@ public class DownloadUploaderCommand : DownloadCommand {
     [Value(0, Required = true, HelpText = "Uploader ID.")]
     public string UploaderId { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var uploader = BilibiliUploader.Client.Get(UploaderId);
         if (uploader == null) {
             Logger.Fatal($"Cannot find uploader ({UploaderId}). Exiting.");

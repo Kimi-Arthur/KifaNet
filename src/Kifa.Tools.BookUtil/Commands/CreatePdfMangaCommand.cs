@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using PdfSharpCore;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
@@ -32,7 +33,7 @@ public class CreatePdfMangaCommand : KifaCommand {
     [Option('i', "ignore-double-pages", HelpText = "Ignore double page configs in the system.")]
     public string IgnoreExistingDoublePages { get; set; } = "";
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var allDoublePages = DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries);
 
         var folderId = new KifaFile(Folder).ToString();

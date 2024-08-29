@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Languages.German.Goethe;
 using Kifa.Tools.DataUtil;
 
@@ -33,7 +34,7 @@ public class GenerateWordListsCommand : KifaCommand {
 
     #endregion
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var wordsChef = new DataChef<GoetheGermanWord>();
         var words = wordsChef.Load(new KifaFile(WordsFile).ReadAsString())
             .Where(word => word.Level != null).ToList();

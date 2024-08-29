@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -25,7 +26,7 @@ class CopyCommand : KifaCommand {
     [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
     public bool ById { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         if (ById) {
             return LinkFile(Targets.First().TrimEnd('/'), LinkName.TrimEnd('/'));
         }

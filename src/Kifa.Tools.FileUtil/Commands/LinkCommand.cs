@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Infos;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -17,7 +18,7 @@ public class LinkCommand : KifaCommand {
 
     public static Dictionary<string, string> FolderServices { get; set; } = new();
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         // Precondition: Must be inside /CAT folder. => last segment is category
         // Goal: /CAT/$/SOME-ID => /CAT/SOME-ID Some Name
         // Info: CAT (service => some/service) + SOME-ID (id) => SOME-ID Some Name (FolderLinks)

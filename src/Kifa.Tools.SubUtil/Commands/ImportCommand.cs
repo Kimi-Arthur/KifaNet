@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Infos;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
@@ -29,7 +30,7 @@ class ImportCommand : KifaFileCommand {
         Required = true)]
     public string ReleaseGroup { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var segments = SourceId.Split('/');
         var type = segments[0];
         var id = segments[1];

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Configs;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools;
@@ -51,5 +52,5 @@ public abstract partial class KifaCommand {
 
     static int HandleParseFail(IEnumerable<Error> errors) => 2;
 
-    public abstract int Execute();
+    public abstract int Execute(KifaTask? task = null);
 }

@@ -1,6 +1,7 @@
 using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -20,7 +21,7 @@ public class DownloadBangumiCommand : DownloadCommand {
 
     string? bangumiId;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var bangumi = BilibiliBangumi.Client.Get(BangumiId);
         if (bangumi == null) {
             Logger.Fatal($"Cannot find Bangumi ({BangumiId}). Exiting.");

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Tencent;
 using Newtonsoft.Json;
 using NLog;
@@ -21,7 +21,7 @@ class GetTencentChatCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to add Tencent chat to.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var rawFile = FileNames.ElementAt(0);
         if (VideoId != null) {
             var subtitleFile =

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Media.MpegDash;
 using Kifa.Service;
 using Kifa.SkyCh;
@@ -34,7 +35,7 @@ public class DownloadLiveCommand : KifaCommand {
     [Option('k', "keep", HelpText = "Keep temp files.")]
     public bool KeepTempFiles { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var skyProgram = new KifaServiceRestClient<SkyLiveProgram>().Get(LiveId);
         if (skyProgram == null) {
             Logger.Fatal($"Cannot find Sky program with id {liveId}.");

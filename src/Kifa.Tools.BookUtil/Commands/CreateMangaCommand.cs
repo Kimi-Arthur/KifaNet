@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using QuickEPUB;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -16,7 +17,7 @@ public class CreateMangaCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to link.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var epub = new Epub("天才麻将少女 第1话 邂逅", "小林立");
 
         var sb = new StringBuilder();

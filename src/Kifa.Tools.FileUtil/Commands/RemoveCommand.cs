@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -38,7 +39,7 @@ class RemoveCommand : KifaCommand {
             "Force remove files even if no other instances exist. Only use when a file is actually removed.")]
     public bool Force { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         FileNames = FileNames.ToList();
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
 

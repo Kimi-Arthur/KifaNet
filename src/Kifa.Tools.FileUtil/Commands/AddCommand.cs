@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using NLog;
-using OpenQA.Selenium.DevTools;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -21,7 +21,7 @@ class AddCommand : KifaCommand {
     [Option('f', "force", HelpText = "Check file integrity even if it is already registered.")]
     public bool ForceRecheck { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
         foreach (var file in files) {
             Console.WriteLine(file);

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -19,7 +20,7 @@ public class DownloadVideoCommand : DownloadCommand {
             "Use video name (and id) as folder name instead of uploader name. This is best for a collection of videos with one id.")]
     public bool UseVideoNameFolder { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         foreach (var aidWithPage in Aids) {
             var segments = aidWithPage.Split('p');
             var aid = segments.First();

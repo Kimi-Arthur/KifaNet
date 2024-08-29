@@ -3,6 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.GameHacking.Files;
+using Kifa.Jobs;
 using Newtonsoft.Json;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -12,7 +13,7 @@ class DecodeCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to import.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         foreach (var file in FileNames.SelectMany(path => new KifaFile(path).List())) {
             using var stream = file.OpenRead();
             var folder = file.Parent.GetFile(file.BaseName);

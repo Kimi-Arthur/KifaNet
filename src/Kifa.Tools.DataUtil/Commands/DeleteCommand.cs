@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -17,7 +18,7 @@ public class DeleteCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Ids to delete.")]
     public IEnumerable<string> Ids { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var chef = DataChef.GetChef(Type);
         if (chef == null) {
             Logger.Fatal($"Failed to find Chef for type {Type}. Exiting.");

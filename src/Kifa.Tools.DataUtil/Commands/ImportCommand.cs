@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -15,7 +16,7 @@ public class ImportCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "File to import data from.")]
     public string File { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var content = new KifaFile(File).ReadAsString();
 
         var chef = DataChef.GetChef(Type, content);

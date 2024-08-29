@@ -5,6 +5,7 @@ using CommandLine;
 using NLog;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 
 namespace Kifa.Tools;
 
@@ -33,7 +34,7 @@ public abstract partial class KifaFileCommand : KifaCommand {
 
     protected virtual bool NaturalSorting => false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var multi = FileNames.Count() > 1;
         if (ById || IterateOverLogicalFiles) {
             var fileInfos = new List<(string sortKey, string value)>();

@@ -4,6 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Cloud.Google;
 using Kifa.IO;
+using Kifa.Jobs;
 using Kifa.Service;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -18,7 +19,7 @@ public class MigrateCommand : KifaCommand {
     [Option('q', "quiet", HelpText = "Quiet mode, no confirmation is requested.")]
     public bool QuietMode { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         foreach (var (file, info) in FileInformation.Client.List()) {
             ExecuteItem(file, () => ProcessOneFile(info));
         }

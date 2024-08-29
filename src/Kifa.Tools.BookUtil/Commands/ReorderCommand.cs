@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CommandLine;
+using Kifa.Jobs;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
@@ -20,7 +21,7 @@ public class ReorderCommand : KifaCommand {
         HelpText = "Force appending blank pages even if it's multiple of 4.")]
     public bool ForceAppend { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var document = PdfReader.Open(FileName, PdfDocumentOpenMode.Import);
 
         var allPages = document.Pages;

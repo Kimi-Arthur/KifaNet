@@ -1,5 +1,6 @@
 using CommandLine;
 using Kifa.Bilibili;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -12,7 +13,7 @@ public class DownloadArchiveCommand : DownloadCommand {
         HelpText = "Archive ID with author and season id separated with slash '/'.")]
     public string ArchiveId { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var archive = BilibiliArchive.Client.Get(ArchiveId);
         if (archive == null) {
             Logger.Fatal($"Cannot find archive ({ArchiveId}). Exiting.");

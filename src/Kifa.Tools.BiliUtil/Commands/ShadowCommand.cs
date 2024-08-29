@@ -1,6 +1,7 @@
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Bilibili.BilibiliApi;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -12,7 +13,7 @@ class ShadowCommand : KifaCommand {
     [Option('r', "reset", HelpText = "Reset shadow history status, i.e. history on.")]
     public bool Reset { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var response = HttpClients.BilibiliHttpClient.Call(new TrackingRpc(!Reset));
         var action = Reset ? "reset" : "shadow";
         if (response.Code != 0) {

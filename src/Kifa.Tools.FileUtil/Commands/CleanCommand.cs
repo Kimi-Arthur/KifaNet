@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
-using OpenQA.Selenium.DevTools;
+using Kifa.Jobs;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -18,7 +18,7 @@ class CleanCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         RemoveMissingFiles();
         DeduplicateFiles();
 

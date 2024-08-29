@@ -6,6 +6,7 @@ using FFMpegCore;
 using FFMpegCore.Arguments;
 using FFMpegCore.Builders.MetaData;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.MediaUtil.Commands;
@@ -32,7 +33,7 @@ public class CombineCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Files to combine.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var files = FileNames.Select(file => new KifaFile(file)).ToList();
 
         OutputFile ??= $"{Title}.{files[0].Extension}";

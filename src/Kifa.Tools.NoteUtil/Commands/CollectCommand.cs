@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.NoteUtil.Commands;
@@ -17,7 +18,7 @@ public class CollectCommand : KifaCommand {
     [Value(1, Required = true, HelpText = "Target file to collect vocabulary to.")]
     public string BookUri { get; set; }
 
-    public override int Execute() {
+    public override int Execute(KifaTask task = null) {
         var source = new KifaFile(FileUri);
         var destination = new KifaFile(BookUri);
         var wordsSections = new Dictionary<string, WordsSection>();

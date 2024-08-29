@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
+using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 
@@ -24,7 +25,7 @@ class TrashCommand : KifaCommand {
     [Option('r', "restore", HelpText = "Restore trashed files")]
     public bool Restore { get; set; } = false;
 
-    public override int Execute() {
+    public override int Execute(KifaTask? task = null) {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
         var fileIds = foundFiles.Select(f => f.Id).ToList();
 
