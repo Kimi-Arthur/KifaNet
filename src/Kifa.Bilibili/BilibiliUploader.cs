@@ -56,11 +56,13 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
             data = HttpClients.BilibiliHttpClient
                 .Call(new UploaderVideoRpc(uploaderId, data.NextOffset))?.Data;
             if (data == null) {
-                throw new DataNotFoundException($"Cannot find videos uploaded by {uploaderId}.");
+                throw new DataNotFoundException(
+                    $"Cannot find videos uploaded by {uploaderId} after {list.Count} videos.");
             }
 
             list.AddRange(data.Cards.Where(card => !string.IsNullOrEmpty(card.Desc.Bvid))
                 .Select(card => $"av{card.Desc.Rid}"));
+            Thread.Sleep(TimeSpan.FromSeconds(10));
         }
 
         return list;
