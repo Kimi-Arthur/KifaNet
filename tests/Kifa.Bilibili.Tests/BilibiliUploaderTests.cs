@@ -26,11 +26,11 @@ public class BilibiliUploaderTests {
     [Fact]
     public void FillTest() {
         var uploader = new BilibiliUploader {
-            Id = "43536"
+            Id = "1462401621"
         };
         uploader.Fill();
-        Assert.Equal("黑桐谷歌", uploader.Name);
-        uploader.Aids.Should().HaveCountGreaterThan(200);
-        Assert.Equal("av27700", uploader.Aids.First());
+        Assert.Equal("特厨隋卞", uploader.Name);
+        uploader.Aids.Should().HaveCountGreaterThan(300);
+        uploader.Aids.Should().Contain("av724849048");
     }
 }
