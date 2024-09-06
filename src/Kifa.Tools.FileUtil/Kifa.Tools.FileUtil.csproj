@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ToolCommandName>filex</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>3.0.3</Version>
+        <Version>3.0.4</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
         <PackageIcon>Kifa.png</PackageIcon>

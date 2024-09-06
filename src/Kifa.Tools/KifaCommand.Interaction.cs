@@ -114,7 +114,8 @@ public abstract partial class KifaCommand {
                     IEnumerable<TChoice> selectedChoices = choices;
                     if (indexDash < i.Length - 1) {
                         selectedChoices =
-                            selectedChoices.Take(int.Parse(i[(indexDash + 1)..]) - startingIndex);
+                            selectedChoices.Take(
+                                int.Parse(i[(indexDash + 1)..]) - startingIndex + 1);
                     }
 
                     if (indexDash > 0) {
