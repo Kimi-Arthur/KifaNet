@@ -98,46 +98,58 @@ public abstract partial class KifaCommand {
 
         choiceName ??= "items";
 
-        for (var i = 0; i < choices.Count; i++) {
-            Console.WriteLine($"[{i + startingIndex}] {choiceToString(choices[i])}");
-        }
+        while (true) {
+            for (var i = 0; i < choices.Count; i++) {
+                Console.WriteLine($"[{i + startingIndex}] {choiceToString(choices[i])}");
+            }
 
-        Console.Write(
-            $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}] (default is all, . is nothing): ");
-        var reply = Console.ReadLine() ?? "";
-        var chosen = reply switch {
-            "" => choices,
-            "." => new List<TChoice>(),
-            _ => reply.Split(',').SelectMany(i => {
-                if (i.Contains('-')) {
-                    var indexDash = i.IndexOf('-');
-                    IEnumerable<TChoice> selectedChoices = choices;
-                    if (indexDash < i.Length - 1) {
-                        selectedChoices =
-                            selectedChoices.Take(
-                                int.Parse(i[(indexDash + 1)..]) - startingIndex + 1);
+            Console.Write(
+                $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}] (default is all, . is nothing): ");
+            var reply = Console.ReadLine() ?? "";
+            var chosen = reply switch {
+                "" => choices,
+                "." => new List<TChoice>(),
+                _ => reply.Split(',').SelectMany(i => {
+                    if (i.Contains('-')) {
+                        var indexDash = i.IndexOf('-');
+                        IEnumerable<TChoice> selectedChoices = choices;
+                        if (indexDash < i.Length - 1) {
+                            selectedChoices =
+                                selectedChoices.Take(int.Parse(i[(indexDash + 1)..]) -
+                                    startingIndex + 1);
+                        }
+
+                        if (indexDash > 0) {
+                            selectedChoices =
+                                selectedChoices.Skip(int.Parse(i[..indexDash]) - startingIndex);
+                        }
+
+                        return selectedChoices;
                     }
 
-                    if (indexDash > 0) {
-                        selectedChoices =
-                            selectedChoices.Skip(int.Parse(i[..indexDash]) - startingIndex);
-                    }
+                    return new List<TChoice> {
+                        choices[int.Parse(i) - startingIndex]
+                    };
+                }).ToList()
+            };
 
-                    return selectedChoices;
-                }
+            if (chosen.Count == choices.Count) {
+                // No need to reconfirm as the selection is for all.
+                return chosen;
+            }
 
-                return new List<TChoice> {
-                    choices[int.Parse(i) - startingIndex]
-                };
-            }).ToList()
-        };
+            foreach (var choice in chosen) {
+                Logger.Debug(choiceToString(choice));
+            }
 
-        foreach (var choice in chosen) {
-            Logger.Debug(choiceToString(choice));
+            if (!Confirm(
+                    $"Confirm selection of {chosen.Count} {choiceName} above out of {choices.Count}?")) {
+                continue;
+            }
+
+            Logger.Debug($"Selected {chosen.Count} {choiceName} above out of {choices.Count}.");
+            return chosen;
         }
-
-        Logger.Debug($"Selected {chosen.Count} {choiceName} above out of {choices.Count}.");
-        return chosen;
     }
 
     public static string Confirm(string prefix, string suggested) {
