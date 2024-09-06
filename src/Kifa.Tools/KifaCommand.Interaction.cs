@@ -92,28 +92,50 @@ public abstract partial class KifaCommand {
     }
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
-        Func<TChoice, string>? choiceToString = null, string? choiceName = null) {
-        var choiceStrings = choiceToString == null
-            ? choices.Select(c => c.ToString()).ToList()
-            : choices.Select(choiceToString).ToList();
+        Func<TChoice, string>? choiceToString = null, string? choiceName = null,
+        int startingIndex = 1) {
+        choiceToString ??= c => c.ToString();
 
         choiceName ??= "items";
 
         for (var i = 0; i < choices.Count; i++) {
-            Console.WriteLine($"[{i}] {choiceStrings[i]}");
+            Console.WriteLine($"[{i + startingIndex}] {choiceToString(choices[i])}");
         }
 
         Console.Write(
-            $"Choose 0 or more from above {choices.Count} {choiceName} [0-{choices.Count - 1}] (default is all, . is nothing): ");
+            $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}] (default is all, . is nothing): ");
         var reply = Console.ReadLine() ?? "";
-        var chosen = reply == "" ? choices :
-            reply == "." ? new List<TChoice>() : reply.Split(',').SelectMany(i => i.Contains('-')
-                ? choices.Take(int.Parse(i.Substring(i.IndexOf('-') + 1)) + 1)
-                    .Skip(int.Parse(i.Substring(0, i.IndexOf('-'))))
-                : new List<TChoice> {
-                    choices[int.Parse(i)]
-                }).ToList();
-        Logger.Debug($"Selected {chosen.Count} out of {choices.Count} {choiceName}.");
+        var chosen = reply switch {
+            "" => choices,
+            "." => new List<TChoice>(),
+            _ => reply.Split(',').SelectMany(i => {
+                if (i.Contains('-')) {
+                    var indexDash = i.IndexOf('-');
+                    IEnumerable<TChoice> selectedChoices = choices;
+                    if (indexDash < i.Length - 1) {
+                        selectedChoices =
+                            selectedChoices.Take(int.Parse(i[(indexDash + 1)..]) - startingIndex);
+                    }
+
+                    if (indexDash > 0) {
+                        selectedChoices =
+                            selectedChoices.Skip(int.Parse(i[..indexDash]) - startingIndex);
+                    }
+
+                    return selectedChoices;
+                }
+
+                return new List<TChoice> {
+                    choices[int.Parse(i) - startingIndex]
+                };
+            }).ToList()
+        };
+
+        foreach (var choice in chosen) {
+            Logger.Debug(choiceToString(choice));
+        }
+
+        Logger.Debug($"Selected {chosen.Count} {choiceName} above out of {choices.Count}.");
         return chosen;
     }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
@@ -41,16 +40,9 @@ class GetCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
-        foreach (var file in files) {
-            Console.WriteLine(file);
-        }
+        var selected = SelectMany(files, choiceName: "files");
 
-        if (!Confirm($"Confirm getting the {files.Count} files above?")) {
-            Logger.Info("Action canceled.");
-            return -1;
-        }
-
-        foreach (var file in files) {
+        foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => GetFile(file));
         }
 

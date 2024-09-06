@@ -87,7 +87,7 @@ public class KifaActionResult {
     public virtual string? Message { get; set; }
 
     public override string ToString()
-        => string.IsNullOrEmpty(Message) ? Status.ToString() : $"{Status}:\n{Message}";
+        => string.IsNullOrEmpty(Message) ? $"({Status})" : $"({Status}): {Message}";
 }
 
 public class KifaBatchActionResult : KifaActionResult {
