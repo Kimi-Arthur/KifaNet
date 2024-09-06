@@ -69,14 +69,25 @@ public static class StringExtensions {
                SizeSymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
     }
 
+    public static string ToSizeString(this long? size) {
+        if (size == null) {
+            return "?B";
+        }
+
+        return size.Checked().ToSizeString();
+    }
+
     public static string ToSizeString(this long size) {
-        var index = Math.Log2(size).RoundDown() / 10 - 1;
+        var index = Math.Log2(size.Checked()).RoundDown() / 10 - 1;
         if (index < 0) {
             return $"{size}B";
         }
+
         var symbol = SizeSymbols[index];
         return $"{size * 1.0 / SizeSymbolMap[symbol.ToString()]:0.0}{symbol}B";
     }
+
+    public static string ToSizeString(this int? size) => ToSizeString((long?) size);
 
     public static string ToSizeString(this int size) => ToSizeString((long) size);
 

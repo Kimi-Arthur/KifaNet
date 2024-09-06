@@ -12,4 +12,13 @@ public static class NullCheckExtensions {
 
         return nullableValue;
     }
+
+    public static long Checked(this long? nullableValue,
+        [CallerArgumentExpression("nullableValue")] string expression = "") {
+        if (nullableValue == null) {
+            throw new ArgumentNullException(expression);
+        }
+
+        return (long) nullableValue;
+    }
 }
