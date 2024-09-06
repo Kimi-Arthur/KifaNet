@@ -9,7 +9,9 @@ namespace Kifa;
 public static class StringExtensions {
     static readonly Regex NumberPattern = new(@"\d+", RegexOptions.ECMAScript);
 
-    static readonly Dictionary<string, long> SymbolMap = "KMGTPEZY".Select(x => x.ToString())
+    const string SizeSymbols = "KMGTPEZY";
+
+    static readonly Dictionary<string, long> SizeSymbolMap = SizeSymbols.Select(x => x.ToString())
         .Prepend("").Select((value, index) => (value, factor: 1L << (10 * index)))
         .ToDictionary(item => item.value, item => item.factor);
 
@@ -64,8 +66,19 @@ public static class StringExtensions {
         var match = new Regex(@"^(\d+)([^B])B?$").Match(data.ToUpper());
 
         return long.Parse(match.Groups[1].Value) *
-               SymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
+               SizeSymbolMap.GetValueOrDefault(match.Groups[2].Value, 0);
     }
+
+    public static string ToSizeString(this long size) {
+        var index = Math.Log2(size).RoundDown() / 10 - 1;
+        if (index < 0) {
+            return $"{size}B";
+        }
+        var symbol = SizeSymbols[index];
+        return $"{size * 1.0 / SizeSymbolMap[symbol.ToString()]:0.0}{symbol}B";
+    }
+
+    public static string ToSizeString(this int size) => ToSizeString((long) size);
 
     public static byte[] ParseHexString(this string hexString) {
         if (hexString == null || hexString.Length % 2 == 1) {

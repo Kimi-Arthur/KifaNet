@@ -40,7 +40,8 @@ class GetCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
-        var selected = SelectMany(files, choiceName: "files");
+        var selected = SelectMany(files,
+            choiceToString: file => $"{file} ({file.Length.ToSizeString()})", choiceName: "files");
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => GetFile(file));
