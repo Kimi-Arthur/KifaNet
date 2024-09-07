@@ -103,33 +103,51 @@ public abstract partial class KifaCommand {
                 Console.WriteLine($"[{i + startingIndex}] {choiceToString(choices[i])}");
             }
 
+            Console.WriteLine(
+                $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.");
             Console.Write(
-                $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}] (default is all, . is nothing): ");
+                $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: ");
             var reply = Console.ReadLine() ?? "";
             var chosenIndexes = (reply switch {
-                "" => Enumerable.Range(0, choices.Count),
+                "" => Enumerable.Range(0, choices.Count).ToList(),
                 "^" => [],
-                _ => reply.Split(',').SelectMany(i => {
-                    if (i.Contains('-')) {
-                        var indexDash = i.IndexOf('-');
-                        var selectedChoices = Enumerable.Range(0, choices.Count);
-                        if (indexDash < i.Length - 1) {
-                            selectedChoices =
-                                selectedChoices.Take(int.Parse(i[(indexDash + 1)..]) -
-                                    startingIndex + 1);
-                        }
-
-                        if (indexDash > 0) {
-                            selectedChoices =
-                                selectedChoices.Skip(int.Parse(i[..indexDash]) - startingIndex);
-                        }
-
-                        return selectedChoices;
+                _ => reply.Split(',').Select(selection => {
+                    var inverted = selection.StartsWith('^');
+                    selection = selection.TrimStart('^');
+                    int rangeStart, rangeEnd;
+                    if (selection.Contains('-')) {
+                        var indexes = selection.Split('-');
+                        rangeStart = indexes[0].Length > 0
+                            ? int.Parse(indexes[0]) - startingIndex
+                            : 0;
+                        rangeEnd = indexes[1].Length > 0
+                            ? int.Parse(indexes[1]) - startingIndex + 1
+                            : choices.Count;
+                    } else {
+                        rangeStart = int.Parse(selection) - startingIndex;
+                        rangeEnd = rangeStart + 1;
                     }
 
-                    return [int.Parse(i) - startingIndex];
-                })
-            }).Distinct().Order().ToList();
+                    return (Inverted: inverted, RangeStart: rangeStart, RangeEnd: rangeEnd);
+                }).Aggregate<(bool Inverted, int RangeStart, int RangeEnd), IEnumerable<int>?>(null,
+                    (result, next) => {
+                        if (result == null) {
+                            return next.Inverted
+                                ? Enumerable.Range(0, next.RangeStart).Concat(
+                                    Enumerable.Range(next.RangeEnd, choices.Count - next.RangeEnd))
+                                : Enumerable.Range(next.RangeStart,
+                                    next.RangeEnd - next.RangeStart);
+                        }
+
+                        if (next.Inverted) {
+                            return result.Except(Enumerable.Range(next.RangeStart,
+                                next.RangeEnd - next.RangeStart));
+                        } else {
+                            return result.Union(Enumerable.Range(next.RangeStart,
+                                next.RangeEnd - next.RangeStart));
+                        }
+                    }).Checked().ToList()
+            });
 
             if (chosenIndexes.Count == choices.Count) {
                 // No need to reconfirm as the selection is for all.
