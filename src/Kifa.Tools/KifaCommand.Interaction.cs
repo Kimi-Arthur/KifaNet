@@ -106,13 +106,13 @@ public abstract partial class KifaCommand {
             Console.Write(
                 $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}] (default is all, . is nothing): ");
             var reply = Console.ReadLine() ?? "";
-            var chosen = reply switch {
-                "" => choices,
-                "." => new List<TChoice>(),
+            var chosenIndexes = (reply switch {
+                "" => Enumerable.Range(0, choices.Count),
+                "^" => [],
                 _ => reply.Split(',').SelectMany(i => {
                     if (i.Contains('-')) {
                         var indexDash = i.IndexOf('-');
-                        IEnumerable<TChoice> selectedChoices = choices;
+                        var selectedChoices = Enumerable.Range(0, choices.Count);
                         if (indexDash < i.Length - 1) {
                             selectedChoices =
                                 selectedChoices.Take(int.Parse(i[(indexDash + 1)..]) -
@@ -127,19 +127,18 @@ public abstract partial class KifaCommand {
                         return selectedChoices;
                     }
 
-                    return new List<TChoice> {
-                        choices[int.Parse(i) - startingIndex]
-                    };
-                }).ToList()
-            };
+                    return [int.Parse(i) - startingIndex];
+                })
+            }).Distinct().Order().ToList();
 
-            if (chosen.Count == choices.Count) {
+            if (chosenIndexes.Count == choices.Count) {
                 // No need to reconfirm as the selection is for all.
-                return chosen;
+                return choices;
             }
 
+            var chosen = chosenIndexes.Select(index => choices[index]).ToList();
             foreach (var choice in chosen) {
-                Logger.Debug(choiceToString(choice));
+                Console.WriteLine(choiceToString(choice));
             }
 
             if (!Confirm(
