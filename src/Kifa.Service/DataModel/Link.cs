@@ -6,7 +6,7 @@ namespace Kifa.Service;
 // Unlimited linking not supported now.
 public class Link<TDataModel> : JsonSerializable, IEquatable<Link<TDataModel>>
     where TDataModel : DataModel, WithModelId<TDataModel> {
-    public string Id { get; set; }
+    public required string Id { get; set; }
 
     TDataModel? data;
 
