@@ -20,6 +20,11 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    FileInformationServiceClient? fileInfoClient;
+
+    FileInformationServiceClient FileInfoClient
+        => (fileInfoClient ??= FileInformation.Client).Checked();
+
     #region Configs
 
     public static string LocalServer { get; set; }
@@ -46,6 +51,45 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public FileInformation? FileInfo { get; set; }
 
     StorageClient Client { get; set; }
+
+    public KifaFile Parent => new($"{Host}{ParentPath}");
+
+    // Path = ParentPath/BaseName.Extension = ParentPath/Name
+
+    // Ends with a slash.
+    public string ParentPath { get; }
+    public string BaseName { get; set; }
+    public string? Extension { get; set; }
+    public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+    public string Path => $"{ParentPath}{Name}";
+
+    public string Host => Client.ToString();
+
+    KifaFileFormat FileFormat { get; }
+
+    public bool IsCloud
+        => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
+           FileFormat is KifaFileV1Format or KifaFileV2Format;
+
+    public bool IsLocal => Client is FileStorageClient;
+
+    public long Length {
+        get {
+            using var s = OpenRead();
+            return s.Length;
+        }
+    }
+
+    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
+
+    public bool Allocated => FileInfo.Checked().Locations.ContainsKey(ToString());
+
+    public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
+
+    bool UseCache { get; set; }
+
+    string LocalFilePath { get; }
+    KifaFile LocalFile => new(LocalFilePath);
 
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
@@ -107,46 +151,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
         UseCache = useCache;
     }
-
-
-    public KifaFile Parent => new($"{Host}{ParentPath}");
-
-    // Path = ParentPath/BaseName.Extension = ParentPath/Name
-
-    // Ends with a slash.
-    public string ParentPath { get; }
-    public string BaseName { get; set; }
-    public string? Extension { get; set; }
-    public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
-    public string Path => $"{ParentPath}{Name}";
-
-    public string Host => Client.ToString();
-
-    KifaFileFormat FileFormat { get; }
-
-    string LocalFilePath { get; }
-    KifaFile LocalFile => new(LocalFilePath);
-
-    bool UseCache { get; set; }
-
-    public bool IsCloud
-        => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
-           FileFormat is KifaFileV1Format or KifaFileV2Format;
-
-    public bool IsLocal => Client is FileStorageClient;
-
-    public long Length {
-        get {
-            using var s = OpenRead();
-            return s.Length;
-        }
-    }
-
-    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
-
-    public bool Allocated => FileInfo.Checked().Locations.ContainsKey(ToString());
-
-    public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {
         string? candidate = null;
@@ -527,12 +531,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 "\nActual:\n" + info.RemoveProperties(FileProperties.All ^ compareResultWithOld));
         }
 
-        var client = FileInformation.Client;
-
-        var sha256Info = client.Get($"/$/{info.Sha256}");
+        var sha256Info = FileInfoClient.Get($"/$/{info.Sha256}");
 
         if (sha256Info != null && sha256Info.Sha256 == info.Sha256) {
-            Logger.LogResult(client.Link(sha256Info.Id, info.Id), "linking file",
+            Logger.LogResult(FileInfoClient.Link(sha256Info.Id, info.Id), "linking file",
                 throwIfError: true);
         }
 
@@ -542,7 +544,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 sha256Info?.EncryptionKey ??
                 info.EncryptionKey; // Respects original encryption key.
 
-            client.Update(info);
+            FileInfoClient.Update(info);
             Register(true);
         } else {
             throw new FileCorruptedException(
