@@ -464,6 +464,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (UseCache) {
             try {
                 LocalFile.Add();
+                file = LocalFile;
+                Logger.Debug($"Use local file {file} instead.");
             } catch (FileNotFoundException) {
                 // Expected to find no cached file.
             }
