@@ -26,12 +26,6 @@ public abstract class StorageClient : IDisposable {
 
     public abstract long Length(string path);
 
-    public virtual FileInformation QuickInfo(string path)
-        => new() {
-            Id = path,
-            Size = Length(path)
-        };
-
     public abstract void Delete(string path);
 
     public abstract void Touch(string path);

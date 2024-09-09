@@ -222,13 +222,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
 
-    public FileInformation QuickInfo()
-        => FileFormat is RawFileFormat
-            ? Client.QuickInfo(Path)
-            : new FileInformation {
-                Id = Id
-            };
-
     public Stream OpenRead()
         => new VerifiableStream(
             FileFormat.GetDecodeStream(Client.OpenRead(Path), FileInfo?.EncryptionKey), FileInfo);
@@ -470,12 +463,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         if (UseCache) {
             try {
-                var cacheQuickInfo = LocalFile.QuickInfo();
-                if (cacheQuickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable) ==
-                    FileProperties.None) {
-                    file = LocalFile;
-                    Logger.Debug($"Use local file {file} instead.");
-                }
+                LocalFile.Add();
             } catch (FileNotFoundException) {
                 // Expected to find no cached file.
             }
@@ -508,20 +496,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             file = LocalFile;
         }
 
-        // Compare with quick info.
-        var quickInfo = file.QuickInfo();
-        Logger.Debug($"Quick info:\n{quickInfo}");
-
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
-
-        var quickCompareResult = info.CompareProperties(quickInfo, FileProperties.AllVerifiable);
-
-        if (quickCompareResult != FileProperties.None) {
-            throw new FileCorruptedException(
-                $"New result differs from quick result: {quickCompareResult}\n" + "Expected:\n" +
-                quickInfo.RemoveProperties(FileProperties.All ^ quickCompareResult) +
-                "\nActual:\n" + info.RemoveProperties(FileProperties.All ^ quickCompareResult));
-        }
 
         var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
         if (compareResultWithOld != FileProperties.None) {

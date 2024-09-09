@@ -428,22 +428,6 @@ public class BaiduCloudStorageClient : StorageClient {
         }
     }
 
-    public override FileInformation QuickInfo(string path) {
-        try {
-            var data = client.FetchJToken((() => GetRequest(APIList.GetFileInfo,
-                new Dictionary<string, string> {
-                    ["remote_path"] = Uri.EscapeDataString(path.TrimStart('/'))
-                })))["list"][0];
-            return new FileInformation {
-                Id = path,
-                Size = (long) data["size"]
-            };
-        } catch (Exception) {
-            Logger.Warn("Failed to get basic info for {0}", path);
-            return new FileInformation();
-        }
-    }
-
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         try {
             var value = client.FetchJToken(() => GetRequest(APIList.CopyFile,
