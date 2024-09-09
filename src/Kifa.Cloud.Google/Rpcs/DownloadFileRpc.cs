@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -17,10 +18,10 @@ class DownloadFileRpc : KifaParameterizedRpc, KifaRpc<Stream> {
             { "Range", "bytes={start_byte}-{end_byte}" }
         };
 
-    public DownloadFileRpc(string fileId, long startByte, long endByte, string accessToken) {
+    public DownloadFileRpc(string fileId, long startByte, long endByte, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "file_id", fileId },
-            { "access_token", accessToken },
+            { "access_token", accessTokenFunc },
             { "start_byte", startByte.ToString() },
             { "end_byte", endByte.ToString() }
         };

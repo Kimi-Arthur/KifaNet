@@ -27,7 +27,7 @@ class MoveFileRpc : KifaJsonParameterizedRpc<MoveFileRpc.Response> {
     protected override string? JsonContent => """{"name": "{name}"}""";
 
     public MoveFileRpc(string fileId, string name, string parentId, Func<string> accessTokenFunc) {
-        Parameters = new () {
+        Parameters = new() {
             { "file_id", fileId },
             { "name", name },
             { "parent_id", parentId },

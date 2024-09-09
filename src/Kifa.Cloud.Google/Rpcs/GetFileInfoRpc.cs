@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -22,10 +23,10 @@ class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Response> {
 
     protected override bool CamelCase => true;
 
-    public GetFileInfoRpc(string fileId, string accessToken) {
+    public GetFileInfoRpc(string fileId, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "file_id", fileId },
-            { "access_token", accessToken },
+            { "access_token", accessTokenFunc },
         };
     }
 }

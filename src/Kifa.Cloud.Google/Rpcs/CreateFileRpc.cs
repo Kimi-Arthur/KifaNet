@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -17,11 +18,11 @@ class CreateFileRpc : KifaParameterizedRpc, KifaRpc<string> {
 
     protected override string JsonContent => """{"name": "{name}", "parents": ["{parent_id}"]}""";
 
-    public CreateFileRpc(string parentId, string name, string accessToken) {
+    public CreateFileRpc(string parentId, string name, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "parent_id", parentId },
             { "name", name },
-            { "access_token", accessToken },
+            { "access_token", accessTokenFunc },
         };
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -26,11 +27,11 @@ class CreateFolderRpc : KifaJsonParameterizedRpc<CreateFolderRpc.Response> {
 
     protected override bool CamelCase => true;
 
-    public CreateFolderRpc(string parentId, string name, string accessToken) {
+    public CreateFolderRpc(string parentId, string name, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "name", name },
             { "parent_id", parentId },
-            { "access_token", accessToken },
+            { "access_token", accessTokenFunc },
         };
     }
 }

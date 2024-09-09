@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -28,11 +29,11 @@ public class ListFilesRpc : KifaJsonParameterizedRpc<ListFilesRpc.Response> {
 
     protected override bool CamelCase => true;
 
-    public ListFilesRpc(string parentId, string pageToken, string accessToken) {
+    public ListFilesRpc(string parentId, string pageToken, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "parent_id", parentId },
             { "page_token", pageToken },
-            { "access_token", accessToken }
+            { "access_token", accessTokenFunc }
         };
     }
 }

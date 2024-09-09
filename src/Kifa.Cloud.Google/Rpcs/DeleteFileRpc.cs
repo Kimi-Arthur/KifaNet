@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -14,10 +15,10 @@ class DeleteFileRpc : KifaParameterizedRpc {
             { "Authorization", "Bearer {access_token}" }
         };
 
-    public DeleteFileRpc(string fileId, string accessToken) {
+    public DeleteFileRpc(string fileId, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "file_id", fileId },
-            { "access_token", accessToken }
+            { "access_token", accessTokenFunc }
         };
     }
 }

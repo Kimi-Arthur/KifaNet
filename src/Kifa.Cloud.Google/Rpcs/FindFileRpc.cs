@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
@@ -31,11 +32,11 @@ class FindFileRpc : KifaJsonParameterizedRpc<FindFileRpc.Response> {
 
     protected override bool CamelCase => true;
 
-    public FindFileRpc(string parentId, string name, string accessToken) {
+    public FindFileRpc(string parentId, string name, Func<string> accessTokenFunc) {
         Parameters = new () {
             { "parent_id", parentId },
             { "name", HttpUtility.UrlEncode(name) },
-            { "access_token", accessToken }
+            { "access_token", accessTokenFunc }
         };
     }
 }

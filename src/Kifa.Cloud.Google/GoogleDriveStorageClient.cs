@@ -60,7 +60,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
         while (pageToken != null) {
             var response = client.Call(new ListFilesRpc(parentId: fileId, pageToken: pageToken,
-                Account.AccessToken));
+                () => Account.AccessToken));
 
             pageToken = response.NextPageToken;
             foreach (var file in response.Files) {
@@ -84,7 +84,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     public override void Delete(string path) {
         var fileId = GetFileId(path);
         if (fileId != null) {
-            client.Call(new DeleteFileRpc(fileId, Account.AccessToken));
+            client.Call(new DeleteFileRpc(fileId, () => Account.AccessToken));
 
             KnownFileIdCache.Remove(KnownFileIdCache.First(cache => cache.Value == fileId).Key);
             KnownFileSizeCache.Remove(fileId);
@@ -124,7 +124,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         var folderId = GetFileId(path[..path.LastIndexOf('/')], true).Checked();
 
         var uploadUri = client.Call(new CreateFileRpc(parentId: folderId,
-            name: path[(path.LastIndexOf('/') + 1)..], Account.AccessToken));
+            name: path[(path.LastIndexOf('/') + 1)..], () => Account.AccessToken));
 
         var size = input.Length;
         var buffer = new byte[BlockSize];
@@ -189,9 +189,8 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             count = buffer.Length - bufferOffset;
         }
 
-        using var stream =
-            client.Call(
-                new DownloadFileRpc(fileId, offset, offset + count - 1, Account.AccessToken));
+        using var stream = client.Call(new DownloadFileRpc(fileId, offset, offset + count - 1,
+            () => Account.AccessToken));
 
         var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
         stream.CopyTo(memoryStream, count);
@@ -209,8 +208,8 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             return size;
         }
 
-        return KnownFileSizeCache[fileId] =
-            client.Call(new GetFileInfoRpc(fileId, Account.AccessToken)).Size;
+        return KnownFileSizeCache[fileId] = client
+            .Call(new GetFileInfoRpc(fileId, () => Account.AccessToken)).Checked().Size;
     }
 
     static readonly Dictionary<(string name, string parentId), string> KnownFileIdCache = new();
@@ -241,14 +240,16 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
     string? FetchFileId(string segment, string fileId) {
         var response =
-            client.Call(new FindFileRpc(parentId: fileId, name: segment, Account.AccessToken));
+            client.Call(new FindFileRpc(parentId: fileId, name: segment,
+                () => Account.AccessToken));
 
         return response.Files.Where(file => file.Name == segment).Select(file => file.Id)
             .FirstOrDefault();
     }
 
     string CreateFolder(string parentId, string name)
-        => client.Call(new CreateFolderRpc(parentId: parentId, name: name, Account.AccessToken)).Id;
+        => client.Call(new CreateFolderRpc(parentId: parentId, name: name,
+            () => Account.AccessToken)).Checked().Id;
 
     public override void Dispose() {
         client?.Dispose();
