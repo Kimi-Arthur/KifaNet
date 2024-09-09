@@ -27,15 +27,7 @@ public static class StringExtensions {
     };
 
     public static string Format(this string format, Dictionary<string, string> parameters) {
-        if (format == null) {
-            throw new ArgumentNullException(nameof(format));
-        }
-
         var result = format;
-
-        if (parameters == null) {
-            return result;
-        }
 
         foreach (var p in parameters) {
             result = result.Replace("{" + p.Key + "}", p.Value);
@@ -44,12 +36,19 @@ public static class StringExtensions {
         return result;
     }
 
-    public static string Format(this string format, params object[] args) {
-        if (format == null) {
-            throw new ArgumentNullException(nameof(format));
+    public static string? FormatIfNonNull(this string format,
+        Dictionary<string, string?> parameters) {
+        if (parameters.Values.Any(s => s == null)) {
+            return null;
         }
 
-        return string.Format(format, args);
+        var result = format;
+
+        foreach (var p in parameters) {
+            result = result.Replace("{" + p.Key + "}", p.Value);
+        }
+
+        return result;
     }
 
     // Remove all characters including and after the last split.
