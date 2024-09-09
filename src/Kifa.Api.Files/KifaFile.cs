@@ -40,6 +40,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     #endregion
 
+    // Canonical `Id` that corresponds to a `FileInformation` object, without format etc.
     public string Id { get; set; }
 
     public FileInformation? FileInfo { get; set; }
@@ -107,26 +108,24 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         UseCache = useCache;
     }
 
-    // Ends with a slash.
-    string ParentPath { get; }
 
     public KifaFile Parent => new($"{Host}{ParentPath}");
 
-    string LocalFilePath { get; }
-    KifaFile LocalFile => new(LocalFilePath);
+    // Path = ParentPath/BaseName.Extension = ParentPath/Name
 
-    // TODO: the fields here will bring inconsistency.
+    // Ends with a slash.
+    public string ParentPath { get; }
     public string BaseName { get; set; }
-
-    public string Extension { get; set; }
-
+    public string? Extension { get; set; }
     public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
-
     public string Path => $"{ParentPath}{Name}";
 
     public string Host => Client.ToString();
 
     KifaFileFormat FileFormat { get; }
+
+    string LocalFilePath { get; }
+    KifaFile LocalFile => new(LocalFilePath);
 
     bool UseCache { get; set; }
 
