@@ -91,11 +91,9 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
         // Only calculate and populate nonexistent fields.
         requiredProperties -= requiredProperties & GetProperties();
 
-        if (Size == null && (requiredProperties.HasFlag(FileProperties.Size) ||
-                             (requiredProperties & FileProperties.AllBlockHashes) !=
-                             FileProperties.None ||
-                             (requiredProperties & FileProperties.AllHashes) !=
-                             FileProperties.None)) {
+        if (Size == null &&
+            (requiredProperties & (FileProperties.Size | FileProperties.AllBlockHashes |
+                                   FileProperties.AllHashes)) != FileProperties.None) {
             Size = stream.Length;
         }
 
