@@ -22,7 +22,7 @@ public sealed class ReorderWordsInLevelRpc : KifaJsonParameterizedRpc<ReorderWor
         };
 
     public ReorderWordsInLevelRpc(string referer, string levelId, List<string> thingIds) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_ids", JsonConvert.SerializeObject(thingIds) }

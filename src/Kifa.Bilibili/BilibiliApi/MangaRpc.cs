@@ -14,7 +14,7 @@ public sealed class MangaRpc : KifaJsonParameterizedRpc<MangaResponse> {
     protected override string JsonContent => "{\"comic_id\":{comic_id}}";
 
     public MangaRpc(string mangaId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "comic_id", mangaId }
         };
     }

@@ -102,7 +102,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             throw new ArgumentException($"Source {sourcePath} doesn't exist.");
         }
 
-        client.Call(new MoveFileRpc(sourceId, fileName, folderId, Account.AccessToken));
+        client.Call(new MoveFileRpc(sourceId, fileName, folderId, () => Account.AccessToken));
 
         KnownFileIdCache.Remove(KnownFileIdCache.First(cache => cache.Value == sourceId).Key);
         // File size cache doesn't have to be removed since it's still the same file.

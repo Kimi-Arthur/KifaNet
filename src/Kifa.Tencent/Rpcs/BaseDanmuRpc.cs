@@ -44,7 +44,7 @@ sealed class BaseDanmuRpc : KifaJsonParameterizedRpc<BaseDanmuRpc.Response> {
     protected override HttpMethod Method => HttpMethod.Get;
 
     public BaseDanmuRpc(string videoId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "video_id", videoId }
         };
     }

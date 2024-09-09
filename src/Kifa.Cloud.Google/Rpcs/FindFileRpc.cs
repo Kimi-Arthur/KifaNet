@@ -32,7 +32,7 @@ class FindFileRpc : KifaJsonParameterizedRpc<FindFileRpc.Response> {
     protected override bool CamelCase => true;
 
     public FindFileRpc(string parentId, string name, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "parent_id", parentId },
             { "name", HttpUtility.UrlEncode(name) },
             { "access_token", accessToken }

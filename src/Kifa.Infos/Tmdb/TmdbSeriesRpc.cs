@@ -14,7 +14,7 @@ public sealed class TmdbSeriesRpc : KifaJsonParameterizedRpc<TmdbSeriesResponse>
     static readonly Random Random = new();
 
     public TmdbSeriesRpc(string sid, Language language, string apiKey) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "sid", sid },
             { "api_key", apiKey },
             { "lang", language.Code },

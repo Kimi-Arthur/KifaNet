@@ -27,24 +27,25 @@ public abstract class KifaParameterizedRpc : KifaRpc {
         get;
     }
 
-    protected Dictionary<string, string> Parameters { get; set; } = new();
-    protected Dictionary<string, byte[]> ByteParameters { get; set; } = new();
+    protected Dictionary<string, FuncOrValue<string>> Parameters { get; set; } = new();
+    protected Dictionary<string, FuncOrValue<byte[]>> ByteParameters { get; set; } = new();
 
     static readonly string ContentHeaderPrefix = "content-";
 
     public HttpRequestMessage GetRequest() {
-        var address = Url.Format(Parameters);
+        var parameters = Parameters.ToDictionary(key => key.Key, value => value.Value.Get());
+        var address = Url.Format(parameters);
         Logger.Trace($"{Method} {address}");
 
         var request = new HttpRequestMessage(Method, address);
 
         foreach (var (headerName, value) in Headers.Where(h
                      => !h.Key.ToLower().StartsWith(ContentHeaderPrefix))) {
-            request.Headers.Add(headerName, value.Format(Parameters));
+            request.Headers.Add(headerName, value.Format(parameters));
         }
 
         if (JsonContent != null) {
-            var content = new StringContent(JsonContent.Format(Parameters)) {
+            var content = new StringContent(JsonContent.Format(parameters)) {
                 Headers = {
                     ContentType = MediaTypeHeaderValue.Parse("application/json; charset=UTF-8")
                 }
@@ -55,31 +56,31 @@ public abstract class KifaParameterizedRpc : KifaRpc {
             request.Content = multipartContent;
             if (FormContent != null) {
                 foreach (var (name, value) in FormContent) {
-                    multipartContent.Add(new StringContent(value.Format(Parameters)),
-                        name.Format(Parameters));
+                    multipartContent.Add(new StringContent(value.Format(parameters)),
+                        name.Format(parameters));
                 }
             }
 
             foreach (var (dataKey, name, fileName) in ExtraMultipartContent) {
-                var content = new ByteArrayContent(ByteParameters[dataKey]);
+                var content = new ByteArrayContent(ByteParameters[dataKey].Get());
                 if (PartHeaders.TryGetValue(dataKey, out var header)) {
                     foreach (var (headerName, value) in header) {
-                        content.Headers.Add(headerName.Format(Parameters),
-                            value.Format(Parameters));
+                        content.Headers.Add(headerName.Format(parameters),
+                            value.Format(parameters));
                     }
                 }
 
-                multipartContent.Add(content, name.Format(Parameters), fileName.Format(Parameters));
+                multipartContent.Add(content, name.Format(parameters), fileName.Format(parameters));
             }
         } else if (FormContent != null) {
             request.Content = new FormUrlEncodedContent(FormContent.Select(item
-                => new KeyValuePair<string?, string?>(item.Key, item.Value.Format(Parameters))));
+                => new KeyValuePair<string?, string?>(item.Key, item.Value.Format(parameters))));
         }
 
         if (request.Content != null) {
             foreach (var (headerName, value) in Headers.Where(h
                          => h.Key.ToLower().StartsWith(ContentHeaderPrefix))) {
-                request.Content.Headers.Add(headerName, value.Format(Parameters));
+                request.Content.Headers.Add(headerName, value.Format(parameters));
             }
         }
 

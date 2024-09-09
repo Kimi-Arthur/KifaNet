@@ -123,7 +123,7 @@ public sealed class VideoRpc : KifaJsonParameterizedRpc<VideoRpc.Response> {
     protected override HttpMethod Method => HttpMethod.Get;
 
     public VideoRpc(string aid) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "aid", aid.Substring(2) }
         };
     }

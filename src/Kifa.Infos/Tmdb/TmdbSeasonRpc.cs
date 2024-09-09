@@ -11,7 +11,7 @@ public sealed class TmdbSeasonRpc : KifaJsonParameterizedRpc<TmdbSeasonResponse>
     protected override HttpMethod Method => HttpMethod.Get;
 
     public TmdbSeasonRpc(string sid, int seasonId, Language language, string apiKey) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "sid", sid },
             { "season", seasonId.ToString() },
             { "lang", language.Code },

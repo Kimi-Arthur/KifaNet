@@ -377,7 +377,7 @@ public sealed class
         };
 
     public UploaderInfoWebRpc(string uploaderId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "id", uploaderId }
         };
     }

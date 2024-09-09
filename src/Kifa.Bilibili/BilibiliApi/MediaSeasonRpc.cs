@@ -13,7 +13,7 @@ public sealed class MediaSeasonRpc : KifaJsonParameterizedRpc<MediaSeasonRespons
     protected override HttpMethod Method => HttpMethod.Get;
 
     public MediaSeasonRpc(string seasonId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "id", seasonId[2..] }
         };
     }

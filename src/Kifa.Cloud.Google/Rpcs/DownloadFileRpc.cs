@@ -18,7 +18,7 @@ class DownloadFileRpc : KifaParameterizedRpc, KifaRpc<Stream> {
         };
 
     public DownloadFileRpc(string fileId, long startByte, long endByte, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "file_id", fileId },
             { "access_token", accessToken },
             { "start_byte", startByte.ToString() },

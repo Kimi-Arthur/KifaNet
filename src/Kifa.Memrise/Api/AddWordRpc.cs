@@ -22,7 +22,7 @@ public sealed class AddWordRpc : KifaJsonParameterizedRpc<AddWordResponse> {
         };
 
     public AddWordRpc(string databaseId, string referer, Dictionary<string, string> data) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "databaseId", databaseId },
             { "referer", referer },
             { "data", JsonConvert.SerializeObject(data) }

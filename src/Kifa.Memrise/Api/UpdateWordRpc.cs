@@ -23,7 +23,7 @@ public sealed class UpdateWordRpc : KifaJsonParameterizedRpc<UpdateWordResponse>
         };
 
     public UpdateWordRpc(string referer, string thingId, string cellId, string value) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "referer", referer },
             { "thing_id", thingId },
             { "cell_id", cellId },

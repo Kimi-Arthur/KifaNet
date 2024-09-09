@@ -27,7 +27,7 @@ class CreateFolderRpc : KifaJsonParameterizedRpc<CreateFolderRpc.Response> {
     protected override bool CamelCase => true;
 
     public CreateFolderRpc(string parentId, string name, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "name", name },
             { "parent_id", parentId },
             { "access_token", accessToken },

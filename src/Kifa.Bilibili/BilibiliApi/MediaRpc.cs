@@ -11,7 +11,7 @@ public sealed class MediaRpc : KifaJsonParameterizedRpc<MediaResponse> {
     protected override HttpMethod Method => HttpMethod.Get;
 
     public MediaRpc(string mediaId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "id", mediaId[2..] }
         };
     }

@@ -18,7 +18,7 @@ class CreateFileRpc : KifaParameterizedRpc, KifaRpc<string> {
     protected override string JsonContent => """{"name": "{name}", "parents": ["{parent_id}"]}""";
 
     public CreateFileRpc(string parentId, string name, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "parent_id", parentId },
             { "name", name },
             { "access_token", accessToken },

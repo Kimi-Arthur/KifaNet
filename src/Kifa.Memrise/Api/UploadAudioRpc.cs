@@ -39,13 +39,13 @@ public sealed class UploadAudioRpc : KifaJsonParameterizedRpc<UpdateAudioRespons
 
     public UploadAudioRpc(string referer, string thingId, string cellId, string csrfToken,
         byte[] audio) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new() {
             { "referer", referer },
             { "thing_id", thingId },
             { "cell_id", cellId },
             { "csrf_token", csrfToken }
         };
-        ByteParameters = new Dictionary<string, byte[]> {
+        ByteParameters = new() {
             { "audio", audio }
         };
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Rpc;
@@ -25,12 +26,12 @@ class MoveFileRpc : KifaJsonParameterizedRpc<MoveFileRpc.Response> {
 
     protected override string? JsonContent => """{"name": "{name}"}""";
 
-    public MoveFileRpc(string fileId, string name, string parentId, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+    public MoveFileRpc(string fileId, string name, string parentId, Func<string> accessTokenFunc) {
+        Parameters = new () {
             { "file_id", fileId },
             { "name", name },
             { "parent_id", parentId },
-            { "access_token", accessToken }
+            { "access_token", accessTokenFunc }
         };
     }
 }

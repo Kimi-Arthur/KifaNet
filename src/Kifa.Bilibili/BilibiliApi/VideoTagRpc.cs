@@ -47,7 +47,7 @@ public sealed class VideoTagRpc : KifaJsonParameterizedRpc<VideoTagRpc.Response>
     protected override HttpMethod Method => HttpMethod.Get;
 
     public VideoTagRpc(string aid) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "aid", aid[2..] }
         };
     }

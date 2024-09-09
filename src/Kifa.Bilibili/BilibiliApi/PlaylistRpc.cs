@@ -96,7 +96,7 @@ public sealed class PlaylistRpc : KifaJsonParameterizedRpc<PlaylistRpc.Response>
     protected override HttpMethod Method => HttpMethod.Get;
 
     public PlaylistRpc(string playlistId, int page = 1) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "id", playlistId },
             { "page", page.ToString() }
         };

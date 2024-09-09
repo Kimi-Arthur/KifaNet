@@ -16,7 +16,7 @@ public sealed class ProgramPlayerRpc : KifaJsonParameterizedRpc<PlayerResponse> 
         };
 
     public ProgramPlayerRpc(string programId, string eventId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "program_id", programId },
             { "event_id", eventId }
         };

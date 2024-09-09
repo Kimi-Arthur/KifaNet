@@ -20,7 +20,7 @@ public sealed class RemoveWordRpc : KifaJsonParameterizedRpc<RemoveWordResponse>
         };
 
     public RemoveWordRpc(string referer, string thingId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "thingId", thingId },
             { "referer", referer }
         };

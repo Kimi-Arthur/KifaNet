@@ -27,7 +27,7 @@ public class TrackingRpc : KifaJsonParameterizedRpc<TrackingRpc.Response> {
         };
 
     public TrackingRpc(bool disableTracking) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "disable_tracking", disableTracking.ToString() },
             { "csrf_token", HttpClients.BilibiliCsrfToken }
         };

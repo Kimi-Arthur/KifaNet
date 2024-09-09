@@ -14,7 +14,7 @@ public sealed class MangaTokenRpc : KifaJsonParameterizedRpc<MangaTokenResponse>
     protected override string JsonContent => "{\"urls\":\"[{urls}]\"}";
 
     public MangaTokenRpc(IEnumerable<string> imageIds) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "urls", string.Join(",", imageIds.Select(id => $"\\\"/bfs/manga/{id}\\\"")) }
         };
     }

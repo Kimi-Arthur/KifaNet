@@ -66,7 +66,7 @@ public class BiliplusVideoCacheRpc : KifaJsonParameterizedRpc<BiliplusVideoCache
             throw new DataNotFoundException($"Failed to find cache page url for {aid}.");
         }
 
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "api_path", match.Groups[1].Value }
         };
     }

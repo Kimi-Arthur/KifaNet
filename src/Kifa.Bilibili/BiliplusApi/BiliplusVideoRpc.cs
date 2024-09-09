@@ -196,7 +196,7 @@ public sealed class BiliplusVideoRpc : KifaJsonParameterizedRpc<BiliplusVideoRpc
     protected override HttpMethod Method => HttpMethod.Get;
 
     public BiliplusVideoRpc(string aid) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "aid", aid.Substring(2) }
         };
     }

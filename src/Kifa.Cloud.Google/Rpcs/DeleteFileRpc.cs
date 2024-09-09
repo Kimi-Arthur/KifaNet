@@ -15,7 +15,7 @@ class DeleteFileRpc : KifaParameterizedRpc {
         };
 
     public DeleteFileRpc(string fileId, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "file_id", fileId },
             { "access_token", accessToken }
         };

@@ -175,7 +175,7 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
     protected override HttpMethod Method => HttpMethod.Get;
 
     public UploaderVideoRpc(string uploaderId, long offset = 0) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "id", uploaderId },
             { "offset", offset.ToString() }
         };

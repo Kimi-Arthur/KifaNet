@@ -29,7 +29,7 @@ public class ListFilesRpc : KifaJsonParameterizedRpc<ListFilesRpc.Response> {
     protected override bool CamelCase => true;
 
     public ListFilesRpc(string parentId, string pageToken, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "parent_id", parentId },
             { "page_token", pageToken },
             { "access_token", accessToken }

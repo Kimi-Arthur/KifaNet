@@ -13,7 +13,7 @@ public class BiliplusMangaEpisodeRpc : KifaParameterizedRpc, KifaRpc<List<string
     protected override HttpMethod Method => HttpMethod.Get;
 
     public BiliplusMangaEpisodeRpc(string mangaId, string epid) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "manga_id", mangaId },
             { "epid", epid }
         };

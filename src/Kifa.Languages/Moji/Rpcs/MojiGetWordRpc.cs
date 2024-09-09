@@ -95,7 +95,7 @@ public sealed class MojiGetWordRpc : KifaJsonParameterizedRpc<MojiGetWordRpc.Res
     protected override bool CamelCase => true;
 
     public MojiGetWordRpc(string wordId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "word_id", wordId }
         };
     }

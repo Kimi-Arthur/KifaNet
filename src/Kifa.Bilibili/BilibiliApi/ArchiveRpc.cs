@@ -68,7 +68,7 @@ public class ArchiveRpc : KifaJsonParameterizedRpc<ArchiveRpc.Response> {
     protected override HttpMethod Method => HttpMethod.Get;
 
     public ArchiveRpc(string uploaderId, string seasonId, int page = 1) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "mid", uploaderId },
             { "season_id", seasonId },
             { "page", page.ToString() }

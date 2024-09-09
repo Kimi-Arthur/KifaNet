@@ -17,7 +17,7 @@ sealed class SegmentDanmuRpc : KifaJsonParameterizedRpc<SegmentDanmuRpc.Response
     protected override HttpMethod Method => HttpMethod.Get;
 
     internal SegmentDanmuRpc(string videoId, string segmentId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "video_id", videoId },
             { "segment_id", segmentId }
         };

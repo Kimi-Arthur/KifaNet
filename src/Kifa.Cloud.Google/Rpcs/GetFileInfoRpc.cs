@@ -23,7 +23,7 @@ class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Response> {
     protected override bool CamelCase => true;
 
     public GetFileInfoRpc(string fileId, string accessToken) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "file_id", fileId },
             { "access_token", accessToken },
         };

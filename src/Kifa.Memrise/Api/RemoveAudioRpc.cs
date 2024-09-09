@@ -23,7 +23,7 @@ public sealed class RemoveAudioRpc : KifaJsonParameterizedRpc<RemoveAudioRespons
         };
 
     public RemoveAudioRpc(string referer, string thingId, string audioColumn, string fileId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "referer", referer },
             { "thing_id", thingId },
             { "audio_column", audioColumn },

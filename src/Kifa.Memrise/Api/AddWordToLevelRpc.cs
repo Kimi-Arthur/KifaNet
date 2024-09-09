@@ -21,7 +21,7 @@ public sealed class AddWordToLevelRpc : KifaJsonParameterizedRpc<AddWordToLevelR
         };
 
     public AddWordToLevelRpc(string referer, string levelId, string thingId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_id", thingId }

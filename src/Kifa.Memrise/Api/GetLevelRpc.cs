@@ -16,7 +16,7 @@ public sealed class GetLevelRpc : KifaJsonParameterizedRpc<GetLevelResponse> {
         };
 
     public GetLevelRpc(string referer, string levelId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "referer", referer },
             { "level_id", levelId }
         };

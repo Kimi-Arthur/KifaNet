@@ -11,7 +11,7 @@ public sealed class VideoUrlRpc : KifaJsonParameterizedRpc<VideoUrlResponse> {
     protected override HttpMethod Method => HttpMethod.Get;
 
     public VideoUrlRpc(string aid, string cid, int quality) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "aid", aid.Substring(2) },
             { "cid", cid },
             { "quality", quality.ToString() }

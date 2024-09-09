@@ -16,7 +16,7 @@ public sealed class LivePlayerRpc : KifaJsonParameterizedRpc<PlayerResponse> {
         };
 
     public LivePlayerRpc(string liveId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "live_id", liveId }
         };
     }

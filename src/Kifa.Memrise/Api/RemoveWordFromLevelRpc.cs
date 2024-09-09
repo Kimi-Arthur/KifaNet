@@ -21,7 +21,7 @@ public sealed class RemoveWordFromLevelRpc : KifaJsonParameterizedRpc<RemoveWord
         };
 
     public RemoveWordFromLevelRpc(string referer, string levelId, string thingId) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "referer", referer },
             { "level_id", levelId },
             { "thing_id", thingId }

@@ -46,7 +46,7 @@ public sealed class MojiSearchRpc : KifaJsonParameterizedRpc<MojiSearchRpc.Respo
         });
 
     public MojiSearchRpc(string word) {
-        Parameters = new Dictionary<string, string> {
+        Parameters = new () {
             { "word", word }
         };
     }
