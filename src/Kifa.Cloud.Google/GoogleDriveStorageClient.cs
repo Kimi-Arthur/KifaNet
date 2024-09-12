@@ -47,11 +47,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
         path = path.TrimEnd('/');
         var fileId = GetFileId(path);
-        if (fileId == null) {
-            return [];
-        }
-
-        return ListWithFileId(path, fileId, recursive);
+        return fileId == null ? [] : ListWithFileId(path, fileId, recursive);
     }
 
     public IEnumerable<FileInformation> ListWithFileId(string path, string fileId,
