@@ -32,8 +32,8 @@ public class TelegramCellClient : IDisposable {
             ThreadPool.SetMinThreads(100, 100);
             wTelegramLogger = LogManager.GetLogger("WTelegram");
 
-            Helpers.Log = (level, message)
-                => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
+            // Completely hide Telegram log in console.
+            Helpers.Log = (_, message) => wTelegramLogger.Log(LogLevel.FromOrdinal(0), message);
         }
 
         AccountId = account.Id;
