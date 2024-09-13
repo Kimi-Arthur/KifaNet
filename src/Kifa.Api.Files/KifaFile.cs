@@ -417,7 +417,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             using var stream = OpenRead();
             LocalFile.Write(stream);
             LocalFile.Add();
-            Register(true);
         }
     }
 
