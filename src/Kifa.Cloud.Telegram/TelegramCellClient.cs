@@ -32,8 +32,8 @@ public class TelegramCellClient : IDisposable {
             ThreadPool.SetMinThreads(100, 100);
             wTelegramLogger = LogManager.GetLogger("WTelegram");
 
-            Helpers.Log = (level, message)
-                => wTelegramLogger.Log(LogLevel.FromOrdinal(level < 3 ? 0 : level), message);
+            // Always use Trace level as WTelegram logs can be noisy.
+            Helpers.Log = (_, message) => wTelegramLogger.Log(LogLevel.FromOrdinal(0), message);
         }
 
         AccountId = account.Id;
