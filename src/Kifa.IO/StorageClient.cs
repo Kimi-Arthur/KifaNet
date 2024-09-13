@@ -45,6 +45,8 @@ public abstract class StorageClient : IDisposable {
 
     public abstract void Write(string path, Stream stream);
 
+    public virtual FileIdInfo? GetFileIdInfo(string path) => null;
+
     public abstract string Type { get; }
 
     public abstract string Id { get; }

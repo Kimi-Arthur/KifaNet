@@ -91,6 +91,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     string LocalFilePath { get; }
     KifaFile LocalFile => new(LocalFilePath);
 
+    FileIdInfo? idInfo;
+    public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path);
+
+    string? fileId;
+
+    public string? FileId
+        => fileId ??= "{host}/{file_id}".FormatIfNonNull(new() {
+            { "host", Host },
+            { "file_id", IdInfo?.Id }
+        });
+
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
         uri ??= GetUri(id ?? fileInfo!.Id, allowedClients);
@@ -465,7 +476,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             try {
                 LocalFile.Add();
                 file = LocalFile;
-                Logger.Debug($"Use local file {file} instead.");
+                Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
             } catch (FileNotFoundException) {
                 // Expected to find no cached file.
             }
@@ -496,6 +507,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (UseCache) {
             CacheFileToLocal();
             file = LocalFile;
+            Logger.Debug($"Since file is cached, use local file {file} instead now.");
+        }
+
+        if (file.CheckedByFileId()) {
+            Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
+            Register(true);
+            return;
         }
 
         // A new encryption key will be added if not already there.
@@ -537,11 +555,71 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             // Even though `Locaions` is removed, it's still OK as it's `Update()`.
             FileInfoClient.Update(info);
             Register(true);
+            RegisterFileIdInfo();
         } else {
             throw new FileCorruptedException(
                 $"New result differs from sha256 result: {compareResult}\n" + "Expected:\n" +
                 sha256Info.RemoveProperties(FileProperties.All ^ compareResult) + "\nActual:\n" +
                 info.RemoveProperties(FileProperties.All ^ compareResult));
+        }
+    }
+
+    bool CheckedByFileId() {
+        if (FileId == null || IdInfo == null) {
+            return false;
+        }
+
+        var existingIdInfo = FileIdInfo.Client.Get(FileId);
+        if (existingIdInfo?.Sha256 == null) {
+            Logger.Debug($"File of file_id {FileId} is not found.");
+            return false;
+        }
+
+        if (IdInfo.Size != existingIdInfo.Size ||
+            IdInfo.LastModified != existingIdInfo.LastModified) {
+            Logger.Warn($"File of file_id {FileId} is found, but some info differs: " +
+                        $"{existingIdInfo.Size} vs {IdInfo.Size}; {existingIdInfo.LastModified} vs {IdInfo.LastModified}");
+            return false;
+        }
+
+        if (FileInfo?.Sha256 == null) {
+            var sha256Info = FileInfoClient.Get($"/$/{existingIdInfo.Sha256}");
+
+            // FileInfo is unknown. Just link it.
+            if (sha256Info != null) {
+                Logger.LogResult(FileInfoClient.Link(sha256Info.Id, Id),
+                    "linking file as checked by file_id", throwIfError: true,
+                    defaultLevel: LogLevel.Debug);
+                FileInfo = FileInfoClient.Get(Id);
+
+                return true;
+            }
+
+            Logger.Warn($"File of SHA256 {existingIdInfo.Sha256} should exist.");
+            return false;
+        }
+
+        // FileInfo.Sha256 should present as this should be a known file.
+        if (existingIdInfo.Sha256 != FileInfo?.Sha256) {
+            Logger.Warn(
+                $"SHA256 found by file_id {FileId} differs: {existingIdInfo.Sha256} vs {FileInfo?.Sha256}");
+            return false;
+        }
+
+        Logger.Debug(
+            $"File of file_id {FileId} is already checked with SHA256 of {existingIdInfo.Sha256}.");
+        return true;
+    }
+
+    void RegisterFileIdInfo() {
+        if (IdInfo != null) {
+            IdInfo.Sha256 = FileInfo.Checked().Sha256;
+            if (IdInfo.Sha256 == null) {
+                throw new FileCorruptedException(
+                    "UNEXPECTED: SHA256 field was not found when registering file_id.");
+            }
+
+            FileIdInfo.Client.Set(IdInfo);
         }
     }
 

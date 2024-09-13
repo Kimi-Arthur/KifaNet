@@ -329,6 +329,23 @@ public class FileStorageClient(string serverId) : StorageClient {
                throw new FileNotFoundException($"Server {ServerId} is not found in config.");
     }
 
+    public override FileIdInfo? GetFileIdInfo(string path) {
+        var localPath = GetLocalPath(path);
+        if (!File.Exists(localPath)) {
+            return null;
+        }
+
+        var id = FileID.GetUniqueFileID(localPath);
+        var info = new FileInfo(localPath);
+
+        Logger.Trace($"{path} has inode of {id}");
+        return new() {
+            Id = id.ToString(),
+            Size = info.Length,
+            LastModified = info.LastAccessTimeUtc
+        };
+    }
+
     public ulong GetLocalFileId(string path) {
         var id = FileID.GetUniqueFileID(GetLocalPath(path));
         Logger.Trace($"{path} has inode of {id}");
