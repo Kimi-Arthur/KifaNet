@@ -82,7 +82,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
 
-    public bool Allocated => FileInfo.Checked().Locations.ContainsKey(ToString());
+    public bool Allocated => FileInfo?.Locations.ContainsKey(ToString()) ?? false;
 
     public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
@@ -429,9 +429,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public FileInformation CalculateInfo(FileProperties properties) {
-        var info = FileInfo.Clone() ?? new FileInformation {
+        var info = FileInfo?.Clone() ?? new FileInformation {
             Id = Id
         };
+
         info.RemoveProperties(
             (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
@@ -471,21 +472,21 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         if (shouldCheckKnown != true &&
-            (FileInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
+            (oldInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
             file.Registered) {
+            oldInfo = oldInfo.Checked();
             if (shouldCheckKnown == false) {
                 Logger.Debug($"Quick check skipped for {file}.");
                 return;
             }
 
-            var partialInfo = file.CalculateInfo(FileProperties.Size);
-            var compareResults =
-                partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            var quickInfo = file.CalculateInfo(FileProperties.Size);
+            var compareResults = quickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
                 throw new FileCorruptedException(
                     $"Quick result differs from old result: {compareResults}\n" + "Expected:\n" +
                     oldInfo.RemoveProperties(FileProperties.All ^ compareResults) + "\nActual:\n" +
-                    partialInfo.RemoveProperties(FileProperties.All ^ compareResults));
+                    quickInfo.RemoveProperties(FileProperties.All ^ compareResults));
             }
 
             Logger.Debug($"Quick check passed for {file}.");
@@ -497,6 +498,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             file = LocalFile;
         }
 
+        // A new encryption key will be added if not already there.
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 
         var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
@@ -507,19 +509,32 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 "\nActual:\n" + info.RemoveProperties(FileProperties.All ^ compareResultWithOld));
         }
 
+        // info.Sha256 is for sure available now.
         var sha256Info = FileInfoClient.Get($"/$/{info.Sha256}");
 
-        if (sha256Info != null && sha256Info.Sha256 == info.Sha256) {
-            Logger.LogResult(FileInfoClient.Link(sha256Info.Id, info.Id), "linking file",
-                throwIfError: true);
+        if (sha256Info != null) {
+            if (sha256Info.Sha256 == info.Sha256) {
+                if (sha256Info.RealId != info.RealId) {
+                    Logger.LogResult(FileInfoClient.Link(sha256Info.Id, info.Id),
+                        $"linking file from {sha256Info.Id} to {info.Id} due common SHA256 value",
+                        defaultLevel: LogLevel.Debug, throwIfError: true);
+                } else {
+                    Logger.Trace($"File {info.Id} already linked to {sha256Info.Id}");
+                }
+            } else {
+                throw new FileCorruptedException(
+                    $"UNEXPECTED: The file found by SHA256 doesn't match the file SHA256: {sha256Info.Sha256} vs {info.Sha256}");
+            }
+        } else {
+            Logger.Trace($"No file with SHA256 {info.Sha256} is found.");
         }
 
         var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
         if (compareResult == FileProperties.None) {
-            info.EncryptionKey =
-                sha256Info?.EncryptionKey ??
-                info.EncryptionKey; // Respects original encryption key.
+            // Respects the original encryption key.
+            info.EncryptionKey = sha256Info?.EncryptionKey ?? info.EncryptionKey;
 
+            // Even though `Locaions` is removed, it's still OK as it's `Update()`.
             FileInfoClient.Update(info);
             Register(true);
         } else {

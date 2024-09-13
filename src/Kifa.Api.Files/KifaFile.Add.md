@@ -30,11 +30,11 @@ Since `FileIdInfo` is not a strong indication, any failure will just be warned a
 
 - `Size` and `LastModified` not match => Ignore.
 - `FileInfo` exists
-  - If `Sha256` match, Register().
-  - Otherwise, ignore.
+    - If `Sha256` match, Register().
+    - Otherwise, ignore.
 - Otherwise, if the one linked by `Sha256`
-  - If `Sha256` match (supposedly always), link `Id` to `Sha256` item and Register().
-  - Otherwise, ignore.
+    - If `Sha256` match (supposedly always), link `Id` to `Sha256` item and Register().
+    - Otherwise, ignore.
 
 ### Situation 1: FileInfo doesn't exist (TBC)
 
@@ -47,3 +47,12 @@ Since `FileIdInfo` is not a strong indication, any failure will just be warned a
 1. Calculate full info of the file.
 2. Find the `SHA256` `FileInformation` and compare. Fail if they differ.
 3. Register.
+
+### Info check precedence
+
+In case a full check is needed, either due to explicit request or inference (file info not calculated or
+instance not known), its full info will be calculated and compared to existing ones if possible. This can ensure
+anything registered is guaranteed to be the same file.
+
+If the file path is known, it's first compared with that info.
+Then if a file with the same SHA256 is found, compare with that info too.
