@@ -55,17 +55,10 @@ public abstract class DataModel {
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
 
-    public SortedSet<string> GetOtherLinks()
-        => Metadata?.Linking?.Links == null
-            ? new SortedSet<string>()
-            : new SortedSet<string>(Metadata.Linking.Links);
+    public SortedSet<string> GetOtherLinks() => Metadata?.Linking?.Links ?? [];
 
     public SortedSet<string> GetAllLinks()
-        => Metadata?.Linking?.Links == null
-            ? new SortedSet<string> {
-                RealId
-            }
-            : new SortedSet<string>(Metadata.Linking.Links.Append(RealId));
+        => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
 
     // Not finished
     public string Compare<TDataModel>(TDataModel other) {
