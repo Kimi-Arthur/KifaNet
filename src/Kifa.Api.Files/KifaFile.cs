@@ -20,10 +20,10 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    FileInformationServiceClient? fileInfoClient;
+    static FileInformationServiceClient? fileInfoClient;
 
-    FileInformationServiceClient FileInfoClient
-        => (fileInfoClient ??= FileInformation.Client).Checked();
+    static FileInformationServiceClient FileInfoClient
+        => (fileInfoClient ??= FileInfoClient).Checked();
 
     #region Configs
 
@@ -146,7 +146,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
-        FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+        FileInfo = fileInfo ?? FileInfoClient.Get(Id);
+        if (Id != FileInfo?.Id) {
+            throw new FileCorruptedException($"File's ID doesn't match: {Id} vs {FileInfo?.Id}");
+        }
+
         // Always store with its id makes more sense to me.
         LocalFilePath = $"{LocalServer}{Id}";
 
@@ -160,7 +164,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     static string? GetUri(string id, HashSet<string>? allowedClients) {
         string? candidate = null;
         var bestScore = 0L;
-        var info = FileInformation.Client.Get(id);
+        var info = FileInfoClient.Get(id);
         if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {
                 if (verifyTime != null) {
@@ -259,7 +263,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         var files = Client.List(Path, recursive).Where(f
             => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path))).ToList();
-        var fileInfos = FileInformation.Client.Get(files.Select(f => f.Id).ToList());
+        var fileInfos = FileInfoClient.Get(files.Select(f => f.Id).ToList());
         return files.Zip(fileInfos)
             .Select(item => new KifaFile(Host + item.First.Id, fileInfo: item.Second));
     }
@@ -276,9 +280,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         string? prefix = null, bool recursive = true, string pattern = "*",
         bool ignoreFiles = true) {
         var files = new List<(string SortKey, KifaFile File)>();
-        foreach (var fileName in sources) {
-            // TODO: batch file info retrieval.
-            var file = new KifaFile(fileName);
+        foreach (var source in GetKifaFiles(sources)) {
+            var file = source;
             if (prefix != null && !file.Path.StartsWith(prefix)) {
                 file = file.GetFilePrefixed(prefix);
             }
@@ -309,18 +312,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
         var files = new List<(string sortKey, string value)>();
-        foreach (var fileName in sources) {
-            // TODO: batch file info retrieval.
-            var fileInfo = new KifaFile(fileName);
-            if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
-                fileInfo = fileInfo.GetFilePrefixed(prefix);
+        foreach (var source in GetKifaFiles(sources)) {
+            var file = source;
+            if (prefix != null && !file.Path.StartsWith(prefix)) {
+                file = file.GetFilePrefixed(prefix);
             }
 
-            var path = fileInfo.Path;
-            var host = fileInfo.Host;
+            var path = file.Path;
+            var host = file.Host;
 
-            var thisFolder = FileInformation.Client.ListFolder(path, recursive);
-            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, fileInfo.Id))
+            var thisFolder = FileInfoClient.ListFolder(path, recursive);
+            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, file.Id))
                 .Select(f => (f.GetNaturalSortKey(), host + f)));
         }
 
@@ -328,6 +330,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         // TODO: batch file info retrieval.
         return files.Select(f => new KifaFile(f.value)).ToList();
+    }
+
+    static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
+        var files = fileNames.ToList();
+        var infos = FileInfoClient.Get(files);
+        return files.Zip(infos)
+            .Select(source => new KifaFile(source.First, fileInfo: source.Second));
     }
 
     // KifaFile.FileInfo is filled for items returned.
@@ -355,7 +364,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     continue;
                 }
 
-                FileInformation.Client.Link(source.Id, link.Id);
+                FileInfoClient.Link(source.Id, link.Id);
                 Logger.Debug($"Linked {link.Id} => {source.Id}.");
             }
 
@@ -627,13 +636,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Register(bool verified = false) {
-        FileInformation.Client.AddLocation(Id, ToString(), verified);
-        FileInfo = FileInformation.Client.Get(Id);
+        FileInfoClient.AddLocation(Id, ToString(), verified);
+        FileInfo = FileInfoClient.Get(Id);
     }
 
     public void Unregister() {
-        FileInformation.Client.RemoveLocation(Id, ToString());
-        FileInfo = FileInformation.Client.Get(Id);
+        FileInfoClient.RemoveLocation(Id, ToString());
+        FileInfo = FileInfoClient.Get(Id);
     }
 
     public bool IsCompatible(KifaFile other)
