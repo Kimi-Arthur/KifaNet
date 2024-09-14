@@ -271,11 +271,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                    .Any(segment => segment.StartsWith(prefix))) ||
            IgnoredFiles.IsMatch(logicalPath);
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindExistingFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, string pattern = "*",
         bool ignoreFiles = true) {
         var files = new List<(string SortKey, KifaFile File)>();
         foreach (var fileName in sources) {
+            // TODO: batch file info retrieval.
             var file = new KifaFile(fileName);
             if (prefix != null && !file.Path.StartsWith(prefix)) {
                 file = file.GetFilePrefixed(prefix);
@@ -296,16 +298,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return files.Select(f => f.File).ToList();
     }
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPhantomFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
         var files = FindPotentialFiles(sources, prefix, recursive, ignoreFiles);
         return files.Where(f => f.Registered && !f.Exists()).ToList();
     }
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
         var files = new List<(string sortKey, string value)>();
         foreach (var fileName in sources) {
+            // TODO: batch file info retrieval.
             var fileInfo = new KifaFile(fileName);
             if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
                 fileInfo = fileInfo.GetFilePrefixed(prefix);
@@ -321,9 +326,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         files.Sort();
 
+        // TODO: batch file info retrieval.
         return files.Select(f => new KifaFile(f.value)).ToList();
     }
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindAllFiles(IEnumerable<string> sources, string? prefix = null,
         bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
         var sourceFiles = sources.ToList();

@@ -85,8 +85,6 @@ public class ExtractAudioCommand : KifaCommand {
     }
 
     static void ExtractAudioFile(KifaFile sourceFile, int trackNumber) {
-        sourceFile = new KifaFile(sourceFile.ToString());
-
         var metadata = ExtractMetadata(sourceFile, trackNumber);
         var metadataString =
             string.Join(" ", metadata.Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
