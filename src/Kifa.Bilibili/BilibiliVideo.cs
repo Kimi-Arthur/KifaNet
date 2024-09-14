@@ -310,7 +310,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
-        string? alternativeFolder = null, bool prefixDate = false,
+        string? alternativeFolder = null, string prefix = "",
         BilibiliUploader? uploader = null) {
         var p = Pages.First(x => x.Id == pid);
 
@@ -322,7 +322,6 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             partName = partName[title.Length..].Trim();
         }
 
-        var prefix = prefixDate ? $"{Uploaded.Value:yyyy-MM-dd}" : "";
         var pidText = $"P{pid.ToString("D" + Pages.Count.ToString().Length)}";
 
         uploader ??= new BilibiliUploader {
