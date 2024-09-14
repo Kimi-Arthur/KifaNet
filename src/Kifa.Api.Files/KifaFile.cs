@@ -520,7 +520,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             Logger.Debug($"Since file is cached, use local file {file} instead now.");
         }
 
-        if (file.CheckedByFileId()) {
+        // If full check is explicitly requested, we should still check.
+        if (shouldCheckKnown != true && file.CheckedByFileId()) {
             Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
             Register(true);
             return;
