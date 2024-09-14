@@ -17,12 +17,16 @@ public class FileIdInfo : DataModel, WithModelId<FileIdInfo> {
 
     // File => <file_id> => file_ids/<file_id> => KifaFile location
 
-    public override string Id => $"{HostId}/{InternalFildId}";
+    string? id;
+
+    public override string Id {
+        get => id ??= $"{HostId}/{InternalFildId}";
+        set => id = value;
+    }
 
     [JsonIgnore]
     [YamlIgnore]
     public string? HostId { get; set; }
-    
 
     [JsonIgnore]
     [YamlIgnore]
