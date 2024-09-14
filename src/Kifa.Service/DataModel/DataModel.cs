@@ -23,7 +23,7 @@ public abstract class DataModel {
 
     [YamlMember(Order = -1)]
     [JsonProperty(Order = -2)]
-    public string Id {
+    public virtual string Id {
         get => Late.Get(id);
         set => Late.Set(ref id, value);
     }

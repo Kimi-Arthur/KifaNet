@@ -92,15 +92,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     KifaFile LocalFile => new(LocalFilePath);
 
     FileIdInfo? idInfo;
-    public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path);
+    public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
 
-    string? fileId;
-
-    public string? FileId
-        => fileId ??= "{host}/{file_id}".FormatIfNonNull(new() {
-            { "host", Host },
-            { "file_id", IdInfo?.Id }
-        });
+    public string? FileId => IdInfo?.Id;
 
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
@@ -578,7 +572,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (IdInfo.Size != existingIdInfo.Size ||
             IdInfo.LastModified != existingIdInfo.LastModified) {
             Logger.Warn($"File of file_id {FileId} is found, but some info differs: " +
-                        $"{existingIdInfo.Size} vs {IdInfo.Size}; {existingIdInfo.LastModified} vs {IdInfo.LastModified}");
+                        $"{existingIdInfo.Size} vs {IdInfo.Size}; {existingIdInfo.LastModified.ToJson()} vs {IdInfo.LastModified.ToJson()}");
             return false;
         }
 
@@ -619,7 +613,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     "UNEXPECTED: SHA256 field was not found when registering file_id.");
             }
 
-            FileIdInfo.Client.Set(IdInfo);
+            Logger.LogResult(FileIdInfo.Client.Set(IdInfo),
+                $"registering {IdInfo.Id} to {IdInfo.Sha256}", defaultLevel: LogLevel.Debug,
+                throwIfError: true);
         }
     }
 
@@ -717,12 +713,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
 
-    public ulong GetLocalFileId()
-        => Client is FileStorageClient fileClient
-            ? fileClient.GetLocalFileId(Path)
-            : throw new FileNotFoundException(
-                "Should not try to get a local file id with a non FileStorageClient.");
-
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
     public static KifaFile GetLocal(string path) => new($"{LocalServer}{path}");
@@ -732,8 +722,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public bool IsSameLocalFile(KifaFile source) {
-        // Assumed the files are local and in the same cell.
-        // So it's only necessary to compare inode/FileId.
-        return GetLocalFileId() == source.GetLocalFileId();
+        return FileId != null && FileId == source.FileId;
     }
 }

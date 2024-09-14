@@ -1,5 +1,7 @@
 using System;
 using Kifa.Service;
+using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace Kifa.IO;
 
@@ -14,6 +16,17 @@ public class FileIdInfo : DataModel, WithModelId<FileIdInfo> {
     // id = local/kch/238353647342895845
 
     // File => <file_id> => file_ids/<file_id> => KifaFile location
+
+    public override string Id => $"{HostId}/{InternalFildId}";
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public string? HostId { get; set; }
+    
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public string? InternalFildId { get; set; }
 
     // Security measures to make sure the file is not changed.
     public long Size { get; set; }

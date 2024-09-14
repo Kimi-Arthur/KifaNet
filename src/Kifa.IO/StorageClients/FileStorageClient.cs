@@ -5,9 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Budaisoft.FileSystem;
+using Mono.Unix;
 using NLog;
-using NLog.Fluent;
 using Renci.SshNet;
 
 namespace Kifa.IO.StorageClients;
@@ -330,25 +329,27 @@ public class FileStorageClient(string serverId) : StorageClient {
     }
 
     public override FileIdInfo? GetFileIdInfo(string path) {
+        if (!IsUnixLike) {
+            return null;
+        }
+
         var localPath = GetLocalPath(path);
         if (!File.Exists(localPath)) {
             return null;
         }
 
-        var id = FileID.GetUniqueFileID(localPath);
+        var id = new UnixFileInfo(localPath).Inode;
         var info = new FileInfo(localPath);
+        var lastModified = info.LastWriteTimeUtc;
+
+        // Remove unencodable datetime part like sub-microsecond component.
+        lastModified = lastModified.Clone();
 
         Logger.Trace($"{path} has inode of {id}");
         return new() {
-            Id = id.ToString(),
+            InternalFildId = id.ToString(),
             Size = info.Length,
-            LastModified = info.LastAccessTimeUtc
+            LastModified = lastModified
         };
-    }
-
-    public ulong GetLocalFileId(string path) {
-        var id = FileID.GetUniqueFileID(GetLocalPath(path));
-        Logger.Trace($"{path} has inode of {id}");
-        return id;
     }
 }
