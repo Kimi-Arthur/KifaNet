@@ -103,31 +103,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             throw new FileNotFoundException();
         }
 
-        // Example uri:
-        //   baidu:Pimix_1/a/b/c/d.txt.v1
-        //   mega:0z/a/b/c/d.txt
-        //   local:cubie/a/b/c/d.txt
-        //   local:/a/b/c/d.txt
-        //   /a/b/c/d.txt
-        //   C:/files/a.txt
-        //   ~/a.txt
-        //   ../a.txt
-        if (!uri.Contains(':') ||
-            uri.Contains(":/") && !uri.StartsWith("http://") && !uri.StartsWith("https://") ||
-            uri.Contains(":\\")) {
-            // Local path, convert to canonical one.
-            var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
-            foreach (var p in FileStorageClient.ServerConfigs) {
-                if (p.Value.Prefix != null && fullPath.StartsWith(p.Value.Prefix)) {
-                    uri = $"local:{p.Key}{fullPath.Substring(p.Value.Prefix.Length)}";
-                    break;
-                }
-            }
-
-            if (!uri.Contains(':')) {
-                throw new Exception($"Path {uri} not in registered path.");
-            }
-        }
+        uri = NormalizeUri(uri);
 
         var segments = uri.Split('/');
         ParentPath = "/" + string.Join("/", segments[1..^1]);
@@ -146,8 +122,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
-        FileInfo = fileInfo ?? FileInfoClient.Get(Id);
-        if (FileInfo != null && Id != FileInfo.Id) {
+        FileInfo = fileInfo ?? FileInfoClient.Get(Id) ?? new FileInformation {
+            Id = Id
+        };
+        if (Id != FileInfo.Id) {
             throw new FileCorruptedException($"File's ID doesn't match: {Id} vs {FileInfo?.Id}");
         }
 
@@ -159,6 +137,35 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
         UseCache = useCache;
+    }
+
+    // Supported uri examples:
+    //   - Canonical paths (conversion goal):
+    //     - baidu:Pimix_1/a/b/c/d.txt.v1
+    //     - mega:0z/a/b/c/d.txt
+    //     - local:cubie/a/b/c/d.txt
+    //   local:/a/b/c/d.txt
+    //   - Local absolute path
+    //     - /a/b/c/d.txt => local:some_cell_a/b/c/d.txt
+    //     - C:/files/a.txt => local:some_win_cell/a.txt
+    //     - ~/a.txt => local:some_home/a.txt
+    //     - ../a.txt => local:some_cell/path/to/parent/a.txt
+    static string NormalizeUri(string uri) {
+        if (uri.Contains(':') &&
+            (uri.StartsWith("http://") || uri.StartsWith("https://") || !uri.Contains(":/")) &&
+            !uri.Contains(":\\")) {
+            return uri;
+        }
+
+        // Local path, convert to canonical one.
+        var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
+        foreach (var p in FileStorageClient.ServerConfigs) {
+            if (fullPath.StartsWith(p.Value.Prefix)) {
+                return $"local:{p.Key}{fullPath[p.Value.Prefix.Length..]}";
+            }
+        }
+
+        throw new FileNotFoundException($"Path {uri} is not valid.");
     }
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {
@@ -264,8 +271,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var files = Client.List(Path, recursive).Where(f
             => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path))).ToList();
         var fileInfos = FileInfoClient.Get(files.Select(f => f.Id).ToList());
-        return files.Zip(fileInfos)
-            .Select(item => new KifaFile(Host + item.First.Id, fileInfo: item.Second));
+        return files.Zip(fileInfos).Select(item => new KifaFile(Host + item.First.Id,
+            fileInfo: item.Second ?? new FileInformation {
+                Id = item.First.Id
+            }));
     }
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
@@ -333,10 +342,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
-        var files = fileNames.ToList();
-        var infos = FileInfoClient.Get(files);
-        return files.Zip(infos)
-            .Select(source => new KifaFile(source.First, fileInfo: source.Second));
+        var files = fileNames.Select(NormalizeUri).ToList();
+        var infos =
+            FileInfoClient.Get(files.Select(f => FileInformation.GetId(f).Checked()).ToList());
+        return files.Zip(infos).Select(source => new KifaFile(source.First,
+            fileInfo: source.Second ?? new FileInformation {
+                Id = FileInformation.GetId(source.First).Checked()
+            }));
     }
 
     // KifaFile.FileInfo is filled for items returned.
