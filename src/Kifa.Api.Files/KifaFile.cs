@@ -23,7 +23,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     static FileInformationServiceClient? fileInfoClient;
 
     static FileInformationServiceClient FileInfoClient
-        => (fileInfoClient ??= FileInfoClient).Checked();
+        => (fileInfoClient ??= FileInformation.Client).Checked();
 
     #region Configs
 
