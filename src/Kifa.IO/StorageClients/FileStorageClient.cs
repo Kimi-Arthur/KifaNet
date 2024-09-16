@@ -338,7 +338,15 @@ public class FileStorageClient(string serverId) : StorageClient {
             return null;
         }
 
-        var id = new UnixFileInfo(localPath).Inode;
+        long id;
+        try {
+            id = new UnixFileInfo(localPath).Inode;
+        } catch (OverflowException ex) {
+            // https://github.com/mono/mono.posix/issues/51
+            Logger.Warn(ex, "Unabled to get file id due to overflow.");
+            return null;
+        }
+
         var info = new FileInfo(localPath);
         var lastModified = info.LastWriteTimeUtc;
 
