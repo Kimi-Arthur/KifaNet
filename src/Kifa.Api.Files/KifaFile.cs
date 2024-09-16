@@ -337,8 +337,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         files.Sort();
 
-        // TODO: batch file info retrieval.
-        return files.Select(f => new KifaFile(f.value)).ToList();
+        return GetKifaFiles(files.Select(f => f.value)).ToList();
     }
 
     static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
