@@ -33,8 +33,8 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     public abstract SortedDictionary<string, TDataModel> List();
     public abstract TDataModel? Get(string id, bool refresh = false);
 
-    public virtual List<TDataModel?> Get(List<string> ids)
-        => ids.AsParallel().Select(id => Get(id)).ToList();
+    // TODO: Use parallel when DataFolder setup issue is solved.
+    public virtual List<TDataModel?> Get(List<string> ids) => ids.Select(id => Get(id)).ToList();
 
     public abstract KifaActionResult Set(TDataModel data);
 
