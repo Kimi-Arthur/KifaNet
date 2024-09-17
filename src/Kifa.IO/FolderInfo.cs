@@ -7,12 +7,21 @@ namespace Kifa.IO;
 public class FolderInfo {
     public required string Folder { get; set; }
 
+    public FileStat Overall { get; set; } = new() {
+        FileCount = 0,
+        TotalSize = 0
+    };
+
     // Spec to stat.
     // Spec can be either storage client like "swiss", "google", or specific locations like
     // "local:server".
     public Dictionary<string, FileStat> Stats { get; set; } = new();
 
-    public long Missing => Stats[""].TotalSize * Stats.Count - Stats.Sum(s => s.Value.TotalSize);
+    public List<long> GetMissingSizes(List<string> targets)
+        => targets.Select(t => Overall.TotalSize - Stats.GetValueOrDefault(t, new FileStat {
+            FileCount = 0,
+            TotalSize = 0
+        }).TotalSize).ToList();
 }
 
 public class FileStat {

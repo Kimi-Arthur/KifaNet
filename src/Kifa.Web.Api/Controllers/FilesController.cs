@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Kifa.Api.Files;
@@ -106,7 +107,7 @@ public class
 public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInformation>,
     FileInformationServiceClient {
     public List<FolderInfo> GetFolder(string folder, List<string> targets) {
-        if (!folder.EndsWith("/")) {
+        if (!folder.EndsWith('/')) {
             folder += "/";
         }
 
@@ -131,8 +132,8 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
                 folders.Add(folderName, folderStat);
             }
 
-            folderStat.Stats[""].AddFile(sha256, size.Value);
-            topFolder.Stats[""].AddFile(sha256, size.Value);
+            folderStat.Overall.AddFile(sha256, size.Value);
+            topFolder.Overall.AddFile(sha256, size.Value);
             foreach (var target in targets) {
                 if (file.Locations.Any(kv => kv.Key.StartsWith(target) && kv.Value != null)) {
                     folderStat.Stats[target].AddFile(sha256, size.Value);
@@ -141,16 +142,18 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             }
         }
 
-        return folders.Values.OrderByDescending(f => f.Missing)
-            .ThenBy(f => f.Folder.GetNaturalSortKey()).ToList();
+        return folders.Values.OrderByDescending(f => f.GetMissingSizes(targets),
+            Comparer<List<long>>.Create((first, second) => {
+                // Stupid usage of LINQ for a single for-loop.
+                var item = first.Zip(second).Where(x => x.First != x.Second).FirstOrDefault((0, 0));
+                return item.First.CompareTo(item.Second);
+            })).ThenBy(f => f.Folder.GetNaturalSortKey()).ToList();
     }
 
     static FolderInfo CreateNewFolder(string folderName, List<string> targets) {
         var folderStat = new FolderInfo {
             Folder = folderName,
-            Stats = new Dictionary<string, FileStat> {
-                { "", new FileStat() }
-            }
+            Stats = []
         };
 
         foreach (var target in targets) {
