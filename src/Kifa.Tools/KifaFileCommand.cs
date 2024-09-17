@@ -77,10 +77,9 @@ public abstract partial class KifaFileCommand : KifaCommand {
                 var thisFolder = fileInfo.List(Recursive).ToList();
                 if (thisFolder.Count > 0) {
                     multi = true;
-                    files.AddRange(thisFolder.Select(f => (f.ToString().GetNaturalSortKey(), f)));
-                } else {
-                    files.Add((fileInfo.ToString().GetNaturalSortKey(), fileInfo));
                 }
+
+                files.AddRange(thisFolder.Select(f => (f.ToString().GetNaturalSortKey(), f)));
             }
 
             files.Sort();

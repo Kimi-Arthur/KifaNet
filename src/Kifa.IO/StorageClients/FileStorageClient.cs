@@ -5,9 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Budaisoft.FileSystem;
+using Mono.Unix;
 using NLog;
-using NLog.Fluent;
 using Renci.SshNet;
 
 namespace Kifa.IO.StorageClients;
@@ -329,9 +328,36 @@ public class FileStorageClient(string serverId) : StorageClient {
                throw new FileNotFoundException($"Server {ServerId} is not found in config.");
     }
 
-    public ulong GetLocalFileId(string path) {
-        var id = FileID.GetUniqueFileID(GetLocalPath(path));
+    public override FileIdInfo? GetFileIdInfo(string path) {
+        if (!IsUnixLike) {
+            return null;
+        }
+
+        var localPath = GetLocalPath(path);
+        if (!File.Exists(localPath)) {
+            return null;
+        }
+
+        long id;
+        try {
+            id = new UnixFileInfo(localPath).Inode;
+        } catch (OverflowException ex) {
+            // https://github.com/mono/mono.posix/issues/51
+            Logger.Warn(ex, "Unabled to get file id due to overflow.");
+            return null;
+        }
+
+        var info = new FileInfo(localPath);
+        var lastModified = info.LastWriteTimeUtc;
+
+        // Remove unencodable datetime part like sub-microsecond component.
+        lastModified = lastModified.Clone();
+
         Logger.Trace($"{path} has inode of {id}");
-        return id;
+        return new() {
+            InternalFildId = id.ToString(),
+            Size = info.Length,
+            LastModified = lastModified
+        };
     }
 }

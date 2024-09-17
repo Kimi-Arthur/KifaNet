@@ -16,6 +16,10 @@ public abstract class DownloadCommand : BiliCommand {
     [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
     public bool PrefixDate { get; set; } = false;
 
+    [Option('n', "prefix-number",
+        HelpText = "Prefix file name with the number in videos (only suggested for archives).")]
+    public bool PrefixNumber { get; set; } = false;
+
     [Option('c', "preferred-codec",
         HelpText = "Codec preferred to download. Supported: avc, hevc, av1. Default is hevc.")]
     public string? PreferredCodec { get; set; }
@@ -31,6 +35,8 @@ public abstract class DownloadCommand : BiliCommand {
         HelpText =
             "Whether to include page title. Possible values: OnlyMultiplePage (default), Never, Always.")]
     public PageTitleOption IncludePageTitle { get; set; } = PageTitleOption.OnlyMultiplePage;
+
+    int DownloadCounter = 0;
 
     public void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null) {
@@ -60,7 +66,7 @@ public abstract class DownloadCommand : BiliCommand {
 
         var desiredName = video.GetDesiredName(pid, quality, codec,
             includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
-            prefixDate: PrefixDate, uploader: uploader);
+            prefix: GetPrefix(video), uploader: uploader);
         var desiredFile = outputFolder.GetFile($"{desiredName}.mp4");
         var targetFiles = video.GetCanonicalNames(pid, quality, codec)
             .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
@@ -119,6 +125,18 @@ public abstract class DownloadCommand : BiliCommand {
         Logger.Debug("Removed temp files.");
 
         KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+    }
+
+    string GetPrefix(BilibiliVideo video) {
+        if (PrefixDate) {
+            return $"{video.Uploaded.Value:yyyy-MM-dd}";
+        }
+
+        if (PrefixNumber) {
+            return $"{++DownloadCounter:D2}";
+        }
+
+        return "";
     }
 
     static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {

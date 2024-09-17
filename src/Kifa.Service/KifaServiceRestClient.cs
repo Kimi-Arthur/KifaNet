@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
@@ -118,7 +119,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
 
     public override List<TDataModel?> Get(List<string> ids)
-        => ids.Any()
+        => ids.Count != 0
             ? Retry.Run(() => {
                     var request = new HttpRequestMessage(HttpMethod.Get,
                         $"{KifaServiceRestClient.ServerAddress}/{ModelId}/$") {
@@ -132,7 +133,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 },
                 (ex, i) => HandleException(ex, i,
                     $"Failure in GET {ModelId}({string.Join(", ", ids)})"))
-            : new List<TDataModel?>();
+            : [];
 
     public override KifaActionResult Link(string targetId, string linkId)
         => KifaActionResult.FromAction(() => Retry.Run(() => {
@@ -201,9 +202,12 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     static void HandleException(Exception ex, int index, string message) {
-        if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException &&
-            ex.InnerException is SocketException {
-                Message: "Device not configured"
+        if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException {
+                InnerException: SocketException {
+                    Message: "Device not configured"
+                }
+            } || ex is HttpRequestException {
+                StatusCode: HttpStatusCode.NotFound
             }) {
             throw ex;
         }

@@ -20,9 +20,9 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    FileInformationServiceClient? fileInfoClient;
+    static FileInformationServiceClient? fileInfoClient;
 
-    FileInformationServiceClient FileInfoClient
+    static FileInformationServiceClient FileInfoClient
         => (fileInfoClient ??= FileInformation.Client).Checked();
 
     #region Configs
@@ -82,7 +82,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
 
-    public bool Allocated => FileInfo.Checked().Locations.ContainsKey(ToString());
+    public bool Allocated => FileInfo?.Locations.ContainsKey(ToString()) ?? false;
 
     public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
 
@@ -91,6 +91,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     string LocalFilePath { get; }
     KifaFile LocalFile => new(LocalFilePath);
 
+    FileIdInfo? idInfo;
+    public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
+
+    public string? FileId => IdInfo?.Id;
+
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
         uri ??= GetUri(id ?? fileInfo!.Id, allowedClients);
@@ -98,31 +103,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             throw new FileNotFoundException();
         }
 
-        // Example uri:
-        //   baidu:Pimix_1/a/b/c/d.txt.v1
-        //   mega:0z/a/b/c/d.txt
-        //   local:cubie/a/b/c/d.txt
-        //   local:/a/b/c/d.txt
-        //   /a/b/c/d.txt
-        //   C:/files/a.txt
-        //   ~/a.txt
-        //   ../a.txt
-        if (!uri.Contains(':') ||
-            uri.Contains(":/") && !uri.StartsWith("http://") && !uri.StartsWith("https://") ||
-            uri.Contains(":\\")) {
-            // Local path, convert to canonical one.
-            var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
-            foreach (var p in FileStorageClient.ServerConfigs) {
-                if (p.Value.Prefix != null && fullPath.StartsWith(p.Value.Prefix)) {
-                    uri = $"local:{p.Key}{fullPath.Substring(p.Value.Prefix.Length)}";
-                    break;
-                }
-            }
-
-            if (!uri.Contains(':')) {
-                throw new Exception($"Path {uri} not in registered path.");
-            }
-        }
+        uri = NormalizeUri(uri);
 
         var segments = uri.Split('/');
         ParentPath = "/" + string.Join("/", segments[1..^1]);
@@ -141,7 +122,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
-        FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+        FileInfo = fileInfo ?? FileInfoClient.Get(Id) ?? new FileInformation {
+            Id = Id
+        };
+        if (Id != FileInfo.Id) {
+            throw new FileCorruptedException($"File's ID doesn't match: {Id} vs {FileInfo?.Id}");
+        }
+
         // Always store with its id makes more sense to me.
         LocalFilePath = $"{LocalServer}{Id}";
 
@@ -152,10 +139,39 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         UseCache = useCache;
     }
 
+    // Supported uri examples:
+    //   - Canonical paths (conversion goal):
+    //     - baidu:Pimix_1/a/b/c/d.txt.v1
+    //     - mega:0z/a/b/c/d.txt
+    //     - local:cubie/a/b/c/d.txt
+    //   local:/a/b/c/d.txt
+    //   - Local absolute path
+    //     - /a/b/c/d.txt => local:some_cell_a/b/c/d.txt
+    //     - C:/files/a.txt => local:some_win_cell/a.txt
+    //     - ~/a.txt => local:some_home/a.txt
+    //     - ../a.txt => local:some_cell/path/to/parent/a.txt
+    static string NormalizeUri(string uri) {
+        if (uri.Contains(':') &&
+            (uri.StartsWith("http://") || uri.StartsWith("https://") || !uri.Contains(":/")) &&
+            !uri.Contains(":\\")) {
+            return uri;
+        }
+
+        // Local path, convert to canonical one.
+        var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
+        foreach (var p in FileStorageClient.ServerConfigs) {
+            if (fullPath.StartsWith(p.Value.Prefix)) {
+                return $"local:{p.Key}{fullPath[p.Value.Prefix.Length..]}";
+            }
+        }
+
+        throw new FileNotFoundException($"Path {uri} is not valid.");
+    }
+
     static string? GetUri(string id, HashSet<string>? allowedClients) {
         string? candidate = null;
         var bestScore = 0L;
-        var info = FileInformation.Client.Get(id);
+        var info = FileInfoClient.Get(id);
         if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {
                 if (verifyTime != null) {
@@ -254,9 +270,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         var files = Client.List(Path, recursive).Where(f
             => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path))).ToList();
-        var fileInfos = FileInformation.Client.Get(files.Select(f => f.Id).ToList());
-        return files.Zip(fileInfos)
-            .Select(item => new KifaFile(Host + item.First.Id, fileInfo: item.Second));
+        var fileInfos = FileInfoClient.Get(files.Select(f => f.Id).ToList());
+        return files.Zip(fileInfos).Select(item => new KifaFile(Host + item.First.Id,
+            fileInfo: item.Second ?? new FileInformation {
+                Id = item.First.Id
+            }));
     }
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
@@ -266,12 +284,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                    .Any(segment => segment.StartsWith(prefix))) ||
            IgnoredFiles.IsMatch(logicalPath);
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindExistingFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, string pattern = "*",
         bool ignoreFiles = true) {
         var files = new List<(string SortKey, KifaFile File)>();
-        foreach (var fileName in sources) {
-            var file = new KifaFile(fileName);
+        foreach (var source in GetKifaFiles(sources)) {
+            var file = source;
             if (prefix != null && !file.Path.StartsWith(prefix)) {
                 file = file.GetFilePrefixed(prefix);
             }
@@ -291,34 +310,47 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return files.Select(f => f.File).ToList();
     }
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPhantomFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
         var files = FindPotentialFiles(sources, prefix, recursive, ignoreFiles);
         return files.Where(f => f.Registered && !f.Exists()).ToList();
     }
 
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
         string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
         var files = new List<(string sortKey, string value)>();
-        foreach (var fileName in sources) {
-            var fileInfo = new KifaFile(fileName);
-            if (prefix != null && !fileInfo.Path.StartsWith(prefix)) {
-                fileInfo = fileInfo.GetFilePrefixed(prefix);
+        foreach (var source in GetKifaFiles(sources)) {
+            var file = source;
+            if (prefix != null && !file.Path.StartsWith(prefix)) {
+                file = file.GetFilePrefixed(prefix);
             }
 
-            var path = fileInfo.Path;
-            var host = fileInfo.Host;
+            var path = file.Path;
+            var host = file.Host;
 
-            var thisFolder = FileInformation.Client.ListFolder(path, recursive);
-            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, fileInfo.Id))
+            var thisFolder = FileInfoClient.ListFolder(path, recursive);
+            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, file.Id))
                 .Select(f => (f.GetNaturalSortKey(), host + f)));
         }
 
         files.Sort();
 
-        return files.Select(f => new KifaFile(f.value)).ToList();
+        return GetKifaFiles(files.Select(f => f.value)).ToList();
     }
 
+    static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
+        var files = fileNames.Select(NormalizeUri).ToList();
+        var infos =
+            FileInfoClient.Get(files.Select(f => FileInformation.GetId(f).Checked()).ToList());
+        return files.Zip(infos).Select(source => new KifaFile(source.First,
+            fileInfo: source.Second ?? new FileInformation {
+                Id = FileInformation.GetId(source.First).Checked()
+            }));
+    }
+
+    // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindAllFiles(IEnumerable<string> sources, string? prefix = null,
         bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
         var sourceFiles = sources.ToList();
@@ -343,7 +375,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     continue;
                 }
 
-                FileInformation.Client.Link(source.Id, link.Id);
+                FileInfoClient.Link(source.Id, link.Id);
                 Logger.Debug($"Linked {link.Id} => {source.Id}.");
             }
 
@@ -417,7 +449,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             using var stream = OpenRead();
             LocalFile.Write(stream);
             LocalFile.Add();
-            Register(true);
         }
     }
 
@@ -430,9 +461,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public FileInformation CalculateInfo(FileProperties properties) {
-        var info = FileInfo.Clone() ?? new FileInformation {
+        var info = FileInfo?.Clone() ?? new FileInformation {
             Id = Id
         };
+
         info.RemoveProperties(
             (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
@@ -465,28 +497,28 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             try {
                 LocalFile.Add();
                 file = LocalFile;
-                Logger.Debug($"Use local file {file} instead.");
+                Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
             } catch (FileNotFoundException) {
                 // Expected to find no cached file.
             }
         }
 
         if (shouldCheckKnown != true &&
-            (FileInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
+            (oldInfo?.GetProperties() & FileProperties.All) == FileProperties.All &&
             file.Registered) {
+            oldInfo = oldInfo.Checked();
             if (shouldCheckKnown == false) {
                 Logger.Debug($"Quick check skipped for {file}.");
                 return;
             }
 
-            var partialInfo = file.CalculateInfo(FileProperties.Size);
-            var compareResults =
-                partialInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
+            var quickInfo = file.CalculateInfo(FileProperties.Size);
+            var compareResults = quickInfo.CompareProperties(oldInfo, FileProperties.AllVerifiable);
             if (compareResults != FileProperties.None) {
                 throw new FileCorruptedException(
                     $"Quick result differs from old result: {compareResults}\n" + "Expected:\n" +
                     oldInfo.RemoveProperties(FileProperties.All ^ compareResults) + "\nActual:\n" +
-                    partialInfo.RemoveProperties(FileProperties.All ^ compareResults));
+                    quickInfo.RemoveProperties(FileProperties.All ^ compareResults));
             }
 
             Logger.Debug($"Quick check passed for {file}.");
@@ -496,8 +528,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (UseCache) {
             CacheFileToLocal();
             file = LocalFile;
+            Logger.Debug($"Since file is cached, use local file {file} instead now.");
         }
 
+        // If full check is explicitly requested, we should still check.
+        if (shouldCheckKnown != true && file.CheckedByFileId()) {
+            Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
+            Register(true);
+            return;
+        }
+
+        // A new encryption key will be added if not already there.
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
 
         var compareResultWithOld = info.CompareProperties(oldInfo, FileProperties.AllVerifiable);
@@ -508,21 +549,35 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 "\nActual:\n" + info.RemoveProperties(FileProperties.All ^ compareResultWithOld));
         }
 
+        // info.Sha256 is for sure available now.
         var sha256Info = FileInfoClient.Get($"/$/{info.Sha256}");
 
-        if (sha256Info != null && sha256Info.Sha256 == info.Sha256) {
-            Logger.LogResult(FileInfoClient.Link(sha256Info.Id, info.Id), "linking file",
-                throwIfError: true);
+        if (sha256Info != null) {
+            if (sha256Info.Sha256 == info.Sha256) {
+                if (sha256Info.RealId != info.RealId) {
+                    Logger.LogResult(FileInfoClient.Link(sha256Info.Id, info.Id),
+                        $"linking file from {sha256Info.Id} to {info.Id} due common SHA256 value",
+                        defaultLevel: LogLevel.Debug, throwIfError: true);
+                } else {
+                    Logger.Trace($"File {info.Id} already linked to {sha256Info.Id}");
+                }
+            } else {
+                throw new FileCorruptedException(
+                    $"UNEXPECTED: The file found by SHA256 doesn't match the file SHA256: {sha256Info.Sha256} vs {info.Sha256}");
+            }
+        } else {
+            Logger.Trace($"No file with SHA256 {info.Sha256} is found.");
         }
 
         var compareResult = info.CompareProperties(sha256Info, FileProperties.AllVerifiable);
         if (compareResult == FileProperties.None) {
-            info.EncryptionKey =
-                sha256Info?.EncryptionKey ??
-                info.EncryptionKey; // Respects original encryption key.
+            // Respects the original encryption key.
+            info.EncryptionKey = sha256Info?.EncryptionKey ?? info.EncryptionKey;
 
+            // Even though `Locaions` is removed, it's still OK as it's `Update()`.
             FileInfoClient.Update(info);
             Register(true);
+            RegisterFileIdInfo();
         } else {
             throw new FileCorruptedException(
                 $"New result differs from sha256 result: {compareResult}\n" + "Expected:\n" +
@@ -531,14 +586,75 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
+    bool CheckedByFileId() {
+        if (FileId == null || IdInfo == null) {
+            return false;
+        }
+
+        var existingIdInfo = FileIdInfo.Client.Get(FileId);
+        if (existingIdInfo?.Sha256 == null) {
+            Logger.Debug($"File of file_id {FileId} is not found.");
+            return false;
+        }
+
+        if (IdInfo.Size != existingIdInfo.Size ||
+            IdInfo.LastModified != existingIdInfo.LastModified) {
+            Logger.Warn($"File of file_id {FileId} is found, but some info differs: " +
+                        $"{existingIdInfo.Size} vs {IdInfo.Size}; {existingIdInfo.LastModified.ToJson()} vs {IdInfo.LastModified.ToJson()}");
+            return false;
+        }
+
+        if (FileInfo?.Sha256 == null) {
+            var sha256Info = FileInfoClient.Get($"/$/{existingIdInfo.Sha256}");
+
+            // FileInfo is unknown. Just link it.
+            if (sha256Info != null) {
+                Logger.LogResult(FileInfoClient.Link(sha256Info.Id, Id),
+                    "linking file as checked by file_id", throwIfError: true,
+                    defaultLevel: LogLevel.Debug);
+                FileInfo = FileInfoClient.Get(Id);
+
+                return true;
+            }
+
+            Logger.Warn($"File of SHA256 {existingIdInfo.Sha256} should exist.");
+            return false;
+        }
+
+        // FileInfo.Sha256 should present as this should be a known file.
+        if (existingIdInfo.Sha256 != FileInfo?.Sha256) {
+            Logger.Warn(
+                $"SHA256 found by file_id {FileId} differs: {existingIdInfo.Sha256} vs {FileInfo?.Sha256}");
+            return false;
+        }
+
+        Logger.Debug(
+            $"File of file_id {FileId} is already checked with SHA256 of {existingIdInfo.Sha256}.");
+        return true;
+    }
+
+    void RegisterFileIdInfo() {
+        if (IdInfo != null) {
+            IdInfo.Sha256 = FileInfo.Checked().Sha256;
+            if (IdInfo.Sha256 == null) {
+                throw new FileCorruptedException(
+                    "UNEXPECTED: SHA256 field was not found when registering file_id.");
+            }
+
+            Logger.LogResult(FileIdInfo.Client.Set(IdInfo),
+                $"registering {IdInfo.Id} to {IdInfo.Sha256}", defaultLevel: LogLevel.Debug,
+                throwIfError: true);
+        }
+    }
+
     public void Register(bool verified = false) {
-        FileInformation.Client.AddLocation(Id, ToString(), verified);
-        FileInfo = FileInformation.Client.Get(Id);
+        FileInfoClient.AddLocation(Id, ToString(), verified);
+        FileInfo = FileInfoClient.Get(Id);
     }
 
     public void Unregister() {
-        FileInformation.Client.RemoveLocation(Id, ToString());
-        FileInfo = FileInformation.Client.Get(Id);
+        FileInfoClient.RemoveLocation(Id, ToString());
+        FileInfo = FileInfoClient.Get(Id);
     }
 
     public bool IsCompatible(KifaFile other)
@@ -625,12 +741,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
 
-    public ulong GetLocalFileId()
-        => Client is FileStorageClient fileClient
-            ? fileClient.GetLocalFileId(Path)
-            : throw new FileNotFoundException(
-                "Should not try to get a local file id with a non FileStorageClient.");
-
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
     public static KifaFile GetLocal(string path) => new($"{LocalServer}{path}");
@@ -640,8 +750,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public bool IsSameLocalFile(KifaFile source) {
-        // Assumed the files are local and in the same cell.
-        // So it's only necessary to compare inode/FileId.
-        return GetLocalFileId() == source.GetLocalFileId();
+        return FileId != null && FileId == source.FileId;
     }
 }

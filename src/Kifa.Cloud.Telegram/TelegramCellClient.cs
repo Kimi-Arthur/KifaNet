@@ -32,7 +32,7 @@ public class TelegramCellClient : IDisposable {
             ThreadPool.SetMinThreads(100, 100);
             wTelegramLogger = LogManager.GetLogger("WTelegram");
 
-            // Completely hide Telegram log in console.
+            // Always use Trace level as WTelegram logs can be noisy.
             Helpers.Log = (_, message) => wTelegramLogger.Log(LogLevel.FromOrdinal(0), message);
         }
 

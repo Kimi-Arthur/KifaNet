@@ -254,7 +254,17 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
         => ValidProperties.Select(x => x.Key)
             .Aggregate(FileProperties.None, (result, x) => result | x);
 
-    // Compares properties with other. The fields not appearing in other won't count.
+    /// <summary>
+    /// Compares this object's properties with the specified <paramref name="other"/> object.
+    /// Returns a combined flag representing the differing fields.
+    /// </summary>
+    /// <param name="other">The other object to compare against.</param>
+    /// <param name="propertiesToCompare">The specific properties to compare.</param>
+    /// <returns>A combined flag of differing fields.</returns>
+    /// <remarks>
+    /// If a property does not exist in <paramref name="other"/>, it is not considered a difference.
+    /// If <paramref name="other"/> is null, it is treated as an empty object, resulting in <see cref="FileProperties.None"/>.
+    /// </remarks>
     public FileProperties CompareProperties(FileInformation? other,
         FileProperties propertiesToCompare) {
         var result = FileProperties.None;

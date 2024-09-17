@@ -31,7 +31,7 @@ class AddCommand : KifaCommand {
         Console.ReadLine();
 
         foreach (var file in files) {
-            ExecuteItem(file.ToString(), () => AddFile(new KifaFile(file.ToString())));
+            ExecuteItem(file.ToString(), () => AddFile(file));
             file.Dispose();
         }
 
