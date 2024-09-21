@@ -145,14 +145,14 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         return null;
     }
 
-    public static IEnumerable<ItemInfo>? GetItems(List<string> spec) {
-        if (spec[0] != "Anime" || spec.Count is < 2 or > 4) {
+    public static IEnumerable<ItemInfo>? GetItems(string[] spec) {
+        if (spec[0] != "Anime" || spec.Length is < 2 or > 4) {
             return null;
         }
 
         var id = spec[1];
-        var seasonId = spec.Count > 2 ? int.Parse(spec[2]) : (int?) null;
-        var episodeId = spec.Count > 3 ? int.Parse(spec[3]) : (int?) null;
+        var seasonId = spec.Length > 2 ? int.Parse(spec[2]) : (int?) null;
+        var episodeId = spec.Length > 3 ? int.Parse(spec[3]) : (int?) null;
         var anime = Client.Get(id).Checked();
         return anime.Seasons.Checked().Where(season => seasonId == null || season.Id == seasonId)
             .SelectMany(season => season.Episodes.Checked(),
