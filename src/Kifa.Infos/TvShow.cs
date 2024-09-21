@@ -7,7 +7,7 @@ using Kifa.Service;
 
 namespace Kifa.Infos;
 
-public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInfo {
+public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInfo, ItemProvider {
     public static string ModelId => "tv_shows";
 
     const string Part1Suffix = " - Part 1";
@@ -182,6 +182,24 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         }
 
         return sharedTitle;
+    }
+
+    public static IEnumerable<ItemInfo>? GetItems(List<string> spec) {
+        if (spec[0] != "TV Shows" || spec.Count is < 2 or > 4) {
+            return null;
+        }
+
+        var id = spec[1];
+        var seasonId = spec.Count > 2 ? int.Parse(spec[2]) : (int?) null;
+        var episodeId = spec.Count > 3 ? int.Parse(spec[3]) : (int?) null;
+        var anime = Client.Get(id).Checked();
+        return anime.Seasons.Checked().Where(season => seasonId == null || season.Id == seasonId)
+            .SelectMany(season => season.Episodes.Checked(),
+                (season, episode) => (season, episode, false))
+            .Where(item => episodeId == null || episodeId == item.episode.Id).Select(item
+                => new ItemInfo {
+                    Path = anime.Format(item.season, item.episode).Checked()
+                });
     }
 }
 

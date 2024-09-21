@@ -145,7 +145,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         return null;
     }
 
-    public IEnumerable<ItemInfo>? GetItems(List<string> spec) {
+    public static IEnumerable<ItemInfo>? GetItems(List<string> spec) {
         if (spec[0] != "Anime" || spec.Count is < 2 or > 4) {
             return null;
         }

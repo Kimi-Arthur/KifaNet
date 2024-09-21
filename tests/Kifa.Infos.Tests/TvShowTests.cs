@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using Kifa.Configs;
 using Xunit;
 
@@ -116,5 +118,12 @@ public class TvShowTests {
 
         Assert.Equal(1, parsed.Value.Season.Id);
         Assert.Equal(1, parsed.Value.Episode.Id);
+    }
+
+    [Fact]
+    public void GetItemsTest() {
+        var items = TvShow.GetItems(["TV Shows", "Westworld", "2"]).Checked().ToList();
+        items[0].Path.Should().Be(
+            "/TV Shows/United States/Westworld (2016)/Season 2 The Door (2018)/Westworld S02E01 Journey Into Night");
     }
 }

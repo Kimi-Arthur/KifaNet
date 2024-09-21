@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
 using Xunit;
@@ -87,5 +88,12 @@ public class AnimeTests {
 
         Assert.Equal("咲-Saki-", show.Id);
         Assert.Equal("全国編", show.Seasons[1].Title);
+    }
+
+    [Fact]
+    public void GetItemsTest() {
+        var items = Anime.GetItems(["Anime", "咲-Saki-"]).Checked().ToList();
+        items[0].Path.Should().Be("/Anime/咲-Saki- (2009)/Season 1 (2009)/咲-Saki- S01E01 出会い");
+        items[52].Path.Should().Be("/Anime/咲-Saki- (2009)/Season 3 全国編 (2014)/咲-Saki- S03E12 真実");
     }
 }
