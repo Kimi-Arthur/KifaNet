@@ -7,7 +7,7 @@ using Kifa.Service;
 
 namespace Kifa.Infos;
 
-public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo {
+public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo, ItemProvider {
     public static string ModelId => "animes";
 
     #region Clients
@@ -104,7 +104,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo 
         }
 
         Language ??= DefaultLanguage;
-        
+
         var tmdb = new TmdbClient();
         var series = tmdb.GetSeries(TmdbId, Language);
         if (series == null) {
@@ -143,5 +143,23 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo 
         }
 
         return null;
+    }
+
+    public IEnumerable<ItemInfo>? GetItems(List<string> spec) {
+        if (spec[0] != "Anime" || spec.Count is < 2 or > 4) {
+            return null;
+        }
+
+        var id = spec[1];
+        var seasonId = spec.Count > 2 ? int.Parse(spec[2]) : (int?) null;
+        var episodeId = spec.Count > 3 ? int.Parse(spec[3]) : (int?) null;
+        var anime = Client.Get(id).Checked();
+        return anime.Seasons.Checked().Where(season => seasonId == null || season.Id == seasonId)
+            .SelectMany(season => season.Episodes.Checked(),
+                (season, episode) => (season, episode, false))
+            .Where(item => episodeId == null || episodeId == item.episode.Id).Select(item
+                => new ItemInfo {
+                    Path = anime.Format(item.season, item.episode).Checked()
+                });
     }
 }
