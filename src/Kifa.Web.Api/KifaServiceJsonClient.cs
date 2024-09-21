@@ -7,7 +7,6 @@ using System.Linq;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
-using NLog.Fluent;
 
 namespace Kifa.Web.Api;
 
@@ -142,6 +141,9 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
         }
     }
+
+    // TODO: Use parallel when DataFolder setup issue is solved.
+    public override List<TDataModel?> Get(List<string> ids) => ids.Select(id => Get(id)).ToList();
 
     // false -> no write needed.
     // true -> rewrite needed.
