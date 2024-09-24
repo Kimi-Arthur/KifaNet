@@ -178,8 +178,8 @@ class ImportCommand : KifaCommand {
                     var newName = Confirm($"Confirm linking {file} to:",
                         $"{series.Format(choice.Season, choice.Episode)}{suffix}");
                     FileInformation.Client.Link(file, newName);
-                    if (Confirm($"Remove info item {series.Format(choice.Season, choice.Episode)}?",
-                            false)) {
+                    if (Confirm(
+                            $"Remove info item {series.Format(choice.Season, choice.Episode)}?")) {
                         MarkMatched(episodes, choice.Season, choice.Episode);
                     }
                 } else {
