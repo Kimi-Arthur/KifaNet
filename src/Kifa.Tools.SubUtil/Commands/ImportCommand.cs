@@ -35,11 +35,11 @@ class ImportCommand : KifaCommand {
 
         foreach (var file in files) {
             var id = file.Id;
-            var suffix = id[id.LastIndexOf('.')..];
+            var suffix = id[id.LastIndexOf('.')..].ToLower();
 
             var validEpisodes = episodes.Where(e => !e.Matched).ToList();
             try {
-                var selected = SelectOne(validEpisodes, e => $"{e.Episode}{suffix}", "mapping",
+                var selected = SelectOne(validEpisodes, e => e.Episode.Path, "mapping",
                     startingIndex: 1, supportsSpecial: true, reverse: true);
                 if (selected == null) {
                     Logger.Warn($"Ignored {file}.");
@@ -48,16 +48,16 @@ class ImportCommand : KifaCommand {
 
                 var (choice, _, special) = selected.Value;
                 if (special) {
-                    var newName = Confirm($"Confirm linking {file} to:", $"{choice.Episode}");
+                    var newName = Confirm($"Confirm linking {file} to:", choice.Episode.Path);
                     file.Copy(new KifaFile($"{file.Host}/Subtitles{newName}.{ReleaseId}{suffix}"),
                         true);
-                    if (Confirm($"Remove info item {choice.Episode}?")) {
+                    if (Confirm($"Remove info item {choice.Episode.Path}?")) {
                         choice.Matched = true;
                     }
                 } else {
                     file.Copy(
                         new KifaFile(
-                            $"{file.Host}/Subtitles{choice.Episode}{suffix}.{ReleaseId}{suffix}"),
+                            $"{file.Host}/Subtitles{choice.Episode.Path}.{ReleaseId}{suffix}"),
                         true);
                     choice.Matched = true;
                 }
