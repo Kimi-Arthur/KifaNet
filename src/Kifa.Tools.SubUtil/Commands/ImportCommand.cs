@@ -4,53 +4,67 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Infos;
+using Kifa.IO;
 using Kifa.Jobs;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Subtitles/Sources folder with resource id.")]
-class ImportCommand : KifaFileCommand {
+class ImportCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    List<ItemInfo> episodes;
-
-    public override bool ById => false;
-    protected override bool NaturalSorting => true;
+    [Value(0, Required = true, HelpText = "Target file(s) to import.")]
+    public IEnumerable<string> FileNames { get; set; }
 
     [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1.",
         Required = true)]
     public string SourceId { get; set; }
 
-    [Option('l', "language", HelpText = "Language code for the source, like en, ja, zh_en etc.",
-        Required = true)]
-    public string LanguageCode { get; set; }
-
-    [Option('g', "group", HelpText = "Group name for the source, like 华盟字幕社, 人人影视.",
-        Required = true)]
-    public string ReleaseGroup { get; set; }
+    [Option('i', "id",
+        HelpText =
+            "Id to be added before suffix. This can be language code and/or group name, like en, zh-华盟 etc.")]
+    public string? ReleaseId { get; set; }
 
     public override int Execute(KifaTask? task = null) {
         var segments = SourceId.Split('/', options: StringSplitOptions.RemoveEmptyEntries);
-        episodes = TvShow.GetItems(segments).Checked().ToList();
+        var episodes = (TvShow.GetItems(segments) ?? Anime.GetItems(segments)).Checked()
+            .Select(e => (Episode: e, Matched: false)).ToList();
 
-        return base.Execute();
-    }
+        var files = KifaFile.FindExistingFiles(FileNames);
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
-        var suffix = file.Path[file.Path.LastIndexOf('.')..];
-        var selected = SelectOne(episodes, e => $"{file} => {e.Path}{suffix}", "mapping");
-        if (selected == null) {
-            Logger.Warn($"File {file} skipped.");
-            return 0;
+        foreach (var file in files) {
+            var id = file.Id;
+            var suffix = id[id.LastIndexOf('.')..];
+
+            var validEpisodes = episodes.Where(e => !e.Matched).ToList();
+            try {
+                var selected = SelectOne(validEpisodes, e => $"{e.Episode}{suffix}", "mapping",
+                    startingIndex: 1, supportsSpecial: true, reverse: true);
+                if (selected == null) {
+                    Logger.Warn($"Ignored {file}.");
+                    continue;
+                }
+
+                var (choice, _, special) = selected.Value;
+                if (special) {
+                    var newName = Confirm($"Confirm linking {file} to:", $"{choice.Episode}");
+                    file.Copy(new KifaFile($"{file.Host}/Subtitles{newName}.{ReleaseId}{suffix}"),
+                        true);
+                    if (Confirm($"Remove info item {choice.Episode}?")) {
+                        choice.Matched = true;
+                    }
+                } else {
+                    file.Copy(
+                        new KifaFile(
+                            $"{file.Host}/Subtitles{choice.Episode}{suffix}.{ReleaseId}{suffix}"),
+                        true);
+                    choice.Matched = true;
+                }
+            } catch (InvalidChoiceException ex) {
+                Logger.Warn(ex, $"File {file} skipped.");
+            }
         }
-
-        var (choice, index, _) = selected.Value;
-
-        file.Copy(
-            new KifaFile($"{file.Host}/Subtitles{choice.Path}" +
-                         $".{LanguageCode}-{ReleaseGroup}{suffix}"), true);
-        episodes.RemoveAt(index);
 
         return 0;
     }
