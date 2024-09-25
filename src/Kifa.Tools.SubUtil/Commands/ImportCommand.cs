@@ -23,8 +23,8 @@ class ImportCommand : KifaCommand {
 
     [Option('i', "id",
         HelpText =
-            "Id to be added before suffix. This can be language code and/or group name, like en, zh-华盟 etc.")]
-    public string? ReleaseId { get; set; }
+            "Id to be added before suffix. This can be language code and/or group name, like en, zh-华盟 etc.", Required = true)]
+    public string ReleaseId { get; set; }
 
     public override int Execute(KifaTask? task = null) {
         var segments = SourceId.Split('/', options: StringSplitOptions.RemoveEmptyEntries);
