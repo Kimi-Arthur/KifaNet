@@ -18,16 +18,14 @@ public class FolderInfo {
     public Dictionary<string, FileStat> Stats { get; set; } = new();
 
     public List<long> GetMissingSizes(List<string> targets)
-        => targets.Select(t => Overall.TotalSize - Stats.GetValueOrDefault(t, new FileStat {
-            FileCount = 0,
-            TotalSize = 0
-        }).TotalSize).ToList();
+        => targets.Select(t => Overall.TotalSize - Stats[t].TotalSize).ToList();
 }
 
 public class FileStat {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     Dictionary<string, long> Files { get; set; } = new();
+
     public long TotalSize { get; set; }
     public long FileCount { get; set; }
 
