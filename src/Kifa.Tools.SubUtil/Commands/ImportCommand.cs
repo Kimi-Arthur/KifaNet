@@ -10,7 +10,7 @@ using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
-[Verb("import", HelpText = "Import files from /Subtitles/Sources folder with resource id.")]
+[Verb("import", HelpText = "Import files from /Sources folder with resource id.")]
 class ImportCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -23,23 +23,24 @@ class ImportCommand : KifaCommand {
 
     [Option('i', "id",
         HelpText =
-            "Id to be added before suffix. This can be language code and/or group name, like en, zh-华盟 etc.", Required = true)]
+            "Id to be added before suffix. This can be language code and/or group name, like en, zh-华盟 etc.",
+        Required = true)]
     public string ReleaseId { get; set; }
 
     public override int Execute(KifaTask? task = null) {
         var segments = SourceId.Split('/', options: StringSplitOptions.RemoveEmptyEntries);
         var episodes = (TvShow.GetItems(segments) ?? Anime.GetItems(segments)).Checked()
-            .Select(e => (Episode: e, Matched: false)).ToList();
+            .Select(e => new MatchableItem(e)).ToList();
 
+        // Assumed all FileNames are from SubtitlesServer.
         var files = KifaFile.FindExistingFiles(FileNames);
 
         foreach (var file in files) {
-            var id = file.Id;
-            var suffix = id[id.LastIndexOf('.')..].ToLower();
+            var suffix = file.Extension.Checked().ToLower();
 
             var validEpisodes = episodes.Where(e => !e.Matched).ToList();
             try {
-                var selected = SelectOne(validEpisodes, e => e.Episode.Path, "mapping",
+                var selected = SelectOne(validEpisodes, e => e.Item.Path, "mapping",
                     startingIndex: 1, supportsSpecial: true, reverse: true);
                 if (selected == null) {
                     Logger.Warn($"Ignored {file}.");
@@ -48,17 +49,18 @@ class ImportCommand : KifaCommand {
 
                 var (choice, _, special) = selected.Value;
                 if (special) {
-                    var newName = Confirm($"Confirm linking {file} to:", choice.Episode.Path);
-                    file.Copy(new KifaFile($"{file.Host}/Subtitles{newName}.{ReleaseId}{suffix}"),
-                        true);
-                    if (Confirm($"Remove info item {choice.Episode.Path}?")) {
-                        choice.Matched = true;
+                    var newName = Confirm($"Confirm linking {file} to (without suffix):",
+                        choice.Item.Path);
+                    var newFile = new KifaFile($"{file.Host}{newName}.{ReleaseId}.{suffix}");
+
+                    file.Copy(newFile, true);
+                    if (Confirm($"Remove info item {choice.Item.Path}?")) {
+                        selected.Value.Choice.Matched = true;
                     }
                 } else {
-                    file.Copy(
-                        new KifaFile(
-                            $"{file.Host}/Subtitles{choice.Episode.Path}.{ReleaseId}{suffix}"),
-                        true);
+                    var newFile =
+                        new KifaFile($"{file.Host}{choice.Item.Path}.{{ReleaseId}}.{suffix}");
+                    file.Copy(newFile, true);
                     choice.Matched = true;
                 }
             } catch (InvalidChoiceException ex) {
@@ -68,4 +70,9 @@ class ImportCommand : KifaCommand {
 
         return 0;
     }
+}
+
+class MatchableItem(ItemInfo item) {
+    public ItemInfo Item { get; set; } = item;
+    public bool Matched { get; set; }
 }

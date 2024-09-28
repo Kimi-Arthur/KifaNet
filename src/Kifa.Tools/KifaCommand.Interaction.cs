@@ -13,7 +13,7 @@ public abstract partial class KifaCommand {
 
     public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string> choiceToString = null,
-        string choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
+        string? choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
         bool reverse = false) {
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
