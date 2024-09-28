@@ -38,6 +38,8 @@ class ImportCommand : KifaCommand {
         foreach (var file in files) {
             var suffix = file.Extension.Checked().ToLower();
 
+            // TODO: Remove this when we can print better message in SelectOne.
+            Console.WriteLine($"Select a location to import {file} to:");
             var validEpisodes = episodes.Where(e => !e.Matched).ToList();
             try {
                 var selected = SelectOne(validEpisodes, e => e.Item.Path, "mapping",
