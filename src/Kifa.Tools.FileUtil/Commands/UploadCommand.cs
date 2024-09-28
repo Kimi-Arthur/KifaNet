@@ -58,6 +58,11 @@ class UploadCommand : KifaCommand {
             Console.WriteLine(file);
         }
 
+        if (files.Count == 0) {
+            Logger.Warn("No files found.");
+            return 0;
+        }
+
         var verifyText = QuickMode ? " without verification" : "";
         var downloadText = DownloadLocal ? " and download to local" : "";
         var removalText = DeleteSource ? " and remove source afterwards" : "";
