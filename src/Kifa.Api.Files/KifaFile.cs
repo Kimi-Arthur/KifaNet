@@ -262,12 +262,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public IEnumerable<KifaFile> List(bool recursive = false, bool ignoreFiles = true,
         string pattern = "*") {
+        Logger.Trace($"Listing files from {this}...");
         if (Exists()) {
+            Logger.Trace($"{this} is a file itself.");
             return Enumerable.Repeat(this, 1);
         }
 
         var files = Client.List(Path, recursive).Where(f
             => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path))).ToList();
+        Logger.Trace($"Found {files.Count} files.");
+        foreach (var file in files) {
+            Logger.Trace($"\t{file}");
+        }
+        
         var fileInfos = FileInfoClient.Get(files.Select(f => f.Id).ToList());
         return files.Zip(fileInfos).Select(item => new KifaFile(Host + item.First.Id,
             fileInfo: item.Second ?? new FileInformation {
@@ -340,12 +347,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
         var files = fileNames.Select(NormalizeUri).ToList();
-        var infos =
-            FileInfoClient.Get(files.Select(f => FileInformation.GetId(f).Checked()).ToList());
-        return files.Zip(infos).Select(source => new KifaFile(source.First,
-            fileInfo: source.Second ?? new FileInformation {
-                Id = FileInformation.GetId(source.First).Checked()
-            }));
+        var fileIds = files.Select(f => FileInformation.GetId(f).Checked()).ToList();
+        var infos = FileInfoClient.Get(fileIds).Zip(fileIds).Select(item => item.First ??
+            new FileInformation {
+                Id = FileInformation.GetId(item.Second).Checked()
+            }).ToList();
+        return files.Zip(infos)
+            .Select(source => new KifaFile(source.First, fileInfo: source.Second));
     }
 
     // KifaFile.FileInfo is filled for items returned.
