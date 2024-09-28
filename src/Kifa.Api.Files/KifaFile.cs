@@ -27,9 +27,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     #region Configs
 
-    public static string LocalServer { get; set; }
+    public static string CacheCell { get; set; }
 
-    public static string SubtitlesServer { get; set; }
+    public static string SubtitlesCell { get; set; }
 
     public static string DefaultIgnoredPrefix { get; set; } = "@";
 
@@ -99,8 +99,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // Note that if it exists in this server, this may differ from itself as it's using `Id` not
     // its actual `Path`. But normally it's for remote files.
-    KifaFile? localFile;
-    KifaFile LocalFile => localFile ??= new($"{LocalServer}{Id}");
+    KifaFile? cacheFile;
+    KifaFile CacheFile => cacheFile ??= new($"{CacheCell}{Id}");
 
     FileIdInfo? idInfo;
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
@@ -422,7 +422,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public void Copy(KifaFile destination, bool neverLink = false) {
         if (UseCache) {
             CacheFileToLocal();
-            LocalFile.Copy(destination, neverLink);
+            CacheFile.Copy(destination, neverLink);
             return;
         }
 
@@ -441,7 +441,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         if (UseCache) {
             CacheFileToLocal();
-            LocalFile.Move(destination);
+            CacheFile.Move(destination);
             return;
         }
 
@@ -454,19 +454,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     void CacheFileToLocal() {
-        if (!LocalFile.Registered || !LocalFile.Exists()) {
-            Logger.Debug($"Caching {this} to {LocalFile}...");
+        if (!CacheFile.Registered || !CacheFile.Exists()) {
+            Logger.Debug($"Caching {this} to {CacheFile}...");
             using var stream = OpenRead();
-            LocalFile.Write(stream);
-            LocalFile.Add();
+            CacheFile.Write(stream);
+            CacheFile.Add();
         }
     }
 
     void RemoveLocalCacheFile() {
-        if (UseCache && LocalFile.Exists()) {
-            LocalFile.Delete();
-            LocalFile.Unregister();
-            Logger.Debug($"Removed cache file {LocalFile}...");
+        if (UseCache && CacheFile.Exists()) {
+            CacheFile.Delete();
+            CacheFile.Unregister();
+            Logger.Debug($"Removed cache file {CacheFile}...");
         }
     }
 
@@ -505,8 +505,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         if (UseCache) {
             try {
-                LocalFile.Add();
-                file = LocalFile;
+                CacheFile.Add();
+                file = CacheFile;
                 Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
             } catch (FileNotFoundException) {
                 // Expected to find no cached file.
@@ -537,7 +537,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         if (UseCache) {
             CacheFileToLocal();
-            file = LocalFile;
+            file = CacheFile;
             Logger.Debug($"Since file is cached, use local file {file} instead now.");
         }
 
@@ -752,7 +752,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 "Should not try to get a local path with a non FileStorageClient.");
 
     public KifaFile GetSubtitleFile(string? suffix = null)
-        => new($"{SubtitlesServer}{PathWithoutSuffix}.{suffix ?? Extension}");
+        => new($"{SubtitlesCell}{PathWithoutSuffix}.{suffix ?? Extension}");
 
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 

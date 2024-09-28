@@ -32,7 +32,7 @@ class ImportCommand : KifaCommand {
         var episodes = (TvShow.GetItems(segments) ?? Anime.GetItems(segments)).Checked()
             .Select(e => new MatchableItem(e)).ToList();
 
-        // Assumed all FileNames are from SubtitlesServer.
+        // Assumed all FileNames are from SubtitlesCell.
         var files = KifaFile.FindExistingFiles(FileNames);
 
         foreach (var file in files) {
