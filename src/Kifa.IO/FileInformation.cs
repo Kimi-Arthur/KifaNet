@@ -10,10 +10,13 @@ using System.Threading.Tasks;
 using HashLib;
 using Kifa.Service;
 using Newtonsoft.Json;
+using NLog;
 
 namespace Kifa.IO;
 
 public class FileInformation : DataModel, WithModelId<FileInformation> {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public static string ModelId => "files";
 
     const int SliceLength = 256 << 10;
@@ -78,6 +81,7 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
     public bool Exists => Size > 0;
 
     public static string? GetId(string location) {
+        Logger.Trace($"Look for id of {location}");
         var linkMatch = linkIdPattern.Match(location);
         if (linkMatch.Success) {
             return $"/Web/{linkMatch.Groups[1].Value}.{linkMatch.Groups[2].Value}";
