@@ -39,7 +39,7 @@ class ExtractCommand : KifaCommand {
         }
 
         if (!Confirm(
-                $"Confirm extracting subtitles of the {foundFiles.Count} above and place in relevant folders in /Subtitles?")) {
+                $"Confirm extracting subtitles of the {foundFiles.Count} above and place in relevant folders in Subtitles cell?")) {
             Logger.Info("Gave up extrating. Exiting.");
             return 0;
         }
