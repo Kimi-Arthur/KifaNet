@@ -20,14 +20,13 @@ public abstract partial class KifaCommand {
     }
 
     protected void ExecuteItem(string item, Action action) {
-        Logger.Info($"Action on {item} started.");
+        Logger.Info($"Processing {item}...");
         Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), $"action on {item}",
-                LogLevel.Info)));
+            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info)));
     }
 
     protected void ExecuteItem(string item, Func<KifaActionResult> action) {
-        Logger.Info($"Processing {item}.");
+        Logger.Info($"Processing {item}...");
         Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info)));
     }
