@@ -16,8 +16,6 @@ namespace Kifa.Tools.BiliUtil.Commands;
 class GetChatCommand : KifaFileCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    const string SubtitlesPrefix = "/Subtitles";
-
     [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
     public string? Cid { get; set; }
 
@@ -30,7 +28,7 @@ class GetChatCommand : KifaFileCommand {
     public string? Bid { get; set; }
 
     [Option('g', "group", HelpText = "Group name.")]
-    public string Group { get; set; }
+    public string? Group { get; set; }
 
     List<(BilibiliVideo video, BilibiliChat chat)> chats = new();
 
@@ -112,12 +110,8 @@ class GetChatCommand : KifaFileCommand {
         // Append a line break to be consistent with other files.
         memoryStream.Write([Convert.ToByte('\n')]);
 
-        var suffix = Group != null ? $"c{chat.Cid}-{Group}" : $"c{chat.Cid}";
-        var segments = rawFile.Name.Split(".");
-        var skippedSegments = segments[^2] == suffix ? 2 : 1;
-        var chatFileName = $"{string.Join(".", segments.SkipLast(skippedSegments))}.{suffix}.xml";
-
-        var target = rawFile.Parent.GetFile(chatFileName).GetFilePrefixed(SubtitlesPrefix);
+        var cidTag = Group != null ? $"c{chat.Cid}-{Group}" : $"c{chat.Cid}";
+        var target = rawFile.GetSubtitleFile($"{cidTag}.xml");
         target.Delete();
 
         memoryStream.Seek(0, SeekOrigin.Begin);

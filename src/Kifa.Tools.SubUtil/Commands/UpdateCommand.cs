@@ -11,17 +11,13 @@ namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("update", HelpText = "Update subtitle with given modification.")]
 class UpdateCommand : KifaCommand {
-    const string SubtitlesPrefix = "/Subtitles";
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file to update.")]
     public string FileUri { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var target = new KifaFile(FileUri);
-        if (!target.Path.StartsWith(SubtitlesPrefix)) {
-            target = target.GetFilePrefixed(SubtitlesPrefix);
-        }
+        var target = new KifaFile(FileUri).GetSubtitleFile();
 
         var sub = AssDocument.Parse(target.OpenRead());
 

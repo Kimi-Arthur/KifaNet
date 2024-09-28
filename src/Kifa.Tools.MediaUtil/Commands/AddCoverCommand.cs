@@ -20,7 +20,7 @@ public class AddCoverCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4", recursive: false);
+        var files = KifaFile.FindExistingFiles(FileNames, recursive: false, pattern: "*.mp4");
         var filesWithImages = files.Select(source
             => (source, cover: GetImageFile(source), target: GetTargetFile(source))).ToList();
         var skippedFiles = filesWithImages.Where(file => file.cover == null || file.target.Exists())

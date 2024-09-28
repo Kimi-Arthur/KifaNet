@@ -12,7 +12,6 @@ namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("extract", HelpText = "Extract subtitle from video files.")]
 class ExtractCommand : KifaCommand {
-    const string SubtitlesPrefix = "/Subtitles";
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static readonly Dictionary<string, string> SubtitleExtensions = new() {
@@ -90,10 +89,10 @@ class ExtractCommand : KifaCommand {
     }
 
     KifaFile GetExtractedSubtitleFile(KifaFile file, SubtitleStream subtitle)
-        => file.Parent
-            .GetFile(file.BaseName + "." + ExtractLanguage(subtitle.Language).Code +
-                     (Group != null ? $"-{Group}." : ".") + SubtitleExtensions[subtitle.CodecName])
-            .GetFilePrefixed(SubtitlesPrefix);
+        => file.GetSubtitleFile(ExtractLanguage(subtitle.Language).Code +
+                                "-{group}.".FormatIfNonNull(new() {
+                                    ["group"] = Group
+                                }, ".") + SubtitleExtensions[subtitle.CodecName]);
 
     static Language ExtractLanguage(string? languageName)
         => languageName == null ? Language.Unknown :

@@ -13,8 +13,6 @@ namespace Kifa.Tools.BiliUtil.Commands;
 class GetTencentChatCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    const string SubtitlesPrefix = "/Subtitles";
-
     [Option('t', "tencent", HelpText = "Tencent video id, like i0045u918s5")]
     public string? VideoId { get; set; }
 
@@ -24,9 +22,7 @@ class GetTencentChatCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var rawFile = FileNames.ElementAt(0);
         if (VideoId != null) {
-            var subtitleFile =
-                new KifaFile(rawFile[..rawFile.LastIndexOf('.')] + $".{VideoId}.json")
-                    .GetFilePrefixed(SubtitlesPrefix);
+            var subtitleFile = new KifaFile(rawFile).GetSubtitleFile($".{VideoId}.json");
             GetChat(subtitleFile, VideoId);
         }
 

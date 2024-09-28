@@ -36,19 +36,16 @@ public static class StringExtensions {
         return result;
     }
 
-    public static string? FormatIfNonNull(this string format,
-        Dictionary<string, string?> parameters) {
-        if (parameters.Values.Any(s => s == null)) {
-            return null;
+    public static string FormatIfNonNull(this string format, Dictionary<string, string?> parameters,
+        string defaultString) {
+        var totalCount = parameters.Count;
+        var nonNulls = parameters.Where(x => x.Value != null)
+            .ToDictionary(item => item.Key, item => item.Value.Checked());
+        if (totalCount > nonNulls.Count) {
+            return defaultString;
         }
 
-        var result = format;
-
-        foreach (var p in parameters) {
-            result = result.Replace("{" + p.Key + "}", p.Value);
-        }
-
-        return result;
+        return Format(format, nonNulls);
     }
 
     // Remove all characters including and after the last split.

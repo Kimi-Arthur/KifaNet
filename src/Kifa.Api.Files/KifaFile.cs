@@ -29,6 +29,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public static string LocalServer { get; set; }
 
+    public static string SubtitlesServer { get; set; }
+
     public static string DefaultIgnoredPrefix { get; set; } = "@";
 
     public static HashSet<string> IgnoredPrefixes { get; set; } = new() {
@@ -60,8 +62,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public string ParentPath { get; }
     public string BaseName { get; set; }
     public string? Extension { get; set; }
-    public string Name => string.IsNullOrEmpty(Extension) ? BaseName : $"{BaseName}.{Extension}";
+
+    public string Name
+        => "{extension}.{base_name}".FormatIfNonNull(new() {
+            ["extension"] = Extension,
+            ["base_name"] = BaseName
+        }, BaseName);
+
     public string Path => $"{ParentPath}{Name}";
+    public string PathWithoutSuffix => $"{ParentPath}{BaseName}";
 
     public string Host => Client.ToString();
 
@@ -88,8 +97,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     bool UseCache { get; set; }
 
-    string LocalFilePath { get; }
-    KifaFile LocalFile => new(LocalFilePath);
+    // Note that if it exists in this server, this may differ from itself as it's using `Id` not
+    // its actual `Path`. But normally it's for remote files.
+    KifaFile? localFile;
+    KifaFile LocalFile => localFile ??= new($"{LocalServer}{Id}");
 
     FileIdInfo? idInfo;
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
@@ -115,7 +126,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var lastDot = name.LastIndexOf('.');
         if (lastDot < 0) {
             BaseName = name;
-            Extension = "";
+            Extension = null;
         } else {
             BaseName = name.Substring(0, lastDot);
             Extension = name.Substring(lastDot + 1);
@@ -128,9 +139,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (Id != FileInfo.Id) {
             throw new FileCorruptedException($"File's ID doesn't match: {Id} vs {FileInfo?.Id}");
         }
-
-        // Always store with its id makes more sense to me.
-        LocalFilePath = $"{LocalServer}{Id}";
 
         Client = GetClient(segments[0]);
 
@@ -295,46 +303,38 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindExistingFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, string pattern = "*",
-        bool ignoreFiles = true) {
-        var files = new List<(string SortKey, KifaFile File)>();
+        bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
+        var allFiles = new List<(string SortKey, KifaFile File)>();
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
-            if (prefix != null && !file.Path.StartsWith(prefix)) {
-                file = file.GetFilePrefixed(prefix);
-            }
 
-            var fileInfos = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles)
-                .ToList();
-            Logger.Trace($"Found {fileInfos.Count} existing files:");
-            foreach (var f in fileInfos) {
+            var files = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles).ToList();
+            Logger.Trace($"Found {files.Count} existing files:");
+            foreach (var f in files) {
                 Logger.Trace($"\t{f}");
             }
 
-            files.AddRange(fileInfos.Select(f => (f.ToString().GetNaturalSortKey(), f)));
+            allFiles.AddRange(files.Select(f => (f.ToString().GetNaturalSortKey(), f)));
         }
 
-        files.Sort();
+        allFiles.Sort();
 
-        return files.Select(f => f.File).ToList();
+        return allFiles.Select(f => f.File).ToList();
     }
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPhantomFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
-        var files = FindPotentialFiles(sources, prefix, recursive, ignoreFiles);
+        bool recursive = true, bool ignoreFiles = true) {
+        var files = FindPotentialFiles(sources, recursive: recursive, ignoreFiles: ignoreFiles);
         return files.Where(f => f.Registered && !f.Exists()).ToList();
     }
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
-        string? prefix = null, bool recursive = true, bool ignoreFiles = true) {
+        bool recursive = true, bool ignoreFiles = true) {
         var files = new List<(string sortKey, string value)>();
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
-            if (prefix != null && !file.Path.StartsWith(prefix)) {
-                file = file.GetFilePrefixed(prefix);
-            }
 
             var path = file.Path;
             var host = file.Host;
@@ -361,12 +361,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     // KifaFile.FileInfo is filled for items returned.
-    public static List<KifaFile> FindAllFiles(IEnumerable<string> sources, string? prefix = null,
-        bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
+    public static List<KifaFile> FindAllFiles(IEnumerable<string> sources, bool recursive = true,
+        string pattern = "*", bool ignoreFiles = true) {
         var sourceFiles = sources.ToList();
-        var existingFiles = FindExistingFiles(sourceFiles, prefix, recursive, pattern: pattern,
+        var existingFiles = FindExistingFiles(sourceFiles, recursive: recursive, pattern: pattern,
             ignoreFiles: ignoreFiles);
-        var potentialFiles = FindPotentialFiles(sourceFiles, prefix, recursive,
+        var potentialFiles = FindPotentialFiles(sourceFiles, recursive: recursive,
             ignoreFiles: ignoreFiles);
         var allFiles = new HashSet<KifaFile>();
         allFiles.UnionWith(existingFiles);
@@ -751,9 +751,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
 
-    public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
+    public KifaFile GetSubtitleFile(string? suffix = null)
+        => new($"{SubtitlesServer}{PathWithoutSuffix}.{suffix ?? Extension}");
 
-    public static KifaFile GetLocal(string path) => new($"{LocalServer}{path}");
+    public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
     public void Dispose() {
         Client.Dispose();
