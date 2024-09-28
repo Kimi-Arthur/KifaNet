@@ -61,7 +61,7 @@ class ImportCommand : KifaCommand {
                     }
                 } else {
                     var newFile =
-                        new KifaFile($"{file.Host}{choice.Item.Path}.{{ReleaseId}}.{suffix}");
+                        new KifaFile($"{file.Host}{choice.Item.Path}.{ReleaseId}.{suffix}");
                     file.Copy(newFile, true);
                     choice.Matched = true;
                 }
