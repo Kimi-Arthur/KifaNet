@@ -282,7 +282,7 @@ class GenerateCommand : KifaFileCommand {
 
     static List<(string id, List<AssDialogue> content)> GetBilibiliChats(KifaFile rawFile) {
         var result = new List<(string id, List<AssDialogue> content)>();
-        foreach (var file in rawFile.GetSubtitleFile()
+        foreach (var file in rawFile.GetSubtitleFile().Parent
                      .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.xml")) {
             var chat = new BilibiliChat();
             chat.Load(file.OpenRead());
@@ -294,7 +294,7 @@ class GenerateCommand : KifaFileCommand {
     }
 
     static List<(string id, List<AssDialogue> content)> GetTencentChats(KifaFile rawFile) {
-        return rawFile.GetSubtitleFile()
+        return rawFile.GetSubtitleFile().Parent
             .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.json").Select(file => (
                 file.BaseName.Split('.').Last(),
                 JsonConvert.DeserializeObject<List<TencentDanmu>>(file.ReadAsString(),
