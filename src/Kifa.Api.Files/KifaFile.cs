@@ -139,6 +139,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         UseCache = useCache;
     }
 
+    static readonly Regex normalizedUriPattern = new Regex("[^:/]+:[^:/]+/.*");
+
     // Supported uri examples:
     //   - Canonical paths (conversion goal):
     //     - baidu:Pimix_1/a/b/c/d.txt.v1
@@ -151,7 +153,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     //     - ~/a.txt => local:some_home/a.txt
     //     - ../a.txt => local:some_cell/path/to/parent/a.txt
     static string NormalizeUri(string uri) {
-        if (uri.StartsWith("http://") || uri.StartsWith("https://")) {
+        if (uri.StartsWith("http://") || uri.StartsWith("https://") ||
+            normalizedUriPattern.IsMatch(uri)) {
             return uri;
         }
 
@@ -274,7 +277,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         foreach (var file in files) {
             Logger.Trace($"\t{file}");
         }
-        
+
         var fileInfos = FileInfoClient.Get(files.Select(f => f.Id).ToList());
         return files.Zip(fileInfos).Select(item => new KifaFile(Host + item.First.Id,
             fileInfo: item.Second ?? new FileInformation {
