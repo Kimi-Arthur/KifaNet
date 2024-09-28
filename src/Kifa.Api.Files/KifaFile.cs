@@ -151,7 +151,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     //     - ~/a.txt => local:some_home/a.txt
     //     - ../a.txt => local:some_cell/path/to/parent/a.txt
     static string NormalizeUri(string uri) {
-        Logger.Trace($"Normalize uri for {uri}");
         if (uri.StartsWith("http://") || uri.StartsWith("https://")) {
             return uri;
         }

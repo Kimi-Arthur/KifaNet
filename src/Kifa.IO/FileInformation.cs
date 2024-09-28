@@ -81,14 +81,18 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
     public bool Exists => Size > 0;
 
     public static string? GetId(string location) {
-        Logger.Trace($"Look for id of {location}");
         var linkMatch = linkIdPattern.Match(location);
         if (linkMatch.Success) {
             return $"/Web/{linkMatch.Groups[1].Value}.{linkMatch.Groups[2].Value}";
         }
 
         var fileMatch = fileIdPattern.Match(location);
-        return fileMatch.Success ? fileMatch.Groups[1].Value : null;
+        if (!fileMatch.Success) {
+            Logger.Warn($"Could not find id of {location}");
+            return null;
+        }
+
+        return fileMatch.Groups[1].Value;
     }
 
     public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
