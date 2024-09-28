@@ -64,7 +64,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public string? Extension { get; set; }
 
     public string Name
-        => "{extension}.{base_name}".FormatIfNonNull(new() {
+        => "{base_name}.{extension}".FormatIfNonNull(new() {
             ["extension"] = Extension,
             ["base_name"] = BaseName
         }, BaseName);
