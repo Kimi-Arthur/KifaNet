@@ -139,7 +139,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         UseCache = useCache;
     }
 
-    static readonly Regex normalizedUriPattern = new Regex("[^:/]+:[^:/]+/.*");
+    static readonly Regex NormalizedFileUriPattern = new("[^:/]+:[^:/]+/.*");
+
+    static readonly Regex NormalizedWebUriPattern = new("(http|https|ftp)://.*");
 
     // Supported uri examples:
     //   - Canonical paths (conversion goal):
@@ -153,8 +155,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     //     - ~/a.txt => local:some_home/a.txt
     //     - ../a.txt => local:some_cell/path/to/parent/a.txt
     static string NormalizeUri(string uri) {
-        if (uri.StartsWith("http://") || uri.StartsWith("https://") ||
-            normalizedUriPattern.IsMatch(uri)) {
+        if (NormalizedWebUriPattern.IsMatch(uri) || NormalizedFileUriPattern.IsMatch(uri)) {
             return uri;
         }
 
