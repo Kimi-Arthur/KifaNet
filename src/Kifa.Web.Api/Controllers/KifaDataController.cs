@@ -23,7 +23,7 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     // GET api/values/5
     [HttpGet("{id}")]
     public virtual ActionResult<TDataModel?> Get(string id, bool refresh = false) {
-        id = Uri.UnescapeDataString(id);
+        id = UnescapeId(id);
         if (id.StartsWith("$")) {
             return new NotFoundResult();
         }
@@ -34,10 +34,14 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     // PATCH api/values/5
     [HttpPatch("{id}")]
     public KifaApiActionResult Patch(string id, [FromBody] TDataModel value) {
-        value.Id = Uri.UnescapeDataString(id);
+        value.Id = UnescapeId(id);
         value.Metadata = null;
         return Client.Update(value);
     }
+
+    // Instead of Uri.UnescapeDataString, only "/" should be unescaped as asp.net already unescaped
+    // others for parameters in url path (but not url parameters).
+    static string UnescapeId(string id) => id.Replace("%2F", "/");
 
     // PATCH api/values/$
     [HttpPatch("$")]
@@ -50,7 +54,7 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
     // POST api/values/5
     [HttpPost("{id}")]
     public KifaApiActionResult Post(string id, [FromBody] TDataModel value) {
-        value.Id = Uri.UnescapeDataString(id);
+        value.Id = UnescapeId(id);
         value.Metadata = null;
         return Client.Set(value);
     }
@@ -70,7 +74,7 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
 
     // DELETE api/values/5
     [HttpDelete("{id}")]
-    public KifaApiActionResult Delete(string id) => Client.Delete(Uri.UnescapeDataString(id));
+    public KifaApiActionResult Delete(string id) => Client.Delete(UnescapeId(id));
 
     // DELETE api/values/$
     [HttpDelete("$")]
