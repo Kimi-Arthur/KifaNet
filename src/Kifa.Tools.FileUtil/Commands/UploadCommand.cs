@@ -75,18 +75,20 @@ class UploadCommand : KifaCommand {
                 () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode, true));
         }
 
-        var pendingFiles = PopPendingResults().Select(item => new KifaFile(item.item));
+        var pendingFiles = PopPendingResults().Select(item => item.item);
         if (SkipPotentiallyUploadFiles) {
             foreach (var file in pendingFiles) {
-                ExecuteItem(file.ToString(), () => new KifaActionResult {
+                ExecuteItem(file, () => new KifaActionResult {
                     Status = KifaActionStatus.OK,
-                    Message = "File skipped as it's potentially uploaded."
+                    Message = "File skipped as it's uploaded, though not verified."
                 });
             }
         } else {
+            // TODO: batch get FileInformation.
             foreach (var file in pendingFiles) {
-                ExecuteItem(file.ToString(),
-                    () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode));
+                ExecuteItem(file,
+                    () => new KifaFile(file).Upload(targets, DeleteSource, UseCache, DownloadLocal,
+                        QuickMode));
             }
         }
 
