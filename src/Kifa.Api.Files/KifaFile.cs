@@ -603,7 +603,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         var existingIdInfo = FileIdInfo.Client.Get(FileId);
         if (existingIdInfo?.Sha256 == null) {
-            Logger.Debug($"File of file_id {FileId} is not found.");
+            Logger.Trace($"File of file_id {FileId} is not found.");
             return false;
         }
 
