@@ -23,7 +23,7 @@
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1"/>
     <PackageReference Include="FFMpegCore" Version="4.8.0"/>
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath=""/>
