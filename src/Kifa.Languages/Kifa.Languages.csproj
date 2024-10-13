@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.17.1" />
+    <PackageReference Include="AngleSharp" Version="1.1.2" />
     <PackageReference Include="CXuesong.MW.MwParserFromScratch" Version="0.2.1" />
     <PackageReference Include="CXuesong.MW.WikiClientLibrary" Version="0.6.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
