@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -433,13 +434,18 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     TDataModel? Read(string id) {
-        var data = ReadRaw(id);
-        Logger.Trace($"Read: {data ?? "null"}");
+        var rawData = ReadRaw(id);
+        Logger.Trace($"Read: {rawData ?? "null"}");
         try {
-            return data == null
-                ? null
-                : JsonConvert.DeserializeObject<TDataModel>(data,
-                    KifaJsonSerializerSettings.Default);
+            if (rawData == null) {
+                return null;
+            }
+
+            var data = JsonConvert.DeserializeObject<TDataModel>(rawData,
+                KifaJsonSerializerSettings.Default).Checked();
+
+            ReadAndFillExternalProperties(data);
+            return data;
         } catch (JsonReaderException ex) {
             Logger.Error(ex, $"Failed to read {ModelId}/{id}");
             throw;
@@ -447,10 +453,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void Write(TDataModel data) {
-        var path = $"{DataFolder}/{ModelId}/{data.Id.Trim('/')}.json";
+        WriteRaw($"{JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Pretty)}\n",
+            data.Id);
+    }
+
+    void WriteRaw(string content, string id, string suffix = "json") {
+        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.{suffix}";
         MakeParent(path);
-        File.WriteAllText(path,
-            $"{JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Pretty)}\n");
+        File.WriteAllText(path, content);
     }
 
     void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null) {
@@ -458,7 +468,56 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             originalVirtualLinks ??
             data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>());
         CleanupForWriting(data);
+        WriteAndClearExternalProperties(data);
         Write(data);
+    }
+
+    static List<(PropertyInfo property, string Suffix)>? externalFields1;
+
+    static List<(PropertyInfo property, string Suffix)> ExternalFields
+        => externalFields1 ??= GatherExternalProperties();
+
+    static List<(PropertyInfo property, string Suffix)> GatherExternalProperties() {
+        var properties = new List<(PropertyInfo property, string Suffix)>();
+        var type = typeof(TDataModel);
+        foreach (var property in type.GetProperties()) {
+            var attribute = property.GetCustomAttribute<ExternalPropertyAttribute>();
+            if (attribute == null) {
+                continue;
+            }
+
+            if (property.PropertyType != typeof(string)) {
+                throw new InvalidExternalPropertyException(
+                    $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should be of type string, but is {property.PropertyType}.");
+            }
+
+            if (attribute.Suffix.EndsWith("json")) {
+                throw new InvalidExternalPropertyException(
+                    $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should not use json as extension, but used {attribute.Suffix}.");
+            }
+
+            properties.Add((property, attribute.Suffix));
+        }
+
+        return properties;
+    }
+
+    void WriteAndClearExternalProperties(TDataModel data) {
+        foreach (var (property, suffix) in ExternalFields) {
+            if (property.GetValue(data) is string content) {
+                WriteRaw(content, data.Id, suffix);
+                property.SetValue(data, "");
+            }
+        }
+    }
+
+    void ReadAndFillExternalProperties(TDataModel data) {
+        foreach (var (property, suffix) in ExternalFields) {
+            var content = ReadRaw(data.Id);
+            if (content != null) {
+                property.SetValue(data, content);
+            }
+        }
     }
 
     string? ReadRaw(string id) {
