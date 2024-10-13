@@ -39,13 +39,14 @@ public class CreateMangaCommand : KifaCommand {
             }
 
             var name = $"{newSection}/{file.Name}";
-            var image = Image.Load(file.GetLocalPath(), out var format);
+            var image = Image.Load(file.GetLocalPath());
 
             image.Mutate(x => x.Rotate(RotateMode.Rotate270));
             var stream = new MemoryStream();
-            image.Save(stream, format);
+            image.Save(stream, image.Metadata.DecodedImageFormat.Checked());
             stream.Seek(0, SeekOrigin.Begin);
 
+            // TODO: should choose the right format for the resource.
             epub.AddResource(name, EpubResourceType.JPEG, stream);
             sb.Append($"<img src=\"{name}\" style=\"height: 40%\"/>\n");
         }
