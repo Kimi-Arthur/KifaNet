@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -36,8 +37,9 @@ public static class StringExtensions {
         return result;
     }
 
-    public static string FormatIfNonNull(this string format, Dictionary<string, string?> parameters,
-        string defaultString) {
+    [return: NotNullIfNotNull(nameof(defaultString))]
+    public static string? FormatIfNonNull(this string format,
+        Dictionary<string, string?> parameters, string? defaultString = null) {
         var totalCount = parameters.Count;
         var nonNulls = parameters.Where(x => x.Value != null)
             .ToDictionary(item => item.Key, item => item.Value.Checked());
