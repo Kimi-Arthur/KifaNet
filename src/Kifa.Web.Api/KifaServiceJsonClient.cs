@@ -513,15 +513,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     void ReadAndFillExternalProperties(TDataModel data) {
         foreach (var (property, suffix) in ExternalFields) {
-            var content = ReadRaw(data.Id);
+            var content = ReadRaw(data.Id, suffix);
             if (content != null) {
                 property.SetValue(data, content);
             }
         }
     }
 
-    string? ReadRaw(string id) {
-        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.json";
+    string? ReadRaw(string id, string suffix = "json") {
+        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.{suffix}";
         return !File.Exists(path) ? null : File.ReadAllText(path);
     }
 
