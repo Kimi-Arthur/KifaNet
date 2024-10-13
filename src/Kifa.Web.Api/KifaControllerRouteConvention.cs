@@ -1,5 +1,3 @@
-using System.Reflection;
-using Kifa.Web.Api.Controllers;
 using Kifa.Web.Api.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
