@@ -11,14 +11,22 @@ For each `World`, we want it to focus on single, specific topic, like one game, 
 Or all TV Shows, or all Anime, which all count as one, as they share very similar nature
 of the structure: data, types of resource files etc.
 
-## Naming
+We can also have dedicated `World`s just to map other websites. For example, it makes sense to map tmdb data separately as
+it can be consumed in TV Shows, Anime and Movies. For this kind of `World`s, we would try to process that as little as
+possible.
 
-We are not sure about world naming yet. It can be that we may want to prepend a category to the actual name like,
+There are also map of data from unstructured websites, which we may have two layers of web page themselves, and a
+processed version which is supposed to contain as much info on the page as possible without adapting to other storage
+data.
+
+### Naming
+
+We are not sure about `World` naming yet. It can be that we may want to prepend a category to the actual name like,
 `worlds.games.botw` or just `BreathOfTheWild`. But the key is we don't rely on this container name in our data so that
 it's easily switchable. For `Link` objects referencing other types, they are only defined in server code instead of
 prefixing the item type etc.
 
-### Examples of worlds
+### Examples of `World`s
 
 #### A Game: The Legend of Zelda: Breath of the Wild
 
@@ -58,7 +66,7 @@ So we still have one pool of all TV Shows like
 ...
 
 We can then have referenced data like actors, directors, (maybe) companies etc. Resources like cover, banner can also be
-collected from websites and stored in World specific locations.
+collected from websites and stored in `World` specific locations.
 
 We can also have our source data recorded to get a clearer view. For example, we can log raw tmdb data another pool.
 With our `Link<>` structure, the `tmdb_id` field can be replaced by `tmdb`, which can optionally be fully loaded. We can
@@ -81,3 +89,7 @@ to create a German list in Memrise/Anki and I want to use the sorted out informa
 These should all be supported. But is currently pending investigation. One idea would be these data should be visible to
 all users like their native data. One issue is file storage separation may be a problem is it's not shared (data can be
 controlled by type, but file control by folder is not nicely supported without messing personal folder structure).
+
+## Migration Guide
+
+Reference https://github.com/Kimi-Arthur/Notes/blob/master/Git/submodules.md for how to migrate data to submodules.
