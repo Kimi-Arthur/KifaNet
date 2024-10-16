@@ -584,7 +584,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             // Respects the original encryption key.
             info.EncryptionKey = sha256Info?.EncryptionKey ?? info.EncryptionKey;
 
-            // Even though `Locaions` is removed, it's still OK as it's `Update()`.
+            // Even though `Locations` is removed, it's still OK as it's `Update()`.
             FileInfoClient.Update(info);
             Register(true);
             RegisterFileIdInfo();
