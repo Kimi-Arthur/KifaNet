@@ -11,6 +11,13 @@ For each `World`, we want it to focus on single, specific topic, like one game, 
 Or all TV Shows, or all Anime, which all count as one, as they share very similar nature
 of the structure: data, types of resource files etc.
 
+## Naming
+
+We are not sure about world naming yet. It can be that we may want to prepend a category to the actual name like,
+`worlds.games.botw` or just `BreathOfTheWild`. But the key is we don't rely on this container name in our data so that
+it's easily switchable. For `Link` objects referencing other types, they are only defined in server code instead of
+prefixing the item type etc.
+
 ### Examples of worlds
 
 #### A Game: The Legend of Zelda: Breath of the Wild
@@ -57,6 +64,13 @@ We can also have our source data recorded to get a clearer view. For example, we
 With our `Link<>` structure, the `tmdb_id` field can be replaced by `tmdb`, which can optionally be fully loaded. We can
 also control whether we need to refresh TV Show object in the case of whether the `tmdb` object is updated (this is
 pending support).
+
+## Data separation
+
+We will definitely separate the information data, but for file storage, it may not be very clear. We don't want to put
+them into user (even our default user Kimily)'s sub paths, but default (or other) user may need to access those files.
+One way to solve this is to have a separate `WorldClient` that can such data, files etc. It may need some extra work to
+support two clients in one app run.
 
 ## Linking
 
