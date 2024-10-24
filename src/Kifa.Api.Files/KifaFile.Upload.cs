@@ -126,7 +126,8 @@ public partial class KifaFile {
             CheckDestination(destination, skipVerify);
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
-                Message = $"Uploaded to destination {destination}."
+                Message =
+                    $"Uploaded to destination {destination}{(skipVerify ? " without verification" : "")}."
             };
         } catch (IOException ex) {
             return new KifaActionResult {
