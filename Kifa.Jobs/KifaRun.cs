@@ -21,7 +21,7 @@ public class KifaRun : DataModel, WithModelId<KifaRun> {
     public string? ProcessId { get; set; }
     public DateTimeOffset StartTime { get; set; }
 
-    // Logging?
+    // Logging? Not used for now.
     public string? LogFilePath { get; set; }
 
     // Progress. Maybe we should make this class a KifaTask by itself.
