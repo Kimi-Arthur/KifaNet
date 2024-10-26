@@ -35,17 +35,19 @@ public abstract partial class KifaCommand {
         var resultsByStatus = Results.GroupBy(item => item.result.IsAcceptable)
             .ToDictionary(item => item.Key, item => item.ToList());
         if (resultsByStatus.TryGetValue(true, out var acceptableItems)) {
-            Logger.Info($"Successfully processed the following {acceptableItems.Count} items:");
             foreach (var (item, result) in acceptableItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
             }
+
+            Logger.Info($"Successfully processed the {acceptableItems.Count} items above.\n");
         }
 
         if (resultsByStatus.TryGetValue(false, out var failedItems)) {
-            Logger.Error($"Failed to process the following {failedItems.Count} items:");
             foreach (var (item, result) in failedItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
             }
+
+            Logger.Error($"Failed to process the {failedItems.Count} items above.");
 
             return 1;
         }
