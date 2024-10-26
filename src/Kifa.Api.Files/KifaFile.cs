@@ -56,12 +56,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public KifaFile Parent => new($"{Host}{ParentPath}");
 
-    // Path = ParentPath/BaseName.Extension = ParentPath/Name
+    // Path = ParentPath/BaseName.Extension = ParentPath/Name = PathSegments separated by '/'
+
+    public List<string> PathSegments { get; }
 
     // Ends with a slash.
     public string ParentPath { get; }
-    public string BaseName { get; set; }
-    public string? Extension { get; set; }
+    public string BaseName { get; }
+    public string? Extension { get; }
 
     public string Name
         => "{base_name}.{extension}".FormatIfNonNull(new() {
@@ -117,6 +119,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         uri = NormalizeUri(uri);
 
         var segments = uri.Split('/');
+        PathSegments = [..segments[1..]];
         ParentPath = "/" + string.Join("/", segments[1..^1]);
         if (!ParentPath.EndsWith("/")) {
             ParentPath += "/";

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
+using Kifa.Api.Files;
 using Kifa.Infos;
 using Kifa.Jobs;
 using Kifa.Service;
@@ -23,7 +24,15 @@ public class LinkCommand : KifaCommand {
         // Goal: /CAT/$/SOME-ID => /CAT/SOME-ID Some Name
         // Info: CAT (service => some/service) + SOME-ID (id) => SOME-ID Some Name (FolderLinks)
         // Action: ln -s $/SOME-ID "SOME-ID (id) => SOME-ID Some Name"
-        var category = CurrentFolder.Name;
+        var folders = Folders.Select(folder => new KifaFile(folder)).ToList();
+        var first = folders[0];
+
+        if (first.Parent.Name != "$") {
+            Logger.Fatal("The parent folder is not named as '$'. Exit.");
+            return 1;
+        }
+
+        var category = first.Parent.Parent.Path[1..];
         if (!FolderServices.TryGetValue(category, out var value)) {
             Logger.Error($"Category {category} not found. Exit.");
             return 1;
@@ -32,15 +41,14 @@ public class LinkCommand : KifaCommand {
         FolderLinkableDataModel.ModelId = value;
         var client = new KifaServiceRestClient<FolderLinkableDataModel>();
 
-        var folders = Folders.ToList();
-        var nonDollarFolders = folders.Where(f => !f.StartsWith('$')).ToList();
-        if (nonDollarFolders.Count > 0) {
+        if (folders.Any(f => f.ParentPath != first.ParentPath)) {
             Logger.Error(
-                $"Not all folders are $ folders, namely: \n\t{string.Join("\n\t", nonDollarFolders)}\n");
+                $"Not all folders are in the same parent folder {first.Parent.GetLocalPath()}");
             return 1;
         }
 
-        var ids = folders.Select(f => f[2..]).ToList();
+        // Because of the previous check, ids are always without '/'.
+        var ids = folders.Select(f => f.Name).ToList();
         var folderLinks = client.Get(ids).OnlyNonNull();
         foreach (var (folder, links) in folders.Zip(folderLinks)) {
             if (!links.FolderLinks.Any()) {
@@ -49,12 +57,14 @@ public class LinkCommand : KifaCommand {
             }
 
             foreach (var link in links.Checked().FolderLinks) {
-                if (!Confirm($"Linking {folder} => {link}")) {
-                    Logger.Warn($"Linking skipped for {folder} => {link}");
+                var target = folder.Parent.Parent.GetFile(link);
+                if (!Confirm($"Linking {folder.GetLocalPath()} => {target.GetLocalPath()}")) {
+                    Logger.Warn(
+                        $"Linking skipped for {folder.GetLocalPath()} => {target.GetLocalPath()}");
                     continue;
                 }
 
-                Directory.CreateSymbolicLink(link, folder);
+                Directory.CreateSymbolicLink(target.GetLocalPath(), folder.GetLocalPath());
             }
         }
 
