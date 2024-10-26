@@ -24,12 +24,12 @@ public class LinkCommand : KifaCommand {
         // Info: CAT (service => some/service) + SOME-ID (id) => SOME-ID Some Name (FolderLinks)
         // Action: ln -s $/SOME-ID "SOME-ID (id) => SOME-ID Some Name"
         var category = CurrentFolder.Name;
-        if (!FolderServices.ContainsKey(category)) {
+        if (!FolderServices.TryGetValue(category, out var value)) {
             Logger.Error($"Category {category} not found. Exit.");
             return 1;
         }
 
-        FolderLinkableDataModel.ModelId = FolderServices[category];
+        FolderLinkableDataModel.ModelId = value;
         var client = new KifaServiceRestClient<FolderLinkableDataModel>();
 
         var folders = Folders.ToList();
@@ -41,11 +41,19 @@ public class LinkCommand : KifaCommand {
         }
 
         var ids = folders.Select(f => f[2..]).ToList();
-        var folderLinks = client.Get(ids);
-
+        var folderLinks = client.Get(ids).OnlyNonNull();
         foreach (var (folder, links) in folders.Zip(folderLinks)) {
-            foreach (var link in links.FolderLinks) {
-                Logger.Info($"Linking {folder} => {link}");
+            if (!links.FolderLinks.Any()) {
+                Logger.Error($"No links found for {folder}. Skipped.");
+                continue;
+            }
+
+            foreach (var link in links.Checked().FolderLinks) {
+                if (!Confirm($"Linking {folder} => {link}")) {
+                    Logger.Warn($"Linking skipped for {folder} => {link}");
+                    continue;
+                }
+
                 Directory.CreateSymbolicLink(link, folder);
             }
         }
