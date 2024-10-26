@@ -20,7 +20,7 @@ class ImportCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     [Option('i', "id", HelpText = "Treat input files as logical ids.")]
-    public virtual bool ById { get; set; } = false;
+    public bool ById { get; set; } = false;
 
     [Option('s', "source-id", HelpText = "ID for the source, like tv_shows/Westworld/1")]
     public string SourceId { get; set; }
