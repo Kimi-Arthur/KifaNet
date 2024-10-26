@@ -16,6 +16,9 @@ namespace Kifa.Tools.FileUtil.Commands;
 class ImportCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    // Folder to models with search/match function. For example, "TV Shows" => "tv_shows".
+    public static Dictionary<string, string> Categories = new();
+
     [Value(0, Required = true, HelpText = "Target file(s) to import.")]
     public IEnumerable<string> FileNames { get; set; }
 
