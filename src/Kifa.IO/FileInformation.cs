@@ -323,6 +323,9 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
 public interface FileInformationServiceClient : KifaServiceClient<FileInformation> {
     List<FolderInfo> GetFolder(string folder, List<string> targets);
+    
+    // Returns the files in the folder or the folder if it's actually a file or empty if it doesn't
+    // exist.
     List<string> ListFolder(string folder, bool recursive = false);
     KifaActionResult AddLocation(string id, string location, bool verified = false);
     KifaActionResult RemoveLocation(string id, string location);

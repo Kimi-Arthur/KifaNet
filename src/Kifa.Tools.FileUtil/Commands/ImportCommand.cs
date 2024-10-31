@@ -36,8 +36,7 @@ class ImportCommand : KifaCommand {
     public bool Recursive { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames);
-        files = FilterRegisteredFiles(files);
+        var files = (ById ? GetFromFileIds() : GetFromLocalFiles()).ToList();
         if (files.Count == 0) {
             Logger.Error("No files found. Action canceled.");
             return 1;
@@ -59,15 +58,17 @@ class ImportCommand : KifaCommand {
         //     /Downloads/Gaming/黑桐谷歌-合集·【黑神话:悟空】.43536-3659146.bilibili/4K超清【黑神话:悟空】全妖降伏攻略解说 11 第三回 夜生白露-小雷音寺.av113073067262848p1.c25765217836.120-hevc.mp4
         //     /Downloads/Movies/Death Note Trilogy/1. Death Note (2006).mkv
 
-        Type ??= files[0].PathSegments[1];
-        foreach (var file in files) {
-            if (file.PathSegments[1] != Type) {
-                Logger.Error("Files don't share a common type. Exit.");
+        var pathSegments = files[0].Split("/", options: StringSplitOptions.RemoveEmptyEntries);
+        Type ??= pathSegments[1];
+        var prefix = $"/Downloads/{Type}/";
+        foreach (var file in files.Skip(1)) {
+            if (!file.StartsWith(prefix)) {
+                Logger.Error($"File {file} don't share a common prefix {prefix}. Exit.");
                 return 1;
             }
         }
 
-        SourceId ??= InferSourceId(files[0].Path);
+        SourceId ??= InferSourceId(pathSegments[2]);
         List<(Season Season, Episode Episode, bool Matched)> episodes;
         Formattable series;
         switch (Type) {
@@ -111,10 +112,7 @@ class ImportCommand : KifaCommand {
                 break;
             }
             case "Soccer":
-                foreach (var file in FileNames.SelectMany(path
-                             => FileInformation.Client
-                                 .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
-                                 .DefaultIfEmpty(ById ? path : new KifaFile(path).Id))) {
+                foreach (var file in files) {
                     var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
                     targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
@@ -136,12 +134,8 @@ class ImportCommand : KifaCommand {
                     baseName = baseName[..dotIndex];
                 }
 
-                var sourceFiles = FileNames.SelectMany(path
-                    => FileInformation.Client
-                        .ListFolder(ById ? path : new KifaFile(path).Id, Recursive)
-                        .DefaultIfEmpty(ById ? path : new KifaFile(path).Id)).ToList();
-                if (sourceFiles.Count == 1) {
-                    var file = sourceFiles.Single();
+                if (files.Count == 1) {
+                    var file = files.Single();
                     var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = fileVersion != null
                         ? $"{folder}/{baseName}/{baseName}.{fileVersion}.{ext}"
@@ -154,7 +148,7 @@ class ImportCommand : KifaCommand {
                 }
 
                 var counter = 'A';
-                foreach (var file in sourceFiles) {
+                foreach (var file in files) {
                     var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = fileVersion != null
                         ? $"{folder}/{baseName}/{baseName}-{counter}.{fileVersion}.{ext}"
@@ -168,10 +162,7 @@ class ImportCommand : KifaCommand {
                 return 0;
         }
 
-        var fileMatches = FileNames.SelectMany(path
-                => FileInformation.Client.ListFolder(ById ? path : new KifaFile(path).Id,
-                    Recursive))
-            .Select(f => (File: f, Matched: false)).ToList();
+        var fileMatches = files.Select(f => (File: f, Matched: false)).ToList();
 
         for (int i = 0; i < fileMatches.Count; i++) {
             var info = FileInformation.Client.Get(fileMatches[i].File);
@@ -225,11 +216,17 @@ class ImportCommand : KifaCommand {
         return 0;
     }
 
+    IEnumerable<string> GetFromFileIds()
+        => FileNames.SelectMany(f => FileInformation.Client.ListFolder(f, Recursive));
+
+    IEnumerable<string> GetFromLocalFiles()
+        => FilterRegisteredFiles(KifaFile.FindExistingFiles(FileNames)).Select(f => f.Id);
+
     string InferSourceId(string title) {
-        throw new NotImplementedException();
+        return title;
     }
 
-    List<KifaFile> FilterRegisteredFiles(List<KifaFile> files) {
+    IEnumerable<KifaFile> FilterRegisteredFiles(List<KifaFile> files) {
         var notRegisteredFiles = files.Where(f => !f.Registered).ToList();
         if (notRegisteredFiles.Count == 0) {
             return files;
@@ -239,7 +236,7 @@ class ImportCommand : KifaCommand {
             choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
             choiceName: "files to add to the system");
         toRegister.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
-        return files.Where(f => f.Registered).ToList();
+        return files.Where(f => f.Registered);
     }
 
     static void MarkMatched(List<(Season Season, Episode Episode, bool Matched)> episodes,
