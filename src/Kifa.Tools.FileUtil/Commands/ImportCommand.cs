@@ -32,9 +32,6 @@ class ImportCommand : KifaCommand {
     [Option('s', "source-id", HelpText = "ID for the source, like Westworld/1")]
     public string? SourceId { get; set; }
 
-    [Option('r', "recursive", HelpText = "Whether to list folder recursively.")]
-    public bool Recursive { get; set; }
-
     public override int Execute(KifaTask? task = null) {
         var files = (ById ? GetFromFileIds() : GetFromLocalFiles()).ToList();
         if (files.Count == 0) {
@@ -217,7 +214,7 @@ class ImportCommand : KifaCommand {
     }
 
     IEnumerable<string> GetFromFileIds()
-        => FileNames.SelectMany(f => FileInformation.Client.ListFolder(f, Recursive));
+        => FileNames.SelectMany(f => FileInformation.Client.ListFolder(f, true));
 
     IEnumerable<string> GetFromLocalFiles()
         => FilterRegisteredFiles(KifaFile.FindExistingFiles(FileNames)).Select(f => f.Id);
