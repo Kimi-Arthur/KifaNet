@@ -219,20 +219,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             }
         }
 
-        if (bestScore > 0) {
-            return candidate;
-        }
-
-        foreach (var p in FileStorageClient.ServerConfigs.Keys) {
-            var location = $"local:{p}{id}";
-            var score = new KifaFile(location).Length;
-            if (score > bestScore) {
-                bestScore = score;
-                candidate = location;
-            }
-        }
-
-        return candidate;
+        return bestScore > 0 ? candidate : null;
     }
 
     public KifaFile GetFile(string name) => new($"{Host}{Path}/{name}");
