@@ -323,6 +323,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         bool isLastBlock, long offset, int effectiveReadCount, byte[] buffer, int bufferOffset,
         DownloadState downloadState, SemaphoreSlim semaphore) {
         var requestStart = offset.RoundDown(DownloadBlockSize);
+        var beforeSleep = Random.Shared.Next(10) + 1;
+        Logger.Trace($"Sleep a random {beforeSleep} seconds before downloading.");
+        Thread.Sleep(TimeSpan.FromSeconds(beforeSleep));
+
         Logger.Trace($"To request {DownloadBlockSize} from {requestStart}.");
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
@@ -334,7 +338,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             // limit is at most 1 MiB and offset should align 1 MiB block boundary.
             var downloadResult = await Retry.Run(
                 async () => await cellClient.Client.Upload_GetFile(location, offset: requestStart,
-                    limit: DownloadBlockSize), HandleFloodException);
+                    limit: DownloadBlockSize, cdn_supported: true), HandleFloodException);
 
             if (downloadResult is not Upload_File uploadFile) {
                 throw new Exception($"Response is not {nameof(Upload_File)}");
