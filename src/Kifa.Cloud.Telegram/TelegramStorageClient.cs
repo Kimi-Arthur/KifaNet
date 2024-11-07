@@ -233,8 +233,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             case RpcException {
                 Code: 420
             } rpcException:
-                Logger.Warn(ex, $"Sleeping {rpcException.X} as requested by Telegram API ({i})...");
-                Thread.Sleep(TimeSpan.FromSeconds(rpcException.X));
+                var extraSecond = Random.Shared.Next(10) + 1;
+                Logger.Warn(ex,
+                    $"Sleeping {rpcException.X + extraSecond} as requested by Telegram API ({i})...");
+                Thread.Sleep(TimeSpan.FromSeconds(rpcException.X + extraSecond));
                 return;
             default:
                 throw ex;
