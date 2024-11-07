@@ -111,9 +111,21 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public KifaFile(string? uri = null, string? id = null, FileInformation? fileInfo = null,
         bool useCache = false, HashSet<string>? allowedClients = null) {
-        uri ??= GetUri(id ?? fileInfo!.Id, allowedClients);
         if (uri == null) {
-            throw new FileNotFoundException();
+            if (id == null) {
+                if (fileInfo?.Id == null) {
+                    throw new FileNotFoundException(
+                        $"At least one of uri, id, fileInfo.Id should be non-null.");
+                }
+
+                id = fileInfo.Id;
+            }
+
+            uri = GetUri(id, allowedClients);
+
+            if (uri == null) {
+                throw new FileNotFoundException($"Unable to infer an available uri for {id}.");
+            }
         }
 
         uri = NormalizeUri(uri);
