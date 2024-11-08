@@ -332,17 +332,22 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 Logger.Trace("Waiting for start semaphore");
                 await StartSemaphore.WaitAsync();
                 var toWait = earliestNextRequest - DateTime.Now;
-                Logger.Trace(
-                    $"Need to wait {toWait} till {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff}");
-                if (toWait > TimeSpan.Zero) {
+                while (true) {
                     Logger.Trace(
-                        $"Sleep {toWait} till {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff} before requesting...");
-                    await Task.Delay(toWait);
+                        $"Need to wait {toWait} till {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff}");
+                    if (toWait > TimeSpan.Zero) {
+                        await Task.Delay(toWait);
+                    }
+
+                    var seconds = Random.Shared.Next(3) + 1;
+                    await Task.Delay(TimeSpan.FromSeconds(seconds));
+                    Logger.Trace($"Slept {seconds}s more before requesting...");
+                    toWait = earliestNextRequest - DateTime.Now;
+                    if (toWait < TimeSpan.Zero) {
+                        break;
+                    }
                 }
 
-                var seconds = Random.Shared.Next(3) + 1;
-                await Task.Delay(TimeSpan.FromSeconds(seconds));
-                Logger.Trace($"Slept {seconds}s more before requesting...");
                 StartSemaphore.Release();
 
                 return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
