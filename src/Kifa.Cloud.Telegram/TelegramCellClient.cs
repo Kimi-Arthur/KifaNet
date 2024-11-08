@@ -44,6 +44,7 @@ public class TelegramCellClient : IDisposable {
         sessionStream.Write(session.Data);
         sessionStream.Seek(0, SeekOrigin.Begin);
         Client = new Client(account.ConfigProvider, sessionStream);
+        Client.FloodRetryThreshold = 0;
 
         try {
             var result = Retry.Run(() => Client.Login(account.Phone).GetAwaiter().GetResult(),
