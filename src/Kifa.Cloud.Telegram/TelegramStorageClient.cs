@@ -231,7 +231,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     earliestNextRequest = nextRequest;
                 }
 
-                Logger.Warn(ex, $"Cannot request before {earliestNextRequest}.");
+                Logger.Warn(ex,
+                    $"Cannot request before {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff}.");
                 return;
             default:
                 throw ex;
@@ -331,8 +332,11 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 Logger.Trace("Waiting for start semaphore");
                 await StartSemaphore.WaitAsync();
                 var toWait = earliestNextRequest - DateTime.Now;
+                Logger.Trace(
+                    $"Need to wait {toWait} till {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff}");
                 if (toWait > TimeSpan.Zero) {
-                    Logger.Trace($"Sleep {toWait} till {earliestNextRequest} before requesting...");
+                    Logger.Trace(
+                        $"Sleep {toWait} till {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff} before requesting...");
                     await Task.Delay(toWait);
                 }
 
