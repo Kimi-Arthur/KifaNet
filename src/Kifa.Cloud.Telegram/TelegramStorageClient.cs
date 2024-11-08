@@ -233,10 +233,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             case RpcException {
                 Code: 420
             } rpcException:
-                var extraSecond = Random.Shared.Next(10) + 1;
-                Logger.Warn(ex,
-                    $"Sleeping {rpcException.X + extraSecond} as requested by Telegram API ({i})...");
-                Thread.Sleep(TimeSpan.FromSeconds(rpcException.X + extraSecond));
+                Logger.Warn(ex, $"Sleeping {rpcException.X} as requested by Telegram API ({i})...");
+                Thread.Sleep(TimeSpan.FromSeconds(rpcException.X));
                 return;
             default:
                 throw ex;
@@ -330,20 +328,23 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
         await semaphore.WaitAsync();
-        Logger.Trace($"Waiting for start semaphore to get block from {offset}...");
-        await startSemaphore.WaitAsync();
-        var seconds = Random.Shared.Next(10) + 1;
-        await Task.Delay(TimeSpan.FromSeconds(seconds));
-        startSemaphore.Release();
 
         Logger.Trace($"Getting block from {offset}...");
 
         try {
             // From https://core.telegram.org/api/files#downloading-files
             // limit is at most 1 MiB and offset should align 1 MiB block boundary.
-            var downloadResult = await Retry.Run(
-                async () => await cellClient.Client.Upload_GetFile(location, offset: requestStart,
-                    limit: DownloadBlockSize, cdn_supported: true), HandleFloodException);
+            var downloadResult = await Retry.Run(async () => {
+                Logger.Trace("Waiting for start semaphore");
+                await startSemaphore.WaitAsync();
+                var seconds = Random.Shared.Next(3) + 1;
+                await Task.Delay(TimeSpan.FromSeconds(seconds));
+                Logger.Trace($"Slept {seconds}s before requesting...");
+                startSemaphore.Release();
+
+                return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
+                    limit: DownloadBlockSize, cdn_supported: true);
+            }, HandleFloodException);
 
             if (downloadResult is not Upload_File uploadFile) {
                 throw new Exception($"Response is not {nameof(Upload_File)}");
