@@ -294,6 +294,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var downloadTasks = new List<Task>();
 
         var semaphore = new SemaphoreSlim(6);
+        var startSemaphore = new SemaphoreSlim(1);
 
         // Workaround for expiration of document with a bit overhead.
         // This solution generally works if the next loop isn't taking too long. Performance wise,
@@ -306,7 +307,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 (int) Math.Min(count, DownloadBlockSize - offset % DownloadBlockSize);
 
             downloadTasks.Add(DownloadOneBlock(cellClient, location, count <= DownloadBlockSize,
-                offset, effectiveReadCount, buffer, bufferOffset, state, semaphore));
+                offset, effectiveReadCount, buffer, bufferOffset, state, semaphore,
+                startSemaphore));
 
             count -= effectiveReadCount;
             offset += effectiveReadCount;
@@ -321,16 +323,19 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     async Task DownloadOneBlock(TelegramCellClient cellClient, InputDocumentFileLocation location,
         bool isLastBlock, long offset, int effectiveReadCount, byte[] buffer, int bufferOffset,
-        DownloadState downloadState, SemaphoreSlim semaphore) {
+        DownloadState downloadState, SemaphoreSlim semaphore, SemaphoreSlim startSemaphore) {
         var requestStart = offset.RoundDown(DownloadBlockSize);
-        var beforeSleep = Random.Shared.Next(10) + 1;
-        Logger.Trace($"Sleep a random {beforeSleep} seconds before downloading.");
-        Thread.Sleep(TimeSpan.FromSeconds(beforeSleep));
 
         Logger.Trace($"To request {DownloadBlockSize} from {requestStart}.");
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
         await semaphore.WaitAsync();
+        Logger.Trace($"Waiting for start semaphore to get block from {offset}...");
+        await startSemaphore.WaitAsync();
+        var seconds = Random.Shared.Next(10) + 1;
+        await Task.Delay(TimeSpan.FromSeconds(seconds));
+        startSemaphore.Release();
+
         Logger.Trace($"Getting block from {offset}...");
 
         try {
