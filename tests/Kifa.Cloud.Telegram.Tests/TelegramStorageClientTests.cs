@@ -20,8 +20,7 @@ public class TelegramStorageClientTests {
         KifaConfigs.Init();
         var cell = TelegramStorageCell.Client.Get("test").Checked();
         var account = cell.Account.Data.Checked();
-        var client = new Client(account.ApiId, account.ApiHash,
-            $"{TelegramStorageClient.SessionsFolder}/{account.Id}.session");
+        var client = new Client(account.ConfigProvider, new MemoryStream(account.Sessions[0].Data));
 
         Assert.Equal("verification_code", client.Login(account.Phone).Result);
 

@@ -17,16 +17,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public const long ShardSize = 4000L * BlockSize; // 2 GB
 
-    #region public late static string SessionsFolder { get; set; }
-
-    static string? sessionsFolder;
-
-    public static string SessionsFolder {
-        get => Late.Get(sessionsFolder);
-        set => Late.Set(ref sessionsFolder, value);
-    }
-
-    #endregion
+    static readonly SemaphoreSlim StartSemaphore = new(1);
+    static readonly SemaphoreSlim TaskSemaphore = new(8);
+    static DateTime earliestNextRequest = DateTime.MinValue;
 
     static readonly ConcurrentDictionary<string, TelegramStorageCell> AllCells = new();
 
@@ -233,8 +226,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             case RpcException {
                 Code: 420
             } rpcException:
-                Logger.Warn(ex, $"Sleeping {rpcException.X} as requested by Telegram API ({i})...");
-                Thread.Sleep(TimeSpan.FromSeconds(rpcException.X));
+                var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X);
+                if (earliestNextRequest < nextRequest) {
+                    earliestNextRequest = nextRequest;
+                }
+
+                Logger.Warn(ex, $"Cannot request before {earliestNextRequest}.");
                 return;
             default:
                 throw ex;
@@ -291,9 +288,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
         var downloadTasks = new List<Task>();
 
-        var semaphore = new SemaphoreSlim(6);
-        var startSemaphore = new SemaphoreSlim(1);
-
         // Workaround for expiration of document with a bit overhead.
         // This solution generally works if the next loop isn't taking too long. Performance wise,
         // this should serve for quite some versions. May need to revise if the next loop finishes
@@ -305,8 +299,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 (int) Math.Min(count, DownloadBlockSize - offset % DownloadBlockSize);
 
             downloadTasks.Add(DownloadOneBlock(cellClient, location, count <= DownloadBlockSize,
-                offset, effectiveReadCount, buffer, bufferOffset, state, semaphore,
-                startSemaphore));
+                offset, effectiveReadCount, buffer, bufferOffset, state));
 
             count -= effectiveReadCount;
             offset += effectiveReadCount;
@@ -321,13 +314,13 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     async Task DownloadOneBlock(TelegramCellClient cellClient, InputDocumentFileLocation location,
         bool isLastBlock, long offset, int effectiveReadCount, byte[] buffer, int bufferOffset,
-        DownloadState downloadState, SemaphoreSlim semaphore, SemaphoreSlim startSemaphore) {
+        DownloadState downloadState) {
         var requestStart = offset.RoundDown(DownloadBlockSize);
 
         Logger.Trace($"To request {DownloadBlockSize} from {requestStart}.");
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
-        await semaphore.WaitAsync();
+        await TaskSemaphore.WaitAsync();
 
         Logger.Trace($"Getting block from {offset}...");
 
@@ -336,11 +329,17 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             // limit is at most 1 MiB and offset should align 1 MiB block boundary.
             var downloadResult = await Retry.Run(async () => {
                 Logger.Trace("Waiting for start semaphore");
-                await startSemaphore.WaitAsync();
+                await StartSemaphore.WaitAsync();
+                var toWait = earliestNextRequest - DateTime.Now;
+                if (toWait > TimeSpan.Zero) {
+                    Logger.Trace($"Sleep {toWait} till {earliestNextRequest} before requesting...");
+                    await Task.Delay(toWait);
+                }
+
                 var seconds = Random.Shared.Next(3) + 1;
                 await Task.Delay(TimeSpan.FromSeconds(seconds));
-                Logger.Trace($"Slept {seconds}s before requesting...");
-                startSemaphore.Release();
+                Logger.Trace($"Slept {seconds}s more before requesting...");
+                StartSemaphore.Release();
 
                 return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
                     limit: DownloadBlockSize, cdn_supported: true);
@@ -360,7 +359,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 uploadFile.bytes.CopyTo(downloadState.LastBlock, 0);
             }
         } finally {
-            semaphore.Release();
+            TaskSemaphore.Release();
         }
     }
 
