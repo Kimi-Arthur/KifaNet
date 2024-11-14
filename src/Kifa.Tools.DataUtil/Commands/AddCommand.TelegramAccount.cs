@@ -43,8 +43,8 @@ public partial class AddCommand {
                 var result = Retry.Run(() => {
                     sessionStream = new MemoryStream();
                     client = new Client(account.ConfigProvider, sessionStream);
-                    return client.Login(account.Phone).GetAwaiter().GetResult();
-                }, TelegramStorageClient.HandleFloodException);
+                    return client.Login(account.Phone);
+                }, TelegramStorageClient.HandleFloodException).GetAwaiter().GetResult();
 
                 if (client == null || sessionStream == null) {
                     Logger.Error("Failed to init session stream or client to login.");
@@ -53,8 +53,8 @@ public partial class AddCommand {
 
                 while (result != null) {
                     var code = Confirm($"Telegram asked for {result}:", "");
-                    result = Retry.Run(() => client.Login(code).GetAwaiter().GetResult(),
-                        TelegramStorageClient.HandleFloodException);
+                    result = Retry.Run(() => client.Login(code),
+                        TelegramStorageClient.HandleFloodException).GetAwaiter().GetResult();
                 }
 
                 Logger.LogResult(

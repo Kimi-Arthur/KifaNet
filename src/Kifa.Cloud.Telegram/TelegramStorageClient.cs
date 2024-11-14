@@ -91,10 +91,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 return;
             }
 
-            var result =
-                Retry.Run(
-                    () => cellClient.Client.DeleteMessages(cellClient.Channel, message.id)
-                        .GetAwaiter().GetResult(), HandleFloodException);
+            var result = Retry
+                .Run(() => cellClient.Client.DeleteMessages(cellClient.Channel, message.id),
+                    HandleFloodException).GetAwaiter().GetResult();
             if (result.pts_count != 1) {
                 Logger.Debug($"Delete of {path} is not successful, but is ignored.");
             }
@@ -144,7 +143,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     id = fileId,
                     parts = totalParts,
                     name = path.Split("/")[^1]
-                }).GetAwaiter().GetResult(), HandleFloodException);
+                }), HandleFloodException).GetAwaiter().GetResult();
 
             if (finalResult.message != path) {
                 throw new Exception(
@@ -193,7 +192,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
             var partResult = await Retry.Run(
                 async () => await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex,
-                    totalParts, buffer), HandleFloodException, isValid: ((result, i) => result));
+                    totalParts, buffer), HandleFloodException, isValid: (result, _) => result);
 
             if (!partResult) {
                 throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
@@ -207,7 +206,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
-    public static void HandleFloodException(Exception ex, int i) {
+    public static async Task HandleFloodException(Exception ex, int i) {
         switch (ex) {
             case IOException:
             case RpcException { Code: 500 }: {
@@ -216,7 +215,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
 
                 Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
-                Thread.Sleep(TimeSpan.FromSeconds(30));
+                await Task.Delay(TimeSpan.FromSeconds(30));
                 return;
             }
             case RpcException {
@@ -389,18 +388,16 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         try {
             var message = Retry
                 .Run(
-                    () => cellClient.Client
-                        .Messages_Search<InputMessagesFilterDocument>(cellClient.Channel, path)
-                        .GetAwaiter().GetResult(), HandleFloodException).Messages
-                .Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+                    () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
+                        cellClient.Channel, path), HandleFloodException).GetAwaiter().GetResult()
+                .Messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
             if (message != null) {
                 return message;
             }
 
             var messages = Retry
-                .Run(
-                    () => cellClient.Client.Messages_GetHistory(cellClient.Channel).GetAwaiter()
-                        .GetResult(), HandleFloodException).Messages;
+                .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
+                    HandleFloodException).GetAwaiter().GetResult().Messages;
             while (messages?.Length > 0) {
                 message = messages.Select(m => m as Message)
                     .SingleOrDefault(m => m?.message == path);
@@ -415,9 +412,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 var lastMessageId = messages[^1].ID;
                 messages = Retry
                     .Run(
-                        () => cellClient.Client
-                            .Messages_GetHistory(cellClient.Channel, lastMessageId).GetAwaiter()
-                            .GetResult(), HandleFloodException).Messages;
+                        () => cellClient.Client.Messages_GetHistory(cellClient.Channel,
+                            lastMessageId), HandleFloodException).GetAwaiter().GetResult().Messages;
             }
 
             return null;

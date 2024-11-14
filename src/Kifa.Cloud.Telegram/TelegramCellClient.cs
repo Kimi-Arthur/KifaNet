@@ -47,17 +47,17 @@ public class TelegramCellClient : IDisposable {
         Client.FloodRetryThreshold = 0;
 
         try {
-            var result = Retry.Run(() => Client.Login(account.Phone).GetAwaiter().GetResult(),
-                TelegramStorageClient.HandleFloodException);
+            var result = Retry.Run(() => Client.Login(account.Phone),
+                TelegramStorageClient.HandleFloodException).GetAwaiter().GetResult();
             if (result != null) {
                 throw new DriveNotFoundException(
                     $"Telegram drive {account.Id} is not accessible. Requesting {result}.");
             }
 
             Channel = Retry
-                .Run(() => Client.Messages_GetAllChats().GetAwaiter().GetResult(),
-                    TelegramStorageClient.HandleFloodException).chats[long.Parse(channelId)]
-                .Checked();
+                .Run(() => Client.Messages_GetAllChats(),
+                    TelegramStorageClient.HandleFloodException).GetAwaiter().GetResult()
+                .chats[long.Parse(channelId)].Checked();
         } catch (WTException) {
             Dispose();
             throw;

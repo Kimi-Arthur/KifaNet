@@ -39,8 +39,8 @@ public static class Retry {
         }
     }
 
-    public static async Task<T> Run<T>(Func<Task<T>> action, Action<Exception, int> handleException,
-        Func<T, int, bool>? isValid = null) {
+    public static async Task<T> Run<T>(Func<Task<T>> action,
+        Func<Exception, int, Task> handleException, Func<T, int, bool>? isValid = null) {
         for (var i = 1;; i++) {
             try {
                 var result = await action();
@@ -53,7 +53,7 @@ public static class Retry {
                     ex = ex.InnerException!;
                 }
 
-                handleException(ex, i);
+                await handleException(ex, i);
             }
         }
     }
