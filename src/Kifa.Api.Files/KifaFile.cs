@@ -130,10 +130,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         uri = NormalizeUri(uri);
 
-        // TODO: test the case of root path etc.
+        // segments[0] is the client spec.
         var segments = uri.Split('/', options: StringSplitOptions.RemoveEmptyEntries);
-        PathSegments = [..segments];
-        ParentPath = "/" + string.Join("/", segments[..^1]);
+        PathSegments = [..segments[1..]];
+        ParentPath = "/" + string.Join("/", segments[1..^1]);
         if (!ParentPath.EndsWith('/')) {
             ParentPath += "/";
         }
