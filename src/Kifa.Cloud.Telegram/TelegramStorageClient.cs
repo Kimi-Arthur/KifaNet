@@ -18,8 +18,11 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public const long ShardSize = 4000L * BlockSize; // 2 GB
 
-    static readonly SemaphoreSlim DownloadTaskSemaphore = new(8);
-    static readonly SemaphoreSlim UploadTaskSemaphore = new(8);
+    public static int DownloadThread { get; set; }
+    public static int UploadThread { get; set; }
+
+    static readonly SemaphoreSlim DownloadTaskSemaphore = new(DownloadThread);
+    static readonly SemaphoreSlim UploadTaskSemaphore = new(UploadThread);
     static readonly PriorityLock PriorityLock = new();
 
     static readonly ConcurrentDictionary<string, TelegramStorageCell> AllCells = new();
