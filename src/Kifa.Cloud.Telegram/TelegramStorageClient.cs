@@ -245,8 +245,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     var toSleep = nextRequest - DateTime.Now;
 
                     if (toSleep > TimeSpan.Zero) {
-                        Logger.Warn(ex,
-                            $"Sleep {toSleep.TotalSeconds:F2}s from now as requested to sleep {rpcException.X}s.");
+                        Logger.Log(
+                            toSleep > TimeSpan.FromSeconds(30) ? LogLevel.Warn : LogLevel.Trace, ex,
+                            $"Sleep {toSleep.TotalSeconds:F2}s from now as requested to sleep {rpcException.X}s ({i}).");
                         await Task.Delay(toSleep);
                     }
                 }
