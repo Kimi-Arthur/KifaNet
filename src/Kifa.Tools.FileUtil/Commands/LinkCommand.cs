@@ -28,7 +28,7 @@ public class LinkCommand : KifaCommand {
         var first = folders[0];
 
         if (first.Parent.Name != "$") {
-            Logger.Fatal("The parent folder is not named as '$'. Exit.");
+            Logger.Fatal($"The parent folder should be '$', but is '{first.Parent.Name}'. Exit.");
             return 1;
         }
 
