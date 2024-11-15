@@ -59,7 +59,7 @@ public class LinkCommand : KifaCommand {
 
             foreach (var link in links.Checked().FolderLinks) {
                 var target = folder.Parent.Parent.GetFile(link);
-                if (target.Exists()) {
+                if (Directory.Exists(target.GetLocalPath())) {
                     Logger.Info($"Linking skipped for {target} as it already exists.");
                     continue;
                 }
