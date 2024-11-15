@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
+using Kifa.Threading;
 using NLog;
 using TL;
 
@@ -17,9 +18,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public const long ShardSize = 4000L * BlockSize; // 2 GB
 
-    static readonly SemaphoreSlim StartSemaphore = new(1);
-    static readonly SemaphoreSlim TaskSemaphore = new(8);
-    static DateTime earliestNextRequest = DateTime.MinValue;
+    static readonly SemaphoreSlim DownloadTaskSemaphore = new(8);
+    static readonly SemaphoreSlim UploadTaskSemaphore = new(8);
+    static readonly PriorityLock PriorityLock = new();
 
     static readonly ConcurrentDictionary<string, TelegramStorageCell> AllCells = new();
 
@@ -118,19 +119,21 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         try {
             var size = stream.Length;
 
+            // This is to ensure we don't simulaneously read the input when uploading to avoid conflict.
+            var uploadInputStreamSemaphore = new SemaphoreSlim(1);
+
+
             // size should be at most 1 << 31.
             var totalParts = (int) (size - 1) / BlockSize + 1;
             var fileId = Random.Shared.NextInt64();
             Logger.Debug($"Uploading {path} with temp file id {fileId}...");
 
-            var uploadSemaphore = new SemaphoreSlim(8);
-            var readSemaphore = new SemaphoreSlim(1);
             var exceptions = new ConcurrentBag<Exception>();
             var tasks = new Task[totalParts];
             for (var i = 0; (long) i * BlockSize < size; ++i) {
                 tasks[i] = UploadOneBlock(cellClient, fileId, totalParts, i, stream, i * BlockSize,
-                    (int) Math.Min(size - i * BlockSize, BlockSize), readSemaphore, uploadSemaphore,
-                    exceptions);
+                    (int) Math.Min(size - i * BlockSize, BlockSize), exceptions,
+                    uploadInputStreamSemaphore);
             }
 
             Task.WhenAll(tasks).GetAwaiter().GetResult();
@@ -155,15 +158,16 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     async Task UploadOneBlock(TelegramCellClient cellClient, long fileId, int totalParts,
-        int partIndex, Stream stream, long fromPosition, int length, SemaphoreSlim readSemaphore,
-        SemaphoreSlim uploadSemaphore, ConcurrentBag<Exception> exceptions) {
+        int partIndex, Stream stream, long fromPosition, int length,
+        ConcurrentBag<Exception> exceptions, SemaphoreSlim uploadInputStreamSemaphore) {
         Logger.Trace(
             $"Waiting for uploadSemaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
-        await uploadSemaphore.WaitAsync();
+        await UploadTaskSemaphore.WaitAsync();
+
         try {
             var buffer = new byte[length];
 
-            await readSemaphore.WaitAsync();
+            await uploadInputStreamSemaphore.WaitAsync();
 
             try {
                 if (!exceptions.IsEmpty) {
@@ -181,7 +185,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 exceptions.Add(ex);
                 return;
             } finally {
-                readSemaphore.Release();
+                uploadInputStreamSemaphore.Release();
             }
 
             if (!exceptions.IsEmpty) {
@@ -190,9 +194,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
 
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
-            var partResult = await Retry.Run(
-                async () => await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex,
-                    totalParts, buffer), HandleFloodException, isValid: (result, _) => result);
+            var partResult = await Retry.Run(async () => {
+                Logger.Trace(
+                    $"Waiting for start semaphore to upload part {partIndex} of {totalParts} for {fileId}...");
+                using (await PriorityLock.EnterScopeAsync(1)) {
+                    var randomSleep = Random.Shared.Next(4) + 1;
+                    Logger.Trace($"Randomly sleep {randomSleep}s before uploading.");
+                    await Task.Delay(TimeSpan.FromSeconds(randomSleep));
+                }
+
+                return await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
+                    buffer);
+            }, HandleFloodException, isValid: (result, _) => result);
 
             if (!partResult) {
                 throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
@@ -202,7 +215,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         } catch (Exception ex) {
             exceptions.Add(ex);
         } finally {
-            uploadSemaphore.Release();
+            UploadTaskSemaphore.Release();
         }
     }
 
@@ -220,18 +233,22 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
             case RpcException {
                 Code: 420
-            } when i >= 10:
+            } when i >= 20:
                 throw ex;
             case RpcException {
                 Code: 420
             } rpcException:
                 var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X);
-                if (earliestNextRequest < nextRequest) {
-                    earliestNextRequest = nextRequest;
+                using (await PriorityLock.EnterScopeAsync(0)) {
+                    var toSleep = nextRequest - DateTime.Now;
+
+                    if (toSleep > TimeSpan.Zero) {
+                        Logger.Warn(ex,
+                            $"Sleep {toSleep.TotalSeconds:F2}s from now as requested to sleep {rpcException.X}s.");
+                        await Task.Delay(toSleep);
+                    }
                 }
 
-                Logger.Warn(ex,
-                    $"Cannot request before {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff}.");
                 return;
             default:
                 throw ex;
@@ -320,7 +337,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         Logger.Trace($"To request {DownloadBlockSize} from {requestStart}.");
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
-        await TaskSemaphore.WaitAsync();
+        await DownloadTaskSemaphore.WaitAsync();
 
         Logger.Trace($"Getting block from {offset}...");
 
@@ -328,26 +345,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             // From https://core.telegram.org/api/files#downloading-files
             // limit is at most 1 MiB and offset should align 1 MiB block boundary.
             var downloadResult = await Retry.Run(async () => {
-                Logger.Trace("Waiting for start semaphore");
-                await StartSemaphore.WaitAsync();
-                var toWait = earliestNextRequest - DateTime.Now;
-                while (true) {
-                    Logger.Trace(
-                        $"Need to wait {toWait} till {earliestNextRequest:yyyy-MM-ddTHH:mm:ss.ffffff}");
-                    if (toWait > TimeSpan.Zero) {
-                        await Task.Delay(toWait);
-                    }
-
-                    var seconds = Random.Shared.Next(3) + 1;
-                    await Task.Delay(TimeSpan.FromSeconds(seconds));
-                    Logger.Trace($"Slept {seconds}s more before requesting...");
-                    toWait = earliestNextRequest - DateTime.Now;
-                    if (toWait < TimeSpan.Zero) {
-                        break;
-                    }
+                Logger.Trace($"Waiting for start semaphore to download from {offset}...");
+                using (await PriorityLock.EnterScopeAsync(1)) {
+                    var randomSleep = Random.Shared.Next(4) + 1;
+                    Logger.Trace($"Randomly sleep {randomSleep}s.");
+                    await Task.Delay(TimeSpan.FromSeconds(randomSleep));
                 }
-
-                StartSemaphore.Release();
 
                 return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
                     limit: DownloadBlockSize, cdn_supported: true);
@@ -367,7 +370,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 uploadFile.bytes.CopyTo(downloadState.LastBlock, 0);
             }
         } finally {
-            TaskSemaphore.Release();
+            DownloadTaskSemaphore.Release();
         }
     }
 
