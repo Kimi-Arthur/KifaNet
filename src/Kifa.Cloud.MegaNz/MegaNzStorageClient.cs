@@ -31,16 +31,16 @@ public class MegaNzStorageClient : StorageClient {
     static MegaNzConfig Config
         => LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
 
-
     public override string Type => "mega";
 
     public override string Id => AccountId;
 
     // Comment out as this doesn't work now.
-    //public override void Move(string sourcePath, string destinationPath)
-    //{
-    //    Client.Move(GetNode(sourcePath), GetNode(GetParent(destinationPath), true));
-    //}
+    public override void Move(string sourcePath, string destinationPath) {
+        var sourceNode = GetNode(sourcePath);
+        Client.Move(sourceNode, GetNode(GetParent(destinationPath), true));
+        Client.Rename(sourceNode, GetName(destinationPath));
+    }
 
     public override void Delete(string path) {
         var node = GetNode(path);
@@ -64,9 +64,10 @@ public class MegaNzStorageClient : StorageClient {
         Client.Upload(stream, name, folder);
     }
 
-    string GetParent(string path) => path.Substring(0, path.LastIndexOf('/'));
+    static string GetParent(string path) => path[..path.LastIndexOf('/')];
+    static string GetName(string path) => path[(path.LastIndexOf('/') + 1)..];
 
-    Node GetNode(string path, bool createParents = false) {
+    INode GetNode(string path, bool createParents = false) {
         path = path.Trim('/');
         var nodes = Client.GetNodes();
 

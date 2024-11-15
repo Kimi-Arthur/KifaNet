@@ -6,4 +6,7 @@
     <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MegaApiClient" Version="1.10.4" />
+  </ItemGroup>
 </Project>
