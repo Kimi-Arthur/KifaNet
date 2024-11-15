@@ -1,0 +1,98 @@
+﻿<Solution>
+  <Folder Name="/Core/">
+    <Project Path="Kifa.Threading\Kifa.Threading.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Configs\Kifa.Configs.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Cryptography\Kifa.Cryptography.csproj" />
+    <Project Path="src\Kifa.Service\Kifa.Service.csproj" />
+    <Project Path="src\Kifa\Kifa.csproj" />
+    <Project Path="tests\Kifa.Configs.Tests\Kifa.Configs.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Cryptography.Tests\Kifa.Cryptography.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Service.Tests\Kifa.Service.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Tests\Kifa.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Experimental/">
+    <Project Path="benchmarks\Kifa.Benchmarks\Kifa.Benchmarks.csproj" Type="Classic C#" />
+    <Project Path="Experimental\ConcurrentProcessorTests\ConcurrentProcessorTests.csproj" Type="Classic C#" />
+    <Project Path="Experimental\KeyValuePairDefault\KeyValuePairDefault.csproj" Type="Classic C#" />
+    <Project Path="Experimental\Kifa.Experimental.NonNullProperty\Kifa.Experimental.NonNullProperty.csproj" Type="Classic C#" />
+    <Project Path="Experimental\LockExperiments\LockExperiments.csproj" Type="Classic C#" />
+    <Project Path="Experimental\TelegramExample\TelegramExample.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Files/">
+    <Project Path="src\Kifa.Api.Files\Kifa.Api.Files.csproj" />
+    <Project Path="src\Kifa.IO\Kifa.IO.csproj" />
+    <Project Path="tests\Kifa.IO.Tests\Kifa.IO.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Files/Cloud/">
+    <Project Path="src\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj" />
+    <Project Path="src\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Cloud.MegaNz\Kifa.Cloud.MegaNz.csproj" />
+    <Project Path="src\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Cloud.Telegram\Kifa.Cloud.Telegram.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Cloud.BaiduCloud.Tests\Kifa.Cloud.BaiduCloud.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Cloud.Google.Tests\Kifa.Cloud.Google.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Cloud.MegaNz.Tests\Kifa.Cloud.MegaNz.Tests.csproj" />
+    <Project Path="tests\Kifa.Cloud.Swisscom.Tests\Kifa.Cloud.Swisscom.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Cloud.Telegram.Tests\Kifa.Cloud.Telegram.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Fun/">
+    <Project Path="Kifa.YouTube\Kifa.YouTube.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Bilibili\Kifa.Bilibili.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Graphics\Kifa.Graphics.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Infos\Kifa.Infos.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Subtitle\Kifa.Subtitle.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Tencent\Kifa.Tencent.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Bilibili.Tests\Kifa.Bilibili.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Graphics.Tests\Kifa.Graphics.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Infos.Tests\Kifa.Infos.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Media.MpegDash.Tests\Kifa.Media.MpegDash.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Subtitle.Tests\Kifa.Subtitle.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Tencent.Tests\Kifa.Tencent.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Games/">
+    <Project Path="src\Kifa.GameHacking\Kifa.GameHacking.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Games.BreathOfTheWild\Kifa.Games.BreathOfTheWild.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.GamingHacking.Tests\Kifa.GamingHacking.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Languages/">
+    <Project Path="src\Kifa.Languages\Kifa.Languages.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Memrise\Kifa.Memrise.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Languages.Tests\Kifa.Languages.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Memrise.Tests\Kifa.Memrise.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Languages/Markdown/">
+    <Project Path="src\Kifa.Markdown\Kifa.Markdown.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Markdown.Tests\Kifa.Markdown.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Reading/" />
+  <Folder Name="/Server/">
+    <Project Path="src\Kifa.Azure\Kifa.Azure.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Web.Api\Kifa.Web.Api.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Azure.Tests\Kifa.Azure.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Web.Api.Tests\Kifa.Web.Api.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Soccer/">
+    <Project Path="src\Kifa.SkyCh\Kifa.SkyCh.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Soccer\Kifa.Soccer.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.SkyCh.Tests\Kifa.SkyCh.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Soccer.Tests\Kifa.Soccer.Tests.csproj" Type="Classic C#" />
+  </Folder>
+  <Folder Name="/Zzz/">
+    <Project Path="src\Kifa.Apps.MomentCounter\Kifa.Apps.MomentCounter.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Music\Kifa.Music.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Tools.NoteUtil\Kifa.Tools.NoteUtil.csproj" Type="Classic C#" />
+  </Folder>
+  <Project Path="Kifa.Jobs\Kifa.Jobs.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Reading\Kifa.Reading.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.BiliUtil\Kifa.Tools.BiliUtil.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.BookUtil\Kifa.Tools.BookUtil.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.DataUtil\Kifa.Tools.DataUtil.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.FileUtil\Kifa.Tools.FileUtil.csproj" />
+  <Project Path="src\Kifa.Tools.MediaUtil\Kifa.Tools.MediaUtil.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.MemriseUtil\Kifa.Tools.MemriseUtil.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.SkyChDownloader\Kifa.Tools.SkyChDownloader.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools.SubUtil\Kifa.Tools.SubUtil.csproj" Type="Classic C#" />
+  <Project Path="src\Kifa.Tools\Kifa.Tools.csproj" Type="Classic C#" />
+</Solution>
