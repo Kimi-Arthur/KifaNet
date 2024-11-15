@@ -198,9 +198,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 Logger.Trace(
                     $"Waiting for start semaphore to upload part {partIndex} of {totalParts} for {fileId}...");
                 using (await PriorityLock.EnterScopeAsync(1)) {
-                    var randomSleep = Random.Shared.Next(4) + 1;
-                    Logger.Trace($"Randomly sleep {randomSleep}s before uploading.");
-                    await Task.Delay(TimeSpan.FromSeconds(randomSleep));
                 }
 
                 return await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
@@ -347,9 +344,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             var downloadResult = await Retry.Run(async () => {
                 Logger.Trace($"Waiting for start semaphore to download from {offset}...");
                 using (await PriorityLock.EnterScopeAsync(1)) {
-                    var randomSleep = Random.Shared.Next(4) + 1;
-                    Logger.Trace($"Randomly sleep {randomSleep}s.");
-                    await Task.Delay(TimeSpan.FromSeconds(randomSleep));
                 }
 
                 return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
