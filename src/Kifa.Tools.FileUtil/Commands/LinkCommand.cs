@@ -50,7 +50,8 @@ public class LinkCommand : KifaCommand {
         // Because of the previous check, ids are always without '/'.
         var ids = folders.Select(f => f.Name).ToList();
         var folderLinks = client.Get(ids).OnlyNonNull();
-        foreach (var (folder, links) in folders.Zip(folderLinks)) {
+        foreach (var ((folder, links), id) in folders.Zip(folderLinks).Zip(ids)) {
+            var relativePath = $"$/{id}";
             if (!links.FolderLinks.Any()) {
                 Logger.Error($"No links found for {folder}. Skipped.");
                 continue;
@@ -58,13 +59,22 @@ public class LinkCommand : KifaCommand {
 
             foreach (var link in links.Checked().FolderLinks) {
                 var target = folder.Parent.Parent.GetFile(link);
-                if (!Confirm($"Linking {folder.GetLocalPath()} => {target.GetLocalPath()}")) {
-                    Logger.Warn(
-                        $"Linking skipped for {folder.GetLocalPath()} => {target.GetLocalPath()}");
+                if (target.Exists()) {
+                    Logger.Info($"Linking skipped for {target} as it already exists.");
                     continue;
                 }
 
-                Directory.CreateSymbolicLink(target.GetLocalPath(), folder.GetLocalPath());
+                if (!Confirm($"Linking {relativePath} => {target.GetLocalPath()}")) {
+                    Logger.Warn($"Linking skipped for {relativePath} => {target.GetLocalPath()}");
+                    continue;
+                }
+
+
+                try {
+                    Directory.CreateSymbolicLink(target.GetLocalPath(), relativePath);
+                } catch (IOException ex) {
+                    Logger.Error(ex, $"Failed to link for {target}. Skipped.");
+                }
             }
         }
 
