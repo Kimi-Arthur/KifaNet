@@ -235,7 +235,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
             case RpcException {
                 Code: 420
-            } when i >= 20:
+            } when i >= 100:
                 throw ex;
             case RpcException {
                 Code: 420
