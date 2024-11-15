@@ -8,6 +8,8 @@ using Kifa.IO;
 namespace Kifa.Cloud.MegaNz;
 
 public class MegaNzStorageClient : StorageClient {
+    public static int ChunkSize { get; set; } = 32 << 20; // 32 MiB.
+
     static MegaNzConfig config;
     string accountId;
 
@@ -18,7 +20,7 @@ public class MegaNzStorageClient : StorageClient {
                 var account = Config.Accounts[value];
 
                 // Update Client.
-                Client = new MegaApiClient();
+                Client = new MegaApiClient(new Options(chunksPackSize: ChunkSize));
                 Client.Login(account.Username, account.Password);
             }
 
