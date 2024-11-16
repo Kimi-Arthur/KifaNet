@@ -235,7 +235,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
             case RpcException {
                 Code: 420
-            } when i >= 100:
+            } when i >= 1000:
                 throw ex;
             case RpcException {
                 Code: 420
@@ -246,8 +246,10 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                     if (toSleep > TimeSpan.Zero) {
                         Logger.Log(
-                            toSleep > TimeSpan.FromSeconds(30) ? LogLevel.Warn : LogLevel.Trace, ex,
-                            $"Sleep {toSleep.TotalSeconds:F2}s from now as requested to sleep {rpcException.X}s ({i}).");
+                            (toSleep > TimeSpan.FromSeconds(30) || i % 100 == 0)
+                                ? LogLevel.Warn
+                                : LogLevel.Trace, ex,
+                            $"Sleep {toSleep.TotalSeconds:F2}s from now as was requested to sleep {rpcException.X}s ({i}).");
                         await Task.Delay(toSleep);
                     }
                 }
