@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using CG.Web.MegaApiClient;
 using Kifa.Configs;
 using Kifa.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,6 +11,23 @@ namespace Kifa.Cloud.MegaNz.Tests;
 [TestClass]
 public class MegaNzStorageClientTests {
     const string FileSha256 = "68EB5DFB2935868A17EEDDB315FBF6682243D29C1C1A20CC06BD25627F596285";
+
+    [TestMethod]
+    public void QuotaTest() {
+        var account = MegaNzConfig.Client.Get("default").Checked().Accounts["test"];
+        var client = new MegaApiClient();
+        client.Login(account.Username, account.Password);
+        var info = client.GetAccountInformation();
+        Assert.AreEqual(53687091200, info.TotalQuota);
+        Assert.AreEqual(1048576, info.UsedQuota);
+
+        account = MegaNzConfig.Client.Get("default").Checked().Accounts["0"];
+        client = new MegaApiClient();
+        client.Login(account.Username, account.Password);
+        info = client.GetAccountInformation();
+        Assert.AreEqual(21474836480, info.TotalQuota);
+        Assert.AreEqual(0, info.UsedQuota);
+    }
 
     [TestMethod]
     public void ExistsTest() {
