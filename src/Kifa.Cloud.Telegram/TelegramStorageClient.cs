@@ -21,6 +21,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static int DownloadThread { get; set; } = 8;
     public static int UploadThread { get; set; } = 8;
 
+    public static TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(1);
+    public static TimeSpan UploadTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
     static SemaphoreSlim? downloadTaskSemaphore;
     static SemaphoreSlim DownloadTaskSemaphore => downloadTaskSemaphore ??= new(DownloadThread);
     static SemaphoreSlim? uploadTaskSemaphore;
@@ -206,7 +209,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
 
                 return await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
-                    buffer);
+                    buffer).WaitAsync(UploadTimeout);
             }, HandleFloodException, isValid: (result, _) => result);
 
             if (!partResult) {
@@ -223,23 +226,13 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public static async Task HandleFloodException(Exception ex, int i) {
         switch (ex) {
-            case IOException:
-            case RpcException { Code: 500 }: {
-                if (i >= 5) {
-                    throw ex;
-                }
-
+            case IOException or RpcException { Code: 500 } or TaskCanceledException when i <= 10:
                 Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 return;
-            }
             case RpcException {
                 Code: 420
-            } when i >= 1000:
-                throw ex;
-            case RpcException {
-                Code: 420
-            } rpcException:
+            } rpcException when i <= 1000:
                 var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X);
                 using (await PriorityLock.EnterScopeAsync(0)) {
                     var toSleep = nextRequest - DateTime.Now;
@@ -355,7 +348,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 }
 
                 return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
-                    limit: DownloadBlockSize, cdn_supported: true);
+                    limit: DownloadBlockSize, cdn_supported: true).WaitAsync(DownloadTimeout);
             }, HandleFloodException);
 
             if (downloadResult is not Upload_File uploadFile) {
