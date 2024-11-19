@@ -1,5 +1,3 @@
-﻿// See https://aka.ms/new-console-template for more information
-
 using System.Collections.Concurrent;
 using Kifa.Service;
 
@@ -11,7 +9,7 @@ class TestModel : DataModel, WithModelId<TestModel> {
     public string? Value { get; set; }
 }
 
-public class Program {
+public class LockExample {
     static ConcurrentDictionary<string, Link<TestModel>> Locks = new();
 
     static Link<TestModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
@@ -92,7 +90,7 @@ public class Program {
             .ForAll(f => f.Invoke());
     }
 
-    public static void Main(string[] args) {
+    public static void Run() {
         Try3();
     }
 }

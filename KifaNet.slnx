@@ -13,9 +13,9 @@
   <Folder Name="/Experimental/">
     <Project Path="benchmarks\Kifa.Benchmarks\Kifa.Benchmarks.csproj" Type="Classic C#" />
     <Project Path="Experimental\ConcurrentProcessorTests\ConcurrentProcessorTests.csproj" Type="Classic C#" />
+    <Project Path="Experimental\Experiments\Experiments.csproj" Type="Classic C#" />
     <Project Path="Experimental\KeyValuePairDefault\KeyValuePairDefault.csproj" Type="Classic C#" />
     <Project Path="Experimental\Kifa.Experimental.NonNullProperty\Kifa.Experimental.NonNullProperty.csproj" Type="Classic C#" />
-    <Project Path="Experimental\LockExperiments\LockExperiments.csproj" Type="Classic C#" />
     <Project Path="Experimental\TelegramExample\TelegramExample.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/Files/">

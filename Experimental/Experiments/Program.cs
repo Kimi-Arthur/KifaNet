@@ -1,0 +1,3 @@
+﻿using MyNamespace;
+
+ExceptionHandlingExample.Run();
