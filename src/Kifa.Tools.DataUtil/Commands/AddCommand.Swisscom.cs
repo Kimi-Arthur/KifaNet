@@ -10,6 +10,7 @@ using Kifa.Service;
 namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
+    // Example command: datax add -t swisscom/accounts p060
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
         if (Verbose) {
             SwisscomAccount.NoHeadless = true;
