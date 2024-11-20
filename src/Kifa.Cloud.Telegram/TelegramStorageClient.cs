@@ -23,6 +23,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public static TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(1);
     public static TimeSpan UploadTimeout { get; set; } = TimeSpan.FromMinutes(1);
+    public static TimeSpan MergeTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
     static SemaphoreSlim? downloadTaskSemaphore;
     static SemaphoreSlim DownloadTaskSemaphore => downloadTaskSemaphore ??= new(DownloadThread);
@@ -154,7 +155,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     id = fileId,
                     parts = totalParts,
                     name = path.Split("/")[^1]
-                }), HandleFloodException).GetAwaiter().GetResult();
+                }).WaitAsync(MergeTimeout), HandleFloodException).GetAwaiter().GetResult();
 
             if (finalResult.message != path) {
                 throw new Exception(
