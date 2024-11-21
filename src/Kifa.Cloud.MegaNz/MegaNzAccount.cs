@@ -5,8 +5,11 @@ using Newtonsoft.Json;
 
 namespace Kifa.Cloud.MegaNz;
 
-public class MegaNzAccount : DataModel, WithModelId<MegaNzAccount> {
+public partial class MegaNzAccount : DataModel, WithModelId<MegaNzAccount> {
     public static string ModelId => "mega_nz/accounts";
+
+    public static KifaServiceClient<MegaNzAccount> Client { get; set; } =
+        new KifaServiceRestClient<MegaNzAccount>();
 
     public string Username { get; set; }
 

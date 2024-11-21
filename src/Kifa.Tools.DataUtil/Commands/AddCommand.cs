@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using CommandLine;
+using Kifa.Cloud.MegaNz;
 using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
 using Kifa.Jobs;
@@ -29,6 +30,11 @@ public partial class AddCommand : KifaCommand {
 
         if (Type == TelegramAccount.ModelId) {
             CreateTelegramAccount(Specs);
+            return 0;
+        }
+
+        if (Type == MegaNzAccount.ModelId) {
+            AddMegaNzAccountSubCommand.CreateMegaNzAccounts(Specs);
             return 0;
         }
 

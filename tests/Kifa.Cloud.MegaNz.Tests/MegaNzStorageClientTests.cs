@@ -26,6 +26,12 @@ public class MegaNzStorageClientTests {
         client.Login(account.Username, account.Password);
         info = client.GetAccountInformation();
         Assert.AreEqual(21474836480, info.TotalQuota);
+
+        var newAccount = MegaNzAccount.Client.Get("p0000");
+        client = new MegaApiClient();
+        client.Login(newAccount.Username, newAccount.Password);
+        info = client.GetAccountInformation();
+        Assert.AreEqual(21474836480, info.TotalQuota);
         Assert.AreEqual(0, info.UsedQuota);
     }
 

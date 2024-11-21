@@ -8,5 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MegaApiClient" Version="1.10.4" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.1.1" />
   </ItemGroup>
 </Project>
