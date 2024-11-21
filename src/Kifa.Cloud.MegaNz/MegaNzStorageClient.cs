@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using CG.Web.MegaApiClient;
 using Kifa.IO;
 
@@ -10,14 +9,13 @@ namespace Kifa.Cloud.MegaNz;
 public class MegaNzStorageClient : StorageClient {
     public static int ChunkSize { get; set; } = 32 << 20; // 32 MiB.
 
-    static MegaNzConfig config;
     string accountId;
 
     public string AccountId {
         get => accountId;
         set {
             if (value != null && accountId != value) {
-                var account = Config.Accounts[value];
+                var account = MegaNzAccount.Client.Get(value);
 
                 // Update Client.
                 Client = new MegaApiClient(new Options(chunksPackSize: ChunkSize));
@@ -29,9 +27,6 @@ public class MegaNzStorageClient : StorageClient {
     }
 
     public MegaApiClient Client { get; private set; }
-
-    static MegaNzConfig Config
-        => LazyInitializer.EnsureInitialized(ref config, () => MegaNzConfig.Client.Get("default"));
 
     public override string Type => "mega";
 

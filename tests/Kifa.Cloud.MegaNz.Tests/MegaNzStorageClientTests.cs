@@ -14,18 +14,12 @@ public class MegaNzStorageClientTests {
 
     [TestMethod]
     public void QuotaTest() {
-        var account = MegaNzConfig.Client.Get("default").Checked().Accounts["test"];
+        var account = MegaNzAccount.Client.Get("test");
         var client = new MegaApiClient();
         client.Login(account.Username, account.Password);
         var info = client.GetAccountInformation();
         Assert.AreEqual(53687091200, info.TotalQuota);
         Assert.AreEqual(1048576, info.UsedQuota);
-
-        account = MegaNzConfig.Client.Get("default").Checked().Accounts["0"];
-        client = new MegaApiClient();
-        client.Login(account.Username, account.Password);
-        info = client.GetAccountInformation();
-        Assert.AreEqual(21474836480, info.TotalQuota);
 
         var newAccount = MegaNzAccount.Client.Get("p0000");
         client = new MegaApiClient();
@@ -33,6 +27,11 @@ public class MegaNzStorageClientTests {
         info = client.GetAccountInformation();
         Assert.AreEqual(21474836480, info.TotalQuota);
         Assert.AreEqual(0, info.UsedQuota);
+
+        // var newClient = new MegaNzStorageClient {
+        //     AccountId = "p0000"
+        // };
+        // newClient.Delete("/Welcome to MEGA.pdf");
     }
 
     [TestMethod]
