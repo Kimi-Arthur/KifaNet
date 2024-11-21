@@ -53,6 +53,7 @@ public class MegaNzStorageClient : StorageClient {
     public override long Length(string path)
         => GetNode(path)?.Size ?? throw new FileNotFoundException();
 
+    // Rule for transfer quota: https://help.mega.io/plans-storage/space-storage/transfer-quota
     public override Stream OpenRead(string path) => Client.Download(GetNode(path));
 
     public override void Write(string path, Stream stream) {
