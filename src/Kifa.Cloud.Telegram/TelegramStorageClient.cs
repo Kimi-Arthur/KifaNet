@@ -21,9 +21,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static int DownloadThread { get; set; } = 8;
     public static int UploadThread { get; set; } = 8;
 
-    public static TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(1);
-    public static TimeSpan UploadTimeout { get; set; } = TimeSpan.FromMinutes(1);
-    public static TimeSpan MergeTimeout { get; set; } = TimeSpan.FromMinutes(1);
+    public static TimeSpan DownloadTimeout { get; set; } = TimeSpan.FromMinutes(10);
+    public static TimeSpan UploadTimeout { get; set; } = TimeSpan.FromMinutes(10);
+    public static TimeSpan MergeTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
     static SemaphoreSlim? downloadTaskSemaphore;
     static SemaphoreSlim DownloadTaskSemaphore => downloadTaskSemaphore ??= new(DownloadThread);
@@ -191,6 +191,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                         $"Unexpected read length {readLength}, expecting {length}");
                 }
             } catch (IOException ex) {
+                Logger.Error(ex,
+                    $"Failed to get the input stream from {fromPosition} to upload part {partIndex} of {totalParts} for {fileId}.");
                 exceptions.Add(ex);
                 return;
             } finally {
@@ -219,6 +221,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             Logger.Trace($"Successfully uploaded part {partIndex} of {totalParts} for {fileId}...");
         } catch (Exception ex) {
+            Logger.Error(ex, $"Failed to upload part {partIndex} of {totalParts} for {fileId}.");
             exceptions.Add(ex);
         } finally {
             UploadTaskSemaphore.Release();
@@ -227,7 +230,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public static async Task HandleFloodException(Exception ex, int i) {
         switch (ex) {
-            case IOException or RpcException { Code: 500 } or TaskCanceledException when i <= 10:
+            case TimeoutException or IOException or RpcException { Code: 500 }
+                or TaskCanceledException when i <= 10:
                 Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 return;
