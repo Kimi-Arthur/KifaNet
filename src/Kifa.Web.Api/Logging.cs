@@ -96,7 +96,7 @@ public static class Logging {
             ArchiveNumbering = ArchiveNumberingMode.Date,
             ArchiveDateFormat = "yyyyMMddHHmmss",
             Layout =
-                @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${threadid} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
+                @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${threadid} ${aspnet-TraceIdentifier} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
         };
 
     public static void ConfigureLogger(bool? fullConsole = null) {
