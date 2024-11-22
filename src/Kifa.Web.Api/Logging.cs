@@ -90,13 +90,11 @@ public static class Logging {
 
     static Target FileFullTarget
         => new FileTarget("file_full") {
-            FileName = LogPath + @"/${appdomain:format={1\}}.log",
-            ArchiveFileName = LogPath + @"/${appdomain:format={1\}}.{#}.log",
-            ArchiveEvery = FileArchivePeriod.Hour,
-            ArchiveNumbering = ArchiveNumberingMode.Date,
-            ArchiveDateFormat = "yyyyMMddHHmmss",
+            FileName =
+                LogPath +
+                @"/${appdomain:format={1\}}.${activity:property=StartTimeUtc:format=yyyyMMddHHmmssffffff}.log",
             Layout =
-                @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${threadid} ${aspnet-TraceIdentifier} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
+                @"${pad:padding=1:fixedLength=true:inner=${level}} ${date:format=yyyy-MM-ddTHH\:mm\:ss.ffffff} ${threadid} ${callsite}:${callsite-linenumber} ${message}${onexception:inner=${newline}Exception\:${newline}}${exception:format=toString,Data}"
         };
 
     public static void ConfigureLogger(bool? fullConsole = null) {
