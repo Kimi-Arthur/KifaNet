@@ -231,11 +231,6 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public static async Task HandleFloodException(Exception ex, int i) {
         switch (ex) {
-            case TimeoutException or IOException or WTException or RpcException { Code: 500 }
-                or TaskCanceledException when i <= 10:
-                Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
-                await Task.Delay(TimeSpan.FromSeconds(30));
-                return;
             case RpcException {
                 Code: 420
             } rpcException when i <= 1000:
@@ -253,6 +248,11 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     }
                 }
 
+                return;
+            case TimeoutException or IOException or WTException or TaskCanceledException
+                when i <= 10:
+                Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
+                await Task.Delay(TimeSpan.FromSeconds(30));
                 return;
             default:
                 throw ex;
