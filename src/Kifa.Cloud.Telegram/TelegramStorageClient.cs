@@ -10,6 +10,7 @@ using Kifa.IO.StorageClients;
 using Kifa.Threading;
 using NLog;
 using TL;
+using WTelegram;
 
 namespace Kifa.Cloud.Telegram;
 
@@ -230,7 +231,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public static async Task HandleFloodException(Exception ex, int i) {
         switch (ex) {
-            case TimeoutException or IOException or RpcException { Code: 500 }
+            case TimeoutException or IOException or WTException or RpcException { Code: 500 }
                 or TaskCanceledException when i <= 10:
                 Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
                 await Task.Delay(TimeSpan.FromSeconds(30));
