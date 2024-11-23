@@ -250,7 +250,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 return;
             case TimeoutException or IOException or WTException or TaskCanceledException
-                when i <= 10:
+                // TODO: we should distinguish error counts from different exceptions.
+                when i <= 100:
                 Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
                 await Task.Delay(TimeSpan.FromSeconds(30));
                 return;
