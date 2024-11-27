@@ -9,7 +9,7 @@ namespace Kifa.Web.Api.Controllers;
 
 public class
     TelegramAccountController : KifaDataController<TelegramAccount,
-        TelegramAccountJsonServiceClient> {
+    TelegramAccountJsonServiceClient> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [HttpPost("$add_session")]
@@ -55,13 +55,18 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
         }
     }
 
+    static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(10);
+
     public KifaActionResult<TelegramSession> ObtainSession(string accountId, int? sessionId) {
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
             if (sessionId != null) {
                 var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
+                // Session should already expire/be returned, otherwise RenewSession should be used.
                 if (matchedSession != null && DateTimeOffset.UtcNow >= matchedSession.Reserved) {
                     account.RefreshIfNeeded(matchedSession);
+                    matchedSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
+
                     Update(account);
                     return matchedSession;
                 }
@@ -75,7 +80,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 };
             }
 
-            coldestSession.Reserved = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(10);
+            coldestSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
             coldestSession.Id = Random.Shared.Next();
             account.RefreshIfNeeded(coldestSession);
 
