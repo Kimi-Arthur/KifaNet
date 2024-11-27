@@ -21,11 +21,11 @@ public static class Retry {
     /// <typeparam name="T">Type of result to return</typeparam>
     /// <returns>Best result of executing action</returns>
     public static T Run<T>(Func<T> action, Action<Exception, int> handleException,
-        Func<T, int, bool>? isValid = null) {
+        Func<T, bool>? isValid = null) {
         for (var i = 1;; i++) {
             try {
                 var result = action();
-                if (isValid == null || isValid(result, i)) {
+                if (isValid == null || isValid(result)) {
                     return result;
                 }
             } catch (Exception ex) {
@@ -40,11 +40,11 @@ public static class Retry {
     }
 
     public static async Task<T> Run<T>(Func<Task<T>> action,
-        Func<Exception, int, Task> handleException, Func<T, int, bool>? isValid = null) {
+        Func<Exception, int, Task> handleException, Func<T, bool>? isValid = null) {
         for (var i = 1;; i++) {
             try {
                 var result = await action();
-                if (isValid == null || isValid(result, i)) {
+                if (isValid == null || isValid(result)) {
                     return result;
                 }
             } catch (Exception ex) {
