@@ -167,18 +167,7 @@ public class MemriseClient : IDisposable {
                 }
 
                 Logger.Warn($"Failed to fill basic row. Retrying ({index + 1}).");
-            }, (result, index) => {
-                if (result != null) {
-                    return true;
-                }
-
-                if (index > 5) {
-                    throw new Exception("Failed to fill basic row.");
-                }
-
-                Logger.Warn($"Retry result ({result}) is not valid. Retrying ({index + 1}).");
-                return false;
-            });
+            }, result => result != null);
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
             existingRow = GetExistingRow(word);
