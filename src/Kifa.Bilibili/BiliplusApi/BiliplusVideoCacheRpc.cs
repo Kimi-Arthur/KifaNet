@@ -58,15 +58,13 @@ public class BiliplusVideoCacheRpc : KifaJsonParameterizedRpc<BiliplusVideoCache
     static readonly Regex ApiRegex = new(@".'(/api/view_all.*)'.*");
 
     public BiliplusVideoCacheRpc(string aid) {
-        var url = CachePagePattern.Format(new Dictionary<string, string> {
-            { "aid", aid }
-        });
+        var url = CachePagePattern.Format(("aid", aid));
         var match = ApiRegex.Match(HttpClients.BiliplusHttpClient.GetAsync(url).Result.GetString());
         if (!match.Success) {
             throw new DataNotFoundException($"Failed to find cache page url for {aid}.");
         }
 
-        Parameters = new () {
+        Parameters = new() {
             { "api_path", match.Groups[1].Value }
         };
     }

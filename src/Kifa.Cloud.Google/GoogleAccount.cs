@@ -33,26 +33,18 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
         "https://oauth2.googleapis.com/token?grant_type=refresh_token&refresh_token={refresh_token}&client_id={client_id}&client_secret={client_secret}";
 
     public override string GetAuthUrl(string redirectUrl, string state)
-        => AuthUrlPattern.Format(new Dictionary<string, string> {
-            { "client_id", GoogleCloudConfig.ClientId },
-            { "redirect_url", HttpUtility.UrlEncode(redirectUrl) },
-            { "scope", HttpUtility.UrlEncode(DefaultScope) },
-            { "state", state }
-        });
+        => AuthUrlPattern.Format(("client_id", GoogleCloudConfig.ClientId),
+            ("redirect_url", HttpUtility.UrlEncode(redirectUrl)),
+            ("scope", HttpUtility.UrlEncode(DefaultScope)), ("state", state));
 
     public override string GetTokenUrl(string code, string redirectUrl)
-        => GetTokenUrlPattern.Format(new Dictionary<string, string> {
-            { "code", code },
-            { "client_id", GoogleCloudConfig.ClientId },
-            { "client_secret", GoogleCloudConfig.ClientSecret },
-            { "redirect_url", HttpUtility.UrlEncode(redirectUrl) }
-        });
+        => GetTokenUrlPattern.Format(("code", code), ("client_id", GoogleCloudConfig.ClientId),
+            ("client_secret", GoogleCloudConfig.ClientSecret),
+            ("redirect_url", HttpUtility.UrlEncode(redirectUrl)));
 
     public override KifaActionResult FillUserInfo()
         => KifaActionResult.FromAction(() => {
-            var userInfoUrl = UserInfoUrlPattern.Format(new Dictionary<string, string> {
-                { "access_token", AccessToken }
-            });
+            var userInfoUrl = UserInfoUrlPattern.Format(("access_token", AccessToken));
             var info =
                 HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Get, userInfoUrl));
             UserName = (string) info["email"];
@@ -66,11 +58,9 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
             throw new DataNotFoundException("No refresh token found.");
         }
 
-        var refreshTokenUrl = RefreshTokenUrlPattern.Format(new Dictionary<string, string> {
-            { "client_id", GoogleCloudConfig.ClientId },
-            { "client_secret", GoogleCloudConfig.ClientSecret },
-            { "refresh_token", RefreshToken }
-        });
+        var refreshTokenUrl = RefreshTokenUrlPattern.Format(
+            ("client_id", GoogleCloudConfig.ClientId),
+            ("client_secret", GoogleCloudConfig.ClientSecret), ("refresh_token", RefreshToken));
 
         var response =
             HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Post, refreshTokenUrl));

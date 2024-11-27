@@ -52,10 +52,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         using var response = client.Send(APIList.GetFileInfo.GetRequest(
-            new Dictionary<string, string> {
-                ["file_id"] = GetFileId(path),
-                ["access_token"] = account.AccessToken
-            }));
+            ("file_id", GetFileId(path)), ("access_token", account.AccessToken)));
 
         if (response.IsSuccessStatusCode) {
             return response.GetJToken().Value<long>("Length");
@@ -70,10 +67,7 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
 
     public override void Delete(string path) {
         using var response = client.SendWithRetry(() => APIList.DeleteFile.GetRequest(
-            new Dictionary<string, string> {
-                ["file_id"] = GetFileId(path),
-                ["access_token"] = Account.AccessToken
-            }));
+            ("file_id", GetFileId(path)), ("access_token", Account.AccessToken)));
         if (!response.IsSuccessStatusCode) {
             Logger.Debug($"Delete of {path} is not successful, but is ignored.");
         }
@@ -81,11 +75,8 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
 
     public override void Move(string sourcePath, string destinationPath) {
         using var response = client.SendWithRetry(() => APIList.MoveFile.GetRequest(
-            new Dictionary<string, string> {
-                ["from_file_path"] = sourcePath,
-                ["to_file_path"] = destinationPath,
-                ["access_token"] = Account.AccessToken
-            }));
+            ("from_file_path", sourcePath), ("to_file_path", destinationPath),
+            ("access_token", Account.AccessToken)));
 
         if (!response.IsSuccessStatusCode) {
             Logger.Error($"Move from {sourcePath} to {destinationPath} failed: {response}");
@@ -121,11 +112,9 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
 
             var response = client.FetchJToken(() => {
-                var uploadRequest = APIList.UploadBlock.GetRequest(new Dictionary<string, string> {
-                    ["access_token"] = Account.AccessToken,
-                    ["upload_id"] = uploadId,
-                    ["block_index"] = blockIndex.ToString()
-                });
+                var uploadRequest = APIList.UploadBlock.GetRequest(
+                    ("access_token", Account.AccessToken), ("upload_id", uploadId),
+                    ("block_index", blockIndex.ToString()));
                 uploadRequest.Content = new MultipartFormDataContent {
                     { content, "files[]", path.Split("/").Last() }
                 };
@@ -143,30 +132,23 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     string InitUpload(string path, long length)
-        => client.FetchJToken(() => APIList.InitUpload.GetRequest(new Dictionary<string, string> {
-            ["file_path"] = path,
-            ["file_length"] = length.ToString(),
-            ["file_guid"] = Guid.NewGuid().ToString().ToUpper(),
-            ["utc_now"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-            ["access_token"] = Account.AccessToken
-        })).Value<string>("Identifier");
+        => client.FetchJToken(() => APIList.InitUpload.GetRequest(("file_path", path),
+            ("file_length", length.ToString()), ("file_guid", Guid.NewGuid().ToString().ToUpper()),
+            ("utc_now", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")),
+            ("access_token", Account.AccessToken))).Value<string>("Identifier");
 
-    bool FinishUpload(string uploadId, string path, List<(string etag, int length)> blockIds) {
-        var partTemplate = "{\"Index\":{index},\"Length\":{length},\"ETag\":\"\\\"{etag}\\\"\"}";
-        return client.FetchJToken(() => APIList.FinishUpload.GetRequest(
-            new Dictionary<string, string> {
-                ["upload_id"] = uploadId,
-                ["access_token"] = Account.AccessToken,
-                ["etag"] = blockIds[0].etag.ParseHexString().ToBase64(),
-                ["file_path"] = path,
-                ["parts"] = "[" + string.Join(",", blockIds.Select((item, index)
-                    => partTemplate.Format(new Dictionary<string, string> {
-                        ["index"] = index.ToString(),
-                        ["length"] = item.length.ToString(),
-                        ["etag"] = item.etag
-                    }))) + "]"
-            })).Value<string>("Path").EndsWith(path);
-    }
+    bool FinishUpload(string uploadId, string path, List<(string etag, int length)> blockIds)
+        => client.FetchJToken(() => APIList.FinishUpload.GetRequest(("upload_id", uploadId),
+                ("access_token", Account.Checked().AccessToken.Checked()),
+                ("etag", blockIds[0].etag.ParseHexString().ToBase64()), ("file_path", path),
+                ("parts",
+                    "[" + string.Join(",",
+                        blockIds.Select((item, index)
+                            => "{\"Index\":{index},\"Length\":{length},\"ETag\":\"\\\"{etag}\\\"\"}"
+                                .Format(("index", index.ToString()),
+                                    ("length", item.length.ToString()),
+                                    ("etag", item.etag))) + "]")))).Value<string>("Path").Checked()
+            .EndsWith(path);
 
     int Download(byte[] buffer, string fileId, int bufferOffset = 0, long offset = 0,
         int count = -1) {
@@ -175,10 +157,8 @@ public class SwisscomStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         using var response = client.SendWithRetry(() => {
-            var request = APIList.DownloadFile.GetRequest(new Dictionary<string, string> {
-                ["file_id"] = fileId,
-                ["access_token"] = Account.AccessToken
-            });
+            var request = APIList.DownloadFile.GetRequest(("file_id", fileId),
+                ("access_token", Account.AccessToken));
 
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
             return request;

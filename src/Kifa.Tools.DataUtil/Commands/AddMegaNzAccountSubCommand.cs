@@ -102,8 +102,5 @@ public class AddMegaNzAccountSubCommand {
 
     static readonly string BaseEmail = "kchbot+{id}@gmail.com";
 
-    static string GetMail(string id)
-        => BaseEmail.Format(new() {
-            ["id"] = id
-        });
+    static string GetMail(string id) => BaseEmail.Format(("id", id));
 }

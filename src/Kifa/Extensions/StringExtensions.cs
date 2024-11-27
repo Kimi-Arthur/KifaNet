@@ -27,27 +27,21 @@ public static class StringExtensions {
         [">"] = "＞"
     };
 
-    public static string Format(this string format, Dictionary<string, string> parameters) {
-        var result = format;
+    public static string Format(this string format, params (string Key, object Value)[] parameters)
+        => parameters.Aggregate(format,
+            (current, p) => current.Replace("{" + p.Key + "}", p.Value.ToString()));
 
-        foreach (var p in parameters) {
-            result = result.Replace("{" + p.Key + "}", p.Value);
-        }
-
-        return result;
-    }
+    public static string Format(this string format, params (string Key, string Value)[] parameters)
+        => parameters.Aggregate(format,
+            (current, p) => current.Replace("{" + p.Key + "}", p.Value));
 
     [return: NotNullIfNotNull(nameof(defaultString))]
-    public static string? FormatIfNonNull(this string format,
-        Dictionary<string, string?> parameters, string? defaultString = null) {
-        var totalCount = parameters.Count;
+    public static string? FormatIfNonNull(this string format, string? defaultString = null,
+        params (string Key, object? Value)[] parameters) {
+        var totalCount = parameters.Length;
         var nonNulls = parameters.Where(x => x.Value != null)
-            .ToDictionary(item => item.Key, item => item.Value.Checked());
-        if (totalCount > nonNulls.Count) {
-            return defaultString;
-        }
-
-        return Format(format, nonNulls);
+            .Select(item => (item.Key, item.Value.Checked())).ToArray();
+        return totalCount > nonNulls.Length ? defaultString : Format(format, nonNulls);
     }
 
     // Remove all characters including and after the last split.

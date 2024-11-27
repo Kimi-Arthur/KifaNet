@@ -207,9 +207,8 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
             }
 
             var response = httpClient.FetchJToken(()
-                => SwisscomStorageClient.APIList.Quota.GetRequest(new Dictionary<string, string> {
-                    ["access_token"] = account.AccessToken
-                }));
+                => SwisscomStorageClient.APIList.Quota.GetRequest(("access_token",
+                    account.AccessToken)));
             UsedQuota = response.Value<long>("TotalBytes");
             TotalQuota = response.Value<long>("StorageLimit");
             return KifaActionResult.Success;

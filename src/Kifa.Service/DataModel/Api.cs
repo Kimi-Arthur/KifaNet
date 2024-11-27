@@ -17,8 +17,7 @@ public class Api {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public HttpRequestMessage GetRequest(Dictionary<string, string>? parameters = null) {
-        parameters ??= new Dictionary<string, string>();
+    public HttpRequestMessage GetRequest(params (string Key, string Value)[] parameters) {
         var address = Url.Format(parameters);
 
         Logger.Trace($"{Method} {address}");

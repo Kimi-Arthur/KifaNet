@@ -33,7 +33,7 @@ public abstract class KifaParameterizedRpc : KifaRpc {
     static readonly string ContentHeaderPrefix = "content-";
 
     public HttpRequestMessage GetRequest() {
-        var parameters = Parameters.ToDictionary(key => key.Key, value => value.Value.Get());
+        var parameters = Parameters.Select(item => (item.Key, Value: item.Value.Get())).ToArray();
         var address = Url.Format(parameters);
         Logger.Trace($"{Method} {address}");
 

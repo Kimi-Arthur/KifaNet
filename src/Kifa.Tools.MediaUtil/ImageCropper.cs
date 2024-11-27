@@ -82,9 +82,8 @@ public class ImageCropper {
         var remoteFile = new KifaFile($"{RemoteServer}{sourceFile.Path}");
         sourceFile.Copy(remoteFile);
 
-        var arguments = CropArguments.Format(new Dictionary<string, string> {
-            { "image_path", remoteFile.GetLocalPath() }
-        });
+        var arguments = CropArguments.Format(("image_path", remoteFile.GetLocalPath()));
+
         Logger.Trace($"Executing: {CropCommand} {arguments}");
         using var proc = new Process();
 

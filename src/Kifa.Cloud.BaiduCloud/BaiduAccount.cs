@@ -27,20 +27,13 @@ public class BaiduAccount : OAuthAccount, WithModelId<BaiduAccount> {
     public long UsedQuota { get; set; }
 
     public override string GetAuthUrl(string redirectUrl, string state)
-        => Rpcs.OauthAuthorize.Url.Format(new Dictionary<string, string> {
-            { "client_id", ClientId },
-            { "redirect_url", HttpUtility.UrlEncode(redirectUrl) },
-            { "scope", HttpUtility.UrlEncode(Scope) },
-            { "state", state }
-        });
+        => Rpcs.OauthAuthorize.Url.Format(("client_id", ClientId),
+            ("redirect_url", HttpUtility.UrlEncode(redirectUrl)),
+            ("scope", HttpUtility.UrlEncode(Scope)), ("state", state));
 
     public override string GetTokenUrl(string code, string redirectUrl)
-        => Rpcs.OauthToken.Url.Format(new Dictionary<string, string> {
-            { "client_id", ClientId },
-            { "code", code },
-            { "client_secret", ClientSecret },
-            { "oauth_redirect_url", redirectUrl }
-        });
+        => Rpcs.OauthToken.Url.Format(("client_id", ClientId), ("code", code),
+            ("client_secret", ClientSecret), ("oauth_redirect_url", redirectUrl));
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
 
@@ -48,12 +41,8 @@ public class BaiduAccount : OAuthAccount, WithModelId<BaiduAccount> {
 
     public override DateTimeOffset? Fill() {
         var response = HttpClient.FetchJToken(() => Rpcs.OauthRefresh.GetRequest(
-            new Dictionary<string, string> {
-                { "client_id", ClientId },
-                { "client_secret", ClientSecret },
-                { "refresh_token", RefreshToken },
-                { "scope", Scope }
-            }));
+            ("client_id", ClientId), ("client_secret", ClientSecret),
+            ("refresh_token", RefreshToken), ("scope", Scope)));
         AccessToken = (string) response["access_token"];
         RefreshToken = (string) response["refresh_token"];
 

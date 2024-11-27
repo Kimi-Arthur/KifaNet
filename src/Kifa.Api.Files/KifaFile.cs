@@ -66,10 +66,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public string? Extension { get; }
 
     public string Name
-        => "{base_name}.{extension}".FormatIfNonNull(new() {
-            ["base_name"] = BaseName,
-            ["extension"] = Extension
-        }, BaseName);
+        => "{base_name}.{extension}".FormatIfNonNull(BaseName, ("base_name", BaseName),
+            ("extension", Extension));
 
     public string Path => $"{ParentPath}{Name}";
     public string PathWithoutSuffix => $"{ParentPath}{BaseName}";
