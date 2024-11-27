@@ -9,6 +9,15 @@ namespace Kifa;
 public static class Retry {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public static T Run<T>(Func<T> action, Action<Exception, int> handleException,
+        Func<T, bool>? isValid = null) {
+        return Run<T, int>(action, (exception, i) => {
+            i++;
+            handleException(exception, i);
+            return i;
+        }, isValid);
+    }
+
     /// <summary>
     /// Runs action repeatedly. calls isValid when it gets a result, and calls handleException if it
     /// gets an exception.
@@ -19,11 +28,13 @@ public static class Retry {
     /// <param name="isValid">Func to call when a result is got. It should return true if the
     /// result is OK, or log and return false to make it retry</param>
     /// <typeparam name="T">Type of result to return</typeparam>
+    /// <typeparam name="TState">Type of state to be used when handling in handleException.</typeparam>
     /// <returns>Best result of executing action</returns>
     /// <exception cref="RetryValidationException">Validation did not pass as isValid returns false</exception>
-    public static T Run<T>(Func<T> action, Action<Exception, int> handleException,
-        Func<T, bool>? isValid = null) {
-        for (var i = 1;; i++) {
+    public static T Run<T, TState>(Func<T> action,
+        Func<Exception, TState?, TState?> handleException, Func<T, bool>? isValid = null) {
+        var state = default(TState);
+        while (true) {
             try {
                 var result = action();
                 if (isValid == null) {
@@ -42,14 +53,23 @@ public static class Retry {
                     ex = ex.InnerException!;
                 }
 
-                handleException(ex, i);
+                state = handleException(ex, state);
             }
         }
     }
 
-    public static async Task<T> Run<T>(Func<Task<T>> action,
-        Func<Exception, int, Task> handleException, Func<T, bool>? isValid = null) {
-        for (var i = 1;; i++) {
+    public static Task<T> Run<T>(Func<Task<T>> action, Func<Exception, int, Task> handleException,
+        Func<T, bool>? isValid = null)
+        => Run<T, int>(action, async (exception, i) => {
+            i++;
+            await handleException(exception, i);
+            return i;
+        }, isValid);
+
+    public static async Task<T> Run<T, TState>(Func<Task<T>> action,
+        Func<Exception, TState?, Task<TState?>> handleException, Func<T, bool>? isValid = null) {
+        var state = default(TState);
+        while (true) {
             try {
                 var result = await action();
                 if (isValid == null) {
@@ -68,10 +88,17 @@ public static class Retry {
                     ex = ex.InnerException!;
                 }
 
-                await handleException(ex, i);
+                state = await handleException(ex, state);
             }
         }
     }
+
+    public static void Run(Action action, Action<Exception, int> handleException)
+        => Run<int>(action, (exception, i) => {
+            i++;
+            handleException(exception, i);
+            return i;
+        });
 
     /// <summary>
     /// Runs action repeatedly. calls handleException if it gets an exception.
@@ -79,8 +106,10 @@ public static class Retry {
     /// <param name="action">Action to run repeatedly</param>
     /// <param name="handleException">Action to handle exception. It should log desired retry
     /// messages and (re)throw if it won't succeed</param>
-    public static void Run(Action action, Action<Exception, int> handleException) {
-        for (var i = 1;; i++) {
+    public static void Run<TState>(Action action,
+        Func<Exception, TState?, TState?> handleException) {
+        var state = default(TState);
+        while (true) {
             try {
                 action();
                 return;
@@ -90,7 +119,7 @@ public static class Retry {
                     ex = ex.InnerException!;
                 }
 
-                handleException(ex, i);
+                state = handleException(ex, state);
             }
         }
     }
