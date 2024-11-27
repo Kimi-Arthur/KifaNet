@@ -96,20 +96,7 @@ public static class HttpExtensions {
             var response = client.Send(request);
             response.EnsureSuccessStatusCode();
             return response.GetJToken();
-        }, HandleHttpException, validate == null
-            ? null
-            : (token, index) => {
-                if (validate(token)) {
-                    return true;
-                }
-
-                if (index >= 5) {
-                    throw new HttpRequestException($"Failed to get desired response: {token}");
-                }
-
-                Logger.Warn($"Failed to get desired response ({index}): {token}");
-                return false;
-            });
+        }, HandleHttpException, validate);
 
     public static HttpResponseMessage SendWithRetry(this HttpClient client, string url,
         HttpStatusCode? expectedStatusCode = null)

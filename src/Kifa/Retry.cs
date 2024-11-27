@@ -20,14 +20,22 @@ public static class Retry {
     /// result is OK, or log and return false to make it retry</param>
     /// <typeparam name="T">Type of result to return</typeparam>
     /// <returns>Best result of executing action</returns>
+    /// <exception cref="RetryValidationException">Validation did not pass as isValid returns false</exception>
     public static T Run<T>(Func<T> action, Action<Exception, int> handleException,
         Func<T, bool>? isValid = null) {
         for (var i = 1;; i++) {
             try {
                 var result = action();
-                if (isValid == null || isValid(result)) {
+                if (isValid == null) {
                     return result;
                 }
+
+                if (isValid(result)) {
+                    return result;
+                }
+
+                throw new RetryValidationException(
+                    $"Result {result} didn't pass validation check.");
             } catch (Exception ex) {
                 while (ex is AggregateException) {
                     // AggregateException should have inner exception.
@@ -44,9 +52,16 @@ public static class Retry {
         for (var i = 1;; i++) {
             try {
                 var result = await action();
-                if (isValid == null || isValid(result)) {
+                if (isValid == null) {
                     return result;
                 }
+
+                if (isValid(result)) {
+                    return result;
+                }
+
+                throw new RetryValidationException(
+                    $"Result {result} didn't pass validation check.");
             } catch (Exception ex) {
                 while (ex is AggregateException) {
                     // AggregateException should have inner exception.
@@ -179,5 +194,16 @@ public static class Retry {
                 }
             }
         }
+    }
+}
+
+public class RetryValidationException : Exception {
+    public RetryValidationException() {
+    }
+
+    public RetryValidationException(string message) : base(message) {
+    }
+
+    public RetryValidationException(string message, Exception inner) : base(message, inner) {
     }
 }
