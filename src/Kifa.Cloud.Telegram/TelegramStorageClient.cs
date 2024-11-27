@@ -104,7 +104,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             var result = Retry
                 .Run(() => cellClient.Client.DeleteMessages(cellClient.Channel, message.id),
-                    HandleFloodException).GetAwaiter().GetResult();
+                    HandleFloodExceptionFunc).GetAwaiter().GetResult();
             if (result.pts_count != 1) {
                 Logger.Debug($"Delete of {path} is not successful, but is ignored.");
             }
@@ -156,7 +156,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     id = fileId,
                     parts = totalParts,
                     name = path.Split("/")[^1]
-                }).WaitAsync(MergeTimeout), HandleFloodException).GetAwaiter().GetResult();
+                }).WaitAsync(MergeTimeout), HandleFloodExceptionFunc).GetAwaiter().GetResult();
 
             if (finalResult.message != path) {
                 throw new Exception(
@@ -214,7 +214,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 return await cellClient.Client.Upload_SaveBigFilePart(fileId, partIndex, totalParts,
                     buffer).WaitAsync(UploadTimeout);
-            }, HandleFloodException, isValid: result => result);
+            }, HandleFloodExceptionFunc, isValid: result => result);
 
             if (!partResult) {
                 throw new Exception($"Failed to upload part {partIndex} for {fileId}.");
@@ -229,32 +229,63 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
     }
 
-    public static async Task HandleFloodException(Exception ex, int i) {
+    const string Failure420Key = "420";
+    public static int Failure420Count { get; set; } = 1000;
+    public static int FailureOtherCount { get; set; } = 20;
+
+    public static readonly Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
+        HandleFloodExceptionFunc = HandleFloodException;
+
+    public static async Task<Dictionary<string, int>?> HandleFloodException(Exception ex,
+        Dictionary<string, int>? failures) {
+        failures ??= new Dictionary<string, int>();
         switch (ex) {
             case RpcException {
                 Code: 420
-            } rpcException when i <= 1000:
+            } rpcException: {
+                var count = failures.GetValueOrDefault(Failure420Key, 0) + 1;
+                if (count > Failure420Count) {
+                    Logger.Error(
+                        $"Failed to avoid RpcException 420 after {Failure420Count} tries.");
+                    throw ex;
+                }
+
+                failures[Failure420Key] = count;
+
                 var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X);
                 using (await PriorityLock.EnterScopeAsync(0)) {
                     var toSleep = nextRequest - DateTime.Now;
 
                     if (toSleep > TimeSpan.Zero) {
-                        Logger.Log(
-                            (toSleep > TimeSpan.FromSeconds(30) || i % 100 == 0)
-                                ? LogLevel.Warn
-                                : LogLevel.Trace, ex,
-                            $"Sleep {toSleep.TotalSeconds:F2}s from now as was requested to sleep {rpcException.X}s ({i}).");
+                        var message =
+                            $"Sleep {toSleep.TotalSeconds:F2}s from now as was requested to sleep {rpcException.X}s ({count}).";
+                        if (toSleep > TimeSpan.FromSeconds(30) || count % 100 == 0) {
+                            Logger.Warn(ex, message);
+                        } else {
+                            Logger.Trace(ex, message);
+                        }
+
                         await Task.Delay(toSleep);
                     }
                 }
 
-                return;
-            case TimeoutException or IOException or WTException or TaskCanceledException
-                // TODO: we should distinguish error counts from different exceptions.
-                when i <= 100:
-                Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({i})...");
+                return failures;
+            }
+            case TimeoutException or IOException or WTException or TaskCanceledException: {
+                var failureKey = ex.GetType().ToString();
+                var count = failures.GetValueOrDefault(failureKey, 0) + 1;
+                if (count > FailureOtherCount) {
+                    Logger.Error(
+                        $"Failed to avoid unexpected exception after {FailureOtherCount} tries.");
+                    throw ex;
+                }
+
+                failures[failureKey] = count;
+
+                Logger.Warn(ex, $"Sleeping 30s for unexpected exception ({count})...");
                 await Task.Delay(TimeSpan.FromSeconds(30));
-                return;
+                return failures;
+            }
             default:
                 throw ex;
         }
@@ -356,7 +387,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
                     limit: DownloadBlockSize, cdn_supported: true).WaitAsync(DownloadTimeout);
-            }, HandleFloodException);
+            }, HandleFloodExceptionFunc);
 
             if (downloadResult is not Upload_File uploadFile) {
                 throw new Exception($"Response is not {nameof(Upload_File)}");
@@ -394,15 +425,16 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             var message = Retry
                 .Run(
                     () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
-                        cellClient.Channel, path), HandleFloodException).GetAwaiter().GetResult()
-                .Messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+                        cellClient.Channel, path), HandleFloodExceptionFunc).GetAwaiter()
+                .GetResult().Messages.Select(m => m as Message)
+                .SingleOrDefault(m => m?.message == path);
             if (message != null) {
                 return message;
             }
 
             var messages = Retry
                 .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
-                    HandleFloodException).GetAwaiter().GetResult().Messages;
+                    HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
             while (messages?.Length > 0) {
                 message = messages.Select(m => m as Message)
                     .SingleOrDefault(m => m?.message == path);
@@ -418,7 +450,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 messages = Retry
                     .Run(
                         () => cellClient.Client.Messages_GetHistory(cellClient.Channel,
-                            lastMessageId), HandleFloodException).GetAwaiter().GetResult().Messages;
+                            lastMessageId), HandleFloodExceptionFunc).GetAwaiter().GetResult()
+                    .Messages;
             }
 
             return null;

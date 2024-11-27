@@ -137,7 +137,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
         using var client = new Client(ConfigProvider, sessionStream);
 
         var result = Retry.Run(() => client.Checked().Login(Phone),
-            TelegramStorageClient.HandleFloodException).GetAwaiter().GetResult();
+            TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult();
         if (result != null) {
             throw new DriveNotFoundException(
                 $"Telegram drive {Id} is not accessible. Requesting {result}.");
