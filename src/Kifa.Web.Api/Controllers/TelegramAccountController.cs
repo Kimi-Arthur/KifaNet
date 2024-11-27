@@ -121,7 +121,9 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 };
             }
 
-            session.Reserved = Date.Zero;
+            // Set as now so that it will be least likely to be reserved again. So that we can
+            // rotate accounts.
+            session.Reserved = DateTimeOffset.UtcNow;
             Update(account);
 
             return new KifaActionResult {
