@@ -49,10 +49,10 @@ public class LinkCommand : KifaCommand {
 
         // Because of the previous check, ids are always without '/'.
         var ids = folders.Select(f => f.Name).ToList();
-        var folderLinks = client.Get(ids).OnlyNonNull();
+        var folderLinks = client.Get(ids);
         foreach (var ((folder, links), id) in folders.Zip(folderLinks).Zip(ids)) {
             var relativePath = $"$/{id}";
-            if (!links.FolderLinks.Any()) {
+            if (links == null || !links.FolderLinks.Any()) {
                 Logger.Error($"No links found for {folder}. Skipped.");
                 continue;
             }
