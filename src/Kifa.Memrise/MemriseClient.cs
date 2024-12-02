@@ -152,7 +152,7 @@ public class MemriseClient : IDisposable {
     }
 
     public KifaActionResult<MemriseWord> AddWord(GoetheGermanWord word, GermanWord rootWord) {
-        Logger.Info($"{word.Id} => {rootWord.Id}");
+        Logger.Debug($"{word.Id} => {rootWord.Id}");
 
         Logger.Debug($"Adding word in {Course.DatabaseUrl}:\n{word}\n{rootWord}");
 

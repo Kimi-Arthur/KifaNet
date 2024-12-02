@@ -117,7 +117,7 @@ class GetCommand : KifaCommand {
         source.Copy(file);
 
         try {
-            Logger.Info($"Verifying destination {file}...");
+            Logger.Debug($"Verifying destination {file}...");
             file.Add();
             source.Register(true);
             return new KifaActionResult {
