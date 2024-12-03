@@ -81,8 +81,8 @@ public class TelegramCellClient : IDisposable {
     }
 
     public void Release() {
-        TelegramAccount.Client.ReleaseSession(AccountId, SessionId);
         Reserved = false;
+        TelegramAccount.Client.ReleaseSession(AccountId, SessionId);
     }
 
     public void Dispose() {
