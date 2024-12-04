@@ -93,10 +93,10 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
-            if (session == null) {
+            if (session == null || session.Reserved < DateTimeOffset.UtcNow) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
-                    Message = $"Session {sessionId} is not found."
+                    Message = $"Session {sessionId} is not found or has expired."
                 };
             }
 
