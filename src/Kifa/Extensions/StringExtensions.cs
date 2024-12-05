@@ -36,7 +36,7 @@ public static class StringExtensions {
             (current, p) => current.Replace("{" + p.Key + "}", p.Value));
 
     [return: NotNullIfNotNull(nameof(defaultString))]
-    public static string? FormatIfNonNull(this string format, string? defaultString = null,
+    public static string? FormatIfNonNull(this string format, string? defaultString,
         params (string Key, object? Value)[] parameters) {
         var totalCount = parameters.Length;
         var nonNulls = parameters.Where(x => x.Value != null)
