@@ -44,7 +44,7 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
 
         var newSession = response.Response.Checked();
 
-        if (!new ReadOnlySpan<byte>(newSession.Data).SequenceEqual(currentSession?.Data)) {
+        if (newSession.Id != currentSession?.Id || !new ReadOnlySpan<byte>(newSession.Data).SequenceEqual(currentSession?.Data)) {
             currentClient?.Dispose();
             currentSession = newSession;
             currentClient = new TelegramCellClient(Account, ChannelId, currentSession);
