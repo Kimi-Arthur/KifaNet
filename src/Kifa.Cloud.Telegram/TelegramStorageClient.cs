@@ -151,6 +151,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 throw ex;
             }
 
+			// TODO: Handle TL.RpcException: 400 FILE_PART_X_MISSING
             var finalResult = Retry.Run(() => cellClient.Client.SendMediaAsync(cellClient.Channel,
                 path, new InputFileBig {
                     id = fileId,
