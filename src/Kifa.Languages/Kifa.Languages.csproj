@@ -16,7 +16,7 @@
     <PackageReference Include="CXuesong.MW.MwParserFromScratch" Version="0.2.1" />
     <PackageReference Include="CXuesong.MW.WikiClientLibrary" Version="0.6.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NLog" Version="4.6.7" />
+    <PackageReference Include="NLog" Version="5.3.4" />
     <PackageReference Include="YamlDotNet" Version="12.0.2" />
   </ItemGroup>
 

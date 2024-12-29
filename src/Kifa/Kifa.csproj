@@ -7,6 +7,6 @@
     <PackageReference Include="AngleSharp" Version="1.1.2" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="NLog" Version="4.6.7" />
+    <PackageReference Include="NLog" Version="5.3.4" />
   </ItemGroup>
 </Project>
