@@ -151,7 +151,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 throw ex;
             }
 
-			// TODO: Handle TL.RpcException: 400 FILE_PART_X_MISSING
+            // TODO: Handle TL.RpcException: 400 FILE_PART_X_MISSING
             var finalResult = Retry.Run(() => cellClient.Client.SendMediaAsync(cellClient.Channel,
                 path, new InputFileBig {
                     id = fileId,
@@ -272,7 +272,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 return failures;
             }
-            case TimeoutException or IOException or WTException or TaskCanceledException: {
+            case TimeoutException or IOException or WTException or TaskCanceledException
+                or RetryValidationException: {
                 var failureKey = ex.GetType().ToString();
                 var count = failures.GetValueOrDefault(failureKey, 0) + 1;
                 if (count > FailureOtherCount) {
