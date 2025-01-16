@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Kifa\Kifa.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 

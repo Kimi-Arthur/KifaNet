@@ -6,7 +6,6 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
-using Kifa.IO;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
 using Kifa.Tencent;

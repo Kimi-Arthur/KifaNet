@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kifa.Cloud.BaiduCloud\Kifa.Cloud.BaiduCloud.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.IO\Kifa.IO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

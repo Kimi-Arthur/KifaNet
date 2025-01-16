@@ -7,6 +7,7 @@
     <PackageReference Include="NLog" Version="5.3.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Kifa\Kifa.csproj" />
     <ProjectReference Include="..\Kifa.Cloud.OAuth\Kifa.Cloud.OAuth.csproj" />
     <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />

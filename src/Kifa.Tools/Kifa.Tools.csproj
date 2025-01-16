@@ -1,15 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    <PackageReference Include="NLog" Version="5.3.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj" />
-    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
-    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+        <PackageReference Include="NLog" Version="5.3.4"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>
+        <ProjectReference Include="..\Kifa\Kifa.csproj"/>
+        <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
+        <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
+        <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
+        <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
+    </ItemGroup>
 </Project>

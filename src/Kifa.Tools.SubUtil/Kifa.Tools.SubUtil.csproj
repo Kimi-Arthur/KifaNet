@@ -15,13 +15,17 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj" />
     <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
     <ProjectReference Include="..\Kifa.Bilibili\Kifa.Bilibili.csproj" />
     <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj" />
     <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj" />
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Subtitle\Kifa.Subtitle.csproj" />
     <ProjectReference Include="..\Kifa.Tencent\Kifa.Tencent.csproj" />
     <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\Kifa\Kifa.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />

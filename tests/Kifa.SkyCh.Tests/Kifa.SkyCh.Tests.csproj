@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kifa.SkyCh\Kifa.SkyCh.csproj"/>
+    <ProjectReference Include="..\..\src\Kifa.Service\Kifa.Service.csproj"/>
   </ItemGroup>
 
 </Project>

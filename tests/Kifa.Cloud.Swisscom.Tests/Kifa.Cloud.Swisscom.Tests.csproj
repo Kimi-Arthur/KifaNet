@@ -16,6 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kifa.Cloud.Swisscom\Kifa.Cloud.Swisscom.csproj"/>
     <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj"/>
+    <ProjectReference Include="..\..\src\Kifa.IO\Kifa.IO.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>
