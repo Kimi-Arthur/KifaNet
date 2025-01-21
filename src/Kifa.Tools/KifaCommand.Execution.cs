@@ -23,12 +23,16 @@ public abstract partial class KifaCommand {
         Logger.Info($"Processing {item}...");
         Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info)));
+        // To space out between tasks, and also before final result.
+        Console.WriteLine();
     }
 
     protected void ExecuteItem(string item, Func<KifaActionResult> action) {
         Logger.Info($"Processing {item}...");
         Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info)));
+        // To space out between tasks, and also before final result.
+        Console.WriteLine();
     }
 
     public int LogSummary() {
