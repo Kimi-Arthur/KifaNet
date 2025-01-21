@@ -127,17 +127,31 @@ class RemoveCommand : KifaCommand {
         return LogSummary();
     }
 
-    KifaActionResult RemoveLogicalFile(string filePath) {
-        var info = FileInformation.Client.Get(filePath).Checked();
+    KifaActionResult RemoveLogicalFile(string fileId) {
+        var info = FileInformation.Client.Get(fileId).Checked();
         var result = new KifaBatchActionResult();
         var links = info.GetAllLinks();
         links.Remove(info.Id);
         var onlyFile = links.Count == 0;
+
+        if (!onlyFile) {
+            // For non onlyFile, we need to check whether we will effectively lose the file.
+            var otherLocations = info.Locations.Count(kv
+                => new KifaFile(kv.Key).Id != info.Id && kv.Value != null);
+            if (otherLocations == 0) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message =
+                        $"{fileId} has no other instances other than the one linked. This will result in effective loss of the file."
+                };
+            }
+        }
+
         if (onlyFile && !Force &&
-            !Confirm($"{filePath} is the last instance. Should it be removed?")) {
+            !Confirm($"{fileId} is the last instance. Should it be removed?")) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
-                Message = $"Since {filePath} is the last instance, we skipped removing it."
+                Message = $"Since {fileId} is the last instance, we skipped removing it."
             };
         }
 
@@ -147,9 +161,9 @@ class RemoveCommand : KifaCommand {
 
                 // Do not auto remove remote file unless it's the last instance and force is
                 // requested.
-                var toRemove = file.Path == info.Id && !file.IsCloud || onlyFile && Force;
+                var toRemove = file.Id == info.Id && !file.IsCloud || onlyFile && Force;
                 if (!toRemove) {
-                    if (onlyFile || file.Path == info.Id) {
+                    if (onlyFile || file.Id == info.Id) {
                         toRemove = !file.Exists() ||
                                    Confirm(
                                        $"Confirm removing dangling instance {file}, not matching file name and in cloud");
