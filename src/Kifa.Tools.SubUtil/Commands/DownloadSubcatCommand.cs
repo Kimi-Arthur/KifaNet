@@ -20,7 +20,7 @@ class DownloadSubcatCommand : KifaCommand {
     public string FileUri { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var target = new KifaFile(FileUri).GetSubtitleFile("srt");
+        var target = new KifaFile(FileUri).GetSubtitleFile("zh.srt");
 
         var doc = HttpClient.GetAsync($"{UrlPrefix}/index.php?search={target.BaseName}")
             .GetAwaiter().GetResult().GetString().GetDocument();
