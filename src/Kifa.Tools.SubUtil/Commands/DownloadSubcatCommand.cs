@@ -1,30 +1,46 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Html;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
-[Verb("subcat", HelpText = "Download subtitle file from https://www.subtitlecat.com/.")]
+[Verb("subcat", HelpText = "Download subtitle files from https://www.subtitlecat.com/.")]
 class DownloadSubcatCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static readonly HttpClient HttpClient = new();
 
-    static readonly string UrlPrefix = "https://www.subtitlecat.com";
+    const string UrlPrefix = "https://www.subtitlecat.com";
 
-    [Value(0, Required = true, HelpText = "Target file to download subtitle for.")]
-    public string FileUri { get; set; }
+    [Value(0, Required = true, HelpText = "Target files to download subtitles for.")]
+    public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var target = new KifaFile(FileUri).GetSubtitleFile("zh.srt");
+        var files = FileNames.Select(f => new KifaFile(f)).ToList();
+        var selected = SelectMany(files, choiceToString: file => file.ToString(),
+            choiceName: "files");
+
+        foreach (var file in selected) {
+            ExecuteItem(file.ToString(), () => DownloadSubtitle(file));
+        }
+
+        return LogSummary();
+    }
+
+    KifaActionResult DownloadSubtitle(KifaFile videoFile) {
+        var target = videoFile.GetSubtitleFile("zh.srt");
         if (target.Exists()) {
             if (!Confirm($"Subtitle file {target} already exists. Replace it?")) {
-                Logger.Warn($"Skipped already downloaded subtitle {target}.");
-                return 1;
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Skipped already downloaded subtitle {target}."
+                };
             }
         }
 
@@ -39,8 +55,10 @@ class DownloadSubcatCommand : KifaCommand {
             startingIndex: 1, reverse: true);
 
         if (choice == null) {
-            Logger.Warn("No choice given. Download is canceled.");
-            return 1;
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "No choice given. Download is canceled."
+            };
         }
 
         var pageLink = $"{UrlPrefix}/{choice.Value.Choice.Link}";
@@ -58,7 +76,9 @@ class DownloadSubcatCommand : KifaCommand {
         var content = HttpClient.GetAsync(link).GetAwaiter().GetResult().GetString();
         target.Write(content);
 
-        Logger.Info($"Successfully written {content.Length} bytes to {target}.");
-        return 0;
+        return new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message = $"Successfully written {content.Length} bytes to {target}."
+        };
     }
 }
