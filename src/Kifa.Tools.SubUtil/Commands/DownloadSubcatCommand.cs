@@ -50,8 +50,6 @@ class DownloadSubcatCommand : KifaCommand {
         Logger.Debug($"Will download subtitle from {link}");
 
         var content = HttpClient.GetAsync(link).GetAwaiter().GetResult().GetString();
-        Logger.Trace(content);
-
         target.Write(content);
 
         Logger.Info($"Successfully written {content.Length} bytes to {target}.");
