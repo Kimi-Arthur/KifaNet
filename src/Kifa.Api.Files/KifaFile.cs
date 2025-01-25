@@ -185,7 +185,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
         foreach (var p in FileStorageClient.ServerConfigs) {
             if (fullPath.StartsWith(p.Value.Prefix)) {
-                return $"local:{p.Key}{fullPath[p.Value.Prefix.Length..]}";
+                var canonicalPath = $"local:{p.Key}{fullPath[p.Value.Prefix.Length..]}";
+                Logger.Trace($"Converted {fullPath} to {canonicalPath}");
+                return canonicalPath;
             }
         }
 
