@@ -140,10 +140,14 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             var exceptions = new ConcurrentBag<Exception>();
             var tasks = new Task[totalParts];
-            for (var i = 0; (long) i * BlockSize < size; ++i) {
-                tasks[i] = UploadOneBlock(cellClient, fileId, totalParts, i, stream, i * BlockSize,
+
+            Task GetUploadBlockTask(int i)
+                => UploadOneBlock(cellClient, fileId, totalParts, i, stream, i * BlockSize,
                     (int) Math.Min(size - i * BlockSize, BlockSize), exceptions,
                     uploadInputStreamSemaphore);
+
+            for (var i = 0; (long) i * BlockSize < size; ++i) {
+                tasks[i] = GetUploadBlockTask(i);
             }
 
             Task.WhenAll(tasks).GetAwaiter().GetResult();
@@ -151,13 +155,17 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 throw ex;
             }
 
-            // TODO: Handle TL.RpcException: 400 FILE_PART_X_MISSING
             var finalResult = Retry.Run(() => cellClient.Client.SendMediaAsync(cellClient.Channel,
-                path, new InputFileBig {
-                    id = fileId,
-                    parts = totalParts,
-                    name = path.Split("/")[^1]
-                }).WaitAsync(MergeTimeout), HandleFloodExceptionFunc).GetAwaiter().GetResult();
+                        path, new InputFileBig {
+                            id = fileId,
+                            parts = totalParts,
+                            name = path.Split("/")[^1]
+                        }).WaitAsync(MergeTimeout),
+                    new Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>(
+                        (exception, failures)
+                            => HandleMergeExceptions(exception, failures, GetUploadBlockTask)))
+                .GetAwaiter()
+                .GetResult();
 
             if (finalResult.message != path) {
                 throw new Exception(
@@ -291,6 +299,24 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             default:
                 throw ex;
         }
+    }
+
+    public static async Task<Dictionary<string, int>?> HandleMergeExceptions(Exception ex,
+        Dictionary<string, int>? failures, Func<int, Task> getUploadBlockTask) {
+        if (ex is RpcException {
+                Code: 400,
+                Message: "FILE_PART_X_MISSING",
+                X: >= 0
+            } rpcException) {
+            var missingPart = rpcException.X;
+            Logger.Warn(ex, $"Retry uploading block {missingPart}.");
+            var task = getUploadBlockTask(missingPart);
+            await task;
+        } else {
+            await HandleFloodException(ex, failures);
+        }
+
+        return failures;
     }
 
     public override Stream OpenRead(string path) {
