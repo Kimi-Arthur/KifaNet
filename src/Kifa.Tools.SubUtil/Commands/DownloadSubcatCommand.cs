@@ -21,6 +21,12 @@ class DownloadSubcatCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var target = new KifaFile(FileUri).GetSubtitleFile("zh.srt");
+        if (target.Exists()) {
+            if (!Confirm($"Subtitle file {target} already exists. Replace it?")) {
+                Logger.Warn($"Skipped already downloaded subtitle {target}.");
+                return 1;
+            }
+        }
 
         var doc = HttpClient.GetAsync($"{UrlPrefix}/index.php?search={target.BaseName}")
             .GetAwaiter().GetResult().GetString().GetDocument();
@@ -33,7 +39,7 @@ class DownloadSubcatCommand : KifaCommand {
             startingIndex: 1, reverse: true);
 
         if (choice == null) {
-            Logger.Fatal("No choice given. Download is canceled.");
+            Logger.Warn("No choice given. Download is canceled.");
             return 1;
         }
 
