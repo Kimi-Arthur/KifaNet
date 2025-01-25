@@ -12,7 +12,7 @@ public abstract partial class KifaCommand {
     static readonly Regex ChoiceRegex = new Regex(@"^(\d*)([asi]*)$");
 
     public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
-        List<TChoice> choices, Func<TChoice, string> choiceToString = null,
+        List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
         string? choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
         bool reverse = false) {
         var choiceStrings = choiceToString == null
