@@ -43,7 +43,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     int currentHolders;
-    TelegramCellClient? sharedCellClient;
+    static TelegramCellClient? sharedCellClient;
 
     TelegramCellClient ObtainCellClient() {
         sharedCellClient ??= Cell.CreateClient();
@@ -129,9 +129,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         try {
             var size = stream.Length;
 
-            // This is to ensure we don't simulaneously read the input when uploading to avoid conflict.
+            // This is to ensure we don't simultaneously read the input when uploading to avoid conflict.
             var uploadInputStreamSemaphore = new SemaphoreSlim(1);
-
 
             // size should be at most 1 << 31.
             var totalParts = (int) (size - 1) / BlockSize + 1;
@@ -280,6 +279,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 return failures;
             }
+            case WTException {
+                Message: "You must connect to Telegram first"
+            }:
+                Logger.Warn(ex, $"Create new telegram client as requested.");
+                sharedCellClient.Checked().Relogin();
+                return failures;
             case TimeoutException or IOException or WTException or TaskCanceledException
                 or RetryValidationException: {
                 var failureKey = ex.GetType().ToString();

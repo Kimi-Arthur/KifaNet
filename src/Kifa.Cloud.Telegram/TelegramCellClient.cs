@@ -12,8 +12,10 @@ namespace Kifa.Cloud.Telegram;
 public class TelegramCellClient : IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    string AccountId { get; set; }
-    int SessionId { get; set; }
+    TelegramAccount Account { get; set; }
+    string ChannelId { get; set; }
+    TelegramSession Session { get; set; }
+
     public Client Client { get; set; }
     public InputPeer Channel { get; set; }
 
@@ -24,7 +26,10 @@ public class TelegramCellClient : IDisposable {
     static Logger? wTelegramLogger;
 
     public TelegramCellClient(TelegramAccount account, string channelId, TelegramSession session) {
-        Logger.Trace($"Client with session id {session.Id} is created.");
+        Logger.Trace($"Create client with session id {session.Id}.");
+        Account = account;
+        ChannelId = channelId;
+        Session = session;
 
         // Race condition should be OK here. Calling twice the clause shouldn't have visible
         // caveats.
@@ -36,28 +41,31 @@ public class TelegramCellClient : IDisposable {
             Helpers.Log = (_, message) => wTelegramLogger.Log(LogLevel.FromOrdinal(0), message);
         }
 
-        AccountId = account.Id;
-        SessionId = session.Id;
-        KeepSessionReserved(SessionId);
+        KeepSessionReserved(Session.Id);
 
+        CreateClient();
+    }
+
+    void CreateClient() {
         var sessionStream = new MemoryStream();
-        sessionStream.Write(session.Data);
+        sessionStream.Write(Session.Data);
         sessionStream.Seek(0, SeekOrigin.Begin);
-        Client = new Client(account.ConfigProvider, sessionStream);
+
+        Client = new Client(Account.ConfigProvider, sessionStream);
         Client.FloodRetryThreshold = 0;
 
         try {
-            var result = Retry.Run(() => Client.Login(account.Phone),
+            var result = Retry.Run(() => Client.Login(Account.Phone),
                 TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult();
             if (result != null) {
                 throw new DriveNotFoundException(
-                    $"Telegram drive {account.Id} is not accessible. Requesting {result}.");
+                    $"Telegram drive {Account.Id} is not accessible. Requesting {result}.");
             }
 
             Channel = Retry
                 .Run(() => Client.Messages_GetAllChats(),
                     TelegramStorageClient.HandleFloodExceptionFunc).GetAwaiter().GetResult()
-                .chats[long.Parse(channelId)].Checked();
+                .chats[long.Parse(ChannelId)].Checked();
         } catch (WTException) {
             Dispose();
             throw;
@@ -74,20 +82,25 @@ public class TelegramCellClient : IDisposable {
             }
 
             if (Reserved) {
-                Logger.LogResult(TelegramAccount.Client.RenewSession(AccountId, sessionId),
+                Logger.LogResult(TelegramAccount.Client.RenewSession(Account.Id, sessionId),
                     $"reserving session {sessionId}", defaultLevel: LogLevel.Trace);
             }
         }
     }
 
+    public void Relogin() {
+        Client.Dispose();
+        CreateClient();
+    }
+
     public void Release() {
         Reserved = false;
-        TelegramAccount.Client.ReleaseSession(AccountId, SessionId);
+        TelegramAccount.Client.ReleaseSession(Account.Id, Session.Id);
     }
 
     public void Dispose() {
         disposed = true;
-        Logger.Trace($"Client with session id {SessionId} is disposed.");
+        Logger.Trace($"Client with session id {Session.Id} is disposed.");
         Client.Dispose();
     }
 }
