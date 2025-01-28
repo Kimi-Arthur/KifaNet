@@ -95,6 +95,12 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
         return fileMatch.Groups[1].Value;
     }
 
+    public void AddProperties(FileInformation other) {
+        foreach (var property in other.ValidProperties) {
+            property.Value.SetValue(this, property.Value.GetValue(other));
+        }
+    }
+
     public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
         // Only calculate and populate nonexistent fields.
         requiredProperties -= requiredProperties & GetProperties();
@@ -323,7 +329,7 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
 public interface FileInformationServiceClient : KifaServiceClient<FileInformation> {
     List<FolderInfo> GetFolder(string folder, List<string> targets);
-    
+
     // Returns the files in the folder or the folder if it's actually a file or empty if it doesn't
     // exist.
     List<string> ListFolder(string folder, bool recursive = false);

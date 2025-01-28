@@ -7,15 +7,24 @@ public static class ByteArrayExtensions {
     public static string ToHexString(this byte[] input)
         => BitConverter.ToString(input).Replace("-", "");
 
-    public static byte[] ToByteArray(this long input) {
-        var result = new byte[8];
+    public static string ToHexString(this long input)
+        => input.ToByteArray(bigEndian: true).ToHexString();
+
+    public static string ToHexString(this int input)
+        => input.ToByteArray(bigEndian: true).ToHexString();
+
+    public static byte[] ToByteArray(this long input, bool bigEndian = false, int length = 8) {
+        var result = new byte[length];
         for (var i = 0; i < result.Length; i++) {
-            result[i] = (byte) input;
+            result[bigEndian ? length - 1 - i : i] = (byte) input;
             input >>= 8;
         }
 
         return result;
     }
+
+    public static byte[] ToByteArray(this int input, bool bigEndian = false)
+        => ToByteArray(input, bigEndian: bigEndian, length: 4);
 
     // Will close the stream after reading.
     public static byte[] ToByteArray(this Stream input) {
