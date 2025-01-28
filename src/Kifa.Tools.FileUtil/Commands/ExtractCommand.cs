@@ -52,12 +52,15 @@ class ExtractCommand : KifaCommand {
         foreach (var entry in selected) {
             var file = folder.GetFile(entry.Key.Checked());
             var tempFile = file.GetIgnoredFile();
+            Logger.Debug($"Write {entry.Key} to {tempFile.GetLocalPath()}");
             entry.WriteToFile(tempFile.GetLocalPath());
+            Logger.Debug($"Copy {tempFile.GetLocalPath()} to {file}");
             tempFile.Copy(file);
             file.Add(knownInfo: new FileInformation {
                 Size = entry.Size,
                 Crc32 = ((int) entry.Crc).ToHexString()
             });
+            tempFile.Delete();
         }
     }
 }
