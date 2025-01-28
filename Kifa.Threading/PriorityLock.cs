@@ -3,7 +3,7 @@ using ConcurrentPriorityQueue.Core;
 
 namespace Kifa.Threading;
 
-// A lock that only acquirable only when higher ones are all released and not pending.
+// A lock that is only acquirable only when higher ones are all released and not pending.
 public class PriorityLock {
     public class Scope : IDisposable {
         public required PriorityLock ParentLock { get; set; }
