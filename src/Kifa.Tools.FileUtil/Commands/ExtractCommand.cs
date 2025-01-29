@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Jobs;
 using NLog;
 using SharpCompress.Archives;
+using SharpCompress.Common;
 using SharpCompress.Readers;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -22,6 +24,15 @@ class ExtractCommand : KifaCommand {
 
     [Option('p', "password", HelpText = "Password for the archive.")]
     public string? Password { get; set; }
+
+    [Option('e', "encoding",
+        HelpText = "Encoding of the archive, typically for zip files with GB18030.")]
+    public string? ArchiveEncoding { get; set; }
+
+    [Option('p', "prefix-archive",
+        HelpText =
+            "Whether to prefix the output files/folders with the archive name. The value is the separator.")]
+    public string? PrefixArchiveName { get; set; }
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
@@ -40,8 +51,12 @@ class ExtractCommand : KifaCommand {
     void ExtractFile(KifaFile archiveFile) {
         var folder = archiveFile.Parent;
         using var archiveFileStream = archiveFile.OpenRead();
+        var encoding = ArchiveEncoding != null
+            ? Encoding.GetEncoding(ArchiveEncoding)
+            : Encoding.UTF8;
         var archive = ArchiveFactory.Open(archiveFileStream, new ReaderOptions {
-            Password = Password
+            Password = Password,
+            ArchiveEncoding = new ArchiveEncoding(encoding, encoding)
         });
         var entries = archive.Entries.ToList();
 
@@ -50,7 +65,10 @@ class ExtractCommand : KifaCommand {
                 => $"{entry.Key}: {entry.Size} ({((int) entry.Crc).ToHexString()})",
             choiceName: "entries");
         foreach (var entry in selected) {
-            var file = folder.GetFile(entry.Key.Checked());
+            var fileName = PrefixArchiveName != null
+                ? $"{archiveFile.BaseName}{PrefixArchiveName}{entry.Key.Checked()}"
+                : entry.Key.Checked();
+            var file = folder.GetFile(fileName);
             var tempFile = file.GetIgnoredFile();
             Logger.Debug($"Write {entry.Key} to {tempFile.GetLocalPath()}");
             entry.WriteToFile(tempFile.GetLocalPath());
