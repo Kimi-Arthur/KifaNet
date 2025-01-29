@@ -55,7 +55,7 @@ public class VerifiableStream : Stream {
         var startPosition = Position.RoundDown(FileInformation.BlockSize);
         var endPosition = Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
-        Logger.Trace($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
+        Logger.Notice($"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
         lastBlock ??= new byte[FileInformation.BlockSize];
 
@@ -64,7 +64,7 @@ public class VerifiableStream : Stream {
             var bytesToRead = (int) Math.Min(endPosition - pos, FileInformation.BlockSize);
             var bytesRead = 0;
             if (pos == lastBlockStart) {
-                Logger.Trace($"[{pos}, {pos + bytesToRead}) skipped");
+                Logger.Notice($"[{pos}, {pos + bytesToRead}) skipped");
                 bytesRead = bytesToRead;
             } else {
                 bool? successful = null;
