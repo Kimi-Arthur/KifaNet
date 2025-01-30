@@ -29,6 +29,9 @@ class ExtractCommand : KifaCommand {
         HelpText = "Encoding of the archive, typically for zip files with GB18030.")]
     public string? ArchiveEncoding { get; set; }
 
+    Encoding? encoding;
+    Encoding Encoding => encoding ??= GetArchiveEncoding();
+
     [Option('p', "prefix-archive",
         HelpText =
             "Whether to prefix the output files/folders with the archive name. The value is the separator.")]
@@ -48,15 +51,21 @@ class ExtractCommand : KifaCommand {
         return LogSummary();
     }
 
+    Encoding GetArchiveEncoding() {
+        if (ArchiveEncoding == null) {
+            return Encoding.UTF8;
+        }
+
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        return Encoding.GetEncoding(ArchiveEncoding);
+    }
+
     void ExtractFile(KifaFile archiveFile) {
         var folder = archiveFile.Parent;
         using var archiveFileStream = archiveFile.OpenRead();
-        var encoding = ArchiveEncoding != null
-            ? Encoding.GetEncoding(ArchiveEncoding)
-            : Encoding.UTF8;
         var archive = ArchiveFactory.Open(archiveFileStream, new ReaderOptions {
             Password = Password,
-            ArchiveEncoding = new ArchiveEncoding(encoding, encoding)
+            ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
         });
         var entries = archive.Entries.ToList();
 
