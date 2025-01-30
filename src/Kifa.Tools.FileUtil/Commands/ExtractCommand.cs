@@ -32,10 +32,10 @@ class ExtractCommand : KifaCommand {
     Encoding? encoding;
     Encoding Encoding => encoding ??= GetArchiveEncoding();
 
-    [Option('p', "prefix-archive",
+    [Option('s', "archive-separator",
         HelpText =
-            "Whether to prefix the output files/folders with the archive name. The value is the separator.")]
-    public string? PrefixArchiveName { get; set; }
+            "Separator between archive name and entry name. Default is not prepend archive name.")]
+    public string? ArchiveNameSeparator { get; set; }
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
