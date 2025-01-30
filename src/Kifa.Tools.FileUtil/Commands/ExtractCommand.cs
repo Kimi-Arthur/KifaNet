@@ -68,8 +68,8 @@ class ExtractCommand : KifaCommand {
         });
 
         var entries = archive.Entries.Select(entry => (Entry: entry,
-            File: folder.GetFile(PrefixArchiveName != null
-                ? $"{archiveFile.BaseName}{PrefixArchiveName}{entry.Key.Checked()}"
+            File: folder.GetFile(ArchiveNameSeparator != null
+                ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
                 : entry.Key.Checked()))).Where(entry => {
             if (entry.File.Exists() && entry.File.FileInfo?.Size == entry.Entry.Size &&
                 entry.File.FileInfo?.Crc32 == ((int) entry.Entry.Crc).ToHexString()) {
