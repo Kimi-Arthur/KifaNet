@@ -9,7 +9,7 @@ public abstract partial class KifaCommand {
     static bool alwaysDefault;
     static int defaultIndex;
 
-    static readonly Regex ChoiceRegex = new(@"^(\d*)([asi]*)$");
+    static readonly Regex SingleChoiceRegex = new(@"^(\d*)([asi]*)$");
 
     public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
@@ -52,11 +52,11 @@ public abstract partial class KifaCommand {
         }
 
         Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
-        var match = ChoiceRegex.Match(Console.ReadLine() ?? "");
+        var match = SingleChoiceRegex.Match(Console.ReadLine() ?? "");
         while (!match.Success) {
             Console.WriteLine("Invalid choice. Try again:");
             Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
-            match = ChoiceRegex.Match(Console.ReadLine() ?? "");
+            match = SingleChoiceRegex.Match(Console.ReadLine() ?? "");
         }
 
         var choiceText = match.Groups[1].Value;
@@ -91,6 +91,10 @@ public abstract partial class KifaCommand {
         return (choices[chosenIndex], chosenIndex, special);
     }
 
+    static readonly Regex ManyChoiceRegex = new(@"^([\d^-,]+)(a*)$");
+
+    static string? defaultReply;
+
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null, string? choiceName = null,
         int startingIndex = 1) {
@@ -103,12 +107,31 @@ public abstract partial class KifaCommand {
                 Console.WriteLine($"[{i + startingIndex}] {choiceToString(choices[i])}");
             }
 
-            Console.WriteLine(
-                $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.");
-            Console.Write(
-                $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: ");
-            var reply = Console.ReadLine() ?? "";
-            var chosenIndexes = (reply switch {
+            string reply;
+            var flags = "";
+
+            if (!alwaysDefault) {
+                Console.WriteLine(
+                    $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.");
+                Console.Write(
+                    $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: ");
+                var match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
+                while (!match.Success) {
+                    Console.WriteLine("Invalid choice. Try again:");
+                    Console.WriteLine(
+                        $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.");
+                    Console.Write(
+                        $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: ");
+                    match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
+                }
+
+                reply = match.Groups[1].Value;
+                flags = match.Groups[2].Value;
+            } else {
+                reply = defaultReply.Checked();
+            }
+
+            var chosenIndexes = reply switch {
                 "" => Enumerable.Range(0, choices.Count).ToList(),
                 "^" => [],
                 _ => reply.Split(',').Select(selection => {
@@ -142,14 +165,20 @@ public abstract partial class KifaCommand {
                         if (next.Inverted) {
                             return result.Except(Enumerable.Range(next.RangeStart,
                                 next.RangeEnd - next.RangeStart));
-                        } else {
-                            return result.Union(Enumerable.Range(next.RangeStart,
-                                next.RangeEnd - next.RangeStart));
                         }
+
+                        return result.Union(Enumerable.Range(next.RangeStart,
+                            next.RangeEnd - next.RangeStart));
                     }).Checked().ToList()
-            });
+            };
 
             if (chosenIndexes.Count == choices.Count) {
+                if (flags.Contains('a')) {
+                    // Currently only used when alwaysDefault is true.
+                    defaultReply = reply;
+                    alwaysDefault = true;
+                }
+
                 // No need to reconfirm as the selection is for all.
                 return choices;
             }
@@ -159,9 +188,15 @@ public abstract partial class KifaCommand {
                 Console.WriteLine(choiceToString(choice));
             }
 
-            if (!Confirm(
+            if (!alwaysDefault && !Confirm(
                     $"Confirm selection of {chosen.Count} {choiceName} above out of {choices.Count}?")) {
                 continue;
+            }
+
+            if (flags.Contains('a')) {
+                // Currently only used when alwaysDefault is true.
+                defaultReply = reply;
+                alwaysDefault = true;
             }
 
             Logger.Debug($"Selected {chosen.Count} {choiceName} above out of {choices.Count}.");
