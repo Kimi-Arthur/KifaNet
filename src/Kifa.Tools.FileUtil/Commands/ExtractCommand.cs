@@ -62,22 +62,30 @@ class ExtractCommand : KifaCommand {
 
     void ExtractFile(KifaFile archiveFile) {
         var folder = archiveFile.Parent;
-        using var archiveFileStream = archiveFile.OpenRead();
-        var archive = ArchiveFactory.Open(archiveFileStream, new ReaderOptions {
+        var archive = ArchiveFactory.Open(archiveFile.GetLocalPath(), new ReaderOptions {
             Password = Password,
             ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
         });
-        var entries = archive.Entries.ToList();
+
+        var entries = archive.Entries.Select(entry => (Entry: entry,
+            File: folder.GetFile(PrefixArchiveName != null
+                ? $"{archiveFile.BaseName}{PrefixArchiveName}{entry.Key.Checked()}"
+                : entry.Key.Checked()))).Where(entry => {
+            if (entry.File.Exists() && entry.File.FileInfo?.Size == entry.Entry.Size &&
+                entry.File.FileInfo?.Crc32 == ((int) entry.Entry.Crc).ToHexString()) {
+                Logger.Debug(
+                    $"File {entry.Entry.Key} already exists and has the same size and crc32. Skipped.");
+                return false;
+            }
+
+            return true;
+        }).ToList();
 
         var selected = SelectMany(entries,
             choiceToString: entry
-                => $"{entry.Key}: {entry.Size} ({((int) entry.Crc).ToHexString()})",
+                => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()})",
             choiceName: "entries");
-        foreach (var entry in selected) {
-            var fileName = PrefixArchiveName != null
-                ? $"{archiveFile.BaseName}{PrefixArchiveName}{entry.Key.Checked()}"
-                : entry.Key.Checked();
-            var file = folder.GetFile(fileName);
+        foreach (var (entry, file) in selected) {
             var tempFile = file.GetIgnoredFile();
             Logger.Debug($"Write {entry.Key} to {tempFile.GetLocalPath()}");
             entry.WriteToFile(tempFile.GetLocalPath());
