@@ -9,7 +9,7 @@ public abstract partial class KifaCommand {
     static bool alwaysDefault;
     static int defaultIndex;
 
-    static readonly Regex ChoiceRegex = new Regex(@"^(\d*)([asi]*)$");
+    static readonly Regex ChoiceRegex = new(@"^(\d*)([asi]*)$");
 
     public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
