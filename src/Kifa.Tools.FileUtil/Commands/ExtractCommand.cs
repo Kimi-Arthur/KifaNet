@@ -16,7 +16,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 class ExtractCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
+    [Value(0, Required = true, HelpText = "Target archive file(s) to extract.")]
     public IEnumerable<string> FileNames { get; set; }
 
     [Option('p', "password", HelpText = "Password for the archive.")]
