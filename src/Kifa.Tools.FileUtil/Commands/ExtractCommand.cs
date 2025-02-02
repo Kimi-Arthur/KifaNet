@@ -19,9 +19,6 @@ class ExtractCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    [Option('s', "skip-full", HelpText = "Skip full file check after extraction.")]
-    public bool SkipFull { get; set; } = false;
-
     [Option('p', "password", HelpText = "Password for the archive.")]
     public string? Password { get; set; }
 
