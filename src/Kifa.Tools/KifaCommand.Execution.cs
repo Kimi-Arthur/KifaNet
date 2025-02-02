@@ -36,6 +36,8 @@ public abstract partial class KifaCommand {
     }
 
     public int LogSummary() {
+        Logger.Info($"Finished processing of {Results.Count} items.\n");
+
         var resultsByStatus = Results.GroupBy(item => item.result.IsAcceptable)
             .ToDictionary(item => item.Key, item => item.ToList());
         if (resultsByStatus.TryGetValue(true, out var acceptableItems)) {
