@@ -80,9 +80,10 @@ class ExtractCommand : KifaCommand {
 
         var selected = SelectMany(entries,
             choiceToString: entry
-                => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()})",
+                => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()}) => {entry.File}",
             choiceName: "entries");
         foreach (var (entry, file) in selected) {
+            file.EnsureLocalParent();
             var tempFile = file.GetIgnoredFile();
             Logger.Debug($"Write {entry.Key} to {tempFile.GetLocalPath()}");
             entry.WriteToFile(tempFile.GetLocalPath());
