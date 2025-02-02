@@ -91,7 +91,7 @@ public abstract partial class KifaCommand {
         return (choices[chosenIndex], chosenIndex, special);
     }
 
-    static readonly Regex ManyChoiceRegex = new(@"^([\d^-,]+)(a*)$");
+    static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]+)(a*)$");
 
     static string? defaultReply;
 
