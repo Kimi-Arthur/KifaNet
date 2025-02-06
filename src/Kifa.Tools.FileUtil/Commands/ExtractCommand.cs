@@ -5,6 +5,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 using SharpCompress.Archives;
 using SharpCompress.Common;
@@ -57,7 +58,7 @@ class ExtractCommand : KifaCommand {
         return Encoding.GetEncoding(ArchiveEncoding);
     }
 
-    void ExtractFile(KifaFile archiveFile) {
+    KifaActionResult ExtractFile(KifaFile archiveFile) {
         var folder = archiveFile.Parent;
         var archive = ArchiveFactory.Open(archiveFile.GetLocalPath(), new ReaderOptions {
             Password = Password,
@@ -79,6 +80,13 @@ class ExtractCommand : KifaCommand {
             return true;
         }).ToList();
 
+        if (entries.Count == 0) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "No more files waiting to be extracted."
+            };
+        }
+
         var selected = SelectMany(entries,
             choiceToString: entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()}) => {entry.File}",
@@ -96,5 +104,10 @@ class ExtractCommand : KifaCommand {
             });
             tempFile.Delete();
         }
+
+        return new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message = $"{selected.Count} files extracted"
+        };
     }
 }
