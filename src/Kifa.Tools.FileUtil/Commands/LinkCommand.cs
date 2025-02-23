@@ -32,7 +32,7 @@ public class LinkCommand : KifaCommand {
             return 1;
         }
 
-        var category = first.Parent.Parent.Path[1..];
+        var category = first.Parent.Parent.PathSegments[^1];
         if (!FolderServices.TryGetValue(category, out var value)) {
             Logger.Error($"Category {category} not found. Exit.");
             return 1;
@@ -47,8 +47,25 @@ public class LinkCommand : KifaCommand {
             return 1;
         }
 
-        // Because of the previous check, ids are always without '/'.
+        var targetFolder = first.Parent.Parent;
+        var targetPath = targetFolder.GetLocalPath();
+        if (!Directory.Exists(targetPath)) {
+            Directory.CreateDirectory(targetPath);
+        }
+
+        var directory = new DirectoryInfo(targetPath);
         var ids = folders.Select(f => f.Name).ToList();
+
+        var linkedIds = new HashSet<string>();
+        foreach (var link in directory.GetDirectories("*", SearchOption.TopDirectoryOnly)) {
+            if (link.LinkTarget != null) {
+                linkedIds.Add(targetFolder.GetFile(link.LinkTarget).Name);
+            }
+        }
+
+        ids.RemoveAll(id => linkedIds.Contains(id));
+
+        // Because of the previous check, ids are always without '/'.
         var folderLinks = client.Get(ids);
         foreach (var ((folder, links), id) in folders.Zip(folderLinks).Zip(ids)) {
             var relativePath = $"$/{id}";
@@ -58,17 +75,14 @@ public class LinkCommand : KifaCommand {
             }
 
             foreach (var link in links.Checked().FolderLinks) {
-                var target = folder.Parent.Parent.GetFile(link);
+                var newLink = Confirm($"Confirm new link for {relativePath}:", link);
+
+                var target = targetFolder.GetFile(newLink);
                 if (Directory.Exists(target.GetLocalPath())) {
-                    Logger.Info($"Linking skipped for {target} as it already exists.");
+                    Logger.Error(
+                        $"Linking skipped for {target} as it already exists. This shouldn't happen as it should be filtered out beforehand.");
                     continue;
                 }
-
-                if (!Confirm($"Linking {relativePath} => {target.GetLocalPath()}")) {
-                    Logger.Warn($"Linking skipped for {relativePath} => {target.GetLocalPath()}");
-                    continue;
-                }
-
 
                 try {
                     Directory.CreateSymbolicLink(target.GetLocalPath(), relativePath);
