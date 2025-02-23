@@ -35,7 +35,7 @@ class GetCommand : KifaCommand {
 
     IEnumerable<string> IgnoreLocations
         => ignoreLocations ??= IgnoreAlreadyThere == null
-            ? new List<string>()
+            ? []
             : IgnoreAlreadyThere.Split("|").ToList();
 
     public override int Execute(KifaTask? task = null) {
@@ -78,16 +78,6 @@ class GetCommand : KifaCommand {
             };
         }
 
-        var foundInstance = info.Locations.FirstOrDefault(l
-            => l.Value != null && IgnoreLocations.Any(u => l.Key.StartsWith(u))).Key;
-
-        if (foundInstance != null) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Warning,
-                Message = $"File already exists in {foundInstance}."
-            };
-        }
-
         foreach (var (location, verifyTime) in info.Locations) {
             if (verifyTime != null) {
                 var linkSource = new KifaFile(location);
@@ -107,6 +97,16 @@ class GetCommand : KifaCommand {
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
                 Message = "Not getting file, which requires downloading."
+            };
+        }
+
+        var foundInstanceInIgnoredLocations = info.Locations.FirstOrDefault(l
+            => l.Value != null && IgnoreLocations.Any(u => l.Key.StartsWith(u))).Key;
+
+        if (foundInstanceInIgnoredLocations != null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Warning,
+                Message = $"File already exists in {foundInstanceInIgnoredLocations}."
             };
         }
 
