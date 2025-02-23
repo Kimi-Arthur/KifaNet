@@ -240,7 +240,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public KifaFile GetFilePrefixed(string prefix) => new($"{Host}{prefix}{Path}");
 
     public KifaFile GetIgnoredFile(string? type = null)
-        => type != null ? Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}") : Parent.GetFile($"{DefaultIgnoredPrefix}{Name}");
+        => type != null
+            ? Parent.GetFile($"{DefaultIgnoredPrefix}{BaseName}.{type}")
+            : Parent.GetFile($"{DefaultIgnoredPrefix}{Name}");
 
     public override string ToString() => $"{Host}{Path}";
 
@@ -344,7 +346,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
             var thisFolder = FileInfoClient.ListFolder(path, recursive);
             files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, file.Id))
-                .Select(f => (f.GetNaturalSortKey(), host + f)));
+                .Select(f => (host + f.GetNaturalSortKey(), host + f)));
         }
 
         files.Sort();
