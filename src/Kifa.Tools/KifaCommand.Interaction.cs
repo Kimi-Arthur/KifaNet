@@ -204,12 +204,24 @@ public abstract partial class KifaCommand {
         }
     }
 
-    public static string Confirm(string prefix, string suggested) {
+    public static string? Confirm(string prefix, string suggested,
+        Func<string, string?>? validation = null) {
         while (true) {
-            Console.WriteLine($"{prefix}\n\n{suggested}");
+            if (validation == null) {
+                Console.WriteLine($"{prefix}\n\n{suggested}");
+            } else {
+                Console.WriteLine($"{prefix}\n\n{suggested} ({validation(suggested) ?? "OK"}");
+            }
 
-            var line = Console.ReadLine();
+            var line = Console.ReadLine() ?? "";
             if (line == "") {
+                var validationResult = validation?.Invoke(suggested);
+                if (validationResult != null) {
+                    Console.WriteLine(
+                        $"Current value {suggested} is invalid, will return null instead: {validationResult}");
+                    return null;
+                }
+
                 return suggested;
             }
 

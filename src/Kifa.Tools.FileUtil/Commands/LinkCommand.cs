@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Infos;
@@ -75,7 +76,15 @@ public class LinkCommand : KifaCommand {
             }
 
             foreach (var link in links.Checked().FolderLinks) {
-                var newLink = Confirm($"Confirm new link for {relativePath}:", link);
+                var newLink = Confirm($"Confirm new link for {relativePath}:", link, name => {
+                    var length = Encoding.UTF8.GetByteCount(name);
+                    return length > 255 ? $"file name too long: {length} > 255" : null;
+                });
+
+                if (newLink == null) {
+                    Logger.Error($"Failed to get a valid link name for {relativePath}. Skipped.");
+                    continue;
+                }
 
                 var target = targetFolder.GetFile(newLink);
                 if (Directory.Exists(target.GetLocalPath())) {
