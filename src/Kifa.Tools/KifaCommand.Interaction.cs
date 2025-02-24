@@ -6,15 +6,18 @@ using System.Text.RegularExpressions;
 namespace Kifa.Tools;
 
 public abstract partial class KifaCommand {
-    static bool alwaysDefault;
-    static int defaultIndex;
+    static Dictionary<string, bool> alwaysDefaultForSelectOne = new();
+    static Dictionary<string, int> defaultIndexForSelectOne = new();
 
     static readonly Regex SingleChoiceRegex = new(@"^(\d*)([asi]*)$");
 
     public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
         string? choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
-        bool reverse = false) {
+        bool reverse = false, string selectionKey = "") {
+        defaultIndexForSelectOne.TryAdd(selectionKey, 0);
+        alwaysDefaultForSelectOne.TryAdd(selectionKey, false);
+
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
@@ -31,14 +34,19 @@ public abstract partial class KifaCommand {
             }
         }
 
-        if (defaultIndex >= choices.Count) {
-            defaultIndex = 0;
+        if (defaultIndexForSelectOne[selectionKey] >= choices.Count) {
+            defaultIndexForSelectOne[selectionKey] = 0;
+
+            // Cancel alwaysDefault when the value is updated.
+            alwaysDefaultForSelectOne[selectionKey] = false;
         }
+
+        var defaultIndex = defaultIndexForSelectOne[selectionKey];
 
         Console.WriteLine(
             $"\nDefault [{defaultIndex + startingIndex}]: {choiceStrings[defaultIndex]}\n");
 
-        if (alwaysDefault) {
+        if (alwaysDefaultForSelectOne[selectionKey]) {
             Console.WriteLine(
                 $"Automatically chose [{defaultIndex + startingIndex}] as previously instructed.\n");
             return (choices[defaultIndex], defaultIndex, false);
@@ -71,7 +79,7 @@ public abstract partial class KifaCommand {
         }
 
         if (flags.Contains('a')) {
-            alwaysDefault = true;
+            alwaysDefaultForSelectOne[selectionKey] = true;
         }
 
         var special = flags.Contains('s');
@@ -79,13 +87,9 @@ public abstract partial class KifaCommand {
             throw new InvalidChoiceException("Special is not supported...");
         }
 
-        defaultIndex = chosenIndex;
+        defaultIndexForSelectOne[selectionKey] = chosenIndex;
         if (chosenIndex < 0 || chosenIndex >= choices.Count) {
             throw new InvalidChoiceException($"Choice {chosenIndex} is out of range.");
-        }
-
-        if (alwaysDefault) {
-            Console.WriteLine($"Will always choose [{chosenIndex + startingIndex}] from now on.\n");
         }
 
         return (choices[chosenIndex], chosenIndex, special);
@@ -93,11 +97,15 @@ public abstract partial class KifaCommand {
 
     static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)$");
 
-    static string? defaultReply;
+    static Dictionary<string, string> defaultReplyForSelectMany = new();
+    static Dictionary<string, bool> alwaysDefaultForSelectMany = new();
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null, string? choiceName = null,
-        int startingIndex = 1) {
+        int startingIndex = 1, string selectionKey = "") {
+        alwaysDefaultForSelectMany.TryAdd(selectionKey, false);
+        defaultReplyForSelectMany.TryAdd(selectionKey, "");
+
         choiceToString ??= c => c.ToString();
 
         choiceName ??= "items";
@@ -110,25 +118,26 @@ public abstract partial class KifaCommand {
             string reply;
             var flags = "";
 
-            if (!alwaysDefault) {
-                Console.WriteLine(
-                    $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.");
-                Console.Write(
-                    $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: ");
+            if (alwaysDefaultForSelectMany[selectionKey]) {
+                reply = defaultReplyForSelectMany[selectionKey];
+                Console.WriteLine($"Automatically chose [{reply}] as previously instructed.\n");
+            } else {
+                var messages = new[] {
+                    $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
+                    $"Select 0 or more from the above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
+                };
+                Console.WriteLine(messages[0]);
+                Console.Write(messages[1]);
                 var match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
                 while (!match.Success) {
                     Console.WriteLine("Invalid choice. Try again:");
-                    Console.WriteLine(
-                        $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.");
-                    Console.Write(
-                        $"Select 0 or more from above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: ");
+                    Console.WriteLine(messages[0]);
+                    Console.Write(messages[1]);
                     match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
                 }
 
                 reply = match.Groups[1].Value;
                 flags = match.Groups[2].Value;
-            } else {
-                reply = defaultReply.Checked();
             }
 
             var chosenIndexes = reply switch {
@@ -172,31 +181,24 @@ public abstract partial class KifaCommand {
                     }).Checked().ToList()
             };
 
-            if (chosenIndexes.Count == choices.Count) {
-                if (flags.Contains('a')) {
-                    // Currently only used when alwaysDefault is true.
-                    defaultReply = reply;
-                    alwaysDefault = true;
+            var chosen = chosenIndexes.Select(index => choices[index]).ToList();
+
+            // Only need to reconfirm if the selection is not for all.
+            if (chosenIndexes.Count != choices.Count) {
+                foreach (var choice in chosen) {
+                    Console.WriteLine(choiceToString(choice));
                 }
 
-                // No need to reconfirm as the selection is for all.
-                return choices;
-            }
-
-            var chosen = chosenIndexes.Select(index => choices[index]).ToList();
-            foreach (var choice in chosen) {
-                Console.WriteLine(choiceToString(choice));
-            }
-
-            if (!alwaysDefault && !Confirm(
-                    $"Confirm selection of {chosen.Count} {choiceName} above out of {choices.Count}?")) {
-                continue;
+                if (!alwaysDefaultForSelectMany[selectionKey] && !Confirm(
+                        $"Confirm selection of {chosen.Count} {choiceName} above out of {choices.Count}?")) {
+                    continue;
+                }
             }
 
             if (flags.Contains('a')) {
-                // Currently only used when alwaysDefault is true.
-                defaultReply = reply;
-                alwaysDefault = true;
+                // Only used when alwaysDefault is true. Otherwise, all is always the default.
+                defaultReplyForSelectMany[selectionKey] = reply;
+                alwaysDefaultForSelectMany[selectionKey] = true;
             }
 
             Logger.Debug($"Selected {chosen.Count} {choiceName} above out of {choices.Count}.");
