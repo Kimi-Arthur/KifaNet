@@ -3,20 +3,29 @@ using System.Collections.Generic;
 using System.IO;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
+using Kifa.Service;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
-[Verb("clean", HelpText = "Clean subtitle file.")]
-class CleanCommand : KifaFileCommand {
-    protected override string Prefix => "/Subtitles";
+[Verb("clean", HelpText = "Clean subtitle file. Currently it cleans up new line symbols.")]
+class CleanCommand : KifaCommand {
+    [Value(0, Required = true, HelpText = "Target subtitle files to clean up.")]
+    public IEnumerable<string> FileNames { get; set; }
 
-    protected override Func<List<KifaFile>, string> KifaFileConfirmText
-        => files => $"Confirm cleaning comments for the {files.Count} files above?";
+    public override int Execute(KifaTask? task = null) {
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames));
+        foreach (var file in selected) {
+            ExecuteItem(file.ToString(), () => CleanUpSubtitle(file));
+        }
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
+        return LogSummary();
+    }
+
+    static void CleanUpSubtitle(KifaFile file) {
         var lines = new List<string>();
         using (var sr = new StreamReader(file.OpenRead())) {
-            string line;
+            string? line;
             while ((line = sr.ReadLine()) != null) {
                 lines.Add(line);
             }
@@ -24,6 +33,5 @@ class CleanCommand : KifaFileCommand {
 
         file.Delete();
         file.Write(string.Join("\n", lines) + "\n");
-        return 0;
     }
 }

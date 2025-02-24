@@ -1,32 +1,45 @@
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.Subtitle.Ass;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
-[Verb("fix", HelpText = "Fix subtitle.")]
-class FixCommand : KifaFileCommand {
+[Verb("fix", HelpText = "Fix subtitle. This includes the function of subx clean.")]
+class FixCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    protected override string Prefix => "/Subtitles";
+    [Value(0, Required = true, HelpText = "Target subtitle files to clean up.")]
+    public IEnumerable<string> FileNames { get; set; }
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
+    public override int Execute(KifaTask? task = null) {
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames));
+        foreach (var file in selected) {
+            ExecuteItem(file.ToString(), () => FixSubtitle(file));
+        }
+
+        return LogSummary();
+    }
+
+    KifaActionResult FixSubtitle(KifaFile file) {
         if (file.Extension != "ass") {
-            Logger.Fatal("Only ass files are supported.");
-            return 1;
+            return new KifaActionResult {
+                Status = KifaActionStatus.BadRequest,
+                Message = "Only ass files are supported."
+            };
         }
 
         var sub = AssDocument.Parse(file.OpenRead());
         sub = FixSubtitleResolution(sub);
         // This is needed as Emby will reject the parts with \fad element.
         sub = RemoveFadElement(sub);
-        Console.WriteLine(sub.ToString());
         file.Delete();
         file.Write(sub.ToString());
-        return 0;
+        return KifaActionResult.Success;
     }
 
     static AssDocument FixSubtitleResolution(AssDocument sub) {
@@ -51,7 +64,8 @@ class FixCommand : KifaFileCommand {
 
         var scaleX = AssScriptInfoSection.PreferredPlayResX * 1.0 / scriptWidth;
         var scaleY = AssScriptInfoSection.PreferredPlayResY * 1.0 / scriptHeight;
-        Logger.Info("Scale by {0}", scaleY);
+        Logger.Debug(
+            $"Scale by {scaleX} x {scaleY} ({scriptWidth} -> {AssScriptInfoSection.PreferredPlayResX}, {scriptHeight} -> {AssScriptInfoSection.PreferredPlayResY})");
 
         foreach (var styleSection in sub.Sections.Where(s => s is AssStylesSection)) {
             foreach (var line in styleSection.AssLines) {
@@ -91,6 +105,8 @@ class FixCommand : KifaFileCommand {
                 }
             }
         }
+
+        Logger.Debug("Removed all fad elements if any.");
 
         return sub;
     }
