@@ -13,7 +13,7 @@ namespace Kifa.Tools.SubUtil.Commands;
 class FixCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Value(0, Required = true, HelpText = "Target subtitle files to clean up.")]
+    [Value(0, Required = true, HelpText = "Target subtitle files to fix.")]
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {

@@ -6,6 +6,8 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
+using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
 using Kifa.Tencent;
@@ -15,144 +17,103 @@ using NLog;
 namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("generate", HelpText = "Generate subtitle.")]
-class GenerateCommand : KifaFileCommand {
+class GenerateCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    List<int> selectedBilibiliChatIndexes;
 
-    List<int> selectedSubtitleIndexes;
+    [Value(0, Required = true, HelpText = "Target files to generate subtitle for.")]
+    public IEnumerable<string> FileNames { get; set; }
 
     [Option('f', "force", HelpText = "Forcing generating the subtitle.")]
     public bool Force { get; set; }
 
-    protected override Func<List<KifaFile>, string> KifaFileConfirmText
-        => files => $"Confirm generating comments for the {files.Count} files above?";
+    public override int Execute(KifaTask? task = null) {
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames));
+        foreach (var file in selected) {
+            ExecuteItem(file.ToString(), () => GenerateSubtitle(file));
+        }
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
+        return LogSummary();
+    }
+
+    KifaActionResult GenerateSubtitle(KifaFile file) {
         var finalFile = file.GetSubtitleFile("default.ass");
 
-        if (!finalFile.Exists() || Force) {
-            var document = new AssDocument();
-
-            var scriptInfo = new AssScriptInfoSection {
-                Title = file.BaseName,
-                PlayResX = AssScriptInfoSection.PreferredPlayResX,
-                PlayResY = AssScriptInfoSection.PreferredPlayResY
+        if (finalFile.Exists() && !Force) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message =
+                    $"No subtitle generated for {file} as {finalFile} exists. Overwrite with '-f'."
             };
-            document.Sections.Add(scriptInfo);
-
-            var styles = AssStyle.Styles;
-            document.Sections.Add(new AssStylesSection {
-                Styles = styles
-            });
-
-            var events = new AssEventsSection();
-
-            var rawSubtitles = GetSrtSubtitles(file);
-            rawSubtitles.AddRange(GetAssSubtitles(file));
-            var subtitles = SelectSubtitles(rawSubtitles);
-            events.Events.AddRange(subtitles.dialogs);
-
-            // TODO: Do duplication check.
-            styles.AddRange(subtitles.styles);
-
-            var chats = GetBilibiliChats(file);
-            var comments = SelectBilibiliChats(chats);
-            PositionNormalComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.NormalCommentStyle).OrderBy(c => c.Start).ToList());
-            PositionTopComments(comments.dialogs.Where(c => c.Style == AssStyle.TopCommentStyle)
-                .OrderBy(c => c.Start).ToList());
-            PositionBottomComments(comments.dialogs
-                .Where(c => c.Style == AssStyle.BottomCommentStyle).OrderBy(c => c.Start).ToList());
-            events.Events.AddRange(comments.dialogs);
-
-            var qqChats = GetTencentChats(file);
-            if (qqChats.Count > 0) {
-                PositionNormalComments(qqChats[0].content.OrderBy(c => c.Start).ToList());
-                events.Events.AddRange(qqChats[0].content);
-            }
-
-            document.Sections.Add(events);
-
-            var subtitleIds = new List<string>();
-
-            if (subtitles.dialogs.Count > 0) {
-                subtitleIds.AddRange(subtitles.ids);
-            }
-
-            if (comments.dialogs.Count > 0) {
-                subtitleIds.AddRange(comments.ids);
-            }
-
-            scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
-
-            finalFile.Delete();
-            finalFile.Write(document.ToString());
         }
 
-        return 0;
-    }
+        var document = new AssDocument();
 
-    (List<string> ids, List<AssDialogue> dialogs) SelectBilibiliChats(
-        List<(string id, List<AssDialogue> content)> chats) {
-        for (var i = 0; i < chats.Count; i++) {
-            Console.WriteLine($"[{i}] {chats[i].id}: {chats[i].content.Count} comments.");
+        var scriptInfo = new AssScriptInfoSection {
+            Title = file.BaseName,
+            PlayResX = AssScriptInfoSection.PreferredPlayResX,
+            PlayResY = AssScriptInfoSection.PreferredPlayResY
+        };
+        document.Sections.Add(scriptInfo);
+
+        var styles = AssStyle.Styles;
+        document.Sections.Add(new AssStylesSection {
+            Styles = styles
+        });
+
+        var events = new AssEventsSection();
+
+        var rawSubtitles = GetSrtSubtitles(file);
+        rawSubtitles.AddRange(GetAssSubtitles(file));
+        var selectedSubtitles = SelectMany(rawSubtitles,
+            subtitle => $"{subtitle.Id} ({subtitle.Dialogs.Count} lines)", choiceName: "subtitles",
+            selectionKey: "subtitles");
+        events.Events.AddRange(selectedSubtitles.SelectMany(sub => sub.Dialogs));
+
+        // TODO: Do duplication check.
+        styles.AddRange(selectedSubtitles.SelectMany(sub => sub.Styles));
+
+        var bilibiliChats = SelectMany(GetBilibiliChats(file),
+            chat => $"{chat.Id} ({chat.Comments.Count} chats)", choiceName: "Bilibili chats",
+            selectionKey: "bili_chats");
+        var comments = bilibiliChats.SelectMany(chat => chat.Comments).ToList();
+        PositionNormalComments(comments.Where(c => c.Style == AssStyle.NormalCommentStyle)
+            .OrderBy(c => c.Start).ToList());
+        PositionTopComments(comments.Where(c => c.Style == AssStyle.TopCommentStyle)
+            .OrderBy(c => c.Start).ToList());
+        PositionBottomComments(comments.Where(c => c.Style == AssStyle.BottomCommentStyle)
+            .OrderBy(c => c.Start).ToList());
+        events.Events.AddRange(comments);
+
+        var qqChats = SelectMany(GetTencentChats(file),
+            chat => $"{chat.Id} ({chat.Comments.Count} chats)", choiceName: "QQ chats",
+            selectionKey: "qq_chats");
+        if (qqChats.Count > 0) {
+            PositionNormalComments(qqChats[0].Comments.OrderBy(c => c.Start).ToList());
+            events.Events.AddRange(qqChats[0].Comments);
         }
 
-        List<int> chosenIndexes;
-        if (selectedBilibiliChatIndexes == null) {
-            Console.Write("Choose Bilibili chats: ");
-            var chosen = Console.ReadLine() ?? "";
-            chosenIndexes = chosen.Trim('a').Split(",", StringSplitOptions.RemoveEmptyEntries)
-                .Select(int.Parse).ToList();
+        document.Sections.Add(events);
 
-            if (chosen.EndsWith('a')) {
-                selectedBilibiliChatIndexes = chosenIndexes;
-            }
-        } else {
-            chosenIndexes = selectedBilibiliChatIndexes;
+        var subtitleIds = new List<string>();
+
+        if (selectedSubtitles.Count > 0) {
+            subtitleIds.AddRange(selectedSubtitles.Select(sub => sub.Id));
         }
 
-        var ids = new List<string>();
-        var dialogs = new List<AssDialogue>();
-        foreach (var index in chosenIndexes) {
-            ids.Add(chats[index].id);
-            dialogs.AddRange(chats[index].content);
+        if (bilibiliChats.Count > 0) {
+            subtitleIds.AddRange(bilibiliChats.Select(chat => chat.Id));
         }
 
-        return (ids, dialogs);
-    }
+        scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
 
-    (List<string> ids, List<AssDialogue> dialogs, List<AssStyle> styles) SelectSubtitles(
-        List<(string id, List<AssDialogue> content, List<AssStyle> styles)> rawSubtitles) {
-        for (var i = 0; i < rawSubtitles.Count; i++) {
-            Console.WriteLine(
-                $"[{i}] {rawSubtitles[i].id}: {rawSubtitles[i].content.Count} lines.");
-        }
+        finalFile.Delete();
+        finalFile.Write(document.ToString());
 
-        List<int> chosenIndexes;
-        if (selectedSubtitleIndexes == null) {
-            Console.Write("Choose subtitles: ");
-            var chosen = Console.ReadLine() ?? "";
-            chosenIndexes = chosen.Trim('a').Split(",", StringSplitOptions.RemoveEmptyEntries)
-                .Select(int.Parse).ToList();
-
-            if (chosen.EndsWith('a')) {
-                selectedSubtitleIndexes = chosenIndexes;
-            }
-        } else {
-            chosenIndexes = selectedSubtitleIndexes;
-        }
-
-        var ids = new List<string>();
-        var dialogs = new List<AssDialogue>();
-        var styles = new List<AssStyle>();
-        foreach (var index in chosenIndexes) {
-            ids.Add(rawSubtitles[index].id);
-            dialogs.AddRange(rawSubtitles[index].content);
-            styles.AddRange(rawSubtitles[index].styles);
-        }
-
-        return (ids, dialogs, styles);
+        return new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message =
+                $"Created {finalFile} with {selectedSubtitles.Count} subtitles, {bilibiliChats} Bilibili chats."
+        };
     }
 
     static void PositionNormalComments(List<AssDialogue> comments) {
@@ -257,7 +218,7 @@ class GenerateCommand : KifaFileCommand {
         }
     }
 
-    static List<(string id, List<AssDialogue> content, List<AssStyle> styles)>
+    static List<(string Id, List<AssDialogue> Dialogs, List<AssStyle> Styles)>
         GetSrtSubtitles(KifaFile rawFile)
         => rawFile.GetSubtitleFile().Parent
             .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.srt").Select(file => {
@@ -267,7 +228,7 @@ class GenerateCommand : KifaFileCommand {
                     new List<AssStyle>());
             }).ToList();
 
-    static List<(string id, List<AssDialogue> content, List<AssStyle> styles)>
+    static List<(string Id, List<AssDialogue> Dialogs, List<AssStyle> Styles)>
         GetAssSubtitles(KifaFile rawFile)
         => rawFile.GetSubtitleFile().Parent
             .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.ass")
@@ -279,8 +240,8 @@ class GenerateCommand : KifaFileCommand {
                     document.Sections.OfType<AssStylesSection>().First().Styles);
             }).ToList();
 
-    static List<(string id, List<AssDialogue> content)> GetBilibiliChats(KifaFile rawFile) {
-        var result = new List<(string id, List<AssDialogue> content)>();
+    static List<(string Id, List<AssDialogue> Comments)> GetBilibiliChats(KifaFile rawFile) {
+        var result = new List<(string Id, List<AssDialogue> Comments)>();
         foreach (var file in rawFile.GetSubtitleFile().Parent
                      .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.xml")) {
             var chat = new BilibiliChat();
@@ -292,7 +253,7 @@ class GenerateCommand : KifaFileCommand {
         return result;
     }
 
-    static List<(string id, List<AssDialogue> content)> GetTencentChats(KifaFile rawFile) {
+    static List<(string Id, List<AssDialogue> Comments)> GetTencentChats(KifaFile rawFile) {
         return rawFile.GetSubtitleFile().Parent
             .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.json").Select(file => (
                 file.BaseName.Split('.').Last(),
