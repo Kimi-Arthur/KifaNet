@@ -212,7 +212,7 @@ public abstract partial class KifaCommand {
             if (validation == null) {
                 Console.WriteLine($"{prefix}\n\n{suggested}");
             } else {
-                Console.WriteLine($"{prefix}\n\n{suggested} ({validation(suggested) ?? "OK"}");
+                Console.WriteLine($"{prefix}\n\n{suggested} ({validation(suggested) ?? "OK"})");
             }
 
             var line = Console.ReadLine() ?? "";
