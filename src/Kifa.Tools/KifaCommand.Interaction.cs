@@ -102,7 +102,11 @@ public abstract partial class KifaCommand {
 
     public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null, string? choiceName = null,
-        int startingIndex = 1, string selectionKey = "") {
+        int startingIndex = 1, string selectionKey = "", bool skipIfEmpty = true) {
+        if (skipIfEmpty && choices.Count == 0) {
+            return [];
+        }
+
         alwaysDefaultForSelectMany.TryAdd(selectionKey, false);
         defaultReplyForSelectMany.TryAdd(selectionKey, "");
 
