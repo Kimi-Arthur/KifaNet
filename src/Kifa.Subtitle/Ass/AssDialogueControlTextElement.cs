@@ -198,10 +198,10 @@ public abstract class BoolElement : AssControlElement {
 }
 
 public abstract class IntElement : AssControlElement {
-    public int Value { get; set; }
+    public int? Value { get; set; }
 
     public override AssControlElement ParseValue(string content) {
-        Value = (int) double.Parse(content);
+        Value = string.IsNullOrEmpty(content) ? null : (int) double.Parse(content);
         return this;
     }
 
@@ -299,7 +299,7 @@ public class FontSizeStyle : IntElement {
     public override string Name => Key;
 
     public override void Scale(double scaleX, double scaleY) {
-        Value = (Value * scaleY).RoundUp(10);
+        Value = (Value * scaleY)?.RoundUp(10);
     }
 }
 
