@@ -65,10 +65,11 @@ class ExtractCommand : KifaCommand {
             ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
         });
 
-        var entries = archive.Entries.Select(entry => (Entry: entry,
-            File: folder.GetFile(ArchiveNameSeparator != null
-                ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
-                : entry.Key.Checked()))).Where(entry => {
+        var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry
+            => (Entry: entry,
+                File: folder.GetFile(ArchiveNameSeparator != null
+                    ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
+                    : entry.Key.Checked()))).Where(entry => {
             if (entry.File.Exists() || entry.File.ExistsSomewhere() &&
                 entry.File.FileInfo?.Size == entry.Entry.Size && entry.File.FileInfo?.Crc32 ==
                 ((int) entry.Entry.Crc).ToHexString()) {
