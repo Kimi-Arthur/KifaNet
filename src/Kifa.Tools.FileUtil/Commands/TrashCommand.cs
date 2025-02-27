@@ -25,9 +25,21 @@ class TrashCommand : KifaCommand {
     [Option('r', "restore", HelpText = "Restore trashed files")]
     public bool Restore { get; set; } = false;
 
+    #region public late string DateString { get; set; }
+
+    string? dateString;
+
+    public string DateString {
+        get => Late.Get(dateString);
+        set => Late.Set(ref dateString, value);
+    }
+
+    #endregion
+
     public override int Execute(KifaTask? task = null) {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
         var fileIds = foundFiles.Select(f => f.Id).ToList();
+        DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {
             var selectedFileIds = SelectMany(fileIds, choiceName: "files to restore");
@@ -56,7 +68,7 @@ class TrashCommand : KifaCommand {
     KifaActionResult Trash(string file)
         => KifaActionResult.FromAction(() => {
             var client = FileInformation.Client;
-            var target = $"/Trash/{GetReasonPath()}{file}";
+            var target = $"/Trash/{GetTrashPath()}{file}";
             client.Link(file, target);
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
@@ -83,8 +95,7 @@ class TrashCommand : KifaCommand {
             Logger.Info($"Original FileInfo {file} removed.");
         });
 
-    string GetReasonPath() {
-        var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
-        return Reason == null ? dateString : $"{dateString}_{Reason}";
+    string GetTrashPath() {
+        return Reason == null ? DateString : $"{DateString}_{Reason}";
     }
 }
