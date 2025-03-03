@@ -111,9 +111,7 @@ class GetCommand : KifaCommand {
         }
 
         var source = new KifaFile(fileInfo: info,
-            allowedClients: AllowedClients == null
-                ? null
-                : new HashSet<string>(AllowedClients.Split(",")));
+            allowedClients: AllowedClients == null ? null : [..AllowedClients.Split(",")]);
         source.Copy(file);
 
         try {

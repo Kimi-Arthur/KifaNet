@@ -111,19 +111,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         bool useCache = false, HashSet<string>? allowedClients = null) {
         if (uri == null) {
             if (id == null) {
-                if (fileInfo?.Id == null) {
-                    throw new FileNotFoundException(
-                        $"At least one of uri, id, fileInfo.Id should be non-null.");
-                }
-
-                id = fileInfo.Id;
+                id = fileInfo?.Id ?? throw new FileNotFoundException(
+                    $"At least one of uri, id, fileInfo.Id should be non-null.");
             }
 
-            uri = GetUri(id, allowedClients);
-
-            if (uri == null) {
-                throw new FileNotFoundException($"Unable to infer an available uri for {id}.");
-            }
+            uri = GetUri(id, allowedClients) ??
+                  throw new FileNotFoundException($"Unable to infer an available uri for {id}.");
         }
 
         uri = NormalizeUri(uri);
@@ -196,7 +189,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {
         string? candidate = null;
-        var bestScore = 0L;
+        var bestScore = int.MinValue;
         var info = FileInfoClient.Get(id);
         if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {

@@ -13,8 +13,7 @@ public abstract class StorageClient : IDisposable {
     public virtual void Dispose() {
     }
 
-    public virtual IEnumerable<FileInformation> List(string path, bool recursive = false)
-        => Enumerable.Empty<FileInformation>();
+    public virtual IEnumerable<FileInformation> List(string path, bool recursive = false) => [];
 
     public bool Exists(string path, long expectedLength = -1) {
         try {
