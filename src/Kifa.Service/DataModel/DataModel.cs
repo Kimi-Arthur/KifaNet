@@ -23,16 +23,11 @@ public abstract class DataModel {
 
     [YamlMember(Order = -1)]
     [JsonProperty(Order = -2)]
-    public virtual string Id {
-        get => Late.Get(id);
-        set => Late.Set(ref id, value);
-    }
-
-    string? id;
+    public virtual string? Id { get; set; }
 
     [JsonIgnore]
     [YamlIgnore]
-    public string RealId => Metadata?.Linking?.Target ?? Id;
+    public string? RealId => Metadata?.Linking?.Target ?? Id;
 
     [JsonProperty("$metadata", Order = -3)]
     [YamlIgnore]

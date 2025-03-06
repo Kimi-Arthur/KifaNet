@@ -143,6 +143,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         FileInfo = fileInfo ?? FileInfoClient.Get(Id) ?? new FileInformation {
             Id = Id
         };
+
+        FileInfo.Id ??= Id;
+
         if (Id != FileInfo.Id) {
             throw new FileCorruptedException($"File's ID doesn't match: {Id} vs {FileInfo?.Id}");
         }
