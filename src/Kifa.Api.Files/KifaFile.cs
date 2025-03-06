@@ -228,7 +228,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return bestScore > 0 ? candidate : null;
     }
 
-    public KifaFile GetFile(string name) => new($"{Host}{Path}/{name}");
+    public KifaFile GetFile(string name, FileInformation? fileInfo = null)
+        => new($"{Host}{Path}/{name}", fileInfo: fileInfo);
 
     public KifaFile GetFilePrefixed(string prefix) => new($"{Host}{prefix}{Path}");
 
@@ -489,11 +490,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     /// If it's true, it will do a full checkup no matter what.<br/>
     /// If it's false, it will never do a check if the file is known.<br/>
     /// If it's null (default case), it will do a quick check for known instance.</param>
-    /// <param name="knownInfo">Information about the file that's known before checking,
-    /// like size and crc32 info for files extracted from archives.</param>
     /// <exception cref="FileNotFoundException">The file doesn't exist.</exception>
     /// <exception cref="FileCorruptedException">File check failed for known file.</exception>
-    public void Add(bool? shouldCheckKnown = null, FileInformation? knownInfo = null) {
+    public void Add(bool? shouldCheckKnown = null) {
         if (shouldCheckKnown != false && !Exists()) {
             throw new FileNotFoundException(ToString());
         }
@@ -506,24 +505,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         };
 
         Logger.Trace($"Original info:\n{existingInfo}");
-
-        if (knownInfo != null) {
-            var compareWithKnownInfo =
-                knownInfo.CompareProperties(existingInfo, FileProperties.AllVerifiable);
-            if (compareWithKnownInfo != FileProperties.None) {
-                throw new FileCorruptedException(
-                    $"The given known info differs from old result: {compareWithKnownInfo}\n" +
-                    "Expected:\n" +
-                    existingInfo.Checked()
-                        .RemoveProperties(FileProperties.All ^ compareWithKnownInfo) +
-                    "\nActual:\n" +
-                    knownInfo.RemoveProperties(FileProperties.All ^ compareWithKnownInfo));
-            }
-
-            existingInfo.AddProperties(knownInfo);
-        }
-
-        Logger.Trace($"With knownInfo:\n{existingInfo}");
 
         if (UseCache) {
             try {
