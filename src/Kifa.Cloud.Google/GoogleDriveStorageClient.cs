@@ -31,9 +31,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
     readonly HttpClient client = new(new HttpClientHandler {
         AllowAutoRedirect = false
-    }) {
-        Timeout = TimeSpan.FromMinutes(30)
-    };
+    });
 
     // Always a fresh account. The server will determine whether refresh is needed.
     public GoogleAccount Account => Cell.Data.Checked().Account.Data.Checked();
