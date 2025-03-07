@@ -196,39 +196,42 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var info = FileInfoClient.Get(id);
         if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {
-                if (verifyTime != null) {
-                    var file = new KifaFile(location, fileInfo: info);
-                    if (file.Client is FileStorageClient && file.Exists()) {
-                        return location;
-                    }
+                var file = new KifaFile(location, fileInfo: info);
+                if (file.Client is FileStorageClient && file.Exists()) {
+                    return location;
+                }
 
-                    // Ignore clients not allowed.
-                    if (allowedClients != null && !allowedClients.Contains(file.Client.Type)) {
-                        continue;
-                    }
+                // Ignore clients not allowed.
+                if (allowedClients != null && !allowedClients.Contains(file.Client.Type)) {
+                    continue;
+                }
 
-                    var score = file.Client switch {
-                        GoogleDriveStorageClient => 32,
-                        WebStorageClient => 24,
-                        SwisscomStorageClient => 16,
-                        BaiduCloudStorageClient => 8,
-                        _ => 0
-                    } + file.FileFormat switch {
-                        KifaFileV2Format => 4,
-                        KifaFileV1Format => 2,
-                        KifaFileV0Format => 1,
-                        _ => 0
-                    };
+                var score = file.Client switch {
+                    GoogleDriveStorageClient => 32,
+                    WebStorageClient => 24,
+                    SwisscomStorageClient => 16,
+                    BaiduCloudStorageClient => 8,
+                    _ => 0
+                } + file.FileFormat switch {
+                    KifaFileV2Format => 8,
+                    KifaFileV1Format => 4,
+                    KifaFileV0Format => 2,
+                    RawFileFormat => 1,
+                    _ => 0
+                } + (verifyTime != null ? 0 : int.MinValue);
 
-                    if (score > bestScore) {
-                        bestScore = score;
-                        candidate = location;
-                    }
+                if (score > bestScore) {
+                    bestScore = score;
+                    candidate = location;
                 }
             }
         }
 
-        return bestScore > 0 ? candidate : null;
+        if (bestScore < 0) {
+            Logger.Warn($"No verified candidate is found. Only {candidate} is.");
+        }
+
+        return bestScore > int.MinValue ? candidate : null;
     }
 
     public KifaFile GetFile(string name, FileInformation? fileInfo = null)
