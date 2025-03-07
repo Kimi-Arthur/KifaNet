@@ -59,11 +59,18 @@ class GetCommand : KifaCommand {
                 Message = "Already got!"
             };
         } catch (FileNotFoundException) {
+            if (file.Registered) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message =
+                        "File is unexpectedly missing. Check again or use `filex rm` to remove phantom files."
+                };
+            }
             // File expected to be not found.
         } catch (FileCorruptedException ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
-                Message = "Target exists, but doesn't match."
+                Message = $"Target exists, but doesn't match: {ex}"
             };
         }
 
