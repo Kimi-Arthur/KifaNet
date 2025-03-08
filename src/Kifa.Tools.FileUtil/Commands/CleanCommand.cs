@@ -27,20 +27,14 @@ class CleanCommand : KifaCommand {
         var files = KifaFile.FindPotentialFiles(FileNames);
         var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
-        if (filesToRemove.Count == 0) {
-            Logger.Info("No missing files found.");
+        var selected = SelectMany(filesToRemove, f => f.ToString(), "non-existing files to remove");
+
+        if (selected.Count == 0) {
+            Logger.Info("No missing files found or selected.");
             return;
         }
 
-        foreach (var file in filesToRemove) {
-            Console.WriteLine(file);
-        }
-
-        Console.Write(
-            $"The {filesToRemove.Count} files above do not actually exist. Confirm removing them from system?");
-        Console.ReadLine();
-
-        foreach (var file in filesToRemove) {
+        foreach (var file in selected) {
             file.Unregister();
         }
     }
