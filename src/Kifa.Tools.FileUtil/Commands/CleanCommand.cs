@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.IO;
 using Kifa.Jobs;
 using NLog;
 
@@ -11,9 +12,6 @@ namespace Kifa.Tools.FileUtil.Commands;
 [Verb("clean", HelpText = "Clean file entries.")]
 class CleanCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    [Option('q', "quiet", HelpText = "Quiet mode, no confirmation is requested.")]
-    public bool QuietMode { get; set; } = false;
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
@@ -48,43 +46,36 @@ class CleanCommand : KifaCommand {
     }
 
     void DeduplicateFiles() {
-        var files = KifaFile.FindExistingFiles(FileNames);
-        if (files.Any(f => !f.IsLocal)) {
-            Logger.Warn("The following files are not local. Aborted." + string.Join("\n\t",
-                files.Where(f => !f.IsLocal)));
-            // Error
-            return;
-        }
+        var files = KifaFile.FindPotentialFiles(FileNames);
+        foreach (var file in files) {
+            var info = file.FileInfo.Checked();
+            info.Id = null;
+            var sameHostFiles = info.Locations
+                .Where(f => f.Value != null && new FileLocation(f.Key).Server == file.Host)
+                .Select(f => new KifaFile(f.Key, fileInfo: info)).ToList();
+            if (sameHostFiles.Select(f => f.FileId).Distinct().Count() == 1) {
+                Logger.Info(
+                    $"No need to dedup these files:\n\t{string.Join("\n\t", sameHostFiles.Select(f => $"{f} ({f.FileId}"))}");
+                continue;
+            }
 
-        foreach (var sameFiles in files.Where(f => f.FileInfo.Checked().Sha256 != null)
-                     .GroupBy(f => $"{f.Host}/{f.FileInfo.Checked().Sha256}")) {
-            var source = sameFiles.First();
-            foreach (var target in sameFiles.Skip(1)) {
-                if (!target.IsCompatible(source)) {
-                    Logger.Warn(
-                        $"File {target} is not in the same local cell as file {source}. Skipped.");
-                    continue;
+            var selected = SelectMany(sameHostFiles, f => $"{f} ({f.FileId})", "files to unify");
+            if (selected.Count <= 1) {
+                Logger.Info($"No need to dedup as at most one item is selected:");
+                foreach (var f in selected) {
+                    Logger.Info($"\t{f} ({f.FileId})");
                 }
 
-                if (target.IsSameLocalFile(source)) {
-                    Logger.Info($"File {target} is the same file as {source}. Skipped.");
-                    continue;
-                }
+                continue;
+            }
 
-                if (!QuietMode && !Confirm($"Removing {target} and linking it to {source}...")) {
-                    continue;
-                }
-
-                Logger.Info($"Removing {target} and linking it to {source}...");
-                target.Delete();
-                target.Unregister();
-                source.Copy(target);
-
-                // Skip the full check if the linking is from local file and in the same cell.
-                // Caveat: It's only inferred that it used hard linking.
-                target.Register(source.IsCompatible(target) && target.IsLocal);
-                target.Add();
-                Logger.Info($"Linked {target} to {source}.");
+            // We then only choose one between the selected ones.
+            foreach (var f in selected.Skip(1)) {
+                f.Delete();
+                f.Unregister();
+                selected[0].Copy(f);
+                f.Add();
+                Logger.Info($"Removed and relinked {f} ({f.FileId}).");
             }
         }
     }
