@@ -152,7 +152,7 @@ public partial class KifaFile {
 
     void CleanupFiles(bool deleteSource, bool downloadLocal) {
         if (!downloadLocal) {
-            RemoveLocalCacheFile();
+            RemoveLocalMirrorFile();
         }
 
         if (deleteSource) {

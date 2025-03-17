@@ -27,9 +27,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     #region Configs
 
-    public static string CacheCell { get; set; }
+    public static string DefaultMirrorHost { get; set; }
 
-    public static string SubtitlesCell { get; set; }
+    public static string SubtitlesHost { get; set; }
 
     public static string DefaultIgnoredPrefix { get; set; } = "@";
 
@@ -99,8 +99,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // Note that if it exists in this server, this may differ from itself as it's using `Id` not
     // its actual `Path`. But normally it's for remote files.
-    KifaFile? cacheFile;
-    KifaFile CacheFile => cacheFile ??= new($"{CacheCell}{Id}");
+    public KifaFile LocalMirrorFile { get; set; }
 
     FileIdInfo? idInfo;
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
@@ -154,6 +153,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
+        LocalMirrorFile = new KifaFile($"{DefaultMirrorHost}{Id}", fileInfo: FileInfo);
         UseCache = useCache;
     }
 
@@ -426,8 +426,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public void Copy(KifaFile destination, bool neverLink = false) {
         if (UseCache) {
-            CacheFileToLocal();
-            CacheFile.Copy(destination, neverLink);
+            MirrorFileToLocal();
+            LocalMirrorFile.Copy(destination, neverLink);
             return;
         }
 
@@ -445,8 +445,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         if (UseCache) {
-            CacheFileToLocal();
-            CacheFile.Move(destination);
+            MirrorFileToLocal();
+            LocalMirrorFile.Move(destination);
             return;
         }
 
@@ -458,20 +458,20 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    void CacheFileToLocal() {
-        if (!CacheFile.Registered || !CacheFile.Exists()) {
-            Logger.Debug($"Caching {this} to {CacheFile}...");
+    void MirrorFileToLocal() {
+        if (!LocalMirrorFile.Registered || !LocalMirrorFile.Exists()) {
+            Logger.Debug($"Mirror {this} to {LocalMirrorFile}...");
             using var stream = OpenRead();
-            CacheFile.Write(stream);
-            CacheFile.Add();
+            LocalMirrorFile.Write(stream);
+            LocalMirrorFile.Add();
         }
     }
 
-    void RemoveLocalCacheFile() {
-        if (UseCache && CacheFile.Exists()) {
-            CacheFile.Delete();
-            CacheFile.Unregister();
-            Logger.Debug($"Removed cache file {CacheFile}...");
+    void RemoveLocalMirrorFile() {
+        if (UseCache && LocalMirrorFile.Exists()) {
+            LocalMirrorFile.Delete();
+            LocalMirrorFile.Unregister();
+            Logger.Debug($"Removed mirror file {LocalMirrorFile}...");
         }
     }
 
@@ -514,11 +514,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         if (UseCache) {
             try {
-                CacheFile.Add();
-                file = CacheFile;
+                LocalMirrorFile.Add();
+                file = LocalMirrorFile;
                 Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
             } catch (FileNotFoundException) {
-                // Expected to find no cached file.
+                // Expected to find no mirrored file.
             }
         }
 
@@ -548,9 +548,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         if (UseCache) {
-            CacheFileToLocal();
-            file = CacheFile;
-            Logger.Debug($"Since file is cached, use local file {file} instead now.");
+            MirrorFileToLocal();
+            file = LocalMirrorFile;
+            Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
         }
 
         // If full check is explicitly requested, we should still check.
@@ -765,7 +765,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 "Should not try to get a local path with a non FileStorageClient.");
 
     public KifaFile GetSubtitleFile(string? suffix = null)
-        => new($"{SubtitlesCell}{PathWithoutSuffix}.{suffix ?? Extension}");
+        => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? Extension}");
 
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
