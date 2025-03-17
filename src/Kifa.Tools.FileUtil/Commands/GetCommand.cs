@@ -14,7 +14,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 class GetCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
+    [Value(0, Required = true, HelpText = "Target file(s) to get.")]
     public IEnumerable<string> FileNames { get; set; }
 
     [Option('l', "lightweight-only", HelpText = "Only get files that need no download.")]
