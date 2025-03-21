@@ -54,21 +54,16 @@ class UploadCommand : KifaCommand {
                 .Where(f => f.Exists()));
         }
 
-        foreach (var file in files) {
-            Console.WriteLine(file);
-        }
-
-        if (files.Count == 0) {
-            Logger.Warn("No files found.");
-            return 0;
-        }
-
         var verifyText = QuickMode ? " without verification" : "";
         var downloadText = DownloadLocal ? " and download to local" : "";
         var removalText = DeleteSource ? " and remove source afterwards" : "";
-        Console.Write(
-            $"Confirm uploading the {files.Count} files above to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?");
-        Console.ReadLine();
+        var selected = SelectMany(files, file => $"{file} ({file.Length})",
+            $"files to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?");
+
+        if (selected.Count == 0) {
+            Logger.Warn("No files found.");
+            return 0;
+        }
 
         foreach (var file in files) {
             ExecuteItem(file.ToString(),
