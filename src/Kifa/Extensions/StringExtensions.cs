@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace Kifa;
 
 public static class StringExtensions {
-    static readonly Regex NumberPattern = new(@"\d+", RegexOptions.ECMAScript);
+    static readonly Regex NumberPattern = new(@"\d{1,8}", RegexOptions.ECMAScript);
 
     const string SizeSymbols = "KMGTPEZY";
 
