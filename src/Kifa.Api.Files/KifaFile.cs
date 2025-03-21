@@ -162,7 +162,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
-        LocalMirrorFile = new KifaFile($"{DefaultMirrorHost}{Id}", fileInfo: FileInfo);
+        LocalMirrorFile = DefaultMirrorHost == Host
+            ? this
+            : new KifaFile($"{DefaultMirrorHost}{Id}", fileInfo: FileInfo);
+
         UseCache = useCache;
     }
 
