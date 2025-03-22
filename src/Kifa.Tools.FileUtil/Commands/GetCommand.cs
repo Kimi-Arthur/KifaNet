@@ -122,7 +122,6 @@ class GetCommand : KifaCommand {
             allowedClients: AllowedClients == null ? null : [..AllowedClients.Split(",")]);
         source.Add();
 
-        Logger.Debug($"Copy from source {source} to destination {file}...");
         source.Copy(file);
 
         try {

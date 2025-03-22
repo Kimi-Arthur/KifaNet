@@ -125,9 +125,9 @@ public class FileStorageClient(string serverId) : StorageClient {
         var actualSourcePath = Server.GetPath(sourcePath);
         var actualDestinationPath = Server.GetPath(destinationPath);
 
-        Logger.Trace($"Copying {actualSourcePath} to {actualDestinationPath}...");
+        Logger.Trace($"Copy {actualSourcePath} to {actualDestinationPath}");
 
-        // Parent is created even for remote case as we don't use remote to create parent.
+        // Parent is created even for the remote case as we don't use remote to create parent.
         EnsureParent(actualDestinationPath);
 
         if (neverLink) {

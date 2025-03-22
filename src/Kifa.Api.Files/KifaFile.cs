@@ -436,8 +436,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Copy(KifaFile destination, bool neverLink = false) {
+        Logger.Debug($"Copy {this} to {destination}");
         if (Equals(destination)) {
-            Logger.Debug("Source is the same as the destination. Skipped copying.");
+            Logger.Trace("Source is the same as the destination. Skipped copying.");
             return;
         }
 
@@ -450,6 +451,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (IsCompatible(destination)) {
             Client.Copy(Path, destination.Path, neverLink);
         } else {
+            Logger.Trace("No way to link, will copy via read/write.");
             using var stream = OpenRead();
             destination.Write(stream);
         }
