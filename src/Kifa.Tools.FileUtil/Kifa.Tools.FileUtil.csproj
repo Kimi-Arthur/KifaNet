@@ -1,37 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ToolCommandName>filex</ToolCommandName>
-    <PackAsTool>true</PackAsTool>
-    <Version>4.1.22</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
-    <PackageIcon>Kifa.png</PackageIcon>
-    <Description>Utility to manage files.</Description>
-    <Copyright>Copyright © 2021 Kimi-Arthur</Copyright>
-    <PackageTags>Kifa FileUtil filex</PackageTags>
-    <Authors>Kimi-Arthur</Authors>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-    <PackageReference Include="SharpCompress" Version="0.39.0"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Kifa\Kifa.csproj"/>
-    <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>
-    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
-    <ProjectReference Include="..\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj"/>
-    <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
-    <ProjectReference Include="..\Kifa.GameHacking\Kifa.GameHacking.csproj"/>
-    <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj"/>
-    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
-    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
-    <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj"/>
-    <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath=""/>
-  </ItemGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ToolCommandName>filex</ToolCommandName>
+        <PackAsTool>true</PackAsTool>
+        <Version>4.2.1</Version>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
+        <PackageIcon>Kifa.png</PackageIcon>
+        <Description>Utility to manage files.</Description>
+        <Copyright>Copyright © 2021 Kimi-Arthur</Copyright>
+        <PackageTags>Kifa FileUtil filex</PackageTags>
+        <Authors>Kimi-Arthur</Authors>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+        <PackageReference Include="SharpCompress" Version="0.39.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Kifa\Kifa.csproj"/>
+        <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>
+        <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
+        <ProjectReference Include="..\Kifa.Cloud.Google\Kifa.Cloud.Google.csproj"/>
+        <ProjectReference Include="..\Kifa.Configs\Kifa.Configs.csproj"/>
+        <ProjectReference Include="..\Kifa.GameHacking\Kifa.GameHacking.csproj"/>
+        <ProjectReference Include="..\Kifa.Infos\Kifa.Infos.csproj"/>
+        <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
+        <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
+        <ProjectReference Include="..\Kifa.Soccer\Kifa.Soccer.csproj"/>
+        <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
 </Project>

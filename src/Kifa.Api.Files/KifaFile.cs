@@ -165,7 +165,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         LocalMirrorFile = DefaultMirrorHost == Host
             ? this
             : new KifaFile($"{DefaultMirrorHost}{Id}", fileInfo: FileInfo);
-
         UseCache = useCache;
     }
 
@@ -451,21 +450,25 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    public void Move(KifaFile destination) {
-        if (!Exists()) {
-            throw new ArgumentException($"Source {this} doesn't exist.");
-        }
-
-        if (destination.Exists()) {
+    public void Move(KifaFile destination)
+    {
+        if (destination.Exists())
+        {
             throw new ArgumentException($"Destination {destination} already exists.");
         }
 
-        if (IsCompatible(destination)) {
+        if (UseCache)
+        {
+            MirrorFileToLocal();
+            LocalMirrorFile.Move(destination);
+            return;
+        }
+
+        if (IsCompatible(destination))
+        {
             Client.Move(Path, destination.Path);
         } else {
             Copy(destination);
-            // It's conceptually safe to assume the destination is not the same as this.
-            // But reality can be different. They should be careful.
             Delete();
         }
     }
