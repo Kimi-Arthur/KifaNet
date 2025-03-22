@@ -121,10 +121,12 @@ class GetCommand : KifaCommand {
         var source = new KifaFile(fileInfo: info,
             allowedClients: AllowedClients == null ? null : [..AllowedClients.Split(",")]);
         source.Add();
+
+        Logger.Debug($"Copy from source {source} to destination {file}...");
         source.Copy(file);
 
         try {
-            Logger.Debug($"Verifying destination {file}...");
+            Logger.Debug($"Verify destination {file}...");
             file.Add();
             source.Register(true);
             return new KifaActionResult {
