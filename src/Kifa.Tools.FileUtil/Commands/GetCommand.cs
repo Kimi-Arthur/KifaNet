@@ -119,8 +119,7 @@ class GetCommand : KifaCommand {
 
         // TODO: Cache should be put to file directly. Currently, it's not controllable.
         var source = new KifaFile(fileInfo: info,
-            allowedClients: AllowedClients == null ? null : [..AllowedClients.Split(",")],
-            useCache: true);
+            allowedClients: AllowedClients == null ? null : [..AllowedClients.Split(",")]);
         source.Add();
         source.Copy(file);
 
