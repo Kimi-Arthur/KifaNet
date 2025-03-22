@@ -450,22 +450,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    public void Move(KifaFile destination)
-    {
-        if (destination.Exists())
-        {
+    public void Move(KifaFile destination) {
+        if (destination.Exists()) {
             throw new ArgumentException($"Destination {destination} already exists.");
         }
 
-        if (UseCache)
-        {
+        if (UseCache) {
             MirrorFileToLocal();
             LocalMirrorFile.Move(destination);
             return;
         }
 
-        if (IsCompatible(destination))
-        {
+        if (IsCompatible(destination)) {
             Client.Move(Path, destination.Path);
         } else {
             Copy(destination);
