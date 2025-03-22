@@ -436,6 +436,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Copy(KifaFile destination, bool neverLink = false) {
+        if (Equals(destination)) {
+            Logger.Debug("Source is the same as the destination. Skipped copying.");
+            return;
+        }
+
         if (UseCache) {
             MirrorFileToLocal();
             LocalMirrorFile.Copy(destination, neverLink);
