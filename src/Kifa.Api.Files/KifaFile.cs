@@ -437,6 +437,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public void Copy(KifaFile destination, bool neverLink = false) {
         Logger.Debug($"Copy {this} to {destination}");
+        if (!Exists()) {
+            throw new ArgumentException($"Source {this} doesn't exist.");
+        }
+
+        if (destination.Exists()) {
+            throw new ArgumentException($"Destination {destination} already exists.");
+        }
+
         if (Equals(destination)) {
             Logger.Trace("Source is the same as the destination. Skipped copying.");
             return;
@@ -458,8 +466,19 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Move(KifaFile destination) {
+        Logger.Debug($"Move {this} to {destination}");
+
+        if (!Exists()) {
+            throw new ArgumentException($"Source {this} doesn't exist.");
+        }
+
         if (destination.Exists()) {
             throw new ArgumentException($"Destination {destination} already exists.");
+        }
+
+        if (Equals(destination)) {
+            Logger.Trace("Source is the same as the destination. Skipped moving.");
+            return;
         }
 
         if (UseCache) {

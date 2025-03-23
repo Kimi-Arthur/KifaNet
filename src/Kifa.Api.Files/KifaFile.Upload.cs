@@ -119,7 +119,6 @@ public partial class KifaFile {
         destination.Unregister();
         destination.Register();
 
-        Logger.Debug($"Copying from source {this} to destination {destination}...");
         Copy(destination);
 
         try {
