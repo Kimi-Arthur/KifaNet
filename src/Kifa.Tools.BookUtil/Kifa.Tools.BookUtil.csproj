@@ -26,6 +26,7 @@
         <None Include="..\..\resources\Kifa.png" Pack="true" PackagePath=""/>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\Kifa.Books.ZeroAvenue\Kifa.Books.ZeroAvenue.csproj" />
         <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>
         <ProjectReference Include="..\Kifa\Kifa.csproj"/>
         <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
