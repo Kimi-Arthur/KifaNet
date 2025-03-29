@@ -136,9 +136,11 @@ class RemoveCommand : KifaCommand {
     }
 
     KifaActionResult RemoveLogicalFile(FileInformation info) {
+        // We still need the latest info to decide for things like only file.
+        info = FileInformation.Client.Get(info.Id.Checked()).Checked();
         var result = new KifaBatchActionResult();
         var links = info.GetAllLinks();
-        links.Remove(info.Id);
+        links.Remove(info.Id.Checked());
         var onlyFile = links.Count == 0;
 
         if (!onlyFile) {
