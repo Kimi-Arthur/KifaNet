@@ -112,7 +112,7 @@ class GetCommand : KifaCommand {
 
         if (foundInstanceInIgnoredLocations != null) {
             return new KifaActionResult {
-                Status = KifaActionStatus.Warning,
+                Status = KifaActionStatus.Skipped,
                 Message = $"File already exists in {foundInstanceInIgnoredLocations}."
             };
         }
