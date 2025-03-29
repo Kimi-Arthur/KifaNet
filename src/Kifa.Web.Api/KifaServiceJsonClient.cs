@@ -71,7 +71,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     protected static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
 
     public override SortedDictionary<string, TDataModel> List(string folder = "",
-        bool recursive = true) {
+        bool recursive = true, KifaDataOptions? options = null) {
         // No data is gonna change. With no locking, the worst case is data not consistent.
         var prefix = $"{DataFolder}/{ModelId}";
         var subFolder = $"{prefix}/{folder.Trim('/')}";
@@ -124,7 +124,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }));
     }
 
-    public override TDataModel? Get(string id, bool refresh = false) {
+    public override TDataModel? Get(string id, bool refresh = false,
+        KifaDataOptions? options = null) {
         lock (GetLock(id)) {
             try {
                 var data = Retrieve(id);
@@ -143,7 +144,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     // TODO: Use parallel when DataFolder setup issue is solved.
-    public override List<TDataModel?> Get(List<string> ids) => ids.Select(id => Get(id)).ToList();
+    public override List<TDataModel?> Get(List<string> ids, KifaDataOptions? options = null)
+        => ids.Select(id => Get(id, options: options)).ToList();
 
     // false -> no write needed.
     // true -> rewrite needed.
