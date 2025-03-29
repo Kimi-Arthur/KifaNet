@@ -70,9 +70,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     protected static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
 
-    public override SortedDictionary<string, TDataModel> List() => List("");
-
-    public SortedDictionary<string, TDataModel> List(string folder, bool recursive = true) {
+    public override SortedDictionary<string, TDataModel> List(string folder = "",
+        bool recursive = true) {
         // No data is gonna change. With no locking, the worst case is data not consistent.
         var prefix = $"{DataFolder}/{ModelId}";
         var subFolder = $"{prefix}/{folder.Trim('/')}";

@@ -14,7 +14,9 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
 
     // GET api/values
     [HttpGet]
-    public ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
+    public ActionResult<SortedDictionary<string, TDataModel>> List(string folder = "",
+        bool recursive = true)
+        => Client.List(folder, recursive);
 
     // GET api/values/$
     [HttpGet("$")]

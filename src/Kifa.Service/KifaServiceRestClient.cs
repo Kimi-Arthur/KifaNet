@@ -99,7 +99,8 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             (ex, i) => HandleException(ex, i,
                 $"Failure in POST {ModelId}({string.Join(", ", data.Select(item => item.Id))})")));
 
-    public override SortedDictionary<string, TDataModel> List()
+    public override SortedDictionary<string, TDataModel> List(string folder = "",
+        bool recursive = true)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{KifaServiceRestClient.ServerAddress}/{ModelId}/");

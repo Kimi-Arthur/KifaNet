@@ -8,7 +8,7 @@ public interface KifaServiceClient<TDataModel>
     where TDataModel : DataModel, WithModelId<TDataModel> {
     string ModelId { get; }
 
-    SortedDictionary<string, TDataModel> List();
+    SortedDictionary<string, TDataModel> List(string folder = "", bool recursive = true);
     TDataModel? Get(string id, bool refresh = false);
     List<TDataModel?> Get(List<string> ids);
     KifaActionResult Set(TDataModel data);
@@ -30,7 +30,9 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
 
     public string ModelId { get; }
 
-    public abstract SortedDictionary<string, TDataModel> List();
+    public abstract SortedDictionary<string, TDataModel> List(string folder = "",
+        bool recursive = true);
+
     public abstract TDataModel? Get(string id, bool refresh = false);
 
     public virtual List<TDataModel?> Get(List<string> ids) => ids.Select(id => Get(id)).ToList();
