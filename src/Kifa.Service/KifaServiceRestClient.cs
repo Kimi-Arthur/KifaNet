@@ -178,7 +178,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
 
     public TResponse Call<TResponse>(string action, object? parameters = null) {
         return Retry.Run(() => {
-            var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(action));
+            var request = new HttpRequestMessage(HttpMethod.Post, GetUrl($"${action}"));
 
             if (parameters != null) {
                 request.Content = new StringContent(
