@@ -101,7 +101,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         bool recursive = true, KifaDataOptions? options = null)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                GetUrl("", [$"recursive={recursive}"], options));
+                GetUrl("", [$"recursive={recursive}", $"folder={folder}"], options));
 
             return KifaServiceRestClient.Client
                        .GetObject<SortedDictionary<string, TDataModel>>(request) ??
