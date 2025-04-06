@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NLog;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
@@ -13,6 +15,41 @@ public interface WithModelId<T> where T : DataModel, WithModelId<T> {
     // This is a useful fallback used in Link.Data.get.
     public static virtual KifaServiceClient<T> Client { get; set; } =
         new KifaServiceRestClient<T>();
+
+    static Dictionary<string, PropertyInfo>? allProperties;
+
+    public static virtual Dictionary<string, PropertyInfo> AllProperties
+        => allProperties ??= GatherAllProperties();
+
+    static Dictionary<string, PropertyInfo> GatherAllProperties() {
+        return typeof(T).GetProperties().ToDictionary(property => property.Name);
+    }
+
+    static List<(PropertyInfo property, string Suffix)>? externalProperties;
+
+    public static virtual List<(PropertyInfo property, string Suffix)> ExternalProperties
+        => externalProperties ??= GatherExternalProperties().ToList();
+
+    static IEnumerable<(PropertyInfo property, string Suffix)> GatherExternalProperties() {
+        foreach (var property in T.AllProperties.Values) {
+            var attribute = property.GetCustomAttribute<ExternalPropertyAttribute>();
+            if (attribute == null) {
+                continue;
+            }
+
+            if (property.PropertyType != typeof(string)) {
+                throw new InvalidExternalPropertyException(
+                    $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should be of type string, but is {property.PropertyType}.");
+            }
+
+            if (attribute.Suffix.EndsWith("json")) {
+                throw new InvalidExternalPropertyException(
+                    $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should not use json as extension, but used {attribute.Suffix}.");
+            }
+
+            yield return (property, attribute.Suffix);
+        }
+    }
 }
 
 /// <summary>

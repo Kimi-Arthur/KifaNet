@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -473,42 +472,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         Write(data);
     }
 
-    static Dictionary<string, PropertyInfo>? allProperties;
-
-    static Dictionary<string, PropertyInfo> AllProperties
-        => allProperties ??= GatherAllProperties();
-
-    static Dictionary<string, PropertyInfo> GatherAllProperties()
-        => typeof(TDataModel).GetProperties().ToDictionary(property => property.Name);
-
-    static List<(PropertyInfo property, string Suffix)>? externalProperties;
-
-    static List<(PropertyInfo property, string Suffix)> ExternalProperties
-        => externalProperties ??= GatherExternalProperties().ToList();
-
-    static IEnumerable<(PropertyInfo property, string? Suffix)> GatherExternalProperties() {
-        foreach (var property in AllProperties.Values) {
-            var attribute = property.GetCustomAttribute<ExternalPropertyAttribute>();
-            if (attribute == null) {
-                continue;
-            }
-
-            if (property.PropertyType != typeof(string)) {
-                throw new InvalidExternalPropertyException(
-                    $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should be of type string, but is {property.PropertyType}.");
-            }
-
-            if (attribute.Suffix.EndsWith("json")) {
-                throw new InvalidExternalPropertyException(
-                    $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should not use json as extension, but used {attribute.Suffix}.");
-            }
-
-            yield return (property, attribute.Suffix);
-        }
-    }
-
     void WriteAndClearExternalProperties(TDataModel data) {
-        foreach (var (property, suffix) in ExternalProperties) {
+        foreach (var (property, suffix) in TDataModel.ExternalProperties) {
             if (property.GetValue(data) is string content) {
                 WriteRaw(content, data.Id, suffix);
                 property.SetValue(data, "");
@@ -517,7 +482,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void ReadAndFillExternalProperties(TDataModel data) {
-        foreach (var (property, suffix) in ExternalProperties) {
+        foreach (var (property, suffix) in TDataModel.ExternalProperties) {
             var content = ReadRaw(data.Id, suffix);
             if (content != null) {
                 property.SetValue(data, content);
@@ -560,14 +525,15 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
 
         if (options.Fields.Count > 0) {
-            var newValue = new TDataModel {
-            };
+            // Logger.Trace(options.Fields.JoinBy(","));
+            // Logger.Trace(TDataModel.AllProperties.Keys.JoinBy(","));
+            var newValue = new TDataModel();
             foreach (var field in options.Fields) {
                 if (field == "Id") {
                     continue;
                 }
 
-                var prop = AllProperties[field];
+                var prop = TDataModel.AllProperties[field];
                 prop.SetValue(newValue, prop.GetValue(data));
             }
 

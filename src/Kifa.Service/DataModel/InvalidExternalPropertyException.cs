@@ -1,6 +1,6 @@
 using System;
 
-namespace Kifa.Web.Api;
+namespace Kifa.Service;
 
 public class InvalidExternalPropertyException : Exception {
     public InvalidExternalPropertyException() {
