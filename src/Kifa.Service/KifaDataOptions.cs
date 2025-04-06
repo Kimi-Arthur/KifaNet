@@ -4,6 +4,7 @@ namespace Kifa.Service;
 
 public class KifaDataOptions {
     // Only these fields should be returned. Empty means all fields.
+    // Do add `Id` if that's the only fields needed.
     public List<string> Fields { get; set; } = [];
 
     // Only these fields should retrieve Link<> target values.

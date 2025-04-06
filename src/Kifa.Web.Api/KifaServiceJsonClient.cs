@@ -106,7 +106,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         return new SortedDictionary<string, TDataModel>(items.AsParallel().ToDictionary(i => i.Key,
             i => {
                 if (i.Value.Metadata?.Linking?.Target == null) {
-                    return i.Value;
+                    return FormatData(i.Value, options);
                 }
 
                 var target = i.Value.Metadata.Linking.Target;
@@ -120,7 +120,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 // source.Metadata.Linking has to exist, to contain Links at least.
                 value.Metadata.Checked().Linking.Checked().Target = value.Id;
                 value.Id = i.Key;
-                return value;
+                return FormatData(value, options);
             }));
     }
 
@@ -135,7 +135,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
 
                 // TODO: Not sure...
-                return Retrieve(id);
+                return FormatData(Retrieve(id), options);
             } catch (Exception ex) {
                 Logger.Error(ex, $"Failed to get {id}.");
                 return null;
@@ -473,15 +473,21 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         Write(data);
     }
 
-    static List<(PropertyInfo property, string Suffix)>? externalFields1;
+    static Dictionary<string, PropertyInfo>? allProperties;
 
-    static List<(PropertyInfo property, string Suffix)> ExternalFields
-        => externalFields1 ??= GatherExternalProperties();
+    static Dictionary<string, PropertyInfo> AllProperties
+        => allProperties ??= GatherAllProperties();
 
-    static List<(PropertyInfo property, string Suffix)> GatherExternalProperties() {
-        var properties = new List<(PropertyInfo property, string Suffix)>();
-        var type = typeof(TDataModel);
-        foreach (var property in type.GetProperties()) {
+    static Dictionary<string, PropertyInfo> GatherAllProperties()
+        => typeof(TDataModel).GetProperties().ToDictionary(property => property.Name);
+
+    static List<(PropertyInfo property, string Suffix)>? externalProperties;
+
+    static List<(PropertyInfo property, string Suffix)> ExternalProperties
+        => externalProperties ??= GatherExternalProperties().ToList();
+
+    static IEnumerable<(PropertyInfo property, string? Suffix)> GatherExternalProperties() {
+        foreach (var property in AllProperties.Values) {
             var attribute = property.GetCustomAttribute<ExternalPropertyAttribute>();
             if (attribute == null) {
                 continue;
@@ -497,14 +503,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     $"Property {property} marked with {nameof(ExternalPropertyAttribute)} should not use json as extension, but used {attribute.Suffix}.");
             }
 
-            properties.Add((property, attribute.Suffix));
+            yield return (property, attribute.Suffix);
         }
-
-        return properties;
     }
 
     void WriteAndClearExternalProperties(TDataModel data) {
-        foreach (var (property, suffix) in ExternalFields) {
+        foreach (var (property, suffix) in ExternalProperties) {
             if (property.GetValue(data) is string content) {
                 WriteRaw(content, data.Id, suffix);
                 property.SetValue(data, "");
@@ -513,7 +517,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void ReadAndFillExternalProperties(TDataModel data) {
-        foreach (var (property, suffix) in ExternalFields) {
+        foreach (var (property, suffix) in ExternalProperties) {
             var content = ReadRaw(data.Id, suffix);
             if (content != null) {
                 property.SetValue(data, content);
@@ -548,5 +552,28 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     static void MakeParent(string path) {
         Directory.CreateDirectory(path[..path.LastIndexOf('/')]);
+    }
+
+    static TDataModel? FormatData(TDataModel? data, KifaDataOptions? options) {
+        if (data == null || options == null) {
+            return data;
+        }
+
+        if (options.Fields.Count > 0) {
+            var newValue = new TDataModel {
+            };
+            foreach (var field in options.Fields) {
+                if (field == "Id") {
+                    continue;
+                }
+
+                var prop = AllProperties[field];
+                prop.SetValue(newValue, prop.GetValue(data));
+            }
+
+            data = newValue;
+        }
+
+        return data;
     }
 }
