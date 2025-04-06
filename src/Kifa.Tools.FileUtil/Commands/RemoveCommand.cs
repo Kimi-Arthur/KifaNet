@@ -65,43 +65,30 @@ class RemoveCommand : KifaCommand {
                     }).Values);
             }
 
-            if (fileInfos.Count > 0) {
-                foreach (var file in fileInfos) {
-                    Console.WriteLine(file.Id);
+            if (fileInfos.Count == 0) {
+                var foundFiles = KifaFile.FindAllFiles(FileNames);
+                if (foundFiles.Count == 0) {
+                    Logger.Fatal("No files found!");
+                    return 1;
                 }
 
-                if (!Confirm($"Confirm deleting the {fileInfos.Count} files above{removalText}?") ||
-                    Force && !Confirm(
-                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
-                    Logger.Info("Action canceled.");
-                    return 2;
-                }
-
-                fileInfos.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
-                return LogSummary();
+                fileInfos.AddRange(foundFiles.Select(file => file.FileInfo.Checked()));
             }
 
             // We support relative paths or FileInformation ids.
-            var foundFiles = KifaFile.FindAllFiles(FileNames);
-            if (foundFiles.Count > 0) {
-                foreach (var foundFile in foundFiles) {
-                    Console.WriteLine(foundFile.Id);
-                }
-
-                if (!Confirm(
-                        $"Confirm deleting the {foundFiles.Count} files above{removalText}?") ||
-                    Force && !Confirm(
-                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
-                    Logger.Info("Action canceled.");
-                    return 2;
-                }
-
-                foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.FileInfo)));
-                return LogSummary();
+            foreach (var file in fileInfos) {
+                Console.WriteLine(file.Id);
             }
 
-            Logger.Fatal("No files found!");
-            return 1;
+            if (!Confirm($"Confirm deleting the {fileInfos.Count} files above{removalText}?") ||
+                Force && !Confirm(
+                    "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
+                Logger.Info("Action canceled.");
+                return 2;
+            }
+
+            fileInfos.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
+            return LogSummary();
         }
 
         var localFiles = KifaFile.FindExistingFiles(FileNames);
