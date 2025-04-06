@@ -105,7 +105,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         return new SortedDictionary<string, TDataModel>(items.AsParallel().ToDictionary(i => i.Key,
             i => {
                 if (i.Value.Metadata?.Linking?.Target == null) {
-                    return FormatData(i.Value, options);
+                    return FormatData(i.Value, options, skipId: true);
                 }
 
                 var target = i.Value.Metadata.Linking.Target;
@@ -119,7 +119,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 // source.Metadata.Linking has to exist, to contain Links at least.
                 value.Metadata.Checked().Linking.Checked().Target = value.Id;
                 value.Id = i.Key;
-                return FormatData(value, options);
+                return FormatData(value, options, skipId: true);
             }));
     }
 
@@ -522,17 +522,19 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         Directory.CreateDirectory(path[..path.LastIndexOf('/')]);
     }
 
-    static TDataModel? FormatData(TDataModel? data, KifaDataOptions? options) {
+    static TDataModel? FormatData(TDataModel? data, KifaDataOptions? options, bool skipId = false) {
         if (data == null || options == null) {
             return data;
         }
 
         if (options.Fields.Count > 0) {
-            Logger.Notice(() => options.Fields.JoinBy(","));
-            Logger.Notice(() => TDataModel.AllProperties.Keys.JoinBy(","));
-            var newValue = new TDataModel();
+            var newValue = skipId
+                ? new TDataModel()
+                : new TDataModel {
+                    Id = data.Id
+                };
             foreach (var field in options.Fields) {
-                if (field == "Id") {
+                if (field == nameof(data.Id)) {
                     continue;
                 }
 

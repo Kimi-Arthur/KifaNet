@@ -103,9 +103,14 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             var request = new HttpRequestMessage(HttpMethod.Get,
                 GetUrl("", [$"recursive={recursive}", $"folder={folder}"], options));
 
-            return KifaServiceRestClient.Client
-                       .GetObject<SortedDictionary<string, TDataModel>>(request) ??
-                   new SortedDictionary<string, TDataModel>();
+            var result = KifaServiceRestClient.Client
+                             .GetObject<SortedDictionary<string, TDataModel>>(request) ??
+                         new SortedDictionary<string, TDataModel>();
+            foreach (var kv in result) {
+                kv.Value.Id = kv.Key;
+            }
+
+            return result;
         }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
     public override TDataModel? Get(string id, bool refresh = false,
