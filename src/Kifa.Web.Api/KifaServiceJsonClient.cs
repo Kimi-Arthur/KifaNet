@@ -226,7 +226,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     public override KifaActionResult Set(TDataModel data)
         => KifaActionResult.FromAction(() => {
             lock (GetLock(data.Id)) {
-                Logger.Trace($"Set {ModelId}/{data.Id}: {data}");
+                Logger.Trace($"Set {ModelId}/{data.Id}");
+                Logger.Notice(() => data.ToString());
                 data = data.Clone();
                 // This is new data, we should Fill it.
                 data.ResetRefreshDate();
@@ -274,7 +275,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => {
             lock (GetLock(data.Id)) {
-                Logger.Trace($"Update {ModelId}/{data.Id}: {data}");
+                Logger.Trace($"Update {ModelId}/{data.Id}");
+                Logger.Notice(() => data.ToString());
                 // If it's new data, we should try Fill it.
                 var original = Retrieve(data.Id);
                 if (original == null) {
@@ -435,7 +437,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     TDataModel? Read(string id) {
         var rawData = ReadRaw(id);
-        Logger.Trace($"Read: {rawData ?? "null"}");
+        Logger.Trace($"Read {id}");
+        Logger.Notice(() => $"{rawData ?? "null"}");
         try {
             if (rawData == null) {
                 return null;
@@ -525,8 +528,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
 
         if (options.Fields.Count > 0) {
-            // Logger.Trace(options.Fields.JoinBy(","));
-            // Logger.Trace(TDataModel.AllProperties.Keys.JoinBy(","));
+            Logger.Notice(() => options.Fields.JoinBy(","));
+            Logger.Notice(() => TDataModel.AllProperties.Keys.JoinBy(","));
             var newValue = new TDataModel();
             foreach (var field in options.Fields) {
                 if (field == "Id") {
