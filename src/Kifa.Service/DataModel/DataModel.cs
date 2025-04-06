@@ -21,9 +21,9 @@ public interface WithModelId<T> where T : DataModel, WithModelId<T> {
     public static virtual Dictionary<string, PropertyInfo> AllProperties
         => allProperties ??= GatherAllProperties();
 
-    static Dictionary<string, PropertyInfo> GatherAllProperties() {
-        return typeof(T).GetProperties().ToDictionary(property => property.Name);
-    }
+    static Dictionary<string, PropertyInfo> GatherAllProperties()
+        => typeof(T).GetProperties().Where(prop => prop.GetSetMethod()?.IsStatic == false)
+            .ToDictionary(property => property.Name);
 
     static List<(PropertyInfo property, string Suffix)>? externalProperties;
 
