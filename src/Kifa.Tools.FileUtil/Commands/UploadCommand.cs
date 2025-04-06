@@ -61,7 +61,7 @@ class UploadCommand : KifaCommand {
             $"files to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}");
 
         if (selected.Count == 0) {
-            Logger.Warn("No files found.");
+            Logger.Warn("No files found or selected.");
             return 0;
         }
 
