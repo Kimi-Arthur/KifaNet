@@ -65,6 +65,7 @@ class RemoveCommand : KifaCommand {
                     }).Values);
             }
 
+            // We support relative paths or FileInformation ids.
             if (fileInfos.Count == 0) {
                 var foundFiles = KifaFile.FindAllFiles(FileNames);
                 if (foundFiles.Count == 0) {
@@ -75,19 +76,21 @@ class RemoveCommand : KifaCommand {
                 fileInfos.AddRange(foundFiles.Select(file => file.FileInfo.Checked()));
             }
 
-            // We support relative paths or FileInformation ids.
-            foreach (var file in fileInfos) {
-                Console.WriteLine(file.Id);
+            var selected = SelectMany(fileInfos, file => file.Id,
+                "file entries to remove along all relevant instances");
+
+            if (selected.Count == 0) {
+                Logger.Warn("No files found or selected.");
+                return 0;
             }
 
-            if (!Confirm($"Confirm deleting the {fileInfos.Count} files above{removalText}?") ||
-                Force && !Confirm(
-                    "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
-                Logger.Info("Action canceled.");
+            if (Force && !Confirm(
+                    "Since --force is specified, files of the only version will automatically be removed!\nIt will truly remove files from everywhere!!! Do you want to continue?")) {
+                Logger.Warn("Action canceled.");
                 return 2;
             }
 
-            fileInfos.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
+            selected.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
             return LogSummary();
         }
 
