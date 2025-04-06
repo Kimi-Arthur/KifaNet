@@ -64,7 +64,7 @@ class RemoveCommand : KifaCommand {
 
             if (fileInfos.Count > 0) {
                 foreach (var file in fileInfos) {
-                    Console.WriteLine(file);
+                    Console.WriteLine(file.Id);
                 }
 
                 if (!Confirm($"Confirm deleting the {fileInfos.Count} files above{removalText}?") ||
@@ -74,7 +74,7 @@ class RemoveCommand : KifaCommand {
                     return 2;
                 }
 
-                fileInfos.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f)));
+                fileInfos.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
                 return LogSummary();
             }
 
