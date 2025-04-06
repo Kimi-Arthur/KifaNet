@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NLog;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
