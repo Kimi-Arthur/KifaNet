@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Kifa.Service;
 
@@ -10,16 +11,9 @@ public class KifaDataOptions {
     // Only these fields should retrieve Link<> target values.
     public List<string> LinkedFields { get; set; } = [];
 
-    public List<string> GetUrlParameters() {
-        var parameters = new List<string>();
-        if (Fields.Count > 0) {
-            parameters.Add($"fields=[{Fields.JoinBy(",")}]");
-        }
-
-        if (LinkedFields.Count > 0) {
-            parameters.Add($"linked_fields=[{LinkedFields.JoinBy(",")}]");
-        }
-
-        return parameters;
-    }
+    public IEnumerable<string> GetUrlParameters()
+        => [
+            ..Fields.Select(field => $"fields={field}"),
+            ..LinkedFields.Select(field => $"linked_fields={field}")
+        ];
 }

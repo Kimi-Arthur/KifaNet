@@ -59,7 +59,10 @@ class RemoveCommand : KifaCommand {
                     break;
                 }
 
-                fileInfos.AddRange(FileInformation.Client.List(fileName).Values);
+                fileInfos.AddRange(FileInformation.Client.List(folder: fileName,
+                    options: new KifaDataOptions {
+                        Fields = ["Id"]
+                    }).Values);
             }
 
             if (fileInfos.Count > 0) {
