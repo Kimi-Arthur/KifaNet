@@ -29,7 +29,7 @@ class ImportCommand : KifaCommand {
         // Assumed all FileNames are from SubtitlesHost.
         var subtitleFiles = KifaFile.FindExistingFiles(FileNames);
         var targetFiles = KifaFile.FindExistingFiles(Targets)
-            .Select(file => new MatchableItem(file.PathWithoutSuffix));
+            .Select(file => new MatchableItem(file.PathWithoutSuffix)).ToList();
 
         foreach (var file in subtitleFiles) {
             var suffix = file.Extension.Checked().ToLower();
