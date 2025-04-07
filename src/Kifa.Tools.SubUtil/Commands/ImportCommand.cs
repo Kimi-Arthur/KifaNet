@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Infos;
 using Kifa.Jobs;
 using NLog;
 
