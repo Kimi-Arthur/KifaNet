@@ -69,7 +69,7 @@ class CopyCommand : KifaCommand {
         } else {
             foreach (var file in files) {
                 var linkFile = linkName + file[target.Length..];
-                Console.WriteLine($"{linkFile} => {file}");
+                Console.WriteLine($"{linkFile}\n=>{file}");
             }
 
             if (!Confirm($"Confirm linking the {files.Count} above?")) {
