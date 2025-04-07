@@ -104,8 +104,8 @@ public partial class KifaFile {
                 Status = KifaActionStatus.OK,
                 Message = $"Destination {destination} is already uploaded."
             };
-        } catch (FileNotFoundException) {
-            // Expected not to find the destination.
+        } catch (FileNotFoundException ex) {
+            Logger.Trace(ex, $"File {destination} is not found. This is expected if not uploaded.");
         } catch (IOException ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,

@@ -554,8 +554,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 LocalMirrorFile.Add();
                 file = LocalMirrorFile;
                 Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
-            } catch (FileNotFoundException) {
-                // Expected to find no mirrored file.
+            } catch (FileNotFoundException ex) {
+                Logger.Trace(ex,
+                    $"File {LocalMirrorFile} is not found. This is expected if not mirrored to local.");
             }
         }
 
@@ -567,6 +568,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 return;
             }
 
+            Logger.Debug($"Quick check for {file}.");
             var quickInfo = file.CalculateInfo(FileProperties.Size);
             var compareResults =
                 quickInfo.CompareProperties(existingInfo, FileProperties.AllVerifiable);
@@ -590,12 +592,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
         }
 
-        // If full check is explicitly requested, we should still check.
         if (shouldCheckKnown != true && file.CheckedByFileId()) {
             Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
             Register(true);
             return;
         }
+
+        Logger.Debug($"Full check is requested for {file}.");
 
         // A new encryption key will be added if not already there.
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);
