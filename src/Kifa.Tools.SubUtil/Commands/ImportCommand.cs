@@ -31,37 +31,43 @@ class ImportCommand : KifaCommand {
         var targetFiles = KifaFile.FindExistingFiles(Targets)
             .Select(file => new MatchableItem(file.PathWithoutSuffix)).ToList();
 
-        foreach (var file in subtitleFiles) {
-            var suffix = file.Extension.Checked().ToLower();
+        foreach (var subtitleFile in subtitleFiles) {
+            var suffix = subtitleFile.Extension.Checked().ToLower();
 
             // TODO: Remove this when we can print better message in SelectOne.
-            Console.WriteLine($"Select a location to import {file} to:");
+            Console.WriteLine($"Select a location to import {subtitleFile} to:");
+            foreach (var f in targetFiles) {
+                Console.WriteLine($"{f.Item}:{f.Matched}");
+            }
+
             var validEpisodes = targetFiles.Where(e => !e.Matched).ToList();
             try {
                 var selected = SelectOne(validEpisodes, e => e.Item, "mapping", startingIndex: 1,
                     supportsSpecial: true, reverse: true);
                 if (selected == null) {
-                    Logger.Warn($"Ignored {file}.");
+                    Logger.Warn($"Ignored {subtitleFile}.");
                     continue;
                 }
 
                 var (choice, _, special) = selected.Value;
                 if (special) {
-                    var newName = Confirm($"Confirm linking {file} to (without suffix):",
+                    var newName = Confirm($"Confirm linking {subtitleFile} to (without suffix):",
                         choice.Item);
-                    var newFile = new KifaFile($"{file.Host}{newName}.{ReleaseId}.{suffix}");
+                    var newFile =
+                        new KifaFile($"{subtitleFile.Host}{newName}.{ReleaseId}.{suffix}");
 
-                    file.Copy(newFile, true);
+                    subtitleFile.Copy(newFile, true);
                     if (Confirm($"Remove info item {choice.Item}?")) {
                         selected.Value.Choice.Matched = true;
                     }
                 } else {
-                    var newFile = new KifaFile($"{file.Host}{choice.Item}.{ReleaseId}.{suffix}");
-                    file.Copy(newFile, true);
+                    var newFile =
+                        new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
+                    subtitleFile.Copy(newFile, true);
                     choice.Matched = true;
                 }
             } catch (InvalidChoiceException ex) {
-                Logger.Warn(ex, $"File {file} skipped.");
+                Logger.Warn(ex, $"File {subtitleFile} skipped.");
             }
         }
 
