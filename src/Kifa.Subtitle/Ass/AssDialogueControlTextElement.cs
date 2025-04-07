@@ -41,7 +41,7 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
                 if (!valueMatch.Success) {
                     if (elementContent.StartsWith("fn")) {
                         name = "fn";
-                        valueContent = elementContent.Substring(2);
+                        valueContent = elementContent[2..];
                     } else {
                         name = elementContent;
                     }
