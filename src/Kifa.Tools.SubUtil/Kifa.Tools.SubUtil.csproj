@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ToolCommandName>subx</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>8.1.3</Version>
+        <Version>8.1.4</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
         <PackageIcon>Kifa.png</PackageIcon>
