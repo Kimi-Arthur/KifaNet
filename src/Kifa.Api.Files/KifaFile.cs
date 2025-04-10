@@ -446,7 +446,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Copy(KifaFile destination, bool neverLink = false) {
-        Logger.Debug($"Copy {this} to {destination}");
+        Logger.Trace($"Copy {this} to {destination}");
         if (!Exists()) {
             throw new ArgumentException($"Source {this} doesn't exist.");
         }

@@ -111,7 +111,6 @@ class ExtractCommand : KifaCommand {
                 Logger.Debug($"Write {entry.Key} to {file}");
                 Logger.Trace($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
                 reader.WriteEntryTo(tempFile.GetLocalPath());
-                Logger.Trace($"Move {tempFile.GetLocalPath()} to {file}");
                 tempFile.Copy(file);
                 file.Add();
                 tempFile.Delete();
