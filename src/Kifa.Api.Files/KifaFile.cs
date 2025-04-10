@@ -106,9 +106,23 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     bool UseCache { get; set; }
 
+    string? mirrorHost;
+
+    public string? MirrorHost {
+        get => mirrorHost;
+        set {
+            if (mirrorHost != value) {
+                LocalMirrorFile = value == Host ? this :
+                    value == null ? null : new KifaFile($"{value}{Id}", fileInfo: FileInfo);
+            }
+
+            mirrorHost = value;
+        }
+    }
+
     // Note that if it exists in this server, this may differ from itself as it's using `Id` not
     // its actual `Path`. But normally it's for remote files.
-    public KifaFile LocalMirrorFile { get; set; }
+    public KifaFile? LocalMirrorFile { get; set; }
 
     FileIdInfo? idInfo;
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
@@ -162,9 +176,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
-        LocalMirrorFile = DefaultMirrorHost == Host
-            ? this
-            : new KifaFile($"{DefaultMirrorHost}{Id}", fileInfo: FileInfo);
+        MirrorHost = DefaultMirrorHost;
         UseCache = useCache;
     }
 
@@ -322,9 +334,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
         var allFiles = new List<(string SortKey, KifaFile File)>();
         foreach (var source in GetKifaFiles(sources)) {
-            var file = source;
-
-            var files = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles).ToList();
+            var files = source.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles).ToList();
             Logger.Trace($"Found {files.Count} existing files:");
             foreach (var f in files) {
                 Logger.Trace($"\t{f}");
@@ -504,7 +514,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    void RemoveLocalMirrorFile() {
+    public void RemoveLocalMirrorFile() {
         if (UseCache && LocalMirrorFile.Exists()) {
             LocalMirrorFile.Delete();
             LocalMirrorFile.Unregister();
