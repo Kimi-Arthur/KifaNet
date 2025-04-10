@@ -65,6 +65,7 @@ class ExtractCommand : KifaCommand {
             ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
         });
 
+        archive.ExtractAllEntries();
         var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => (
             Entry: entry, File: folder.GetFile(
                 ArchiveNameSeparator != null
@@ -96,15 +97,29 @@ class ExtractCommand : KifaCommand {
             };
         }
 
-        foreach (var (entry, file) in selected) {
-            file.EnsureLocalParent();
-            var tempFile = file.GetIgnoredFile();
-            Logger.Debug($"Write {entry.Key} to {tempFile.GetLocalPath()}");
-            entry.WriteToFile(tempFile.GetLocalPath());
-            Logger.Debug($"Move {tempFile.GetLocalPath()} to {file}");
-            tempFile.Copy(file);
-            file.Add();
-            tempFile.Delete();
+        // The enumerator way is adopted due to the issue mentioned in
+        // https://stackoverflow.com/a/44379540.
+        using var reader = archive.ExtractAllEntries();
+        var enumerator = selected.GetEnumerator();
+        var valid = enumerator.MoveNext();
+        while (reader.MoveToNextEntry()) {
+            if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
+                var file = enumerator.Current.File;
+                var entry = reader.Entry;
+                file.EnsureLocalParent();
+                var tempFile = file.GetIgnoredFile();
+                Logger.Debug($"Write {entry.Key} to {file}");
+                Logger.Trace($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
+                reader.WriteEntryTo(tempFile.GetLocalPath());
+                Logger.Trace($"Move {tempFile.GetLocalPath()} to {file}");
+                tempFile.Copy(file);
+                file.Add();
+                tempFile.Delete();
+
+                valid = enumerator.MoveNext();
+            } else {
+                Logger.Trace($"Ignored {reader.Entry.Key}");
+            }
         }
 
         return new KifaActionResult {
