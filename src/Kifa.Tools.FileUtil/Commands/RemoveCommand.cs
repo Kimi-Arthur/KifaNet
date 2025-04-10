@@ -220,26 +220,17 @@ class RemoveCommand : KifaCommand {
                 };
             }
 
-            file.Delete();
-
             return fileExists
-                ? new KifaActionResult {
-                    Status = KifaActionStatus.OK,
-                    Message = $"File {file} deleted, no entry found though."
-                }
+                ? KifaActionResult.FromAction(file.Delete)
                 : new KifaActionResult {
                     Status = KifaActionStatus.Warning,
-                    Message = $"File {file} not found."
+                    Message = $"File {file} deleted, no entry found though."
                 };
         }
 
         if (!RemoveLinkOnly) {
-            file.Delete();
-            result.Add(file.Id, fileExists
-                ? new KifaActionResult {
-                    Status = KifaActionStatus.OK,
-                    Message = $"File {file} deleted."
-                }
+            result.Add($"Remove {file}", fileExists
+                ? KifaActionResult.FromAction(file.Delete)
                 : new KifaActionResult {
                     Status = KifaActionStatus.Warning,
                     Message = $"File {file} not found."
