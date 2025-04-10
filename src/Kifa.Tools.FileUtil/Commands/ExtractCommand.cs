@@ -84,23 +84,24 @@ class ExtractCommand : KifaCommand {
             return true;
         }).ToList();
 
-        if (entries.Count == 0) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = "No more files waiting to be extracted."
-            };
-        }
-
         var selected = SelectMany(entries,
             choiceToString: entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()}) => {entry.File}",
             choiceName: "entries");
+
+        if (selected.Count == 0) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "No more files selected to be extracted."
+            };
+        }
+
         foreach (var (entry, file) in selected) {
             file.EnsureLocalParent();
             var tempFile = file.GetIgnoredFile();
             Logger.Debug($"Write {entry.Key} to {tempFile.GetLocalPath()}");
             entry.WriteToFile(tempFile.GetLocalPath());
-            Logger.Debug($"Copy {tempFile.GetLocalPath()} to {file}");
+            Logger.Debug($"Move {tempFile.GetLocalPath()} to {file}");
             tempFile.Copy(file);
             file.Add();
             tempFile.Delete();
