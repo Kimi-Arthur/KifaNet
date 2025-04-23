@@ -53,5 +53,5 @@ public class WebStorageClient : StorageClient {
     public override string Type => Protocol;
     public override string Id => "";
 
-    string GetUrl(string path) => $"{Protocol}:/{path}";
+    string GetUrl(string path) => $"{Protocol}:{path}";
 }
