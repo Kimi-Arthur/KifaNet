@@ -343,7 +343,7 @@ public class FileStorageClient(string serverId) : StorageClient {
             id = new UnixFileInfo(localPath).Inode;
         } catch (OverflowException ex) {
             // https://github.com/mono/mono.posix/issues/51
-            Logger.Warn(ex, "Unabled to get file id due to overflow.");
+            Logger.Warn(ex, "Unable to get file id due to overflow.");
             return null;
         }
 

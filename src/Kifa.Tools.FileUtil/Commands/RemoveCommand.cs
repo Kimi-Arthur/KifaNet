@@ -34,6 +34,9 @@ class RemoveCommand : KifaCommand {
     [Option('l', "link", HelpText = "Remove link only.")]
     public bool RemoveLinkOnly { get; set; }
 
+    [Option('a', "all-references", HelpText = "Remove all references.")]
+    public bool RemoveAllReferences { get; set; }
+
     [Option('f', "force",
         HelpText =
             "Force remove files even if no other instances exist. Only use when a file is actually removed.")]
@@ -43,54 +46,52 @@ class RemoveCommand : KifaCommand {
         FileNames = FileNames.ToList();
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
 
+        if (RemoveAllReferences && !ById) {
+            Logger.Fatal("-a can only be used with -i");
+            return 1;
+        }
+
         if (ById) {
-            var files = new List<string>();
+            var fileInfos = new List<FileInformation>();
             foreach (var fileName in FileNames) {
                 if (!fileName.StartsWith('/')) {
-                    files.Clear();
+                    fileInfos.Clear();
                     break;
                 }
 
-                files.AddRange(FileInformation.Client.ListFolder(fileName, true));
-            }
-
-            if (files.Count > 0) {
-                foreach (var file in files) {
-                    Console.WriteLine(file);
-                }
-
-                if (!Confirm($"Confirm deleting the {files.Count} files above{removalText}?") ||
-                    Force && !Confirm(
-                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
-                    Logger.Info("Action canceled.");
-                    return 2;
-                }
-
-                files.ForEach(f => ExecuteItem(f, () => RemoveLogicalFile(f)));
-                return LogSummary();
+                fileInfos.AddRange(FileInformation.Client.List(folder: fileName,
+                    options: new KifaDataOptions {
+                        Fields = ["Id"]
+                    }).Values);
             }
 
             // We support relative paths or FileInformation ids.
-            var foundFiles = KifaFile.FindAllFiles(FileNames);
-            if (foundFiles.Count > 0) {
-                foreach (var foundFile in foundFiles) {
-                    Console.WriteLine(foundFile.Id);
+            if (fileInfos.Count == 0) {
+                var foundFiles = KifaFile.FindAllFiles(FileNames);
+                if (foundFiles.Count == 0) {
+                    Logger.Fatal("No files found!");
+                    return 1;
                 }
 
-                if (!Confirm(
-                        $"Confirm deleting the {foundFiles.Count} files above{removalText}?") ||
-                    Force && !Confirm(
-                        "Since --force is specified, files of the only instance will automatically be removed! It will truly remove files from everywhere!!! Do you want to continue?")) {
-                    Logger.Info("Action canceled.");
-                    return 2;
-                }
-
-                foundFiles.ForEach(f => ExecuteItem(f.Id, () => RemoveLogicalFile(f.Id)));
-                return LogSummary();
+                fileInfos.AddRange(foundFiles.Select(file => file.FileInfo.Checked()));
             }
 
-            Logger.Fatal("No files found!");
-            return 1;
+            var selected = SelectMany(fileInfos, file => file.Id,
+                "file entries to remove along all relevant instances");
+
+            if (selected.Count == 0) {
+                Logger.Warn("No files found or selected.");
+                return 0;
+            }
+
+            if (Force && !Confirm(
+                    "Since --force is specified, files of the only version will automatically be removed!\nIt will truly remove files from everywhere!!! Do you want to continue?")) {
+                Logger.Warn("Action canceled.");
+                return 2;
+            }
+
+            selected.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
+            return LogSummary();
         }
 
         var localFiles = KifaFile.FindExistingFiles(FileNames);
@@ -127,11 +128,12 @@ class RemoveCommand : KifaCommand {
         return LogSummary();
     }
 
-    KifaActionResult RemoveLogicalFile(string fileId) {
-        var info = FileInformation.Client.Get(fileId).Checked();
+    KifaActionResult RemoveLogicalFile(FileInformation info) {
+        // We still need the latest info to decide for things like only file.
+        info = FileInformation.Client.Get(info.Id.Checked()).Checked();
         var result = new KifaBatchActionResult();
         var links = info.GetAllLinks();
-        links.Remove(info.Id);
+        links.Remove(info.Id.Checked());
         var onlyFile = links.Count == 0;
 
         if (!onlyFile) {
@@ -142,16 +144,16 @@ class RemoveCommand : KifaCommand {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Skipped,
                     Message =
-                        $"{fileId} has no other instances other than the one linked. This will result in effective loss of the file."
+                        $"{info.Id} has no other instances other than the one linked. This will result in effective loss of the file."
                 };
             }
         }
 
         if (onlyFile && !Force &&
-            !Confirm($"{fileId} is the last instance. Should it be removed?")) {
+            !Confirm($"{info.Id} is the last instance. Should it be removed?")) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
-                Message = $"Since {fileId} is the last instance, we skipped removing it."
+                Message = $"Since {info.Id} is the last instance, we skipped removing it."
             };
         }
 
@@ -218,26 +220,17 @@ class RemoveCommand : KifaCommand {
                 };
             }
 
-            file.Delete();
-
             return fileExists
-                ? new KifaActionResult {
-                    Status = KifaActionStatus.OK,
-                    Message = $"File {file} deleted, no entry found though."
-                }
+                ? KifaActionResult.FromAction(file.Delete)
                 : new KifaActionResult {
                     Status = KifaActionStatus.Warning,
-                    Message = $"File {file} not found."
+                    Message = $"File {file} deleted, no entry found though."
                 };
         }
 
         if (!RemoveLinkOnly) {
-            file.Delete();
-            result.Add(file.Id, fileExists
-                ? new KifaActionResult {
-                    Status = KifaActionStatus.OK,
-                    Message = $"File {file} deleted."
-                }
+            result.Add($"Remove {file}", fileExists
+                ? KifaActionResult.FromAction(file.Delete)
                 : new KifaActionResult {
                     Status = KifaActionStatus.Warning,
                     Message = $"File {file} not found."

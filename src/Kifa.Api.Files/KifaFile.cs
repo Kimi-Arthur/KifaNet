@@ -106,9 +106,23 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     bool UseCache { get; set; }
 
+    string? mirrorHost;
+
+    public string? MirrorHost {
+        get => mirrorHost;
+        set {
+            if (mirrorHost != value) {
+                LocalMirrorFile = value == Host ? this :
+                    value == null ? null : new KifaFile($"{value}{Id}", fileInfo: FileInfo);
+            }
+
+            mirrorHost = value;
+        }
+    }
+
     // Note that if it exists in this server, this may differ from itself as it's using `Id` not
     // its actual `Path`. But normally it's for remote files.
-    public KifaFile LocalMirrorFile { get; set; }
+    public KifaFile? LocalMirrorFile { get; set; }
 
     FileIdInfo? idInfo;
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
@@ -162,9 +176,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
-        LocalMirrorFile = DefaultMirrorHost == Host
-            ? this
-            : new KifaFile($"{DefaultMirrorHost}{Id}", fileInfo: FileInfo);
+        MirrorHost = DefaultMirrorHost;
         UseCache = useCache;
     }
 
@@ -322,9 +334,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
         var allFiles = new List<(string SortKey, KifaFile File)>();
         foreach (var source in GetKifaFiles(sources)) {
-            var file = source;
-
-            var files = file.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles).ToList();
+            var files = source.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles).ToList();
             Logger.Trace($"Found {files.Count} existing files:");
             foreach (var f in files) {
                 Logger.Trace($"\t{f}");
@@ -436,7 +446,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public void Copy(KifaFile destination, bool neverLink = false) {
-        Logger.Debug($"Copy {this} to {destination}");
+        Logger.Trace($"Copy {this} to {destination}");
         if (!Exists()) {
             throw new ArgumentException($"Source {this} doesn't exist.");
         }
@@ -504,7 +514,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    void RemoveLocalMirrorFile() {
+    public void RemoveLocalMirrorFile() {
         if (UseCache && LocalMirrorFile.Exists()) {
             LocalMirrorFile.Delete();
             LocalMirrorFile.Unregister();
@@ -554,8 +564,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 LocalMirrorFile.Add();
                 file = LocalMirrorFile;
                 Logger.Debug($"Local file {file} is found. Use local file instead of {this}.");
-            } catch (FileNotFoundException) {
-                // Expected to find no mirrored file.
+            } catch (FileNotFoundException ex) {
+                Logger.Trace(ex,
+                    $"File {LocalMirrorFile} is not found. This is expected if not mirrored to local.");
             }
         }
 
@@ -567,6 +578,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 return;
             }
 
+            Logger.Debug($"Quick check for {file}.");
             var quickInfo = file.CalculateInfo(FileProperties.Size);
             var compareResults =
                 quickInfo.CompareProperties(existingInfo, FileProperties.AllVerifiable);
@@ -590,12 +602,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
         }
 
-        // If full check is explicitly requested, we should still check.
         if (shouldCheckKnown != true && file.CheckedByFileId()) {
             Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
             Register(true);
             return;
         }
+
+        Logger.Debug($"Full check is requested for {file}.");
 
         // A new encryption key will be added if not already there.
         var info = file.CalculateInfo(FileProperties.AllVerifiable | FileProperties.EncryptionKey);

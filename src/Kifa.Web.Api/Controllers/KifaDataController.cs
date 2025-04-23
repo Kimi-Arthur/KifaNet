@@ -14,21 +14,26 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
 
     // GET api/values
     [HttpGet]
-    public ActionResult<SortedDictionary<string, TDataModel>> List() => Client.List();
+    public ActionResult<SortedDictionary<string, TDataModel>> List(string folder = "",
+        bool recursive = true, [FromQuery] KifaDataOptions? options = null)
+        => Client.List(folder, recursive, options);
 
     // GET api/values/$
     [HttpGet("$")]
-    public ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids) => Client.Get(ids);
+    public ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids,
+        [FromQuery] KifaDataOptions? options = null)
+        => Client.Get(ids, options);
 
     // GET api/values/5
     [HttpGet("{id}")]
-    public virtual ActionResult<TDataModel?> Get(string id, bool refresh = false) {
+    public virtual ActionResult<TDataModel?> Get(string id, bool refresh = false,
+        [FromQuery] KifaDataOptions? options = null) {
         id = UnescapeId(id);
         if (id.StartsWith("$")) {
             return new NotFoundResult();
         }
 
-        return Client.Get(id, refresh);
+        return Client.Get(id, refresh, options);
     }
 
     // PATCH api/values/5

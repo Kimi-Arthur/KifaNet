@@ -58,14 +58,14 @@ class UploadCommand : KifaCommand {
         var downloadText = DownloadLocal ? " and download to local" : "";
         var removalText = DeleteSource ? " and remove source afterwards" : "";
         var selected = SelectMany(files, file => $"{file} ({file.Length})",
-            $"files to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?");
+            $"files to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}");
 
         if (selected.Count == 0) {
-            Logger.Warn("No files found.");
+            Logger.Warn("No files found or selected.");
             return 0;
         }
 
-        foreach (var file in files) {
+        foreach (var file in selected) {
             ExecuteItem(file.ToString(),
                 () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode, true));
         }

@@ -42,9 +42,12 @@ public class AssDocument {
         }
 
         if (startLine >= 0) {
-            // No need to check styles section as this is the last one.
-            document.Sections.Add(AssSection.Parse(stylesSection, lines[startLine],
-                lines.Skip(startLine + 1)));
+            // No need to check whether this is a styles section as this is the last one.
+            var section = AssSection.Parse(stylesSection, lines[startLine],
+                lines.Skip(startLine + 1));
+            if (section != null) {
+                document.Sections.Add(section);
+            }
         }
 
         return document;
