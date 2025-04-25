@@ -78,8 +78,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         => "{base_name}.{extension}".FormatIfNonNull(BaseName, ("base_name", BaseName),
             ("extension", Extension));
 
-    public string Path => $"{ParentPath}{Name}";
-    public string PathWithoutSuffix => $"{ParentPath}{BaseName}";
+    public string Path => $"{ParentPath}/{Name}";
+    public string PathWithoutSuffix => $"{ParentPath}/{BaseName}";
 
     public string Host => Client.ToString();
 
@@ -147,9 +147,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var segments = uri.Split('/');
         PathSegments = [..segments[1..]];
         ParentPath = "/" + string.Join("/", segments[1..^1]);
-        if (!ParentPath.EndsWith('/')) {
-            ParentPath += "/";
-        }
 
         var name = segments.Last();
         var lastDot = name.LastIndexOf('.');
