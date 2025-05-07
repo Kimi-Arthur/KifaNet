@@ -61,17 +61,11 @@ class ExtractCommand : KifaCommand {
 
     KifaActionResult ExtractFile(KifaFile archiveFile) {
         var folder = archiveFile.Parent;
-        var archive = archiveFile.Extension == "rar"
-            ? RarArchive.Open(archiveFile.GetLocalPath(), new ReaderOptions {
-                Password = Password,
-                ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
-            })
-            : ArchiveFactory.Open(archiveFile.GetLocalPath(), new ReaderOptions {
-                Password = Password,
-                ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
-            });
+        var archive = ArchiveFactory.Open(archiveFile.GetLocalPath(), new ReaderOptions {
+            Password = Password,
+            ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
+        });
 
-        archive.ExtractAllEntries();
         var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => (
             Entry: entry, File: folder.GetFile(
                 ArchiveNameSeparator != null
