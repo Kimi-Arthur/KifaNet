@@ -76,6 +76,13 @@ class RemoveCommand : KifaCommand {
                 fileInfos.AddRange(foundFiles.Select(file => file.FileInfo.Checked()));
             }
 
+            if (RemoveAllReferences) {
+                fileInfos = fileInfos.SelectMany(f => f.GetAllLinks()).Distinct().Select(f
+                    => new FileInformation {
+                        Id = f
+                    }).ToList();
+            }
+
             var selected = SelectMany(fileInfos, file => file.Id,
                 "file entries to remove along all relevant instances");
 
