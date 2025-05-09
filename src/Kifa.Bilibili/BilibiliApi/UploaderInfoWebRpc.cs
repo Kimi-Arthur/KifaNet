@@ -383,7 +383,7 @@ public sealed class
     }
 
     const string JsonPrefix = "__INITIAL_STATE__=";
-    const string JsonSuffix = ";";
+    const string JsonSuffix = ";(";
 
     public Response? ParseResponse(HttpResponseMessage responseMessage) {
         var html = responseMessage.GetString();
