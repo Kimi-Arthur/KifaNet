@@ -10,43 +10,44 @@ public sealed class
     #region Response
 
     public class Response {
-        public ResponsePerformance Performance { get; set; }
         public Common Common { get; set; }
-        public Space Space { get; set; }
-        public List List { get; set; }
+        public Home Home { get; set; }
+        public Channel Channel { get; set; }
         public Video Video { get; set; }
+        public Search Search { get; set; }
+        public Space Space { get; set; }
+        public Opus Opus { get; set; }
         public Tag Tag { get; set; }
         public Topic Topic { get; set; }
-        public Opus Opus { get; set; }
         public Playlist Playlist { get; set; }
-        public Search Search { get; set; }
+        public Tribee Tribee { get; set; }
+        public Route Route { get; set; }
+    }
+
+    public class Channel {
+        public object[] ChannelConfig { get; set; }
+        public ChannelData ChannelData { get; set; }
+        public object ServerFetched { get; set; }
+    }
+
+    public class ChannelData {
     }
 
     public class Common {
         public UserInfo UserInfo { get; set; }
-        public CommonPerformance Performance { get; set; }
-        public List LocsData { get; set; }
-        public List<object> ErrorRecord { get; set; }
-        public List Abtest { get; set; }
-        public List<object> ChannelConfig { get; set; }
-        public bool IsWxTagLaunch { get; set; }
-        public Dictionary<string, bool> Browser { get; set; }
-        public bool NoCallApp { get; set; }
-        public bool TinyApp { get; set; }
-        public bool Teenager { get; set; }
-        public string Ua { get; set; }
         public ServerConfig ServerConfig { get; set; }
-        public List ReportMsg { get; set; }
+        public Abtest Abtest { get; set; }
+        public string Ua { get; set; }
+        public Dictionary<string, bool> Browser { get; set; }
         public string DefDomain { get; set; }
+        public bool IsWxTagLaunch { get; set; }
+        public bool NoCallApp { get; set; }
         public Switch Switch { get; set; }
     }
 
-    public class List {
-    }
-
-    public class CommonPerformance {
-        public long StartApiTime { get; set; }
-        public long EndApiTime { get; set; }
+    public class Abtest {
+        public string SearchHomepageAwake { get; set; }
+        public long H5LabordayStyle { get; set; }
     }
 
     public class ServerConfig {
@@ -58,17 +59,16 @@ public sealed class
 
     public class Constants {
         public bool NewClipboard { get; set; }
-        public string AndroidLink { get; set; }
     }
 
     public class CustomChannel {
-        public List<string> Bsource { get; set; }
+        public string[] Bsource { get; set; }
     }
 
     public class LimitChannel {
-        public List<string> Ua { get; set; }
-        public List<string> Bsource { get; set; }
-        public List<string> Referrer { get; set; }
+        public string[] Ua { get; set; }
+        public string[] Bsource { get; set; }
+        public string[] Referrer { get; set; }
     }
 
     public class Switch {
@@ -80,6 +80,19 @@ public sealed class
         public string Face { get; set; }
         public long VipStatus { get; set; }
         public long VipType { get; set; }
+    }
+
+    public class Home {
+        public HotList HotList { get; set; }
+    }
+
+    public class HotList {
+        public object[] Result { get; set; }
+        public ChannelData Extra { get; set; }
+        public bool Error { get; set; }
+        public bool? NoMore { get; set; }
+        public long? Total { get; set; }
+        public bool? HotListNoMore { get; set; }
     }
 
     public class Opus {
@@ -98,11 +111,6 @@ public sealed class
         public long Type { get; set; }
     }
 
-    public class ResponsePerformance {
-        public long StartApiTime { get; set; }
-        public long EndApiTime { get; set; }
-    }
-
     public class Playlist {
         public string MediaId { get; set; }
         public long Ps { get; set; }
@@ -111,28 +119,93 @@ public sealed class
         public long P { get; set; }
         public bool IsClient { get; set; }
         public bool HasMore { get; set; }
-        public List<object> MediaList { get; set; }
-        public List<object> RandomList { get; set; }
-        public List Info { get; set; }
+        public MediaData MediaData { get; set; }
+        public object[] MediaList { get; set; }
+        public object[] RandomList { get; set; }
         public long VideoIndex { get; set; }
-        public List VideoInfo { get; set; }
+        public ChannelData VideoInfo { get; set; }
         public string PlayMode { get; set; }
-        public List<object> PlayUrl { get; set; }
+        public object[] PlayUrl { get; set; }
         public bool ForbidPreview { get; set; }
         public bool PlayEnd { get; set; }
         public long PlaySum { get; set; }
     }
 
+    public class MediaData {
+        public object[] MediaList { get; set; }
+        public long Ps { get; set; }
+        public long Pn { get; set; }
+        public bool NoMore { get; set; }
+    }
+
+    public class Route {
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public string Hash { get; set; }
+        public ChannelData Query { get; set; }
+        public Params Params { get; set; }
+        public string FullPath { get; set; }
+        public ChannelData Meta { get; set; }
+        public From From { get; set; }
+    }
+
+    public class From {
+        public object Name { get; set; }
+        public string Path { get; set; }
+        public string Hash { get; set; }
+        public ChannelData Query { get; set; }
+        public ChannelData Params { get; set; }
+        public string FullPath { get; set; }
+        public ChannelData Meta { get; set; }
+    }
+
+    public class Params {
+        public long Id { get; set; }
+    }
+
     public class Search {
+        public SearchAllResult SearchAllResult { get; set; }
+        public SearchBangumiResult SearchBangumiResult { get; set; }
+        public SearchBangumiResult SearchUserResult { get; set; }
+        public SearchBangumiResult SearchFilmResult { get; set; }
         public bool OpenAppDialog { get; set; }
         public string Keyword { get; set; }
         public bool IsCustom { get; set; }
         public string Bsource { get; set; }
     }
 
+    public class SearchAllResult {
+        public Extra Extra { get; set; }
+        public SearchBangumiResult Totalrank { get; set; }
+        public SearchBangumiResult Click { get; set; }
+        public SearchBangumiResult Pubdate { get; set; }
+        public SearchBangumiResult Dm { get; set; }
+    }
+
+    public class SearchBangumiResult {
+        public object[] Result { get; set; }
+        public bool NoMore { get; set; }
+        public long Page { get; set; }
+        public long Total { get; set; }
+    }
+
+    public class Extra {
+        public Count Count { get; set; }
+        public object[] PgcList { get; set; }
+        public object[] FilmList { get; set; }
+    }
+
+    public class Count {
+        public long Video { get; set; }
+        public long MediaBangumi { get; set; }
+        public long BiliUser { get; set; }
+        public long MediaFt { get; set; }
+    }
+
     public class Space {
-        public string Mid { get; set; }
+        public long Mid { get; set; }
         public Info Info { get; set; }
+        public HotList FeedList { get; set; }
     }
 
     public class Info {
@@ -158,8 +231,7 @@ public sealed class
         public UserHonourInfo UserHonourInfo { get; set; }
         public bool IsFollowed { get; set; }
         public string TopPhoto { get; set; }
-        public List Theme { get; set; }
-        public List SysNotice { get; set; }
+        public ChannelData SysNotice { get; set; }
         public LiveRoom LiveRoom { get; set; }
         public string Birthday { get; set; }
         public object School { get; set; }
@@ -172,14 +244,30 @@ public sealed class
         public object GaiaData { get; set; }
         public bool IsRisk { get; set; }
         public Elec Elec { get; set; }
-        public Contract Contract { get; set; }
+        public object Contract { get; set; }
         public bool CertificateShow { get; set; }
         public object NameRender { get; set; }
+        public TopPhotoV2 TopPhotoV2 { get; set; }
+        public object Theme { get; set; }
+        public Attestation Attestation { get; set; }
     }
 
-    public class Contract {
-        public bool IsDisplay { get; set; }
-        public bool IsFollowDisplay { get; set; }
+    public class Attestation {
+        public long Type { get; set; }
+        public CommonInfo CommonInfo { get; set; }
+        public SpliceInfo SpliceInfo { get; set; }
+        public string Icon { get; set; }
+        public string Desc { get; set; }
+    }
+
+    public class CommonInfo {
+        public string Title { get; set; }
+        public string Prefix { get; set; }
+        public string PrefixTitle { get; set; }
+    }
+
+    public class SpliceInfo {
+        public string Title { get; set; }
     }
 
     public class Elec {
@@ -215,7 +303,7 @@ public sealed class
     public class WatchedShow {
         public bool Switch { get; set; }
         public long Num { get; set; }
-        public string TextSmall { get; set; }
+        public long TextSmall { get; set; }
         public string TextLarge { get; set; }
         public string Icon { get; set; }
         public string IconLocation { get; set; }
@@ -260,10 +348,16 @@ public sealed class
         public bool ShowUpgradeWindow { get; set; }
     }
 
+    public class TopPhotoV2 {
+        public long Sid { get; set; }
+        public string LImg { get; set; }
+        public string L200HImg { get; set; }
+    }
+
     public class UserHonourInfo {
         public long Mid { get; set; }
         public object Colour { get; set; }
-        public List<object> Tags { get; set; }
+        public object[] Tags { get; set; }
         public long IsLatest100Honour { get; set; }
     }
 
@@ -286,7 +380,7 @@ public sealed class
 
     public class AvatarIcon {
         public long IconType { get; set; }
-        public List IconResource { get; set; }
+        public ChannelData IconResource { get; set; }
     }
 
     public class Label {
@@ -305,61 +399,56 @@ public sealed class
     }
 
     public class Tag {
-        public List TagInfo { get; set; }
-        public List<object> TagSimilar { get; set; }
+        public ChannelData TagInfo { get; set; }
+        public object[] TagSimilar { get; set; }
+        public HotList TagRelated { get; set; }
     }
 
     public class Topic {
-        public List TopicDetail { get; set; }
-        public List Activities { get; set; }
-        public List Ads { get; set; }
+        public ChannelData TopicDetail { get; set; }
+        public ChannelData Activities { get; set; }
+        public ChannelData Ads { get; set; }
         public long TopicId { get; set; }
-        public List<object> RelevantTopics { get; set; }
+        public HotList TopicListResult { get; set; }
+        public object[] RelevantTopics { get; set; }
         public long HeaderTextColor { get; set; }
         public bool IsExpanded { get; set; }
     }
 
+    public class Tribee {
+        public ChannelData TribeeBaseInfo { get; set; }
+        public object[] TribeeList { get; set; }
+        public long TribeeListTotal { get; set; }
+    }
+
     public class Video {
-        public string Aid { get; set; }
-        public string Bvid { get; set; }
-        public long P { get; set; }
-        public bool IsClient { get; set; }
-        public List ViewInfo { get; set; }
-        public List<object> Related { get; set; }
-        public bool HotShareShow { get; set; }
-        public List<object> HotShare { get; set; }
-        public List PlayUrlInfo { get; set; }
-        public string PlayState { get; set; }
         public long Error { get; set; }
-        public bool GameMode { get; set; }
-        public long CurrentTab { get; set; }
-        public bool RenderTabs { get; set; }
-        public List UpInfo { get; set; }
-        public bool InfoFolded { get; set; }
-        public bool Muted { get; set; }
-        public long CurrentTime { get; set; }
-        public bool QrcodePlayBtnShow { get; set; }
-        public long HighestQuality { get; set; }
-        public List ShareUser { get; set; }
-        public string Keyword { get; set; }
-        public bool TrigglePlay { get; set; }
-        public long IsOldUser { get; set; }
-        public long IsNewOpenid { get; set; }
-        public long IsNewIpua { get; set; }
+        public bool IsClient { get; set; }
+        public ChannelData Breadcrumb { get; set; }
+        public ChannelData ViewInfo { get; set; }
+        public ChannelData UpInfo { get; set; }
+        public HotList Related { get; set; }
+        public object[] Tags { get; set; }
+        public ChannelData Elec { get; set; }
+        public long P { get; set; }
+        public long Avid { get; set; }
+        public string Bvid { get; set; }
+        public ChannelData Quality { get; set; }
+        public ChannelData PlayUrlInfo { get; set; }
+        public string PlayState { get; set; }
         public string Bsource { get; set; }
-        public List Elec { get; set; }
-        public List<object> Tags { get; set; }
-        public bool IsNaturalSearch { get; set; }
-        public bool IsCustom { get; set; }
+        public bool GameMode { get; set; }
+        public string Keyword { get; set; }
+        public bool TogglePlay { get; set; }
         public bool IsTab3 { get; set; }
+        public bool IsCustom { get; set; }
         public bool IsSem { get; set; }
-        public List ReportMsg { get; set; }
-        public List<object> TrendingData { get; set; }
-        public bool IsShowTrend { get; set; }
-        public bool IsGaokaoArc { get; set; }
-        public bool IsGaokao { get; set; }
-        public long HotspotMediaId { get; set; }
-        public List<object> Replies { get; set; }
+        public ChannelData ReportMsg { get; set; }
+        public string PageType { get; set; }
+        public ChannelData PlayerSettings { get; set; }
+        public bool IsRelatedUp { get; set; }
+        public bool IsHitLabourDayActivity { get; set; }
+        public bool IsHitLabourDayAbTest { get; set; }
     }
 
     #endregion
@@ -377,7 +466,7 @@ public sealed class
         };
 
     public UploaderInfoWebRpc(string uploaderId) {
-        Parameters = new () {
+        Parameters = new() {
             { "id", uploaderId }
         };
     }
