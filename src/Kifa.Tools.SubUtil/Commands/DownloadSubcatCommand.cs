@@ -21,6 +21,9 @@ class DownloadSubcatCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to download subtitles for.")]
     public IEnumerable<string> FileNames { get; set; }
 
+    [Option('f', "force", HelpText = "Try to get the subtitle even if it exists.")]
+    public bool Force { get; set; }
+
     public override int Execute(KifaTask? task = null) {
         var files = FileNames.Select(f => new KifaFile(f)).ToList();
         var selected = SelectMany(files, choiceToString: file => file.ToString(),
@@ -36,7 +39,7 @@ class DownloadSubcatCommand : KifaCommand {
     KifaActionResult DownloadSubtitle(KifaFile videoFile) {
         var target = videoFile.GetSubtitleFile("zh.srt");
         if (target.Exists()) {
-            if (!Confirm($"Subtitle file {target} already exists. Replace it?")) {
+            if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Skipped,
                     Message = $"Skipped already downloaded subtitle {target}."
