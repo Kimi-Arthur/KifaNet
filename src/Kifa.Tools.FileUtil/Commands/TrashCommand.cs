@@ -38,27 +38,25 @@ class TrashCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var foundFiles = KifaFile.FindAllFiles(FileNames);
-        var fileIds = foundFiles.Select(f => f.Id).ToList();
         DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {
-            var selectedFileIds = SelectMany(fileIds, choiceName: "files to restore");
+            var selectedFileIds = SelectMany(foundFiles, choiceName: "files to restore");
             Logger.Info("Should restore the files above.");
             return 1;
         } else {
-            if (fileIds.Count == 0) {
+            if (foundFiles.Count == 0) {
                 Logger.Error("No files found.");
                 return 1;
             }
 
-            var selectedFileIds = SelectMany(fileIds, choiceName: "files to trash");
+            var selectedFiles = SelectMany(foundFiles, choiceName: "files to trash");
+            var selectedFileIds = selectedFiles.Select(file => file.Id).ToHashSet();
 
-            var extraFileIds = foundFiles.SelectMany(f => f.FileInfo.Checked().GetOtherLinks())
+            var extraFileIds = selectedFiles.SelectMany(f => f.FileInfo.Checked().GetAllLinks())
                 .ToList();
-            if (extraFileIds.Count > 0) {
-                selectedFileIds.AddRange(SelectMany(extraFileIds,
-                    choiceName: "extra versions of trashed files to trash"));
-            }
+            selectedFileIds.UnionWith(SelectMany(extraFileIds,
+                choiceName: "extra versions of trashed files to trash"));
 
             selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId)));
             return LogSummary();

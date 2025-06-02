@@ -86,8 +86,6 @@ public abstract class DataModel {
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
 
-    public SortedSet<string> GetOtherLinks() => Metadata?.Linking?.Links ?? [];
-
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
 
