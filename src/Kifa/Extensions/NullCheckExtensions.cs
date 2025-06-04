@@ -21,4 +21,13 @@ public static class NullCheckExtensions {
 
         return (long) nullableValue;
     }
+
+    public static DateTimeOffset Checked(this DateTimeOffset? nullableValue,
+        [CallerArgumentExpression("nullableValue")] string expression = "") {
+        if (nullableValue == null) {
+            throw new ArgumentNullException(expression);
+        }
+
+        return (DateTimeOffset) nullableValue;
+    }
 }

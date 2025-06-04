@@ -13,12 +13,10 @@ namespace Kifa.Tools.BiliUtil.Commands;
 public abstract class DownloadCommand : BiliCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Option('d', "prefix-date", HelpText = "Prefix file name with the upload date.")]
-    public bool PrefixDate { get; set; } = false;
-
-    [Option('n', "prefix-number",
-        HelpText = "Prefix file name with the number in videos (only suggested for archives).")]
-    public bool PrefixNumber { get; set; } = false;
+    [Option('p', "prefix",
+        HelpText =
+            "Prefix of file name. Possible values: date, number (only suggested for archives)")]
+    public string? Prefix { get; set; }
 
     [Option('c', "preferred-codec",
         HelpText = "Codec preferred to download. Supported: avc, hevc, av1. Default is hevc.")]
@@ -31,14 +29,14 @@ public abstract class DownloadCommand : BiliCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
-    [Option('p', "include-page-title",
+    [Option('t', "include-page-title",
         HelpText =
             "Whether to include page title. Possible values: OnlyMultiplePage (default), Never, Always.")]
     public PageTitleOption IncludePageTitle { get; set; } = PageTitleOption.OnlyMultiplePage;
 
-    int DownloadCounter = 0;
+    int downloadCounter;
 
-    public void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
+    protected void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         BilibiliUploader? uploader = null) {
         string? extension;
         int quality;
@@ -49,8 +47,8 @@ public abstract class DownloadCommand : BiliCommand {
             (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
                 video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
         } catch (BilibiliVideoNotFoundException ex) {
-            Logger.Warn("Video not found. Maybe data needs to be updated.");
-            video = BilibiliVideo.Client.Get(video.Id, true).Checked();
+            Logger.Warn(ex, "Video not found. Maybe data needs to be updated.");
+            video = BilibiliVideo.Client.Get(video.Id.Checked(), true).Checked();
             (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
                 video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
         }
@@ -127,17 +125,12 @@ public abstract class DownloadCommand : BiliCommand {
         KifaFile.LinkAll(canonicalTargetFile, targetFiles);
     }
 
-    string GetPrefix(BilibiliVideo video) {
-        if (PrefixDate) {
-            return $"{video.Uploaded.Value:yyyy-MM-dd}";
-        }
-
-        if (PrefixNumber) {
-            return $"{++DownloadCounter:D2}";
-        }
-
-        return "";
-    }
+    string GetPrefix(BilibiliVideo video)
+        => Prefix switch {
+            "date" => $"{video.Uploaded.Checked():yyyy-MM-dd}",
+            "number" => $"{++downloadCounter:D2}",
+            _ => ""
+        };
 
     static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {
         var result = Executor.Run("ffmpeg",
