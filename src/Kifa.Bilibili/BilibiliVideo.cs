@@ -310,8 +310,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
-        string? alternativeFolder = null, string prefix = "",
-        BilibiliUploader? uploader = null) {
+        string? alternativeFolder = null, string prefix = "", BilibiliUploader? uploader = null) {
         var p = Pages.First(x => x.Id == pid);
 
         var partName = p.Title.NormalizeFileName();
@@ -329,10 +328,12 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             Name = Author
         };
 
-        var folder = alternativeFolder ?? $"{uploader.Name}.{uploader.Id}".NormalizeFileName();
+        var folderSegments =
+            (alternativeFolder ?? $"{uploader.Name}.{uploader.Id}".NormalizeFileName()).Split('/');
+        folderSegments[0] += ".bilibili";
         var partString = Pages.Count > 1 ? $"{pidText} {partName}" : partName;
         return
-            $"{folder}.bilibili/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
+            $"{folderSegments.JoinBy('/')}/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
