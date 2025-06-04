@@ -87,7 +87,7 @@ public class KifaActionResult {
     public virtual string? Message { get; set; }
 
     public override string ToString()
-        => string.IsNullOrEmpty(Message) ? $"({Status})" : $"({Status}): {Message}";
+        => string.IsNullOrEmpty(Message) ? $"{Status}" : $"{Status} => {Message}";
 }
 
 public class KifaBatchActionResult : KifaActionResult {
@@ -111,9 +111,8 @@ public class KifaBatchActionResult : KifaActionResult {
     public override KifaActionStatus Status
         => Results.Aggregate(KifaActionStatus.OK, (status, item) => status | item.Result.Status);
 
-    public override string Message
-        => string.Join("\n",
-            Results.Select(r => $"{r.Item} ({r.Result.Status}): {r.Result.Message}"));
+    public override string ToString()
+        => $"{Status} =>\n{string.Join("\n", Results.Select(r => $"\t{r.Item}: {r.Result}"))}";
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {
