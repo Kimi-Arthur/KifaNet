@@ -135,9 +135,18 @@ class RemoveCommand : KifaCommand {
         return LogSummary();
     }
 
-    KifaActionResult RemoveLogicalFile(FileInformation info) {
+    KifaActionResult RemoveLogicalFile(FileInformation? info) {
+        var id = info.Checked().Id.Checked();
+
         // We still need the latest info to decide for things like only file.
-        info = FileInformation.Client.Get(info.Id.Checked()).Checked();
+        info = FileInformation.Client.Get(id);
+        if (info == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Warning,
+                Message = $"File {id} is not found in registration."
+            };
+        }
+
         var result = new KifaBatchActionResult();
         var links = info.GetAllLinks();
         links.Remove(info.Id.Checked());
