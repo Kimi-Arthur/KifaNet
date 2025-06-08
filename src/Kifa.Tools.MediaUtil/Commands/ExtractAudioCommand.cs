@@ -84,7 +84,7 @@ public class ExtractAudioCommand : KifaCommand {
         return results;
     }
 
-    static void ExtractAudioFile(KifaFile sourceFile, int trackNumber) {
+    void ExtractAudioFile(KifaFile sourceFile, int trackNumber) {
         var metadata = ExtractMetadata(sourceFile, trackNumber);
         var metadataString =
             string.Join(" ", metadata.Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
@@ -129,7 +129,7 @@ public class ExtractAudioCommand : KifaCommand {
     static string GetFileName(Dictionary<string, string> metadata, string prefix)
         => $"{metadata["album"]}/{prefix} {metadata["track"].PadLeft(2, '0')} {metadata["title"]}";
 
-    static string ChooseImage(List<string> images)
+    string ChooseImage(List<string> images)
         => SelectOne(images,
             image => ITermImage.GetITermImageFromBase64(image, DisplayImageSize, DisplayImageSize),
             "image").Value.Choice;

@@ -23,7 +23,7 @@ class UpdateCommand : KifaCommand {
 
         SelectOne(new List<Action> {
             new TimeShiftAction()
-        }, choiceName: "actions").Value.Choice.Update(sub);
+        }, choiceName: "actions").Value.Choice.Update(sub, this);
 
         Logger.Info(sub.ToString());
         target.Delete();
@@ -33,14 +33,14 @@ class UpdateCommand : KifaCommand {
 }
 
 abstract class Action {
-    public abstract void Update(AssDocument sub);
+    public abstract void Update(AssDocument sub, KifaCommand command);
 }
 
 class TimeShiftAction : Action {
-    public override void Update(AssDocument sub) {
-        var selectedLines = KifaCommand.SelectMany(
+    public override void Update(AssDocument sub, KifaCommand command) {
+        var selectedLines = command.SelectMany(
             sub.Sections.OfType<AssEventsSection>().First().Events.ToList());
-        var shift = KifaCommand.Confirm("Input the amount of time to shift:", "10s")
+        var shift = command.Confirm("Input the amount of time to shift:", "10s")
             .ParseTimeSpanString();
         ShiftTime(selectedLines, shift);
     }

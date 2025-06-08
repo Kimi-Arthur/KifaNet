@@ -35,7 +35,7 @@ class CopyCommand : KifaCommand {
         return 0;
     }
 
-    static void LinkLocalFile(KifaFile file1, KifaFile file2) {
+    void LinkLocalFile(KifaFile file1, KifaFile file2) {
         file1.Add();
         LinkFile(file1.Id, file2.Id);
         file1.Copy(file2);
@@ -46,7 +46,7 @@ class CopyCommand : KifaCommand {
         file2.Add();
     }
 
-    static int LinkFile(string target, string linkName) {
+    int LinkFile(string target, string linkName) {
         if (!target.StartsWith('/') || !linkName.StartsWith('/')) {
             Logger.Error("You should use absolute file path for the two arguments.");
             return 1;

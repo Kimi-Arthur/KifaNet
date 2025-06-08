@@ -11,10 +11,10 @@ public abstract partial class KifaCommand {
 
     static readonly Regex SingleChoiceRegex = new(@"^(\d*)([asi]*)$");
 
-    public static (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(
-        List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
-        string? choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
-        bool reverse = false, string selectionKey = "") {
+    public (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(List<TChoice> choices,
+        Func<TChoice, string>? choiceToString = null, string? choiceName = null,
+        int startingIndex = 0, bool supportsSpecial = false, bool reverse = false,
+        string selectionKey = "") {
         defaultIndexForSelectOne.TryAdd(selectionKey, 0);
         alwaysDefaultForSelectOne.TryAdd(selectionKey, false);
 
@@ -100,7 +100,7 @@ public abstract partial class KifaCommand {
     static Dictionary<string, string> defaultReplyForSelectMany = new();
     static Dictionary<string, bool> alwaysDefaultForSelectMany = new();
 
-    public static List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
+    public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null, string? choiceName = null,
         int startingIndex = 1, string selectionKey = "", bool skipIfEmpty = true) {
         if (skipIfEmpty && choices.Count == 0) {
@@ -210,7 +210,7 @@ public abstract partial class KifaCommand {
         }
     }
 
-    public static string? Confirm(string prefix, string suggested,
+    public string? Confirm(string prefix, string suggested,
         Func<string, string?>? validation = null) {
         while (true) {
             if (validation == null) {
@@ -235,7 +235,7 @@ public abstract partial class KifaCommand {
         }
     }
 
-    public static bool Confirm(string prefix, bool suggested = true) {
+    public bool Confirm(string prefix, bool suggested = true, bool followGlobalYes = true) {
         while (true) {
             var suggestedOptions = suggested ? "Y/n" : "y/N";
             Console.Write($"{prefix} [{suggestedOptions}]?");
