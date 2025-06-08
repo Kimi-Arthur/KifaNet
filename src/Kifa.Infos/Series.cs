@@ -76,7 +76,8 @@ static class Helper {
                 (new Regex(@"[\?] *"), _ => "？"),
                 (new Regex(@"[!] *"), _ => "！"),
                 (new Regex(@"･"), _ => "・"),
-                (new Regex(@"([…？！]) *"), match => $"{match.Groups[1].Value}")
+                (new Regex(@"([…？！]) *"), match => $"{match.Groups[1].Value}"),
+                (new Regex(@"　"), _ => " "), // Full-width space
             },
             [Language.English] = new List<(Regex pattern, MatchEvaluator replacer)> {
                 (new Regex(@" \((\d+)\)"), match => $" - Part {match.Groups[1].Value}"),
