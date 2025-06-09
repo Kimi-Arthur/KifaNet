@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using CommandLine;
 
 namespace Kifa.Tools;
 
@@ -10,6 +11,10 @@ public abstract partial class KifaCommand {
     static Dictionary<string, int> defaultIndexForSelectOne = new();
 
     static readonly Regex SingleChoiceRegex = new(@"^(\d*)([asi]*)$");
+
+    [Option('y', "yes",
+        HelpText = "Always yes to all confirmations with default value (not always yes).")]
+    public bool AutoConfirmDefault { get; set; } = false;
 
     public (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null, string? choiceName = null,
@@ -235,7 +240,11 @@ public abstract partial class KifaCommand {
         }
     }
 
-    public bool Confirm(string prefix, bool suggested = true, bool followGlobalYes = true) {
+    public bool Confirm(string prefix, bool suggested = true, bool alwaysConfirm = true) {
+        if (!alwaysConfirm && AutoConfirmDefault) {
+            return suggested;
+        }
+
         while (true) {
             var suggestedOptions = suggested ? "Y/n" : "y/N";
             Console.Write($"{prefix} [{suggestedOptions}]?");
