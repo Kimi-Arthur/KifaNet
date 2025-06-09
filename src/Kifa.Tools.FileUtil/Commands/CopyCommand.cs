@@ -72,7 +72,7 @@ class CopyCommand : KifaCommand {
                 Console.WriteLine($"\t{linkFile}\n=>\t{file}\n");
             }
 
-            if (!Confirm($"Confirm linking the {files.Count} above?")) {
+            if (!Confirm($"Confirm linking the {files.Count} above?", alwaysConfirm: false)) {
                 Logger.Info("Linking cancelled.");
                 return -1;
             }
