@@ -37,7 +37,7 @@ public abstract class DownloadCommand : BiliCommand {
     int downloadCounter;
 
     protected void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
-        BilibiliUploader? uploader = null) {
+        BilibiliUploader? uploader = null, bool regionLocked = false) {
         string? extension;
         int quality;
         int codec;
@@ -45,7 +45,7 @@ public abstract class DownloadCommand : BiliCommand {
         List<Func<Stream>>? audioStreamGetters;
         try {
             (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
-                video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
+                video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec, regionLocked: regionLocked);
         } catch (BilibiliVideoNotFoundException ex) {
             Logger.Warn(ex, "Video not found. Maybe data needs to be updated.");
             video = BilibiliVideo.Client.Get(video.Id.Checked(), true).Checked();
