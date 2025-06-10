@@ -29,14 +29,14 @@ public class BilibiliVideoTests {
 
     [Fact]
     public void BilibiliVideoRpcTest() {
-        var data = HttpClients.BilibiliHttpClient.Call(new VideoRpc("av170001")).Data;
+        var data = HttpClients.GetBilibiliClient().Call(new VideoRpc("av170001")).Data;
         Assert.Equal(10, data.Pages.Count);
         Assert.Equal("Хоп", data.Pages[0].Part);
     }
 
     [Fact]
     public void BilibiliVideoTagRpcTest() {
-        var data = HttpClients.BilibiliHttpClient.Call(new VideoTagRpc("av170001")).Data;
+        var data = HttpClients.GetBilibiliClient().Call(new VideoTagRpc("av170001")).Data;
         Assert.Equal(5, data.Count);
         Assert.Equal("保加利亚妖王", data[0].TagName);
     }

@@ -18,7 +18,7 @@ public class HttpClients {
 
     static HttpClient? bilibiliClient;
 
-    public static HttpClient BilibiliHttpClient {
+    public static HttpClient BilibiliProxiedHttpClient {
         get {
             if (bilibiliClient == null) {
                 bilibiliClient = new HttpClient(new HttpClientHandler {
@@ -33,6 +33,28 @@ public class HttpClients {
 
             return bilibiliClient;
         }
+    }
+
+    static HttpClient? bilibiliDirectClient;
+
+    public static HttpClient BilibiliDirectHttpClient {
+        get {
+            if (bilibiliDirectClient == null) {
+                bilibiliDirectClient = new HttpClient();
+                bilibiliDirectClient.Timeout = TimeSpan.FromMinutes(10);
+                bilibiliDirectClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                bilibiliDirectClient.DefaultRequestHeaders.Referrer =
+                    new Uri("https://m.bilibili.com/");
+                bilibiliDirectClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+            }
+
+            return bilibiliDirectClient;
+        }
+    }
+
+    public static HttpClient GetBilibiliClient(bool regionLocked = false) {
+        return regionLocked ? BilibiliProxiedHttpClient : BilibiliDirectHttpClient;
     }
 
     static HttpClient? biliplusClient;

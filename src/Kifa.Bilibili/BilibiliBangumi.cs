@@ -24,11 +24,11 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var mediaData = HttpClients.BilibiliHttpClient.Call(new MediaRpc(Id))?.Result;
+        var mediaData = HttpClients.GetBilibiliClient().Call(new MediaRpc(Id))?.Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";
         Title = mediaData.Media.Title.Trim();
         Type = mediaData.Media.TypeName;
-        var seasonData = HttpClients.BilibiliHttpClient.Call(new MediaSeasonRpc(SeasonId))?.Result;
+        var seasonData = HttpClients.GetBilibiliClient().Call(new MediaSeasonRpc(SeasonId))?.Result;
         if (seasonData == null) {
             throw new UnableToFillException(
                 $"Failed to get data for season ({SeasonId}) from Bilibili.");

@@ -130,8 +130,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     void FillWithBilibili() {
-        var data = HttpClients.BilibiliHttpClient.Call(new VideoRpc(Id))?.Data;
-        var tags = HttpClients.BilibiliHttpClient.Call(new VideoTagRpc(Id))?.Data;
+        var data = HttpClients.GetBilibiliClient().Call(new VideoRpc(Id))?.Data;
+        var tags = HttpClients.GetBilibiliClient().Call(new VideoTagRpc(Id))?.Data;
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
@@ -359,7 +359,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         long? length = null;
         foreach (var l in link.links) {
             try {
-                length = HttpClients.BilibiliHttpClient.GetContentLength(l);
+                length = HttpClients.GetBilibiliClient().GetContentLength(l);
             } catch (HttpRequestException ex) {
                 Logger.Warn(ex, $"Not available: {l}");
                 continue;
@@ -392,7 +392,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
                 var request = new HttpRequestMessage(HttpMethod.Get, finalLink);
 
                 request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
-                using var response = HttpClients.BilibiliHttpClient.SendAsync(request).Result;
+                using var response = HttpClients.GetBilibiliClient().SendAsync(request).Result;
                 response.EnsureSuccessStatusCode();
                 var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
                 response.Content.ReadAsStreamAsync().Result.CopyTo(memoryStream, count);
@@ -451,7 +451,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             int maxQuality, string? preferredCodec) {
         var quality = maxQuality;
         return Retry.Run(() => {
-            var response = HttpClients.BilibiliHttpClient.Call(new VideoUrlRpc(aid, cid, quality));
+            var response = HttpClients.GetBilibiliClient().Call(new VideoUrlRpc(aid, cid, quality));
 
             if (response is not { Code: 0 }) {
                 if (response.Code == -404) {

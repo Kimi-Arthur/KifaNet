@@ -11,11 +11,11 @@ public class BilibiliTrackingTests {
 
     [Fact]
     public void EnableTrackingTest() {
-        Assert.Equal(0, HttpClients.BilibiliHttpClient.Call(new TrackingRpc(false)).Code);
+        Assert.Equal(0, HttpClients.GetBilibiliClient().Call(new TrackingRpc(false)).Code);
     }
 
     [Fact]
     public void DisableTrackingTest() {
-        Assert.Equal(0, HttpClients.BilibiliHttpClient.Call(new TrackingRpc(true)).Code);
+        Assert.Equal(0, HttpClients.GetBilibiliClient().Call(new TrackingRpc(true)).Code);
     }
 }

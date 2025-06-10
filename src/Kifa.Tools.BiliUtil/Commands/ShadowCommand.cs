@@ -14,7 +14,7 @@ class ShadowCommand : KifaCommand {
     public bool Reset { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var response = HttpClients.BilibiliHttpClient.Call(new TrackingRpc(!Reset));
+        var response = HttpClients.GetBilibiliClient().Call(new TrackingRpc(!Reset));
         var action = Reset ? "reset" : "shadow";
         if (response.Code != 0) {
             Logger.Error($"Failed to {action} history ({response.Code}): {response.Message}");

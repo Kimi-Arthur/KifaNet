@@ -12,7 +12,7 @@ public class BilibiliArchiveTests {
 
     [Fact]
     public void RpcTest() {
-        HttpClients.BilibiliHttpClient
+        HttpClients.GetBilibiliClient()
             .Call(new ArchiveRpc(uploaderId: "43536", seasonId: "1808473")).Data.Checked().Aids
             .Should().HaveCountGreaterOrEqualTo(6);
     }

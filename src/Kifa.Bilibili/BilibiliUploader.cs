@@ -23,7 +23,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     public override bool FillByDefault => true;
 
     public override DateTimeOffset? Fill() {
-        var info = HttpClients.BilibiliHttpClient.Call(new UploaderInfoWebRpc(Id));
+        var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(Id));
         if (info == null) {
             throw new DataNotFoundException(
                 $"Failed to retrieve data for uploader ({Id}) from bilibili,");
@@ -43,7 +43,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     }
 
     List<string> GetAllVideos(string uploaderId) {
-        var data = HttpClients.BilibiliHttpClient.Call(new UploaderVideoRpc(uploaderId))?.Data;
+        var data = HttpClients.GetBilibiliClient().Call(new UploaderVideoRpc(uploaderId))?.Data;
         if (data == null) {
             throw new DataNotFoundException($"Cannot find videos uploaded by {uploaderId}.");
         }
@@ -53,7 +53,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
             .Select(card => $"av{card.Desc.Rid}").ToList();
         while (data.HasMore > 0) {
             Thread.Sleep(TimeSpan.FromSeconds(1));
-            data = HttpClients.BilibiliHttpClient
+            data = HttpClients.GetBilibiliClient()
                 .Call(new UploaderVideoRpc(uploaderId, data.NextOffset))?.Data;
             if (data == null) {
                 throw new DataNotFoundException(

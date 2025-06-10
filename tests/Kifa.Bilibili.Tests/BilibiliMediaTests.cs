@@ -14,7 +14,7 @@ public class BilibiliMediaTests {
     [InlineData("md28222837", "深夜食堂 第三季", "电视剧", 28671)]
     [InlineData("md28231812", "关于我转生变成史莱姆这档事 第二季", "番剧", 36170)]
     public void MediaRpcTest(string mediaId, string title, string typeName, long seasonId) {
-        var result = HttpClients.BilibiliHttpClient.Call(new MediaRpc(mediaId)).Result.Media;
+        var result = HttpClients.GetBilibiliClient().Call(new MediaRpc(mediaId)).Result.Media;
         Assert.Equal(title, result.Title);
         Assert.Equal(typeName, result.TypeName);
         Assert.Equal(seasonId, result.SeasonId);
@@ -27,7 +27,7 @@ public class BilibiliMediaTests {
         string episode1Title, string episode1LongTitle, string otherTitle = null,
         long otherEpisode1Id = 0, string otherEpisode1Title = null,
         string otherEpisode1LongTitle = null) {
-        var result = HttpClients.BilibiliHttpClient.Call(new MediaSeasonRpc(seasonId)).Result;
+        var result = HttpClients.GetBilibiliClient().Call(new MediaSeasonRpc(seasonId)).Result;
         Assert.Equal(title, result.MainSection.Title);
         Assert.Equal(episode1Id, result.MainSection.Episodes.First().Aid);
         Assert.Equal(episode1Title, result.MainSection.Episodes.First().Title);

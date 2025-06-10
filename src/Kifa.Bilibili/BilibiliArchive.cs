@@ -27,14 +27,14 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
         AuthorId = ids[0];
         SeasonId = ids[1];
 
-        var info = HttpClients.BilibiliHttpClient.Call(new UploaderInfoWebRpc(AuthorId));
+        var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(AuthorId));
         if (info == null) {
             throw new DataNotFoundException(
                 $"Failed to retrieve data for uploader ({Id}) from bilibili,");
         }
 
         Author = info.Space.Info.Name;
-        var data = HttpClients.BilibiliHttpClient
+        var data = HttpClients.GetBilibiliClient()
             .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId)).Data;
         if (data == null) {
             throw new DataNotFoundException($"Failed to find archive ({Id}).");
@@ -45,7 +45,7 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
         Videos = data.Aids.Select(m => $"av{m}").ToList();
         var page = 1;
         while (Videos.Count < data.Page.Checked().Total) {
-            data = HttpClients.BilibiliHttpClient
+            data = HttpClients.GetBilibiliClient()
                 .Call(new ArchiveRpc(uploaderId: AuthorId, seasonId: SeasonId, page: ++page)).Data;
             if (data == null) {
                 throw new DataNotFoundException($"Failed to find playlist ({Id}).");
