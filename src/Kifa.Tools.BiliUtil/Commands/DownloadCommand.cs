@@ -44,8 +44,9 @@ public abstract class DownloadCommand : BiliCommand {
         Func<Stream>? videoStreamGetter;
         List<Func<Stream>>? audioStreamGetters;
         try {
-            (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
-                video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec, regionLocked: regionLocked);
+            (extension, quality, codec, videoStreamGetter, audioStreamGetters) = video.GetStreams(
+                pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec,
+                regionLocked: regionLocked);
         } catch (BilibiliVideoNotFoundException ex) {
             Logger.Warn(ex, "Video not found. Maybe data needs to be updated.");
             video = BilibiliVideo.Client.Get(video.Id.Checked(), true).Checked();
@@ -86,7 +87,7 @@ public abstract class DownloadCommand : BiliCommand {
         var coverLink = new KifaFile(video.Cover.ToString());
         var coverFile = canonicalTargetFile.Parent.GetFile(
             $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.c.{coverLink.Extension}");
-        coverLink.Copy(coverFile);
+        coverFile.Write(coverLink.OpenRead);
 
         var trackFiles = new List<KifaFile>();
         var videoFile = canonicalTargetFile.Parent.GetFile(
