@@ -51,19 +51,18 @@ class TrashCommand : KifaCommand {
                 return 1;
             }
 
-            var selectedFiles = SelectMany(foundFiles, choiceName: "files to trash");
+            var trashPath = Reason == null
+                ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
+                : $"{DateString}_{Reason}_{new KifaFile(fileNames[0]).Name}";
+
+            var selectedFiles =
+                SelectMany(foundFiles, choiceName: $"files to trash to {trashPath}");
             var selectedFileIds = selectedFiles.Select(file => file.Id).ToHashSet();
 
             var extraFileIds = selectedFiles.SelectMany(f => f.FileInfo.Checked().GetAllLinks())
                 .ToList();
             selectedFileIds.UnionWith(SelectMany(extraFileIds,
                 choiceName: "extra versions of trashed files to trash"));
-
-            var trashPath = Reason == null
-                ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
-                : $"{DateString}_{Reason}_{new KifaFile(fileNames[0]).Name}";
-
-            Logger.Info($"Trash files to {trashPath}");
 
             selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId, trashPath)));
             return LogSummary();
