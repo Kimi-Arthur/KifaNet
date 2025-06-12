@@ -37,7 +37,8 @@ class TrashCommand : KifaCommand {
     #endregion
 
     public override int Execute(KifaTask? task = null) {
-        var foundFiles = KifaFile.FindAllFiles(FileNames);
+        var fileNames = FileNames.ToList();
+        var foundFiles = KifaFile.FindAllFiles(fileNames);
         DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {
@@ -58,15 +59,21 @@ class TrashCommand : KifaCommand {
             selectedFileIds.UnionWith(SelectMany(extraFileIds,
                 choiceName: "extra versions of trashed files to trash"));
 
-            selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId)));
+            var trashPath = Reason == null ? $"/Trash/{DateString}" : $"{DateString}_{Reason}";
+            var entries = fileNames[0].Split("/", StringSplitOptions.RemoveEmptyEntries);
+            if (entries.Length > 0) {
+                trashPath += $"_{entries[^1]}";
+            }
+
+            selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId, trashPath)));
             return LogSummary();
         }
     }
 
-    KifaActionResult Trash(string file)
+    KifaActionResult Trash(string file, string trashPath)
         => KifaActionResult.FromAction(() => {
             var client = FileInformation.Client;
-            var target = $"/Trash/{GetTrashPath()}{file}";
+            var target = $"{file}";
             client.Link(file, target);
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
@@ -92,8 +99,4 @@ class TrashCommand : KifaCommand {
             client.Delete(file);
             Logger.Info($"Original FileInfo {file} removed.");
         });
-
-    string GetTrashPath() {
-        return Reason == null ? DateString : $"{DateString}_{Reason}";
-    }
 }
