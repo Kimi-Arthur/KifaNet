@@ -59,11 +59,11 @@ class TrashCommand : KifaCommand {
             selectedFileIds.UnionWith(SelectMany(extraFileIds,
                 choiceName: "extra versions of trashed files to trash"));
 
-            var trashPath = Reason == null ? $"/Trash/{DateString}" : $"{DateString}_{Reason}";
-            var entries = fileNames[0].Split("/", StringSplitOptions.RemoveEmptyEntries);
-            if (entries.Length > 0) {
-                trashPath += $"_{entries[^1]}";
-            }
+            var trashPath = Reason == null
+                ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
+                : $"{DateString}_{Reason}_{new KifaFile(fileNames[0]).Name}";
+
+            Logger.Info($"Trash files to {trashPath}");
 
             selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId, trashPath)));
             return LogSummary();
