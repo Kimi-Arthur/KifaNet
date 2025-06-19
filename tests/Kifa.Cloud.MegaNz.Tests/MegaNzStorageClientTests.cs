@@ -53,6 +53,15 @@ public class MegaNzStorageClientTests {
     }
 
     [TestMethod]
+    public void DownloadBigTest() {
+        var client = GetStorageClient("kp0000");
+
+        using var s = client.OpenRead("/output.mp4");
+        Assert.AreEqual(FileSha256,
+            FileInformation.GetInformation(s, FileProperties.Sha256).Sha256);
+    }
+
+    [TestMethod]
     public void UploadTest() {
         var client = GetStorageClient();
 
@@ -130,8 +139,8 @@ public class MegaNzStorageClientTests {
         }
     }
 
-    static MegaNzStorageClient GetStorageClient()
+    static MegaNzStorageClient GetStorageClient(string account = "test")
         => new() {
-            AccountId = "test"
+            AccountId = account
         };
 }
