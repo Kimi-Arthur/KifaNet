@@ -20,7 +20,7 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
 
     // GET api/values/$
     [HttpGet("$")]
-    public ActionResult<List<TDataModel?>> Get([FromBody] List<string> ids,
+    public ActionResult<List<TDataModel?>> GetMany([FromBody] List<string> ids,
         [FromQuery] KifaDataOptions? options = null)
         => Client.Get(ids, options);
 
