@@ -21,7 +21,7 @@ public class TwitterAccount : OAuthAccount, WithModelId<TwitterAccount> {
 
     const string GetTokenUrlPattern = "https://api.x.com/2/oauth2/token";
 
-    public override string GetTokenUrl(string code, string redirectUrl)
+    public override OAuthTokenRequest GetTokenRequest(string code, string redirectUrl)
         => throw new NotImplementedException();
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();

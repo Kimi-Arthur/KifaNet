@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
+using Kifa.Cloud.BaiduCloud.Rpcs;
 using Kifa.Cloud.OAuth;
 using Kifa.Service;
 
@@ -31,9 +32,9 @@ public class BaiduAccount : OAuthAccount, WithModelId<BaiduAccount> {
             ("redirect_url", HttpUtility.UrlEncode(redirectUrl)),
             ("scope", HttpUtility.UrlEncode(Scope)), ("state", state));
 
-    public override string GetTokenUrl(string code, string redirectUrl)
-        => Rpcs.OauthToken.Url.Format(("client_id", ClientId), ("code", code),
-            ("client_secret", ClientSecret), ("oauth_redirect_url", redirectUrl));
+    public override OAuthTokenRequest GetTokenRequest(string code, string redirectUrl)
+        => new BaiduOAuthTokenRequest(code: code, clientId: ClientId, clientSecret: ClientSecret,
+            redirectUrl: redirectUrl);
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
 

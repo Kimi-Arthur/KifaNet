@@ -27,15 +27,14 @@ public abstract class
 
     [HttpGet("$redirect")]
     public IActionResult AccountRedirect([FromQuery] string code, [FromQuery] string state) {
-        var tokenUrl = new TAccount().GetTokenUrl(code, this.ForAction(nameof(AccountRedirect)));
+        var response = HttpClient.Call(new TAccount().GetTokenRequest(code: code,
+            redirectUrl: this.ForAction(nameof(AccountRedirect)))).Checked();
 
-        var response =
-            HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Post, tokenUrl));
         var account = new TAccount {
             Id = state,
-            AccessToken = ((string?) response["access_token"]).Checked(),
-            RefreshToken = ((string?) response["refresh_token"]).Checked(),
-            Scope = ((string?) response["scope"]).Checked()
+            AccessToken = response.AccessToken.Checked(),
+            RefreshToken = response.RefreshToken.Checked(),
+            Scope = response.Scope.Checked()
         };
 
         return account.FillUserInfo().And(() => ServiceClient.Set(account)).And(Redirect(

@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Web;
+using Kifa.Cloud.Google.Rpcs;
 using Kifa.Cloud.OAuth;
 using Kifa.Service;
 
@@ -23,9 +23,6 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
     const string AuthUrlPattern =
         "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={client_id}&redirect_uri={redirect_url}&prompt=consent&access_type=offline&scope={scope}&state={state}";
 
-    const string GetTokenUrlPattern =
-        "https://oauth2.googleapis.com/token?grant_type=authorization_code&code={code}&client_id={client_id}&client_secret={client_secret}&redirect_uri={redirect_url}";
-
     const string UserInfoUrlPattern =
         "https://www.googleapis.com/userinfo/v2/me?access_token={access_token}";
 
@@ -37,10 +34,10 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
             ("redirect_url", HttpUtility.UrlEncode(redirectUrl)),
             ("scope", HttpUtility.UrlEncode(DefaultScope)), ("state", state));
 
-    public override string GetTokenUrl(string code, string redirectUrl)
-        => GetTokenUrlPattern.Format(("code", code), ("client_id", GoogleCloudConfig.ClientId),
-            ("client_secret", GoogleCloudConfig.ClientSecret),
-            ("redirect_url", HttpUtility.UrlEncode(redirectUrl)));
+    public override OAuthTokenRequest GetTokenRequest(string code, string redirectUrl)
+        => new GoogleOAuthTokenRequest(code: code, clientId: GoogleCloudConfig.ClientId,
+            clientSecret: GoogleCloudConfig.ClientSecret,
+            redirectUrl: HttpUtility.UrlEncode(redirectUrl));
 
     public override KifaActionResult FillUserInfo()
         => KifaActionResult.FromAction(() => {
