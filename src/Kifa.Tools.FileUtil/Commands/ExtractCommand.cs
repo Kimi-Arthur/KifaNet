@@ -121,6 +121,8 @@ class ExtractCommand : KifaCommand {
             }
         }
 
+        Logger.Info($"Archive files:\n\t{archive.Volumes.Select(v => v.FileName).JoinBy("\t\n")}");
+
         return new KifaActionResult {
             Status = KifaActionStatus.OK,
             Message = $"{selected.Count} files extracted"

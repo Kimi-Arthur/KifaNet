@@ -160,10 +160,10 @@ public static class StringExtensions {
         return false;
     }
 
-    public static string JoinBy(this IEnumerable<string> values, string separator = "")
+    public static string JoinBy(this IEnumerable<string?> values, string separator = "")
         => string.Join(separator, values);
 
-    public static string JoinBy(this IEnumerable<string> values, char separator)
+    public static string JoinBy(this IEnumerable<string?> values, char separator)
         => string.Join(separator, values);
 
     public static string NormalizeWikiTitle(this string title) => title.Replace(" ", "_");
