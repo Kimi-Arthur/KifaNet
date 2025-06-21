@@ -91,7 +91,14 @@ public class KifaActionResult {
 }
 
 public class KifaBatchActionResult : KifaActionResult {
-    List<(string Item, KifaActionResult Result)> Results { get; set; } = new();
+    List<(string Item, KifaActionResult Result)> Results { get; set; } = [];
+
+    public KifaBatchActionResult(
+        IEnumerable<(string Item, KifaActionResult Result)>? results = null) {
+        if (results != null) {
+            AddRange(results);
+        }
+    }
 
     public KifaBatchActionResult Add(string item, KifaActionResult moreResult) {
         Results.Add((item, moreResult));

@@ -66,6 +66,13 @@ class ExtractCommand : KifaCommand {
             ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
         });
 
+        var volumes = archive.Volumes.ToList();
+
+        Logger.Error($"Archive volume count: {volumes.Count}");
+        foreach (var volume in volumes) {
+            Logger.Error($"Volume name: {volume.Index} {volume.FileName}");
+        }
+
         var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => (
             Entry: entry, File: folder.GetFile(
                 ArchiveNameSeparator != null
@@ -97,6 +104,8 @@ class ExtractCommand : KifaCommand {
             };
         }
 
+        var results = new KifaBatchActionResult();
+
         // The enumerator way is adopted due to the issue mentioned in
         // https://stackoverflow.com/a/44379540.
         using var reader = archive.ExtractAllEntries();
@@ -104,16 +113,18 @@ class ExtractCommand : KifaCommand {
         var valid = enumerator.MoveNext();
         while (reader.MoveToNextEntry()) {
             if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
-                var file = enumerator.Current.File;
-                var entry = reader.Entry;
-                file.EnsureLocalParent();
-                var tempFile = file.GetIgnoredFile();
-                Logger.Debug($"Write {entry.Key} to {file}");
-                Logger.Trace($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
-                reader.WriteEntryTo(tempFile.GetLocalPath());
-                tempFile.Copy(file);
-                file.Add();
-                tempFile.Delete();
+                results.Add(reader.Entry.Key.Checked(), KifaActionResult.FromAction(() => {
+                    var file = enumerator.Current.File;
+                    var entry = reader.Entry;
+                    file.EnsureLocalParent();
+                    var tempFile = file.GetIgnoredFile();
+                    Logger.Debug($"Write {entry.Key} to {file}");
+                    Logger.Trace($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
+                    reader.WriteEntryTo(tempFile.GetLocalPath());
+                    tempFile.Copy(file);
+                    file.Add();
+                    tempFile.Delete();
+                }));
 
                 valid = enumerator.MoveNext();
             } else {
@@ -121,11 +132,41 @@ class ExtractCommand : KifaCommand {
             }
         }
 
-        Logger.Info($"Archive files:\n\t{archive.Volumes.Select(v => v.FileName).JoinBy("\t\n")}");
+        // results.AddRange(RemoveArchives(archive.Volumes
+        //     .Select(v => folder.GetFile(v.FileName.Checked())).ToList()));
 
         return new KifaActionResult {
             Status = KifaActionStatus.OK,
             Message = $"{selected.Count} files extracted"
         };
+    }
+
+    IEnumerable<(string Item, KifaActionResult Result)> RemoveArchives(
+        List<KifaFile> archiveVolumes) {
+        var selected = SelectMany(archiveVolumes, v => $"{{v}}: {v.Length}",
+            "archive files to delete since extraction is successful");
+        if (selected.Count == 0) {
+            Logger.Info("No archive files to remove.");
+        }
+
+        return selected.Select(v => ($"Remove {v}", RemoveOneArchiveFile(v)));
+    }
+
+    KifaActionResult RemoveOneArchiveFile(KifaFile file) {
+        if (file.Registered) {
+            if (Confirm($"File {file} is already registerd. Confirm removing it completely?")) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = "Should not extract from registered archives as of now."
+                };
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "Registered file is asked to be skipped."
+            };
+        }
+
+        return KifaActionResult.FromAction(file.Delete);
     }
 }
