@@ -94,7 +94,7 @@ public class KifaBatchActionResult : KifaActionResult {
     List<(string Item, KifaActionResult Result)> Results { get; set; } = [];
 
     public KifaBatchActionResult(
-        IEnumerable<(string Item, KifaActionResult Result)>? results = null) {
+        IEnumerable<(string item, KifaActionResult result)>? results = null) {
         if (results != null) {
             AddRange(results);
         }
@@ -106,9 +106,9 @@ public class KifaBatchActionResult : KifaActionResult {
     }
 
     public KifaBatchActionResult AddRange(
-        IEnumerable<(string Item, KifaActionResult Result)> moreResults) {
+        IEnumerable<(string item, KifaActionResult result)> moreResults) {
         foreach (var result in moreResults) {
-            Results.Add((result.Item, result.Result));
+            Results.Add((result.item, result.result));
         }
 
         return this;

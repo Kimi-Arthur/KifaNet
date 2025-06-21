@@ -141,7 +141,7 @@ class ExtractCommand : KifaCommand {
         };
     }
 
-    IEnumerable<(string Item, KifaActionResult Result)> RemoveArchives(
+    IEnumerable<(string item, KifaActionResult result)> RemoveArchives(
         List<KifaFile> archiveVolumes) {
         var selected = SelectMany(archiveVolumes, v => $"{{v}}: {v.Length}",
             "archive files to delete since extraction is successful");
