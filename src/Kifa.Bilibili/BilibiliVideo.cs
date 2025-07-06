@@ -130,8 +130,9 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     void FillWithBilibili() {
-        var data = HttpClients.GetBilibiliClient().Call(new VideoRpc(Id))?.Data;
-        var tags = HttpClients.GetBilibiliClient().Call(new VideoTagRpc(Id))?.Data;
+        var client = HttpClients.GetBilibiliClient(true);
+        var data = client.Call(new VideoRpc(Id))?.Data;
+        var tags = client.Call(new VideoTagRpc(Id))?.Data;
         Title = data.Title;
         Author = data.Owner.Name;
         AuthorId = data.Owner.Mid.ToString();
