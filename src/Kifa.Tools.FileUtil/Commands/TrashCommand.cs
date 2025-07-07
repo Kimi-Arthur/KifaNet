@@ -53,7 +53,7 @@ class TrashCommand : KifaCommand {
 
             var trashPath = Reason == null
                 ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
-                : $"{DateString}_{Reason}_{new KifaFile(fileNames[0]).Name}";
+                : $"/Trash/{DateString}_{Reason}_{new KifaFile(fileNames[0]).Name}";
 
             var selectedFiles =
                 SelectMany(foundFiles, choiceName: $"files to trash to {trashPath}");
@@ -72,7 +72,7 @@ class TrashCommand : KifaCommand {
     KifaActionResult Trash(string file, string trashPath)
         => KifaActionResult.FromAction(() => {
             var client = FileInformation.Client;
-            var target = $"{file}";
+            var target = $"{trashPath}/{file}";
             client.Link(file, target);
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
