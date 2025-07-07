@@ -457,45 +457,45 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     static readonly TimeSpan SearchDelay = TimeSpan.FromMinutes(30);
 
     Message? GetMessage(string path) {
-        var cellClient = ObtainCellClient();
-
         try {
-            var message = Retry
-                .Run(
-                    () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
-                        cellClient.Channel, path), HandleFloodExceptionFunc).GetAwaiter()
-                .GetResult().Messages.Select(m => m as Message)
+            return GetMessageBySearch(path) ?? GetMessageByHistory(path);
+        } finally {
+            ReturnCellClient();
+        }
+    }
+
+    Message? GetMessageByHistory(string path) {
+        var cellClient = ObtainCellClient();
+        var messages = Retry
+            .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
+                HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
+        while (messages?.Length > 0) {
+            var message = messages.Select(m => m as Message)
                 .SingleOrDefault(m => m?.message == path);
             if (message != null) {
                 return message;
             }
 
-            var messages = Retry
-                .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
-                    HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
-            while (messages?.Length > 0) {
-                message = messages.Select(m => m as Message)
-                    .SingleOrDefault(m => m?.message == path);
-                if (message != null) {
-                    return message;
-                }
-
-                if (messages[^1].Date < DateTime.UtcNow - SearchDelay) {
-                    break;
-                }
-
-                var lastMessageId = messages[^1].ID;
-                messages = Retry
-                    .Run(
-                        () => cellClient.Client.Messages_GetHistory(cellClient.Channel,
-                            lastMessageId), HandleFloodExceptionFunc).GetAwaiter().GetResult()
-                    .Messages;
+            if (messages[^1].Date < DateTime.UtcNow - SearchDelay) {
+                break;
             }
 
-            return null;
-        } finally {
-            ReturnCellClient();
+            var lastMessageId = messages[^1].ID;
+            messages = Retry
+                .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel, lastMessageId),
+                    HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
         }
+
+        return null;
+    }
+
+    Message? GetMessageBySearch(string path) {
+        var cellClient = ObtainCellClient();
+        return Retry
+            .Run(
+                () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
+                    cellClient.Channel, path), HandleFloodExceptionFunc).GetAwaiter().GetResult()
+            .Messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
     }
 
     public override void Dispose() {
