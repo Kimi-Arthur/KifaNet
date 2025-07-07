@@ -156,7 +156,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
             if (Exists(path)) {
                 throw new FileCorruptedException(
-                    $"Another program may have uploaded the file {path}. Skip creating the file.");
+                    $"Another program may have uploaded the file {path} in cell {this}. Skip creating the file.");
             }
 
             var finalResult = Retry.Run(() => cellClient.Client.SendMediaAsync(cellClient.Channel,
@@ -470,10 +470,16 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
                 HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
         while (messages?.Length > 0) {
-            var message = messages.Select(m => m as Message)
-                .SingleOrDefault(m => m?.message == path);
-            if (message != null) {
-                return message;
+            try {
+                var message = messages.Select(m => m as Message)
+                    .SingleOrDefault(m => m?.message == path);
+
+                if (message != null) {
+                    return message;
+                }
+            } catch (InvalidOperationException) {
+                throw new FileCorruptedException(
+                    $"Multiple entries matched for {path} by history in cell {this}");
             }
 
             if (messages[^1].Date < DateTime.UtcNow - SearchDelay) {
@@ -491,11 +497,17 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     Message? GetMessageBySearch(string path) {
         var cellClient = ObtainCellClient();
-        return Retry
-            .Run(
-                () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
-                    cellClient.Channel, path), HandleFloodExceptionFunc).GetAwaiter().GetResult()
-            .Messages.Select(m => m as Message).SingleOrDefault(m => m?.message == path);
+        try {
+            return Retry
+                .Run(
+                    () => cellClient.Client.Messages_Search<InputMessagesFilterDocument>(
+                        cellClient.Channel, path), HandleFloodExceptionFunc).GetAwaiter()
+                .GetResult().Messages.Select(m => m as Message)
+                .SingleOrDefault(m => m?.message == path);
+        } catch (InvalidOperationException) {
+            throw new FileCorruptedException(
+                $"Multiple entries matched for {path} by search in cell {this}");
+        }
     }
 
     public override void Dispose() {
