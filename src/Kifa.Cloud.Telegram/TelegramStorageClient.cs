@@ -154,15 +154,20 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 throw ex;
             }
 
+            if (Exists(path)) {
+                throw new FileCorruptedException(
+                    $"Another program may have uploaded the file {path}. Skip creating the file.");
+            }
+
             var finalResult = Retry.Run(() => cellClient.Client.SendMediaAsync(cellClient.Channel,
                         path, new InputFileBig {
                             id = fileId,
                             parts = totalParts,
                             name = path.Split("/")[^1]
                         }).WaitAsync(MergeTimeout),
-                    new Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>(
-                        (exception, failures)
-                            => HandleMergeExceptions(exception, failures, GetUploadBlockTask)))
+                    new Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>((
+                            exception, failures)
+                        => HandleMergeExceptions(exception, failures, GetUploadBlockTask)))
                 .GetAwaiter()
                 .GetResult();
 
