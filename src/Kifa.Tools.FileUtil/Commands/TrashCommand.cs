@@ -72,7 +72,7 @@ class TrashCommand : KifaCommand {
     KifaActionResult Trash(string file, string trashPath)
         => KifaActionResult.FromAction(() => {
             var client = FileInformation.Client;
-            var target = $"{trashPath}/{file}";
+            var target = $"{trashPath}{file}";
             client.Link(file, target);
             Logger.Info($"Linked original FileInfo {file} to new FileInfo {target}.");
 
