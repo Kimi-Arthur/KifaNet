@@ -53,7 +53,7 @@ class TrashCommand : KifaCommand {
 
             var trashPath = Reason == null
                 ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
-                : $"/Trash/{DateString}_{Reason}_{new KifaFile(fileNames[0]).Name}";
+                : $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}";
 
             var selectedFiles =
                 SelectMany(foundFiles, choiceName: $"files to trash to {trashPath}");
