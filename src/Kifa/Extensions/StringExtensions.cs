@@ -17,7 +17,7 @@ public static class StringExtensions {
         .ToDictionary(item => item.value, item => item.factor);
 
     static readonly Dictionary<string, string> SafeCharacterMapping = new() {
-        ["/"] = "／", // Must come first fot NormalizeFilePath.
+        ["/"] = "／",
         ["\\"] = "＼",
         [": "] = "：",
         ["|"] = "｜",
