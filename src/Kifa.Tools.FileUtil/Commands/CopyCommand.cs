@@ -58,32 +58,22 @@ class CopyCommand : KifaCommand {
             return 1;
         }
 
-        foreach (var file in files) {
-            var linkFile = linkName + file[target.Length..];
-            Console.WriteLine($"\t{linkFile}\n=>\t{file}\n");
+        var links = files.Select(file => (File: file, Link: linkName + file[target.Length..]))
+            .ToList();
+        var selected = SelectMany(links, link => $"{link.File} <-\n{link.Link}", "files to link");
+
+        if (selected.Count == 0) {
+            Logger.Warn("No files selected to link.");
+            return 0;
         }
 
-        if (!Confirm($"Confirm linking the {files.Count} above?", alwaysConfirm: false)) {
-            Logger.Info("Linking cancelled.");
-            return -1;
+        foreach (var (file, link) in selected) {
+            ExecuteItem(file, () => LinkFileEntry(file, link));
         }
 
-        foreach (var file in files) {
-            var linkFile = linkName + file[target.Length..];
-            if (FileInformation.Client.Get(file) == null) {
-                Logger.Warn($"Target {file} not found.");
-                continue;
-            }
-
-            if (FileInformation.Client.Get(linkFile) != null) {
-                Logger.Warn($"Link name {linkFile} already exists. Ignored.");
-                continue;
-            }
-
-            Logger.LogResult(FileInformation.Client.Link(file, linkFile),
-                $"linking {linkFile} => {file}!");
-        }
-
-        return 0;
+        return LogSummary();
     }
+
+    static KifaActionResult LinkFileEntry(string file, string link)
+        => FileInformation.Client.Link(file, link);
 }
