@@ -17,7 +17,7 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
     public class Data {
         public long HasMore { get; set; }
         public Attentions Attentions { get; set; }
-        public List<CardElement> Cards { get; set; }
+        public List<CardElement> Cards { get; set; } = [];
         public long NextOffset { get; set; }
         public long Gt { get; set; }
     }
@@ -175,7 +175,7 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
     protected override HttpMethod Method => HttpMethod.Get;
 
     public UploaderVideoRpc(string uploaderId, long offset = 0) {
-        Parameters = new () {
+        Parameters = new() {
             { "id", uploaderId },
             { "offset", offset.ToString() }
         };
