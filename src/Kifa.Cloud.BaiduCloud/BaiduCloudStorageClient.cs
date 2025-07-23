@@ -317,8 +317,18 @@ public class BaiduCloudStorageClient : StorageClient {
         var needWalk = path.StartsWith("/$/");
 
         if (!needWalk && recursive) {
-            var result = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
-                ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))));
+            JToken result;
+            try {
+                result = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
+                    ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))));
+            } catch (HttpRequestException ex) {
+                if (ex.StatusCode == HttpStatusCode.NotFound) {
+                    yield break;
+                }
+
+                throw;
+            }
+
             if (result["list"] == null) {
                 yield break;
             }
