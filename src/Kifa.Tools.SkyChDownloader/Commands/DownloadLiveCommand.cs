@@ -70,7 +70,7 @@ public class DownloadLiveCommand : KifaCommand {
         var mpegDash = new MpegDashFile(videoLink);
         var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
-        var selected = SelectMany(audioStreamGetters, _ => "audio");
+        var selected = SelectMany(audioStreamGetters, choiceToString: _ => "audio");
 
         var parts = new List<KifaFile>();
         var videoFile = targetFile.GetIgnoredFile("v.mp4");
