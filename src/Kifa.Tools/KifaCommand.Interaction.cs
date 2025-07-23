@@ -106,7 +106,14 @@ public abstract partial class KifaCommand {
     static Dictionary<string, bool> alwaysDefaultForSelectMany = new();
 
     public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
-        Func<TChoice, string>? choiceToString = null, string? choiceName = null,
+        Func<TChoice, string>? choiceToString = null, string? choicesName = null,
+        int startingIndex = 1, string selectionKey = "", bool skipIfEmpty = true) {
+        return SelectMany(choices, getChoicesName: _ => choicesName ?? "items", choiceToString,
+            startingIndex, selectionKey, skipIfEmpty);
+    }
+
+    public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
+        Func<List<TChoice>, string> getChoicesName, Func<TChoice, string>? choiceToString = null,
         int startingIndex = 1, string selectionKey = "", bool skipIfEmpty = true) {
         if (skipIfEmpty && choices.Count == 0) {
             return [];
@@ -116,8 +123,6 @@ public abstract partial class KifaCommand {
         defaultReplyForSelectMany.TryAdd(selectionKey, "");
 
         choiceToString ??= c => c.ToString();
-
-        choiceName ??= "items";
 
         while (true) {
             for (var i = 0; i < choices.Count; i++) {
@@ -133,7 +138,7 @@ public abstract partial class KifaCommand {
             } else {
                 var messages = new[] {
                     $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
-                    $"Select 0 or more from the above {choices.Count} {choiceName} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
+                    $"Select 0 or more from the above {choices.Count} {getChoicesName(choices)} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
                 };
                 Console.WriteLine(messages[0]);
                 Console.Write(messages[1]);
@@ -199,7 +204,7 @@ public abstract partial class KifaCommand {
                 }
 
                 if (!alwaysDefaultForSelectMany[selectionKey] && !Confirm(
-                        $"Confirm selection of {chosen.Count} {choiceName} above out of {choices.Count}?")) {
+                        $"Confirm selection of {chosen.Count} {getChoicesName(chosen)} above out of {choices.Count}?")) {
                     continue;
                 }
             }
@@ -210,7 +215,8 @@ public abstract partial class KifaCommand {
                 alwaysDefaultForSelectMany[selectionKey] = true;
             }
 
-            Logger.Debug($"Selected {chosen.Count} {choiceName} above out of {choices.Count}.");
+            Logger.Debug(
+                $"Selected {chosen.Count} {getChoicesName(chosen)} above out of {choices.Count}.");
             return chosen;
         }
     }

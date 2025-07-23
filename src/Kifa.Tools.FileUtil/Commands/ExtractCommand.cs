@@ -8,7 +8,6 @@ using Kifa.Jobs;
 using Kifa.Service;
 using NLog;
 using SharpCompress.Archives;
-using SharpCompress.Archives.Rar;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 
@@ -40,7 +39,7 @@ class ExtractCommand : KifaCommand {
         var files = KifaFile.FindExistingFiles(FileNames);
         var selected = SelectMany(files,
             choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choiceName: "files");
+            choicesName: "files");
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => ExtractFile(file));
@@ -95,7 +94,7 @@ class ExtractCommand : KifaCommand {
         var selected = SelectMany(entries,
             choiceToString: entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()}) => {entry.File}",
-            choiceName: "entries");
+            choicesName: "entries");
 
         if (selected.Count == 0) {
             return new KifaActionResult {

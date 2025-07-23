@@ -31,7 +31,7 @@ class AddCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
         var selected = SelectMany(files, choiceToString: file => file.ToString(),
-            choiceName: "files to add");
+            choicesName: "files to add");
 
         if (selected.Count == 0) {
             Logger.Warn("No files selected or found to be checked.");

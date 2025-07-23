@@ -21,7 +21,7 @@ class NormalizeCommand : KifaCommand {
         var files = KifaFile.FindExistingFiles(FileNames);
         var selected = SelectMany(files,
             choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choiceName: "files to normalize their paths (FormC + extension to lower)");
+            choicesName: "files to normalize their paths (FormC + extension to lower)");
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => NormalizeFile(file));

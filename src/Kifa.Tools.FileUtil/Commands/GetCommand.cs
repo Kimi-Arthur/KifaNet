@@ -42,7 +42,7 @@ class GetCommand : KifaCommand {
         var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
         var selected = SelectMany(files,
             choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choiceName: "files");
+            choicesName: "files");
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => GetFile(file));
