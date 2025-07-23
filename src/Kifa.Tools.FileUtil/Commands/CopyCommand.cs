@@ -54,44 +54,34 @@ class CopyCommand : KifaCommand {
 
         var files = FileInformation.Client.ListFolder(target, true);
         if (files.Count == 0) {
-            if (FileInformation.Client.Get(target)?.Exists != true) {
-                Logger.Fatal($"Target {target} not found.");
-                return 1;
+            Logger.Fatal($"Target {target} not found.");
+            return 1;
+        }
+
+        foreach (var file in files) {
+            var linkFile = linkName + file[target.Length..];
+            Console.WriteLine($"\t{linkFile}\n=>\t{file}\n");
+        }
+
+        if (!Confirm($"Confirm linking the {files.Count} above?", alwaysConfirm: false)) {
+            Logger.Info("Linking cancelled.");
+            return -1;
+        }
+
+        foreach (var file in files) {
+            var linkFile = linkName + file[target.Length..];
+            if (FileInformation.Client.Get(file) == null) {
+                Logger.Warn($"Target {file} not found.");
+                continue;
             }
 
-            if (FileInformation.Client.Get(linkName)?.Exists == true) {
-                Logger.Fatal($"Link name {linkName} already exists.");
-                return 1;
+            if (FileInformation.Client.Get(linkFile) != null) {
+                Logger.Warn($"Link name {linkFile} already exists. Ignored.");
+                continue;
             }
 
-            Logger.LogResult(FileInformation.Client.Link(target, linkName),
-                $"linking {linkName} => {target}!");
-        } else {
-            foreach (var file in files) {
-                var linkFile = linkName + file[target.Length..];
-                Console.WriteLine($"\t{linkFile}\n=>\t{file}\n");
-            }
-
-            if (!Confirm($"Confirm linking the {files.Count} above?", alwaysConfirm: false)) {
-                Logger.Info("Linking cancelled.");
-                return -1;
-            }
-
-            foreach (var file in files) {
-                var linkFile = linkName + file[target.Length..];
-                if (FileInformation.Client.Get(file) == null) {
-                    Logger.Warn($"Target {file} not found.");
-                    continue;
-                }
-
-                if (FileInformation.Client.Get(linkFile) != null) {
-                    Logger.Warn($"Link name {linkFile} already exists. Ignored.");
-                    continue;
-                }
-
-                Logger.LogResult(FileInformation.Client.Link(file, linkFile),
-                    $"linking {linkFile} => {file}!");
-            }
+            Logger.LogResult(FileInformation.Client.Link(file, linkFile),
+                $"linking {linkFile} => {file}!");
         }
 
         return 0;
