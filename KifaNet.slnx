@@ -39,6 +39,7 @@
   <Folder Name="/Fun/">
     <Project Path="Kifa.Books.ZeroAvenue\Kifa.Books.ZeroAvenue.csproj" Type="Classic C#" />
     <Project Path="Kifa.Twitter\Kifa.Twitter.csproj" Type="Classic C#" />
+    <Project Path="Kifa.YouTube.Tests\Kifa.YouTube.Tests.csproj" Type="Classic C#" />
     <Project Path="Kifa.YouTube\Kifa.YouTube.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Bilibili\Kifa.Bilibili.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Graphics\Kifa.Graphics.csproj" Type="Classic C#" />

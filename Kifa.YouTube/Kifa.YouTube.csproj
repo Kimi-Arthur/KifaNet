@@ -2,13 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\Kifa\Kifa.csproj" />
-        <ProjectReference Include="..\src\Kifa.Service\Kifa.Service.csproj" />
+        <ProjectReference Include="..\src\Kifa\Kifa.csproj"/>
+        <ProjectReference Include="..\src\Kifa.Service\Kifa.Service.csproj"/>
     </ItemGroup>
 
 </Project>
