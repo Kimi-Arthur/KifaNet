@@ -205,6 +205,7 @@ public abstract partial class KifaCommand {
 
                 if (!alwaysDefaultForSelectMany[selectionKey] && !Confirm(
                         $"Confirm selection of {chosen.Count} {getChoicesName(chosen)} above out of {choices.Count}?")) {
+                    Logger.Info("Choices not confirmed. Rechoose.");
                     continue;
                 }
             }
