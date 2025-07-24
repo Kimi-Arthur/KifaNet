@@ -13,8 +13,8 @@ public class BilibiliUploaderTests {
 
     [Fact]
     public void UploaderVideoRpcTest() {
-        HttpClients.GetBilibiliClient().Call(new UploaderVideoRpc("43536")).Data.Cards.Should()
-            .HaveCount(20);
+        HttpClients.GetBilibiliClient().Call(new UploaderVideoRpc("43536")).Data.Items.Should()
+            .HaveCountGreaterThan(10);
     }
 
     [Fact]
@@ -26,11 +26,11 @@ public class BilibiliUploaderTests {
     [Fact]
     public void FillTest() {
         var uploader = new BilibiliUploader {
-            Id = "1462401621"
+            Id = "18427691"
         };
         uploader.Fill();
-        Assert.Equal("特厨隋卞", uploader.Name);
-        uploader.Aids.Should().HaveCountGreaterThan(300);
-        uploader.Aids.Should().Contain("av724849048");
+        uploader.Name.Should().Be("壹壹yeamusic");
+        uploader.Aids[^1].Should().Be("av561513930");
+        uploader.Aids.Should().HaveCount(104);
     }
 }
