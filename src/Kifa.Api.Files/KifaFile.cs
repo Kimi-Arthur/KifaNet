@@ -108,21 +108,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     string? mirrorHost;
 
-    public string? MirrorHost {
-        get => mirrorHost;
-        set {
-            if (mirrorHost != value) {
-                LocalMirrorFile = value == Host ? this :
-                    value == null ? null : new KifaFile($"{value}{Id}", fileInfo: FileInfo);
-            }
-
-            mirrorHost = value;
-        }
+    public string MirrorHost {
+        get => (mirrorHost ??= DefaultMirrorHost).Checked();
+        set => mirrorHost = value;
     }
 
     // Note that if it exists in this server, this may differ from itself as it's using `Id` not
     // its actual `Path`. But normally it's for remote files.
-    public KifaFile? LocalMirrorFile { get; set; }
+    public KifaFile? LocalMirrorFile => new($"{MirrorHost}{Id}", fileInfo: FileInfo);
 
     FileIdInfo? idInfo;
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
@@ -173,7 +166,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         FileFormat = KifaFileV2Format.Get(uri) ?? KifaFileV1Format.Get(uri) ??
             KifaFileV0Format.Get(uri) ?? RawFileFormat.Instance;
-        MirrorHost = DefaultMirrorHost;
         UseCache = useCache;
     }
 
