@@ -140,8 +140,8 @@ class RemoveCommand : KifaCommand {
         info = FileInformation.Client.Get(id);
         if (info == null) {
             return new KifaActionResult {
-                Status = KifaActionStatus.Warning,
-                Message = $"File {id} is not found in registration."
+                Status = KifaActionStatus.Skipped,
+                Message = $"File {id} is not found in registration. Skipped"
             };
         }
 
