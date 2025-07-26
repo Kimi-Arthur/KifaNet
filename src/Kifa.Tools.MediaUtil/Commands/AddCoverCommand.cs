@@ -40,7 +40,8 @@ public class AddCoverCommand : KifaCommand {
         var selectedFiles = SelectMany(
             filesWithImages.Where(file => file.cover != null && !file.target.Exists())
                 .Select(file => (file.source, cover: file.cover!, file.target)).ToList(),
-            choice => $"{choice.source} + {choice.cover} => {choice.target}", "files");
+            choice => $"{choice.source} + {choice.cover} => {choice.target}",
+            "files to add cover for");
 
         var filesByResults = selectedFiles.Select(file => (file, result: AddCover(file)))
             .GroupBy(item => item.result.Status == KifaActionStatus.OK)

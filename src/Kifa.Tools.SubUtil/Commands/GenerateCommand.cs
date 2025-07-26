@@ -27,7 +27,8 @@ class GenerateCommand : KifaCommand {
     public bool Force { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames));
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames),
+            choicesName: "files to generate merged subtitle for");
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => GenerateSubtitle(file));
         }
@@ -65,16 +66,16 @@ class GenerateCommand : KifaCommand {
         var rawSubtitles = GetSrtSubtitles(file);
         rawSubtitles.AddRange(GetAssSubtitles(file));
         var selectedSubtitles = SelectMany(rawSubtitles,
-            subtitle => $"{subtitle.Id} ({subtitle.Dialogs.Count} lines)", choicesName: "subtitles",
-            selectionKey: "subtitles");
+            subtitle => $"{subtitle.Id} ({subtitle.Dialogs.Count} lines)",
+            choicesName: "subtitles to include", selectionKey: "subtitles");
         events.Events.AddRange(selectedSubtitles.SelectMany(sub => sub.Dialogs));
 
         // TODO: Do duplication check.
         styles.AddRange(selectedSubtitles.SelectMany(sub => sub.Styles));
 
         var bilibiliChats = SelectMany(GetBilibiliChats(file),
-            chat => $"{chat.Id} ({chat.Comments.Count} chats)", choicesName: "Bilibili chats",
-            selectionKey: "bili_chats");
+            chat => $"{chat.Id} ({chat.Comments.Count} chats)",
+            choicesName: "Bilibili chats to include", selectionKey: "bili_chats");
         var comments = bilibiliChats.SelectMany(chat => chat.Comments).ToList();
         PositionNormalComments(comments.Where(c => c.Style == AssStyle.NormalCommentStyle)
             .OrderBy(c => c.Start).ToList());
@@ -85,7 +86,7 @@ class GenerateCommand : KifaCommand {
         events.Events.AddRange(comments);
 
         var qqChats = SelectMany(GetTencentChats(file),
-            chat => $"{chat.Id} ({chat.Comments.Count} chats)", choicesName: "QQ chats",
+            chat => $"{chat.Id} ({chat.Comments.Count} chats)", choicesName: "QQ chats to include",
             selectionKey: "qq_chats");
         if (qqChats.Count > 0) {
             PositionNormalComments(qqChats[0].Comments.OrderBy(c => c.Start).ToList());

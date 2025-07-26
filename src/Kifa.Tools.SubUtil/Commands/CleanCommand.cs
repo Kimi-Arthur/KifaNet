@@ -12,7 +12,8 @@ class CleanCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames));
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames),
+            choicesName: "subtitle files to clean");
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => CleanUpSubtitle(file));
         }

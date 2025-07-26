@@ -74,7 +74,7 @@ public class DownloadProgramCommand : KifaCommand {
         var mpegDash = new MpegDashFile(videoLink);
         var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
-        var selected = SelectMany(audioStreamGetters, choiceToString: _ => "audio");
+        var selected = SelectMany(audioStreamGetters, choiceToString: _ => "audio", choicesName: "audio tracks to include");
 
         var parts = new List<KifaFile>();
         var videoFile = targetFile.GetIgnoredFile("v.mp4");

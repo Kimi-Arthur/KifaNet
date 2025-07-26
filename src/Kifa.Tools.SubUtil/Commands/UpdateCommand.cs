@@ -41,8 +41,13 @@ class TimeShiftAction : Action {
         var selectedLines = command.SelectMany(
             sub.Sections.OfType<AssEventsSection>().First().Events.ToList());
         var shift = command.Confirm("Input the amount of time to shift:", "10s")
-            .ParseTimeSpanString();
-        ShiftTime(selectedLines, shift);
+            ?.ParseTimeSpanString();
+        if (shift == null) {
+            Console.WriteLine("No valid time shift provided!");
+            return;
+        }
+
+        ShiftTime(selectedLines, shift.Value);
     }
 
     static void ShiftTime(IEnumerable<AssEvent> selectedLines, TimeSpan shift) {

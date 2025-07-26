@@ -231,7 +231,7 @@ class ImportCommand : KifaCommand {
 
         var toRegister = SelectMany(notRegisteredFiles,
             choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choicesName: "files to add to the system");
+            choicesName: "files to register before importing");
         toRegister.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
         return files.Where(f => f.Registered);
     }

@@ -104,17 +104,15 @@ class RemoveCommand : KifaCommand {
         var localFiles = KifaFile.FindExistingFiles(FileNames);
 
         if (localFiles.Count > 0) {
-            foreach (var file in localFiles) {
-                Console.WriteLine(file);
-            }
+            var selected = SelectMany(localFiles,
+                choicesName: $"local files to delete{removalText}");
 
-            if (!Confirm(
-                    $"Confirm deleting the {localFiles.Count} file instances above{removalText}?")) {
-                Logger.Info("Action canceled.");
+            if (selected.Count == 0) {
+                Logger.Warn("No files found or selected to be deleted.");
                 return 2;
             }
 
-            localFiles.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+            selected.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
         }
 
         var phantomFiles = KifaFile.FindPhantomFiles(FileNames);
