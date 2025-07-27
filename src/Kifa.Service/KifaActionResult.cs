@@ -182,8 +182,12 @@ public static class KifaActionResultLogger {
     }
 
     static LogLevel GetLogLevel(KifaActionStatus status, LogLevel? defaultLevel)
-        => status.HasFlag(KifaActionStatus.Error) ? LogLevel.Error :
-            status.HasFlag(KifaActionStatus.Warning) ? LogLevel.Warn :
-            status.HasFlag(KifaActionStatus.Pending) ? LogLevel.Debug :
-            defaultLevel ?? LogLevel.Trace;
+        => status.HasFlag(KifaActionStatus.Error) || status.HasFlag(KifaActionStatus.BadRequest)
+            ?
+            LogLevel.Error
+            : status.HasFlag(KifaActionStatus.Warning)
+                ? LogLevel.Warn
+                : status.HasFlag(KifaActionStatus.Pending)
+                    ? LogLevel.Debug
+                    : defaultLevel ?? LogLevel.Trace;
 }
