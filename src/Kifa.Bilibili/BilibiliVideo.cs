@@ -311,7 +311,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
-        string? alternativeFolder = null, string prefix = "", BilibiliUploader? uploader = null) {
+        string? alternativeFolder = null, string? extraFolder = null, string prefix = "",
+        BilibiliUploader? uploader = null) {
         var p = Pages.First(x => x.Id == pid);
 
         var partName = p.Title.NormalizeFileName();
@@ -329,8 +330,12 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             Name = Author
         };
 
-        var folderSegments =
-            (alternativeFolder ?? $"{uploader.Name}.{uploader.Id}".NormalizeFileName()).Split('/');
+        var folderSegments = (alternativeFolder ?? $"{uploader.Name}.{uploader.Id}")
+            .NormalizeFileName().Split('/').ToList();
+        if (extraFolder != null) {
+            folderSegments.Add(extraFolder);
+        }
+
         folderSegments[0] += ".bilibili";
         var partString = Pages.Count > 1 ? $"{pidText} {partName}" : partName;
         return

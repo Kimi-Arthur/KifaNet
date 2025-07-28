@@ -13,6 +13,11 @@ public class DownloadUploaderCommand : DownloadCommand {
     [Value(0, Required = true, HelpText = "Uploader ID.")]
     public string UploaderId { get; set; }
 
+    [Option('f', "folder",
+        HelpText =
+            "Extra inner folder name for the group of videos (especially if subset of videos are selected).")]
+    public string? InnerFolder { get; set; }
+
     public override int Execute(KifaTask? task = null) {
         var uploader = BilibiliUploader.Client.Get(UploaderId);
         if (uploader == null) {
@@ -20,15 +25,12 @@ public class DownloadUploaderCommand : DownloadCommand {
             return 1;
         }
 
-        foreach (var videoId in Enumerable.Reverse(uploader.Aids)) {
-            var video = BilibiliVideo.Client.Get(videoId);
-            if (video == null) {
-                Logger.Error($"Cannot find video ({videoId}). Skipping.");
-                continue;
-            }
-
+        var videos = BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList())
+            .ExceptNull().ToList();
+        var selected = SelectMany(videos, video => video.Title);
+        foreach (var video in selected) {
             foreach (var page in video.Pages) {
-                Download(video, page.Id, uploader: uploader);
+                Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder);
             }
         }
 

@@ -37,7 +37,7 @@ public abstract class DownloadCommand : BiliCommand {
     int downloadCounter;
 
     protected void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
-        BilibiliUploader? uploader = null, bool regionLocked = false) {
+        string? extraFolder = null, BilibiliUploader? uploader = null, bool regionLocked = false) {
         string? extension;
         int quality;
         int codec;
@@ -65,7 +65,7 @@ public abstract class DownloadCommand : BiliCommand {
 
         var desiredName = video.GetDesiredName(pid, quality, codec,
             includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
-            prefix: GetPrefix(video), uploader: uploader);
+            extraFolder: extraFolder, prefix: GetPrefix(video), uploader: uploader);
         var desiredFile = outputFolder.GetFile($"{desiredName}.mp4");
         var targetFiles = video.GetCanonicalNames(pid, quality, codec)
             .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
