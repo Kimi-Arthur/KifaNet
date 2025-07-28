@@ -24,7 +24,8 @@ public static class StringExtensions {
         ["?"] = "？",
         ["*"] = "＊",
         ["<"] = "＜",
-        [">"] = "＞"
+        [">"] = "＞",
+        ["\\n"] = " "
     };
 
     public static string Format(this string format, params (string Key, object Value)[] parameters)
