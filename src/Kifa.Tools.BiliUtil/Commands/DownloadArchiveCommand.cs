@@ -30,7 +30,7 @@ public class DownloadArchiveCommand : DownloadCommand {
             Logger.Trace($"To download video {video}");
 
             foreach (var page in video.Pages) {
-                Download(video, page.Id, alternativeFolder: archive.GetBaseFolder());
+                Download(video, page.Id, extraFolder: archive.GetArchiveFolder());
             }
         }
 

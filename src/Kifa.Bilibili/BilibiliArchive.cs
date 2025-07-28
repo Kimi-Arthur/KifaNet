@@ -57,5 +57,5 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
         return null;
     }
 
-    public string GetBaseFolder() => $"{Author}-{Title}.{AuthorId}-{SeasonId}";
+    public string GetArchiveFolder() => $"{Title}.{SeasonId}";
 }
