@@ -618,7 +618,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             if (sha256Info.Sha256 == info.Sha256) {
                 if (sha256Info.RealId != info.RealId) {
                     Logger.LogResult(FileInfoClient.Link(sha256Info.Id, info.Id),
-                        $"linking file from {sha256Info.Id} to {info.Id} due common SHA256 value",
+                        $"linking file from {sha256Info.Id} to {info.Id} due to common SHA256 value",
                         defaultLevel: LogLevel.Debug, throwIfError: true);
                 } else {
                     Logger.Trace($"File {info.Id} already linked to {sha256Info.Id}");
