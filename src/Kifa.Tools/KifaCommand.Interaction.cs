@@ -31,11 +31,11 @@ public abstract partial class KifaCommand {
 
         if (reverse) {
             for (var i = choices.Count - 1; i >= 0; i--) {
-                Console.WriteLine($"[{i + startingIndex}] {choiceStrings[i]}");
+                Console.WriteLine($"[{i + startingIndex}]\t{choiceStrings[i]}");
             }
         } else {
             for (var i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i + startingIndex}] {choiceStrings[i]}");
+                Console.WriteLine($"[{i + startingIndex}]\t{choiceStrings[i]}");
             }
         }
 
@@ -126,7 +126,7 @@ public abstract partial class KifaCommand {
 
         while (true) {
             for (var i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i + startingIndex}] {choiceToString(choices[i])}");
+                Console.WriteLine($"[{i + startingIndex}]\t{choiceToString(choices[i])}");
             }
 
             string reply;

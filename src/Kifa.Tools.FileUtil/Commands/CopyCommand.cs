@@ -60,7 +60,7 @@ class CopyCommand : KifaCommand {
 
         var links = files.Select(file => (File: file, Link: linkName + file[target.Length..]))
             .ToList();
-        var selected = SelectMany(links, link => $"\t{link.File}\n->\t{link.Link}",
+        var selected = SelectMany(links, link => $"{link.File}\n->\t{link.Link}",
             "files to link");
 
         if (selected.Count == 0) {
