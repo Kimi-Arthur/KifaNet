@@ -52,7 +52,6 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         var list = GetAids(data).ToList();
 
         while (data.HasMore) {
-            Thread.Sleep(TimeSpan.FromSeconds(1));
             data = HttpClients.GetBilibiliClient()
                 .Call(new UploaderVideoRpc(uploaderId, data.Offset))?.Data;
             if (data == null) {
@@ -61,6 +60,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
             }
 
             list.AddRange(GetAids(data));
+            Thread.Sleep(TimeSpan.FromSeconds(5));
         }
 
         return list;
