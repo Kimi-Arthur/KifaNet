@@ -28,6 +28,7 @@ public interface DataChef {
         { GuitarChord.ModelId, new Lazy<DataChef>(() => new DataChef<GuitarChord>()) },
         { TvShow.ModelId, new Lazy<DataChef>(() => new DataChef<TvShow>()) },
         { Anime.ModelId, new Lazy<DataChef>(() => new DataChef<Anime>()) },
+        { Series.ModelId, new Lazy<DataChef>(() => new DataChef<Series>()) },
         { Unit.ModelId, new Lazy<DataChef>(() => new DataChef<Unit>()) },
         { User.ModelId, new Lazy<DataChef>(() => new DataChef<User>()) },
         { Event.ModelId, new Lazy<DataChef>(() => new DataChef<Event>()) },
@@ -61,7 +62,8 @@ public interface DataChef {
     KifaActionResult Delete(List<string> ids);
 }
 
-public class DataChef<TDataModel> : DataChef where TDataModel : DataModel, WithModelId<TDataModel>, new() {
+public class DataChef<TDataModel> : DataChef
+    where TDataModel : DataModel, WithModelId<TDataModel>, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     static KifaServiceClient<TDataModel> client;
