@@ -1,8 +1,111 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Kifa.Service;
+using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Infos;
+
+public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInfo, ItemProvider {
+    public static string ModelId => "series";
+
+    public static KifaServiceClient<Series> Client { get; set; } =
+        new KifaServiceRestClient<Series>();
+
+    public static HashSet<string> KnownCategories { get; set; } =
+        ["Gaming", "Tales", "Food", "News", "Technology"];
+    // Id should be like /Gaming/黑桐谷歌/漫威蜘蛛侠2
+
+    public List<Season>? Seasons { get; set; }
+    public List<Episode>? Specials { get; set; }
+
+    public string? PatternId { get; set; }
+    public int? SeasonIdWidth { get; set; }
+    public int? EpisodeIdWidth { get; set; }
+
+    [JsonIgnore]
+    [YamlIgnore]
+    string Title => Id.Checked().Split("/").Last();
+
+    public string? Format(Season season, Episode episode) {
+        var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
+        var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
+
+        var sid = season.Id.ToString().PadLeft(seasonIdWidth, '0');
+
+        var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
+
+        // season.Title and episode.Title can be empty.
+        return PatternId switch {
+            "multi_season" => $"{Id}/Season {season.Id} {season.Title}".TrimEnd() +
+                              $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd(),
+            "single_season" => $"{Id}/{Title} EP{eid} {episode.Title}".TrimEnd(),
+            _ => null
+        };
+    }
+
+    public (Season Season, Episode Episode)? Parse(string formatted) {
+        var pattern = PatternId switch {
+            "multi_season" =>
+                $@"{Id}/Season (\d+)( .*)?/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+            "single_season" => $@"{Id}/{Title} EP(?<episode_id>\d+)",
+            _ => null
+        };
+
+        if (pattern == null) {
+            return null;
+        }
+
+        var match = Regex.Match(formatted, pattern);
+        if (match.Success) {
+            var seasonId = match.Groups["season_id"].Success
+                ? int.Parse(match.Groups["season_id"].Value)
+                : 1;
+
+            var episodeId = match.Groups["episode_id"].Success
+                ? int.Parse(match.Groups["episode_id"].Value)
+                : -1;
+
+            if (episodeId < 0) {
+                return null;
+            }
+
+            var season = Seasons.First(s => s.Id == seasonId);
+            var episode = season.Episodes.First(e => e.Id == episodeId);
+            return (season, episode);
+        }
+
+        return null;
+    }
+
+    public static IEnumerable<ItemInfo>? GetItems(string[] spec) {
+        if (!KnownCategories.Contains(spec[0])) {
+            return null;
+        }
+
+        var numberedSegments = spec.Reverse().TakeWhile(s => int.TryParse("123", out _))
+            .Select(int.Parse).Reverse().ToList();
+
+        if (numberedSegments.Count > 2) {
+            throw new ArgumentOutOfRangeException(
+                $"Number of number segments at the end of the spec exceeds the maximum number of 2, is {numberedSegments.Count}");
+        }
+
+        var id = $"/{spec[..^numberedSegments.Count].JoinBy('/')}";
+        var seasonId = numberedSegments.Count > 0 ? numberedSegments[0] : (int?) null;
+        var episodeId = numberedSegments.Count > 1 ? numberedSegments[1] : (int?) null;
+        var series = Client.Get(id).Checked();
+        return series.Seasons.Checked().Where(season => seasonId == null || season.Id == seasonId)
+            .SelectMany(season => season.Episodes.Checked(),
+                (season, episode) => (season, episode, false))
+            .Where(item => episodeId == null || episodeId == item.episode.Id).Select(item
+                => new ItemInfo {
+                    Path = series.Format(item.season, item.episode).Checked()
+                });
+    }
+}
 
 public class Season : WithFormatInfo {
     public int Id { get; set; }
