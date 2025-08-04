@@ -164,7 +164,7 @@ class ImportCommand : KifaCommand {
 
             var validEpisodes = info.Items.Where(e => !e.Matched).ToList();
             try {
-                var selected = SelectOne(validEpisodes, e => $"{file} => {e.Path}{suffix}",
+                var selected = SelectOne(validEpisodes, e => $"{file}\n=>\t{e.Path}{suffix}",
                     "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
                 if (selected == null) {
                     Logger.Warn($"Ignored {file}.");
