@@ -54,8 +54,8 @@ class DownloadSubcatCommand : KifaCommand {
             Title: element.Parent.Checked().TextContent,
             Link: element.Attributes["href"].Checked().Value)).ToList();
 
-        var choice = SelectOne(subtitles, sub => $"{sub.Title}: {sub.Link}", "subtitle",
-            startingIndex: 1, reverse: true);
+        var choice = SelectOne(subtitles, sub => $"{sub.Title}: {sub.Link}",
+            $"subtitles for {target}", startingIndex: 1, reverse: true);
 
         if (choice == null) {
             return new KifaActionResult {
