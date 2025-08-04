@@ -69,7 +69,8 @@ class UploadCommand : KifaCommand {
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(),
-                () => file.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode, true));
+                () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
+                    DownloadLocal, QuickMode, true));
         }
 
         var pendingFiles = PopPendingResults().Select(item => item.item);
