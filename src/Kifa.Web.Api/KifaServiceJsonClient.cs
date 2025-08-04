@@ -220,6 +220,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         }
 
         Logger.Trace($"Got {ModelId}/{id}");
+        Logger.Notice(() => $"Content: {data}");
         return data;
     }
 

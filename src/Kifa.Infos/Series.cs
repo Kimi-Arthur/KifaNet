@@ -11,8 +11,24 @@ namespace Kifa.Infos;
 public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInfo, ItemProvider {
     public static string ModelId => "series";
 
-    public static KifaServiceClient<Series> Client { get; set; } =
-        new KifaServiceRestClient<Series>();
+    #region Clients
+
+    public static ServiceClient Client { get; set; } = new RestServiceClient();
+
+    public interface ServiceClient : KifaServiceClient<Series> {
+        string? Format(string id, int seasonId, int episodeId);
+    }
+
+    public class RestServiceClient : KifaServiceRestClient<Series>, ServiceClient {
+        public string? Format(string id, int seasonId, int episodeId)
+            => Call<string?>("format", new Dictionary<string, string> {
+                { "id", id },
+                { "seasonId", seasonId.ToString() },
+                { "episodeId", episodeId.ToString() }
+            });
+    }
+
+    #endregion
 
     public static HashSet<string> KnownCategories { get; set; } =
         ["Gaming", "Tales", "Food", "News", "Technology"];

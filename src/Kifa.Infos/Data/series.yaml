@@ -1,0 +1,165 @@
+# series
+- Id: /Gaming/旭日之记忆/黄金太阳
+  Seasons:
+    - Id: 1
+      Title: 开启的封印
+      Episodes:
+        - Id: 1
+          Title: 海迪亚村
+        - Id: 2
+          Title: 索尔神殿
+        - Id: 3
+          Title: 美少年伊万
+        - Id: 4
+          Title: 比利比诺镇
+        - Id: 5
+          Title: 科里玛森林
+        - Id: 6
+          Title: 水星灯塔
+        - Id: 7
+          Title: 湖清寺试炼
+        - Id: 8
+          Title: 溪安村演武
+        - Id: 9
+          Title: 拉玛寺传功
+        - Id: 10
+          Title: 卡莱依镇
+        - Id: 11
+          Title: 再回海迪亚
+        - Id: 12
+          Title: 误入宝岛
+        - Id: 13
+          Title: 托勒比镇
+        - Id: 14
+          Title: 竞技大赛
+        - Id: 15
+          Title: 雷姆利亚之谜
+        - Id: 16
+          Title: 营救哈梅特
+        - Id: 17
+          Title: 苏哈拉沙漠
+        - Id: 18
+          Title: 再入宝岛
+        - Id: 19
+          Title: 拉里贝洛镇
+        - Id: 20
+          Title: 金星灯塔
+        - Id: 21
+          Title: 震裂的大地
+    - Id: 2
+      Title: 失落的时代
+      Episodes:
+        - Id: 1
+          Title: 勇者加西亚
+        - Id: 2
+          Title: 坎德拉寺
+        - Id: 3
+          Title: 马德拉镇
+        - Id: 4
+          Title: 风之岩
+        - Id: 5
+          Title: 加罗村
+        - Id: 6
+          Title: 抓捕海盗
+        - Id: 7
+          Title: 奇彭波山脉
+        - Id: 8
+          Title: 刚玻玛神像
+        - Id: 9
+          Title: 驾船出海
+        - Id: 10
+          Title: 东海大游行
+        - Id: 11
+          Title: 雨之岩
+        - Id: 12
+          Title: 南大陆塔
+        - Id: 13
+          Title: 地之岩
+        - Id: 14
+          Title: 安科尔遗迹
+        - Id: 15
+          Title: 姜帕村
+        - Id: 16
+          Title: 雷姆利亚
+        - Id: 17
+          Title: 萨满村
+        - Id: 18
+          Title: 木星灯塔（上）
+        - Id: 19
+          Title: 木星灯塔（下）
+        - Id: 20
+          Title: 阿尼莫斯之翼
+        - Id: 21
+          Title: 火之岩
+        - Id: 22
+          Title: 火星灯塔
+        - Id: 23
+          Title: 秘密基地
+        - Id: 24
+          Title: 无头领主
+        - Id: 25
+          Title: 黄金的太阳
+    - Id: 3
+      Title: 漆黑的黎明
+      Episodes:
+        - Id: 1
+          Title: 罗宾的小屋
+        - Id: 2
+          Title: 冒险之始
+        - Id: 3
+          Title: 训练场游览
+        - Id: 4
+          Title: 贡帕遗迹
+        - Id: 5
+          Title: 神秘面具男
+        - Id: 6
+          Title: 克利德山脉
+        - Id: 7
+          Title: 卡欧乔之罠
+        - Id: 8
+          Title: 阿雅塔由
+        - Id: 9
+          Title: 衔尾蛇迷宫
+        - Id: 10
+          Title: 哈拉帕遗迹
+        - Id: 11
+          Title: 飞跃尖柱山
+        - Id: 12
+          Title: 少女史黛拉
+        - Id: 13
+          Title: 贝尔夫奈
+        - Id: 14
+          Title: 帕亚亚姆
+        - Id: 15
+          Title: 科利玛村
+        - Id: 16
+          Title: 森林神树
+        - Id: 17
+          Title: 神鸟的岩山
+        - Id: 18
+          Title: 露娜之塔
+        - Id: 19
+          Title: 日蚀异变
+        - Id: 20
+          Title: 海上旅行
+        - Id: 21
+          Title: 卑弥之天启
+        - Id: 22
+          Title: 首都东方
+        - Id: 23
+          Title: 查巴海岸
+        - Id: 24
+          Title: 月影侵袭
+        - Id: 25
+          Title: 再临东方
+        - Id: 26
+          Title: 阿波罗之门
+        - Id: 27
+          Title: 最后修行
+        - Id: 28
+          Title: 黑暗终结
+        - Id: 29
+          Title: 封印的太阳
+        - Id: 30
+          Title: 传说画册
+  PatternId: multi_season
