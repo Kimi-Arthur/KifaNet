@@ -184,22 +184,28 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         return sharedTitle;
     }
 
-    public static IEnumerable<ItemInfo>? GetItems(string[] spec) {
+    public static ItemsInfo? GetItems(string[] spec) {
         if (spec[0] != "TV Shows" || spec.Length is < 2 or > 4) {
             return null;
         }
 
         var id = spec[1];
-        var seasonId = spec.Length > 2 ? int.Parse(spec[2]) : (int?) null;
-        var episodeId = spec.Length > 3 ? int.Parse(spec[3]) : (int?) null;
-        var anime = Client.Get(id).Checked();
-        return anime.Seasons.Checked().Where(season => seasonId == null || season.Id == seasonId)
-            .SelectMany(season => season.Episodes.Checked(),
-                (season, episode) => (season, episode, false))
-            .Where(item => episodeId == null || episodeId == item.episode.Id).Select(item
-                => new ItemInfo {
-                    Path = anime.Format(item.season, item.episode).Checked()
-                });
+        var requestedSeasonId = spec.Length > 2 ? int.Parse(spec[2]) : (int?) null;
+        var requestedEpisodeId = spec.Length > 3 ? int.Parse(spec[3]) : (int?) null;
+        var tvShow = Client.Get(id).Checked();
+        return new ItemsInfo {
+            Info = tvShow,
+            Items = tvShow.Seasons.Checked()
+                .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)
+                .SelectMany(season => season.Episodes.Checked(),
+                    (season, episode) => (Season: season, Episode: episode))
+                .Where(item => requestedEpisodeId == null || requestedEpisodeId == item.Episode.Id)
+                .Select(item => new ItemInfo {
+                    EpisodeId = item.Episode.Id,
+                    SeasonId = item.Season.Id,
+                    Path = tvShow.Format(item.Season, item.Episode).Checked()
+                }).ToList()
+        };
     }
 }
 

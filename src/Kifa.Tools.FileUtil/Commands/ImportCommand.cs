@@ -66,46 +66,26 @@ class ImportCommand : KifaCommand {
         }
 
         SourceId ??= InferSourceId(pathSegments[2]);
-        List<(Season Season, Episode Episode, bool Matched)> episodes;
-        Formattable series;
+        ItemsInfo info;
         switch (Type) {
             case "Gaming": {
                 // Example:
-                // Gaming/黑桐谷歌/漫威蜘蛛侠2 -> /Gaming/黑桐谷歌/漫威蜘蛛侠2/漫威蜘蛛侠2 EP01 表面张力.mp4
-                series = new Gaming {
-                    Id = SourceId
-                };
-                episodes = Enumerable.Range(1, 100).Select(i => (new Season {
-                    Id = 1
-                }, new Episode {
-                    Id = i
-                }, false)).ToList();
+                // /Gaming/黑桐谷歌/漫威蜘蛛侠2
+                info = Series.GetItems([
+                    Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                ]).Checked();
                 break;
             }
             case "TV Shows": {
-                var segments = SourceId.Split('/');
-                var id = segments.Length > 0 ? segments[0] : "";
-                var seasonId = segments.Length > 1 ? int.Parse(segments[1]) : 0;
-                var episodeId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
-                var tvShow = TvShow.Client.Get(id);
-                series = tvShow;
-                episodes = tvShow.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
-                    .SelectMany(season => season.Episodes,
-                        (season, episode) => (season, episode, false)).Where(item
-                        => episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                info = TvShow.GetItems([
+                    Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                ]).Checked();
                 break;
             }
             case "Anime": {
-                var segments = SourceId.Split('/');
-                var id = segments.Length > 0 ? segments[0] : "";
-                var seasonId = segments.Length > 1 ? int.Parse(segments[1]) : 0;
-                var episodeId = segments.Length > 2 ? int.Parse(segments[2]) : 0;
-                var anime = Anime.Client.Get(id);
-                series = anime;
-                episodes = anime.Seasons.Where(season => seasonId <= 0 || season.Id == seasonId)
-                    .SelectMany(season => season.Episodes,
-                        (season, episode) => (season, episode, false)).Where(item
-                        => episodeId <= 0 || episodeId == item.episode.Id).ToList();
+                info = Anime.GetItems([
+                    Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                ]).Checked();
                 break;
             }
             case "Soccer":
@@ -162,14 +142,15 @@ class ImportCommand : KifaCommand {
         var fileMatches = files.Select(f => (File: f, Matched: false)).ToList();
 
         for (int i = 0; i < fileMatches.Count; i++) {
-            var info = FileInformation.Client.Get(fileMatches[i].File);
-            var existingMatch = info.GetAllLinks().Select(l => (Link: l, Episode: series.Parse(l)))
-                .FirstOrDefault(e => e.Episode != null, ("", null));
+            var fileInfo = FileInformation.Client.Get(fileMatches[i].File);
+            var existingMatch = fileInfo.GetAllLinks()
+                .Select(l => (Link: l, Episode: info.Info.Parse(l)))
+                .FirstOrDefault(e => e.Episode != null);
 
             if (existingMatch.Episode.HasValue) {
                 var match = existingMatch.Episode.Value;
                 Logger.Info($"{fileMatches[i].File} already matched to {existingMatch.Link}");
-                MarkMatched(episodes, match.Season, match.Episode);
+                MarkMatched(info.Items, match.Season.Id, match.Episode.Id);
                 fileMatches[i] = (fileMatches[i].File, true);
             }
         }
@@ -181,11 +162,10 @@ class ImportCommand : KifaCommand {
 
             var suffix = file[file.LastIndexOf('.')..];
 
-            var validEpisodes = episodes.Where(e => !e.Matched).ToList();
+            var validEpisodes = info.Items.Where(e => !e.Matched).ToList();
             try {
-                var selected = SelectOne(validEpisodes,
-                    e => $"{file} => {series.Format(e.Season, e.Episode)}{suffix}", "mapping",
-                    startingIndex: 1, supportsSpecial: true, reverse: true);
+                var selected = SelectOne(validEpisodes, e => $"{file} => {e.Path}{suffix}",
+                    "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
                 if (selected == null) {
                     Logger.Warn($"Ignored {file}.");
                     continue;
@@ -193,17 +173,14 @@ class ImportCommand : KifaCommand {
 
                 var (choice, _, special) = selected.Value;
                 if (special) {
-                    var newName = Confirm($"Confirm linking {file} to:",
-                        $"{series.Format(choice.Season, choice.Episode)}{suffix}");
+                    var newName = Confirm($"Confirm linking {file} to:", $"{choice.Path}{suffix}");
                     FileInformation.Client.Link(file, newName);
-                    if (Confirm(
-                            $"Remove info item {series.Format(choice.Season, choice.Episode)}?")) {
-                        MarkMatched(episodes, choice.Season, choice.Episode);
+                    if (Confirm($"Remove info item {choice.Path}?")) {
+                        MarkMatched(info.Items, choice.SeasonId, choice.EpisodeId);
                     }
                 } else {
-                    FileInformation.Client.Link(file,
-                        series.Format(choice.Season, choice.Episode) + suffix);
-                    MarkMatched(episodes, choice.Season, choice.Episode);
+                    FileInformation.Client.Link(file, $"{choice.Path}{suffix}");
+                    MarkMatched(info.Items, choice.SeasonId, choice.EpisodeId);
                 }
             } catch (InvalidChoiceException ex) {
                 Logger.Warn(ex, $"File {file} skipped.");
@@ -236,12 +213,10 @@ class ImportCommand : KifaCommand {
         return files.Where(f => f.Registered);
     }
 
-    static void MarkMatched(List<(Season Season, Episode Episode, bool Matched)> episodes,
-        Season matchSeason, Episode matchEpisode) {
+    static void MarkMatched(List<ItemInfo> episodes, int matchSeason, int matchEpisode) {
         for (var i = 0; i < episodes.Count; i++) {
-            if (episodes[i].Season.Id == matchSeason.Id &&
-                episodes[i].Episode.Id == matchEpisode.Id) {
-                episodes[i] = (episodes[i].Season, episodes[i].Episode, true);
+            if (episodes[i].SeasonId == matchSeason && episodes[i].EpisodeId == matchEpisode) {
+                episodes[i].Matched = true;
             }
         }
     }

@@ -3,5 +3,5 @@
 namespace Kifa.Infos;
 
 public interface ItemProvider {
-    static abstract IEnumerable<ItemInfo>? GetItems(string[] spec);
+    static abstract ItemsInfo? GetItems(string[] spec);
 }

@@ -96,12 +96,12 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         return null;
     }
 
-    public static IEnumerable<ItemInfo>? GetItems(string[] spec) {
+    public static ItemsInfo? GetItems(string[] spec) {
         if (!KnownCategories.Contains(spec[0])) {
             return null;
         }
 
-        var numberedSegments = spec.Reverse().TakeWhile(s => int.TryParse("123", out _))
+        var numberedSegments = spec.Reverse().TakeWhile(s => int.TryParse(s, out _))
             .Select(int.Parse).Reverse().ToList();
 
         if (numberedSegments.Count > 2) {
@@ -110,16 +110,22 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         }
 
         var id = $"/{spec[..^numberedSegments.Count].JoinBy('/')}";
-        var seasonId = numberedSegments.Count > 0 ? numberedSegments[0] : (int?) null;
-        var episodeId = numberedSegments.Count > 1 ? numberedSegments[1] : (int?) null;
+        var requestedSeasonId = numberedSegments.Count > 0 ? numberedSegments[0] : (int?) null;
+        var requestedEpisodeId = numberedSegments.Count > 1 ? numberedSegments[1] : (int?) null;
         var series = Client.Get(id).Checked();
-        return series.Seasons.Checked().Where(season => seasonId == null || season.Id == seasonId)
-            .SelectMany(season => season.Episodes.Checked(),
-                (season, episode) => (season, episode, false))
-            .Where(item => episodeId == null || episodeId == item.episode.Id).Select(item
-                => new ItemInfo {
-                    Path = series.Format(item.season, item.episode).Checked()
-                });
+        return new ItemsInfo {
+            Info = series,
+            Items = series.Seasons.Checked()
+                .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)
+                .SelectMany(season => season.Episodes.Checked(),
+                    (season, episode) => (Season: season, Episode: episode))
+                .Where(item => requestedEpisodeId == null || requestedEpisodeId == item.Episode.Id)
+                .Select(item => new ItemInfo {
+                    EpisodeId = item.Episode.Id,
+                    SeasonId = item.Season.Id,
+                    Path = series.Format(item.Season, item.Episode).Checked()
+                }).ToList()
+        };
     }
 }
 

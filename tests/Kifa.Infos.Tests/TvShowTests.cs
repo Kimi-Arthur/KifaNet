@@ -122,7 +122,7 @@ public class TvShowTests {
 
     [Fact]
     public void GetItemsTest() {
-        var items = TvShow.GetItems(["TV Shows", "Westworld", "2"]).Checked().ToList();
+        var items = TvShow.GetItems(["TV Shows", "Westworld", "2"]).Checked().Items;
         items[0].Path.Should().Be(
             "/TV Shows/United States/Westworld (2016)/Season 2 The Door (2018)/Westworld S02E01 Journey Into Night");
     }

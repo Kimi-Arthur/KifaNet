@@ -92,7 +92,7 @@ public class AnimeTests {
 
     [Fact]
     public void GetItemsTest() {
-        var items = Anime.GetItems(["Anime", "咲-Saki-"]).Checked().ToList();
+        var items = Anime.GetItems(["Anime", "咲-Saki-"]).Checked().Items;
         items[0].Path.Should().Be("/Anime/咲-Saki- (2009)/Season 1 (2009)/咲-Saki- S01E01 出会い");
         items[52].Path.Should().Be("/Anime/咲-Saki- (2009)/Season 3 全国編 (2014)/咲-Saki- S03E12 真実");
     }
