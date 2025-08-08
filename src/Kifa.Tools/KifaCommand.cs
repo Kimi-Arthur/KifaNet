@@ -30,6 +30,7 @@ public abstract partial class KifaCommand {
         KifaConfigs.Init(command.ConfigFile);
 
         if (command.Verbose) {
+            global::Kifa.Logging.EnableNotice = true;
             Logging.ConfigureLogger(true);
         } else if (command.NonVerbose) {
             Logging.ConfigureLogger(false);
