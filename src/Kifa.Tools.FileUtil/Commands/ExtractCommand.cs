@@ -80,11 +80,15 @@ class ExtractCommand : KifaCommand {
                     Size = entry.Size,
                     Crc32 = ((int) entry.Crc).ToHexString()
                 }))).Where(entry => {
-            if (entry.File.Exists() || entry.File.ExistsSomewhere() &&
-                entry.File.FileInfo?.Size == entry.Entry.Size && entry.File.FileInfo?.Crc32 ==
-                ((int) entry.Entry.Crc).ToHexString()) {
+            if (entry.File.ExistsSomewhere() && entry.File.FileInfo?.Size == entry.Entry.Size &&
+                entry.File.FileInfo?.Crc32 == ((int) entry.Entry.Crc).ToHexString()) {
                 Logger.Debug(
-                    $"File {entry.Entry.Key} already exists locally or has the same size and crc32. Skipped.");
+                    $"File {entry.Entry.Key} already exists and has the same size and crc32. Skipped.");
+                return false;
+            }
+
+            if (entry.File.Exists()) {
+                Logger.Debug($"File {entry.Entry.Key} already exists locally. Skipped.");
                 return false;
             }
 
