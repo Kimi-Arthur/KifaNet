@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ToolCommandName>filex</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>4.5.3</Version>
+        <Version>4.5.4</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
         <PackageIcon>Kifa.png</PackageIcon>
@@ -16,7 +16,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-        <PackageReference Include="SharpCompress" Version="0.40.0" />
+        <PackageReference Include="SharpCompress" Version="0.40.0"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Kifa\Kifa.csproj"/>

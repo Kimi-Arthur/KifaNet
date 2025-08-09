@@ -73,13 +73,10 @@ class ExtractCommand : KifaCommand {
         }
 
         var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => (
-            Entry: entry, File: folder.GetFile(
-                ArchiveNameSeparator != null
-                    ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
-                    : entry.Key.Checked(), fileInfo: new FileInformation {
-                    Size = entry.Size,
-                    Crc32 = ((int) entry.Crc).ToHexString()
-                }))).Where(entry => {
+            Entry: entry,
+            File: folder.GetFile(ArchiveNameSeparator != null
+                ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
+                : entry.Key.Checked()))).Where(entry => {
             Logger.Notice(()
                 => $"File:\t{entry.File} {entry.File.ExistsSomewhere()}, {entry.File.Exists()}");
             Logger.Notice(() => $"Expected:\tsize={{entry.Entry.Size}}, crc32={{entry.Entry.Crc}}");
@@ -120,6 +117,7 @@ class ExtractCommand : KifaCommand {
         using var reader = archive.ExtractAllEntries();
         var enumerator = selected.GetEnumerator();
         var valid = enumerator.MoveNext();
+
         while (reader.MoveToNextEntry()) {
             if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
                 results.Add(reader.Entry.Key.Checked(), KifaActionResult.FromAction(() => {
@@ -133,6 +131,11 @@ class ExtractCommand : KifaCommand {
                     tempFile.Copy(file);
                     file.Add();
                     tempFile.Delete();
+                    var expectedCrc = ((int) entry.Crc).ToHexString();
+                    if (file.FileInfo?.Size != entry.Size || file.FileInfo?.Crc32 != expectedCrc) {
+                        throw new FileCorruptedException(
+                            $"File {file} should have size={entry.Size}, crc32={expectedCrc}, but has size={file.FileInfo?.Size}, crc32={file.FileInfo?.Crc32}.");
+                    }
                 }));
 
                 valid = enumerator.MoveNext();
