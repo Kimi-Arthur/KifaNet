@@ -147,10 +147,7 @@ class ExtractCommand : KifaCommand {
         // results.AddRange(RemoveArchives(archive.Volumes
         //     .Select(v => folder.GetFile(v.FileName.Checked())).ToList()));
 
-        return new KifaActionResult {
-            Status = KifaActionStatus.OK,
-            Message = $"{selected.Count} files extracted"
-        };
+        return results;
     }
 
     IEnumerable<(string item, KifaActionResult result)> RemoveArchives(
