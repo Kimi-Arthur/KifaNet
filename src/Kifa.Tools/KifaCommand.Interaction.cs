@@ -198,7 +198,7 @@ public abstract partial class KifaCommand {
             var chosen = chosenIndexes.Select(index => choices[index]).ToList();
 
             // Only need to reconfirm if the selection is not for all.
-            if (chosenIndexes.Count != choices.Count) {
+            if (chosenIndexes.Count != choices.Count && chosenIndexes.Count != 0) {
                 foreach (var choice in chosen) {
                     Console.WriteLine(choiceToString(choice));
                 }
