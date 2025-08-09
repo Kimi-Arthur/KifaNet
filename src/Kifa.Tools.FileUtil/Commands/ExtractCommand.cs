@@ -79,14 +79,15 @@ class ExtractCommand : KifaCommand {
                 : entry.Key.Checked()))).Where(entry => {
             Logger.Notice(()
                 => $"File:\t{entry.File} {entry.File.ExistsSomewhere()}, {entry.File.Exists()}");
-            Logger.Notice(() => $"Expected:\tsize={{entry.Entry.Size}}, crc32={{entry.Entry.Crc}}");
+            Logger.Notice(()
+                => $"Expected:\tsize={entry.Entry.Size}, crc32={entry.Entry.GetCrc32InHex()}");
             Logger.Notice(()
                 => $"Found:\tsize={entry.File.FileInfo?.Size}, crc32={entry.File.FileInfo?.Crc32}");
 
             if (entry.File.ExistsSomewhere() && entry.File.FileInfo?.Size == entry.Entry.Size &&
-                entry.File.FileInfo?.Crc32 == ((int) entry.Entry.Crc).ToHexString()) {
+                entry.File.FileInfo?.Crc32 == entry.Entry.GetCrc32InHex()) {
                 Logger.Debug(
-                    $"File {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.Crc}). Skipped.");
+                    $"File {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.GetCrc32InHex()}). Skipped.");
                 return false;
             }
 
@@ -100,7 +101,7 @@ class ExtractCommand : KifaCommand {
 
         var selected = SelectMany(entries,
             choiceToString: entry
-                => $"{entry.Entry.Key}: {entry.Entry.Size} ({((int) entry.Entry.Crc).ToHexString()}) => {entry.File}",
+                => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
             choicesName: "entries to extract");
 
         if (selected.Count == 0) {
@@ -131,7 +132,7 @@ class ExtractCommand : KifaCommand {
                     tempFile.Copy(file);
                     file.Add();
                     tempFile.Delete();
-                    var expectedCrc = ((int) entry.Crc).ToHexString();
+                    var expectedCrc = entry.GetCrc32InHex();
                     if (file.FileInfo?.Size != entry.Size || file.FileInfo?.Crc32 != expectedCrc) {
                         throw new FileCorruptedException(
                             $"File {file} should have size={entry.Size}, crc32={expectedCrc}, but has size={file.FileInfo?.Size}, crc32={file.FileInfo?.Crc32}.");
@@ -152,7 +153,7 @@ class ExtractCommand : KifaCommand {
 
     IEnumerable<(string item, KifaActionResult result)> RemoveArchives(
         List<KifaFile> archiveVolumes) {
-        var selected = SelectMany(archiveVolumes, v => $"{{v}}: {v.Length}",
+        var selected = SelectMany(archiveVolumes, v => $"{v}: {v.Length}",
             "archive files to delete since extraction is successful");
         if (selected.Count == 0) {
             Logger.Info("No archive files to remove.");
@@ -178,4 +179,8 @@ class ExtractCommand : KifaCommand {
 
         return KifaActionResult.FromAction(file.Delete);
     }
+}
+
+public static class IEntryExtension {
+    public static string GetCrc32InHex(this IEntry entry) => ((int) entry.Crc).ToHexString();
 }
