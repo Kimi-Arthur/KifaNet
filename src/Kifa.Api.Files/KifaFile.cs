@@ -321,7 +321,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindExistingFiles(IEnumerable<string> sources,
         bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
-        var allFiles = new List<(string SortKey, KifaFile File)>();
+        var allFiles = new HashSet<KifaFile>();
         foreach (var source in GetKifaFiles(sources)) {
             var files = source.List(recursive, pattern: pattern, ignoreFiles: ignoreFiles).ToList();
             Logger.Trace($"Found {files.Count} existing files:");
@@ -329,12 +329,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                 Logger.Trace($"\t{f}");
             }
 
-            allFiles.AddRange(files.Select(f => (f.ToString().GetNaturalSortKey(), f)));
+            allFiles.UnionWith(files);
         }
 
-        allFiles.Sort();
-
-        return allFiles.Select(f => f.File).ToList();
+        return allFiles.OrderBy(f => f.ToString().GetNaturalSortKey()).ToList();
     }
 
     // KifaFile.FileInfo is filled for items returned.
@@ -347,7 +345,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
         bool recursive = true, bool ignoreFiles = true) {
-        var files = new List<(string sortKey, string value)>();
+        var files = new HashSet<string>();
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
 
@@ -355,13 +353,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             var host = file.Host;
 
             var thisFolder = FileInfoClient.ListFolder(path, recursive);
-            files.AddRange(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, file.Id))
-                .Select(f => (host + f.GetNaturalSortKey(), host + f)));
+            files.UnionWith(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, file.Id))
+                .Select(f => host + f));
         }
 
-        files.Sort();
-
-        return GetKifaFiles(files.Select(f => f.value)).ToList();
+        return GetKifaFiles(files.OrderBy(f => f.GetNaturalSortKey())).ToList();
     }
 
     static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {

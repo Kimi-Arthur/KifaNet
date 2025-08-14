@@ -16,4 +16,23 @@ public static class IEnumerableExtensions {
             action(item);
         }
     }
+
+    public static IEnumerable<T> Dedup<T>(this IEnumerable<T> source) {
+        return source.Dedup(value => value);
+    }
+
+    public static IEnumerable<T> Dedup<T, R>(this IEnumerable<T> source, Func<T, R> transform) {
+        // TODO: Fix the analysis errors here.
+        var first = true;
+        R lastConverted = default;
+        foreach (var value in source) {
+            var converted = transform(value);
+            if (first || !converted.Equals(lastConverted)) {
+                yield return value;
+            }
+
+            first = false;
+            lastConverted = converted;
+        }
+    }
 }
