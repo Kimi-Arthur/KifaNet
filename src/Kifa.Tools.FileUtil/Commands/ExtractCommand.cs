@@ -146,6 +146,7 @@ class ExtractCommand : KifaCommand {
 
                     file.Add();
                     tempFile.Delete();
+                    FileInformation.Client.RemoveLocation(tempFile.Id, tempFile.ToString());
                     Logger.LogResult(FileInformation.Client.Delete(tempFile.Id),
                         $"Removal of file info {tempFile.Id}");
                 }));
