@@ -35,14 +35,14 @@ public class DownloadVideoCommand : DownloadCommand {
                 var pid = int.Parse(segments.Last());
                 Logger.Info($"Downloading part {pid} of video {video.Id}...");
                 Download(video, pid,
-                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}-{video.Id}" : null);
+                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
                 continue;
             }
 
             Logger.Info($"Downloading all parts of video {video.Id}...");
             foreach (var page in video.Pages) {
                 Download(video, page.Id,
-                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}-{video.Id}" : null);
+                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
             }
         }
 
