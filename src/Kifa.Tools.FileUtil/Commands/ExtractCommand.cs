@@ -129,7 +129,7 @@ class ExtractCommand : KifaCommand {
                     var tempFile = file.GetIgnoredFile();
 
                     Logger.Debug($"Write {entry.Key} to {file}");
-                    Logger.Trace($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
+                    Logger.Debug($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
                     reader.WriteEntryTo(tempFile.GetLocalPath());
                     tempFile.Add();
 
@@ -141,7 +141,7 @@ class ExtractCommand : KifaCommand {
                     }
 
                     Logger.Debug(
-                        $"File {tempFile} passed size and crc32 check. Fast copy to {file}");
+                        $"File {tempFile} has the expected size={entry.Size} and crc32={expectedCrc}. Fast copy to {file}");
                     tempFile.Copy(file);
 
                     file.Add();
