@@ -2,7 +2,7 @@
 
 namespace Kifa.Cloud.OAuth;
 
-public abstract class OAuthAccount {
+public abstract class OAuthAccount : DataModel {
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
     public string Scope { get; set; }
