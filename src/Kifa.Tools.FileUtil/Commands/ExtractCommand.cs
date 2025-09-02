@@ -123,20 +123,32 @@ class ExtractCommand : KifaCommand {
             if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
                 results.Add(reader.Entry.Key.Checked(), KifaActionResult.FromAction(() => {
                     var file = enumerator.Current.File;
-                    var entry = reader.Entry;
+                    var entry = enumerator.Current.Entry;
+
                     file.EnsureLocalParent();
                     var tempFile = file.GetIgnoredFile();
+
                     Logger.Debug($"Write {entry.Key} to {file}");
-                    Logger.Trace($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
+                    Logger.Debug($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
                     reader.WriteEntryTo(tempFile.GetLocalPath());
+                    tempFile.Add();
+
+                    var expectedCrc = entry.GetCrc32InHex();
+                    if (tempFile.FileInfo?.Size != entry.Size ||
+                        tempFile.FileInfo?.Crc32 != expectedCrc) {
+                        throw new FileCorruptedException(
+                            $"File {tempFile} should have size={entry.Size}, crc32={expectedCrc}, but has size={tempFile.FileInfo?.Size}, crc32={tempFile.FileInfo?.Crc32}.");
+                    }
+
+                    Logger.Debug(
+                        $"File {tempFile} has the expected size={entry.Size} and crc32={expectedCrc}. Fast copy to {file}");
                     tempFile.Copy(file);
+
                     file.Add();
                     tempFile.Delete();
-                    var expectedCrc = entry.GetCrc32InHex();
-                    if (file.FileInfo?.Size != entry.Size || file.FileInfo?.Crc32 != expectedCrc) {
-                        throw new FileCorruptedException(
-                            $"File {file} should have size={entry.Size}, crc32={expectedCrc}, but has size={file.FileInfo?.Size}, crc32={file.FileInfo?.Crc32}.");
-                    }
+                    FileInformation.Client.RemoveLocation(tempFile.Id, tempFile.ToString());
+                    Logger.LogResult(FileInformation.Client.Delete(tempFile.Id),
+                        $"Removal of file info {tempFile.Id}");
                 }));
 
                 valid = enumerator.MoveNext();

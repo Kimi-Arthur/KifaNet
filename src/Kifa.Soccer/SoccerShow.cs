@@ -3,7 +3,12 @@ using Kifa.Service;
 
 namespace Kifa.Soccer;
 
-public class SoccerShow : DataModel {
+public class SoccerShow : DataModel, WithModelId<SoccerShow> {
+    public static string ModelId => "soccer_shows";
+
+    public static KifaServiceClient<SoccerShow> Client { get; set; } =
+        new KifaServiceRestClient<SoccerShow>();
+
     public Program Program { get; set; }
     public Competition Competition { get; set; }
     public Season Season { get; set; }
