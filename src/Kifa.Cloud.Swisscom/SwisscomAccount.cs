@@ -111,8 +111,6 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
         using var driver = GetDriver(true);
         driver.Navigate()
             .GoToUrl("https://www.mycloud.swisscom.ch/login/?response_type=code&lang=en");
-        Run(() => driver.FindElementByCssSelector("button[data-test-id=button-use-existing-login]")
-            .Click());
         Run(() => driver.FindElementById("username").SendKeys(Username));
         Run(() => driver.FindElementById("continueButton").Click());
         Run(() => driver.FindElementById("password").SendKeys(Password));
