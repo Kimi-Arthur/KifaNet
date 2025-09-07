@@ -1,0 +1,141 @@
+Subject: [PATCH] Enable upload with id.
+---
+Index: src/Kifa.Tools.FileUtil/Commands/UploadCommand.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Kifa.Tools.FileUtil/Commands/UploadCommand.cs b/src/Kifa.Tools.FileUtil/Commands/UploadCommand.cs
+--- a/src/Kifa.Tools.FileUtil/Commands/UploadCommand.cs	
++++ b/src/Kifa.Tools.FileUtil/Commands/UploadCommand.cs	
+@@ -3,6 +3,7 @@
+ using System.Linq;
+ using CommandLine;
+ using Kifa.Api.Files;
++using Kifa.IO;
+ using NLog;
+ 
+ namespace Kifa.Tools.FileUtil.Commands;
+@@ -16,8 +17,13 @@
+     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
+     public IEnumerable<string> FileNames { get; set; }
+ 
++    [Option('i', "as-ids",
++        HelpText =
++            "Treat file names as ids, which means the client will be selected automaticaly.")]
++    public bool AsIds { get; set; } = false;
++
+     [Option('d', "delete-source",
+-        HelpText = "Remove source if upload is successful. Won't remove valid cloud version.")]
++        HelpText = "Remove source if upload is successful. Won't remove valid cloud versions.")]
+     public bool DeleteSource { get; set; } = false;
+ 
+     [Option('q', "quick", HelpText = "Finish quickly by not verifying validity of destination.")]
+@@ -40,24 +46,39 @@
+         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)
+             .Select(CloudTarget.Parse).ToList();
+ 
+-        var (multi, files) = KifaFile.FindExistingFiles(FileNames);
+-        if (multi) {
+-            foreach (var file in files) {
+-                Console.WriteLine(file);
+-            }
++        List<(KifaFile File, string Name)> files;
++
++        if (AsIds) {
++            if (FileNames.Any(f => !f.StartsWith("/"))) {
++                Logger.Fatal("You should use absolute file paths when --as-ids is specified.");
++                return 1;
++            }
++
++            files = FileNames.SelectMany(fileName
++                => FileInformation.Client.ListFolder(fileName).Select(info
++                    => (new KifaFile(fileInfo: FileInformation.Client.Get(info)), info))).ToList();
++        } else {
++            (_, var fileInstances) = KifaFile.FindExistingFiles(FileNames);
++            files = fileInstances.Select(f => (f, f.Id)).ToList();
++        }
++
++        foreach (var file in files) {
++            Console.WriteLine($"{file.File} ({file.Name})");
++        }
+ 
+-            var verifyText = QuickMode ? " without verification" : "";
+-            var downloadText = DownloadLocal ? " and download to local" : "";
+-            var removalText = DeleteSource ? " and remove source afterwards" : "";
+-            Console.Write(
+-                $"Confirm uploading the {files.Count} files above to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?");
+-            Console.ReadLine();
++        var verifyText = QuickMode ? " without verification" : "";
++        var downloadText = DownloadLocal ? " and download to local" : "";
++        var removalText = DeleteSource ? " and remove source afterwards" : "";
++        if (!Confirm(
++                $"Confirm uploading the {files.Count} files above to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}?")) {
++            Logger.Info("Cancelled.");
++            return 0;
+         }
+ 
+         foreach (var file in files) {
+-            ExecuteItem(file.ToString(),
+-                () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
+-                    DownloadLocal, QuickMode, true));
++            ExecuteItem(file.File.ToString(),
++                () => file.File.Upload(targets, DeleteSource, UseCache, DownloadLocal, QuickMode,
++                    true));
+         }
+ 
+         var pendingFiles = PopPendingResults().Select(item => new KifaFile(item.item));
+Index: src/Kifa.Api.Files/KifaFile.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/Kifa.Api.Files/KifaFile.cs b/src/Kifa.Api.Files/KifaFile.cs
+--- a/src/Kifa.Api.Files/KifaFile.cs	
++++ b/src/Kifa.Api.Files/KifaFile.cs	
+@@ -102,11 +102,9 @@
+ 
+         Id = id ?? fileInfo?.Id ?? FileInformation.GetId(uri)!;
+         FileInfo = fileInfo ?? FileInformation.Client.Get(Id);
+-        if (UseCache) {
+-            LocalFile = FileInfo?.Sha256 != null
+-                ? new($"{LocalServer}/$/{FileInfo.Sha256}")
+-                : new($"{LocalServer}{Id}");
+-        }
++        LocalFilePath = FileInfo?.Sha256 != null
++            ? $"{LocalServer}/$/{FileInfo.Sha256}"
++            : $"{LocalServer}{Id}";
+ 
+         Client = GetClient(segments[0]);
+ 
+@@ -138,7 +136,8 @@
+ 
+     public KifaFile Parent => new($"{Host}{ParentPath}");
+ 
+-    KifaFile LocalFile { get; }
++    string LocalFilePath { get; }
++    KifaFile LocalFile => new(LocalFilePath);
+ 
+     // TODO: the fields here will bring inconsistency.
+     public string BaseName { get; set; }
+@@ -275,9 +274,8 @@
+         List(bool recursive = false, bool ignoreFiles = true, string pattern = "*")
+         => Exists()
+             ? Enumerable.Repeat(this, 1)
+-            : Client.List(Path, recursive)
+-                .Select(info => new KifaFile(Host + info.Id, fileInfo: info)).Where(f
+-                    => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path)));
++            : Client.List(Path, recursive).Select(info => new KifaFile(Host + info.Id)).Where(f
++                => IsMatch(f.Id, pattern) && (!ignoreFiles || !ShouldIgnore(f.Id, Path)));
+ 
+     static bool ShouldIgnore(string logicalPath, string pathPrefix)
+         => IgnoredExtensions.Contains(logicalPath[(logicalPath.LastIndexOf(".") + 1)..]) ||
+@@ -292,7 +290,7 @@
+         var multi = 0;
+         var files = new List<(string sortKey, KifaFile value)>();
+         foreach (var fileName in sources) {
+-            var file = new KifaFile(fileName, simpleMode: !fullFile);
++            var file = new KifaFile(fileName);
+             if (prefix != null && !file.Path.StartsWith(prefix)) {
+                 file = file.GetFilePrefixed(prefix);
+             }
