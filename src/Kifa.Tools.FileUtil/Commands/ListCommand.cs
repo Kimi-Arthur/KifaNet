@@ -8,7 +8,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 [Verb("ls", HelpText = "List files and folders in the FOLDER.")]
 class ListCommand : KifaCommand {
     [Option('i', "id", HelpText = "Treat input files as logical ids.")]
-    public virtual bool ById { get; set; } = false;
+    public bool ById { get; set; } = false;
 
     [Option('l', "long", HelpText = "Long list mode")]
     public bool LongListMode { get; set; } = false;
