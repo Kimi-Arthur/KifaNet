@@ -29,7 +29,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return null;
     }
 
-    public string GetCanonicalName(string? formatId = null) => $"{Id}.{formatId ?? FormatId}";
+    public List<string> GetCanonicalNames(string? formatId = null)
+        => [$"{Id}.{formatId ?? FormatId}", Id];
 
     public string GetDesiredName(string? formatId = null)
         => $"{Author}/{Title}.{Id}.{formatId ?? FormatId}";
