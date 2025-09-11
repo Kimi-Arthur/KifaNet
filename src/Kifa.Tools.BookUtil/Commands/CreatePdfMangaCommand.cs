@@ -2,10 +2,11 @@ using System;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Graphics;
 using Kifa.Jobs;
-using PdfSharpCore;
-using PdfSharpCore.Drawing;
-using PdfSharpCore.Pdf;
+using PdfSharp;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace Kifa.Tools.BookUtil.Commands;
 
@@ -34,7 +35,7 @@ public class CreatePdfMangaCommand : KifaCommand {
     public string IgnoreExistingDoublePages { get; set; } = "";
 
     public override int Execute(KifaTask? task = null) {
-        var allDoublePages = DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries);
+        // var allDoublePages = DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries);
 
         var folderId = new KifaFile(Folder).ToString();
         // var episode = BilibiliMangaEpisode.Parse(folderId);
@@ -43,11 +44,18 @@ public class CreatePdfMangaCommand : KifaCommand {
         document.Info.Author = Author;
         document.Info.Title = title;
 
+        var files = KifaFile.FindAllFiles([Folder]);
+        var pairedFiles = files.Skip(1).Select((f, idx) => (File: f, LastFile: files[idx]))
+            .ToList();
+        var selectedDoublePages = SelectMany(pairedFiles,
+            pair => GetPrintImages(pair.File, pair.LastFile),
+            "pages to be the start page of double pages").Select(pair => pair.LastFile).ToHashSet();
+
         XImage? doublePage = null;
-        foreach (var file in KifaFile.FindAllFiles(new[] { Folder })) {
+        foreach (var file in files) {
             var image = XImage.FromFile(file.GetLocalPath());
 
-            if (allDoublePages.Contains(file.BaseName)) {
+            if (selectedDoublePages.Contains(file)) {
                 doublePage = image;
                 continue;
             }
@@ -66,7 +74,12 @@ public class CreatePdfMangaCommand : KifaCommand {
         return 0;
     }
 
-    public string GetOutputName(string folder) {
+    static string GetPrintImages(KifaFile leftFile, KifaFile rightFile) {
+        return ITermImage.GetITermImagesSideBySideFromRawBytes(leftFile.ReadAsBytes(),
+            rightFile.ReadAsBytes());
+    }
+
+    static string GetOutputName(string folder) {
         var segments = folder.Split("/", StringSplitOptions.RemoveEmptyEntries);
         return
             $"{segments[^2][..segments[^2].IndexOf("-")]} {segments[^1][(segments[^1].IndexOf(" ") + 1)..]}";
