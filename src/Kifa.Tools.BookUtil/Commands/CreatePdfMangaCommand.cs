@@ -87,7 +87,7 @@ public class CreatePdfMangaCommand : KifaCommand {
 
     static string GetPrintImages(KifaFile leftFile, KifaFile rightFile) {
         return ITermImage.GetITermImagesSideBySideFromRawBytes(leftFile.ReadAsBytes(),
-            rightFile.ReadAsBytes());
+            rightFile.ReadAsBytes(), displayImageHeight: "48%");
     }
 
     static string GetOutputName(string folder) {
