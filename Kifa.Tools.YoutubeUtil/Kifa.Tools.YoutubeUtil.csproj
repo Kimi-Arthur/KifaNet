@@ -4,7 +4,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ToolCommandName>ytbx</ToolCommandName>
         <PackAsTool>true</PackAsTool>
-        <Version>0.1.0</Version>
+        <Version>0.1.1</Version>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageProjectUrl>https://github.com/Kimi-Arthur/KifaNet</PackageProjectUrl>
         <PackageIcon>KifaYoutubeUtil.png</PackageIcon>

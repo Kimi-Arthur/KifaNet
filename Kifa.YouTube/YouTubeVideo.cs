@@ -33,5 +33,5 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         => [$"{Id}.{formatId ?? FormatId}", Id];
 
     public string GetDesiredName(string? formatId = null)
-        => $"{Author}/{Title}.{Id}.{formatId ?? FormatId}";
+        => $"{Author.NormalizeFileName()}/{Title.NormalizeFileName()}.{Id}.{formatId ?? FormatId}";
 }
