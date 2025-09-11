@@ -88,6 +88,7 @@
     <Project Path="src\Kifa.Tools.NoteUtil\Kifa.Tools.NoteUtil.csproj" Type="Classic C#" />
   </Folder>
   <Project Path="Kifa.Jobs\Kifa.Jobs.csproj" Type="Classic C#" />
+  <Project Path="Kifa.Tools.YoutubeUtil\Kifa.Tools.YoutubeUtil.csproj" Type="Classic C#" />
   <Project Path="src\Kifa.Reading\Kifa.Reading.csproj" Type="Classic C#" />
   <Project Path="src\Kifa.Tools.BiliUtil\Kifa.Tools.BiliUtil.csproj" Type="Classic C#" />
   <Project Path="src\Kifa.Tools.BookUtil\Kifa.Tools.BookUtil.csproj" Type="Classic C#" />

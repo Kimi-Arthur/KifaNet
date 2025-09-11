@@ -390,27 +390,27 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public static void LinkAll(KifaFile source, List<KifaFile> links) {
         if (source.ExistsSomewhere()) {
-            Logger.Debug("Source is alreay in system. Will link files virtually.");
+            Logger.Debug("Source is alreay in system. Link files virtually.");
             foreach (var link in links) {
                 if (link.Equals(source)) {
                     continue;
                 }
 
                 FileInfoClient.Link(source.Id, link.Id);
-                Logger.Debug($"Linked {link.Id} => {source.Id}.");
+                Logger.Debug($"Linked virtually {link.Id} => {source.Id}.");
             }
 
             return;
         }
 
-        Logger.Debug("Source is not in system. Will link files locally.");
+        Logger.Debug("Source is not in system. Link locally.");
         foreach (var link in links) {
             if (link.Exists()) {
                 continue;
             }
 
             source.Copy(link);
-            Logger.Debug($"Linked {link} => {source}.");
+            Logger.Debug($"Linked locally {link} => {source}.");
         }
     }
 
