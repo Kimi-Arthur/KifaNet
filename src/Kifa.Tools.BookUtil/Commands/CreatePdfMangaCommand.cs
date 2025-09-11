@@ -34,6 +34,10 @@ public class CreatePdfMangaCommand : KifaCommand {
     [Option('i', "ignore-double-pages", HelpText = "Ignore double page configs in the system.")]
     public string IgnoreExistingDoublePages { get; set; } = "";
 
+    [Option('c', "duplicate-double-pages",
+        HelpText = "Put original pages from double pages after the merged one.")]
+    public bool DuplicateDoublePages { get; set; }
+
     public override int Execute(KifaTask? task = null) {
         // var allDoublePages = DoublePages.Split(",", StringSplitOptions.RemoveEmptyEntries);
 
@@ -63,6 +67,13 @@ public class CreatePdfMangaCommand : KifaCommand {
             var page = document.AddPage();
             if (doublePage != null) {
                 DrawDoublePage(page, doublePage, image);
+                if (DuplicateDoublePages) {
+                    page = document.AddPage();
+                    DrawSinglePage(page, doublePage);
+                    page = document.AddPage();
+                    DrawSinglePage(page, image);
+                }
+
                 doublePage = null;
             } else {
                 DrawSinglePage(page, image);
