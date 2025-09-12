@@ -1,6 +1,7 @@
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.YouTube;
 using NLog;
 
@@ -23,7 +24,8 @@ public class DownloadVideoCommand : KifaCommand {
                 YouTubeVideo.Client.Get(ids.ToList()).OrderBy(video => video.GetDesiredName())
                     .ToList(), video => video.GetDesiredName(), "YouTube videos to download");
         foreach (var video in selectedVideos) {
-            ExecuteItem(video.GetDesiredName(), () => DownloadVideo(video));
+            ExecuteItem(video.GetDesiredName(),
+                () => KifaActionResult.FromAction(() => DownloadVideo(video)));
         }
 
         return LogSummary();
