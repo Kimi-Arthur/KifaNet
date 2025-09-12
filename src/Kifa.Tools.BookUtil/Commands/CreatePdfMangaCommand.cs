@@ -49,11 +49,17 @@ public class CreatePdfMangaCommand : KifaCommand {
         document.Info.Title = title;
 
         var files = KifaFile.FindAllFiles([Folder]);
-        var pairedFiles = files.Skip(1).Select((f, idx) => (File: f, LastFile: files[idx]))
-            .ToList();
-        var selectedDoublePages = SelectMany(pairedFiles,
+        var pairedFiles = files.Skip(1)
+            .Select((f, idx) => (File: f, LastFile: files[idx], Odd: idx % 2)).ToList();
+
+        var grouped = pairedFiles.GroupBy(f => f.Odd).ToDictionary(g => g.Key, g => g.ToList());
+
+        var selectedDoublePages = SelectMany(grouped[1],
             pair => GetPrintImages(pair.File, pair.LastFile),
             "pages to be the start page of double pages").Select(pair => pair.LastFile).ToHashSet();
+        selectedDoublePages.UnionWith(SelectMany(grouped[0],
+            pair => GetPrintImages(pair.File, pair.LastFile),
+            "pages to be the start page of double pages").Select(pair => pair.LastFile));
 
         XImage? doublePage = null;
         foreach (var file in files) {
