@@ -78,8 +78,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         => "{base_name}.{extension}".FormatIfNonNull(BaseName, ("base_name", BaseName),
             ("extension", Extension));
 
-    public string Path => $"{ParentPath}/{Name}";
-    public string PathWithoutSuffix => $"{ParentPath}/{BaseName}";
+    public string Path => $"{SlashToEmpty(ParentPath)}/{Name}";
+    public string PathWithoutSuffix => $"{SlashToEmpty(ParentPath)}/{BaseName}";
 
     public string Host => Client.ToString();
 
@@ -811,4 +811,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public bool IsSameLocalFile(KifaFile source) {
         return FileId != null && FileId == source.FileId;
     }
+
+    static string SlashToEmpty(string path) => path == "/" ? "" : path;
 }

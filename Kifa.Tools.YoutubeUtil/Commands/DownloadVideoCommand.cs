@@ -51,7 +51,6 @@ public class DownloadVideoCommand : KifaCommand {
         Logger.Error("Downloading is not supported yet.");
     }
 
-    static KifaFile GetCanonicalFile(string host, string name) {
-        return new KifaFile($"{host}{Configs.BasePath}/{name}");
-    }
+    static KifaFile GetCanonicalFile(string host, string name)
+        => new($"{host}{Configs.BasePath}/{name}");
 }
