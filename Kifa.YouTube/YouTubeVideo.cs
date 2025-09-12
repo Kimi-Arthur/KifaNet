@@ -30,8 +30,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     }
 
     public List<string> GetCanonicalNames(string? formatId = null)
-        => [$"{Id}.{formatId ?? FormatId}", Id];
+        => [$"{Id}.{formatId ?? FormatId}", Id.Checked()];
 
-    public string GetDesiredName(string? formatId = null)
-        => $"{Author.NormalizeFileName()}/{Title.NormalizeFileName()}.{Id}.{formatId ?? FormatId}";
+    public string? GetDesiredName(string? formatId = null)
+        => "{author}/{title}.{id},{format_id}".FormatIfNonNull(null, ("author", Author?.NormalizeFileName()), ("title", Title?.NormalizeFileName()), ("id", Id), ("format_id", formatId ?? FormatId));
 }

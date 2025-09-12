@@ -19,12 +19,12 @@ public class DownloadVideoCommand : KifaCommand {
     public string? OutputFolder { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selectedVideos =
-            SelectMany(
-                YouTubeVideo.Client.Get(ids.ToList()).OrderBy(video => video.GetDesiredName())
-                    .ToList(), video => video.GetDesiredName(), "YouTube videos to download");
+        var selectedVideos = SelectMany(
+            YouTubeVideo.Client.Get(ids.ToList()).ExceptNull()
+                .OrderBy(video => video.GetDesiredName()).ToList(),
+            video => video.GetDesiredName() ?? video.Id.Checked(), "YouTube videos to download");
         foreach (var video in selectedVideos) {
-            ExecuteItem(video.GetDesiredName(),
+            ExecuteItem(video.GetDesiredName() ?? video.Id.Checked(),
                 () => KifaActionResult.FromAction(() => DownloadVideo(video)));
         }
 
@@ -34,6 +34,9 @@ public class DownloadVideoCommand : KifaCommand {
     void DownloadVideo(YouTubeVideo video) {
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
         var desiredName = video.GetDesiredName();
+        if (desiredName == null) {
+            throw new KifaExecutionException($"No desired name is found for {video.Id}");
+        }
 
         var desiredFile = outputFolder.GetFile($"{desiredName}.mp4");
         var targetFiles = video.GetCanonicalNames()
