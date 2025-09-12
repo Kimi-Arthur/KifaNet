@@ -6,6 +6,7 @@ namespace Kifa.Tools.YoutubeUtil;
 class Program {
     static int Main(string[] args)
         => KifaCommand.Run(
-            parameters => Parser.Default.ParseArguments(parameters, typeof(DownloadVideoCommand)),
-            args);
+            parameters
+                => new Parser(settings => { settings.EnableDashDash = true; }).ParseArguments(
+                    parameters, typeof(DownloadVideoCommand)), args);
 }
