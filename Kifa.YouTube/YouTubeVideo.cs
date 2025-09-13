@@ -12,7 +12,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static KifaServiceClient<YouTubeVideo> Client { get; set; } =
         new KifaServiceRestClient<YouTubeVideo>();
 
-    public static string? YoutubeDlPath { get; set; } = "/opt/homebrew/bin/yt-dlp";
+    public override bool FillByDefault => true;
+
+    public static string? YoutubeDownloaderPath { get; set; }
 
     public string? Title { get; set; }
     public string? Author { get; set; }
@@ -30,7 +32,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public override DateTimeOffset? Fill() {
         var ytdl = new YoutubeDL {
-            YoutubeDLPath = YoutubeDlPath
+            YoutubeDLPath = YoutubeDownloaderPath
         };
         var metadata = ytdl.RunVideoDataFetch(Id).GetAwaiter().GetResult();
         if (!metadata.Success) {
