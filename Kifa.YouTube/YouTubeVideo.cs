@@ -57,7 +57,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Height = videoFormat.Height.Checked();
         Thumbnail = videoData.Thumbnail;
 
-        return null;
+        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
     }
 
     public List<string> GetCanonicalNames(string? formatId = null)
