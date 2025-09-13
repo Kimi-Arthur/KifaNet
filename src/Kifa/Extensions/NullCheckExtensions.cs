@@ -13,6 +13,24 @@ public static class NullCheckExtensions {
         return nullableValue;
     }
 
+    public static float Checked(this float? nullableValue,
+        [CallerArgumentExpression("nullableValue")] string expression = "") {
+        if (nullableValue == null) {
+            throw new ArgumentNullException(expression);
+        }
+
+        return (float) nullableValue;
+    }
+
+    public static int Checked(this int? nullableValue,
+        [CallerArgumentExpression("nullableValue")] string expression = "") {
+        if (nullableValue == null) {
+            throw new ArgumentNullException(expression);
+        }
+
+        return (int) nullableValue;
+    }
+
     public static long Checked(this long? nullableValue,
         [CallerArgumentExpression("nullableValue")] string expression = "") {
         if (nullableValue == null) {

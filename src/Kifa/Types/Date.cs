@@ -27,6 +27,11 @@ public class Date : JsonSerializable, IComparable<Date> {
 
     public static implicit operator Date(string data) => Parse(data);
 
+    public static implicit operator Date(DateTime dataTime)
+        => new() {
+            DateTime = dataTime
+        };
+
     static DateTime ParseDateTime(string data, string? format = null) {
         if (string.IsNullOrEmpty(data)) {
             return DateTime.MinValue;
