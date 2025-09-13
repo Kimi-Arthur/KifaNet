@@ -8,7 +8,7 @@
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="MegaApiClient" Version="1.10.4"/>
-        <PackageReference Include="Selenium.WebDriver" Version="4.1.1"/>
+        <PackageReference Include="MegaApiClient" Version="1.10.5" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.35.0" />
     </ItemGroup>
 </Project>
