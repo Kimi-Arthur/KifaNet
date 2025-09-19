@@ -61,7 +61,7 @@ class RemoveCommand : KifaCommand {
 
                 fileInfos.AddRange(FileInformation.Client.List(folder: fileName,
                     options: new KifaDataOptions {
-                        Fields = ["Id"]
+                        Fields = ["Id", "Metadata"]
                     }).Values);
             }
 
