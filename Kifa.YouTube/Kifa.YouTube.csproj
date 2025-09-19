@@ -10,4 +10,8 @@
         <ProjectReference Include="..\src\Kifa.Service\Kifa.Service.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
+    </ItemGroup>
+
 </Project>
