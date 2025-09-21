@@ -96,7 +96,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         return null;
     }
 
-    public static ItemsInfo? GetItems(string[] spec) {
+    public static ItemInfoList? GetItems(string[] spec) {
         if (!KnownCategories.Contains(spec[0])) {
             return null;
         }
@@ -113,7 +113,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         var requestedSeasonId = numberedSegments.Count > 0 ? numberedSegments[0] : (int?) null;
         var requestedEpisodeId = numberedSegments.Count > 1 ? numberedSegments[1] : (int?) null;
         var series = Client.Get(id).Checked();
-        return new ItemsInfo {
+        return new ItemInfoList {
             Info = series,
             Items = series.Seasons.Checked()
                 .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)

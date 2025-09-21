@@ -145,7 +145,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         return null;
     }
 
-    public static ItemsInfo? GetItems(string[] spec) {
+    public static ItemInfoList? GetItems(string[] spec) {
         if (spec[0] != "Anime" || spec.Length is < 2 or > 4) {
             return null;
         }
@@ -154,7 +154,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         var requestedSeasonId = spec.Length > 2 ? int.Parse(spec[2]) : (int?) null;
         var requestedEpisodeId = spec.Length > 3 ? int.Parse(spec[3]) : (int?) null;
         var anime = Client.Get(id).Checked();
-        return new ItemsInfo {
+        return new ItemInfoList {
             Info = anime,
             Items = anime.Seasons.Checked()
                 .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)

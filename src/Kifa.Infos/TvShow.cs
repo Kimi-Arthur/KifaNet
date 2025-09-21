@@ -184,7 +184,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         return sharedTitle;
     }
 
-    public static ItemsInfo? GetItems(string[] spec) {
+    public static ItemInfoList? GetItems(string[] spec) {
         if (spec[0] != "TV Shows" || spec.Length is < 2 or > 4) {
             return null;
         }
@@ -193,7 +193,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         var requestedSeasonId = spec.Length > 2 ? int.Parse(spec[2]) : (int?) null;
         var requestedEpisodeId = spec.Length > 3 ? int.Parse(spec[3]) : (int?) null;
         var tvShow = Client.Get(id).Checked();
-        return new ItemsInfo {
+        return new ItemInfoList {
             Info = tvShow,
             Items = tvShow.Seasons.Checked()
                 .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)

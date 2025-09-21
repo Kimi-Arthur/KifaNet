@@ -14,7 +14,7 @@ public class ItemInfo {
     public bool Matched { get; set; }
 }
 
-public class ItemsInfo {
+public class ItemInfoList {
     public Formattable Info { get; set; }
     public List<ItemInfo> Items { get; set; }
 }
