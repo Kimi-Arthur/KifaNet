@@ -37,6 +37,52 @@ public class YouTubeVideoTests {
     }
 
     [Fact]
+    public void FillMissingVideoTest() {
+        var video = new YouTubeVideo {
+            Id = "-mvEt8ZLsX4"
+        };
+
+        const string expectedVideo = """
+                                     {
+                                       "id": "-mvEt8ZLsX4",
+                                       "title": "AKB48 恋するフォーチュンクッキー KOREA COVER DANCE ' HHO48 ' IN 사통팔달",
+                                       "author": "베레스트(Verest) 360 VR",
+                                       "upload_date": "2015-01-03",
+                                       "description": "사통팔달 행사영상\n커버댄스 걸그룹 HHO48\nAKB48-恋するフォーチュンクッキー\n재미있게 봐주세요.^^\n다른 팀들의 영상도 차후 업로드 됩니다.",
+                                       "categories": [
+                                         "Music"
+                                       ],
+                                       "tags": [
+                                         "AKB48 (Award Winner)",
+                                         "Dance Music (Musical Genre)",
+                                         "Dance-pop (Musical Genre)",
+                                         "Dance (Interest)",
+                                         "Dancehall (Musical Genre)",
+                                         "Dance Dance Revolution (Video Game Series)",
+                                         "恋するフォーチュンクッキー (Musical Recording)",
+                                         "K-pop Cover Dance Festival",
+                                         "J-pop (Musical Genre)",
+                                         "Music (TV Genre)",
+                                         "South Korea (Country)",
+                                         "Country (Musical Genre)",
+                                         "Television (Invention)",
+                                         "North",
+                                         "Carolina"
+                                       ],
+                                       "duration": "00:03:08",
+                                       "fps": 24.0,
+                                       "width": 1920,
+                                       "height": 1080,
+                                       "format_id": "248+171",
+                                       "thumbnail": "https://i.ytimg.com/vi/-mvEt8ZLsX4/maxresdefault.jpg"
+                                     }
+                                     """;
+
+        video.Fill();
+        video.ToString().Should().Be(expectedVideo);
+    }
+
+    [Fact]
     public void NameTest() {
         var video = new YouTubeVideo {
             Id = "RWrSo_7RmgQ",

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using Kifa.Service;
+using NLog;
 using YoutubeDLSharp;
 
 namespace Kifa.YouTube;
@@ -30,7 +32,20 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public string? FormatId { get; set; }
     public string? Thumbnail { get; set; }
 
+    static readonly HttpClient HttpClient = new();
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public override DateTimeOffset? Fill() {
+        try {
+            return FillWithYoutubeDl();
+        } catch (Exception e) {
+            Logger.Warn(e);
+        }
+
+        return FillWithFindYoutubeVideo();
+    }
+
+    DateTimeOffset? FillWithYoutubeDl() {
         var ytdl = new YoutubeDL {
             YoutubeDLPath = YoutubeDownloaderPath
         };
@@ -58,6 +73,61 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Thumbnail = videoData.Thumbnail;
 
         return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
+    }
+
+    DateTimeOffset? FillWithFindYoutubeVideo() {
+        var fybResponse = HttpClient.Call(new FindYoutubeVideoRpc(Id.Checked()));
+        var archiveItem =
+            fybResponse?.Keys.FirstOrDefault(key
+                => key.Archived && key.Name == "Archive.org Details");
+        if (archiveItem == null) {
+            throw new UnableToFillException(
+                $"Cannot find video history with FindYoutubeVideo service: {fybResponse.ToJson()}");
+        }
+
+        var archiveLink = archiveItem.Available.FirstOrDefault(link => link.Url != null)?.Url;
+
+        if (archiveLink == null) {
+            throw new UnableToFillException(
+                $"Cannot find link with FindYoutubeVideo service: {fybResponse.ToJson()}");
+        }
+
+        var archiveId = archiveLink.Split("/").Last();
+        var archiveMetadata = HttpClient.Call(new ArchiveMetadataRpc(archiveId));
+        if (archiveMetadata == null) {
+            throw new UnableToFillException($"Cannot find archive for {archiveId}");
+        }
+
+        var archiveFile =
+            archiveMetadata.Files.FirstOrDefault(f => f.Name.EndsWith($"-{Id}.info.json"));
+
+        if (archiveFile == null) {
+            throw new UnableToFillException($"Cannot find item {Id} in archive {archiveId}");
+        }
+
+        var archiveFileContent = HttpClient.Call(new ArchiveItemDetailRpc(archiveMetadata.D1,
+            archiveMetadata.Dir, archiveFile.Name));
+
+        if (archiveFileContent == null) {
+            throw new UnableToFillException(
+                $"Cannot find file {archiveFile.Name} in archive {archiveId}");
+        }
+
+        Title = archiveFileContent.Title;
+        Author = archiveFileContent.Uploader;
+        UploadDate = Date.Parse(archiveFileContent.UploadDate, "yyyyMMdd");
+        Description = archiveFileContent.Description;
+        Categories = archiveFileContent.Categories.ToList();
+        Tags = archiveFileContent.Tags.ToList();
+        Duration = TimeSpan.FromSeconds(archiveFileContent.Duration.Checked());
+
+        FormatId = archiveFileContent.FormatId;
+        Fps = archiveFileContent.Fps;
+        Width = archiveFileContent.Width;
+        Height = archiveFileContent.Height;
+        Thumbnail = archiveFileContent.Thumbnail;
+
+        return DateTimeOffset.Now + TimeSpan.FromDays(365 * 10);
     }
 
     public List<string> GetCanonicalNames(string? formatId = null)
