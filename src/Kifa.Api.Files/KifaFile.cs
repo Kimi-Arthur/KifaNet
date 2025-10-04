@@ -40,6 +40,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public static string SubtitlesHost { get; set; }
 
+    public static string NfosHost { get; set; }
+
     public static string DefaultIgnoredPrefix { get; set; } = "@";
 
     public static HashSet<string> IgnoredPrefixes { get; set; } = new() {
@@ -801,6 +803,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public KifaFile GetSubtitleFile(string? suffix = null)
         => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? Extension}");
+
+    public KifaFile GetNfoFile()
+        => new($"{NfosHost}{PathWithoutSuffix}.nfo");
 
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 

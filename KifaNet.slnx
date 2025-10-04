@@ -38,6 +38,7 @@
   </Folder>
   <Folder Name="/Fun/">
     <Project Path="Kifa.Books.ZeroAvenue\Kifa.Books.ZeroAvenue.csproj" Type="Classic C#" />
+    <Project Path="Kifa.Jellyfin\Kifa.Jellyfin.csproj" Type="Classic C#" />
     <Project Path="Kifa.Twitter\Kifa.Twitter.csproj" Type="Classic C#" />
     <Project Path="Kifa.YouTube.Tests\Kifa.YouTube.Tests.csproj" Type="Classic C#" />
     <Project Path="Kifa.YouTube\Kifa.YouTube.csproj" Type="Classic C#" />
