@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,17 +47,28 @@ public class FixInfoCommand : KifaCommand {
             };
         }
 
-        if (!Confirm("Confirm the change above?")) {
+        using var ms = new MemoryStream();
+        document.Save(ms);
+
+        if (!Confirm($"{GetDiff(infoFile.OpenRead(), ms)}\n\nConfirm the change above?")) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
                 Message = "User skipped"
             };
         }
 
-        using var ms = new MemoryStream();
-        document.Save(ms);
+        infoFile.Delete();
         infoFile.Write(ms);
 
         return KifaActionResult.Success;
+    }
+
+    string GetDiff(Stream oldStream, Stream newStream) {
+        using var oldReader = new StreamReader(oldStream);
+        using var newReader = new StreamReader(newStream, leaveOpen: true);
+        var oldLines = oldReader.GetLines().ToList();
+        var newLines = newReader.GetLines().ToList();
+
+        return LineDiffer.DiffLines(oldLines, newLines).JoinBy("\n");
     }
 }
