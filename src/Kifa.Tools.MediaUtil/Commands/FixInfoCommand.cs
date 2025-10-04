@@ -49,6 +49,7 @@ public class FixInfoCommand : KifaCommand {
 
         using var ms = new MemoryStream();
         document.Save(ms);
+        ms.Seek(0, SeekOrigin.Begin);
 
         if (!Confirm($"{GetDiff(infoFile.OpenRead(), ms)}\n\nConfirm the change above?")) {
             return new KifaActionResult {
@@ -63,7 +64,7 @@ public class FixInfoCommand : KifaCommand {
         return KifaActionResult.Success;
     }
 
-    string GetDiff(Stream oldStream, Stream newStream) {
+    static string GetDiff(Stream oldStream, Stream newStream) {
         using var oldReader = new StreamReader(oldStream);
         using var newReader = new StreamReader(newStream, leaveOpen: true);
         var oldLines = oldReader.GetLines().ToList();
