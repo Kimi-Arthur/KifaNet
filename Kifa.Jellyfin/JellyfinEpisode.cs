@@ -5,6 +5,7 @@ namespace Kifa.Jellyfin;
 // Currently dummy
 public class JellyfinEpisode {
     const string SortTitleKey = "sorttitle";
+    const string TitleKey = "sorttitle";
     const string SeasonKey = "season";
 
     public static bool FixNfo(string path, XDocument document) {
@@ -14,8 +15,9 @@ public class JellyfinEpisode {
         }
 
         var modified = false;
-        if (root.Element(SortTitleKey)?.Value != path) {
+        if (root.Element(SortTitleKey)?.Value != path || root.Element(TitleKey)?.Value != path) {
             root.SetElementValue(SortTitleKey, path);
+            root.SetElementValue(TitleKey, path);
             modified = true;
         }
 
