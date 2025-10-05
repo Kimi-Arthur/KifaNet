@@ -59,6 +59,7 @@ public class FixInfoCommand : KifaCommand {
         }
 
         infoFile.Delete();
+        ms.Seek(0, SeekOrigin.Begin);
         infoFile.Write(ms);
 
         return KifaActionResult.Success;
