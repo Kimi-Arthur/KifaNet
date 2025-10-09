@@ -350,12 +350,11 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     public (string extension, int quality, int codec, Func<Stream> videoStreamGetter,
         List<Func<Stream>> audioStreamGetters) GetStreams(int pid, int maxQuality = 0,
-            string? preferredCodec = null, bool regionLocked = false) {
+            string? preferredCodec = null, BilibiliRegion region = BilibiliRegion.Direct) {
         var cid = Pages[pid - 1].Cid;
 
         var (extension, quality, codec, videoLink, audioLinks) = GetDownloadLinks(Id, cid,
-            maxQuality: maxQuality == 0 ? 127 : maxQuality, preferredCodec,
-            regionLocked: regionLocked);
+            maxQuality: maxQuality == 0 ? 127 : maxQuality, preferredCodec, region: region);
         return (extension, quality, codec, () => BuildDownloadStream(videoLink),
             audioLinks.Select<(List<string> links, long size), Func<Stream>>(l
                 => () => BuildDownloadStream(l)).ToList());
@@ -455,10 +454,10 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     static (string extension, int quality, int codec, (List<string> links, long size) videoLink,
         List<(List<string> links, long size)> audioLinks) GetDownloadLinks(string aid, string cid,
-            int maxQuality, string? preferredCodec, bool regionLocked) {
+            int maxQuality, string? preferredCodec, BilibiliRegion region) {
         var quality = maxQuality;
         return Retry.Run(() => {
-            var response = HttpClients.GetBilibiliClient(regionLocked)
+            var response = HttpClients.GetBilibiliClient(region)
                 .Call(new VideoUrlRpc(aid, cid, quality));
 
             if (response is not { Code: 0 }) {

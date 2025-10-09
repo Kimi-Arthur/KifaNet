@@ -6,7 +6,8 @@ using System.Text.RegularExpressions;
 namespace Kifa.Bilibili;
 
 public class HttpClients {
-    public static string? BilibiliProxy { get; set; }
+    public static string? CnProxy { get; set; }
+    public static string? HkProxy { get; set; }
 
     public static string BilibiliCookies { get; set; }
 
@@ -16,28 +17,49 @@ public class HttpClients {
 
     public static string BiliplusCookies { get; set; }
 
-    static HttpClient? bilibiliClient;
+    static HttpClient? bilibiliCnClient;
 
-    public static HttpClient BilibiliProxiedHttpClient {
+    public static HttpClient BilibiliCnClient {
         get {
-            if (bilibiliClient == null) {
-                bilibiliClient = new HttpClient(new HttpClientHandler {
-                    Proxy = new WebProxy(BilibiliProxy)
+            if (bilibiliCnClient == null) {
+                bilibiliCnClient = new HttpClient(new HttpClientHandler {
+                    Proxy = new WebProxy(CnProxy)
                 });
-                bilibiliClient.Timeout = TimeSpan.FromMinutes(10);
-                bilibiliClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
-                bilibiliClient.DefaultRequestHeaders.Referrer = new Uri("https://m.bilibili.com/");
-                bilibiliClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                bilibiliCnClient.Timeout = TimeSpan.FromMinutes(10);
+                bilibiliCnClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                bilibiliCnClient.DefaultRequestHeaders.Referrer =
+                    new Uri("https://m.bilibili.com/");
+                bilibiliCnClient.DefaultRequestHeaders.UserAgent.ParseAdd(
                     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
             }
 
-            return bilibiliClient;
+            return bilibiliCnClient;
+        }
+    }
+
+    static HttpClient? bilibiliHkClient;
+
+    public static HttpClient BilibiliHkClient {
+        get {
+            if (bilibiliHkClient == null) {
+                bilibiliHkClient = new HttpClient(new HttpClientHandler {
+                    Proxy = new WebProxy(HkProxy)
+                });
+                bilibiliHkClient.Timeout = TimeSpan.FromMinutes(10);
+                bilibiliHkClient.DefaultRequestHeaders.Add("cookie", BilibiliCookies);
+                bilibiliHkClient.DefaultRequestHeaders.Referrer =
+                    new Uri("https://m.bilibili.com/");
+                bilibiliHkClient.DefaultRequestHeaders.UserAgent.ParseAdd(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
+            }
+
+            return bilibiliHkClient;
         }
     }
 
     static HttpClient? bilibiliDirectClient;
 
-    public static HttpClient BilibiliDirectHttpClient {
+    public static HttpClient BilibiliDirectClient {
         get {
             if (bilibiliDirectClient == null) {
                 bilibiliDirectClient = new HttpClient();
@@ -53,9 +75,14 @@ public class HttpClients {
         }
     }
 
-    public static HttpClient GetBilibiliClient(bool regionLocked = false) {
-        return regionLocked ? BilibiliProxiedHttpClient : BilibiliDirectHttpClient;
-    }
+    public static HttpClient GetBilibiliClient(BilibiliRegion region = BilibiliRegion.Direct)
+        => region switch {
+            BilibiliRegion.Direct => BilibiliDirectClient,
+            BilibiliRegion.Cn => BilibiliCnClient,
+            BilibiliRegion.Hk => BilibiliHkClient,
+            _ => throw new ArgumentOutOfRangeException(nameof(region), region,
+                "region should be one of direct, cn or hk.")
+        };
 
     static HttpClient? biliplusClient;
 
@@ -73,4 +100,10 @@ public class HttpClients {
             return biliplusClient;
         }
     }
+}
+
+public enum BilibiliRegion {
+    Direct,
+    Cn,
+    Hk
 }
