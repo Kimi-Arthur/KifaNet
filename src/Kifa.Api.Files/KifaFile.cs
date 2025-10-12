@@ -801,11 +801,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             : throw new FileNotFoundException(
                 "Should not try to get a local path with a non FileStorageClient.");
 
+    public KifaFile GetTruncatedFile() => new($"{Host}{PathWithoutSuffix}.truncated.{Extension}");
+
     public KifaFile GetSubtitleFile(string? suffix = null)
         => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? Extension}");
 
-    public KifaFile GetNfoFile()
-        => new($"{NfosHost}{PathWithoutSuffix}.nfo");
+    public KifaFile GetNfoFile() => new($"{NfosHost}{PathWithoutSuffix}.nfo");
 
     public void EnsureLocalParent() => FileStorageClient.EnsureParent(GetLocalPath());
 
