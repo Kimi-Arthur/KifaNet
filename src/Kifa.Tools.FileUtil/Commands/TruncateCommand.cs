@@ -25,6 +25,13 @@ class TruncateCommand : KifaCommand {
 
     static KifaActionResult TruncateFile(KifaFile file) {
         var truncatedFile = file.GetTruncatedFile();
+        if (truncatedFile.Exists()) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"Target truncate file {truncatedFile} already exists."
+            };
+        }
+
         file.Copy(truncatedFile, neverLink: true);
         using (var s = File.Open(truncatedFile.GetLocalPath(), FileMode.Open)) {
             s.Seek(-1, SeekOrigin.End);
