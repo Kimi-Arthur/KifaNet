@@ -93,7 +93,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         return null;
     }
 
-    public string? Format(Season season, Episode episode)
+    public string? Format(Season season, Episode episode, string? version = null)
         => Format(season, new List<Episode> {
             episode
         });
@@ -133,7 +133,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         return null;
     }
 
-    public string? Format(Season season, List<Episode> episodes) {
+    public string? Format(Season season, List<Episode> episodes, string? version = null) {
         var episode = episodes.First();
         var patternId = episode.PatternId ?? season.PatternId ?? PatternId;
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
@@ -146,14 +146,15 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
         var episodeTitle = GetTitle(episodes.Select(e => e.Title).ToList());
 
+        var baseFolder = $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
+                         " {version}".FormatIfNonNull("", ("version", version));
         // season.Title and episode.Title can be empty.
         return patternId switch {
-            "multi_season" => $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                              $"/Season {season.Id} {season.Title}".TrimEnd() +
+            "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +
                               $" ({season.AirDate.Year})" +
                               $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}"
                                   .TrimEnd(),
-            "single_season" => $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
+            "single_season" => baseFolder +
                                $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}"
                                    .TrimEnd(),
             _ => null
@@ -184,7 +185,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         return sharedTitle;
     }
 
-    public static ItemInfoList? GetItems(string[] spec) {
+    public static ItemInfoList? GetItems(string[] spec, string? version = null) {
         if (spec[0] != "TV Shows" || spec.Length is < 2 or > 4) {
             return null;
         }
@@ -203,7 +204,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
                 .Select(item => new ItemInfo {
                     EpisodeId = item.Episode.Id,
                     SeasonId = item.Season.Id,
-                    Path = tvShow.Format(item.Season, item.Episode).Checked()
+                    Path = tvShow.Format(item.Season, item.Episode, version).Checked()
                 }).ToList()
         };
     }

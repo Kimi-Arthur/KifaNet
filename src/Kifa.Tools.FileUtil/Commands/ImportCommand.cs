@@ -32,6 +32,11 @@ class ImportCommand : KifaCommand {
     [Option('s', "source-id", HelpText = "ID for the source, like Westworld/1")]
     public string? SourceId { get; set; }
 
+    [Option('x', "suffix",
+        HelpText =
+            "Version suffix, like DVDRip, 4K etc, will be appended after the top level folder like 'Friends (1994) [DVDRip]'.")]
+    public string? VersionSuffix { get; set; }
+
     public override int Execute(KifaTask? task = null) {
         var files = (ById ? GetFromFileIds() : GetFromLocalFiles()).ToList();
         if (files.Count == 0) {
@@ -73,19 +78,19 @@ class ImportCommand : KifaCommand {
                 // /Gaming/黑桐谷歌/漫威蜘蛛侠2
                 infoList = Series.GetItems([
                     Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
-                ]).Checked();
+                ], VersionSuffix).Checked();
                 break;
             }
             case "TV Shows": {
                 infoList = TvShow.GetItems([
                     Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
-                ]).Checked();
+                ], VersionSuffix).Checked();
                 break;
             }
             case "Anime": {
                 infoList = Anime.GetItems([
                     Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
-                ]).Checked();
+                ], VersionSuffix).Checked();
                 break;
             }
             case "Soccer":

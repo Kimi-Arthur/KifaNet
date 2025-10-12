@@ -44,7 +44,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
-    public string? Format(Season season, Episode episode) {
+    public string? Format(Season season, Episode episode, string? version = null) {
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
         var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
@@ -52,14 +52,14 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
 
+        var baseFolder = $"/Anime/{Title} ({AirDate.Year})" +
+                         " [{version}]".FormatIfNonNull("", ("version", version));
         // season.Title and episode.Title can be empty.
         return PatternId switch {
-            "multi_season" => $"/Anime/{Title} ({AirDate.Year})" +
-                              $"/Season {season.Id} {season.Title}".TrimEnd() +
+            "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +
                               $" ({season.AirDate.Year})" +
                               $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd(),
-            "single_season" => $"/Anime/{Title} ({AirDate.Year})" +
-                               $"/{Title} EP{eid} {episode.Title}".TrimEnd(),
+            "single_season" => baseFolder + $"/{Title} EP{eid} {episode.Title}".TrimEnd(),
             _ => null
         };
     }
@@ -145,7 +145,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         return null;
     }
 
-    public static ItemInfoList? GetItems(string[] spec) {
+    public static ItemInfoList? GetItems(string[] spec, string? version = null) {
         if (spec[0] != "Anime" || spec.Length is < 2 or > 4) {
             return null;
         }
@@ -164,7 +164,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
                 .Select(item => new ItemInfo {
                     EpisodeId = item.Episode.Id,
                     SeasonId = item.Season.Id,
-                    Path = anime.Format(item.Season, item.Episode).Checked()
+                    Path = anime.Format(item.Season, item.Episode, version).Checked()
                 }).ToList()
         };
     }

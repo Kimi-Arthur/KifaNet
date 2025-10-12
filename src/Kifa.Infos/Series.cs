@@ -45,7 +45,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
     [YamlIgnore]
     string Title => Id.Checked().Split("/").Last();
 
-    public string? Format(Season season, Episode episode) {
+    public string? Format(Season season, Episode episode, string? version = null) {
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
         var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
 
@@ -96,7 +96,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         return null;
     }
 
-    public static ItemInfoList? GetItems(string[] spec) {
+    public static ItemInfoList? GetItems(string[] spec, string? version = null) {
         if (!KnownCategories.Contains(spec[0])) {
             return null;
         }
@@ -123,7 +123,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
                 .Select(item => new ItemInfo {
                     EpisodeId = item.Episode.Id,
                     SeasonId = item.Season.Id,
-                    Path = series.Format(item.Season, item.Episode).Checked()
+                    Path = series.Format(item.Season, item.Episode, version).Checked()
                 }).ToList()
         };
     }
@@ -173,7 +173,7 @@ public class SpecialEpisode : Episode {
 }
 
 public interface Formattable {
-    string? Format(Season season, Episode episode);
+    string? Format(Season season, Episode episode, string? version = null);
     (Season Season, Episode Episode)? Parse(string formatted);
 }
 
