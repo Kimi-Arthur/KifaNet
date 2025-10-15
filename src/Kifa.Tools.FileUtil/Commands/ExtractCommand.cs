@@ -27,6 +27,10 @@ class ExtractCommand : KifaCommand {
         HelpText = "Encoding of the archive, typically for zip files with GB18030.")]
     public string? ArchiveEncoding { get; set; }
 
+    [Option('d', "delete-source",
+        HelpText = "Delete source archive files in case extraction is successful and verified.")]
+    public bool DeleteSource { get; set; } = false;
+
     Encoding? encoding;
     Encoding Encoding => encoding ??= GetArchiveEncoding();
 
@@ -64,13 +68,6 @@ class ExtractCommand : KifaCommand {
             Password = Password,
             ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
         });
-
-        var volumes = archive.Volumes.ToList();
-
-        Logger.Error($"Archive volume count: {volumes.Count}");
-        foreach (var volume in volumes) {
-            Logger.Error($"Volume name: {volume.Index} {volume.FileName}");
-        }
 
         var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => (
             Entry: entry,
@@ -157,21 +154,14 @@ class ExtractCommand : KifaCommand {
             }
         }
 
-        // results.AddRange(RemoveArchives(archive.Volumes
-        //     .Select(v => folder.GetFile(v.FileName.Checked())).ToList()));
-
-        return results;
-    }
-
-    IEnumerable<(string item, KifaActionResult result)> RemoveArchives(
-        List<KifaFile> archiveVolumes) {
-        var selected = SelectMany(archiveVolumes, v => $"{v}: {v.Length}",
-            "archive files to delete since extraction is successful");
-        if (selected.Count == 0) {
-            Logger.Info("No archive files to remove.");
+        if (results.IsAcceptable && DeleteSource && Confirm(
+                $"{archive.Volumes.Select(v => v.FileName).JoinBy("\n")}\n" +
+                $"Confirm removing the {archive.Volumes.Count()} source archive files above?")) {
+            results.AddRange(archive.Volumes.Select(v => ($"Remove {v.FileName.Checked()}",
+                RemoveOneArchiveFile(new KifaFile(v.FileName.Checked())))));
         }
 
-        return selected.Select(v => ($"Remove {v}", RemoveOneArchiveFile(v)));
+        return results;
     }
 
     KifaActionResult RemoveOneArchiveFile(KifaFile file) {
@@ -179,7 +169,7 @@ class ExtractCommand : KifaCommand {
             if (Confirm($"File {file} is already registerd. Confirm removing it completely?")) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.BadRequest,
-                    Message = "Should not extract from registered archives as of now."
+                    Message = "Should not remove a registered archive file as of now."
                 };
             }
 
