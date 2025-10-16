@@ -37,6 +37,7 @@
     <Project Path="tests\Kifa.Cloud.Telegram.Tests\Kifa.Cloud.Telegram.Tests.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/Fun/">
+    <Project Path="Kifa.ArchiveOrg\Kifa.ArchiveOrg.csproj" Type="Classic C#" />
     <Project Path="Kifa.Books.ZeroAvenue\Kifa.Books.ZeroAvenue.csproj" Type="Classic C#" />
     <Project Path="Kifa.Jellyfin\Kifa.Jellyfin.csproj" Type="Classic C#" />
     <Project Path="Kifa.Twitter\Kifa.Twitter.csproj" Type="Classic C#" />
@@ -48,6 +49,7 @@
     <Project Path="src\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Subtitle\Kifa.Subtitle.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Tencent\Kifa.Tencent.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.ArchiveOrg.Tests\Kifa.ArchiveOrg.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Kifa.Bilibili.Tests\Kifa.Bilibili.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Kifa.Graphics.Tests\Kifa.Graphics.Tests.csproj" Type="Classic C#" />
     <Project Path="tests\Kifa.Infos.Tests\Kifa.Infos.Tests.csproj" Type="Classic C#" />
