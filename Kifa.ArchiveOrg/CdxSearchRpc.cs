@@ -3,6 +3,7 @@ using Kifa.Rpc;
 
 namespace Kifa.ArchiveOrg;
 
+// https://archive.org/developers/wayback-cdx-server.html#basic-usage
 public class CdxSearchRpc : KifaJsonParameterizedRpc<List<List<string>>> {
     protected override string Url
         => "http://web.archive.org/cdx/search/cdx?url={encoded_url}&output=json";
