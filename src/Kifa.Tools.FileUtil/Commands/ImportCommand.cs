@@ -129,12 +129,12 @@ class ImportCommand : KifaCommand {
                     return 0;
                 }
 
-                var counter = 'A';
+                var counter = 1;
                 foreach (var file in files) {
                     var ext = file[(file.LastIndexOf(".") + 1)..];
                     var targetFileName = fileVersion != null
-                        ? $"{folder}/{baseName}/{baseName}-{counter}.{fileVersion}.{ext}"
-                        : $"{folder}/{baseName}/{baseName}-{counter}.{ext}";
+                        ? $"{folder}/{baseName}/{baseName}.{fileVersion}.part{counter}.{ext}"
+                        : $"{folder}/{baseName}/{baseName}.part{counter}.{ext}";
                     targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
                     FileInformation.Client.Link(file, targetFileName);
                     Logger.Info($"Successfully linked {file} to {targetFileName}");
