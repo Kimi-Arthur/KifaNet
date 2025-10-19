@@ -5,7 +5,7 @@ namespace Kifa.YouTube.Tests;
 
 public class YouTubeVideoTests {
     [Fact]
-    public void FillTest() {
+    public void FillWithYoutubeDlTest() {
         var video = new YouTubeVideo {
             Id = "_ox9gJZ8ENo"
         };
@@ -37,7 +37,29 @@ public class YouTubeVideoTests {
     }
 
     [Fact]
-    public void FillMissingVideoTest() {
+    public void FillWithWaybackTest() {
+        var video = new YouTubeVideo {
+            Id = "0iNrY1ixR8I"
+        };
+
+        const string expectedVideo = """
+                                     {
+                                       "id": "0iNrY1ixR8I",
+                                       "title": "Taylor Swift - Red Carpet Interview (2013 AMAs)",
+                                       "author": "TaylorSwiftVEVO",
+                                       "description": "Lance Bass and Jordin Sparks interview Taylor Swift on the red carpet at the American Music Awards 2013. She discusses her AMA nominations, being named the biggest Pop Star in the world by New York Magazine and her new movie.",
+                                       "duration": "00:03:21",
+                                       "width": 1280,
+                                       "height": 720
+                                     }
+                                     """;
+
+        video.Fill();
+        video.ToString().Should().Be(expectedVideo);
+    }
+
+    [Fact]
+    public void FillWithFindYoutubeVideoTest() {
         var video = new YouTubeVideo {
             Id = "-mvEt8ZLsX4"
         };

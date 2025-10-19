@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using Kifa.ArchiveOrg;
+using Kifa.Html;
 using Kifa.Service;
 using NLog;
 using YoutubeDLSharp;
@@ -42,7 +45,13 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             Logger.Warn(e);
         }
 
-        return FillWithFindYoutubeVideo();
+        try {
+            return FillWithFindYoutubeVideo();
+        } catch (Exception e) {
+            Logger.Warn(e);
+        }
+
+        return FillWithWayback();
     }
 
     DateTimeOffset? FillWithYoutubeDl() {
@@ -130,11 +139,57 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return DateTimeOffset.Now + TimeSpan.FromDays(365 * 10);
     }
 
+
+    DateTimeOffset? FillWithWayback() {
+        var watchUrl = $"https://www.youtube.com/watch?v={Id}";
+        var cdxResults = HttpClient.Call(new CdxSearchRpc(watchUrl));
+        foreach (var entry in cdxResults.OrderByDescending(r => r.Length)) {
+            if (FillWithPageContent(
+                    HttpClient.Call(new ArchiveContentRpc(entry.Original, entry.Timestamp)))) {
+                return DateTimeOffset.Now + TimeSpan.FromDays(365 * 10);
+            }
+        }
+
+        return null;
+    }
+
+    bool FillWithPageContent(string? body) {
+        if (body == null) {
+            return false;
+        }
+
+        var document = body.GetDocument();
+        Title = document.QuerySelector("#watch-headline-title > span")?.InnerHtml.Trim();
+        if (Title == null) {
+            return false;
+        }
+
+        Author = document.QuerySelectorAll("#watch7-user-header a")[1].InnerHtml.Trim();
+        var date = document.QuerySelector("#eow-date")?.InnerHtml.Trim();
+        if (date != null) {
+            UploadDate = Date.Parse(date, "MMM d, yyyy");
+        }
+
+        Description = document.QuerySelector("#eow-description")?.InnerHtml.Trim();
+        Categories = document.QuerySelectorAll("#eow-category > a").Select(c => c.InnerHtml.Trim())
+            .ToList();
+
+        Height = int.Parse(document.QuerySelector("meta[itemprop=height]").Checked()
+            .Attributes["content"].Checked().Value);
+        Width = int.Parse(document.QuerySelector("meta[itemprop=width]").Checked()
+            .Attributes["content"].Checked().Value);
+        Duration =
+            TimeSpan.ParseExact(
+                document.QuerySelector("meta[itemprop=duration]").Checked().Attributes["content"]
+                    .Checked().Value, @"\P\Tm\Ms\S", CultureInfo.InvariantCulture);
+        return true;
+    }
+
     public List<string> GetCanonicalNames(string? formatId = null)
         => [$"{Id}.{formatId ?? FormatId}", Id.Checked()];
 
     public string? GetDesiredName(string? formatId = null)
-        => "{author}/{title}.{id},{format_id}".FormatIfNonNull(null,
+        => "{author}/{title}.{id}.{format_id}".FormatIfNonNull(null,
             ("author", Author?.NormalizeFileName()), ("title", Title?.NormalizeFileName()),
             ("id", Id), ("format_id", formatId ?? FormatId));
 }

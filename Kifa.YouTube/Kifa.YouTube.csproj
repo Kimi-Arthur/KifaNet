@@ -1,17 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\src\Kifa\Kifa.csproj"/>
         <ProjectReference Include="..\src\Kifa.Service\Kifa.Service.csproj"/>
+        <ProjectReference Include="..\Kifa.ArchiveOrg\Kifa.ArchiveOrg.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
+        <PackageReference Include="YoutubeDLSharp" Version="1.1.2"/>
     </ItemGroup>
 
 </Project>
