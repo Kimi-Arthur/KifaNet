@@ -1,9 +1,13 @@
 using FluentAssertions;
-using Xunit;
+using Kifa.Configs;
 
 namespace Kifa.YouTube.Tests;
 
 public class YouTubeVideoTests {
+    public YouTubeVideoTests() {
+        KifaConfigs.Init();
+    }
+
     [Fact]
     public void FillWithYoutubeDlTest() {
         var video = new YouTubeVideo {
