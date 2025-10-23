@@ -34,18 +34,24 @@ public class DownloadVideoCommand : DownloadCommand {
             if (segments.Length == 2) {
                 var pid = int.Parse(segments.Last());
                 Logger.Info($"Downloading part {pid} of video {video.Id}...");
-                Download(video, pid,
-                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+                ExecuteItem($"{video.Id} {video.Title}",
+                    () => Download(video, pid,
+                        alternativeFolder: UseVideoNameFolder
+                            ? $"{video.Title}.{video.Id}"
+                            : null));
                 continue;
             }
 
             Logger.Info($"Downloading all parts of video {video.Id}...");
             foreach (var page in video.Pages) {
-                Download(video, page.Id,
-                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                    () => Download(video, page.Id,
+                        alternativeFolder: UseVideoNameFolder
+                            ? $"{video.Title}.{video.Id}"
+                            : null));
             }
         }
 
-        return 0;
+        return LogSummary();
     }
 }

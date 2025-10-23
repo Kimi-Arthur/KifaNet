@@ -30,7 +30,8 @@ public class DownloadArchiveCommand : DownloadCommand {
             Logger.Trace($"To download video {video}");
 
             foreach (var page in video.Pages) {
-                Download(video, page.Id, extraFolder: archive.GetArchiveFolder());
+                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                    () => Download(video, page.Id, extraFolder: archive.GetArchiveFolder()));
             }
         }
 

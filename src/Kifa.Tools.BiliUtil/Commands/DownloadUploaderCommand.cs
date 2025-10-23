@@ -27,13 +27,14 @@ public class DownloadUploaderCommand : DownloadCommand {
 
         var videos = BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList())
             .ExceptNull().ToList();
-        var selected = SelectMany(videos, video => video.Title);
+        var selected = SelectMany(videos, video => $"{video.Id} {video.Title}");
         foreach (var video in selected) {
             foreach (var page in video.Pages) {
-                Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder);
+                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                    () => Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder));
             }
         }
 
-        return 0;
+        return LogSummary();
     }
 }

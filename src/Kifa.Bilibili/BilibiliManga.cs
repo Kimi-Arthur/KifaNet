@@ -92,7 +92,7 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
         return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
 
-    public IEnumerable<(string desiredName, string canonicalName)>
+    public IEnumerable<(string DesiredName, string CanonicalName)>
         GetNames(BilibiliMangaEpisode episode)
         => episode.GetNames($"{Title}-{Id}");
 

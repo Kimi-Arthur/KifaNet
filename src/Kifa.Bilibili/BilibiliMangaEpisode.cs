@@ -60,7 +60,7 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
 
     static readonly HttpClient NoAuthClient = new();
 
-    public IEnumerable<(string desiredName, string canonicalName)> GetNames(string prefix) {
+    public IEnumerable<(string DesiredName, string CanonicalName)> GetNames(string prefix) {
         var episodePrefix = $"{prefix}/{Index:000.#} {ShortTitle} {Title}".Trim();
         return Pages.Select(p => (
             $"{episodePrefix}/{p.Id:00}{p.ImageId[p.ImageId.LastIndexOf(".")..]}",

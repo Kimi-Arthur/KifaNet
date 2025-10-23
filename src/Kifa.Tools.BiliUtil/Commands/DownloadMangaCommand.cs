@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using CommandLine;
@@ -34,16 +35,16 @@ public class DownloadMangaCommand : KifaCommand {
         }
 
         foreach (var episode in manga.Episodes) {
-            DownloadEpisode(manga, episode);
+            ExecuteItem($"{manga.Title} {episode.Id}", () => DownloadEpisode(manga, episode));
         }
 
-        return 0;
+        return LogSummary();
     }
 
     void DownloadEpisode(BilibiliManga manga, BilibiliMangaEpisode episode) {
         var names = manga.GetNames(episode).ToList();
-        var targetFiles = names.Select(name => (Desired: new KifaFile(name.desiredName),
-            Canonical: new KifaFile(name.canonicalName))).ToList();
+        var targetFiles = names.Select(name => (Desired: new KifaFile(name.DesiredName),
+            Canonical: new KifaFile(name.CanonicalName))).ToList();
 
         if (targetFiles.All(f => f.Canonical.Exists() || f.Canonical.ExistsSomewhere())) {
             Logger.Debug("All images exist.");
