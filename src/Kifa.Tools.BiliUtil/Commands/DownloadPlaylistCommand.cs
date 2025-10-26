@@ -1,3 +1,4 @@
+using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Jobs;
@@ -24,7 +25,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
             return 1;
         }
 
-        foreach (var videoId in playlist.Videos) {
+        foreach (var videoId in playlist.Videos.Reverse<string>()) {
             var video = BilibiliVideo.Client.Get(videoId);
             if (video == null) {
                 Logger.Error($"Cannot find video ({videoId}). Skipping.");
