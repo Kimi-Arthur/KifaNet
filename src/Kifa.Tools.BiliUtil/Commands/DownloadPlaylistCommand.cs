@@ -27,7 +27,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
 
         foreach (var videoId in playlist.Videos.Reverse<string>()) {
             var video = BilibiliVideo.Client.Get(videoId);
-            if (video == null) {
+            if (video?.Pages == null) {
                 Logger.Error($"Cannot find video ({videoId}). Skipping.");
                 continue;
             }
