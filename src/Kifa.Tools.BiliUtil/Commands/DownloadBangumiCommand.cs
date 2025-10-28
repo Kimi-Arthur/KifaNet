@@ -67,8 +67,7 @@ public class DownloadBangumiCommand : DownloadCommand {
             }
         }
 
-        LogSummary();
-        return 0;
+        return LogSummary();
     }
 
     BilibiliRegion GetRegion()

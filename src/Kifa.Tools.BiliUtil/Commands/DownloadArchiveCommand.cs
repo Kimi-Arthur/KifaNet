@@ -35,6 +35,6 @@ public class DownloadArchiveCommand : DownloadCommand {
             }
         }
 
-        return 0;
+        return LogSummary();
     }
 }

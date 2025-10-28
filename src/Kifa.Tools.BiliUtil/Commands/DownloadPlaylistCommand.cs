@@ -41,6 +41,6 @@ public class DownloadPlaylistCommand : DownloadCommand {
             }
         }
 
-        return 0;
+        return LogSummary();
     }
 }
