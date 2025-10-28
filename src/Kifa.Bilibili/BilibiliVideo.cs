@@ -333,7 +333,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         var folderSegments = (alternativeFolder ?? $"{uploader.Name}.{uploader.Id}")
             .NormalizeFileName().Split('/').ToList();
         if (extraFolder != null) {
-            folderSegments.Add(extraFolder);
+            folderSegments.Add(extraFolder.NormalizeFileName());
         }
 
         folderSegments[0] += ".bilibili";
