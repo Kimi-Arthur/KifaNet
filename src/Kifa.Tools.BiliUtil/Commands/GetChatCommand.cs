@@ -8,13 +8,16 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Kifa.Jobs;
-using NLog;
+using Kifa.Service;
 
 namespace Kifa.Tools.BiliUtil.Commands;
 
-[Verb("chat", HelpText = "Get Bilibili chat as xml document.")]
-class GetChatCommand : KifaFileCommand {
-    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+[Verb("chat",
+    HelpText =
+        "Get Bilibili chat as xml document.\nSpecify one of aid, cid and bangumi-id or none if files are downloaded from bilibili.")]
+class GetChatCommand : KifaCommand {
+    [Value(0, Required = true, HelpText = "Target files to get Bilibili chats for.")]
+    public IEnumerable<string> FileNames { get; set; }
 
     [Option('c', "cid", HelpText = "Bilibili cid for comments.")]
     public string? Cid { get; set; }
@@ -27,81 +30,129 @@ class GetChatCommand : KifaFileCommand {
     [Option('b', "bangumi-id", HelpText = "Bangumi id that starts with 'md'.")]
     public string? Bid { get; set; }
 
-    [Option('g', "group", HelpText = "Group name.")]
-    public string? Group { get; set; }
-
-    List<(BilibiliVideo video, BilibiliChat chat)> chats = new();
+    [Option('n', "version-name", HelpText = "Version name.")]
+    public string? VersionName { get; set; }
 
     public override int Execute(KifaTask? task = null) {
+        var chats = GetChatsFromIds().ToList();
+
+        var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames),
+            choicesName: "files to download bilibili danmaku for");
+
+        if (chats.Count > 0) {
+            GetChatsWithIds(selectedFiles, chats);
+        } else {
+            GetChatsWithLinks(selectedFiles);
+        }
+
+        return LogSummary();
+    }
+
+    IEnumerable<(BilibiliVideo Video, BilibiliChat Chat)> GetChatsFromIds() {
+        bool returned = false;
         if (Cid != null) {
-            var video = BilibiliVideo.Client.Get(BilibiliVideo.GetAid(Cid));
+            var aid = BilibiliVideo.GetAid(Cid);
+            if (aid == null) {
+                throw new InvalidInputException($"Cannot find Aid for c{Cid}.");
+            }
+
+            var video = BilibiliVideo.Client.Get(aid);
             if (video == null) {
-                Logger.Fatal($"Cannot find video for {Cid}.");
-                return 1;
+                throw new InvalidInputException($"Cannot find video for {aid} for c{Cid}.");
             }
 
             var chat = video.Pages.FirstOrDefault(c => c.Cid == Cid);
 
             if (chat == null) {
-                Logger.Fatal($"Cannot find chat for {Cid}.");
-                return 1;
+                throw new InvalidInputException($"Cannot find chat for c{Cid}.");
             }
 
-            chats.Add((video, chat));
+            yield return (video, chat);
+            returned = true;
         }
 
         if (Aid != null) {
+            if (returned) {
+                throw new InvalidInputException(
+                    "Too many types of ids were specified. Specify only one of aid, cid and bangumi-id.");
+            }
+
             var ids = Aid.Split('p');
             var v = BilibiliVideo.Client.Get(ids[0]);
             if (v == null) {
-                Logger.Fatal($"Cannot find video ({Aid}). Exiting.");
-                return 1;
+                throw new InvalidInputException($"Cannot find video for {Aid}.");
             }
 
             if (ids.Length == 1) {
-                chats.AddRange(v.Pages.Select(p => (v, p)));
+                foreach (var p in v.Pages) {
+                    yield return (v, p);
+                }
             } else {
                 foreach (var index in ids.Skip(1)) {
-                    chats.Add((v, v.Pages[int.Parse(index) - 1]));
+                    yield return (v, v.Pages[int.Parse(index) - 1]);
                 }
             }
         }
 
         if (Bid != null) {
+            if (returned) {
+                throw new InvalidInputException(
+                    "Too many types of ids were specified. Specify only one of aid, cid and bangumi-id.");
+            }
+
             var bangumi = BilibiliBangumi.Client.Get(Bid);
             if (bangumi == null) {
-                Logger.Fatal($"Cannot find Bangumi ({Bid}). Exiting.");
-                return 1;
+                throw new InvalidInputException($"Cannot find Bangumi for {Bid}.");
             }
 
             foreach (var aid in bangumi.Aids) {
                 var video = BilibiliVideo.Client.Get(aid);
-                chats.AddRange(video.Pages.Select(c => (video, c)));
+                foreach (var p in video.Pages) {
+                    yield return (video, p);
+                }
             }
         }
-
-        return base.Execute();
     }
 
-    protected override int ExecuteOneKifaFile(KifaFile file) {
-        var (video, pid, _, _) = file.FileInfo!.GetAllLinks()
-            .Select(link => BilibiliVideo.Parse(link))
-            .FirstOrDefault(v => v.video != null, (null, 0, 0, 0));
-        if (video != null) {
-            return GetChat(video.Pages[pid - 1], file);
+    void GetChatsWithIds(List<KifaFile> files,
+        List<(BilibiliVideo Video, BilibiliChat Chat)> chats) {
+        foreach (var file in files) {
+            ExecuteItem(file.ToString(), () => {
+                var selected = SelectOne(chats,
+                    c => $"{c.Video.Title} - {c.Chat.Title} {c.Video.Id}p{c.Chat.Id} (cid={c.Chat.Cid})",
+                    $"danmaku to download for {file}", startingIndex: 1, reverse: true);
+
+                if (selected == null) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Skipped,
+                        Message = $"No chat selected for {file}"
+                    };
+                }
+
+                chats.RemoveAt(selected.Value.Index);
+
+                return GetChat(selected.Value.Choice.Chat, file);
+            });
         }
-
-        var selected = SelectOne(chats,
-            c => $"{c.video.Title} - {c.chat.Title} {c.video.Id}p{c.chat.Id} (cid={c.chat.Cid})",
-            "danmaku", startingIndex: 1, reverse: true).Value;
-
-        chats.RemoveAt(selected.Index);
-
-        return selected.Index >= 0 ? GetChat(selected.Choice.chat, file) : 0;
     }
 
-    int GetChat(BilibiliChat chat, KifaFile rawFile) {
-        var memoryStream = new MemoryStream();
+    void GetChatsWithLinks(List<KifaFile> files) {
+        foreach (var file in files) {
+            ExecuteItem(file.ToString(), () => {
+                var (video, pid, _, _) = file.FileInfo!.GetAllLinks()
+                    .Select(link => BilibiliVideo.Parse(link))
+                    .FirstOrDefault(v => v.video != null, (null, 0, 0, 0));
+                if (video == null) {
+                    throw new KifaExecutionException($"Cannot find video for {file}");
+                }
+
+                return GetChat(video.Pages[pid - 1], file);
+            });
+        }
+    }
+
+    KifaActionResult GetChat(BilibiliChat chat, KifaFile rawFile) {
+        using var memoryStream = new MemoryStream();
         var writer = new XmlTextWriter(memoryStream, new UpperCaseUtf8Encoding()) {
             Formatting = Formatting.Indented
         };
@@ -110,16 +161,14 @@ class GetChatCommand : KifaFileCommand {
         // Append a line break to be consistent with other files.
         memoryStream.Write([Convert.ToByte('\n')]);
 
-        var cidTag = Group != null ? $"c{chat.Cid}-{Group}" : $"c{chat.Cid}";
+        var cidTag = VersionName != null ? $"c{chat.Cid}-{VersionName}" : $"c{chat.Cid}";
         var target = rawFile.GetSubtitleFile($"{cidTag}.xml");
         target.Delete();
 
         memoryStream.Seek(0, SeekOrigin.Begin);
         target.Write(memoryStream);
 
-        memoryStream.Dispose();
-
-        return 0;
+        return KifaActionResult.Success;
     }
 }
 

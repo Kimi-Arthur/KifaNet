@@ -804,7 +804,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public KifaFile GetTruncatedFile() => new($"{Host}{PathWithoutSuffix}.truncated.{Extension}");
 
     public KifaFile GetSubtitleFile(string? suffix = null)
-        => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? Extension}");
+        => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? "???"}");
 
     public KifaFile GetNfoFile() => new($"{NfosHost}{PathWithoutSuffix}.nfo");
 
