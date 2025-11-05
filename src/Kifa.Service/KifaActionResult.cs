@@ -121,7 +121,7 @@ public class KifaBatchActionResult : KifaActionResult {
         => Results.Aggregate(KifaActionStatus.OK, (status, item) => status | item.Result.Status);
 
     public override string ToString(int level)
-        => $"{Status} =>\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
+        => $"{Status} => {Message}\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {
