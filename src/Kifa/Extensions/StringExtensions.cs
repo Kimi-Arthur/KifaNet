@@ -36,13 +36,12 @@ public static class StringExtensions {
         => parameters.Aggregate(format,
             (current, p) => current.Replace("{" + p.Key + "}", p.Value));
 
-    [return: NotNullIfNotNull(nameof(defaultString))]
-    public static string? FormatIfNonNull(this string format, string? defaultString,
+    public static string? FormatIfNonNull(this string format,
         params (string Key, object? Value)[] parameters) {
         var totalCount = parameters.Length;
         var nonNulls = parameters.Where(x => x.Value != null)
             .Select(item => (item.Key, item.Value.Checked())).ToArray();
-        return totalCount > nonNulls.Length ? defaultString : Format(format, nonNulls);
+        return totalCount > nonNulls.Length ? null : Format(format, nonNulls);
     }
 
     // Remove all characters including and after the last split.

@@ -146,8 +146,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
         var episodeTitle = GetTitle(episodes.Select(e => e.Title).ToList());
 
-        var baseFolder = $"/TV Shows/{Region}/{Title} ({AirDate.Year})" +
-                         " {version}".FormatIfNonNull("", ("version", version));
+        var baseFolder =
+            $"/TV Shows/{Region}/{Title} ({AirDate.Year}){" {version}".FormatIfNonNull(("version", version)) ?? ""}";
         // season.Title and episode.Title can be empty.
         return patternId switch {
             "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +

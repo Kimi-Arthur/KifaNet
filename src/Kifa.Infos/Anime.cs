@@ -52,8 +52,8 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
 
-        var baseFolder = $"/Anime/{Title} ({AirDate.Year})" +
-                         " [{version}]".FormatIfNonNull("", ("version", version));
+        var baseFolder =
+            $"/Anime/{Title} ({AirDate.Year}){" [{version}]".FormatIfNonNull(("version", version)) ?? ""}";
         // season.Title and episode.Title can be empty.
         return PatternId switch {
             "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +
