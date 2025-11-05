@@ -139,8 +139,7 @@ class GetChatCommand : KifaCommand {
     void GetChatsWithLinks(List<KifaFile> files) {
         foreach (var file in files) {
             ExecuteItem(file.ToString(), () => {
-                var (video, pid, _, _) = file.FileInfo!.GetAllLinks()
-                    .Select(link => BilibiliVideo.Parse(link))
+                var (video, pid, _, _) = file.FileInfo!.GetAllLinks().Select(BilibiliVideo.Parse)
                     .FirstOrDefault(v => v.video != null, (null, 0, 0, 0));
                 if (video == null) {
                     throw new KifaExecutionException($"Cannot find video for {file}");
