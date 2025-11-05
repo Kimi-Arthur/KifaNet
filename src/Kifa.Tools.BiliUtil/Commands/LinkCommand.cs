@@ -10,7 +10,7 @@ using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
 
-[Verb("link", HelpText = "Link bilibili files to proper places.")]
+[Verb("link", HelpText = "Link bilibili files to canonical places.")]
 public class LinkCommand : BiliCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
@@ -18,41 +18,17 @@ public class LinkCommand : BiliCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var foundFiles = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4");
-        foreach (var file in foundFiles) {
-            Console.WriteLine(file);
-        }
-
-        if (!Confirm($"Confirm linking files for the {foundFiles.Count} files above")) {
+        var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4"));
+        if (selectedFiles.Count == 0) {
+            Logger.Warn("No files found or selected to link.");
             return 1;
         }
 
-        var filesByResult = foundFiles.Select(file => (file, result: LinkFile(file)))
-            .GroupBy(item => item.result.Status == KifaActionStatus.OK)
-            .ToDictionary(item => item.Key, item => item.ToList());
-
-        if (filesByResult.ContainsKey(true)) {
-            var files = filesByResult[true];
-            Logger.Info($"Successfully linked files for the following {files.Count} files:");
-            foreach (var (file, result) in files) {
-                Logger.Info($"\t{file} =>");
-                foreach (var message in result.Response) {
-                    Logger.Info($"\t\t{message}");
-                }
-            }
+        foreach (var file in selectedFiles) {
+            ExecuteItem(file.ToString(), () => LinkFile(file));
         }
 
-        if (filesByResult.ContainsKey(false)) {
-            var files = filesByResult[false];
-            Logger.Info($"Failed to link files for the following {files.Count} files:");
-            foreach (var (file, result) in files) {
-                Logger.Info($"\t{file}: {result.Message}");
-            }
-
-            return 1;
-        }
-
-        return 0;
+        return LogSummary();
     }
 
     KifaActionResult<List<string>> LinkFile(KifaFile file) {
