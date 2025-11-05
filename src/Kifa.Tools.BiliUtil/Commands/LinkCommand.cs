@@ -31,39 +31,49 @@ public class LinkCommand : BiliCommand {
         return LogSummary();
     }
 
-    KifaActionResult<List<string>> LinkFile(KifaFile file) {
+    static KifaActionResult LinkFile(KifaFile file) {
         var video = BilibiliVideo.Parse(file.Id);
         if (video.video == null) {
-            return new KifaActionResult<List<string>> {
+            return new KifaActionResult {
                 Status = KifaActionStatus.Error,
-                Message = "Video info not found."
+                Message = $"Video info not found for {file.Id}."
             };
         }
 
         var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality, video.codec);
-        var linkedFiles = new List<string>();
+        var results = new KifaBatchActionResult();
         foreach (var canonicalName in canonicalNames) {
             var canonicalFile =
                 GetCanonicalFile(CurrentFolder.Host, $"{canonicalName}.{file.Extension}");
             if (canonicalFile.Equals(file)) {
                 Logger.Info($"Skipped {canonicalFile} as it's the source file.");
-                linkedFiles.Add($"{canonicalFile} is source file.");
+                results.Add(canonicalFile.ToString(), new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = "Is same file as source."
+                });
                 continue;
             }
 
-            if (canonicalFile.Exists() && canonicalFile.Length == file.Length) {
-                Logger.Info(
-                    $"Source file is not canonical file, but canonical file {canonicalFile} exists too. Skipped.");
-                linkedFiles.Add($"{canonicalFile} exists.");
+            if (canonicalFile.Exists()) {
+                if (canonicalFile.IsSameLocalFile(file)) {
+                    results.Add(canonicalFile.ToString(), new KifaActionResult {
+                        Status = KifaActionStatus.Skipped,
+                        Message = "Is already linked to the source."
+                    });
+                    continue;
+                }
+
+                results.Add(canonicalFile.ToString(), new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = "Cannot link as the target exists and is not the same file."
+                });
                 continue;
             }
 
-            file.Copy(canonicalFile);
-            Logger.Info(
-                $"Source file is not canonical file. Linked to canonical file {canonicalFile}.");
-            linkedFiles.Add($"Copied to {canonicalFile}");
+            results.Add(canonicalFile.ToString(),
+                KifaActionResult.FromAction(() => file.Copy(canonicalFile), "Linked to source"));
         }
 
-        return linkedFiles;
+        return results;
     }
 }

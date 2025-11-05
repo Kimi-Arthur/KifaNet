@@ -35,7 +35,7 @@ public class KifaActionResult {
     public bool IsAcceptable
         => Status is KifaActionStatus.OK or KifaActionStatus.Warning or KifaActionStatus.Skipped;
 
-    public static KifaActionResult FromAction(Action action) {
+    public static KifaActionResult FromAction(Action action, string? message = null) {
         try {
             action.Invoke();
         } catch (KifaActionFailedException ex) {
@@ -47,7 +47,10 @@ public class KifaActionResult {
             };
         }
 
-        return Success;
+        return new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message = message
+        };
     }
 
     public static KifaActionResult FromAction(Func<KifaActionResult> action) {
@@ -72,8 +75,8 @@ public class KifaActionResult {
     public KifaActionResult And(KifaActionResult nextResult)
         => Status == KifaActionStatus.OK ? nextResult : this;
 
-    public KifaActionResult And(Action nextAction)
-        => Status == KifaActionStatus.OK ? FromAction(nextAction) : this;
+    public KifaActionResult And(Action nextAction, string? message = null)
+        => Status == KifaActionStatus.OK ? FromAction(nextAction, message) : this;
 
     public KifaActionResult And(Func<KifaActionResult> nextAction)
         => Status == KifaActionStatus.OK ? nextAction() : this;
