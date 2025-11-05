@@ -3,8 +3,11 @@
 using Kifa;
 using Kifa.Service;
 
+Func<KifaActionResult, bool?> ActionValidator =
+    result => result.IsAcceptable ? true : result.IsRetryable ? null : false;
+
 var processor = new ConcurrentProcessor<KifaActionResult> {
-    Validator = KifaActionResult.ActionValidator,
+    Validator = ActionValidator,
     TotalRetryCount = 5,
     CooldownDuration = TimeSpan.FromSeconds(2)
 };
@@ -19,10 +22,10 @@ for (var i = 0; i < 20; i++) {
     var i1 = i;
     processor.Add(() => {
         var v = random.Next(10);
-        var status = v == i1 % 10 ? KifaActionResult.Success :
+        var status = v == i1 % 10 ? KifaActionResult.Success() :
             v > 4 ? new KifaActionResult {
                 Status = KifaActionStatus.Pending
-            } : KifaActionResult.UnknownError;
+            } : KifaActionResult.Error();
         Console.WriteLine($"{DateTimeOffset.Now}: Run {i1}: {v} {status.Status}");
 
         return status;

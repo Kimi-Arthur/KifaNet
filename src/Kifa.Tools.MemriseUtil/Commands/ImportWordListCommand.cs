@@ -57,21 +57,20 @@ public class ImportWordListCommand : KifaCommand {
         };
 
         foreach (var wordListId in WordListIds) {
-            var wordList = GoetheWordList.Client.Get(wordListId);
-            memriseClient.AddWordList(wordList);
+            ExecuteItem($"Add wordlist {wordListId}", () => {
+                var wordList = GoetheWordList.Client.Get(wordListId);
+                memriseClient.AddWordList(wordList);
+            });
         }
 
-        Logger.LogResult(memriseClient.AddWordListAll(), "adding all words to All Words Level");
+        ExecuteItem("Add all words to All Words Level", () => memriseClient.AddWordListAll());
 
-        var unusedWords = course.GetUnusedWords().ToList();
+        var unusedWords = SelectMany(course.GetUnusedWords().ToList(),
+            choicesName: "unused words to remove");
+
         if (unusedWords.Count > 0) {
-            foreach (var w in unusedWords) {
-                Console.WriteLine(w);
-            }
-
-            if (Confirm($"Found {unusedWords.Count} words not used by any level")) {
-                Logger.LogResult(memriseClient.RemoveWords(unusedWords), "removing words");
-            }
+            ExecuteItem($"Remove {unusedWords.Count} words not used by any level.",
+                () => memriseClient.RemoveWords(unusedWords));
         }
 
         return 0;

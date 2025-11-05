@@ -19,18 +19,21 @@ public abstract partial class KifaCommand {
         return pendingResults;
     }
 
-    protected void ExecuteItem(string item, Action action) {
-        Logger.Info($"Processing {item}...");
+    protected void ExecuteItem(string item, Action action, bool throwIfError = false) {
+        Logger.Info($"{item}:");
         Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info)));
+            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
+                throwIfError: throwIfError)));
         // To space out between tasks, and also before final result.
         Console.WriteLine();
     }
 
-    protected void ExecuteItem(string item, Func<KifaActionResult> action) {
-        Logger.Info($"Processing {item}...");
+    protected void ExecuteItem(string item, Func<KifaActionResult> action,
+        bool throwIfError = false) {
+        Logger.Info($"{item}:");
         Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info)));
+            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
+                throwIfError: throwIfError)));
         // To space out between tasks, and also before final result.
         Console.WriteLine();
     }

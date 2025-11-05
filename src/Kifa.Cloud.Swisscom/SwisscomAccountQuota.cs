@@ -211,7 +211,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
                     account.AccessToken)));
             UsedQuota = response.Value<long>("TotalBytes");
             TotalQuota = response.Value<long>("StorageLimit");
-            return KifaActionResult.Success;
+            return KifaActionResult.Success($"Updated quota of {Id} to {UsedQuota} / {TotalQuota}");
         });
 }
 

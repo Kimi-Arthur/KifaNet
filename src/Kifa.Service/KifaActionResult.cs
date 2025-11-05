@@ -14,18 +14,6 @@ public class KifaActionResult {
 
     public string? Message { get; set; }
 
-    public static readonly KifaActionResult Success = new() {
-        Status = KifaActionStatus.OK
-    };
-
-    public static readonly KifaActionResult UnknownError = new() {
-        Status = KifaActionStatus.Error,
-        Message = "Unknown Error"
-    };
-
-    public static Func<KifaActionResult, bool?> ActionValidator
-        => result => result.IsAcceptable ? true : result.IsRetryable ? null : false;
-
     [JsonIgnore]
     [YamlIgnore]
     public bool IsRetryable => Status is KifaActionStatus.Pending or KifaActionStatus.Error;
@@ -35,7 +23,27 @@ public class KifaActionResult {
     public bool IsAcceptable
         => Status is KifaActionStatus.OK or KifaActionStatus.Warning or KifaActionStatus.Skipped;
 
-    public static KifaActionResult FromAction(Action action, string? message = null) {
+    public static KifaActionResult Success(string? message = null)
+        => new() {
+            Status = KifaActionStatus.OK,
+            Message = message
+        };
+
+    public static KifaActionResult BadRequest(string? message = null)
+        => new() {
+            Status = KifaActionStatus.BadRequest,
+            Message = message
+        };
+
+    public static KifaActionResult UnknownError() => Error("Unknown error");
+
+    public static KifaActionResult Error(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Error,
+            Message = message
+        };
+
+    public static KifaActionResult FromAction(Action action, string? successMessage = null) {
         try {
             action.Invoke();
         } catch (KifaActionFailedException ex) {
@@ -47,10 +55,16 @@ public class KifaActionResult {
             };
         }
 
-        return new KifaActionResult {
-            Status = KifaActionStatus.OK,
-            Message = message
-        };
+        return Success(successMessage);
+    }
+
+    public static KifaActionResult FromAction(Func<bool> action, string? successMessage = null,
+        string? failureMessage = null) {
+        try {
+            return action.Invoke() ? Success(successMessage) : Error(failureMessage);
+        } catch (Exception ex) {
+            return Error(ex.ToString());
+        }
     }
 
     public static KifaActionResult FromAction(Func<KifaActionResult> action) {
@@ -66,11 +80,8 @@ public class KifaActionResult {
 
     public static KifaActionResult FromExecutionResult(ExecutionResult result)
         => result.ExitCode == 0
-            ? Success
-            : new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message = result.StandardError
-            };
+            ? Success("Successfully executed command.")
+            : Error(result.ToString());
 
     public KifaActionResult And(KifaActionResult nextResult)
         => Status == KifaActionStatus.OK ? nextResult : this;
@@ -124,7 +135,8 @@ public class KifaBatchActionResult : KifaActionResult {
         => Results.Aggregate(KifaActionStatus.OK, (status, item) => status | item.Result.Status);
 
     public override string ToString(int level)
-        => $"{Status} => {Message}\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
+        => $"{Status} =>" + (" {message}".FormatIfNonNull(("message", Message)) ?? "") +
+           $"\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {

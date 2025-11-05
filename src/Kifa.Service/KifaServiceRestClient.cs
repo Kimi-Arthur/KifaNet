@@ -51,7 +51,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             };
 
             return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                   KifaActionResult.UnknownError;
+                   KifaActionResult.UnknownError();
         }, (ex, i) => HandleException(ex, i, $"Failure in PATCH {ModelId}({data.Id})")));
 
     public override KifaActionResult Update(List<TDataModel> data)
@@ -63,7 +63,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                       KifaActionResult.UnknownError;
+                       KifaActionResult.UnknownError();
             },
             (ex, i) => HandleException(ex, i,
                 $"Failure in PATCH {ModelId}({string.Join(", ", data.Select(item => item.Id))})")));
@@ -79,7 +79,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             };
 
             return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                   KifaActionResult.UnknownError;
+                   KifaActionResult.UnknownError();
         }, (ex, i) => HandleException(ex, i, $"Failure in POST {ModelId}({data.Id})")));
 
     public override KifaActionResult Set(List<TDataModel> data)
@@ -91,7 +91,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                       KifaActionResult.UnknownError;
+                       KifaActionResult.UnknownError();
                 ;
             },
             (ex, i) => HandleException(ex, i,
@@ -150,7 +150,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                       KifaActionResult.UnknownError;
+                       KifaActionResult.UnknownError();
             },
             (ex, i) => HandleException(ex, i,
                 $"Failure in LINK {ModelId}({linkId}) to {ModelId}({targetId})")));
@@ -161,7 +161,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 new HttpRequestMessage(HttpMethod.Delete, GetUrl(Uri.EscapeDataString(id)));
 
             return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                   KifaActionResult.UnknownError;
+                   KifaActionResult.UnknownError();
         }, (ex, i) => HandleException(ex, i, $"Failure in DELETE {ModelId}({id})")));
 
     public override KifaActionResult Delete(List<string> ids)
@@ -173,7 +173,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
-                       KifaActionResult.UnknownError;
+                       KifaActionResult.UnknownError();
             },
             (ex, i) => HandleException(ex, i,
                 $"Failure in DELETE {ModelId}({string.Join(", ", ids)})")));
@@ -199,7 +199,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                 return result.Response!;
             }
 
-            throw new KifaActionFailedException(result ?? KifaActionResult.UnknownError);
+            throw new KifaActionFailedException(result ?? KifaActionResult.UnknownError());
         }, (ex, i) => HandleException(ex, i, $"Failure in CALL {ModelId}.{action}"));
     }
 

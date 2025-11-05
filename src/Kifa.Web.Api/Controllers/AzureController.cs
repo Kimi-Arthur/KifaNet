@@ -8,7 +8,6 @@ namespace Kifa.Web.Api.Controllers;
 public class AzureController : ControllerBase {
     [HttpGet("$update_dns")]
     public KifaApiActionResult UpdateDomainName(string name, string ip) {
-        new DnsClient().ReplaceIp(name, ip);
-        return KifaActionResult.Success;
+        return KifaActionResult.FromAction(() => new DnsClient().ReplaceIp(name, ip));
     }
 }

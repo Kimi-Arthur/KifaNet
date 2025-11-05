@@ -9,6 +9,9 @@ using Kifa.Service;
 namespace Kifa.Tools.DataUtil.Commands;
 
 public partial class AddCommand {
+    public static Func<KifaActionResult, bool?> ActionValidator
+        => result => result.IsAcceptable ? true : result.IsRetryable ? null : false;
+
     // Example command: datax add -t swisscom/accounts p060
     void CreateSwisscomAccounts(IEnumerable<string> specs) {
         if (Verbose) {
@@ -16,13 +19,13 @@ public partial class AddCommand {
         }
 
         var swisscomProcessor = new ConcurrentProcessor<KifaActionResult> {
-            Validator = KifaActionResult.ActionValidator,
+            Validator = ActionValidator,
             TotalRetryCount = 3,
             CooldownDuration = TimeSpan.Zero
         };
 
         var myCloudProcessor = new ConcurrentProcessor<KifaActionResult> {
-            Validator = KifaActionResult.ActionValidator,
+            Validator = ActionValidator,
             TotalRetryCount = 5,
             CooldownDuration = TimeSpan.FromSeconds(10)
         };

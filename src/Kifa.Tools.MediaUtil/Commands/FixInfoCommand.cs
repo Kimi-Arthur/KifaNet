@@ -62,7 +62,7 @@ public class FixInfoCommand : KifaCommand {
         ms.Seek(0, SeekOrigin.Begin);
         infoFile.Write(ms);
 
-        return KifaActionResult.Success;
+        return KifaActionResult.Success();
     }
 
     static string GetDiff(Stream oldStream, Stream newStream) {

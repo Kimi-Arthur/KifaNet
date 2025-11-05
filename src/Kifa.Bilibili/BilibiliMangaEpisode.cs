@@ -94,14 +94,11 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
         }
 
         if (count != ids.Count) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message = $"Only found {count} pages to mark, instead of {ids.Count}."
-            };
+            return KifaActionResult.Error(
+                $"Only found {count} pages to mark, instead of {ids.Count}.");
         }
 
-        Client.Set(this);
-        return KifaActionResult.Success;
+        return Client.Set(this);
     }
 }
 

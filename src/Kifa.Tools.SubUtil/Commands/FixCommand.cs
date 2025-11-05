@@ -17,20 +17,18 @@ class FixCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), choicesName:"subtitle files to fix");
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames),
+            choicesName: "subtitle files to fix");
         foreach (var file in selected) {
-            ExecuteItem(file.ToString(), () => FixSubtitle(file));
+            ExecuteItem($"Fix subtitle file {file}", () => FixSubtitle(file));
         }
 
         return LogSummary();
     }
 
-    KifaActionResult FixSubtitle(KifaFile file) {
+    static KifaActionResult FixSubtitle(KifaFile file) {
         if (file.Extension != "ass") {
-            return new KifaActionResult {
-                Status = KifaActionStatus.BadRequest,
-                Message = "Only ass files are supported."
-            };
+            return KifaActionResult.BadRequest("Only ass files are supported.");
         }
 
         var sub = AssDocument.Parse(file.OpenRead());
@@ -39,7 +37,7 @@ class FixCommand : KifaCommand {
         sub = RemoveFadElement(sub);
         file.Delete();
         file.Write(sub.ToString());
-        return KifaActionResult.Success;
+        return KifaActionResult.Success();
     }
 
     static AssDocument FixSubtitleResolution(AssDocument sub) {

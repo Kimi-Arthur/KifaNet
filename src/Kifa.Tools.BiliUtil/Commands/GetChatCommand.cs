@@ -131,7 +131,8 @@ class GetChatCommand : KifaCommand {
 
                 chats.RemoveAt(selected.Value.Index);
 
-                return GetChat(selected.Value.Choice.Chat, file);
+                GetChat(selected.Value.Choice.Chat, file);
+                return KifaActionResult.Success();
             });
         }
     }
@@ -145,12 +146,12 @@ class GetChatCommand : KifaCommand {
                     throw new KifaExecutionException($"Cannot find video for {file}");
                 }
 
-                return GetChat(video.Pages[pid - 1], file);
+                GetChat(video.Pages[pid - 1], file);
             });
         }
     }
 
-    KifaActionResult GetChat(BilibiliChat chat, KifaFile rawFile) {
+    void GetChat(BilibiliChat chat, KifaFile rawFile) {
         using var memoryStream = new MemoryStream();
         var writer = new XmlTextWriter(memoryStream, new UpperCaseUtf8Encoding()) {
             Formatting = Formatting.Indented
@@ -166,8 +167,6 @@ class GetChatCommand : KifaCommand {
 
         memoryStream.Seek(0, SeekOrigin.Begin);
         target.Write(memoryStream);
-
-        return KifaActionResult.Success;
     }
 }
 

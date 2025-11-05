@@ -50,11 +50,9 @@ public class MemriseClient : IDisposable {
 
     MemriseCourse.ServiceClient CourseClient => MemriseCourse.Client;
 
-    public KifaActionResult AddWordList(GoetheWordList wordList) {
-        AddWordsToLevel(Course.Levels[wordList.Id], AddWords(ExpandWords(wordList.Words)).ToList());
-
-        return KifaActionResult.Success;
-    }
+    public KifaActionResult AddWordList(GoetheWordList wordList)
+        => KifaActionResult.FromAction(() => AddWordsToLevel(Course.Levels[wordList.Id],
+            AddWords(ExpandWords(wordList.Words)).ToList()));
 
     public KifaActionResult AddWordListAll()
         => KifaActionResult.FromAction(()

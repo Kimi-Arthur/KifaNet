@@ -377,7 +377,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
 
             Remove(id);
-            return KifaActionResult.Success;
+            return KifaActionResult.Success();
         }
     }
 
@@ -430,7 +430,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     target.Id = realTargetId;
                     target.Metadata.Linking.Target = null;
                     Write(target);
-                    return KifaActionResult.Success;
+                    return KifaActionResult.Success();
                 }
             }
         }
