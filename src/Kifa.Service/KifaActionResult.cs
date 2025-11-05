@@ -9,6 +9,11 @@ using YamlDotNet.Serialization;
 namespace Kifa.Service;
 
 public class KifaActionResult {
+    [JsonConverter(typeof(StringEnumConverter))]
+    public virtual KifaActionStatus Status { get; set; }
+
+    public string? Message { get; set; }
+
     public static readonly KifaActionResult Success = new() {
         Status = KifaActionStatus.OK
     };
@@ -81,12 +86,9 @@ public class KifaActionResult {
             ? KifaActionResult<TValue>.FromAction(nextAction)
             : new KifaActionResult<TValue>(this);
 
-    [JsonConverter(typeof(StringEnumConverter))]
-    public virtual KifaActionStatus Status { get; set; }
+    public override string ToString() => ToString(0);
 
-    public virtual string? Message { get; set; }
-
-    public override string ToString()
+    public virtual string ToString(int level)
         => string.IsNullOrEmpty(Message) ? $"{Status}" : $"{Status} => {Message}";
 }
 
@@ -118,8 +120,10 @@ public class KifaBatchActionResult : KifaActionResult {
     public override KifaActionStatus Status
         => Results.Aggregate(KifaActionStatus.OK, (status, item) => status | item.Result.Status);
 
-    public override string ToString()
-        => $"{Status} =>\n{string.Join("\n", Results.Select(r => $"\t{r.Item}: {r.Result}"))}";
+    public override string ToString() => ToString(0);
+
+    public override string ToString(int level = 0)
+        => $"{Status} =>\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {
