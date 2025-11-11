@@ -337,6 +337,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             filenameSegments.Add($"[{uploader.Name}.{uploader.Id}]");
         }
 
+        filenameSegments.Add(title);
+
         var p = Pages.First(x => x.Id == pid);
 
         if (Pages.Count > 1) {
