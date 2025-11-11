@@ -38,7 +38,7 @@ public abstract class DownloadCommand : BiliCommand {
 
     protected void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         string? extraFolder = null, BilibiliUploader? uploader = null,
-        BilibiliRegion region = BilibiliRegion.Direct) {
+        BilibiliRegion region = BilibiliRegion.Direct, bool includeUploaderInFileTitle = false) {
         string? extension;
         int quality;
         int codec;
@@ -65,7 +65,8 @@ public abstract class DownloadCommand : BiliCommand {
 
         var desiredName = video.GetDesiredName(pid, quality, codec,
             includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
-            extraFolder: extraFolder, prefix: GetPrefix(video), uploader: uploader);
+            extraFolder: extraFolder, prefix: GetPrefix(video), uploader: uploader,
+            includeUploaderInFileTitle: includeUploaderInFileTitle);
         var desiredFile = outputFolder.GetFile($"{desiredName}.mp4");
         var targetFiles = video.GetCanonicalNames(pid, quality, codec)
             .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
@@ -126,11 +127,11 @@ public abstract class DownloadCommand : BiliCommand {
         KifaFile.LinkAll(canonicalTargetFile, targetFiles);
     }
 
-    string GetPrefix(BilibiliVideo video)
+    string? GetPrefix(BilibiliVideo video)
         => Prefix switch {
             "date" => $"{video.Uploaded.Checked():yyyy-MM-dd}",
             "number" => $"{++downloadCounter:D2}",
-            _ => ""
+            _ => null
         };
 
     static void MergePartFiles(List<KifaFile> parts, KifaFile cover, KifaFile target) {

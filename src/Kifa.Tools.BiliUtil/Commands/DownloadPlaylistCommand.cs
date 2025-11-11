@@ -2,6 +2,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -28,16 +29,16 @@ public class DownloadPlaylistCommand : DownloadCommand {
         foreach (var videoId in playlist.Videos.Reverse<string>()) {
             var video = BilibiliVideo.Client.Get(videoId);
             if (video?.Pages == null) {
-                Logger.Error($"Cannot find video ({videoId}). Skipping.");
+                ExecuteItem(videoId,
+                    () => KifaActionResult.Error($"Cannot find video ({videoId})."));
                 continue;
             }
-
-            Logger.Trace($"To download video {video}");
 
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
                     () => Download(video, page.Id,
-                        alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}"));
+                        alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
+                        includeUploaderInFileTitle: true));
             }
         }
 

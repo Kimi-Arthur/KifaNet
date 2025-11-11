@@ -311,19 +311,9 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
-        string? alternativeFolder = null, string? extraFolder = null, string prefix = "",
-        BilibiliUploader? uploader = null) {
-        var p = Pages.First(x => x.Id == pid);
-
-        var partName = p.Title.NormalizeFileName();
+        string? alternativeFolder = null, string? extraFolder = null, string? prefix = null,
+        BilibiliUploader? uploader = null, bool includeUploaderInFileTitle = false) {
         var title = Title.NormalizeFileName();
-        if (!includePageTitle || title.Contains(partName)) {
-            partName = "";
-        } else if (partName.StartsWith(title)) {
-            partName = partName[title.Length..].Trim();
-        }
-
-        var pidText = $"P{pid.ToString("D" + Pages.Count.ToString().Length)}";
 
         uploader ??= new BilibiliUploader {
             Id = AuthorId,
@@ -337,9 +327,33 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         }
 
         folderSegments[0] += ".bilibili";
-        var partString = Pages.Count > 1 ? $"{pidText} {partName}" : partName;
+
+        var filenameSegments = new List<string>();
+        if (prefix != null) {
+            filenameSegments.Add(prefix);
+        }
+
+        if (includeUploaderInFileTitle) {
+            filenameSegments.Add($"[{uploader.Name}.{uploader.Id}]");
+        }
+
+        var p = Pages.First(x => x.Id == pid);
+
+        if (Pages.Count > 1) {
+            filenameSegments.Add($"P{pid.ToString("D" + Pages.Count.ToString().Length)}");
+        }
+
+        var partName = p.Title.NormalizeFileName();
+        if (includePageTitle && !title.Contains(partName)) {
+            if (partName.StartsWith(title)) {
+                partName = partName[title.Length..].Trim();
+            }
+
+            filenameSegments.Add(partName);
+        }
+
         return
-            $"{folderSegments.JoinBy('/')}/{$"{prefix} {title} {partString}".NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
+            $"{folderSegments.JoinBy('/')}/{filenameSegments.JoinBy(" ").NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
