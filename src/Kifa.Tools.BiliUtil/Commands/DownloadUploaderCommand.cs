@@ -27,7 +27,13 @@ public class DownloadUploaderCommand : DownloadCommand {
 
         var videos = BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList())
             .ExceptNull().ToList();
-        var selected = SelectMany(videos, video => $"{video.Id} {video.Title}");
+        var deletedVideos = BilibiliVideo.Client
+            .Get(Enumerable.Reverse(uploader.RemovedAids).ToList()).ExceptNull().ToList();
+        var selected =
+            SelectMany(videos, video => $"{video.Id} {video.Title} ({video.Pages.Count})",
+                choicesName: "videos to download").Concat(SelectMany(deletedVideos,
+                video => $"{video.Id} {video.Title} ({video.Pages.Count})",
+                choicesName: "deleted videos to download"));
         foreach (var video in selected) {
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
