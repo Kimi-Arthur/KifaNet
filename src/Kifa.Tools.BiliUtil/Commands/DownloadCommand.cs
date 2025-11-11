@@ -29,6 +29,8 @@ public abstract class DownloadCommand : BiliCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
+    KifaFile BaseFolder => OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
+
     [Option('t', "include-page-title",
         HelpText =
             "Whether to include page title. Possible values: OnlyMultiplePage (default), Never, Always.")]
@@ -59,11 +61,11 @@ public abstract class DownloadCommand : BiliCommand {
             } catch (BilibiliVideoNotFoundException ex) {
                 exception = ex;
                 Logger.Warn(ex, "Video not found. Try to infer from the downloaded versions.");
-                (extension, quality, codec) = InferVideoInfo(video);
+                (extension, quality, codec) = InferVideoInfo(video, pid);
             }
         }
 
-        var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
+        var outputFolder = BaseFolder;
         var includePageTitle = IncludePageTitle switch {
             PageTitleOption.Never => false,
             PageTitleOption.Always => true,
@@ -140,8 +142,25 @@ public abstract class DownloadCommand : BiliCommand {
         KifaFile.LinkAll(canonicalTargetFile, targetFiles);
     }
 
-    static (string? extension, int quality, int codec) InferVideoInfo(BilibiliVideo video) {
-        throw new NotImplementedException();
+    (string? extension, int quality, int codec) InferVideoInfo(BilibiliVideo video, int pid) {
+        var files = KifaFile.FindAllFiles([BaseFolder.Host + RepoPath],
+            pattern: $"{video.Id}p{pid}.*.mp4");
+        int bestQuality = 0, bestCodec = 0;
+        foreach (var file in files) {
+            var (inferredVideo, inferredVideoPid, quality, codec) =
+                BilibiliVideo.Parse(file.ToString());
+            if (inferredVideo?.Id != video.Id || inferredVideoPid != pid) {
+                throw new BilibiliVideoNotFoundException(
+                    $"Downloaded video doesn't match missing video ({inferredVideo?.Id}p{inferredVideoPid} != {video.Id}p{pid})");
+            }
+
+            if (bestQuality < quality) {
+                bestQuality = quality;
+                bestCodec = codec;
+            }
+        }
+
+        return ("mp4", bestQuality, bestCodec);
     }
 
     string? GetPrefix(BilibiliVideo video)
