@@ -42,16 +42,25 @@ public abstract class DownloadCommand : BiliCommand {
         string? extension;
         int quality;
         int codec;
-        Func<Stream>? videoStreamGetter;
-        List<Func<Stream>>? audioStreamGetters;
+        Func<Stream>? videoStreamGetter = null;
+        List<Func<Stream>>? audioStreamGetters = null;
+
+        BilibiliVideoNotFoundException? exception = null;
         try {
             (extension, quality, codec, videoStreamGetter, audioStreamGetters) = video.GetStreams(
                 pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec, region: region);
-        } catch (BilibiliVideoNotFoundException ex) {
-            Logger.Warn(ex, "Video not found. Maybe data needs to be updated.");
+        } catch (BilibiliVideoNotFoundException ex1) {
+            Logger.Warn(ex1, "Video not found. Maybe data needs to be updated.");
             video = BilibiliVideo.Client.Get(video.Id.Checked(), true).Checked();
-            (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
-                video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec);
+            try {
+                (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
+                    video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec,
+                        region: region);
+            } catch (BilibiliVideoNotFoundException ex) {
+                exception = ex;
+                Logger.Warn(ex, "Video not found. Try to infer from the downloaded versions.");
+                (extension, quality, codec) = InferVideoInfo(video);
+            }
         }
 
         var outputFolder = OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
@@ -95,6 +104,10 @@ public abstract class DownloadCommand : BiliCommand {
             $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.v.{extension}");
         Logger.Debug($"Writing video file to {videoFile}...");
 
+        if (videoStreamGetter == null) {
+            throw exception.Checked();
+        }
+
         videoFile.Write(videoStreamGetter);
         trackFiles.Add(videoFile);
         Logger.Debug($"Written video file to {videoFile}...");
@@ -125,6 +138,10 @@ public abstract class DownloadCommand : BiliCommand {
         Logger.Debug("Removed temp files.");
 
         KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+    }
+
+    static (string? extension, int quality, int codec) InferVideoInfo(BilibiliVideo video) {
+        throw new NotImplementedException();
     }
 
     string? GetPrefix(BilibiliVideo video)
