@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using GlobExpressions;
 using Kifa.Cloud.BaiduCloud;
 using Kifa.Cloud.Google;
 using Kifa.Cloud.MegaNz;
@@ -346,7 +347,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // KifaFile.FileInfo is filled for items returned.
     public static List<KifaFile> FindPotentialFiles(IEnumerable<string> sources,
-        bool recursive = true, bool ignoreFiles = true) {
+        bool recursive = true, string pattern = "*", bool ignoreFiles = true) {
         var files = new HashSet<string>();
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
@@ -355,12 +356,16 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             var host = file.Host;
 
             var thisFolder = FileInfoClient.ListFolder(path, recursive);
-            files.UnionWith(thisFolder.Where(f => !ignoreFiles || !ShouldIgnore(f, file.Id))
-                .Select(f => host + f));
+            files.UnionWith(thisFolder
+                .Where(f => (!ignoreFiles || !ShouldIgnore(f, file.Id)) && f.StartsWith(path) &&
+                            MatchPattern(f[(path.Length + 1)..], pattern)).Select(f => host + f));
         }
 
         return GetKifaFiles(files.OrderBy(f => f.GetNaturalSortKey())).ToList();
     }
+
+    static bool MatchPattern(string filename, string pattern)
+        => new Glob(pattern).IsMatch(filename);
 
     static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
         var files = fileNames.Select(NormalizeUri).ToList();

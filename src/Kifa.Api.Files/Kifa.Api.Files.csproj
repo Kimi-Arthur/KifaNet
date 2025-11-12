@@ -14,6 +14,7 @@
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
     </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="Glob" Version="1.1.9" />
         <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Primitives" Version="3.0.0"/>
     </ItemGroup>
