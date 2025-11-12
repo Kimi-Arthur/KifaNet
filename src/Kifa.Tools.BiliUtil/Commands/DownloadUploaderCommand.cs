@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
@@ -25,22 +26,28 @@ public class DownloadUploaderCommand : DownloadCommand {
             return 1;
         }
 
-        var videos = BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList())
-            .ExceptNull().ToList();
-        var deletedVideos = BilibiliVideo.Client
-            .Get(Enumerable.Reverse(uploader.RemovedAids).ToList()).ExceptNull().ToList();
-        var selected =
-            SelectMany(videos, video => $"{video.Id} {video.Title} ({video.Pages.Count})",
-                choicesName: "videos to download").Concat(SelectMany(deletedVideos,
+        DownloadVideos(uploader,
+            SelectMany(
+                BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList()).ExceptNull()
+                    .ToList(), video => $"{video.Id} {video.Title} ({video.Pages.Count})",
+                choicesName: "videos to download"));
+
+        DownloadVideos(uploader,
+            SelectMany(
+                BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.RemovedAids).ToList())
+                    .ExceptNull().ToList(),
                 video => $"{video.Id} {video.Title} ({video.Pages.Count})",
                 choicesName: "deleted videos to download"));
-        foreach (var video in selected) {
+
+        return LogSummary();
+    }
+
+    void DownloadVideos(BilibiliUploader uploader, List<BilibiliVideo> videos) {
+        foreach (var video in videos) {
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
                     () => Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder));
             }
         }
-
-        return LogSummary();
     }
 }
