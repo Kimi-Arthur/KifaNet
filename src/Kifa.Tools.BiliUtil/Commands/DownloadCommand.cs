@@ -144,7 +144,7 @@ public abstract class DownloadCommand : BiliCommand {
 
     (string? extension, int quality, int codec) InferVideoInfo(BilibiliVideo video, int pid) {
         var files = KifaFile.FindAllFiles([BaseFolder.Host + RepoPath],
-            pattern: $"{video.Id}p{pid}.*.mp4");
+            pattern: $"{video.Id}p{pid}.*");
         int bestQuality = 0, bestCodec = 0;
         foreach (var file in files) {
             var (inferredVideo, inferredVideoPid, quality, codec) =
