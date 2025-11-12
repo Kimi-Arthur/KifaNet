@@ -384,7 +384,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var sourceFiles = sources.ToList();
         var existingFiles = FindExistingFiles(sourceFiles, recursive: recursive, pattern: pattern,
             ignoreFiles: ignoreFiles);
-        var potentialFiles = FindPotentialFiles(sourceFiles, recursive: recursive,
+        var potentialFiles = FindPotentialFiles(sourceFiles, recursive: recursive, pattern: pattern,
             ignoreFiles: ignoreFiles);
         var allFiles = new HashSet<KifaFile>();
         allFiles.UnionWith(existingFiles);
