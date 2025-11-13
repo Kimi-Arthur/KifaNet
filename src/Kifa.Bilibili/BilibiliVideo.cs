@@ -126,7 +126,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             Logger.Debug(e, $"Unable to find video {Id} from biliplus cache.");
         }
 
-        return Date.Zero;
+        throw new DataNotFoundException();
     }
 
     void FillWithBilibili() {
