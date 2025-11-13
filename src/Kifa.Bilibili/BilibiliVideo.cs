@@ -73,11 +73,11 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     public string Description { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
-    public List<string> Tags { get; set; } = new();
+    public List<string> Tags { get; set; } = [];
     public string Category { get; set; }
     public Uri Cover { get; set; }
     public DateTimeOffset? Uploaded { get; set; }
-    public List<BilibiliChat> Pages { get; set; }
+    public List<BilibiliChat> Pages { get; set; } = [];
     public BilibiliVideoStats Stats { get; set; } = new();
 
     [JsonIgnore]
