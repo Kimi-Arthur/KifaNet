@@ -106,15 +106,9 @@ public abstract partial class KifaCommand {
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
 
     public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
-        Func<TChoice, string>? choiceToString = null, string? choicesName = null,
-        int startingIndex = 1, string selectionKey = "", bool skipIfEmpty = true) {
-        return SelectMany(choices, getChoicesName: _ => choicesName ?? "items", choiceToString,
-            startingIndex, selectionKey, skipIfEmpty);
-    }
-
-    public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
-        Func<List<TChoice>, string> getChoicesName, Func<TChoice, string>? choiceToString = null,
-        int startingIndex = 1, string selectionKey = "", bool skipIfEmpty = true) {
+        Func<TChoice, string> choiceItemString,
+        FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
+        string selectionKey = "", bool skipIfEmpty = true) {
         if (skipIfEmpty && choices.Count == 0) {
             return [];
         }
@@ -122,11 +116,9 @@ public abstract partial class KifaCommand {
         AlwaysDefaultForSelectMany.TryAdd(selectionKey, false);
         DefaultReplyForSelectMany.TryAdd(selectionKey, "");
 
-        choiceToString ??= c => c.ToString();
-
         while (true) {
             for (var i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i + startingIndex}]\t{choiceToString(choices[i])}");
+                Console.WriteLine($"[{i + startingIndex}]\t{choiceItemString(choices[i])}");
             }
 
             string reply;
@@ -139,7 +131,7 @@ public abstract partial class KifaCommand {
                 var messages = new[] {
                     $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
                     "      '?' to restart, '/xxx' for a glob matching with xxx",
-                    $"Select 0 or more from the above {choices.Count} {getChoicesName(choices)} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
+                    $"Select 0 or more from the above {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
                 };
                 Console.WriteLine(messages[0]);
                 Console.Write(messages[1]);
@@ -201,11 +193,11 @@ public abstract partial class KifaCommand {
             // Only need to reconfirm if the selection is not for all.
             if (chosenIndexes.Count != choices.Count && chosenIndexes.Count != 0) {
                 foreach (var choice in chosen) {
-                    Console.WriteLine(choiceToString(choice));
+                    Console.WriteLine(choiceItemString(choice));
                 }
 
                 if (!AlwaysDefaultForSelectMany[selectionKey] && !Confirm(
-                        $"Confirm selection of {chosen.Count} {getChoicesName(chosen)} above out of {choices.Count}?")) {
+                        $"Confirm selection of {chosen.Count} {choiceSummaryString?.Get(chosen) ?? "items"} above out of {choices.Count}?")) {
                     Logger.Info("Choices not confirmed. Rechoose.");
                     continue;
                 }
@@ -218,7 +210,7 @@ public abstract partial class KifaCommand {
             }
 
             Logger.Debug(
-                $"Selected {chosen.Count} {getChoicesName(chosen)} above out of {choices.Count}.");
+                $"Selected {chosen.Count} {choiceSummaryString?.Get(chosen) ?? "items"} above out of {choices.Count}.");
             return chosen;
         }
     }

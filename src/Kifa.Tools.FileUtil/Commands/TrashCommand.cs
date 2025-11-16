@@ -42,7 +42,8 @@ class TrashCommand : KifaCommand {
         DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {
-            var selectedFileIds = SelectMany(foundFiles, choicesName: "files to restore");
+            var selectedFileIds =
+                SelectMany(foundFiles, file => file.ToString(), "files to restore");
             Logger.Info("Should restore the files above.");
             return 1;
         } else {
@@ -55,14 +56,14 @@ class TrashCommand : KifaCommand {
                 ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
                 : $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}";
 
-            var selectedFiles =
-                SelectMany(foundFiles, choicesName: $"files to trash to {trashPath}");
+            var selectedFiles = SelectMany(foundFiles, file => file.ToString(),
+                $"files to trash to {trashPath}");
             var selectedFileIds = selectedFiles.Select(file => file.Id).ToHashSet();
 
             var extraFileIds = selectedFiles.SelectMany(f => f.FileInfo.Checked().GetAllLinks())
                 .ToList();
-            selectedFileIds.UnionWith(SelectMany(extraFileIds,
-                choicesName: "extra versions of trashed files to trash"));
+            selectedFileIds.UnionWith(SelectMany(extraFileIds, file => file,
+                "extra versions of trashed files to trash"));
 
             selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId, trashPath)));
             return LogSummary();

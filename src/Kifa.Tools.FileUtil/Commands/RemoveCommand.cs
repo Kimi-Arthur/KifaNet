@@ -104,8 +104,8 @@ class RemoveCommand : KifaCommand {
         var localFiles = KifaFile.FindExistingFiles(FileNames);
 
         if (localFiles.Count > 0) {
-            var selected = SelectMany(localFiles,
-                choicesName: $"local files to delete{removalText}");
+            var selected = SelectMany(localFiles, file => file.ToString(),
+                $"local files to delete{removalText}");
 
             if (selected.Count == 0) {
                 Logger.Warn("No files found or selected to be deleted.");

@@ -41,9 +41,8 @@ class ExtractCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
-        var selected = SelectMany(files,
-            choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choicesName: "files to extract from");
+        var selected = SelectMany(files, file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
+            "files to extract from");
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => ExtractFile(file));
@@ -97,9 +96,9 @@ class ExtractCommand : KifaCommand {
         }).ToList();
 
         var selected = SelectMany(entries,
-            choiceToString: entry
+            entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
-            choicesName: "entries to extract");
+            "entries to extract");
 
         if (selected.Count == 0) {
             return new KifaActionResult {

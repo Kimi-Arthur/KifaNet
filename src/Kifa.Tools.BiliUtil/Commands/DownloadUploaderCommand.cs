@@ -30,14 +30,14 @@ public class DownloadUploaderCommand : DownloadCommand {
             SelectMany(
                 BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList()).ExceptNull()
                     .ToList(), video => $"{video.Id} {video.Title} ({video.Pages.Count})",
-                choicesName: "videos to download"));
+                "videos to download"));
 
         DownloadVideos(uploader,
             SelectMany(
                 BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.RemovedAids).ToList())
                     .ExceptNull().ToList(),
                 video => $"{video.Id} {video.Title} ({video.Pages.Count})",
-                choicesName: "deleted videos to download"));
+                "deleted videos to download"));
 
         return LogSummary();
     }

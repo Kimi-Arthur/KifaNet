@@ -17,8 +17,8 @@ class FixCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames),
-            choicesName: "subtitle files to fix");
+        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
+            "subtitle files to fix");
         foreach (var file in selected) {
             ExecuteItem($"Fix subtitle file {file}", () => FixSubtitle(file));
         }

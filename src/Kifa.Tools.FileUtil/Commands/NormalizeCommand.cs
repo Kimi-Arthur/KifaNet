@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CommandLine;
-using NLog;
 using Kifa.Api.Files;
 using Kifa.Jobs;
 using Kifa.Service;
+using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -19,9 +18,8 @@ class NormalizeCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
-        var selected = SelectMany(files,
-            choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choicesName: "files to normalize their paths (FormC + extension to lower)");
+        var selected = SelectMany(files, file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
+            "files to normalize their paths (FormC + extension to lower)");
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => NormalizeFile(file));

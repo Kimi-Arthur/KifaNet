@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
@@ -18,7 +16,8 @@ public class LinkCommand : BiliCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4"));
+        var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4"),
+            file => file.ToString());
         if (selectedFiles.Count == 0) {
             Logger.Warn("No files found or selected to link.");
             return 1;

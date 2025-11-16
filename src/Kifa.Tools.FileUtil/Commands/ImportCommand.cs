@@ -8,7 +8,6 @@ using Kifa.IO;
 using Kifa.Jobs;
 using Kifa.Soccer;
 using NLog;
-using Season = Kifa.Infos.Season;
 
 namespace Kifa.Tools.FileUtil.Commands;
 
@@ -212,8 +211,8 @@ class ImportCommand : KifaCommand {
         }
 
         var toRegister = SelectMany(notRegisteredFiles,
-            choiceToString: file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            choicesName: "files to register before importing");
+            file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
+            "files to register before importing");
         toRegister.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
         return files.Where(f => f.Registered);
     }

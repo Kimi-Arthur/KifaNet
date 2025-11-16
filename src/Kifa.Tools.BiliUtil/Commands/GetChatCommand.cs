@@ -37,7 +37,7 @@ class GetChatCommand : KifaCommand {
         var chats = GetChatsFromIds().ToList();
 
         var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames),
-            choicesName: "files to download bilibili danmaku for");
+            file => file.ToString(), "files to download bilibili danmaku for");
 
         if (chats.Count > 0) {
             GetChatsWithIds(selectedFiles, chats);
