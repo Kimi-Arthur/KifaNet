@@ -101,7 +101,7 @@ public abstract partial class KifaCommand {
         return (choices[chosenIndex], chosenIndex, special);
     }
 
-    static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)$");
+    static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)|/(.*)$");
 
     static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
@@ -125,8 +125,9 @@ public abstract partial class KifaCommand {
                 Console.WriteLine($"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
             }
 
-            string reply;
+            var reply = "";
             var flags = "";
+            Glob? glob = null;
 
             if (AlwaysDefaultForSelectMany[selectionKey]) {
                 reply = DefaultReplyForSelectMany[selectionKey];
@@ -148,8 +149,19 @@ public abstract partial class KifaCommand {
                     match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
                 }
 
-                reply = match.Groups[1].Value;
-                flags = match.Groups[2].Value;
+                if (match.Groups[3].Success) {
+                    glob = new Glob(match.Groups[3].Value);
+                } else {
+                    reply = match.Groups[1].Value;
+                    flags = match.Groups[2].Value;
+                }
+            }
+
+            if (glob != null) {
+                chosenIndexes = chosenIndexes.Zip(selectedChoices)
+                    .Where(item => glob.IsMatch(choiceItemString(item.Second)))
+                    .Select(item => item.First).ToList();
+                continue;
             }
 
             if (reply == "") {
@@ -162,14 +174,6 @@ public abstract partial class KifaCommand {
                 Logger.Debug(
                     $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
                 return selectedChoices;
-            }
-
-            if (reply.StartsWith("/")) {
-                var glob = new Glob(reply[1..]);
-                chosenIndexes = chosenIndexes.Zip(selectedChoices)
-                    .Where(item => glob.IsMatch(choiceItemString(item.Second)))
-                    .Select(item => item.First).ToList();
-                continue;
             }
 
             if (reply == "^") {
