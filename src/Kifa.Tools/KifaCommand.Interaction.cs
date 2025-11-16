@@ -116,9 +116,12 @@ public abstract partial class KifaCommand {
         AlwaysDefaultForSelectMany.TryAdd(selectionKey, false);
         DefaultReplyForSelectMany.TryAdd(selectionKey, "");
 
+        var chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
+
         while (true) {
-            for (var i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i + startingIndex}]\t{choiceItemString(choices[i])}");
+            var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
+            for (var i = 0; i < selectedChoices.Count; i++) {
+                Console.WriteLine($"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
             }
 
             string reply;
@@ -131,10 +134,11 @@ public abstract partial class KifaCommand {
                 var messages = new[] {
                     $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
                     "      '?' to restart, '/xxx' for a glob matching with xxx",
-                    $"Select 0 or more from the above {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
+                    $"Select 0 or more from the above {selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} [{startingIndex}-{startingIndex + selectedChoices.Count - 1}]: "
                 };
-                Console.WriteLine(messages[0]);
-                Console.Write(messages[1]);
+
+                Console.Write(messages.JoinBy("\n"));
+
                 var match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
                 while (!match.Success) {
                     Console.WriteLine("Invalid choice. Try again:");
@@ -147,11 +151,23 @@ public abstract partial class KifaCommand {
                 flags = match.Groups[2].Value;
             }
 
-            var chosenIndexes = reply switch {
-                "" => Enumerable.Range(0, choices.Count).ToList(),
+            if (reply == "") {
+                if (flags.Contains('a')) {
+                    // Only used when alwaysDefault is true. Otherwise, all is always the default.
+                    DefaultReplyForSelectMany[selectionKey] = reply;
+                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                }
+
+                Logger.Debug(
+                    $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
+                return selectedChoices;
+            }
+
+            chosenIndexes = reply switch {
+                "" => chosenIndexes,
                 "^" => [],
                 _ => reply.Split(',').Select(selection => {
-                    var inverted = selection.StartsWith('^');
+                    var excluded = selection.StartsWith('^');
                     selection = selection.TrimStart('^');
                     int rangeStart, rangeEnd;
                     if (selection.Contains('-')) {
@@ -161,57 +177,33 @@ public abstract partial class KifaCommand {
                             : 0;
                         rangeEnd = indexes[1].Length > 0
                             ? int.Parse(indexes[1]) - startingIndex + 1
-                            : choices.Count;
+                            : chosenIndexes.Count;
                     } else {
                         rangeStart = int.Parse(selection) - startingIndex;
                         rangeEnd = rangeStart + 1;
                     }
 
-                    return (Inverted: inverted, RangeStart: rangeStart, RangeEnd: rangeEnd);
-                }).Aggregate<(bool Inverted, int RangeStart, int RangeEnd), IEnumerable<int>?>(null,
+                    return (Excluded: excluded, RangeStart: rangeStart, RangeEnd: rangeEnd);
+                }).Aggregate<(bool Excluded, int RangeStart, int RangeEnd), IEnumerable<int>?>(null,
                     (result, next) => {
                         if (result == null) {
-                            return next.Inverted
+                            return next.Excluded
                                 ? Enumerable.Range(0, next.RangeStart).Concat(
-                                    Enumerable.Range(next.RangeEnd, choices.Count - next.RangeEnd))
+                                    Enumerable.Range(next.RangeEnd,
+                                        chosenIndexes.Count - next.RangeEnd))
                                 : Enumerable.Range(next.RangeStart,
                                     next.RangeEnd - next.RangeStart);
                         }
 
-                        if (next.Inverted) {
+                        if (next.Excluded) {
                             return result.Except(Enumerable.Range(next.RangeStart,
                                 next.RangeEnd - next.RangeStart));
                         }
 
                         return result.Union(Enumerable.Range(next.RangeStart,
                             next.RangeEnd - next.RangeStart));
-                    }).Checked().ToList()
+                    }).Checked().Select(index => chosenIndexes[index]).ToList()
             };
-
-            var chosen = chosenIndexes.Select(index => choices[index]).ToList();
-
-            // Only need to reconfirm if the selection is not for all.
-            if (chosenIndexes.Count != choices.Count && chosenIndexes.Count != 0) {
-                foreach (var choice in chosen) {
-                    Console.WriteLine(choiceItemString(choice));
-                }
-
-                if (!AlwaysDefaultForSelectMany[selectionKey] && !Confirm(
-                        $"Confirm selection of {chosen.Count} {choiceSummaryString?.Get(chosen) ?? "items"} above out of {choices.Count}?")) {
-                    Logger.Info("Choices not confirmed. Rechoose.");
-                    continue;
-                }
-            }
-
-            if (flags.Contains('a')) {
-                // Only used when alwaysDefault is true. Otherwise, all is always the default.
-                DefaultReplyForSelectMany[selectionKey] = reply;
-                AlwaysDefaultForSelectMany[selectionKey] = true;
-            }
-
-            Logger.Debug(
-                $"Selected {chosen.Count} {choiceSummaryString?.Get(chosen) ?? "items"} above out of {choices.Count}.");
-            return chosen;
         }
     }
 
