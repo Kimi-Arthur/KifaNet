@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using CommandLine;
+using GlobExpressions;
 
 namespace Kifa.Tools;
 
@@ -163,47 +164,53 @@ public abstract partial class KifaCommand {
                 return selectedChoices;
             }
 
-            chosenIndexes = reply switch {
-                "" => chosenIndexes,
-                "^" => [],
-                _ => reply.Split(',').Select(selection => {
-                    var excluded = selection.StartsWith('^');
-                    selection = selection.TrimStart('^');
-                    int rangeStart, rangeEnd;
-                    if (selection.Contains('-')) {
-                        var indexes = selection.Split('-');
-                        rangeStart = indexes[0].Length > 0
-                            ? int.Parse(indexes[0]) - startingIndex
-                            : 0;
-                        rangeEnd = indexes[1].Length > 0
-                            ? int.Parse(indexes[1]) - startingIndex + 1
-                            : chosenIndexes.Count;
-                    } else {
-                        rangeStart = int.Parse(selection) - startingIndex;
-                        rangeEnd = rangeStart + 1;
+            if (reply.StartsWith("/")) {
+                var glob = new Glob(reply[1..]);
+                chosenIndexes = chosenIndexes.Zip(selectedChoices)
+                    .Where(item => glob.IsMatch(choiceItemString(item.Second)))
+                    .Select(item => item.First).ToList();
+                continue;
+            }
+
+            if (reply == "^") {
+                chosenIndexes = [];
+                return [];
+            }
+
+            chosenIndexes = reply.Split(',').Select(selection => {
+                var excluded = selection.StartsWith('^');
+                selection = selection.TrimStart('^');
+                int rangeStart, rangeEnd;
+                if (selection.Contains('-')) {
+                    var indexes = selection.Split('-');
+                    rangeStart = indexes[0].Length > 0 ? int.Parse(indexes[0]) - startingIndex : 0;
+                    rangeEnd = indexes[1].Length > 0
+                        ? int.Parse(indexes[1]) - startingIndex + 1
+                        : chosenIndexes.Count;
+                } else {
+                    rangeStart = int.Parse(selection) - startingIndex;
+                    rangeEnd = rangeStart + 1;
+                }
+
+                return (Excluded: excluded, RangeStart: rangeStart, RangeEnd: rangeEnd);
+            }).Aggregate<(bool Excluded, int RangeStart, int RangeEnd), IEnumerable<int>?>(null,
+                (result, next) => {
+                    if (result == null) {
+                        return next.Excluded
+                            ? Enumerable.Range(0, next.RangeStart).Concat(
+                                Enumerable.Range(next.RangeEnd,
+                                    chosenIndexes.Count - next.RangeEnd))
+                            : Enumerable.Range(next.RangeStart, next.RangeEnd - next.RangeStart);
                     }
 
-                    return (Excluded: excluded, RangeStart: rangeStart, RangeEnd: rangeEnd);
-                }).Aggregate<(bool Excluded, int RangeStart, int RangeEnd), IEnumerable<int>?>(null,
-                    (result, next) => {
-                        if (result == null) {
-                            return next.Excluded
-                                ? Enumerable.Range(0, next.RangeStart).Concat(
-                                    Enumerable.Range(next.RangeEnd,
-                                        chosenIndexes.Count - next.RangeEnd))
-                                : Enumerable.Range(next.RangeStart,
-                                    next.RangeEnd - next.RangeStart);
-                        }
-
-                        if (next.Excluded) {
-                            return result.Except(Enumerable.Range(next.RangeStart,
-                                next.RangeEnd - next.RangeStart));
-                        }
-
-                        return result.Union(Enumerable.Range(next.RangeStart,
+                    if (next.Excluded) {
+                        return result.Except(Enumerable.Range(next.RangeStart,
                             next.RangeEnd - next.RangeStart));
-                    }).Checked().Select(index => chosenIndexes[index]).ToList()
-            };
+                    }
+
+                    return result.Union(Enumerable.Range(next.RangeStart,
+                        next.RangeEnd - next.RangeStart));
+                }).Checked().Select(index => chosenIndexes[index]).ToList();
         }
     }
 
