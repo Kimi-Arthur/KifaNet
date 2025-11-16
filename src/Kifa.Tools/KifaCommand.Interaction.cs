@@ -101,7 +101,7 @@ public abstract partial class KifaCommand {
         return (choices[chosenIndex], chosenIndex, special);
     }
 
-    static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)|/(.*)$");
+    static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)$|^/(.*)$");
 
     static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
