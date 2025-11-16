@@ -102,8 +102,8 @@ public abstract partial class KifaCommand {
 
     static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)$");
 
-    static Dictionary<string, string> defaultReplyForSelectMany = new();
-    static Dictionary<string, bool> alwaysDefaultForSelectMany = new();
+    static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
+    static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
 
     public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null, string? choicesName = null,
@@ -119,8 +119,8 @@ public abstract partial class KifaCommand {
             return [];
         }
 
-        alwaysDefaultForSelectMany.TryAdd(selectionKey, false);
-        defaultReplyForSelectMany.TryAdd(selectionKey, "");
+        AlwaysDefaultForSelectMany.TryAdd(selectionKey, false);
+        DefaultReplyForSelectMany.TryAdd(selectionKey, "");
 
         choiceToString ??= c => c.ToString();
 
@@ -132,12 +132,13 @@ public abstract partial class KifaCommand {
             string reply;
             var flags = "";
 
-            if (alwaysDefaultForSelectMany[selectionKey]) {
-                reply = defaultReplyForSelectMany[selectionKey];
+            if (AlwaysDefaultForSelectMany[selectionKey]) {
+                reply = DefaultReplyForSelectMany[selectionKey];
                 Console.WriteLine($"Automatically chose [{reply}] as previously instructed.\n");
             } else {
                 var messages = new[] {
                     $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
+                    "      '?' to restart, '/xxx' for a glob matching with xxx",
                     $"Select 0 or more from the above {choices.Count} {getChoicesName(choices)} [{startingIndex}-{startingIndex + choices.Count - 1}]: "
                 };
                 Console.WriteLine(messages[0]);
@@ -203,7 +204,7 @@ public abstract partial class KifaCommand {
                     Console.WriteLine(choiceToString(choice));
                 }
 
-                if (!alwaysDefaultForSelectMany[selectionKey] && !Confirm(
+                if (!AlwaysDefaultForSelectMany[selectionKey] && !Confirm(
                         $"Confirm selection of {chosen.Count} {getChoicesName(chosen)} above out of {choices.Count}?")) {
                     Logger.Info("Choices not confirmed. Rechoose.");
                     continue;
@@ -212,8 +213,8 @@ public abstract partial class KifaCommand {
 
             if (flags.Contains('a')) {
                 // Only used when alwaysDefault is true. Otherwise, all is always the default.
-                defaultReplyForSelectMany[selectionKey] = reply;
-                alwaysDefaultForSelectMany[selectionKey] = true;
+                DefaultReplyForSelectMany[selectionKey] = reply;
+                AlwaysDefaultForSelectMany[selectionKey] = true;
             }
 
             Logger.Debug(
