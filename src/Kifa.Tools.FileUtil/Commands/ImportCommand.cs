@@ -148,7 +148,7 @@ class ImportCommand : KifaCommand {
         for (int i = 0; i < fileMatches.Count; i++) {
             var fileInfo = FileInformation.Client.Get(fileMatches[i].File);
             var existingMatch = fileInfo.GetAllLinks()
-                .Select(l => (Link: l, Episode: infoList.Info.Parse(l)))
+                .Select(l => (Link: l, Episode: infoList.Info.Parse(l, VersionSuffix)))
                 .FirstOrDefault(e => e.Episode != null);
 
             if (existingMatch.Episode.HasValue) {

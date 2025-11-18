@@ -98,12 +98,12 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
             episode
         });
 
-    public (Season Season, Episode Episode)? Parse(string formatted) {
+    public (Season Season, Episode Episode)? Parse(string formatted, string? version = null) {
+        var baseFolder = GetBaseFolder(version);
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"/TV Shows/{Region}/{Title} \({AirDate.Year}\)/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
-            "single_season" =>
-                $@"/TV Shows/{Region}/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
+                $@"{baseFolder}/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+            "single_season" => $@"{baseFolder}/{Title} EP(?<episode_id>\d+)",
             _ => null
         };
 
@@ -146,8 +146,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
         var episodeTitle = GetTitle(episodes.Select(e => e.Title).ToList());
 
-        var baseFolder =
-            $"/TV Shows/{Region}/{Title} ({AirDate.Year}){" {version}".FormatIfNonNull(("version", version)) ?? ""}";
+        var baseFolder = GetBaseFolder(version);
+
         // season.Title and episode.Title can be empty.
         return patternId switch {
             "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +
@@ -160,6 +160,9 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
             _ => null
         };
     }
+
+    string GetBaseFolder(string? version = null)
+        => $"/TV Shows/{Region}/{Title} ({AirDate.Checked().Year}){" {version}".FormatIfNonNull(("version", version)) ?? ""}";
 
     static string GetTitle(IReadOnlyList<string> titles)
         => GetSharedTitle(titles) ?? string.Join(" ", titles);

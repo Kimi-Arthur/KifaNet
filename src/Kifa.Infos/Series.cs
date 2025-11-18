@@ -62,7 +62,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         };
     }
 
-    public (Season Season, Episode Episode)? Parse(string formatted) {
+    public (Season Season, Episode Episode)? Parse(string formatted, string? version = null) {
         var pattern = PatternId switch {
             "multi_season" =>
                 $@"{Id}/Season (\d+)( .*)?/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
@@ -174,7 +174,7 @@ public class SpecialEpisode : Episode {
 
 public interface Formattable {
     string? Format(Season season, Episode episode, string? version = null);
-    (Season Season, Episode Episode)? Parse(string formatted);
+    (Season Season, Episode Episode)? Parse(string formatted, string? version = null);
 }
 
 public interface WithFormatInfo {

@@ -52,8 +52,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
 
-        var baseFolder =
-            $"/Anime/{Title} ({AirDate.Year}){" [{version}]".FormatIfNonNull(("version", version)) ?? ""}";
+        var baseFolder = GetBaseFolder(version);
         // season.Title and episode.Title can be empty.
         return PatternId switch {
             "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +
@@ -64,11 +63,12 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         };
     }
 
-    public (Season Season, Episode Episode)? Parse(string formatted) {
+    public (Season Season, Episode Episode)? Parse(string formatted, string? version = null) {
+        var baseFolder = GetBaseFolder(version);
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"/Anime/{Title} \({AirDate.Year}\)/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
-            "single_season" => $@"/Anime/{Title} \({AirDate.Year}\)/{Title} EP(?<episode_id>\d+)",
+                $@"{baseFolder}/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+            "single_season" => $@"{baseFolder}/{Title} EP(?<episode_id>\d+)",
             _ => null
         };
 
@@ -97,6 +97,9 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
         return null;
     }
+
+    string GetBaseFolder(string? version = null)
+        => $"/Anime/{Title} ({AirDate.Checked().Year}){" [{version}]".FormatIfNonNull(("version", version)) ?? ""}";
 
     public override DateTimeOffset? Fill() {
         if (TmdbId == null) {
