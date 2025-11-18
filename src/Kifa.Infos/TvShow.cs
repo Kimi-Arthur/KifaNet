@@ -102,8 +102,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         var baseFolder = GetBaseFolder(version);
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"{baseFolder}/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
-            "single_season" => $@"{baseFolder}/{Title} EP(?<episode_id>\d+)",
+                $@"{Regex.Escape(baseFolder)}/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
+            "single_season" => $@"{Regex.Escape(baseFolder)}/{Title} EP(?<episode_id>\d+)",
             _ => null
         };
 
