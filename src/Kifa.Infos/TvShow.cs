@@ -96,7 +96,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
     public string? Format(Season season, Episode episode, string? version = null)
         => Format(season, new List<Episode> {
             episode
-        });
+        }, version);
 
     public (Season Season, Episode Episode)? Parse(string formatted, string? version = null) {
         var baseFolder = GetBaseFolder(version);
