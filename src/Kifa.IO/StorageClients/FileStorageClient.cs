@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Mono.Unix;
 using NLog;
 using Renci.SshNet;
 
@@ -338,12 +337,9 @@ public class FileStorageClient(string serverId) : StorageClient {
             return null;
         }
 
-        long id;
-        try {
-            id = new UnixFileInfo(localPath).Inode;
-        } catch (OverflowException ex) {
-            // https://github.com/mono/mono.posix/issues/51
-            Logger.Warn(ex, "Unable to get file id due to overflow.");
+        // Use Mono.Posix version when https://github.com/mono/mono.posix/issues/51 is resolved.
+        var id = UnixFileInfo.GetInode(localPath);
+        if (id == null) {
             return null;
         }
 
