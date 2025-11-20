@@ -47,29 +47,35 @@ class CleanCommand : KifaCommand {
             var sameHostFiles = info.Locations
                 .Where(f => f.Value != null && new FileLocation(f.Key).Server == file.Host)
                 .Select(f => new KifaFile(f.Key, fileInfo: info)).ToList();
-            if (sameHostFiles.Select(f => f.FileId).Distinct().Count() == 1) {
+            var filesById = sameHostFiles.GroupBy(f => f.FileId).ToList();
+            if (filesById.Count == 1) {
                 Logger.Info(
                     $"No need to dedup these files:\n\t{string.Join("\n\t", sameHostFiles.Select(f => $"{f} ({f.FileId}"))}");
                 continue;
             }
 
-            var selected = SelectMany(sameHostFiles, f => $"{f} ({f.FileId})", "files to unify");
-            if (selected.Count <= 1) {
-                Logger.Info($"No need to dedup as at most one item is selected:");
-                foreach (var f in selected) {
-                    Logger.Info($"\t{f} ({f.FileId})");
-                }
+            var selected = SelectOne(filesById,
+                group
+                    => $"{group.Key} ({group.Count()} refs, {group.First().GetRefCount()} refs in OS):\n{group.Select(f => f.ToString()).JoinBy("\n")})",
+                "file to keep");
 
+            if (selected == null) {
+                Logger.Error("No proper file is selected");
                 continue;
             }
 
-            // We then only choose one between the selected ones.
-            foreach (var f in selected.Skip(1)) {
-                f.Delete();
-                f.Unregister();
-                selected[0].Copy(f);
-                f.Add();
-                Logger.Info($"Removed and relinked {f} ({f.FileId}).");
+            foreach (var group in filesById) {
+                if (group == selected.Value.Choice) {
+                    continue;
+                }
+
+                foreach (var f in group) {
+                    f.Delete();
+                    f.Unregister();
+                    selected.Value.Choice.First().Copy(f);
+                    f.Add();
+                    Logger.Info($"Removed and relinked {f} ({f.FileId}).");
+                }
             }
         }
     }

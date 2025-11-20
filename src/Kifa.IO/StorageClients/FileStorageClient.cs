@@ -337,7 +337,6 @@ public class FileStorageClient(string serverId) : StorageClient {
             return null;
         }
 
-        // Use Mono.Posix version when https://github.com/mono/mono.posix/issues/51 is resolved.
         var id = UnixFileInfo.GetInode(localPath);
         if (id == null) {
             return null;
@@ -355,5 +354,18 @@ public class FileStorageClient(string serverId) : StorageClient {
             Size = info.Length,
             LastModified = lastModified
         };
+    }
+
+    public override ulong? GetFileRefCount(string path) {
+        if (!IsUnixLike) {
+            return null;
+        }
+
+        var localPath = GetLocalPath(path);
+        if (!File.Exists(localPath)) {
+            return null;
+        }
+
+        return UnixFileInfo.GetRefCount(localPath);
     }
 }

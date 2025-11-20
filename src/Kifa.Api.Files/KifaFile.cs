@@ -121,6 +121,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public KifaFile? LocalMirrorFile => new($"{MirrorHost}{Id}", fileInfo: FileInfo);
 
     FileIdInfo? idInfo;
+
+    // File id info including inode, size, modification time, always extracted from file system.
     public FileIdInfo? IdInfo => idInfo ??= Client.GetFileIdInfo(Path)?.With(f => f.HostId = Host);
 
     public string? FileId => IdInfo?.Id;
@@ -762,6 +764,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         return obj.GetType() == GetType() && Equals((KifaFile) obj);
     }
+
+    public ulong? GetRefCount() => Client.GetFileRefCount(Path);
 
     public string ReadAsString() {
         using var streamReader = new StreamReader(OpenRead());
