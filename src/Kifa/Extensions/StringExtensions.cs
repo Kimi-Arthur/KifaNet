@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -167,4 +166,7 @@ public static class StringExtensions {
         => string.Join(separator, values);
 
     public static string NormalizeWikiTitle(this string title) => title.Replace(" ", "_");
+
+    public static string ChopPrefix(this string source, string prefix)
+        => source.StartsWith(prefix) ? source[prefix.Length..] : source;
 }
