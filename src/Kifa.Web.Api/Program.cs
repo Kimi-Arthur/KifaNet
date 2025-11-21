@@ -16,5 +16,7 @@ public class Program {
     }
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args)
-        => WebHost.CreateDefaultBuilder(args).UseNLog().UseStartup<Startup>();
+        => (global::Kifa.Logging.EnableNotice
+            ? WebHost.CreateDefaultBuilder(args).UseNLog()
+            : WebHost.CreateDefaultBuilder(args)).UseStartup<Startup>();
 }
