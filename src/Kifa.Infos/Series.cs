@@ -32,14 +32,15 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
 
     public static HashSet<string> KnownCategories { get; set; } =
         ["Gaming", "Tales", "Food", "News", "Technology"];
-    // Id should be like /Gaming/黑桐谷歌/漫威蜘蛛侠2
 
-    public List<Season>? Seasons { get; set; }
-    public List<Episode>? Specials { get; set; }
+    // Id should be like /Gaming/黑桐谷歌/漫威蜘蛛侠2
 
     public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
+
+    public List<Season>? Seasons { get; set; }
+    public List<Episode>? Specials { get; set; }
 
     [JsonIgnore]
     [YamlIgnore]
@@ -52,12 +53,14 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         var sid = season.Id.ToString().PadLeft(seasonIdWidth, '0');
 
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
+        var date = episode.AirDate?.ToString();
 
         // season.Title and episode.Title can be empty.
         return PatternId switch {
             "multi_season" => $"{Id}/Season {season.Id} {season.Title}".TrimEnd() +
                               $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd(),
             "single_season" => $"{Id}/{Title} EP{eid} {episode.Title}".TrimEnd(),
+            "date" => $"{Id}/{Title} {date} {episode.Title}".TrimEnd(),
             _ => null
         };
     }
