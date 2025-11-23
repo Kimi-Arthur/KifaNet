@@ -72,14 +72,6 @@ class ImportCommand : KifaCommand {
         SourceId ??= InferSourceId(pathSegments[2]);
         ItemInfoList infoList;
         switch (Type) {
-            case "Gaming": {
-                // Example:
-                // /Gaming/黑桐谷歌/漫威蜘蛛侠2
-                infoList = Series.GetItems([
-                    Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
-                ], VersionSuffix).Checked();
-                break;
-            }
             case "TV Shows": {
                 infoList = TvShow.GetItems([
                     Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
@@ -103,6 +95,15 @@ class ImportCommand : KifaCommand {
 
                 return 0;
             default:
+                if (Series.KnownCategories.Contains(Type)) {
+                    // Example:
+                    // /Gaming/黑桐谷歌/漫威蜘蛛侠2
+                    infoList = Series.GetItems([
+                        Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                    ], VersionSuffix).Checked();
+                    break;
+                }
+
                 Console.WriteLine($"{Type} is not known. Will treat it like base folder");
                 var lastSlash = SourceId.LastIndexOf("/");
                 var folder = $"/{Type}/{SourceId[..lastSlash]}";

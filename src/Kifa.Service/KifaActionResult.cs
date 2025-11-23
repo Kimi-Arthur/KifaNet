@@ -29,6 +29,12 @@ public class KifaActionResult {
             Message = message
         };
 
+    public static KifaActionResult Skipped(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Skipped,
+            Message = message
+        };
+
     public static KifaActionResult BadRequest(string? message = null)
         => new() {
             Status = KifaActionStatus.BadRequest,
