@@ -303,7 +303,7 @@ public sealed class
     public class WatchedShow {
         public bool Switch { get; set; }
         public long Num { get; set; }
-        public long TextSmall { get; set; }
+        public string TextSmall { get; set; }
         public string TextLarge { get; set; }
         public string Icon { get; set; }
         public string IconLocation { get; set; }
