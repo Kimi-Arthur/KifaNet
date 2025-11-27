@@ -108,5 +108,5 @@ public class LinkCommand : KifaCommand {
 class FolderLinkableDataModel : DataModel, WithModelId<FolderLinkableDataModel>, FolderLinkable {
     public static string ModelId { get; set; }
 
-    public List<string> FolderLinks { get; set; }
+    public List<string> FolderLinks { get; set; } = [];
 }
