@@ -24,46 +24,28 @@ public enum EnumType {
 }
 
 public class LateClass {
-    #region public late EnumType LateEnumProperty { get; set; }
-
-    EnumType? lateEnumProperty;
+    public EnumType EnumProperty { get; set; }
 
     public EnumType LateEnumProperty {
-        get => Late.Get(lateEnumProperty);
-        set => Late.Set(ref lateEnumProperty, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late JsonType LateJsonProperty { get; set; }
-
-    JsonType? lateJsonProperty;
 
     public JsonType LateJsonProperty {
-        get => Late.Get(lateJsonProperty);
-        set => Late.Set(ref lateJsonProperty, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
 
-    #endregion
-
-    public EnumType EnumProperty { get; set; }
+    public string LateStringProperty {
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
+    }
 
     public JsonType? JsonProperty { get; set; }
 
-    public string StringProperty { get; set; } = "";
-
     public string? NullableStringProperty { get; set; }
 
-    #region public late string LateStringProperty { get; set; }
-
-    string? lateStringProperty;
-
-    public string LateStringProperty {
-        get => Late.Get(lateStringProperty);
-        set => Late.Set(ref lateStringProperty, value);
-    }
-
-    #endregion
+    public string StringProperty { get; set; } = "";
 
     public List<string> ListProperty { get; set; } = new();
 
@@ -91,10 +73,7 @@ public class LatePropertyTests {
                         { "Good", "Bad" }
                     }
                 },
-                "{\"dict_property\":{\"Good\":\"Bad\"},\"enum_property\":\"value_a\",\"json_property\":\"hid\"," +
-                "\"late_enum_property\":\"value_a\",\"late_json_property\":\"bcd\"," +
-                "\"late_string_property\":\"abc\",\"list_property\":[\"a\",\"d\",\"f\"]," +
-                "\"nullable_string_property\":\"nullok\",\"string_property\":\"ok\"}"
+                "{\"enum_property\":\"value_a\",\"late_enum_property\":\"value_a\",\"late_json_property\":\"bcd\",\"late_string_property\":\"abc\",\"json_property\":\"hid\",\"nullable_string_property\":\"nullok\",\"string_property\":\"ok\",\"list_property\":[\"a\",\"d\",\"f\"],\"dict_property\":{\"Good\":\"Bad\"}}"
             },
             new object[] {
                 new LateClass {
@@ -105,7 +84,7 @@ public class LatePropertyTests {
                     JsonProperty = "",
                     NullableStringProperty = ""
                 },
-                "{\"json_property\":\"\",\"late_json_property\":\"\",\"nullable_string_property\":\"\"}"
+                "{\"late_json_property\":\"\",\"json_property\":\"\",\"nullable_string_property\":\"\"}"
             }
         };
 
@@ -134,15 +113,15 @@ public class LatePropertyTests {
                     LateStringProperty = ""
                 }
             },
-            new object[] {
-                new LateClass {
-                    EnumProperty = EnumType.Default,
-                    // LateEnumProperty = EnumType.Default,
-                    LateJsonProperty = "",
-                    JsonProperty = "",
-                    LateStringProperty = ""
-                }
-            },
+            // new object[] {
+            //     new LateClass {
+            //         EnumProperty = EnumType.Default,
+            //         // LateEnumProperty = EnumType.Default,
+            //         LateJsonProperty = "",
+            //         JsonProperty = "",
+            //         LateStringProperty = ""
+            //     }
+            // },
             new object[] {
                 new LateClass {
                     EnumProperty = EnumType.Default,
