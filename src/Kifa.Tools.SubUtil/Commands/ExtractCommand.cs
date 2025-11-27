@@ -90,7 +90,7 @@ class ExtractCommand : KifaCommand {
 
     KifaFile GetExtractedSubtitleFile(KifaFile file, SubtitleStream subtitle)
         => file.GetSubtitleFile(ExtractLanguage(subtitle.Language).Code +
-                                ("-{group}.".FormatIfNonNull(("group", Group)) ?? ".") +
+                                string.Or($"-{Group}.", ".") +
                                 SubtitleExtensions[subtitle.CodecName]);
 
     static Language ExtractLanguage(string? languageName)

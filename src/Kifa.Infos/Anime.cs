@@ -99,7 +99,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
     }
 
     string GetBaseFolder(string? version = null)
-        => $"/Anime/{Title} ({AirDate.Checked().Year}){" [{version}]".FormatIfNonNull(("version", version)) ?? ""}";
+        => $"/Anime/{Title} ({AirDate.Checked().Year}){string.OrEmpty($" [{version}]")}";
 
     public override DateTimeOffset? Fill() {
         if (TmdbId == null) {

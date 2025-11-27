@@ -189,7 +189,6 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         => [$"{Id}.{formatId ?? FormatId}", Id.Checked()];
 
     public string? GetDesiredName(string? formatId = null)
-        => "{author}/{title}.{id}.{format_id}".FormatIfNonNull(
-            ("author", Author?.NormalizeFileName()), ("title", Title?.NormalizeFileName()),
-            ("id", Id), ("format_id", formatId ?? FormatId));
+        => string.Or(
+            $"{Author?.NormalizeFileName()}/{Title?.NormalizeFileName()}.{Id}.{formatId ?? FormatId}");
 }

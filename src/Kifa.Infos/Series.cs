@@ -104,7 +104,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
             return null;
         }
 
-        var numberedSegments = spec.Reverse().TakeWhile(s => int.TryParse(s, out _))
+        var numberedSegments = spec.AsEnumerable().Reverse().TakeWhile(s => int.TryParse(s, out _))
             .Select(int.Parse).Reverse().ToList();
 
         if (numberedSegments.Count > 2) {

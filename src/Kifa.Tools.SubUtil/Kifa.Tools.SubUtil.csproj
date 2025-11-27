@@ -13,6 +13,7 @@
         <PackageTags>Kifa SubUtil subx</PackageTags>
         <Authors>Kimi-Arthur</Authors>
         <Nullable>enable</Nullable>
+        <LangVersion>14</LangVersion>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>

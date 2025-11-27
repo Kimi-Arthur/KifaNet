@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -35,12 +36,15 @@ public static class StringExtensions {
         => parameters.Aggregate(format,
             (current, p) => current.Replace("{" + p.Key + "}", p.Value));
 
-    public static string? FormatIfNonNull(this string format,
-        params (string Key, object? Value)[] parameters) {
-        var totalCount = parameters.Length;
-        var nonNulls = parameters.Where(x => x.Value != null)
-            .Select(item => (item.Key, item.Value.Checked())).ToArray();
-        return totalCount > nonNulls.Length ? null : Format(format, nonNulls);
+    extension(string) {
+        [return: NotNullIfNotNull(nameof(defaultString))]
+        public static string? Or(FormattableString formattableString, string? defaultString = null)
+            => formattableString.GetArguments().Any(arg => arg == null)
+                ? defaultString
+                : formattableString.ToString();
+
+        public static string OrEmpty(FormattableString formattableString)
+            => Or(formattableString, "");
     }
 
     // Remove all characters including and after the last split.
