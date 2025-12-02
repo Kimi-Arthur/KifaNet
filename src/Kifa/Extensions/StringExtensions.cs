@@ -183,11 +183,13 @@ public static class StringExtensions {
             return str;
         }
 
-        Logger.Trace($"Chop {str} to {maxByteCount} bytes.");
+        Logger.Notice(() => $"Chop {str} to {maxByteCount} bytes.");
         var length = 0;
         for (var i = 0; i < str.Length; i++) {
             length += Encoding.UTF8.GetByteCount(str[i..(i + 1)]);
             if (length > maxByteCount) {
+                Logger.Notice(()
+                    => $"Chopped {str} to {str[..i]} due to byte limit of {maxByteCount}");
                 return str[..i];
             }
         }
