@@ -178,18 +178,26 @@ public static class StringExtensions {
     public static string ChopPrefix(this string source, string prefix)
         => source.StartsWith(prefix) ? source[prefix.Length..] : source;
 
+    // Chops the given string to the given byte length with a trailing '+' if it's cut.
     public static string ChopEndToByteCount(this string str, int maxByteCount = -1) {
         if (maxByteCount < 0 || Encoding.UTF8.GetByteCount(str) <= maxByteCount) {
             return str;
         }
 
         Logger.Trace($"Chop {str} to {maxByteCount} bytes.");
+
+        // Special case for maxByteCount = 0
+        if (maxByteCount == 0) {
+            throw new ArgumentException($"{nameof(maxByteCount)} should be <0 or >=1.",
+                nameof(maxByteCount));
+        }
+
         var length = 0;
         for (var i = 0; i < str.Length; i++) {
             length += Encoding.UTF8.GetByteCount(str[i..(i + 1)]);
-            if (length > maxByteCount) {
+            if (length + 1 > maxByteCount) {
                 Logger.Debug($"Chopped {str} to {str[..i]} due to byte limit of {maxByteCount}");
-                return str[..i];
+                return str[..i] + "+";
             }
         }
 
