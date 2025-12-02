@@ -144,23 +144,12 @@ public class FileStorageClient(string serverId) : StorageClient {
     }
 
     static void Link(string actualSourcePath, string actualDestinationPath) {
-        using var proc = new Process {
-            StartInfo = {
-                FileName = IsUnixLike ? "ln" : "cmd.exe",
-                Arguments = IsUnixLike
-                    ? $"\"{EscapeQuote(actualSourcePath)}\" \"{EscapeQuote(actualDestinationPath)}\""
-                    : $"/c mklink /h \"{EscapeQuote(actualDestinationPath)}\" \"{EscapeQuote(actualSourcePath)}\"",
-                UseShellExecute = false
-            }
-        };
-        proc.StartInfo.RedirectStandardOutput = true;
-        proc.StartInfo.RedirectStandardError = true;
-        proc.Start();
-        proc.WaitForExit();
-        Logger.Trace($"stdout: {proc.StandardOutput.ReadToEnd()}");
-        Logger.Trace($"stderr: {proc.StandardError.ReadToEnd()}");
-        if (proc.ExitCode != 0) {
-            Logger.Warn($"Failed to local link.");
+        var result = Executor.Run(IsUnixLike ? "ln" : "cmd.exe",
+            IsUnixLike
+                ? $"\"{EscapeQuote(actualSourcePath)}\" \"{EscapeQuote(actualDestinationPath)}\""
+                : $"/c mklink /h \"{EscapeQuote(actualDestinationPath)}\" \"{EscapeQuote(actualSourcePath)}\"");
+
+        if (result.ExitCode != 0) {
             throw new Exception("Local link command failed");
         }
     }
