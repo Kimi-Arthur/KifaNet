@@ -356,8 +356,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             var host = file.Host;
 
             var thisFolder = FileInfoClient.ListFolder(path, recursive);
+            if (thisFolder.Count == 1 && thisFolder[0] == path) {
+                // This is a file.
+                files.Add(host + path);
+            }
+
             files.UnionWith(thisFolder
-                .Where(f => (!ignoreFiles || !ShouldIgnore(f, file.Id)) && f.StartsWith(path) &&
+                .Where(f => (!ignoreFiles || !ShouldIgnore(f, file.Id)) &&
+                            f.StartsWith($"{path}/") &&
                             MatchPattern(f[(path.Length + 1)..], pattern)).Select(f => host + f));
         }
 
