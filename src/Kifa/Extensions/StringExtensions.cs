@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using NLog;
 
 namespace Kifa;
 
 public static class StringExtensions {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     static readonly Regex NumberPattern = new(@"\d{1,8}", RegexOptions.ECMAScript);
 
     const string SizeSymbols = "KMGTPEZY";
@@ -133,10 +137,10 @@ public static class StringExtensions {
             ? path
             : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D8}");
 
-    public static string NormalizeFileName(this string fileName)
+    public static string NormalizeFileName(this string fileName, int maxNameByteCount = -1)
         => SafeCharacterMapping.Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
                 (current, mapping) => current.Replace(mapping.Key, mapping.Value))
-            .RemoveUnnecessarySpaces();
+            .RemoveUnnecessarySpaces().ChopEndToByteCount(maxNameByteCount);
 
     public static string NormalizeFilePath(this string fileName)
         => string.Join("/", fileName.Split('/').Select(NormalizeFileName));
@@ -173,4 +177,22 @@ public static class StringExtensions {
 
     public static string ChopPrefix(this string source, string prefix)
         => source.StartsWith(prefix) ? source[prefix.Length..] : source;
+
+    public static string ChopEndToByteCount(this string str, int maxByteCount = -1) {
+        if (maxByteCount < 0 || Encoding.UTF8.GetByteCount(str) <= maxByteCount) {
+            return str;
+        }
+
+        Logger.Trace($"Chop {str} to {maxByteCount} bytes.");
+        var length = 0;
+        for (var i = 0; i < str.Length; i++) {
+            length += Encoding.UTF8.GetByteCount(str[i..(i + 1)]);
+            if (length > maxByteCount) {
+                return str[..i];
+            }
+        }
+
+        throw new UnreachableException(
+            $"String ({str}) of byte size {length} should be chopped somewhere to {maxByteCount}");
+    }
 }

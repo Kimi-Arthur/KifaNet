@@ -310,9 +310,16 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         };
     }
 
+    // Limit imposed by Linux kernel for filename: UTF-8 encoded length <= 255.
+    const int MaxFilenameByteLength = 255;
+
+    // Common suffixes are mp4, flv.
+    const int TypeSuffixLength = 3;
+
     public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
         string? alternativeFolder = null, string? extraFolder = null, string? prefix = null,
-        BilibiliUploader? uploader = null, bool includeUploaderInFileTitle = false) {
+        BilibiliUploader? uploader = null, bool includeUploaderInFileTitle = false,
+        bool limitFileLength = false) {
         var title = Title.NormalizeFileName();
 
         uploader ??= new BilibiliUploader {
@@ -354,8 +361,9 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             filenameSegments.Add(partName);
         }
 
+        var suffix = GetSuffix(Id, pid, p.Cid, quality, codec);
         return
-            $"{folderSegments.JoinBy('/')}/{filenameSegments.JoinBy(" ").NormalizeFileName()}.{GetSuffix(Id, pid, p.Cid, quality, codec)}";
+            $"{folderSegments.JoinBy('/')}/{filenameSegments.JoinBy(" ").NormalizeFileName(MaxFilenameByteLength - suffix.Length - TypeSuffixLength - 2)}.{suffix}";
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {

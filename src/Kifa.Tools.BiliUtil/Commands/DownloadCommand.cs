@@ -77,7 +77,7 @@ public abstract class DownloadCommand : BiliCommand {
         var desiredName = video.GetDesiredName(pid, quality, codec,
             includePageTitle: includePageTitle, alternativeFolder: alternativeFolder,
             extraFolder: extraFolder, prefix: GetPrefix(video), uploader: uploader,
-            includeUploaderInFileTitle: includeUploaderInFileTitle);
+            includeUploaderInFileTitle: includeUploaderInFileTitle, limitFileLength: true);
         var desiredFile = outputFolder.GetFile($"{desiredName}.mp4");
         var targetFiles = video.GetCanonicalNames(pid, quality, codec)
             .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
