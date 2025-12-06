@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Kifa.Http;
 using NLog;
 
 namespace Kifa.IO.StorageClients;

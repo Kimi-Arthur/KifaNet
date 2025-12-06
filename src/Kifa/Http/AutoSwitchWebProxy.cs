@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Kifa.Http;
+namespace Kifa;
 
 public class AutoSwitchWebProxy(Dictionary<string, string> proxyMap) : IWebProxy {
     public Dictionary<string, string> ProxyMap { get; set; } = proxyMap;
