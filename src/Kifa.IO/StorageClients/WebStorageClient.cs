@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Kifa.Http;
 using NLog;
 
 namespace Kifa.IO.StorageClients;
@@ -10,8 +12,12 @@ public class WebStorageClient : StorageClient {
     readonly HttpClient httpClient = GetHttpClient();
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public static Dictionary<string, string> ProxyMap { get; set; } = new();
+
     static HttpClient GetHttpClient() {
-        var client = new HttpClient();
+        var client = new HttpClient(new HttpClientHandler {
+            Proxy = new AutoSwitchWebProxy(ProxyMap)
+        });
         client.DefaultRequestHeaders.UserAgent.ParseAdd(
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36");
         return client;
