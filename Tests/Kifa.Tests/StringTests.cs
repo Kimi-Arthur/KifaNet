@@ -15,17 +15,17 @@ public class StringTests {
 
     [Fact]
     public void OrNullTest() {
-        string.Or($"{null}").Should().Be(null);
-        string.OrEmpty($"{null}").Should().Be("");
+        string.FormatOr($"{null}").Should().Be(null);
+        string.FormatOrEmpty($"{null}").Should().Be("");
         var x = 100;
-        string.Or($"{x}").Should().Be("100");
-        string.OrEmpty($"{x}").Should().Be("100");
+        string.FormatOr($"{x}").Should().Be("100");
+        string.FormatOrEmpty($"{x}").Should().Be("100");
         int? y = null;
-        string.Or($"{y}").Should().Be(null);
-        string.OrEmpty($"{y}").Should().Be("");
-        string.Or($"{x} {y}").Should().Be(null);
-        string.OrEmpty($"{x} {y}").Should().Be("");
+        string.FormatOr($"{y}").Should().Be(null);
+        string.FormatOrEmpty($"{y}").Should().Be("");
+        string.FormatOr($"{x} {y}").Should().Be(null);
+        string.FormatOrEmpty($"{x} {y}").Should().Be("");
 
-        string.Or($"{x} {y}", "c").Should().Be("c");
+        string.FormatOr($"{x} {y}", "c").Should().Be("c");
     }
 }

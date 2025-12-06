@@ -42,13 +42,14 @@ public static class StringExtensions {
 
     extension(string) {
         [return: NotNullIfNotNull(nameof(defaultString))]
-        public static string? Or(FormattableString formattableString, string? defaultString = null)
+        public static string? FormatOr(FormattableString formattableString,
+            string? defaultString = null)
             => formattableString.GetArguments().Any(arg => arg == null)
                 ? defaultString
                 : formattableString.ToString();
 
-        public static string OrEmpty(FormattableString formattableString)
-            => Or(formattableString, "");
+        public static string FormatOrEmpty(FormattableString formattableString)
+            => FormatOr(formattableString, "");
     }
 
     // Remove all characters including and after the last split.

@@ -162,7 +162,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
     }
 
     string GetBaseFolder(string? version = null)
-        => $"/TV Shows/{Region}/{Title} ({AirDate.Checked().Year}){string.OrEmpty($" [{version}]")}";
+        => $"/TV Shows/{Region}/{Title} ({AirDate.Checked().Year}){string.FormatOrEmpty($" [{version}]")}";
 
     static string GetTitle(IReadOnlyList<string> titles)
         => GetSharedTitle(titles) ?? string.Join(" ", titles);

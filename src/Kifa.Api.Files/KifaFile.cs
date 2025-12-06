@@ -77,7 +77,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public string BaseName { get; }
     public string? Extension { get; }
 
-    public string Name => string.Or($"{BaseName}.{Extension}", BaseName);
+    public string Name => string.FormatOr($"{BaseName}.{Extension}", BaseName);
 
     public string Path => $"{SlashToEmpty(ParentPath)}/{Name}";
     public string PathWithoutSuffix => $"{SlashToEmpty(ParentPath)}/{BaseName}";
