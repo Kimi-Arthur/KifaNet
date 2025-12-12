@@ -11,23 +11,19 @@ public class KindleLookup : DataModel, WithModelId<KindleLookup> {
     public static KifaServiceClient<KindleLookup> Client { get; set; } =
         new KifaServiceRestClient<KindleLookup>();
 
-    // Id will be book_name/byte_location
-    [JsonIgnore]
-    [YamlIgnore]
-    public string? BookName { get; set; }
+    // Id will be <BOOK_HASH_KEY>/<LOCATION>
+    // Examples: CR!PKA6SC8PQ17GDCW9SKX2RZ2TFD9W:AaUEAAAwAAAA:12970:13
+    //          -> PKA6SC8PQ17GDCW9SKX2RZ2TFD9W/12970
+    //           CR!E50026W9V11MB2BHTQKR511F3V96:CF5C2CC9:678626:8
+    //          -> E50026W9V11MB2BHTQKR511F3V96_CF5C2CC9/678626
+    // Note the two types of book ids.
 
-    [JsonIgnore]
-    [YamlIgnore]
-    public int Location { get; set; }
+    public string? BookHashKey => Id?.Split('/')[0];
+    public int Location => Id == null ? 0 : int.Parse(Id.Split('/')[^1]);
 
     public string? Word { get; set; }
 
     public string? Usage { get; set; }
 
     public DateTimeOffset LookupTime { get; set; }
-
-    // Extra fields to add after import. We will skip complicated fields like form, examples etc.
-    public string? Meaning { get; set; }
-
-    public string? Pronunciation { get; set; }
 }
