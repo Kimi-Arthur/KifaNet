@@ -18,6 +18,11 @@ public abstract class DownloadCommand : BiliCommand {
             "Prefix of file name. Possible values: date, number (only suggested for archives)")]
     public string? Prefix { get; set; }
 
+    [Option('r', "region",
+        HelpText =
+            "Region of the video(s). Possible values: cn, hk, any. Default is any for direct downloading.")]
+    public virtual string Region { get; set; } = "any";
+
     [Option('c', "preferred-codec",
         HelpText = "Codec preferred to download. Supported: avc, hevc, av1. Default is hevc.")]
     public string? PreferredCodec { get; set; }
@@ -182,6 +187,14 @@ public abstract class DownloadCommand : BiliCommand {
             throw new Exception("Merging files failed.");
         }
     }
+
+    static readonly Dictionary<string, BilibiliRegion> Regions = new() {
+        { "cn", BilibiliRegion.Cn },
+        { "hk", BilibiliRegion.Hk },
+        { "any", BilibiliRegion.Direct }
+    };
+
+    protected BilibiliRegion GetRegion() => Regions[Region];
 }
 
 public enum PageTitleOption {
