@@ -42,7 +42,7 @@ public class DownloadBangumiCommand : DownloadCommand {
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
                     () => Download(video, page.Id,
-                        alternativeFolder: $"{bangumi.Title}.{bangumi.Id}", region: GetRegion()));
+                        alternativeFolder: $"{bangumi.Title}.{bangumi.Id}"));
             }
         }
 
@@ -60,7 +60,7 @@ public class DownloadBangumiCommand : DownloadCommand {
                     ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
                         () => Download(video, page.Id,
                             alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
-                            extraFolder: "Extras", region: GetRegion()));
+                            extraFolder: "Extras"));
                 }
             }
         }
