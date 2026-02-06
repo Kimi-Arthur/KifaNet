@@ -131,7 +131,14 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     void FillWithBilibili() {
         var client = HttpClients.GetBilibiliClient();
-        var data = client.Call(new VideoRpc(Id))?.Data;
+        var response = client.Call(new VideoRpc(Id));
+        if (response?.Code == -404) {
+            Logger.Warn("Fail to locate video with direct access. Retry with CN access");
+            response = HttpClients.GetBilibiliClient(BilibiliRegion.Cn).Call(new VideoRpc(Id));
+        }
+
+        var data = response?.Data.Checked();
+
         var tags = client.Call(new VideoTagRpc(Id))?.Data;
         Title = data.Title;
         Author = data.Owner.Name;

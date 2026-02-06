@@ -19,11 +19,9 @@ public class DownloadBangumiCommand : DownloadCommand {
     [Option('e', "include-extras", HelpText = "Include extra video files.")]
     public bool IncludeExtras { get; set; } = false;
 
-    [Option("anywhere", HelpText = "Bangumi is available anywhere.")]
-    public bool FromAnywhere { get; set; } = false;
-
-    [Option("hk", HelpText = "Bangumi is available in HK.")]
-    public bool FromHk { get; set; } = false;
+    [Option('r', "region",
+        HelpText = "Region of the video(s). Possible values: cn, hk, any. Default is cn.")]
+    public override string Region { get; set; } = "cn";
 
     string? bangumiId;
 
@@ -44,7 +42,7 @@ public class DownloadBangumiCommand : DownloadCommand {
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
                     () => Download(video, page.Id,
-                        alternativeFolder: $"{bangumi.Title}.{bangumi.Id}", region: GetRegion()));
+                        alternativeFolder: $"{bangumi.Title}.{bangumi.Id}"));
             }
         }
 
@@ -62,14 +60,11 @@ public class DownloadBangumiCommand : DownloadCommand {
                     ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
                         () => Download(video, page.Id,
                             alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
-                            extraFolder: "Extras", region: GetRegion()));
+                            extraFolder: "Extras"));
                 }
             }
         }
 
         return LogSummary();
     }
-
-    BilibiliRegion GetRegion()
-        => FromHk ? BilibiliRegion.Hk : FromAnywhere ? BilibiliRegion.Direct : BilibiliRegion.Cn;
 }
