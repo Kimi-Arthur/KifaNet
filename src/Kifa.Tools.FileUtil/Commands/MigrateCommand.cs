@@ -55,6 +55,13 @@ public class MigrateCommand : KifaCommand {
             ? targetTime != null
             : null;
 
+        if (targetRegistered == null && targetRegistered == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"File with sha256 {info.Sha256} not uploaded to google."
+            };
+        }
+
         if (targetRegistered == true && sourceRegistered == null) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
@@ -62,7 +69,7 @@ public class MigrateCommand : KifaCommand {
             };
         }
 
-        if (sourceRegistered == true && targetRegistered == null) {
+        if (sourceRegistered == true) {
             var sourceFound = new KifaFile(source).Exists();
             var targetFound = new KifaFile(target).Exists();
 
