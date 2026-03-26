@@ -55,7 +55,7 @@ public class MigrateCommand : KifaCommand {
             ? targetTime != null
             : null;
 
-        if (targetRegistered == null && targetRegistered == null) {
+        if (sourceRegistered == null && targetRegistered == null) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
                 Message = $"File with sha256 {info.Sha256} not uploaded to google."
