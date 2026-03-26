@@ -41,6 +41,7 @@ class CleanCommand : KifaCommand {
 
     void DeduplicateFiles() {
         var files = KifaFile.FindPotentialFiles(FileNames);
+        // TODO: Should probably group by Id first.
         foreach (var file in files) {
             var info = file.FileInfo.Checked();
             info.Id = null;
@@ -50,7 +51,7 @@ class CleanCommand : KifaCommand {
             var filesById = sameHostFiles.GroupBy(f => f.FileId).ToList();
             if (filesById.Count == 1) {
                 Logger.Info(
-                    $"No need to dedup these files:\n\t{string.Join("\n\t", sameHostFiles.Select(f => $"{f} ({f.FileId}"))}");
+                    $"No need to dedup these files:\n\t{string.Join("\n\t", sameHostFiles.Select(f => $"{f} ({f.FileId})"))}");
                 continue;
             }
 
