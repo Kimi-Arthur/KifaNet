@@ -21,7 +21,7 @@ class ImportCommand : KifaCommand {
 
     [Option('s', "release-id",
         HelpText =
-            "Release Id to be added before suffix. This can be language code and/or group name, like en, zh-华盟 etc.",
+            "Release Id to be added before suffix. This should contain a language code, like en, 华盟.zh etc.",
         Required = true)]
     public string ReleaseId { get; set; }
 
@@ -33,12 +33,6 @@ class ImportCommand : KifaCommand {
 
         foreach (var subtitleFile in subtitleFiles) {
             var suffix = subtitleFile.Extension.Checked().ToLower();
-
-            // TODO: Remove this when we can print better message in SelectOne.
-            Console.WriteLine($"Select a location to import {subtitleFile} to:");
-            foreach (var f in targetFiles) {
-                Console.WriteLine($"{f.Item}:{f.Matched}");
-            }
 
             var validEpisodes = targetFiles.Where(e => !e.Matched).ToList();
             try {
