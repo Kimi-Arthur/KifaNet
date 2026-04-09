@@ -23,12 +23,15 @@ class GetChatCommand : KifaCommand {
     public string? Cid { get; set; }
 
     [Option('a', "aid",
-        HelpText = "Bilibili aid for the video. It can contain one segment or multiple." +
+        HelpText = "Bilibili aid for the video. It can contain one segment or multiple. " +
                    "Example: av2044037, av2044037p4p5")]
     public string? Aid { get; set; }
 
     [Option('b', "bangumi-id", HelpText = "Bangumi id that starts with 'md'.")]
     public string? Bid { get; set; }
+
+    [Option('x', "archive-id", HelpText = "Archive id that contains '/'.")]
+    public string? ArchiveId { get; set; }
 
     [Option('n', "version-name", HelpText = "Version name.")]
     public string? VersionName { get; set; }
@@ -92,6 +95,8 @@ class GetChatCommand : KifaCommand {
                     yield return (v, v.Pages[int.Parse(index) - 1]);
                 }
             }
+
+            returned = true;
         }
 
         if (Bid != null) {
@@ -107,6 +112,35 @@ class GetChatCommand : KifaCommand {
 
             foreach (var aid in bangumi.Aids) {
                 var video = BilibiliVideo.Client.Get(aid);
+                if (video == null) {
+                    throw new InvalidInputException($"Cannot find video for {aid}.");
+                }
+
+                foreach (var p in video.Pages) {
+                    yield return (video, p);
+                }
+            }
+
+            returned = true;
+        }
+
+        if (ArchiveId != null) {
+            if (returned) {
+                throw new InvalidInputException(
+                    "Too many types of ids were specified. Specify only one of aid, cid and bangumi-id.");
+            }
+
+            var archive = BilibiliArchive.Client.Get(ArchiveId);
+            if (archive == null) {
+                throw new InvalidInputException($"Cannot find Bangumi for {Bid}.");
+            }
+
+            foreach (var aid in archive.Videos) {
+                var video = BilibiliVideo.Client.Get(aid);
+                if (video == null) {
+                    throw new InvalidInputException($"Cannot find video for {aid}.");
+                }
+
                 foreach (var p in video.Pages) {
                     yield return (video, p);
                 }
