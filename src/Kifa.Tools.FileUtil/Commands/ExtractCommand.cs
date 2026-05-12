@@ -100,14 +100,16 @@ class ExtractCommand : KifaCommand {
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
             "entries to extract");
 
+        var results = new KifaBatchActionResult();
+
         if (selected.Count == 0) {
-            return new KifaActionResult {
+            results.Add("extract", new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
                 Message = "No more files selected to be extracted."
-            };
+            });
+            results.AddRange(RemoveArchiveFilesIfRequested(archive));
+            return results;
         }
-
-        var results = new KifaBatchActionResult();
 
         // The enumerator way is adopted due to the issue mentioned in
         // https://stackoverflow.com/a/44379540.
@@ -153,14 +155,22 @@ class ExtractCommand : KifaCommand {
             }
         }
 
-        if (results.IsAcceptable && DeleteSource && Confirm(
-                $"{archive.Volumes.Select(v => v.FileName).JoinBy("\n")}\n" +
-                $"Confirm removing the {archive.Volumes.Count()} source archive files above?")) {
-            results.AddRange(archive.Volumes.Select(v => ($"Remove {v.FileName.Checked()}",
-                RemoveOneArchiveFile(new KifaFile(v.FileName.Checked())))));
+        if (results.IsAcceptable) {
+            results.AddRange(RemoveArchiveFilesIfRequested(archive));
         }
 
         return results;
+    }
+
+    IEnumerable<(string item, KifaActionResult result)> RemoveArchiveFilesIfRequested(
+        IArchive archive) {
+        if (DeleteSource && Confirm($"{archive.Volumes.Select(v => v.FileName).JoinBy("\n")}\n" +
+                                    $"Confirm removing the {archive.Volumes.Count()} source archive files above?")) {
+            return archive.Volumes.Select(v => ($"Remove {v.FileName.Checked()}",
+                RemoveOneArchiveFile(new KifaFile(v.FileName.Checked()))));
+        }
+
+        return [];
     }
 
     KifaActionResult RemoveOneArchiveFile(KifaFile file) {
