@@ -33,6 +33,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     public static KifaServiceClient<BilibiliVideo> Client { get; set; } =
         new KifaServiceRestClient<BilibiliVideo>();
 
+    public static List<string> IgnoredDomains { get; set; } = ["akamaized.net"];
+
     public enum PartModeType {
         SinglePartMode,
         ContinuousPartMode,
@@ -546,11 +548,13 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
                 : video.Bandwidth * data.Dash.Duration / 8;
 
             return (video.MimeType.Split("/").Last(), receivedQuality, codec,
-                ((video.BackupUrl ?? Enumerable.Empty<string>()).Prepend(video.BaseUrl).ToList(),
+                ((video.BackupUrl ?? Enumerable.Empty<string>()).Prepend(video.BaseUrl).Where(v => !IsIgnored(v)).ToList(),
                     videoSize),
                 audios.Select(audio => (
-                    (audio.BackupUrl ?? Enumerable.Empty<string>()).Prepend(audio.BaseUrl).ToList(),
-                    audio.Bandwidth * data.Dash.Duration / 8)).ToList());
+                        (audio.BackupUrl ?? Enumerable.Empty<string>()).Prepend(audio.BaseUrl)
+                        .Where(v => !IsIgnored(v)).ToList(),
+                        audio.Bandwidth * data.Dash.Duration / 8))
+                    .ToList());
         }, (ex, index) => {
             if (ex is BilibiliApiException || index > 5) {
                 throw ex;
@@ -560,6 +564,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             Thread.Sleep(TimeSpan.FromSeconds(10));
         });
     }
+
+    static bool IsIgnored(string url) => IgnoredDomains.Any(d => url.Contains(d + "/"));
 
     static int GetCodecId(string preferredCodec)
         => CodecNames.First(c => c.Value == preferredCodec).Key;
