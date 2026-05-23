@@ -70,7 +70,7 @@ public class LinkCommand : KifaCommand {
         var folderLinks = client.Get(ids);
         foreach (var (links, id) in folderLinks.Zip(ids)) {
             var relativePath = $"$/{id}";
-            if (links == null || !links.FolderLinks.Any()) {
+            if (links == null || links.FolderLinks.Count == 0) {
                 Logger.Error($"No links found for {id}. Skipped.");
                 continue;
             }
