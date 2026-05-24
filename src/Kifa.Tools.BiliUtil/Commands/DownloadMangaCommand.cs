@@ -12,25 +12,19 @@ namespace Kifa.Tools.BiliUtil.Commands;
 
 [Verb("manga", HelpText = "Download manga.")]
 public class DownloadMangaCommand : KifaCommand {
-    #region public late string MangaId { get; set; }
-
-    string? mangaId;
-
     [Value(0, Required = true, HelpText = "Manga ID. Should start with 'mc'.")]
     public string MangaId {
-        get => Late.Get(mangaId);
-        set => Late.Set(ref mangaId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public override int Execute(KifaTask? task = null) {
-        var manga = BilibiliManga.Client.Get(mangaId);
+        var manga = BilibiliManga.Client.Get(MangaId);
 
         if (manga == null) {
-            Logger.Fatal($"Cannot find manga with id {mangaId}.");
+            Logger.Fatal($"Cannot find manga with id {MangaId}.");
             return 1;
         }
 

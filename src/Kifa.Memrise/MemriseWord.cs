@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net.Http;
 using Kifa.Service;
 
@@ -47,16 +47,10 @@ public class MemriseWord : DataModel, WithModelId<MemriseWord> {
 }
 
 public class MemriseAudio {
-    #region public late string Link { get; set; }
-
-    string? link;
-
     public string Link {
-        get => Late.Get(link);
-        set => Late.Set(ref link, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public long Size { get; set; }
     public string? Md5 { get; set; }

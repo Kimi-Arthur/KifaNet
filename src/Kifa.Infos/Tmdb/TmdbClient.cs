@@ -5,16 +5,10 @@ using System.Text.RegularExpressions;
 namespace Kifa.Infos.Tmdb;
 
 public class TmdbClient {
-    #region public late string ApiKey { get; set; }
-
-    static string? apiKey;
-
     public static string ApiKey {
-        get => Late.Get(apiKey);
-        set => Late.Set(ref apiKey, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     static readonly HttpClient HttpClient = new();
 

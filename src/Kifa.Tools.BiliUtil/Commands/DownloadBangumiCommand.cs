@@ -12,8 +12,8 @@ public class DownloadBangumiCommand : DownloadCommand {
 
     [Value(0, Required = true, HelpText = "Bangumi ID. Should start with 'md' or 'ss'.")]
     public string BangumiId {
-        get => Late.Get(bangumiId);
-        set => Late.Set(ref bangumiId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
 
     [Option('e', "include-extras", HelpText = "Include extra video files.")]
@@ -22,8 +22,6 @@ public class DownloadBangumiCommand : DownloadCommand {
     [Option('r', "region",
         HelpText = "Region of the video(s). Possible values: cn, hk, any. Default is cn.")]
     public override string Region { get; set; } = "cn";
-
-    string? bangumiId;
 
     public override int Execute(KifaTask? task = null) {
         var bangumi = BilibiliBangumi.Client.Get(BangumiId);

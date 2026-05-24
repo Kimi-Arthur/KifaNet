@@ -216,16 +216,10 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
 }
 
 public class StorageMapping {
-    #region public late string Pattern { get; set; }
-
-    string? pattern;
-
     public string Pattern {
-        get => Late.Get(pattern);
-        set => Late.Set(ref pattern, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public List<string> AccountPrefixes { get; set; } = new();
 }

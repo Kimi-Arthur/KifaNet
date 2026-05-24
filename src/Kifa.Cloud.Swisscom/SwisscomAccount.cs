@@ -40,16 +40,10 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
         set => Late.Set(ref field, value);
     }
 
-    #region public late static string DefaultAddress { get; set; }
-
-    static string? defaultAddress;
-
     public static string DefaultAddress {
-        get => Late.Get(defaultAddress);
-        set => Late.Set(ref defaultAddress, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public static KifaServiceClient<SwisscomAccount> Client { get; set; } =
         new KifaServiceRestClient<SwisscomAccount>();

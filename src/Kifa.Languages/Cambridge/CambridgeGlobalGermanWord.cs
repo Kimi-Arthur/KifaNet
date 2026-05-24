@@ -74,16 +74,10 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalG
 }
 
 public class CambridgeGlobalGermanEntry {
-    #region public late WordType WordType { get; set; }
-
-    WordType? wordType;
-
     public WordType WordType {
-        get => Late.Get(wordType);
-        set => Late.Set(ref wordType, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public List<CambridgeGlobalGermanSense> Senses { get; set; } = new();
 }

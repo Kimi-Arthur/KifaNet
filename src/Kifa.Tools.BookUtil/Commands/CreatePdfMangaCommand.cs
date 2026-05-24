@@ -15,17 +15,11 @@ public class CreatePdfMangaCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to link.")]
     public string Folder { get; set; }
 
-    #region public late string Author { get; set; }
-
-    string? author;
-
     [Option('a', "author", HelpText = "Author of the manga.")]
     public string Author {
-        get => Late.Get(author);
-        set => Late.Set(ref author, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     [Option('d', "double-pages",
         HelpText = "Pages on the right of the double pages, separated by ','.")]

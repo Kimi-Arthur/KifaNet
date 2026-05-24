@@ -6,38 +6,20 @@ using YamlDotNet.Serialization;
 namespace Kifa.IO;
 
 public class FileLocation : JsonSerializable {
-    #region public late string ServerType { get; set; }
-
-    string? serverType;
-
     public string ServerType {
-        get => Late.Get(serverType);
-        set => Late.Set(ref serverType, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string ServerId { get; set; }
-
-    string? serverId;
 
     public string ServerId {
-        get => Late.Get(serverId);
-        set => Late.Set(ref serverId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string Path { get; set; }
-
-    string? path;
 
     public string Path {
-        get => Late.Get(path);
-        set => Late.Set(ref path, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     static readonly Regex ServerPattern = new(@"^([^:]+):([^/]*)$");
 

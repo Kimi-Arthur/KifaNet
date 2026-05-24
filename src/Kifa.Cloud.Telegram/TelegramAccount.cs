@@ -82,38 +82,20 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
 
     #endregion
 
-    #region public late long ApiId { get; set; }
-
-    int? apiId;
-
     public int ApiId {
-        get => Late.Get(apiId);
-        set => Late.Set(ref apiId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string ApiHash { get; set; }
-
-    string? apiHash;
 
     public string ApiHash {
-        get => Late.Get(apiHash);
-        set => Late.Set(ref apiHash, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string Phone { get; set; }
-
-    string? phone;
 
     public string Phone {
-        get => Late.Get(phone);
-        set => Late.Set(ref phone, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public List<TelegramSession> Sessions { get; set; } = new();
 

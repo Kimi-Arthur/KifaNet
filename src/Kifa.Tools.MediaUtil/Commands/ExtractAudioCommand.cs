@@ -21,11 +21,9 @@ public class ExtractAudioCommand : KifaCommand {
 
     [Value(0, Required = true, HelpText = "Target file(s) to extract audios from.")]
     public IEnumerable<string> FileNames {
-        get => Late.Get(fileNames);
-        set => Late.Set(ref fileNames, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    IEnumerable<string>? fileNames;
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames, recursive: false);

@@ -6,16 +6,10 @@ public class NoNeedToFillException : Exception {
 }
 
 public class DataIsLinkedException : Exception {
-    #region public late static string TargetId { get; set; }
-
-    static string? targetId;
-
     public string TargetId {
-        get => Late.Get(targetId);
-        set => Late.Set(ref targetId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 }
 
 public class UnableToFillException : Exception {

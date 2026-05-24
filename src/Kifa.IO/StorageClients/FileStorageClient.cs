@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,16 +11,10 @@ using Renci.SshNet;
 namespace Kifa.IO.StorageClients;
 
 public class ServerConfig {
-    #region public late string Prefix { get; set; }
-
-    string? prefix;
-
     public string Prefix {
-        get => Late.Get(prefix);
-        set => Late.Set(ref prefix, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public RemoteServerConfig? RemoteServer { get; set; }
 
@@ -32,49 +26,25 @@ public class ServerConfig {
 public class RemoteServerConfig {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late string Username { get; set; }
-
-    string? username;
-
     public string Username {
-        get => Late.Get(username);
-        set => Late.Set(ref username, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string Password { get; set; }
-
-    string? password;
 
     public string Password {
-        get => Late.Get(password);
-        set => Late.Set(ref password, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string Host { get; set; }
-
-    string? host;
 
     public string Host {
-        get => Late.Get(host);
-        set => Late.Set(ref host, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string RemotePrefix { get; set; }
-
-    string? remotePrefix;
 
     public string RemotePrefix {
-        get => Late.Get(remotePrefix);
-        set => Late.Set(ref remotePrefix, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public string GetRemotePath(string path) => $"{RemotePrefix}{path}";
 

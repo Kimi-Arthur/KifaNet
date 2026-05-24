@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Globalization;
 using Kifa.Subtitle.Ass;
 using Kifa.Tencent.Rpcs;
@@ -22,16 +22,10 @@ public class TencentDanmu {
     public int UserVipDegree { get; set; }
     public string CreateTime { get; set; }
 
-    #region public late string Content { get; set; }
-
-    string? content;
-
     public string Content {
-        get => Late.Get(content);
-        set => Late.Set(ref content, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public long HotType { get; set; }
     public string Vuid { get; set; }

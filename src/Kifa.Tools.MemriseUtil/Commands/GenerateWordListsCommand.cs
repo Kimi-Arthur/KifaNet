@@ -10,29 +10,17 @@ namespace Kifa.Tools.MemriseUtil.Commands;
 
 [Verb("levels", HelpText = "Generate word lists.")]
 public class GenerateWordListsCommand : KifaCommand {
-    #region public late string WordsFile { get; set; }
-
-    string? wordsFile;
-
     [Value(0, HelpText = "Words file containing raw words.")]
     public string WordsFile {
-        get => Late.Get(wordsFile);
-        set => Late.Set(ref wordsFile, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string ListsFile { get; set; }
-
-    string? listsFile;
 
     [Value(1, HelpText = "Lists file containing lists of words.")]
     public string ListsFile {
-        get => Late.Get(listsFile);
-        set => Late.Set(ref listsFile, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public override int Execute(KifaTask? task = null) {
         var wordsChef = new DataChef<GoetheGermanWord>();

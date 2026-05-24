@@ -14,29 +14,17 @@ namespace Kifa.Tools.MemriseUtil.Commands;
 public class ImportWordListCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late IEnumerable<string> WordListIds { get; set; }
-
-    IEnumerable<string>? wordListIds;
-
     [Value(0, Min = 1, HelpText = "Word list IDs.")]
     public IEnumerable<string> WordListIds {
-        get => Late.Get(wordListIds);
-        set => Late.Set(ref wordListIds, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string CourseName { get; set; }
-
-    string? course;
 
     [Option('c', "course", Required = true, HelpText = "Course to add the word list to.")]
     public string CourseName {
-        get => Late.Get(course);
-        set => Late.Set(ref course, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     [Option('f', "fill-empty", Default = false,
         HelpText = "Whether to force fill empty fields or not. Useful to fix column order.")]

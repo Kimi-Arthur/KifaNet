@@ -13,29 +13,17 @@ namespace Kifa.Tools.MemriseUtil.Commands;
 public class ClearWordListCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late IEnumerable<string> WordListIds { get; set; }
-
-    IEnumerable<string>? wordListIds;
-
     [Value(0, Min = 1, HelpText = "Word list IDs.")]
     public IEnumerable<string> WordListIds {
-        get => Late.Get(wordListIds);
-        set => Late.Set(ref wordListIds, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late string CourseName { get; set; }
-
-    string? courseName;
 
     [Option('c', "course", Required = true, HelpText = "Course to add the word list to.")]
     public string CourseName {
-        get => Late.Get(courseName);
-        set => Late.Set(ref courseName, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public override int Execute(KifaTask? task = null) {
         var memriseCourseClient = MemriseCourse.Client;

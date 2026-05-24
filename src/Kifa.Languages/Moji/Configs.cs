@@ -1,25 +1,13 @@
 namespace Kifa.Languages.Moji;
 
 class Configs {
-    #region public late static string SessionToken { get; set; }
-
-    static string? sessionToken;
-
     public static string SessionToken {
-        get => Late.Get(sessionToken);
-        set => Late.Set(ref sessionToken, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late static string ApplicationId { get; set; }
-
-    static string? applicationId;
 
     public static string ApplicationId {
-        get => Late.Get(applicationId);
-        set => Late.Set(ref applicationId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 }

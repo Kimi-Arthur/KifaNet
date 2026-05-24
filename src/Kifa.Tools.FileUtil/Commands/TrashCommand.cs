@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -25,16 +25,10 @@ class TrashCommand : KifaCommand {
     [Option('r', "restore", HelpText = "Restore trashed files")]
     public bool Restore { get; set; } = false;
 
-    #region public late string DateString { get; set; }
-
-    string? dateString;
-
     public string DateString {
-        get => Late.Get(dateString);
-        set => Late.Set(ref dateString, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public override int Execute(KifaTask? task = null) {
         var fileNames = FileNames.ToList();

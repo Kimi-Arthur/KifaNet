@@ -17,17 +17,11 @@ namespace Kifa.Tools.SkyChDownloader.Commands;
 public class DownloadLiveCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late string LiveId { get; set; }
-
-    string? liveId;
-
     [Value(0, Required = true, HelpText = "Live TV ID.")]
     public string LiveId {
-        get => Late.Get(liveId);
-        set => Late.Set(ref liveId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     [Option('t', "title", HelpText = "Descriptive file title.")]
     public string? Title { get; set; }
@@ -38,7 +32,7 @@ public class DownloadLiveCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var skyProgram = new KifaServiceRestClient<SkyLiveProgram>().Get(LiveId);
         if (skyProgram == null) {
-            Logger.Fatal($"Cannot find Sky program with id {liveId}.");
+            Logger.Fatal($"Cannot find Sky program with id {LiveId}.");
             return 1;
         }
 
@@ -63,7 +57,7 @@ public class DownloadLiveCommand : KifaCommand {
         Logger.Info($"Link: {videoLink}");
 
         if (videoLink == null) {
-            Logger.Fatal($"Cannot get video link for {liveId}.");
+            Logger.Fatal($"Cannot get video link for {LiveId}.");
             return 1;
         }
 

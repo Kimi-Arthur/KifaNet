@@ -14,38 +14,20 @@ namespace Kifa.Tools.MediaUtil;
 public class ImageCropper {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late static string CropCommand { get; set; }
-
-    static string? cropCommand;
-
     public static string CropCommand {
-        get => Late.Get(cropCommand);
-        set => Late.Set(ref cropCommand, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late static string CropArguments { get; set; }
-
-    static string? cropArguments;
 
     public static string CropArguments {
-        get => Late.Get(cropArguments);
-        set => Late.Set(ref cropArguments, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late static string RemoteServer { get; set; }
-
-    static string? remoteServer;
 
     public static string RemoteServer {
-        get => Late.Get(remoteServer);
-        set => Late.Set(ref remoteServer, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     // Gets the images with cropped with presets in base64 encoded formats.
     public static List<string> Crop(KifaFile sourceFile) {

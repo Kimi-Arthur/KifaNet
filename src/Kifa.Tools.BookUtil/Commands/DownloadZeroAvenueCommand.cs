@@ -5,12 +5,10 @@ using Kifa.Jobs;
 namespace Kifa.Tools.BookUtil.Commands;
 
 public class DownloadZeroAvenueCommand : KifaCommand {
-    string? bookId;
-
     [Value(0, Required = true, HelpText = "Id of the book to download.")]
     public string BookId {
-        get => Late.Get(bookId);
-        set => Late.Set(ref bookId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
 
     public override int Execute(KifaTask? task = null) {

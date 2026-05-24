@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -16,17 +16,11 @@ namespace Kifa.Tools.FileUtil.Commands;
 class RemoveCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late IEnumerable<string> FileNames { get; set; }
-
-    IEnumerable<string>? fileNames;
-
     [Value(0, Required = true, HelpText = "Target file(s) to remove.")]
     public IEnumerable<string> FileNames {
-        get => Late.Get(fileNames);
-        set => Late.Set(ref fileNames, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     [Option('i', "id", HelpText = "Delete file by id instead of just instances.")]
     public virtual bool ById { get; set; } = false;
