@@ -14,16 +14,10 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
     public static KifaServiceClient<BilibiliManga> Client { get; set; } =
         new KifaServiceRestClient<BilibiliManga>();
 
-    #region public late string Title { get; set; }
-
-    string? title;
-
     public string Title {
-        get => Late.Get(title);
-        set => Late.Set(ref title, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public List<string> Authors { get; set; } = new();
 
@@ -32,16 +26,10 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
 
     public List<string> Styles { get; set; } = new();
 
-    #region public late string Description { get; set; }
-
-    string? description;
-
     public string Description {
-        get => Late.Get(description);
-        set => Late.Set(ref description, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public List<Link<BilibiliMangaEpisode>> Episodes { get; set; } = new();
 

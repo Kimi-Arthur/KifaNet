@@ -15,16 +15,10 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
 
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7) - TimeSpan.FromHours(1);
 
-    #region public late static string WebDriverUrl { get; set; }
-
-    static string? webDriverUrl;
-
     public static string WebDriverUrl {
-        get => Late.Get(webDriverUrl);
-        set => Late.Set(ref webDriverUrl, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public static bool NoHeadless { get; set; }
 
@@ -36,27 +30,15 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
     public static TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(1);
     public static TimeSpan LongTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
-    #region public late static string DefaultPassword { get; set; }
-
-    static string? defaultPassword;
-
     public static string DefaultPassword {
-        get => Late.Get(defaultPassword);
-        set => Late.Set(ref defaultPassword, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
-
-    #region public late static string DefaultBirthday { get; set; }
-
-    static string? defaultBirthday;
 
     public static string DefaultBirthday {
-        get => Late.Get(defaultBirthday);
-        set => Late.Set(ref defaultBirthday, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     #region public late static string DefaultAddress { get; set; }
 

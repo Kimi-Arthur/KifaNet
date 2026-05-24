@@ -18,16 +18,10 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
     const int BlockSize = 32 << 20;
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late static string DefaultCell { get; set; }
-
-    static string? defaultCell;
-
     public static string DefaultCell {
-        get => Late.Get(defaultCell);
-        set => Late.Set(ref defaultCell, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     readonly HttpClient client = new(new HttpClientHandler {
         AllowAutoRedirect = false

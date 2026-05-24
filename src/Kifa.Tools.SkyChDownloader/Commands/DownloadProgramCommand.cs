@@ -16,17 +16,11 @@ namespace Kifa.Tools.SkyChDownloader.Commands;
 public class DownloadProgramCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    #region public late string ProgramId { get; set; }
-
-    string? programId;
-
     [Value(0, Required = true, HelpText = "Program id like 'xxx/xxx'.")]
     public string ProgramId {
-        get => Late.Get(programId);
-        set => Late.Set(ref programId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     [Option('t', "title", Required = true, HelpText = "Descriptive file title.")]
     public string? Title { get; set; }

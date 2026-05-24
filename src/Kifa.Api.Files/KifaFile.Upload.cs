@@ -11,16 +11,10 @@ using Kifa.Service;
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    #region public late static string TelegramCell { get; set; }
-
-    static string? telegramCell;
-
     public static string TelegramCell {
-        get => Late.Get(telegramCell);
-        set => Late.Set(ref telegramCell, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public KifaActionResult Upload(List<CloudTarget> targets, bool deleteSource = false,
         bool useCache = false, bool downloadLocal = false, bool skipVerify = false,

@@ -28,16 +28,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     #region Configs
 
-    #region public late static string DefaultMirrorHost { get; set; }
-
-    static string? defaultMirrorHost;
-
     public static string DefaultMirrorHost {
-        get => Late.Get(defaultMirrorHost);
-        set => Late.Set(ref defaultMirrorHost, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public static string SubtitlesHost { get; set; }
 

@@ -16,10 +16,8 @@ namespace Kifa.Service;
 public class KifaServiceRestClient {
     internal static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static HttpClient? client;
-
     internal static HttpClient Client
-        => client ??= ClientCertPath != null
+        => field ??= ClientCertPath != null
             ? new HttpClient(new HttpClientHandler {
                 ClientCertificates = {
                     new X509Certificate2(ClientCertPath, ClientCertPassword)

@@ -33,27 +33,15 @@ public class
         => Client.ListFolder(request.Folder, request.Recursive);
 
     public class MoveServerRequest {
-        #region public late string FromServer { get; set; }
-
-        string? fromServer;
-
         public string FromServer {
-            get => Late.Get(fromServer);
-            set => Late.Set(ref fromServer, value);
+            get => Late.Get(field);
+            set => Late.Set(ref field, value);
         }
-
-        #endregion
-
-        #region public late string ToServer { get; set; }
-
-        string? toServer;
 
         public string ToServer {
-            get => Late.Get(toServer);
-            set => Late.Set(ref toServer, value);
+            get => Late.Get(field);
+            set => Late.Set(ref field, value);
         }
-
-        #endregion
     }
 
     [HttpPost("$move_server")]

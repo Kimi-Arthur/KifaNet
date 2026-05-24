@@ -26,16 +26,10 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
 
     public string ShortTitle { get; set; } = "";
 
-    #region public late string Cover { get; set; }
-
-    string? cover;
-
     public string Cover {
-        get => Late.Get(cover);
-        set => Late.Set(ref cover, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public long Size { get; set; }
 
@@ -105,16 +99,10 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
 public class BilibiliMangaPage {
     public int Id { get; set; }
 
-    #region public late string ImageId { get; set; }
-
-    string? imageId;
-
     public string ImageId {
-        get => Late.Get(imageId);
-        set => Late.Set(ref imageId, value);
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
     }
-
-    #endregion
 
     public bool DoublePage { get; set; }
 }
