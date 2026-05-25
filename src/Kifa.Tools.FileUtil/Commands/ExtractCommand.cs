@@ -169,7 +169,7 @@ class ExtractCommand : KifaCommand {
         // The check is needed due to https://github.com/adamhathcock/sharpcompress/issues/1331.
         if (volumeFiles.Any(f => f == null)) {
             Logger.Warn(
-                $"Unexpected null volume files {volumeFiles.JoinBy(", ")}. Replaced with the original filename: {archiveFile}");
+                $"Unexpected null volume files [{volumeFiles.JoinBy(", ")}]. Replaced with the original filename: {archiveFile}");
             volumeFiles = [archiveFile];
         }
 
