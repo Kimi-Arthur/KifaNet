@@ -98,7 +98,7 @@ class ExtractCommand : KifaCommand {
         var selected = SelectMany(entries,
             entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
-            "entries to extract");
+            "entries to extract", selectionKey: "extract");
 
         var results = new KifaBatchActionResult();
 
@@ -117,6 +117,7 @@ class ExtractCommand : KifaCommand {
         var enumerator = selected.GetEnumerator();
         var valid = enumerator.MoveNext();
 
+        var extractedCount = 0;
         while (reader.MoveToNextEntry()) {
             if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
                 results.Add(reader.Entry.Key.Checked(), KifaActionResult.FromAction(() => {
@@ -147,6 +148,7 @@ class ExtractCommand : KifaCommand {
                     FileInformation.Client.RemoveLocation(tempFile.Id, tempFile.ToString());
                     Logger.LogResult(FileInformation.Client.Delete(tempFile.Id),
                         $"Removal of file info {tempFile.Id}");
+                    extractedCount++;
                 }));
 
                 valid = enumerator.MoveNext();
@@ -155,7 +157,15 @@ class ExtractCommand : KifaCommand {
             }
         }
 
-        if (results.IsAcceptable) {
+        if (extractedCount < selected.Count) {
+            var missingFilesResult = new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message =
+                    $"Only extracted {extractedCount} files when {selected.Count} is requested."
+            };
+            Logger.Error(missingFilesResult);
+            results.Add(archiveFile.ToString(), missingFilesResult);
+        } else if (results.IsAcceptable) {
             results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile.ToString()));
         }
 
