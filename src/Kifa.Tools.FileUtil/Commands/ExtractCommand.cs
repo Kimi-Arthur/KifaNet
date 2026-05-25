@@ -107,7 +107,7 @@ class ExtractCommand : KifaCommand {
                 Status = KifaActionStatus.Skipped,
                 Message = "No more files selected to be extracted."
             });
-            results.AddRange(RemoveArchiveFilesIfRequested(archive));
+            results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile.ToString()));
             return results;
         }
 
@@ -156,18 +156,28 @@ class ExtractCommand : KifaCommand {
         }
 
         if (results.IsAcceptable) {
-            results.AddRange(RemoveArchiveFilesIfRequested(archive));
+            results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile.ToString()));
         }
 
         return results;
     }
 
     IEnumerable<(string item, KifaActionResult result)> RemoveArchiveFilesIfRequested(
-        IArchive archive) {
-        if (DeleteSource && Confirm($"{archive.Volumes.Select(v => v.FileName).JoinBy("\n")}\n" +
-                                    $"Confirm removing the {archive.Volumes.Count()} source archive files above?")) {
-            return archive.Volumes.Select(v => ($"Remove {v.FileName.Checked()}",
-                RemoveOneArchiveFile(new KifaFile(v.FileName.Checked()))));
+        IArchive archive, string archiveFile) {
+        var volumeFiles = archive.Volumes.Select(v => v.FileName).ToList();
+
+        // The check is needed due to https://github.com/adamhathcock/sharpcompress/issues/1331.
+        if (volumeFiles.Any(f => f == null)) {
+            Logger.Warn(
+                $"Unexpected null volume files {volumeFiles.JoinBy(", ")}. Replaced with the original filename: {archiveFile}");
+            volumeFiles = [archiveFile];
+        }
+
+        if (DeleteSource) {
+            var toBeRemoved = SelectMany(volumeFiles, f => f,
+                $"Confirm removing the {volumeFiles.Count} source archive files above?");
+
+            return toBeRemoved.Select(v => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
         }
 
         return [];
