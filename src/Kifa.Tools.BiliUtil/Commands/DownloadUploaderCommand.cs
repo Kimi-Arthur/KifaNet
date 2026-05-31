@@ -19,7 +19,7 @@ public class DownloadUploaderCommand : DownloadCommand {
             "Extra inner folder name for the group of videos (especially if subset of videos are selected).")]
     public string? InnerFolder { get; set; }
 
-    [Option('o', "oldest-first", HelpText = "Download oldest video first.")]
+    [Option('l', "oldest-first", HelpText = "Download oldest video first.")]
     public bool OldestFirst { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
