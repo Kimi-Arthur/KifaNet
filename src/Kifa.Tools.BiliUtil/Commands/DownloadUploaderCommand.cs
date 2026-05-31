@@ -19,6 +19,9 @@ public class DownloadUploaderCommand : DownloadCommand {
             "Extra inner folder name for the group of videos (especially if subset of videos are selected).")]
     public string? InnerFolder { get; set; }
 
+    [Option('r', "reverse", HelpText = "Download oldest video first.")]
+    public bool Reverse { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var uploader = BilibiliUploader.Client.Get(UploaderId);
         if (uploader == null) {
@@ -43,6 +46,10 @@ public class DownloadUploaderCommand : DownloadCommand {
     }
 
     void DownloadVideos(BilibiliUploader uploader, List<BilibiliVideo> videos) {
+        if (Reverse) {
+            videos.Reverse();
+        }
+
         foreach (var video in videos) {
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
