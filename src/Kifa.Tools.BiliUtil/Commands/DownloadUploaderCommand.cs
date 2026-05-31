@@ -19,8 +19,8 @@ public class DownloadUploaderCommand : DownloadCommand {
             "Extra inner folder name for the group of videos (especially if subset of videos are selected).")]
     public string? InnerFolder { get; set; }
 
-    [Option('r', "reverse", HelpText = "Download oldest video first.")]
-    public bool Reverse { get; set; } = false;
+    [Option('o', "oldest-first", HelpText = "Download oldest video first.")]
+    public bool OldestFirst { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
         var uploader = BilibiliUploader.Client.Get(UploaderId);
@@ -31,14 +31,17 @@ public class DownloadUploaderCommand : DownloadCommand {
 
         DownloadVideos(uploader,
             SelectMany(
-                BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.Aids).ToList()).ExceptNull()
-                    .ToList(), video => $"{video.Id} {video.Title} ({video.Pages.Count})",
-                "videos to download"));
+                BilibiliVideo.Client
+                    .Get(OldestFirst ? uploader.Aids : Enumerable.Reverse(uploader.Aids).ToList())
+                    .ExceptNull().ToList(),
+                video => $"{video.Id} {video.Title} ({video.Pages.Count})", "videos to download"));
 
         DownloadVideos(uploader,
             SelectMany(
-                BilibiliVideo.Client.Get(Enumerable.Reverse(uploader.RemovedAids).ToList())
-                    .ExceptNull().ToList(),
+                BilibiliVideo.Client
+                    .Get(OldestFirst
+                        ? uploader.Aids
+                        : Enumerable.Reverse(uploader.RemovedAids).ToList()).ExceptNull().ToList(),
                 video => $"{video.Id} {video.Title} ({video.Pages.Count})",
                 "deleted videos to download"));
 
@@ -46,10 +49,6 @@ public class DownloadUploaderCommand : DownloadCommand {
     }
 
     void DownloadVideos(BilibiliUploader uploader, List<BilibiliVideo> videos) {
-        if (Reverse) {
-            videos.Reverse();
-        }
-
         foreach (var video in videos) {
             foreach (var page in video.Pages) {
                 ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
