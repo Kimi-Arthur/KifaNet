@@ -23,6 +23,9 @@ class ExtractCommand : KifaCommand {
     [Option('g', "group", HelpText = "Group name for the source, like SMURF, 人人影视.")]
     public string? Group { get; set; }
 
+    [Option('l', "language", HelpText = "Language name for the source, like zh, ja, en.")]
+    public string? LanguageName { get; set; }
+
     [Option('f', "force", HelpText = "Forcing extracting the subtitle.")]
     public bool Force { get; set; }
 
@@ -93,7 +96,7 @@ class ExtractCommand : KifaCommand {
                                 string.FormatOr($"-{Group}.", ".") +
                                 SubtitleExtensions[subtitle.CodecName]);
 
-    static Language ExtractLanguage(string? languageName)
-        => languageName == null ? Language.Unknown :
-            languageName.Contains('-') ? languageName[..languageName.IndexOf("-")] : languageName;
+    Language ExtractLanguage(string? languageName)
+        => LanguageName ?? (languageName == null ? Language.Unknown :
+            languageName.Contains('-') ? languageName[..languageName.IndexOf("-")] : languageName);
 }
