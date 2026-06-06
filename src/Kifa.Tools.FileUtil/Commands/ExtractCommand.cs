@@ -185,7 +185,7 @@ class ExtractCommand : KifaCommand {
 
         if (DeleteSource) {
             var toBeRemoved = SelectMany(volumeFiles, f => f,
-                $"Confirm removing the {volumeFiles.Count} source archive files above?");
+                $"source archive files");
 
             return toBeRemoved.Select(v => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
         }

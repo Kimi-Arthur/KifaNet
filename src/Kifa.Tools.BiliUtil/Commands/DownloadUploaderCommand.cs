@@ -40,7 +40,7 @@ public class DownloadUploaderCommand : DownloadCommand {
             SelectMany(
                 BilibiliVideo.Client
                     .Get(OldestFirst
-                        ? uploader.Aids
+                        ? uploader.RemovedAids
                         : Enumerable.Reverse(uploader.RemovedAids).ToList()).ExceptNull().ToList(),
                 video => $"{video.Id} {video.Title} ({video.Pages.Count})",
                 "deleted videos to download"));

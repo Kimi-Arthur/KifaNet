@@ -11,7 +11,7 @@ public sealed class VideoUrlRpc : KifaJsonParameterizedRpc<VideoUrlResponse> {
     protected override HttpMethod Method => HttpMethod.Get;
 
     public VideoUrlRpc(string aid, string cid, int quality) {
-        Parameters = new () {
+        Parameters = new() {
             { "aid", aid.Substring(2) },
             { "cid", cid },
             { "quality", quality.ToString() }
@@ -40,8 +40,16 @@ public class Data {
     public string SeekParam { get; set; }
     public string SeekType { get; set; }
     public Dash Dash { get; set; }
+    public List<Durl> Durl { get; set; }
     public List<SupportFormat> SupportFormats { get; set; }
     public object HighFormat { get; set; }
+    public long LastPlayTime { get; set; }
+    public long LastPlayCid { get; set; }
+    public object ViewInfo { get; set; }
+    public PlayConf PlayConf { get; set; }
+    public string CurLanguage { get; set; }
+    public long CurProductionType { get; set; }
+    public AutoQnResp AutoQnResp { get; set; }
 }
 
 public class Dash {
@@ -52,6 +60,28 @@ public class Dash {
     public List<Resource>? Audio { get; set; }
     public Dash? Dolby { get; set; }
     public Dash? Flac { get; set; }
+}
+
+public class AutoQnResp {
+    public string Dyeid { get; set; }
+}
+
+public class Durl {
+    public long Order { get; set; }
+    public long Length { get; set; }
+    public long Size { get; set; }
+    public string Ahead { get; set; }
+    public string Vhead { get; set; }
+    public string Url { get; set; }
+    public List<string> BackupUrl { get; set; }
+}
+
+public class PlayConf {
+    public bool IsNewDescription { get; set; }
+}
+
+public class Report {
+    public string ExtVipReportParams { get; set; }
 }
 
 public class Resource {
@@ -82,4 +112,7 @@ public class SupportFormat {
     public string DisplayDesc { get; set; }
     public string Superscript { get; set; }
     public List<string> Codecs { get; set; }
+    public long CanWatchQnReason { get; set; }
+    public long LimitWatchReason { get; set; }
+    public Report Report { get; set; }
 }
