@@ -22,7 +22,7 @@ public abstract partial class KifaCommand {
         int startingIndex = 0, bool supportsSpecial = false, bool reverse = false,
         string selectionKey = "") {
         defaultIndexForSelectOne.TryAdd(selectionKey, 0);
-        alwaysDefaultForSelectOne.TryAdd(selectionKey, false);
+        alwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
 
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
@@ -114,7 +114,7 @@ public abstract partial class KifaCommand {
             return [];
         }
 
-        AlwaysDefaultForSelectMany.TryAdd(selectionKey, false);
+        AlwaysDefaultForSelectMany.TryAdd(selectionKey, AutoConfirmDefault);
         DefaultReplyForSelectMany.TryAdd(selectionKey, "");
 
         var chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
@@ -243,8 +243,9 @@ public abstract partial class KifaCommand {
         }
     }
 
-    public bool Confirm(string prefix, bool suggested = true, bool alwaysConfirm = true) {
-        if (!alwaysConfirm && AutoConfirmDefault) {
+    public bool Confirm(string prefix, bool suggested = true) {
+        if (AutoConfirmDefault) {
+            Logger.Debug($"Auto selected default {suggested} as enabled by -y or --yes.");
             return suggested;
         }
 
