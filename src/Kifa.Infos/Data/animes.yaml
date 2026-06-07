@@ -1,5 +1,5 @@
 # animes
-- Id: 名探偵コナン
-  TmdbId: 30983
-  EpisodeIdWidth: 3
+- Id: 'DIGIMON ADVENTURE :'
+  TmdbId: 98034
+#  EpisodeIdWidth: 2
   PatternId: single_season
