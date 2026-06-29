@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
-    <ProjectReference Include="..\Pimix.Cryptography\Pimix.Cryptography.csproj" />
-  </ItemGroup>
-</Project>

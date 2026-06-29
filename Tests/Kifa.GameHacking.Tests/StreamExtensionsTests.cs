@@ -3,7 +3,7 @@ using System.Text;
 using Kifa.GameHacking;
 using Xunit;
 
-namespace Kifa.GamingHacking.Tests;
+namespace Kifa.GameHacking.Tests;
 
 public class StreamExtensionsTests {
     [Fact]

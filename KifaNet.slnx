@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/Core/">
     <Project Path="Kifa.Threading\Kifa.Threading.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Configs\Kifa.Configs.csproj" Type="Classic C#" />
@@ -60,7 +60,7 @@
   <Folder Name="/Games/">
     <Project Path="src\Kifa.GameHacking\Kifa.GameHacking.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Games.BreathOfTheWild\Kifa.Games.BreathOfTheWild.csproj" Type="Classic C#" />
-    <Project Path="Tests\Kifa.GamingHacking.Tests\Kifa.GamingHacking.Tests.csproj" Type="Classic C#" />
+    <Project Path="Tests\Kifa.GameHacking.Tests\Kifa.GameHacking.Tests.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/Languages/">
     <Project Path="src\Kifa.Languages\Kifa.Languages.csproj" Type="Classic C#" />
