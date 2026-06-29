@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommandLine;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -16,10 +17,18 @@ public class RemoveEmptyCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         foreach (var fileName in FileNames) {
-            RecursivelyRemoveEmptyFolders(fileName);
+            ExecuteItem(fileName, () => CleanFolder(fileName));
         }
 
-        return 0;
+        return LogSummary();
+    }
+
+    static KifaActionResult CleanFolder(string folderName) {
+        var hasRemaining = RecursivelyRemoveEmptyFolders(folderName);
+        return new KifaActionResult {
+            Status = KifaActionStatus.OK,
+            Message = hasRemaining ? "Folder not empty." : "Folder deleted."
+        };
     }
 
     static bool RecursivelyRemoveEmptyFolders(string fileName) {

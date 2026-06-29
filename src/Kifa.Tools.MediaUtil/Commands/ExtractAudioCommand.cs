@@ -28,37 +28,20 @@ public class ExtractAudioCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames, recursive: false);
         files = files.Where(file => file.Extension != "m4a").ToList();
-        foreach (var file in files) {
-            Console.WriteLine(file);
+
+        var selected = SelectMany(files, file => file.ToString(), "files to extract audio from");
+        if (selected.Count == 0) {
+            Logger.Warn("No files selected.");
+            return 0;
         }
 
-        Console.Write($"Confirm extracting audio from the {files.Count} files above?");
-        Console.ReadLine();
+        var trackNumbers = GatherTrackNumbers(selected);
 
-        var failedFiles = new List<KifaFile>();
-
-        var trackNumbers = GatherTrackNumbers(files);
-
-        foreach (var file in files) {
-            try {
-                ExtractAudioFile(file, trackNumbers[file.ToString()]);
-            } catch (Exception ex) {
-                Logger.Error(ex, $"Failed to extract audio from {file}");
-                failedFiles.Add(file);
-            }
+        foreach (var file in selected) {
+            ExecuteItem(file.ToString(), () => ExtractAudioFile(file, trackNumbers[file.ToString()]));
         }
 
-        if (failedFiles.Count > 0) {
-            Logger.Error($"Failed to extract audio from {failedFiles.Count} files:");
-            foreach (var file in failedFiles) {
-                Logger.Error($"\t{file}");
-            }
-
-            return 1;
-        }
-
-        Logger.Info($"Successfully extracted audio from {files.Count} files.");
-        return 0;
+        return LogSummary();
     }
 
     Dictionary<string, int> GatherTrackNumbers(List<KifaFile> files) {
@@ -82,47 +65,52 @@ public class ExtractAudioCommand : KifaCommand {
         return results;
     }
 
-    void ExtractAudioFile(KifaFile sourceFile, int trackNumber) {
-        var metadata = ExtractMetadata(sourceFile, trackNumber);
-        var metadataString =
-            string.Join(" ", metadata.Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
+    KifaActionResult ExtractAudioFile(KifaFile sourceFile, int trackNumber)
+        => KifaActionResult.FromAction(() => {
+            var metadata = ExtractMetadata(sourceFile, trackNumber);
+            var metadataString =
+                string.Join(" ", metadata.Select(kv => $"-metadata {kv.Key}=\"{kv.Value}\""));
 
-        var fileName = GetFileName(metadata, sourceFile.BaseName.Split(" ")[0]);
+            var fileName = GetFileName(metadata, sourceFile.BaseName.Split(" ")[0]);
 
-        var targetFile = sourceFile.Parent.GetFile($"Albums/{fileName}.m4a");
-        if (targetFile.Exists()) {
-            return;
-        }
-
-        var coverFile = GetCover(sourceFile);
-        var croppedImages = ImageCropper.Crop(coverFile);
-        var chosenImage = ChooseImage(croppedImages);
-        coverFile.Delete();
-        coverFile.Write(chosenImage.Split(",")[^1].FromBase64());
-
-        var sourcePath = sourceFile.GetLocalPath();
-        var targetPath = targetFile.GetLocalPath();
-        Directory.GetParent(targetPath)!.Create();
-
-        // Inline image: https://ffmpeg.org/ffmpeg-protocols.html#data
-        var arguments = $"-i \"{sourcePath}\" -i \"{coverFile.GetLocalPath()}\" " +
-                        $"-map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadataString} \"{targetPath}\"";
-        Logger.Trace($"Executing: ffmpeg {arguments}");
-        using var proc = new Process {
-            StartInfo = {
-                FileName = "ffmpeg",
-                Arguments = arguments
+            var targetFile = sourceFile.Parent.GetFile($"Albums/{fileName}.m4a");
+            if (targetFile.Exists()) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Target file {targetFile} already exists."
+                };
             }
-        };
 
-        proc.Start();
-        proc.WaitForExit();
-        if (proc.ExitCode != 0) {
-            throw new Exception("Extract audio file failed.");
-        }
+            var coverFile = GetCover(sourceFile);
+            var croppedImages = ImageCropper.Crop(coverFile);
+            var chosenImage = ChooseImage(croppedImages);
+            coverFile.Delete();
+            coverFile.Write(chosenImage.Split(",")[^1].FromBase64());
 
-        coverFile.Delete();
-    }
+            var sourcePath = sourceFile.GetLocalPath();
+            var targetPath = targetFile.GetLocalPath();
+            Directory.GetParent(targetPath)!.Create();
+
+            // Inline image: https://ffmpeg.org/ffmpeg-protocols.html#data
+            var arguments = $"-i \"{sourcePath}\" -i \"{coverFile.GetLocalPath()}\" " +
+                            $"-map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadataString} \"{targetPath}\"";
+            Logger.Trace($"Executing: ffmpeg {arguments}");
+            using var proc = new Process {
+                StartInfo = {
+                    FileName = "ffmpeg",
+                    Arguments = arguments
+                }
+            };
+
+            proc.Start();
+            proc.WaitForExit();
+            if (proc.ExitCode != 0) {
+                throw new Exception("Extract audio file failed.");
+            }
+
+            coverFile.Delete();
+            return KifaActionResult.Success();
+        });
 
     static string GetFileName(Dictionary<string, string> metadata, string prefix)
         => $"{metadata["album"]}/{prefix} {metadata["track"].PadLeft(2, '0')} {metadata["title"]}";

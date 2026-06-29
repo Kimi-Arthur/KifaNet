@@ -43,30 +43,11 @@ public class AddCoverCommand : KifaCommand {
             choice => $"{choice.source} + {choice.cover} => {choice.target}",
             "files to add cover for");
 
-        var filesByResults = selectedFiles.Select(file => (file, result: AddCover(file)))
-            .GroupBy(item => item.result.Status == KifaActionStatus.OK)
-            .ToDictionary(item => item.Key, item => item.ToList());
-
-        if (filesByResults.ContainsKey(true)) {
-            var successes = filesByResults[true];
-            Logger.Info($"Successfully added cover for the following {successes.Count} files:");
-            foreach (var success in successes) {
-                Logger.Info(
-                    $"\t{success.file.source} + {success.file.cover} => {success.file.target}");
-            }
+        foreach (var file in selectedFiles) {
+            ExecuteItem($"{file.source} + {file.cover} => {file.target}", () => AddCover(file));
         }
 
-        if (filesByResults.ContainsKey(false)) {
-            var failures = filesByResults[false];
-            Logger.Error($"Failed to add cover for the following {failures.Count} files:");
-            foreach (var failure in failures) {
-                Logger.Error($"\t{failure.file.source}: {failure.result.Message}");
-            }
-
-            return 1;
-        }
-
-        return 0;
+        return LogSummary();
     }
 
     KifaActionResult AddCover((KifaFile source, KifaFile cover, KifaFile target) file) {

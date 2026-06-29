@@ -19,37 +19,14 @@ public class GetCoverCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var foundFiles = KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4");
-        foreach (var file in foundFiles) {
-            Console.WriteLine(file);
+        var selectedFiles = SelectMany(foundFiles, file => file.ToString(),
+            "files to download cover images for");
+
+        foreach (var file in selectedFiles) {
+            ExecuteItem(file.ToString(), () => GetCover(file));
         }
 
-        if (!Confirm($"Confirm getting cover files for the {foundFiles.Count} files above")) {
-            return 1;
-        }
-
-        var filesByResult = foundFiles.Select(file => (file, result: GetCover(file)))
-            .GroupBy(item => item.result.Status == KifaActionStatus.OK)
-            .ToDictionary(item => item.Key, item => item.ToList());
-
-        if (filesByResult.ContainsKey(true)) {
-            var files = filesByResult[true];
-            Logger.Info($"Successfully got cover files for the following {files.Count} files:");
-            foreach (var (file, result) in files) {
-                Logger.Info($"\t{file} => {result.Response}");
-            }
-        }
-
-        if (filesByResult.ContainsKey(false)) {
-            var files = filesByResult[false];
-            Logger.Info($"Failed to get cover files for the following {files.Count} files:");
-            foreach (var (file, result) in files) {
-                Logger.Info($"\t{file}: {result.Message}");
-            }
-
-            return 1;
-        }
-
-        return 0;
+        return LogSummary();
     }
 
     static readonly List<string> ExpectedCoverExtensions = new() {
@@ -57,14 +34,14 @@ public class GetCoverCommand : KifaCommand {
         "png"
     };
 
-    static KifaActionResult<KifaFile> GetCover(KifaFile file)
-        => KifaActionResult<KifaFile>.FromAction(() => {
+    static KifaActionResult GetCover(KifaFile file)
+        => KifaActionResult.FromAction(() => {
             var foundCoverExtension = ExpectedCoverExtensions.FirstOrDefault(ext
                 => file.Parent.GetFile($"{file.BaseName}.{ext}").Exists());
             if (foundCoverExtension != null) {
                 var foundCoverFile = file.Parent.GetFile($"{file.BaseName}.{foundCoverExtension}");
                 Logger.Info($"Found cover file {foundCoverFile} for {file}. Skipped.");
-                return file.Parent.GetFile($"{file.BaseName}.{foundCoverExtension}");
+                return;
             }
 
             var video = BilibiliVideo.Parse(file.Id);
@@ -77,6 +54,5 @@ public class GetCoverCommand : KifaCommand {
             var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLinkFile.Extension}");
             coverFile.Delete();
             coverLinkFile.Copy(coverFile);
-            return coverFile;
         });
 }

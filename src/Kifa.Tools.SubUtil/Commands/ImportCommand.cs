@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
@@ -32,40 +33,57 @@ class ImportCommand : KifaCommand {
             .Select(file => new MatchableItem(file.PathWithoutSuffix)).ToList();
 
         foreach (var subtitleFile in subtitleFiles) {
-            var suffix = subtitleFile.Extension.Checked().ToLower();
-
-            var validEpisodes = targetFiles.Where(e => !e.Matched).ToList();
-            try {
-                var selected = SelectOne(validEpisodes, e => e.Item, "mapping", startingIndex: 1,
-                    supportsSpecial: true, reverse: true);
-                if (selected == null) {
-                    Logger.Warn($"Ignored {subtitleFile}.");
-                    continue;
-                }
-
-                var (choice, _, special) = selected.Value;
-                if (special) {
-                    var newName = Confirm($"Confirm linking {subtitleFile} to (without suffix):",
-                        choice.Item);
-                    var newFile =
-                        new KifaFile($"{subtitleFile.Host}{newName}.{ReleaseId}.{suffix}");
-
-                    subtitleFile.Copy(newFile, true);
-                    if (Confirm($"Remove info item {choice.Item}?")) {
-                        selected.Value.Choice.Matched = true;
-                    }
-                } else {
-                    var newFile =
-                        new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
-                    subtitleFile.Copy(newFile, true);
-                    choice.Matched = true;
-                }
-            } catch (InvalidChoiceException ex) {
-                Logger.Warn(ex, $"File {subtitleFile} skipped.");
-            }
+            ExecuteItem(subtitleFile.ToString(), () => ImportSubtitle(subtitleFile, targetFiles));
         }
 
-        return 0;
+        return LogSummary();
+    }
+
+    KifaActionResult ImportSubtitle(KifaFile subtitleFile, List<MatchableItem> targetFiles) {
+        var suffix = subtitleFile.Extension.Checked().ToLower();
+
+        var validEpisodes = targetFiles.Where(e => !e.Matched).ToList();
+        try {
+            var selected = SelectOne(validEpisodes, e => e.Item, "mapping", startingIndex: 1,
+                supportsSpecial: true, reverse: true);
+            if (selected == null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Ignored {subtitleFile}."
+                };
+            }
+
+            var (choice, _, special) = selected.Value;
+            if (special) {
+                var newName = Confirm($"Confirm linking {subtitleFile} to (without suffix):",
+                    choice.Item);
+                if (newName == null) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Skipped,
+                        Message = "Cancelled by user."
+                    };
+                }
+                var newFile =
+                    new KifaFile($"{subtitleFile.Host}{newName}.{ReleaseId}.{suffix}");
+
+                subtitleFile.Copy(newFile, true);
+                if (Confirm($"Remove info item {choice.Item}?")) {
+                    selected.Value.Choice.Matched = true;
+                }
+            } else {
+                var newFile =
+                    new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
+                subtitleFile.Copy(newFile, true);
+                choice.Matched = true;
+            }
+
+            return KifaActionResult.Success();
+        } catch (InvalidChoiceException ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"File {subtitleFile} skipped due to invalid choice: {ex.Message}"
+            };
+        }
     }
 }
 

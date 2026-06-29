@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
@@ -39,11 +39,11 @@ class DedupCommand : KifaCommand {
 
         var confirmedDeletion = SelectMany(filesToDelete,
             tuple => $"{tuple.toDelete.Id} ({tuple.truth})", "files to delete");
-        foreach (var file in confirmedDeletion.Select(d => d.toDelete)) {
-            RemoveLogicalFile(file);
+        foreach (var tuple in confirmedDeletion) {
+            ExecuteItem(tuple.toDelete.Id, () => RemoveLogicalFile(tuple.toDelete));
         }
 
-        return 0;
+        return LogSummary();
     }
 
     void RemoveLogicalFile(FileInformation fileInfo) {

@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -20,7 +21,7 @@ class CleanCommand : KifaCommand {
         RemoveMissingFiles();
         DeduplicateFiles();
 
-        return 0;
+        return LogSummary();
     }
 
     void RemoveMissingFiles() {
@@ -35,7 +36,7 @@ class CleanCommand : KifaCommand {
         }
 
         foreach (var file in selected) {
-            file.Unregister();
+            ExecuteItem(file.ToString(), () => file.Unregister());
         }
     }
 
@@ -55,29 +56,37 @@ class CleanCommand : KifaCommand {
                 continue;
             }
 
-            var selected = SelectOne(filesById,
-                group
-                    => $"{group.Key} ({group.Count()} refs, {group.First().GetRefCount()} refs in OS):\n{group.Select(f => f.ToString()).JoinBy("\n")})",
-                "file to keep");
+            ExecuteItem($"Deduplicate {file}", () => DedupFileGroup(filesById));
+        }
+    }
 
-            if (selected == null) {
-                Logger.Error("No proper file is selected");
+    KifaActionResult DedupFileGroup(List<IGrouping<string?, KifaFile>> filesById) {
+        var selected = SelectOne(filesById,
+            group
+                => $"{group.Key} ({group.Count()} refs, {group.First().GetRefCount()} refs in OS):\n{group.Select(f => f.ToString()).JoinBy("\n")})",
+            "file to keep");
+
+        if (selected == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = "No proper file is selected"
+            };
+        }
+
+        foreach (var group in filesById) {
+            if (group == selected.Value.Choice) {
                 continue;
             }
 
-            foreach (var group in filesById) {
-                if (group == selected.Value.Choice) {
-                    continue;
-                }
-
-                foreach (var f in group) {
-                    f.Delete();
-                    f.Unregister();
-                    selected.Value.Choice.First().Copy(f);
-                    f.Add();
-                    Logger.Info($"Removed and relinked {f} ({f.FileId}).");
-                }
+            foreach (var f in group) {
+                f.Delete();
+                f.Unregister();
+                selected.Value.Choice.First().Copy(f);
+                f.Add();
+                Logger.Info($"Removed and relinked {f} ({f.FileId}).");
             }
         }
+
+        return KifaActionResult.Success();
     }
 }

@@ -20,13 +20,16 @@ class GetTencentChatCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var rawFile = FileNames.ElementAt(0);
         if (VideoId != null) {
-            var subtitleFile = new KifaFile(rawFile).GetSubtitleFile($".{VideoId}.json");
-            GetChat(subtitleFile, VideoId);
+            var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames),
+                file => file.ToString(), "files to get tencent chat for");
+            foreach (var file in selectedFiles) {
+                var subtitleFile = file.GetSubtitleFile($".{VideoId}.json");
+                ExecuteItem(file.ToString(), () => GetChat(subtitleFile, VideoId));
+            }
         }
 
-        return 0;
+        return LogSummary();
     }
 
     void GetChat(KifaFile chatFile, string videoId) {

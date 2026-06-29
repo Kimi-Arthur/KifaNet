@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -6,6 +6,7 @@ using Kifa.Api.Files;
 using Kifa.Infos;
 using Kifa.IO;
 using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.Soccer;
 using NLog;
 
@@ -86,14 +87,10 @@ class ImportCommand : KifaCommand {
             }
             case "Soccer":
                 foreach (var file in files) {
-                    var ext = file[(file.LastIndexOf(".") + 1)..];
-                    var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
-                    targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
-                    FileInformation.Client.Link(file, targetFileName);
-                    Logger.Info($"Successfully linked {file} to {targetFileName}");
+                    ExecuteItem(file, () => ImportSoccerFile(file));
                 }
 
-                return 0;
+                return LogSummary();
             default:
                 if (Series.KnownCategories.Contains(Type)) {
                     // Example:
@@ -118,30 +115,18 @@ class ImportCommand : KifaCommand {
 
                 if (files.Count == 1) {
                     var file = files.Single();
-                    var ext = file[(file.LastIndexOf(".") + 1)..];
-                    var targetFileName = fileVersion != null
-                        ? $"{folder}/{baseName}/{baseName}.{fileVersion}.{ext}"
-                        : $"{folder}/{baseName}/{baseName}.{ext}";
-                    targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
-                    FileInformation.Client.Link(file, targetFileName);
-                    Logger.Info($"Successfully linked {file} to {targetFileName}");
-
-                    return 0;
+                    ExecuteItem(file, () => ImportDefaultFile(file, folder, baseName, fileVersion, null));
+                    return LogSummary();
                 }
 
                 var counter = 1;
                 foreach (var file in files) {
-                    var ext = file[(file.LastIndexOf(".") + 1)..];
-                    var targetFileName = fileVersion != null
-                        ? $"{folder}/{baseName}/{baseName}.{fileVersion}.part{counter}.{ext}"
-                        : $"{folder}/{baseName}/{baseName}.part{counter}.{ext}";
-                    targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
-                    FileInformation.Client.Link(file, targetFileName);
-                    Logger.Info($"Successfully linked {file} to {targetFileName}");
+                    var currentCounter = counter;
+                    ExecuteItem(file, () => ImportDefaultFile(file, folder, baseName, fileVersion, currentCounter));
                     counter++;
                 }
 
-                return 0;
+                return LogSummary();
         }
 
         var fileMatches = files.Select(f => (File: f, Matched: false)).ToList();
@@ -165,34 +150,89 @@ class ImportCommand : KifaCommand {
                 continue;
             }
 
-            var suffix = file[file.LastIndexOf('.')..];
-
-            var validEpisodes = infoList.Items.Where(e => !e.Matched).ToList();
-            try {
-                var selected = SelectOne(validEpisodes, e => $"{file}\n=>\t{e.Path}{suffix}",
-                    "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
-                if (selected == null) {
-                    Logger.Warn($"Ignored {file}.");
-                    continue;
-                }
-
-                var (choice, _, special) = selected.Value;
-                if (special) {
-                    var newName = Confirm($"Confirm linking {file} to:", $"{choice.Path}{suffix}");
-                    FileInformation.Client.Link(file, newName);
-                    if (Confirm($"Remove infoList item {choice.Path}?")) {
-                        MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
-                    }
-                } else {
-                    FileInformation.Client.Link(file, $"{choice.Path}{suffix}");
-                    MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
-                }
-            } catch (InvalidChoiceException ex) {
-                Logger.Warn(ex, $"File {file} skipped.");
-            }
+            ExecuteItem(file, () => ImportFile(file, infoList, VersionSuffix));
         }
 
-        return 0;
+        return LogSummary();
+    }
+
+    KifaActionResult ImportSoccerFile(string file) {
+        var ext = file[(file.LastIndexOf(".") + 1)..];
+        var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
+        targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
+        if (targetFileName == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "Import cancelled by user."
+            };
+        }
+
+        return FileInformation.Client.Link(file, targetFileName);
+    }
+
+    KifaActionResult ImportDefaultFile(string file, string folder, string baseName, string? fileVersion, int? part) {
+        var ext = file[(file.LastIndexOf(".") + 1)..];
+        var targetFileName = fileVersion != null
+            ? part != null
+                ? $"{folder}/{baseName}/{baseName}.{fileVersion}.part{part}.{ext}"
+                : $"{folder}/{baseName}/{baseName}.{fileVersion}.{ext}"
+            : part != null
+                ? $"{folder}/{baseName}/{baseName}.part{part}.{ext}"
+                : $"{folder}/{baseName}/{baseName}.{ext}";
+        targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
+        if (targetFileName == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "Import cancelled by user."
+            };
+        }
+
+        return FileInformation.Client.Link(file, targetFileName);
+    }
+
+    KifaActionResult ImportFile(string file, ItemInfoList infoList, string? versionSuffix) {
+        var suffix = file[file.LastIndexOf('.')..];
+        var validEpisodes = infoList.Items.Where(e => !e.Matched).ToList();
+        try {
+            var selected = SelectOne(validEpisodes, e => $"{file}\n=>\t{e.Path}{suffix}",
+                "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
+            if (selected == null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Ignored {file}."
+                };
+            }
+
+            var (choice, _, special) = selected.Value;
+            if (special) {
+                var newName = Confirm($"Confirm linking {file} to:", $"{choice.Path}{suffix}");
+                if (newName == null) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Skipped,
+                        Message = "Import cancelled by user."
+                    };
+                }
+
+                var result = FileInformation.Client.Link(file, newName);
+                if (result.Status == KifaActionStatus.OK && Confirm($"Remove infoList item {choice.Path}?")) {
+                    MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
+                }
+
+                return result;
+            } else {
+                var result = FileInformation.Client.Link(file, $"{choice.Path}{suffix}");
+                if (result.Status == KifaActionStatus.OK) {
+                    MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
+                }
+
+                return result;
+            }
+        } catch (InvalidChoiceException ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"File {file} skipped due to invalid choice: {ex.Message}"
+            };
+        }
     }
 
     IEnumerable<string> GetFromFileIds()

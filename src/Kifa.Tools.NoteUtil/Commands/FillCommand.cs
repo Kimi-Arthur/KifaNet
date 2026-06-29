@@ -75,21 +75,8 @@ public class FillCommand : KifaCommand {
                         var parts = line.Trim('|').Split("|").Select(s => s.Trim()).ToList();
                         parts.AddRange(Enumerable.Repeat("", columnNames.Count - parts.Count));
                         if (parts.Any(p => p.Length == 0)) {
-                            try {
-                                switch (state) {
-                                    case ParsingState.Verbs:
-                                        FillVerbRow(parts, columnNames);
-                                        break;
-                                    case ParsingState.Nouns:
-                                        FillNounRow(parts, columnNames);
-                                        break;
-                                    case ParsingState.Vocabulary:
-                                        FillWordRow(parts, columnNames);
-                                        break;
-                                }
-                            } catch (Exception ex) {
-                                Logger.Warn(ex, $"Fail to fill line: |{string.Join("|", parts)}|.");
-                            }
+                            var wordId = MarkdownHelpers.GetWordId(parts, columnNames);
+                            ExecuteItem(wordId, () => FillRow(state, parts, columnNames));
                         }
 
                         lines.Add($"|{string.Join("|", parts)}|");
@@ -103,14 +90,27 @@ public class FillCommand : KifaCommand {
 
         noteFile.Delete();
         noteFile.Write(string.Join("\n", lines));
-        return 0;
+        return LogSummary();
+    }
+
+    void FillRow(ParsingState state, List<string> parts, Dictionary<string, int> columnNames) {
+        switch (state) {
+            case ParsingState.Verbs:
+                FillVerbRow(parts, columnNames);
+                break;
+            case ParsingState.Nouns:
+                FillNounRow(parts, columnNames);
+                break;
+            case ParsingState.Vocabulary:
+                FillWordRow(parts, columnNames);
+                break;
+        }
     }
 
     static void FillVerbRow(List<string> parts, Dictionary<string, int> columnNames) {
         var verb = new GermanWord {
             Id = MarkdownHelpers.GetWordId(parts, columnNames)
         };
-        Logger.Info($"Processing verb: {verb.Id}");
 
         verb.Fill();
 
@@ -129,7 +129,6 @@ public class FillCommand : KifaCommand {
         var noun = new GermanWord {
             Id = MarkdownHelpers.GetWordId(parts, columnNames)
         };
-        Logger.Info($"Processing noun: {noun.Id}");
 
         noun.Fill();
 
@@ -148,7 +147,6 @@ public class FillCommand : KifaCommand {
         var word = new GermanWord {
             Id = MarkdownHelpers.GetWordId(parts, columnNames)
         };
-        Logger.Info($"Processing word: {word.Id}");
 
         word.Fill();
 

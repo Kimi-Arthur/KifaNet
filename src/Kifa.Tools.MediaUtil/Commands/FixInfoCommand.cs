@@ -34,7 +34,7 @@ public class FixInfoCommand : KifaCommand {
             ExecuteItem($"Fix of {file}", () => FixOneFile(file));
         }
 
-        return 0;
+        return LogSummary();
     }
 
     KifaActionResult FixOneFile(KifaFile file) {
