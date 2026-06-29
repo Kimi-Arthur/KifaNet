@@ -1,4 +1,4 @@
-﻿namespace Kifa.Languages;
+namespace Kifa.Languages;
 
 public enum WordType {
     Unknown,

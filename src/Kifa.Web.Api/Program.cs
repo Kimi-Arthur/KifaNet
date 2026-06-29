@@ -1,4 +1,4 @@
-﻿using Kifa.Configs;
+using Kifa.Configs;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using NLog.Web;

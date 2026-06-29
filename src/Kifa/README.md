@@ -1,4 +1,4 @@
-﻿Kifa Common Library
+Kifa Common Library
 ===
 
 Assembly Name

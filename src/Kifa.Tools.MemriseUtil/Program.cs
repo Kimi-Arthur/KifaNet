@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Tools.MemriseUtil.Commands;
 
 namespace Kifa.Tools.MemriseUtil;

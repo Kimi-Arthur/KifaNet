@@ -1,3 +1,3 @@
-﻿using MyNamespace;
+using MyNamespace;
 
 ExceptionHandlingExample.Run();

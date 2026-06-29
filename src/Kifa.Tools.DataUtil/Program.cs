@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Tools.DataUtil.Commands;
 
 namespace Kifa.Tools.DataUtil;

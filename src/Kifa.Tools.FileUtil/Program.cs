@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Tools.FileUtil.Commands;
 
 namespace Kifa.Tools.FileUtil;

@@ -1,4 +1,4 @@
-﻿Kifa Subtitle Library
+Kifa Subtitle Library
 ===
 
 Assembly Name

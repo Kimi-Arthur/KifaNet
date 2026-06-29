@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Tools.NoteUtil.Commands;
 
 namespace Kifa.Tools.NoteUtil;

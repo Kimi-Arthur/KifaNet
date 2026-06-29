@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CommandLine;
 using Kifa.Tools.BiliUtil.Commands;
 

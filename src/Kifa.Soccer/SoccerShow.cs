@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Kifa.Service;
 
 namespace Kifa.Soccer;

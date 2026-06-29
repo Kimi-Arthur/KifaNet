@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using Kifa.Rpc;
 using Newtonsoft.Json;
 

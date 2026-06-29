@@ -1,4 +1,4 @@
-﻿using System.Web;
+using System.Web;
 using Kifa.Cloud.OAuth;
 using Kifa.Service;
 

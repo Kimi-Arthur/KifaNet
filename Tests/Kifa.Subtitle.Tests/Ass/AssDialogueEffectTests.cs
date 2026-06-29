@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Kifa.Subtitle.Ass;
 using Xunit;
 

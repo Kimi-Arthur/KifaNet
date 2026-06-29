@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Tools.YoutubeUtil.Commands;
 
 namespace Kifa.Tools.YoutubeUtil;

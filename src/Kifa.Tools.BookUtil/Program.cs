@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Tools.BookUtil.Commands;
 
 namespace Kifa.Tools.BookUtil;

@@ -1,4 +1,4 @@
-﻿using CommandLine;
+using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
 using Kifa.Service;

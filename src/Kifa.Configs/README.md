@@ -1,4 +1,4 @@
-﻿Kifa Configs Library
+Kifa Configs Library
 ===
 
 Assembly Name

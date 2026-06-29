@@ -1,4 +1,4 @@
-﻿using Kifa.Subtitle.Ass;
+using Kifa.Subtitle.Ass;
 using Xunit;
 
 namespace Kifa.Subtitle.Tests.Ass;
