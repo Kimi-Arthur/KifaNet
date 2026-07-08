@@ -31,20 +31,40 @@ class CopyCommand : KifaCommand {
             return LinkFile(Targets.First().TrimEnd('/'), LinkName.TrimEnd('/'));
         }
 
-        LinkLocalFile(new KifaFile(Targets.First()), new KifaFile(LinkName));
-        return 0;
+        var source = new KifaFile(Targets.First());
+        var destination = new KifaFile(LinkName);
+
+        if (!source.Exists() && source.List(recursive: true).Any()) {
+            var files = source.List(recursive: true).ToList();
+            var sourceFolderId = source.Id.EndsWith('/') ? source.Id : source.Id + "/";
+            foreach (var file in files) {
+                var relativePath = file.Id[sourceFolderId.Length..];
+                var targetFile = new KifaFile($"{destination.Host}{destination.Id.TrimEnd('/')}/{relativePath}");
+                ExecuteItem(file.ToString(), () => LinkLocalFile(file, targetFile));
+            }
+        } else {
+            ExecuteItem(source.ToString(), () => LinkLocalFile(source, destination));
+        }
+
+        return LogSummary();
     }
 
-    void LinkLocalFile(KifaFile file1, KifaFile file2) {
-        file1.Add();
-        LinkFile(file1.Id, file2.Id);
-        file1.Copy(file2);
+    KifaActionResult LinkLocalFile(KifaFile file1, KifaFile file2)
+        => KifaActionResult.FromAction(() => {
+            file1.Add();
+            var result = FileInformation.Client.Link(file1.Id, file2.Id);
+            if (result.Status != KifaActionStatus.OK) {
+                return result;
+            }
 
-        // Skip the full check if the linking is from local file and in the same cell.
-        // Caveat: It's only inferred that it used hard linking.
-        file2.Register(file1.IsCompatible(file2) && file2.IsLocal);
-        file2.Add();
-    }
+            file1.Copy(file2);
+
+            // Skip the full check if the linking is from local file and in the same cell.
+            // Caveat: It's only inferred that it used hard linking.
+            file2.Register(file1.IsCompatible(file2) && file2.IsLocal);
+            file2.Add();
+            return KifaActionResult.Success();
+        });
 
     int LinkFile(string target, string linkName) {
         if (!target.StartsWith('/') || !linkName.StartsWith('/')) {
