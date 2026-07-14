@@ -51,16 +51,23 @@ public abstract partial class KifaCommand {
             Logger.Info($"Successfully processed the {acceptableItems.Count} items above.\n");
         }
 
-        if (resultsByStatus.TryGetValue(false, out var failedItems)) {
+        var hasFailed = resultsByStatus.TryGetValue(false, out var failedItems);
+        if (hasFailed && failedItems != null) {
             foreach (var (item, result) in failedItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
             }
 
             Logger.Error($"Failed to process the {failedItems.Count} items above.");
-
-            return 1;
         }
 
-        return 0;
+        var fileTargets = LogManager.Configuration?.AllTargets.OfType<NLog.Targets.FileTarget>();
+        if (fileTargets != null) {
+            foreach (var target in fileTargets) {
+                var fileName = target.FileName.Render(new LogEventInfo());
+                Logger.Info($"Log file: {fileName}");
+            }
+        }
+
+        return hasFailed ? 1 : 0;
     }
 }
