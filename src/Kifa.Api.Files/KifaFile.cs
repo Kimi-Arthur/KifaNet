@@ -369,11 +369,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     static IEnumerable<KifaFile> GetKifaFiles(IEnumerable<string> fileNames) {
         var files = fileNames.Select(NormalizeUri).ToList();
+        // TODO: to debug an issue of finding files ending with /.
+        Logger.Notice(() => "GetKifaFiles found files:" + files.JoinBy('\n'));
         var fileIds = files.Select(f => FileInformation.GetId(f).Checked()).ToList();
+        // TODO: to debug an issue of finding files ending with /.
+        Logger.Notice(() => "GetKifaFiles found files:" + fileIds.JoinBy('\n'));
         var infos = FileInfoClient.Get(fileIds).Zip(fileIds).Select(item => item.First ??
             new FileInformation {
                 Id = FileInformation.GetId(item.Second).Checked()
             }).ToList();
+        // TODO: to debug an issue of finding files ending with /.
+        Logger.Notice(()
+            => "GetKifaFiles found infos:" + infos.Select(info => info.Id).JoinBy('\n'));
         return files.Zip(infos)
             .Select(source => new KifaFile(source.First, fileInfo: source.Second));
     }
