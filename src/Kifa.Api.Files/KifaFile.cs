@@ -346,7 +346,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         foreach (var source in GetKifaFiles(sources)) {
             var file = source;
 
-            var path = file.Path;
+            var path = file.Path.TrimEnd('/');
             var host = file.Host;
 
             var thisFolder = FileInfoClient.ListFolder(path, recursive);
