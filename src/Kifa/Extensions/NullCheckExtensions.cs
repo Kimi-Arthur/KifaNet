@@ -5,13 +5,8 @@ namespace Kifa;
 
 public static class NullCheckExtensions {
     public static T Checked<T>(this T? nullableValue,
-        [CallerArgumentExpression("nullableValue")] string expression = "") {
-        if (nullableValue == null) {
-            throw new ArgumentNullException(expression);
-        }
-
-        return nullableValue;
-    }
+        [CallerArgumentExpression("nullableValue")] string expression = "")
+        => nullableValue ?? throw new ArgumentNullException(expression);
 
     public static float Checked(this float? nullableValue,
         [CallerArgumentExpression("nullableValue")] string expression = "") {
