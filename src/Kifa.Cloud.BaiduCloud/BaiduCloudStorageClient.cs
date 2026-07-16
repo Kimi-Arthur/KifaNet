@@ -8,10 +8,8 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Kifa.Cloud.BaiduCloud.Rpcs;
 using Kifa.IO;
-using Kifa.Service;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NLog;
 
 namespace Kifa.Cloud.BaiduCloud;
@@ -21,8 +19,6 @@ public class BaiduCloudStorageClient : StorageClient {
     const long MaxBlockSize = 2L << 30;
     const long MinBlockSize = 32L << 20;
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    public static APIList APIList { get; set; }
 
     public static string RemotePathPrefix { get; set; }
 
@@ -81,8 +77,7 @@ public class BaiduCloudStorageClient : StorageClient {
     int DownloadChunk(byte[] buffer, string path, int bufferOffset, long offset, int count) {
         Logger.Trace($"Download chunk: [{offset}, {offset + count})");
 
-        var request = GetRequest(APIList.DownloadFile,
-            ("remote_path", Uri.EscapeDataString(path.TrimStart('/'))));
+        var request = new DownloadFileRpc(RemotePathPrefix, path, Account.AccessToken).GetRequest();
 
         while (true) {
             request.Headers.Range = new RangeHeaderValue(offset, offset + count - 1);
@@ -107,8 +102,8 @@ public class BaiduCloudStorageClient : StorageClient {
             } else if (response.StatusCode == HttpStatusCode.Unauthorized) {
                 Logger.Warn(
                     $"Unauthorized access, refresh config: {response.Content.ReadAsStringAsync().Result}");
-                request = GetRequest(APIList.DownloadFile,
-                    ("remote_path", Uri.EscapeDataString(path.TrimStart('/'))));
+                request = new DownloadFileRpc(RemotePathPrefix, path, Account.AccessToken)
+                    .GetRequest();
                 Thread.Sleep(TimeSpan.FromSeconds(10));
             } else {
                 Logger.Fatal(response.Content.ReadAsStringAsync().Result);
@@ -127,8 +122,7 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public override void Delete(string path) {
-        var response = client.FetchJToken(() => GetRequest(APIList.RemovePath,
-            ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))));
+        var response = client.Call(new RemovePathRpc(RemotePathPrefix, path, Account.AccessToken));
         if (response == null) {
             throw new InvalidOperationException();
         }
@@ -216,13 +210,8 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     void UploadDirect(string path, byte[] buffer, int offset, int count) {
-        var realPath = (string?) client.FetchJToken(() => {
-            var request = GetRequest(APIList.UploadFileDirect,
-                ("remote_path", Uri.EscapeDataString(path.TrimStart('/'))));
-
-            request.Content = new ByteArrayContent(buffer, offset, count);
-            return request;
-        })["path"];
+        var realPath = client.Call(new UploadFileDirectRpc(RemotePathPrefix, path, buffer, offset,
+            count, Account.AccessToken))?.Path;
         if (realPath != RemotePathPrefix + path) {
             throw new Exception(
                 $"Direct upload may fail: {RemotePathPrefix + path}, real path: {realPath}");
@@ -233,11 +222,8 @@ public class BaiduCloudStorageClient : StorageClient {
         var expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count)
             .ToHexString().ToLower();
 
-        var actualMd5 = (string?) client.FetchJToken(() => {
-            var request = GetRequest(APIList.UploadBlock);
-            request.Content = new ByteArrayContent(buffer, offset, count);
-            return request;
-        })["md5"];
+        var actualMd5 = client.Call(new UploadBlockRpc(buffer, offset, count, Account.AccessToken))
+            ?.Md5;
         if (expectedMd5 != actualMd5) {
             throw new UploadBlockException {
                 ExpectedMd5 = expectedMd5,
@@ -245,23 +231,12 @@ public class BaiduCloudStorageClient : StorageClient {
             };
         }
 
-        return actualMd5;
+        return actualMd5!;
     }
 
     void MergeBlocks(string path, List<string> blockList) {
-        var realPath = (string?) client.FetchJToken(() => {
-            var request = GetRequest(APIList.MergeBlocks,
-                ("remote_path", Uri.EscapeDataString(path.TrimStart('/'))));
-
-            request.Content = new FormUrlEncodedContent(new[] {
-                new KeyValuePair<string, string>("param", JsonConvert.SerializeObject(
-                    new Dictionary<string, List<string>> {
-                        ["block_list"] = blockList
-                    }))
-            });
-
-            return request;
-        })["path"];
+        var realPath = client
+            .Call(new MergeBlocksRpc(RemotePathPrefix, path, blockList, Account.AccessToken))?.Path;
         if (realPath != RemotePathPrefix + path) {
             throw new Exception(
                 $"Merge may fail! Original path: {RemotePathPrefix + path}, real path: {realPath}");
@@ -269,16 +244,15 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     public void UploadStreamRapid(string path, FileInformation fileInformation,
-        Stream input = null) {
+        Stream? input = null) {
         fileInformation.AddProperties(input, FileProperties.AllBaiduCloudRapidHashes);
 
-        if ((string?) client.FetchJToken(() => GetRequest(APIList.UploadFileRapid,
-                ("remote_path", Uri.EscapeDataString(path.TrimStart('/'))),
-                ("content_length", fileInformation.Size.Checked().ToString()),
-                ("content_md5", fileInformation.Md5.Checked()),
-                ("slice_md5", fileInformation.SliceMd5.Checked()),
-                ("content_crc32", fileInformation.Adler32.Checked())))["md5"] !=
-            fileInformation.Md5) {
+        var response = client.Call(new UploadFileRapidRpc(RemotePathPrefix, path,
+            fileInformation.Size.Checked(), fileInformation.Md5.Checked(),
+            fileInformation.SliceMd5.Checked(), fileInformation.Adler32.Checked(),
+            Account.AccessToken));
+
+        if (response?.Md5 != fileInformation.Md5) {
             throw new Exception("Response md5 is unexpected!");
         }
     }
@@ -286,8 +260,8 @@ public class BaiduCloudStorageClient : StorageClient {
     public long GetDownloadLength(string path) {
         while (true) {
             try {
-                return (long) client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
-                    ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))))["list"][0]["size"];
+                return client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken))
+                    .Checked().List.Checked()[0].Size;
             } catch (AggregateException ae) {
                 ae.Handle(x => {
                     if (x is HttpRequestException) {
@@ -307,20 +281,14 @@ public class BaiduCloudStorageClient : StorageClient {
             (buffer, bufferOffset, offset, count)
                 => Download(buffer, path, bufferOffset, offset, count));
 
-    HttpRequestMessage GetRequest(Api api, params (string Key, string Value)[] parameters)
-        => api.GetRequest([
-            ("access_token", Account.AccessToken),
-            ("remote_path_prefix", RemotePathPrefix), ..parameters
-        ]);
-
     public override IEnumerable<FileInformation> List(string path, bool recursive = false) {
         var needWalk = path.StartsWith("/$/");
 
         if (!needWalk && recursive) {
-            JToken result;
+            GetFileInfoRpc.Response result;
             try {
-                result = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
-                    ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))));
+                result = client.Call(
+                    new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken))!;
             } catch (HttpRequestException ex) {
                 if (ex.StatusCode == HttpStatusCode.NotFound) {
                     yield break;
@@ -329,70 +297,74 @@ public class BaiduCloudStorageClient : StorageClient {
                 throw;
             }
 
-            if (result["list"] == null) {
+            if (result.List == null) {
                 yield break;
             }
 
-            var info = result["list"][0];
-            if ((int) info["isdir"] == 0) {
+            var info = result.List[0];
+            if (info.Isdir == 0) {
                 yield break;
             }
 
-            needWalk = (int) info["ifhassubdir"] == 1;
+            needWalk = info.Ifhassubdir == 1;
         }
 
-        List<JToken> fileList;
+        List<DiffFileListRpc.FileInformation> fileList;
 
         if (needWalk) {
-            var entries = new Dictionary<string, JToken>();
-            var result = client.FetchJToken(() => GetRequest(APIList.DiffFileList,
-                ("cursor", "null")));
+            var entries = new Dictionary<string, DiffFileListRpc.FileInformation>();
+            var result = client.Call(new DiffFileListRpc("null", Account.AccessToken))!;
 
             ProcessDiffResponse(result, entries);
 
-            while ((bool) result["has_more"]) {
-                result = client.FetchJToken(() => GetRequest(APIList.DiffFileList,
-                    ("cursor", (string) result["cursor"])));
+            while (result.HasMore) {
+                result = client.Call(new DiffFileListRpc(result.Cursor, Account.AccessToken))!;
 
                 ProcessDiffResponse(result, entries);
             }
 
             fileList = entries.Values.ToList();
         } else {
-            var result = client.FetchJToken(() => GetRequest(APIList.ListFiles,
-                ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))));
-            fileList = new List<JToken>(result["list"] ?? Enumerable.Empty<JToken>());
+            var result =
+                client.Call(new ListFilesRpc(RemotePathPrefix, path, Account.AccessToken))!;
+            fileList = result.List?.Select(f => new DiffFileListRpc.FileInformation {
+                Path = f.Path,
+                Isdir = f.Isdir,
+                Size = f.Size,
+                Md5 = f.Md5
+            }).ToList() ?? new List<DiffFileListRpc.FileInformation>();
         }
 
-        foreach (var file in fileList.OrderBy(f => f["path"])) {
-            if ((int) file["isdir"] == 0) {
-                var id = ((string) file["path"]).Substring(RemotePathPrefix.Length);
+        foreach (var file in fileList.OrderBy(f => f.Path)) {
+            if (file.Isdir == 0) {
+                var id = file.Path.Substring(RemotePathPrefix.Length);
                 if (!id.StartsWith(path)) {
                     continue;
                 }
 
                 yield return new FileInformation {
                     Id = id,
-                    Size = (long) file["size"],
-                    Md5 = ((string) file["md5"]).ToUpper()
+                    Size = file.Size,
+                    Md5 = file.Md5?.ToUpper()
                 };
             }
         }
     }
 
-    void ProcessDiffResponse(JToken result, Dictionary<string, JToken> entries) {
-        if ((bool) result["reset"]) {
+    void ProcessDiffResponse(DiffFileListRpc.Response result,
+        Dictionary<string, DiffFileListRpc.FileInformation> entries) {
+        if (result.Reset) {
             entries.Clear();
         }
 
-        foreach (var entry in result["entries"].Values()) {
-            if ((int) entry["isdelete"] == 0) {
-                entries[(string) entry["path"]] = entry;
+        foreach (var entry in result.Entries) {
+            if (entry.Isdelete == 0) {
+                entries[entry.Path] = entry;
             } else {
-                if ((int) entry["isdir"] == 0) {
-                    entries.Remove((string) entry["path"]);
+                if (entry.Isdir == 0) {
+                    entries.Remove(entry.Path);
                 } else {
-                    var path = (string) entry["path"];
+                    var path = entry.Path;
                     var toRemove = entries.Keys.Where(x => x.StartsWith(path)).ToArray();
                     foreach (var key in toRemove) {
                         entries.Remove(key);
@@ -404,14 +376,14 @@ public class BaiduCloudStorageClient : StorageClient {
 
     public override long Length(string path) {
         try {
-            var responseObject = client.FetchJToken(() => GetRequest(APIList.GetFileInfo,
-                ("remote_path", Uri.EscapeDataString(path.TrimStart('/')))));
+            var responseObject =
+                client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken))!;
 
-            if (responseObject["list"] == null) {
+            if (responseObject.List == null) {
                 throw new FileNotFoundException();
             }
 
-            return (long) responseObject["list"][0]["size"];
+            return responseObject.List[0].Size;
         } catch (Exception ex) {
             Logger.Debug(ex, "Existence test failed");
             throw new FileNotFoundException();
@@ -420,14 +392,13 @@ public class BaiduCloudStorageClient : StorageClient {
 
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         try {
-            var value = client.FetchJToken(() => GetRequest(APIList.CopyFile,
-                ("from_remote_path", sourcePath.TrimStart('/')),
-                ("to_remote_path", destinationPath.TrimStart('/'))));
-            if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
+            var value = client.Call(new CopyFileRpc(RemotePathPrefix, sourcePath, destinationPath,
+                Account.AccessToken))!;
+            if (!value.Extra.Checked().List.Checked()[0].From.EndsWith(sourcePath)) {
                 throw new Exception("from field is incorrect");
             }
 
-            if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
+            if (!value.Extra.Checked().List.Checked()[0].To.EndsWith(destinationPath)) {
                 throw new Exception("to field is incorrect");
             }
         } catch (Exception ex) {
@@ -438,14 +409,13 @@ public class BaiduCloudStorageClient : StorageClient {
 
     public override void Move(string sourcePath, string destinationPath) {
         try {
-            var value = client.FetchJToken(() => GetRequest(APIList.MoveFile,
-                ("from_remote_path", sourcePath.TrimStart('/')),
-                ("to_remote_path", destinationPath.TrimStart('/'))));
-            if (!((string) value["extra"]["list"][0]["from"]).EndsWith(sourcePath)) {
+            var value = client.Call(new MoveFileRpc(RemotePathPrefix, sourcePath, destinationPath,
+                Account.AccessToken))!;
+            if (!value.Extra.Checked().List.Checked()[0].From.EndsWith(sourcePath)) {
                 throw new Exception("from field is incorrect");
             }
 
-            if (!((string) value["extra"]["list"][0]["to"]).EndsWith(destinationPath)) {
+            if (!value.Extra.Checked().List.Checked()[0].To.EndsWith(destinationPath)) {
                 throw new Exception("to field is incorrect");
             }
         } catch (Exception ex) {
@@ -480,28 +450,4 @@ public class BaiduCloudStorageClient : StorageClient {
         public override string ToString()
             => $"Expected md5 is {ExpectedMd5}, while actual md5 is {ActualMd5}.";
     }
-}
-
-public class APIList {
-    public Api CopyFile { get; set; }
-
-    public Api MoveFile { get; set; }
-
-    public Api DownloadFile { get; set; }
-
-    public Api UploadFileRapid { get; set; }
-
-    public Api UploadFileDirect { get; set; }
-
-    public Api RemovePath { get; set; }
-
-    public Api UploadBlock { get; set; }
-
-    public Api MergeBlocks { get; set; }
-
-    public Api GetFileInfo { get; set; }
-
-    public Api DiffFileList { get; set; }
-
-    public Api ListFiles { get; set; }
 }

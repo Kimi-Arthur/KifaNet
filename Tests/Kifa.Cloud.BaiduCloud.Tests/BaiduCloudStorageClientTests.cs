@@ -150,7 +150,7 @@ public class BaiduCloudStorageClientTests : IDisposable {
 
     static BaiduCloudStorageClient GetStorageClient()
         => new() {
-            AccountId = "PimixT"
+            AccountId = "PimixC"
         };
 
     public void Dispose() {
