@@ -158,6 +158,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             try {
                 nextUpdate = data.Fill();
             } catch (DataIsLinkedException ex) {
+                Delete(data.Id);
                 Link(ex.TargetId, data.Id);
 
                 data = Retrieve(data.Id);
