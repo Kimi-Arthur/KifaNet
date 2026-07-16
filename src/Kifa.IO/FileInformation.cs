@@ -101,25 +101,30 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
         }
     }
 
-    public FileInformation AddProperties(Stream stream, FileProperties requiredProperties) {
+    public FileInformation AddProperties(Stream? stream, FileProperties requiredProperties) {
         // Only calculate and populate nonexistent fields.
         requiredProperties -= requiredProperties & GetProperties();
 
+        if (requiredProperties == FileProperties.None) {
+            return this;
+        }
+
+        var checkedStream = stream.Checked();
         if (Size == null &&
             (requiredProperties & (FileProperties.Size | FileProperties.AllBlockHashes |
                                    FileProperties.AllHashes)) != FileProperties.None) {
-            Size = stream.Length;
+            Size = checkedStream.Length;
         }
 
         var readLength = 0;
         var buffer = new byte[BlockSize];
 
-        if (stream.CanSeek) {
-            stream.Seek(0, SeekOrigin.Begin);
+        if (checkedStream.CanSeek) {
+            checkedStream.Seek(0, SeekOrigin.Begin);
         }
 
         if (requiredProperties.HasFlag(FileProperties.SliceMd5)) {
-            readLength = stream.Read(buffer, 0, SliceLength);
+            readLength = checkedStream.Read(buffer, 0, SliceLength);
             SliceMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength)
                 .ToHexString();
         }
@@ -188,7 +193,8 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
             }
 
             var threadCount = transformers.Count;
-            while ((readLength += stream.Read(buffer, readLength, BlockSize - readLength)) != 0) {
+            while ((readLength += checkedStream.Read(buffer, readLength, BlockSize - readLength)) !=
+                   0) {
                 Parallel.ForEach(transformers, new ParallelOptions {
                     MaxDegreeOfParallelism = threadCount
                 }, transformer => transformer(buffer, readLength));
