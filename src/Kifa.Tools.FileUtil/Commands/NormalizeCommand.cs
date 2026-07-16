@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,10 +17,14 @@ class NormalizeCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to normalize.")]
     public IEnumerable<string> FileNames { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
-        var selected = SelectMany(files, file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            "files to normalize their paths (FormC + extension to lower)");
+        var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to normalize their paths (FormC + extension to lower)"));
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => NormalizeFile(file));

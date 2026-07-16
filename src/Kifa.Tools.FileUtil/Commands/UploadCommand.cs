@@ -42,6 +42,9 @@ class UploadCommand : KifaCommand {
     [Option('a', "include-all", HelpText = "Include all files already registered.")]
     public bool IncludeAll { get; set; } = false;
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var targetsFromFlag = Targets.Split(",", StringSplitOptions.RemoveEmptyEntries).ToList();
 
@@ -59,9 +62,9 @@ class UploadCommand : KifaCommand {
         var removalText = DeleteSource ? " and remove source afterwards" : "";
 
         // TODO: somehow make this type auto inferred.
-        var selected = SelectMany(files, file => $"{file} ({file.Length.ToSizeString()})",
+        var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
-                => $"files ({choices.Sum(c => c.Length).ToSizeString()}) to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}"));
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.Length).ToSizeString()})" : "")} to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}"));
 
         if (selected.Count == 0) {
             Logger.Warn("No files found or selected.");

@@ -37,6 +37,9 @@ class ImportCommand : KifaCommand {
             "Version suffix, like DVDRip, 4K etc, will be appended after the top level folder like 'Friends (1994) [DVDRip]'.")]
     public string? VersionSuffix { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var files = (ById ? GetFromFileIds() : GetFromLocalFiles()).ToList();
         if (files.Count == 0) {
@@ -252,8 +255,9 @@ class ImportCommand : KifaCommand {
         }
 
         var toRegister = SelectMany(notRegisteredFiles,
-            file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            "files to register before importing");
+            file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to register before importing"));
         toRegister.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
         return files.Where(f => f.Registered);
     }

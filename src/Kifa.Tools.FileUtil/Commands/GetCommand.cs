@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,6 +32,9 @@ class GetCommand : KifaCommand {
             "Ignores files that are already located in the given locations. Locations are given as prefixes and separated by '|'.")]
     public string? IgnoreAlreadyThere { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     List<string>? ignoreLocations;
 
     IEnumerable<string> IgnoreLocations
@@ -40,8 +44,9 @@ class GetCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
-        var selected = SelectMany(files, file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            "files to get");
+        var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to get"));
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => GetFile(file));

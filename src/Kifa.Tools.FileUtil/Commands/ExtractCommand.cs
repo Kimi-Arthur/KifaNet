@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,10 +40,14 @@ class ExtractCommand : KifaCommand {
             "Separator between archive name and entry name. Default is not prepend archive name.")]
     public string? ArchiveNameSeparator { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
-        var selected = SelectMany(files, file => $"{file} ({file.FileInfo?.Size.ToSizeString()})",
-            "files to extract from");
+        var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to extract from"));
 
         foreach (var file in selected) {
             ExecuteItem(file.ToString(), () => ExtractFile(file));
@@ -98,7 +103,8 @@ class ExtractCommand : KifaCommand {
         var selected = SelectMany(entries,
             entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
-            "entries to extract", selectionKey: "extract");
+            new Func<List<(IArchiveEntry Entry, KifaFile File)>, string>(choices
+                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"), selectionKey: "extract");
 
         var results = new KifaBatchActionResult();
 
