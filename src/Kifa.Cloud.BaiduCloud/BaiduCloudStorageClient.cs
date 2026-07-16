@@ -126,6 +126,10 @@ public class BaiduCloudStorageClient : StorageClient {
         if (response == null) {
             throw new InvalidOperationException();
         }
+
+        if (response.Errno != 0) {
+            throw new IOException($"Remove path failed: {response.ShowMsg} ({response.Errno})");
+        }
     }
 
     public override void Touch(string path) {

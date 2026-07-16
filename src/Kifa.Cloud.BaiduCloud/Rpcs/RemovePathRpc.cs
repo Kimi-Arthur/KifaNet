@@ -1,11 +1,16 @@
 using System;
 using System.Net.Http;
 using Kifa.Rpc;
-using Newtonsoft.Json.Linq;
 
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
-public sealed class RemovePathRpc : KifaJsonParameterizedRpc<JToken> {
+public sealed class RemovePathRpc : KifaJsonParameterizedRpc<RemovePathRpc.Response> {
+    public class Response {
+        public string? RequestId { get; set; }
+        public int Errno { get; set; }
+        public string? ShowMsg { get; set; }
+    }
+
     protected override string Url
         => "https://pcs.baidu.com/rest/2.0/pcs/file?method=delete&path={remote_path_prefix}/{remote_path}&access_token={access_token}";
 
