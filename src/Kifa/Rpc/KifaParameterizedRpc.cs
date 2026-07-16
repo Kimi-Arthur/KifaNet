@@ -19,6 +19,8 @@ public abstract class KifaParameterizedRpc : KifaRpc {
     protected virtual Dictionary<string, Dictionary<string, string>> PartHeaders => new();
 
     // Different types of content
+    protected virtual byte[]? BinaryContent => null;
+
     protected virtual string? JsonContent => null;
 
     protected virtual List<KeyValuePair<string, string>>? FormContent => null;
@@ -44,7 +46,9 @@ public abstract class KifaParameterizedRpc : KifaRpc {
             request.Headers.Add(headerName, value.Format(parameters));
         }
 
-        if (JsonContent != null) {
+        if (BinaryContent != null) {
+            request.Content = new ByteArrayContent(BinaryContent);
+        } else if (JsonContent != null) {
             var content = new StringContent(JsonContent.Format(parameters)) {
                 Headers = {
                     ContentType = MediaTypeHeaderValue.Parse("application/json; charset=UTF-8")
