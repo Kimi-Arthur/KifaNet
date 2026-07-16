@@ -10,6 +10,9 @@ public sealed class DiffFileListRpc : KifaJsonParameterizedRpc<DiffFileListRpc.R
         public string Cursor { get; set; } = "";
         public bool HasMore { get; set; }
         public bool Reset { get; set; }
+        public bool ClientTypeReset { get; set; }
+        public string RequestCursor { get; set; } = "";
+        public long RequestId { get; set; }
         public Dictionary<string, FileInformation> Entries { get; set; } = new();
     }
 
@@ -19,6 +22,12 @@ public sealed class DiffFileListRpc : KifaJsonParameterizedRpc<DiffFileListRpc.R
         public long Size { get; set; }
         public string? Md5 { get; set; }
         public int Isdelete { get; set; }
+        public long Ctime { get; set; }
+        public long Mtime { get; set; }
+        public long FsId { get; set; }
+        public long OwnerId { get; set; }
+        public int OwnerType { get; set; }
+        public long Revision { get; set; }
     }
 
     protected override string Url
