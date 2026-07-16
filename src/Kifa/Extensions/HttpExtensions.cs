@@ -113,6 +113,17 @@ public static class HttpExtensions {
                 return response;
             }
 
+            if (!response.IsSuccessStatusCode) {
+                string body;
+                try {
+                    using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result, Encoding.UTF8);
+                    body = sr.ReadToEnd();
+                } catch (Exception) {
+                    body = "(failed to read body)";
+                }
+                Logger.Error($"HTTP Request failed with status {response.StatusCode}. Response: {body}");
+            }
+
             return response.EnsureSuccessStatusCode();
         }, HandleHttpException);
 
