@@ -41,14 +41,33 @@ public class DwdsPage : DataModel, WithModelId<DwdsPage> {
 
     void FillPageContent() {
         var response = HttpClient.SendWithRetry(Url);
-        var actualId = response.RequestMessage!.RequestUri!.ToString()[UrlPrefix.Length..];
+        var actualUri = response.RequestMessage!.RequestUri!.ToString().Split('?')[0];
+        if (!actualUri.StartsWith(UrlPrefix)) {
+            throw new DataNotFoundException($"Redirected to an external/invalid URL: {actualUri}");
+        }
+
+        var actualId = HttpUtility.UrlDecode(actualUri[UrlPrefix.Length..]);
 
         if (actualId != RealId) {
-            throw new DataNotFoundException("Redirected to an unknown page.");
+            Client.Get(actualId);
+            throw new DataIsLinkedException {
+                TargetId = actualId
+            };
         }
 
         var doc = new HtmlDocument();
         doc.LoadHtml(response.GetString());
+
+        var lemmaNode = doc.DocumentNode.SelectSingleNode("//h1[contains(@class, 'dwdswb-ft-lemmaansatz')]/b");
+        if (lemmaNode != null) {
+            var lemma = HttpUtility.UrlDecode(lemmaNode.InnerText.Trim());
+            if (lemma != RealId) {
+                Client.Get(lemma);
+                throw new DataIsLinkedException {
+                    TargetId = lemma
+                };
+            }
+        }
 
         doc.DocumentNode
             .SelectNodes("//script | //p[. = 'Weitere Wörterbücher'] | " +
