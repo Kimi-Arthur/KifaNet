@@ -26,8 +26,6 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
     const string UserInfoUrlPattern =
         "https://www.googleapis.com/userinfo/v2/me?access_token={access_token}";
 
-    const string RefreshTokenUrlPattern =
-        "https://oauth2.googleapis.com/token?grant_type=refresh_token&refresh_token={refresh_token}&client_id={client_id}&client_secret={client_secret}";
 
     public override string GetAuthUrl(string redirectUrl, string state)
         => AuthUrlPattern.Format(("client_id", GoogleCloudConfig.ClientId),
@@ -55,15 +53,11 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
             throw new DataNotFoundException("No refresh token found.");
         }
 
-        var refreshTokenUrl = RefreshTokenUrlPattern.Format(
-            ("client_id", GoogleCloudConfig.ClientId),
-            ("client_secret", GoogleCloudConfig.ClientSecret), ("refresh_token", RefreshToken));
+        var response = HttpClient.Call(new GoogleOAuthRefreshRpc(GoogleCloudConfig.ClientId,
+            GoogleCloudConfig.ClientSecret, RefreshToken));
 
-        var response =
-            HttpClient.FetchJToken(() => new HttpRequestMessage(HttpMethod.Post, refreshTokenUrl));
-        var token = (string) response["access_token"];
-
-        AccessToken = token ?? throw new InvalidOperationException("Refresh is not successful.");
+        AccessToken = response?.AccessToken ??
+                      throw new InvalidOperationException("Refresh is not successful.");
 
         return DateTimeOffset.UtcNow + TokenValidDuration;
     }
