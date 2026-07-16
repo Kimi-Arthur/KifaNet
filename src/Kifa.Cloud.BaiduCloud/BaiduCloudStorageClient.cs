@@ -361,7 +361,7 @@ public class BaiduCloudStorageClient : StorageClient {
             entries.Clear();
         }
 
-        foreach (var entry in result.Entries) {
+        foreach (var entry in result.Entries.Values) {
             if (entry.Isdelete == 0) {
                 entries[entry.Path] = entry;
             } else {

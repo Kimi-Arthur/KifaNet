@@ -10,7 +10,7 @@ public sealed class DiffFileListRpc : KifaJsonParameterizedRpc<DiffFileListRpc.R
         public string Cursor { get; set; } = "";
         public bool HasMore { get; set; }
         public bool Reset { get; set; }
-        public List<FileInformation> Entries { get; set; } = new();
+        public Dictionary<string, FileInformation> Entries { get; set; } = new();
     }
 
     public class FileInformation {
