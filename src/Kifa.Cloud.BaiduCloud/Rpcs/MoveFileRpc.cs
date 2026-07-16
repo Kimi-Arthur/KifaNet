@@ -5,7 +5,7 @@ using Kifa.Rpc;
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
 public sealed class MoveFileRpc : KifaJsonParameterizedRpc<MoveFileRpc.Response> {
-    public class Response {
+    public class Response : BaiduRpcResponse {
         public ExtraInfo? Extra { get; set; }
     }
 

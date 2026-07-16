@@ -6,13 +6,12 @@ using Kifa.Rpc;
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
 public sealed class DiffFileListRpc : KifaJsonParameterizedRpc<DiffFileListRpc.Response> {
-    public class Response {
+    public class Response : BaiduRpcResponse {
         public string Cursor { get; set; } = "";
         public bool HasMore { get; set; }
         public bool Reset { get; set; }
         public bool ClientTypeReset { get; set; }
         public string RequestCursor { get; set; } = "";
-        public long RequestId { get; set; }
         public Dictionary<string, FileInformation> Entries { get; set; } = new();
     }
 

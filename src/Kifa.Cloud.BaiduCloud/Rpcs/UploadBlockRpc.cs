@@ -5,7 +5,7 @@ using Kifa.Rpc;
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
 public sealed class UploadBlockRpc : KifaJsonParameterizedRpc<UploadBlockRpc.Response> {
-    public class Response {
+    public class Response : BaiduRpcResponse {
         public string Md5 { get; set; } = "";
     }
 

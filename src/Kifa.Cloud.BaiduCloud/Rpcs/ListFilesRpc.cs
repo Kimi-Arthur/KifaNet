@@ -6,7 +6,7 @@ using Kifa.Rpc;
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
 public sealed class ListFilesRpc : KifaJsonParameterizedRpc<ListFilesRpc.Response> {
-    public class Response {
+    public class Response : BaiduRpcResponse {
         public List<FileInformation>? List { get; set; }
     }
 

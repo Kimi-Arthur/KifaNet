@@ -5,10 +5,7 @@ using Kifa.Rpc;
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
 public sealed class RemovePathRpc : KifaJsonParameterizedRpc<RemovePathRpc.Response> {
-    public class Response {
-        public string? RequestId { get; set; }
-        public int Errno { get; set; }
-        public string? ShowMsg { get; set; }
+    public class Response : BaiduRpcResponse {
     }
 
     protected override string Url

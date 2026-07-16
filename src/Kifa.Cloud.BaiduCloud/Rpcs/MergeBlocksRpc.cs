@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 namespace Kifa.Cloud.BaiduCloud.Rpcs;
 
 public sealed class MergeBlocksRpc : KifaJsonParameterizedRpc<MergeBlocksRpc.Response> {
-    public class Response {
+    public class Response : BaiduRpcResponse {
         public string Path { get; set; } = "";
     }
 

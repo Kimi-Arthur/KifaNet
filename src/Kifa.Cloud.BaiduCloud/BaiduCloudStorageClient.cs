@@ -214,8 +214,15 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     void UploadDirect(string path, byte[] buffer, int offset, int count) {
-        var realPath = client.Call(new UploadFileDirectRpc(RemotePathPrefix, path, buffer, offset,
-            count, Account.AccessToken))?.Path;
+        var response = client.Call(new UploadFileDirectRpc(RemotePathPrefix, path, buffer, offset,
+            count, Account.AccessToken));
+        if (response == null) {
+            throw new InvalidOperationException();
+        }
+        if (response.Errno != 0) {
+            throw new IOException($"Direct upload failed: {response.ShowMsg} ({response.Errno})");
+        }
+        var realPath = response.Path;
         if (realPath != RemotePathPrefix + path) {
             throw new Exception(
                 $"Direct upload may fail: {RemotePathPrefix + path}, real path: {realPath}");
@@ -226,8 +233,14 @@ public class BaiduCloudStorageClient : StorageClient {
         var expectedMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, offset, count)
             .ToHexString().ToLower();
 
-        var actualMd5 = client.Call(new UploadBlockRpc(buffer, offset, count, Account.AccessToken))
-            ?.Md5;
+        var response = client.Call(new UploadBlockRpc(buffer, offset, count, Account.AccessToken));
+        if (response == null) {
+            throw new InvalidOperationException();
+        }
+        if (response.Errno != 0) {
+            throw new IOException($"Upload block failed: {response.ShowMsg} ({response.Errno})");
+        }
+        var actualMd5 = response.Md5;
         if (expectedMd5 != actualMd5) {
             throw new UploadBlockException {
                 ExpectedMd5 = expectedMd5,
@@ -239,8 +252,15 @@ public class BaiduCloudStorageClient : StorageClient {
     }
 
     void MergeBlocks(string path, List<string> blockList) {
-        var realPath = client
-            .Call(new MergeBlocksRpc(RemotePathPrefix, path, blockList, Account.AccessToken))?.Path;
+        var response = client
+            .Call(new MergeBlocksRpc(RemotePathPrefix, path, blockList, Account.AccessToken));
+        if (response == null) {
+            throw new InvalidOperationException();
+        }
+        if (response.Errno != 0) {
+            throw new IOException($"Merge blocks failed: {response.ShowMsg} ({response.Errno})");
+        }
+        var realPath = response.Path;
         if (realPath != RemotePathPrefix + path) {
             throw new Exception(
                 $"Merge may fail! Original path: {RemotePathPrefix + path}, real path: {realPath}");
@@ -256,7 +276,13 @@ public class BaiduCloudStorageClient : StorageClient {
             fileInformation.SliceMd5.Checked(), fileInformation.Adler32.Checked(),
             Account.AccessToken));
 
-        if (response?.Md5 != fileInformation.Md5) {
+        if (response == null) {
+            throw new InvalidOperationException();
+        }
+        if (response.Errno != 0) {
+            throw new IOException($"Rapid upload failed: {response.ShowMsg} ({response.Errno})");
+        }
+        if (response.Md5 != fileInformation.Md5) {
             throw new Exception("Response md5 is unexpected!");
         }
     }
@@ -264,8 +290,14 @@ public class BaiduCloudStorageClient : StorageClient {
     public long GetDownloadLength(string path) {
         while (true) {
             try {
-                return client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken))
-                    .Checked().List.Checked()[0].Size;
+                var response = client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken));
+                if (response == null) {
+                    throw new InvalidOperationException();
+                }
+                if (response.Errno != 0) {
+                    throw new IOException($"Get download length failed: {response.ShowMsg} ({response.Errno})");
+                }
+                return response.List.Checked()[0].Size;
             } catch (AggregateException ae) {
                 ae.Handle(x => {
                     if (x is HttpRequestException) {
@@ -293,6 +325,9 @@ public class BaiduCloudStorageClient : StorageClient {
             try {
                 result = client.Call(
                     new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken))!;
+                if (result.Errno != 0) {
+                    throw new IOException($"Get file info failed: {result.ShowMsg} ({result.Errno})");
+                }
             } catch (HttpRequestException ex) {
                 if (ex.StatusCode == HttpStatusCode.NotFound) {
                     yield break;
@@ -317,12 +352,24 @@ public class BaiduCloudStorageClient : StorageClient {
 
         if (needWalk) {
             var entries = new Dictionary<string, DiffFileListRpc.FileInformation>();
-            var result = client.Call(new DiffFileListRpc("null", Account.AccessToken))!;
+            var result = client.Call(new DiffFileListRpc("null", Account.AccessToken));
+            if (result == null) {
+                throw new InvalidOperationException();
+            }
+            if (result.Errno != 0) {
+                throw new IOException($"Diff file list failed: {result.ShowMsg} ({result.Errno})");
+            }
 
             ProcessDiffResponse(result, entries);
 
             while (result.HasMore) {
-                result = client.Call(new DiffFileListRpc(result.Cursor, Account.AccessToken))!;
+                result = client.Call(new DiffFileListRpc(result.Cursor, Account.AccessToken));
+                if (result == null) {
+                    throw new InvalidOperationException();
+                }
+                if (result.Errno != 0) {
+                    throw new IOException($"Diff file list failed: {result.ShowMsg} ({result.Errno})");
+                }
 
                 ProcessDiffResponse(result, entries);
             }
@@ -330,7 +377,13 @@ public class BaiduCloudStorageClient : StorageClient {
             fileList = entries.Values.ToList();
         } else {
             var result =
-                client.Call(new ListFilesRpc(RemotePathPrefix, path, Account.AccessToken))!;
+                client.Call(new ListFilesRpc(RemotePathPrefix, path, Account.AccessToken));
+            if (result == null) {
+                throw new InvalidOperationException();
+            }
+            if (result.Errno != 0) {
+                throw new IOException($"List files failed: {result.ShowMsg} ({result.Errno})");
+            }
             fileList = result.List?.Select(f => new DiffFileListRpc.FileInformation {
                 Path = f.Path,
                 Isdir = f.Isdir,
@@ -381,7 +434,13 @@ public class BaiduCloudStorageClient : StorageClient {
     public override long Length(string path) {
         try {
             var responseObject =
-                client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken))!;
+                client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken));
+            if (responseObject == null) {
+                throw new InvalidOperationException();
+            }
+            if (responseObject.Errno != 0) {
+                throw new IOException($"Get file info failed: {responseObject.ShowMsg} ({responseObject.Errno})");
+            }
 
             if (responseObject.List == null) {
                 throw new FileNotFoundException();
@@ -397,7 +456,13 @@ public class BaiduCloudStorageClient : StorageClient {
     public override void Copy(string sourcePath, string destinationPath, bool neverLink = false) {
         try {
             var value = client.Call(new CopyFileRpc(RemotePathPrefix, sourcePath, destinationPath,
-                Account.AccessToken))!;
+                Account.AccessToken));
+            if (value == null) {
+                throw new InvalidOperationException();
+            }
+            if (value.Errno != 0) {
+                throw new IOException($"Copy failed: {value.ShowMsg} ({value.Errno})");
+            }
             if (!value.Extra.Checked().List.Checked()[0].From.EndsWith(sourcePath)) {
                 throw new Exception("from field is incorrect");
             }
@@ -414,7 +479,13 @@ public class BaiduCloudStorageClient : StorageClient {
     public override void Move(string sourcePath, string destinationPath) {
         try {
             var value = client.Call(new MoveFileRpc(RemotePathPrefix, sourcePath, destinationPath,
-                Account.AccessToken))!;
+                Account.AccessToken));
+            if (value == null) {
+                throw new InvalidOperationException();
+            }
+            if (value.Errno != 0) {
+                throw new IOException($"Move failed: {value.ShowMsg} ({value.Errno})");
+            }
             if (!value.Extra.Checked().List.Checked()[0].From.EndsWith(sourcePath)) {
                 throw new Exception("from field is incorrect");
             }
