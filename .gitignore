@@ -352,3 +352,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# NuGet API Keys/Secrets
+scripts/nuget_key
+
