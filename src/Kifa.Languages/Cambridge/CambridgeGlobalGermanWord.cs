@@ -130,8 +130,9 @@ public class CambridgeGlobalGermanDefinition {
             Notes = notesElement.GetSafeInnerText().Trim();
         }
 
-        Translation = string.Join("",
-            element.QuerySelectorAll(".def-body > .trans").Select(e => e.GetSafeInnerText()));
+        Translation = string.Join("", element.QuerySelectorAll(".def-body > .trans")
+            .Select(e => e.QuerySelector(".trans") ?? e)
+            .Select(e => e.GetSafeInnerText()));
         Examples = element.QuerySelectorAll(".examp").Select(div => new TextWithTranslation {
             Text = div.QuerySelector(".eg").GetSafeInnerText(),
             Translation = div.QuerySelector(".trans").GetSafeInnerText()

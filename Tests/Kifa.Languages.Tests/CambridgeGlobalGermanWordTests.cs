@@ -97,7 +97,7 @@ public class CambridgeGlobalGermanWordTests {
         };
 
         word.Fill();
-        expectedWord = CambridgeGlobalGermanWord.Client.Get(id);
+        expectedWord = CambridgeGlobalGermanWord.Client.Get(id, refresh: true);
         expectedWord.Metadata = null;
 
         Assert.Equal(expectedWord, word);
