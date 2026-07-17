@@ -25,7 +25,8 @@ public class CambridgePage : DataModel, WithModelId<CambridgePage> {
     public List<string> PagesBefore { get; set; } = [];
     public List<string> PagesAfter { get; set; } = [];
 
-    public string? PageContent { get; set; }
+    [ExternalProperty("html")]
+    public string PageContent { get; set; } = "";
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient HttpClient = new();
