@@ -11,7 +11,8 @@ public interface KifaServiceClient<TDataModel>
     SortedDictionary<string, TDataModel> List(string folder = "", bool recursive = true,
         KifaDataOptions? options = null);
 
-    TDataModel? Get(string id, bool refresh = false, KifaDataOptions? options = null);
+    TDataModel? Get(string id, bool refresh = false, bool rewrite = false,
+        KifaDataOptions? options = null);
     List<TDataModel?> Get(List<string> ids, KifaDataOptions? options = null);
 
     KifaActionResult Set(TDataModel data);
@@ -36,7 +37,7 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     public abstract SortedDictionary<string, TDataModel> List(string folder = "",
         bool recursive = true, KifaDataOptions? options = null);
 
-    public abstract TDataModel? Get(string id, bool refresh = false,
+    public abstract TDataModel? Get(string id, bool refresh = false, bool rewrite = false,
         KifaDataOptions? options = null);
 
     public virtual List<TDataModel?> Get(List<string> ids, KifaDataOptions? options = null)

@@ -111,11 +111,11 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             return result;
         }, (ex, i) => HandleException(ex, i, $"Failure in LIST {ModelId}"));
 
-    public override TDataModel? Get(string id, bool refresh = false,
+    public override TDataModel? Get(string id, bool refresh = false, bool rewrite = false,
         KifaDataOptions? options = null)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                GetUrl(Uri.EscapeDataString(id), [$"refresh={refresh}"], options));
+                GetUrl(Uri.EscapeDataString(id), [$"refresh={refresh}", $"rewrite={rewrite}"], options));
 
             return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));

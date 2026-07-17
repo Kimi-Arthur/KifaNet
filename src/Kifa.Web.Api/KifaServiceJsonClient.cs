@@ -111,7 +111,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }));
     }
 
-    public override TDataModel? Get(string id, bool refresh = false,
+    public override TDataModel? Get(string id, bool refresh = false, bool rewrite = false,
         KifaDataOptions? options = null) {
         lock (GetLock(id)) {
             try {
@@ -119,6 +119,22 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
                 if (Fill(ref data, id, refresh)) {
                     WriteTarget(data.Clone());
+                } else if (rewrite) {
+                    if (data != null) {
+                        var rawData = ReadRaw(data.RealId);
+                        if (rawData != null) {
+                            var clonedForChecking = data.Clone();
+                            CleanupForWriting(clonedForChecking);
+                            foreach (var (property, suffix) in TDataModel.ExternalProperties) {
+                                property.SetValue(clonedForChecking, "");
+                            }
+                            var expectedRawData = $"{JsonConvert.SerializeObject(clonedForChecking, KifaJsonSerializerSettings.Pretty)}\n";
+                            if (rawData != expectedRawData) {
+                                Logger.Info($"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
+                                WriteTarget(data.Clone());
+                            }
+                        }
+                    }
                 }
 
                 // TODO: Not sure...

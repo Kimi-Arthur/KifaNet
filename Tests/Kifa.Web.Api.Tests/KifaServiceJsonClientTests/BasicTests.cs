@@ -17,6 +17,9 @@ public class TestDataModel : DataModel, WithModelId<TestDataModel> {
     public List<string>? ListData { get; set; }
 
     public TestDataModel Self { get; set; }
+
+    [ExternalProperty("txt")]
+    public string? ExternalData { get; set; }
 }
 
 public class BasicTests : IDisposable {
@@ -396,6 +399,44 @@ public class BasicTests : IDisposable {
     [Fact]
     public void ListEmptyTest() {
         client.List().Values.Where(x => x.Id.StartsWith(nameof(ListEmptyTest))).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetExpectedRewriteTest() {
+        Directory.CreateDirectory(folder + "/tests");
+        var id = nameof(GetExpectedRewriteTest);
+
+        var model = new TestDataModel {
+            Id = id,
+            Data = "some data",
+            ExternalData = "this should be in an external file!"
+        };
+
+        var rawJson = JsonConvert.SerializeObject(model, KifaJsonSerializerSettings.Pretty) + "\n";
+        File.WriteAllText(folder + $"/tests/{id}.json", rawJson);
+
+        var txtFilePath = folder + $"/tests/{id}.txt";
+        File.Exists(txtFilePath).Should().BeFalse();
+
+        var data = client.Get(id);
+        data.Should().NotBeNull();
+        File.Exists(txtFilePath).Should().BeFalse();
+
+        data = client.Get(id, rewrite: true);
+
+        data.Should().NotBeNull();
+        data.Id.Should().Be(id);
+        data.Data.Should().Be("some data");
+        data.ExternalData.Should().Be("this should be in an external file!");
+
+        File.Exists(txtFilePath).Should().BeTrue();
+        File.ReadAllText(txtFilePath).Should().Be("this should be in an external file!");
+
+        var updatedJson = File.ReadAllText(folder + $"/tests/{id}.json");
+        updatedJson.Should().NotContain("this should be in an external file!");
+
+        var deserializedJsonModel = JsonConvert.DeserializeObject<TestDataModel>(updatedJson);
+        deserializedJsonModel.ExternalData.Should().BeNullOrEmpty();
     }
 
     public void Dispose() {
