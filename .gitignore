@@ -356,3 +356,5 @@ $RECYCLE.BIN/
 # NuGet API Keys/Secrets
 scripts/nuget_key
 
+# Agent temporary files
+.agent_temp/

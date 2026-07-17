@@ -9,3 +9,7 @@
 ## Git Commit Rules
 - Use meaningful, concise commit messages following conventional commit standards.
 - Keep commits focused and atomic.
+
+## Temporary Files Rules
+- Always place all temporary files, crawler state/progress files, local logs, intermediate scripts, or certificates generated during agent operations in the `.agent_temp/` directory.
+- Do not write temporary or untracked files to the root directory of the workspace or other source/test folders.
