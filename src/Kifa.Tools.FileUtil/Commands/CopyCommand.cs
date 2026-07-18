@@ -123,11 +123,44 @@ class CopyCommand : KifaCommand {
 
     static KifaActionResult LinkLocalFile(KifaFile file1, KifaFile file2)
         => KifaActionResult.FromAction(() => {
-            if (file2.Id.EndsWith('/')) {
-                file2 = file2.GetFile(file1.Name);
+            file1.Add();
+
+            if (file2.Exists()) {
+                if (file1.IsLinked(file2)) {
+                    var linkResult = FileInformation.Client.Link(file1.Id, file2.Id);
+                    if (linkResult.Status != KifaActionStatus.OK) {
+                        return linkResult;
+                    }
+
+                    file2.Register(true);
+                    file2.Add();
+
+                    return KifaActionResult.Success(
+                        $"File {file2} is already linked to {file1} on disk.");
+                }
+
+                var file2Sha256 = file2.FileInfo?.Sha256 ??
+                                  file2.CalculateInfo(FileProperties.Sha256).Sha256;
+                var isSameContent = file1.FileInfo?.Sha256 != null &&
+                                    file2Sha256 == file1.FileInfo.Sha256;
+
+                if (isSameContent) {
+                    var linkResult = FileInformation.Client.Link(file1.Id, file2.Id);
+                    if (linkResult.Status != KifaActionStatus.OK) {
+                        return linkResult;
+                    }
+
+                    file2.Register(true);
+                    file2.Add();
+
+                    return KifaActionResult.Warning(
+                        $"File {file2} already exists as a different instance on disk (same content). Run 'filex clean' to deduplicate.");
+                }
+
+                return KifaActionResult.Error(
+                    $"File {file2} already exists as a different instance on disk (different content).");
             }
 
-            file1.Add();
             var result = FileInformation.Client.Link(file1.Id, file2.Id);
             if (result.Status != KifaActionStatus.OK) {
                 return result;
@@ -137,7 +170,7 @@ class CopyCommand : KifaCommand {
 
             // Skip the full check if the linking is from local file and in the same cell.
             // Caveat: It's only inferred that it used hard linking.
-            file2.Register(file1.IsCompatible(file2) && file2.IsLocal);
+            file2.Register(true);
             file2.Add();
             return KifaActionResult.Success();
         });

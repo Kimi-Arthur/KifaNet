@@ -725,6 +725,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public bool IsCompatible(KifaFile other)
         => Host == other.Host && FileFormat == other.FileFormat;
 
+    public bool IsLinked(KifaFile other)
+        => Exists() && other.Exists() && IsCompatible(other) &&
+           (Equals(other) || (IdInfo?.Id != null && IdInfo.Id == other.IdInfo?.Id));
+
     public override int GetHashCode() => ToString()?.GetHashCode() ?? 0;
 
     public bool Equals(KifaFile? other) {

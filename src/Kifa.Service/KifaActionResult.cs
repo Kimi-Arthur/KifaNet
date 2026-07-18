@@ -35,6 +35,12 @@ public class KifaActionResult {
             Message = message
         };
 
+    public static KifaActionResult Warning(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Warning,
+            Message = message
+        };
+
     public static KifaActionResult BadRequest(string? message = null)
         => new() {
             Status = KifaActionStatus.BadRequest,
