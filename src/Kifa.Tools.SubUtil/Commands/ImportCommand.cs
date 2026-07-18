@@ -27,6 +27,13 @@ class ImportCommand : KifaCommand {
     public string ReleaseId { get; set; }
 
     public override int Execute(KifaTask? task = null) {
+        var langPart = ReleaseId.Split('.').Last();
+        if (langPart.Contains('-')) {
+            Logger.Error(
+                $"Language code '{langPart}' in ReleaseId '{ReleaseId}' contains '-'. Dual language codes (e.g. 'zh-en') are not allowed. Only the main language code (e.g. 'zh') should be used.");
+            return 1;
+        }
+
         // Assumed all FileNames are from SubtitlesHost.
         var subtitleFiles = KifaFile.FindExistingFiles(FileNames);
         var targetFiles = KifaFile.FindExistingFiles(Targets)

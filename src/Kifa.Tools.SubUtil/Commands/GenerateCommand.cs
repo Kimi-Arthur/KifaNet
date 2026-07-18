@@ -37,16 +37,6 @@ class GenerateCommand : KifaCommand {
     }
 
     KifaActionResult GenerateSubtitle(KifaFile file) {
-        var finalFile = file.GetSubtitleFile("default.ass");
-
-        if (finalFile.Exists() && !Force) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message =
-                    $"No subtitle generated for {file} as {finalFile} exists. Overwrite with '-f'."
-            };
-        }
-
         var document = new AssDocument();
 
         var scriptInfo = new AssScriptInfoSection {
@@ -95,17 +85,46 @@ class GenerateCommand : KifaCommand {
 
         document.Sections.Add(events);
 
-        var subtitleIds = new List<string>();
-
-        if (selectedSubtitles.Count > 0) {
-            subtitleIds.AddRange(selectedSubtitles.Select(sub => sub.Id));
+        if (selectedSubtitles.Count == 0 && bilibiliChats.Count == 0 && qqChats.Count == 0) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"No subtitles or danmaku selected for {file}."
+            };
         }
 
-        if (bilibiliChats.Count > 0) {
-            subtitleIds.AddRange(bilibiliChats.Select(chat => chat.Id));
+        var subtitleIds = selectedSubtitles.Select(sub => sub.Id).ToList();
+
+        var danmakuGroups = new List<string>();
+        foreach (var chat in bilibiliChats) {
+            var parts = chat.Id.Split('-');
+            var group = parts.Length > 1 ? parts[1] : "bilibili";
+            if (!danmakuGroups.Contains(group)) {
+                danmakuGroups.Add(group);
+            }
         }
 
-        scriptInfo.OriginalScript = string.Join(", ", subtitleIds);
+        foreach (var chat in qqChats) {
+            var group = "qq";
+            if (!danmakuGroups.Contains(group)) {
+                danmakuGroups.Add(group);
+            }
+        }
+
+        var danmakuTag = danmakuGroups.Count > 0 ? $"<{string.Join("+", danmakuGroups)}>" : null;
+        var langTag = subtitleIds.Count > 0 ? string.Join("+", subtitleIds) : null;
+        var filenameTag = string.Join(".", new[] { danmakuTag, langTag }.Where(t => t != null));
+
+        var finalFile = file.GetSubtitleFile($"{filenameTag}.ass");
+
+        if (finalFile.Exists() && !Force) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message =
+                    $"No subtitle generated for {file} as {finalFile} exists. Overwrite with '-f'."
+            };
+        }
+
+        scriptInfo.OriginalScript = string.Join(", ", subtitleIds.Concat(bilibiliChats.Select(c => c.Id)));
 
         finalFile.Delete();
         finalFile.Write(document.ToString());
@@ -113,7 +132,7 @@ class GenerateCommand : KifaCommand {
         return new KifaActionResult {
             Status = KifaActionStatus.OK,
             Message =
-                $"Created {finalFile} with {selectedSubtitles.Count} subtitles, {bilibiliChats} Bilibili chats."
+                $"Created {finalFile} with {selectedSubtitles.Count} subtitles, {bilibiliChats.Count} Bilibili chats."
         };
     }
 
