@@ -23,7 +23,7 @@ public class TvShowJsonServiceClient : KifaServiceJsonClient<TvShow>, TvShowServ
 
     public string Format(string id, int seasonId, List<int> episodeIds) {
         var show = Get(id);
-        var season = show.Seasons.First(s => s.Id == seasonId);
+        var season = show.AllSeasons.First(s => s.Id == seasonId);
         var episodes = episodeIds.Select(episodeId => season.Episodes.First(e => e.Id == episodeId))
             .ToList();
         return show.Format(season, episodes);

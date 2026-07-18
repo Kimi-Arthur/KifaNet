@@ -126,4 +126,42 @@ public class TvShowTests {
         items[0].Path.Should().Be(
             "/TV Shows/United States/Westworld (2016)/Season 2 The Door (2018)/Westworld S02E01 Journey Into Night");
     }
+
+    [Fact]
+    public void ParseSpecialsTest() {
+        var show = new TvShow {
+            Id = "Westworld",
+            Title = "Westworld",
+            Region = Region.UnitedStates,
+            AirDate = Date.Parse("2016-10-02"),
+            PatternId = "multi_season",
+            Seasons = new List<Season> {
+                new() {
+                    Id = 1,
+                    AirDate = Date.Parse("2016-10-02"),
+                    Episodes = new List<Episode> {
+                        new() {
+                            Id = 1,
+                            Title = "The Original"
+                        }
+                    }
+                }
+            },
+            Specials = new List<Episode> {
+                new() {
+                    Id = 1,
+                    Title = "Special Episode"
+                }
+            }
+        };
+
+        var parsed = show.Parse("/TV Shows/United States/Westworld (2016)/Specials (2016)/Westworld SP1 Special Episode.mp4");
+        parsed.Should().NotBeNull();
+        parsed.Value.Season.Id.Should().Be(0);
+        parsed.Value.Episode.Id.Should().Be(1);
+        parsed.Value.Episode.Title.Should().Be("Special Episode");
+
+        var formatted = show.Format(parsed.Value.Season, parsed.Value.Episode);
+        formatted.Should().Be("/TV Shows/United States/Westworld (2016)/Specials (2016)/Westworld SP1 Special Episode");
+    }
 }

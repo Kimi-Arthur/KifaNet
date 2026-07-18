@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Kifa.Infos.Tmdb;
 using Kifa.Service;
+using Newtonsoft.Json;
+using YamlDotNet.Serialization;
 
 namespace Kifa.Infos;
 
@@ -26,6 +28,24 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
     public List<Season>? Seasons { get; set; }
     public List<Episode>? Specials { get; set; }
+
+    [JsonIgnore]
+    [YamlIgnore]
+    public List<Season> AllSeasons {
+        get {
+            var seasons = Seasons ?? new List<Season>();
+            return Specials is { Count: > 0 }
+                ? new List<Season> {
+                    new() {
+                        Id = 0,
+                        Title = "Specials",
+                        AirDate = AirDate,
+                        Episodes = Specials
+                    }
+                }.Concat(seasons).ToList()
+                : seasons;
+        }
+    }
 
     public string? PatternId { get; set; }
     public int? SeasonIdWidth { get; set; }
@@ -102,8 +122,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         var baseFolder = GetBaseFolder(version);
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"{Regex.Escape(baseFolder)}/Season (\d+) (.* )?(\(\d+\))/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
-            "single_season" => $@"{Regex.Escape(baseFolder)}/{Title} EP(?<episode_id>\d+)",
+                $@"{Regex.Escape(baseFolder)}/(Season \d+|Specials|\d+)([^/]*)/{Title} (S(?<season_id>\d+)E(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
+            "single_season" => $@"{Regex.Escape(baseFolder)}/{Title} (EP(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
             _ => null
         };
 
@@ -113,19 +133,23 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
         var match = Regex.Match(formatted, pattern);
         if (match.Success) {
-            var seasonId = match.Groups["season_id"].Success
-                ? int.Parse(match.Groups["season_id"].Value)
-                : 1;
+            var seasonId = match.Groups["special_episode_id"].Success
+                ? 0
+                : match.Groups["season_id"].Success
+                    ? int.Parse(match.Groups["season_id"].Value)
+                    : 1;
 
-            var episodeId = match.Groups["episode_id"].Success
-                ? int.Parse(match.Groups["episode_id"].Value)
-                : -1;
+            var episodeId = match.Groups["special_episode_id"].Success
+                ? int.Parse(match.Groups["special_episode_id"].Value)
+                : match.Groups["episode_id"].Success
+                    ? int.Parse(match.Groups["episode_id"].Value)
+                    : -1;
 
             if (episodeId < 0) {
                 return null;
             }
 
-            var season = Seasons.First(s => s.Id == seasonId);
+            var season = AllSeasons.First(s => s.Id == seasonId);
             var episode = season.Episodes.First(e => e.Id == episodeId);
             return (season, episode);
         }
@@ -148,15 +172,27 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
         var baseFolder = GetBaseFolder(version);
 
+        var seasonFolder = season.Id == 0
+            ? $"/{season.Title ?? "Specials"}".TrimEnd()
+            : $"/Season {season.Id} {season.Title}".TrimEnd();
+        if (season.AirDate != null) {
+            seasonFolder += $" ({season.AirDate.Year})";
+        }
+
+        var epCode = season.Id == 0
+            ? string.Join("", episodes.Select(e => $"SP{e.Id}"))
+            : $"S{sid}" + string.Join("", eids.Select(eid => $"E{eid}"));
+
+        var epCodeSingle = season.Id == 0
+            ? string.Join("", episodes.Select(e => $"SP{e.Id}"))
+            : string.Join("", eids.Select(eid => $"EP{eid}"));
+
         // season.Title and episode.Title can be empty.
         return patternId switch {
-            "multi_season" => baseFolder + $"/Season {season.Id} {season.Title}".TrimEnd() +
-                              $" ({season.AirDate.Year})" +
-                              $"/{Title} S{sid}{string.Join("", eids.Select(eid => $"E{eid}"))} {episodeTitle}"
-                                  .TrimEnd(),
+            "multi_season" => baseFolder + seasonFolder +
+                              $"/{Title} {epCode} {episodeTitle}".TrimEnd(),
             "single_season" => baseFolder +
-                               $"/{Title} {string.Join("", eids.Select(eid => $"EP{eid}"))} {episodeTitle}"
-                                   .TrimEnd(),
+                               $"/{Title} {epCodeSingle} {episodeTitle}".TrimEnd(),
             _ => null
         };
     }
@@ -199,7 +235,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         var tvShow = Client.Get(id).Checked();
         return new ItemInfoList {
             Info = tvShow,
-            Items = tvShow.Seasons.Checked()
+            Items = tvShow.AllSeasons
                 .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)
                 .SelectMany(season => season.Episodes.Checked(),
                     (season, episode) => (Season: season, Episode: episode))
@@ -229,7 +265,7 @@ public class TvShowRestServiceClient : KifaServiceRestClient<TvShow>, TvShowServ
 
     public string Format(string id, int seasonId, List<int> episodeIds) {
         var show = Get(id);
-        var season = show.Seasons.First(s => s.Id == seasonId);
+        var season = show.AllSeasons.First(s => s.Id == seasonId);
         var episodes = episodeIds.Select(episodeId => season.Episodes.First(e => e.Id == episodeId))
             .ToList();
         return show.Format(season, episodes);

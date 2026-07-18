@@ -44,6 +44,23 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
 
     [JsonIgnore]
     [YamlIgnore]
+    public List<Season> AllSeasons {
+        get {
+            var seasons = Seasons ?? new List<Season>();
+            return Specials is { Count: > 0 }
+                ? new List<Season> {
+                    new() {
+                        Id = 0,
+                        Title = "Specials",
+                        Episodes = Specials
+                    }
+                }.Concat(seasons).ToList()
+                : seasons;
+        }
+    }
+
+    [JsonIgnore]
+    [YamlIgnore]
     string Title => Id.Checked().Split("/").Last();
 
     public string? Format(Season season, Episode episode, string? version = null) {
@@ -55,11 +72,18 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         var eid = episode.Id.ToString().PadLeft(episodeIdWidth, '0');
         var date = episode.AirDate?.ToString();
 
+        var seasonFolder = season.Id == 0
+            ? $"/{season.Title ?? "Specials"}".TrimEnd()
+            : $"/Season {season.Id} {season.Title}".TrimEnd();
+
+        var epCode = season.Id == 0 ? $"SP{episode.Id}" : $"S{sid}E{eid}";
+        var epCodeSingle = season.Id == 0 ? $"SP{episode.Id}" : $"EP{eid}";
+
         // season.Title and episode.Title can be empty.
         return PatternId switch {
-            "multi_season" => $"{Id}/Season {season.Id} {season.Title}".TrimEnd() +
-                              $"/{Title} S{sid}E{eid} {episode.Title}".TrimEnd(),
-            "single_season" => $"{Id}/{Title} EP{eid} {episode.Title}".TrimEnd(),
+            "multi_season" => $"{Id}" + seasonFolder +
+                              $"/{Title} {epCode} {episode.Title}".TrimEnd(),
+            "single_season" => $"{Id}/{Title} {epCodeSingle} {episode.Title}".TrimEnd(),
             "date" => $"{Id}/{Title} {date} {episode.Title}".TrimEnd(),
             _ => null
         };
@@ -68,8 +92,8 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
     public (Season Season, Episode Episode)? Parse(string formatted, string? version = null) {
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"{Id}/Season (\d+)( .*)?/{Title} S(?<season_id>\d+)E(?<episode_id>\d+)",
-            "single_season" => $@"{Id}/{Title} EP(?<episode_id>\d+)",
+                $@"{Id}/(Season \d+|Specials|\d+)([^/]*)/{Title} (S(?<season_id>\d+)E(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
+            "single_season" => $@"{Id}/{Title} (EP(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
             _ => null
         };
 
@@ -79,19 +103,23 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
 
         var match = Regex.Match(formatted, pattern);
         if (match.Success) {
-            var seasonId = match.Groups["season_id"].Success
-                ? int.Parse(match.Groups["season_id"].Value)
-                : 1;
+            var seasonId = match.Groups["special_episode_id"].Success
+                ? 0
+                : match.Groups["season_id"].Success
+                    ? int.Parse(match.Groups["season_id"].Value)
+                    : 1;
 
-            var episodeId = match.Groups["episode_id"].Success
-                ? int.Parse(match.Groups["episode_id"].Value)
-                : -1;
+            var episodeId = match.Groups["special_episode_id"].Success
+                ? int.Parse(match.Groups["special_episode_id"].Value)
+                : match.Groups["episode_id"].Success
+                    ? int.Parse(match.Groups["episode_id"].Value)
+                    : -1;
 
             if (episodeId < 0) {
                 return null;
             }
 
-            var season = Seasons.First(s => s.Id == seasonId);
+            var season = AllSeasons.First(s => s.Id == seasonId);
             var episode = season.Episodes.First(e => e.Id == episodeId);
             return (season, episode);
         }
@@ -118,7 +146,7 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         var series = Client.Get(id).Checked();
         return new ItemInfoList {
             Info = series,
-            Items = series.Seasons.Checked()
+            Items = series.AllSeasons
                 .Where(season => requestedSeasonId == null || season.Id == requestedSeasonId)
                 .SelectMany(season => season.Episodes.Checked(),
                     (season, episode) => (Season: season, Episode: episode))

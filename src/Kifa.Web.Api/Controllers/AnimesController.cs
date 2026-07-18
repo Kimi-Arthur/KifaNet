@@ -14,7 +14,7 @@ public class AnimeJsonServiceClient : KifaServiceJsonClient<Anime>, Anime.Servic
     public string? Format(string id, int seasonId, int episodeId) {
         var show = Get(id);
 
-        var season = show?.Seasons?.First(s => s.Id == seasonId);
+        var season = show?.AllSeasons?.First(s => s.Id == seasonId);
 
         if (season == null) {
             return null;
