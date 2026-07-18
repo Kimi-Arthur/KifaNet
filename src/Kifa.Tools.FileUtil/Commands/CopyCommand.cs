@@ -16,12 +16,12 @@ class CopyCommand : KifaCommand {
 
     [Value(0, Min = 2, MetaName = "FILES", MetaValue = "STRING", Required = true,
         HelpText =
-            "Files to copy, the last one is the new link name or folder (ending with a slash.")]
+            "Files to copy, the last one is the destination link name or folder (ending with a slash).")]
     public IEnumerable<string> Files { get; set; }
 
-    public IEnumerable<string> Targets => Files.SkipLast(1);
+    public IEnumerable<string> Sources => Files.SkipLast(1);
 
-    public string LinkName => Files.Last();
+    public string Destination => Files.Last();
 
     [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
     public bool ById { get; set; } = false;
@@ -35,34 +35,34 @@ class CopyCommand : KifaCommand {
     }
 
     int ExecuteLocal() {
-        var destination = new KifaFile(LinkName);
-        var targetList = Targets.Select(t => new KifaFile(t)).ToList();
-        var isDestFolder = LinkName.EndsWith('/') || targetList.Count > 1;
+        var destination = new KifaFile(Destination);
+        var sourceItems = Sources.Select(s => new KifaFile(s)).ToList();
+        var isDestFolder = Destination.EndsWith('/') || sourceItems.Count > 1;
 
-        var allPairs = new List<(KifaFile Source, KifaFile Destination)>();
+        var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
-        foreach (var source in targetList) {
-            if (!source.Exists() && source.List(recursive: true).Any()) {
-                var files = source.List(recursive: true).ToList();
-                var sourceFolderId = source.Id.EndsWith('/') ? source.Id : source.Id + "/";
+        foreach (var sourceItem in sourceItems) {
+            if (!sourceItem.Exists() && sourceItem.List(recursive: true).Any()) {
+                var childFiles = sourceItem.List(recursive: true).ToList();
+                var sourceFolderId = sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
                 var baseDestId = isDestFolder
-                    ? $"{destination.Host}{destination.Id.TrimEnd('/')}/{source.Name}"
+                    ? $"{destination.Host}{destination.Id.TrimEnd('/')}/{sourceItem.Name}"
                     : $"{destination.Host}{destination.Id.TrimEnd('/')}";
 
-                foreach (var file in files) {
-                    var relativePath = file.Id[sourceFolderId.Length..];
+                foreach (var childFile in childFiles) {
+                    var relativePath = childFile.Id[sourceFolderId.Length..];
                     var targetFile = new KifaFile($"{baseDestId}/{relativePath}");
-                    allPairs.Add((file, targetFile));
+                    localFileCopyPairs.Add((childFile, targetFile));
                 }
             } else {
                 var targetFile = isDestFolder
-                    ? destination.GetFile(source.Name)
+                    ? destination.GetFile(sourceItem.Name)
                     : destination;
-                allPairs.Add((source, targetFile));
+                localFileCopyPairs.Add((sourceItem, targetFile));
             }
         }
 
-        var selected = SelectMany(allPairs, pair => $"{pair.Source}\n=>\t{pair.Destination}",
+        var selected = SelectMany(localFileCopyPairs, pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}",
             "files to link");
 
         if (selected.Count == 0) {
@@ -70,43 +70,43 @@ class CopyCommand : KifaCommand {
             return 0;
         }
 
-        foreach (var (file, dest) in selected) {
-            ExecuteItem(file.ToString(), () => LinkLocalFile(file, dest));
+        foreach (var (sourceFile, destinationFile) in selected) {
+            ExecuteItem(sourceFile.ToString(), () => LinkLocalFile(sourceFile, destinationFile));
         }
 
         return LogSummary();
     }
 
     int ExecuteById() {
-        var linkName = LinkName.TrimEnd('/');
-        var targetList = Targets.Select(t => t.TrimEnd('/')).ToList();
+        var destinationPath = Destination.TrimEnd('/');
+        var sourceIds = Sources.Select(s => s.TrimEnd('/')).ToList();
 
-        if (targetList.Any(t => !t.StartsWith('/')) || !linkName.StartsWith('/')) {
+        if (sourceIds.Any(s => !s.StartsWith('/')) || !destinationPath.StartsWith('/')) {
             Logger.Error("You should use absolute file path for all arguments.");
             return 1;
         }
 
-        var isLinkNameFolder = LinkName.EndsWith('/') || targetList.Count > 1;
-        var allLinks = new List<(string File, string Link)>();
+        var isDestFolder = Destination.EndsWith('/') || sourceIds.Count > 1;
+        var idFileCopyPairs = new List<(string SourceId, string DestinationId)>();
 
-        foreach (var target in targetList) {
-            var files = FileInformation.Client.ListFolder(target, true);
+        foreach (var sourceId in sourceIds) {
+            var files = FileInformation.Client.ListFolder(sourceId, true);
             if (files.Count > 0) {
-                foreach (var file in files) {
-                    var relativeLink = isLinkNameFolder
-                        ? $"{linkName}/{target.Split('/').Last()}{file[target.Length..]}"
-                        : linkName + file[target.Length..];
-                    allLinks.Add((file, relativeLink));
+                foreach (var childFileId in files) {
+                    var relativeDestinationId = isDestFolder
+                        ? $"{destinationPath}/{sourceId.Split('/').Last()}{childFileId[sourceId.Length..]}"
+                        : destinationPath + childFileId[sourceId.Length..];
+                    idFileCopyPairs.Add((childFileId, relativeDestinationId));
                 }
             } else {
-                var targetLink = isLinkNameFolder
-                    ? $"{linkName}/{target.Split('/').Last()}"
-                    : linkName;
-                allLinks.Add((target, targetLink));
+                var destinationId = isDestFolder
+                    ? $"{destinationPath}/{sourceId.Split('/').Last()}"
+                    : destinationPath;
+                idFileCopyPairs.Add((sourceId, destinationId));
             }
         }
 
-        var selected = SelectMany(allLinks, link => $"{link.File}\n=>\t{link.Link}",
+        var selected = SelectMany(idFileCopyPairs, pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}",
             "files to link");
 
         if (selected.Count == 0) {
@@ -114,8 +114,8 @@ class CopyCommand : KifaCommand {
             return 0;
         }
 
-        foreach (var (file, linkPath) in selected) {
-            ExecuteItem(file, () => LinkFileEntry(file, linkPath));
+        foreach (var (sourceId, destinationId) in selected) {
+            ExecuteItem(sourceId, () => LinkFileEntry(sourceId, destinationId));
         }
 
         return LogSummary();
@@ -142,11 +142,11 @@ class CopyCommand : KifaCommand {
             return KifaActionResult.Success();
         });
 
-    static KifaActionResult LinkFileEntry(string file, string link) {
-        if (link.EndsWith('/')) {
-            link = $"{link.TrimEnd('/')}/{file.Split('/').Last()}";
+    static KifaActionResult LinkFileEntry(string sourceId, string destinationId) {
+        if (destinationId.EndsWith('/')) {
+            destinationId = $"{destinationId.TrimEnd('/')}/{sourceId.Split('/').Last()}";
         }
 
-        return FileInformation.Client.Link(file, link);
+        return FileInformation.Client.Link(sourceId, destinationId);
     }
 }
