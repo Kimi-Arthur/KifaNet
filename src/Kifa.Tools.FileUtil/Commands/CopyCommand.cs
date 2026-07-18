@@ -37,9 +37,21 @@ class CopyCommand : KifaCommand {
         if (!source.Exists() && source.List(recursive: true).Any()) {
             var files = source.List(recursive: true).ToList();
             var sourceFolderId = source.Id.EndsWith('/') ? source.Id : source.Id + "/";
-            foreach (var file in files) {
+            var pairs = files.Select(file => {
                 var relativePath = file.Id[sourceFolderId.Length..];
                 var targetFile = new KifaFile($"{destination.Host}{destination.Id.TrimEnd('/')}/{relativePath}");
+                return (Source: file, Destination: targetFile);
+            }).ToList();
+
+            var selected = SelectMany(pairs, pair => $"{pair.Source}\n=>\t{pair.Destination}",
+                "files to link");
+
+            if (selected.Count == 0) {
+                Logger.Warn("No files selected to link.");
+                return 0;
+            }
+
+            foreach (var (file, targetFile) in selected) {
                 ExecuteItem(file.ToString(), () => LinkLocalFile(file, targetFile));
             }
         } else {
