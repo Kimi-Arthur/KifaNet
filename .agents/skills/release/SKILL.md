@@ -32,7 +32,12 @@ Automate version incrementing, git commits, and package/tool publishing followin
    * Example: `release(filex 5.6.4): interactive multi-source file linking`
 
 4. **Prompt User for Confirmation**:
-   * Present the proposed version bump (`MAJOR`, `MINOR`, or `PATCH`), current vs. new version, target `.csproj`, and drafted commit message.
+   * Present release details formatted as **one information item per line**:
+     * **Tool**: `<tool_name>`
+     * **Target Project**: `<path_to_csproj>`
+     * **Change Type**: `<MAJOR | MINOR | PATCH>` (`<reason>`)
+     * **Version Bump**: `<current_version>` $\rightarrow$ `<new_version>`
+     * **Commit Message**: `release(<tool_name> <new_version>): <description>`
    * Always ask for explicit user confirmation on version and release details before updating files, committing, or publishing.
 
 5. **Execute Version Bump, Commit & Publish**:
