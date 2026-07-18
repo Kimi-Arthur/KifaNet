@@ -28,64 +28,42 @@ class CopyCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         if (ById) {
-            var target = Targets.First().TrimEnd('/');
-            var linkName = LinkName.TrimEnd('/');
-
-            if (!target.StartsWith('/') || !linkName.StartsWith('/')) {
-                Logger.Error("You should use absolute file path for the two arguments.");
-                return 1;
-            }
-
-            var files = FileInformation.Client.ListFolder(target, true);
-            if (files.Count > 0) {
-                return ExecuteByIdFolder(target, linkName, files);
-            }
-
-            return ExecuteByIdFile(target, LinkName);
+            return ExecuteById();
         }
 
-        var source = new KifaFile(Targets.First());
+        return ExecuteLocal();
+    }
+
+    int ExecuteLocal() {
         var destination = new KifaFile(LinkName);
+        var targetList = Targets.Select(t => new KifaFile(t)).ToList();
+        var isDestFolder = LinkName.EndsWith('/') || targetList.Count > 1;
 
-        if (!source.Exists() && source.List(recursive: true).Any()) {
-            return ExecuteLocalFolder(source, destination);
+        var allPairs = new List<(KifaFile Source, KifaFile Destination)>();
+
+        foreach (var source in targetList) {
+            if (!source.Exists() && source.List(recursive: true).Any()) {
+                var files = source.List(recursive: true).ToList();
+                var sourceFolderId = source.Id.EndsWith('/') ? source.Id : source.Id + "/";
+                var baseDestId = isDestFolder
+                    ? $"{destination.Host}{destination.Id.TrimEnd('/')}/{source.Name}"
+                    : $"{destination.Host}{destination.Id.TrimEnd('/')}";
+
+                foreach (var file in files) {
+                    var relativePath = file.Id[sourceFolderId.Length..];
+                    var targetFile = new KifaFile($"{baseDestId}/{relativePath}");
+                    allPairs.Add((file, targetFile));
+                }
+            } else {
+                var targetFile = isDestFolder
+                    ? destination.GetFile(source.Name)
+                    : destination;
+                allPairs.Add((source, targetFile));
+            }
         }
 
-        return ExecuteLocalFile(source, destination);
-    }
-
-    int ExecuteLocalFolder(KifaFile source, KifaFile destination) {
-        var files = source.List(recursive: true).ToList();
-        var sourceFolderId = source.Id.EndsWith('/') ? source.Id : source.Id + "/";
-        var pairs = files.Select(file => {
-            var relativePath = file.Id[sourceFolderId.Length..];
-            var targetFile = new KifaFile($"{destination.Host}{destination.Id.TrimEnd('/')}/{relativePath}");
-            return (Source: file, Destination: targetFile);
-        }).ToList();
-
-        var selected = SelectMany(pairs, pair => $"{pair.Source}\n=>\t{pair.Destination}",
+        var selected = SelectMany(allPairs, pair => $"{pair.Source}\n=>\t{pair.Destination}",
             "files to link");
-
-        if (selected.Count == 0) {
-            Logger.Warn("No files selected to link.");
-            return 0;
-        }
-
-        foreach (var (file, targetFile) in selected) {
-            ExecuteItem(file.ToString(), () => LinkLocalFile(file, targetFile));
-        }
-
-        return LogSummary();
-    }
-
-    int ExecuteLocalFile(KifaFile source, KifaFile destination) {
-        var targetFile = destination.Id.EndsWith('/') || LinkName.EndsWith('/')
-            ? destination.GetFile(source.Name)
-            : destination;
-
-        var pair = (Source: source, Destination: targetFile);
-        var selected = SelectMany(new List<(KifaFile Source, KifaFile Destination)> { pair },
-            p => $"{p.Source}\n=>\t{p.Destination}", "files to link");
 
         if (selected.Count == 0) {
             Logger.Warn("No files selected to link.");
@@ -99,32 +77,37 @@ class CopyCommand : KifaCommand {
         return LogSummary();
     }
 
-    int ExecuteByIdFolder(string target, string linkName, List<string> files) {
-        var links = files.Select(file => (File: file, Link: linkName + file[target.Length..]))
-            .ToList();
-        var selected = SelectMany(links, link => $"{link.File}\n=>\t{link.Link}",
+    int ExecuteById() {
+        var linkName = LinkName.TrimEnd('/');
+        var targetList = Targets.Select(t => t.TrimEnd('/')).ToList();
+
+        if (targetList.Any(t => !t.StartsWith('/')) || !linkName.StartsWith('/')) {
+            Logger.Error("You should use absolute file path for all arguments.");
+            return 1;
+        }
+
+        var isLinkNameFolder = LinkName.EndsWith('/') || targetList.Count > 1;
+        var allLinks = new List<(string File, string Link)>();
+
+        foreach (var target in targetList) {
+            var files = FileInformation.Client.ListFolder(target, true);
+            if (files.Count > 0) {
+                foreach (var file in files) {
+                    var relativeLink = isLinkNameFolder
+                        ? $"{linkName}/{target.Split('/').Last()}{file[target.Length..]}"
+                        : linkName + file[target.Length..];
+                    allLinks.Add((file, relativeLink));
+                }
+            } else {
+                var targetLink = isLinkNameFolder
+                    ? $"{linkName}/{target.Split('/').Last()}"
+                    : linkName;
+                allLinks.Add((target, targetLink));
+            }
+        }
+
+        var selected = SelectMany(allLinks, link => $"{link.File}\n=>\t{link.Link}",
             "files to link");
-
-        if (selected.Count == 0) {
-            Logger.Warn("No files selected to link.");
-            return 0;
-        }
-
-        foreach (var (file, link) in selected) {
-            ExecuteItem(file, () => LinkFileEntry(file, link));
-        }
-
-        return LogSummary();
-    }
-
-    int ExecuteByIdFile(string target, string linkName) {
-        var targetLink = linkName.EndsWith('/')
-            ? $"{linkName.TrimEnd('/')}/{target.Split('/').Last()}"
-            : linkName;
-
-        var link = (File: target, Link: targetLink);
-        var selected = SelectMany(new List<(string File, string Link)> { link },
-            l => $"{l.File}\n=>\t{l.Link}", "files to link");
 
         if (selected.Count == 0) {
             Logger.Warn("No files selected to link.");
