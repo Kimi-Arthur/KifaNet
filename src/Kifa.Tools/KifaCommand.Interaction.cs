@@ -21,14 +21,19 @@ public abstract partial class KifaCommand {
         Func<TChoice, string>? choiceToString = null, string? choiceName = null,
         int startingIndex = 0, bool supportsSpecial = false, bool reverse = false,
         string selectionKey = "") {
+        choiceName ??= "items";
+
+        if (choices.Count == 0) {
+            Logger.Warn($"No {choiceName} available to select from.");
+            return null;
+        }
+
         defaultIndexForSelectOne.TryAdd(selectionKey, 0);
         alwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
 
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c.ToString()).ToList()
             : choices.Select(choiceToString).ToList();
-
-        choiceName ??= "items";
 
         if (reverse) {
             for (var i = choices.Count - 1; i >= 0; i--) {
