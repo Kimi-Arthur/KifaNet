@@ -22,9 +22,9 @@ Automate version incrementing, git commits, and package/tool publishing followin
 
 2. **Categorize Change Type & Propose Version Bump**:
    * Inspect diffs and added files to categorize the change:
-     * New `[Verb]` or new command class $\rightarrow$ **MAJOR** bump (`X.0.0`).
-     * New `[Option]` attribute or new CLI flag $\rightarrow$ **MINOR** bump (`X.Y.0`).
-     * Other bug fixes, performance improvements, or refactoring $\rightarrow$ **PATCH** bump (`X.Y.Z`).
+     * New `[Verb]` or new command class -> **MAJOR** bump (`X.0.0`).
+     * New `[Option]` attribute or new CLI flag -> **MINOR** bump (`X.Y.0`).
+     * Other bug fixes, performance improvements, or refactoring -> **PATCH** bump (`X.Y.Z`).
    * Calculate proposed `<new_version>`.
 
 3. **Draft Release Commit Message**:
@@ -36,7 +36,7 @@ Automate version incrementing, git commits, and package/tool publishing followin
      * **Tool**: `<tool_name>`
      * **Target Project**: `<path_to_csproj>`
      * **Change Type**: `<MAJOR | MINOR | PATCH>` (`<reason>`)
-     * **Version Bump**: `<current_version>` $\rightarrow$ `<new_version>`
+     * **Version Bump**: `<current_version>` -> `<new_version>`
      * **Commit Message**: `release(<tool_name> <new_version>): <description>`
    * Always ask for explicit user confirmation on version and release details before updating files, committing, or publishing.
 
