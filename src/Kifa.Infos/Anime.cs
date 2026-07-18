@@ -48,14 +48,14 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         get {
             var seasons = Seasons ?? new List<Season>();
             return Specials is { Count: > 0 }
-                ? new List<Season> {
+                ? seasons.Concat(new List<Season> {
                     new() {
                         Id = 0,
                         Title = "Specials",
                         AirDate = AirDate,
                         Episodes = Specials
                     }
-                }.Concat(seasons).ToList()
+                }).ToList()
                 : seasons;
         }
     }
@@ -77,7 +77,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         var seasonFolder = season.Id == 0
             ? $"/{season.Title ?? "Specials"}".TrimEnd()
             : $"/Season {season.Id} {season.Title}".TrimEnd();
-        if (season.AirDate != null) {
+        if (season.Id != 0 && season.AirDate != null) {
             seasonFolder += $" ({season.AirDate.Year})";
         }
 

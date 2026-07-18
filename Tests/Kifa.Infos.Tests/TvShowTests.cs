@@ -155,13 +155,15 @@ public class TvShowTests {
             }
         };
 
-        var parsed = show.Parse("/TV Shows/United States/Westworld (2016)/Specials (2016)/Westworld SP1 Special Episode.mp4");
+        show.AllSeasons.Last().Id.Should().Be(0);
+
+        var parsed = show.Parse("/TV Shows/United States/Westworld (2016)/Specials/Westworld SP1 Special Episode.mp4");
         parsed.Should().NotBeNull();
         parsed.Value.Season.Id.Should().Be(0);
         parsed.Value.Episode.Id.Should().Be(1);
         parsed.Value.Episode.Title.Should().Be("Special Episode");
 
         var formatted = show.Format(parsed.Value.Season, parsed.Value.Episode);
-        formatted.Should().Be("/TV Shows/United States/Westworld (2016)/Specials (2016)/Westworld SP1 Special Episode");
+        formatted.Should().Be("/TV Shows/United States/Westworld (2016)/Specials/Westworld SP1 Special Episode");
     }
 }

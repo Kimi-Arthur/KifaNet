@@ -48,13 +48,13 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         get {
             var seasons = Seasons ?? new List<Season>();
             return Specials is { Count: > 0 }
-                ? new List<Season> {
+                ? seasons.Concat(new List<Season> {
                     new() {
                         Id = 0,
                         Title = "Specials",
                         Episodes = Specials
                     }
-                }.Concat(seasons).ToList()
+                }).ToList()
                 : seasons;
         }
     }
