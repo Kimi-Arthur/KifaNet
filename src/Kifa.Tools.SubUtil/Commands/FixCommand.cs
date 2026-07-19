@@ -36,13 +36,71 @@ class FixCommand : KifaCommand {
             return KifaActionResult.BadRequest("Only ass files are supported.");
         }
 
-        var sub = AssDocument.Parse(file.OpenRead());
+        var targetFile = FixFilename(file);
+
+        var sub = AssDocument.Parse(targetFile.OpenRead());
         sub = FixSubtitleResolution(sub);
         // This is needed as Emby will reject the parts with \fad element.
         sub = RemoveFadElement(sub);
-        file.Delete();
-        file.Write(sub.ToString());
+        sub = FixStyles(sub);
+        sub = FixTitle(sub, targetFile);
+
+        targetFile.Delete();
+        targetFile.Write(sub.ToString());
         return KifaActionResult.Success();
+    }
+
+    static KifaFile FixFilename(KifaFile file) {
+        var name = file.Name;
+        var newName = name;
+
+        // Fix dual language codes e.g. .zh-en. -> .zh.
+        if (newName.Contains(".zh-en.")) {
+            newName = newName.Replace(".zh-en.", ".zh.");
+        }
+
+        // Fix old .default.ass naming -> .<bilibili>.zh.ass
+        if (newName.EndsWith(".default.ass")) {
+            newName = newName.Replace(".default.ass", ".<bilibili>.zh.ass");
+        }
+
+        if (newName != name) {
+            var targetFile = file.Parent.GetFile(newName);
+            Logger.Info($"Renaming subtitle file: {file.Name} => {targetFile.Name}");
+            file.Move(targetFile);
+            return targetFile;
+        }
+
+        return file;
+    }
+
+    static AssDocument FixStyles(AssDocument sub) {
+        var styleSection = sub.Sections.OfType<AssStylesSection>().FirstOrDefault();
+        if (styleSection == null) {
+            styleSection = new AssStylesSection {
+                Styles = AssStyle.Styles
+            };
+            sub.Sections.Insert(1, styleSection);
+        } else {
+            var existingStyleNames = styleSection.Styles.Select(s => s.Name).ToHashSet();
+            foreach (var standardStyle in AssStyle.Styles) {
+                if (!existingStyleNames.Contains(standardStyle.Name)) {
+                    styleSection.Styles.Add(standardStyle);
+                }
+            }
+        }
+
+        return sub;
+    }
+
+    static AssDocument FixTitle(AssDocument sub, KifaFile file) {
+        if (sub.Sections.FirstOrDefault(s => s is AssScriptInfoSection) is AssScriptInfoSection header) {
+            if (string.IsNullOrEmpty(header.Title) || header.Title == "Untitled") {
+                header.Title = file.BaseName;
+            }
+        }
+
+        return sub;
     }
 
     static AssDocument FixSubtitleResolution(AssDocument sub) {
