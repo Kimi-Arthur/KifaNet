@@ -51,41 +51,20 @@ partial class ImportCommand : KifaCommand {
 
         var validEpisodes = targetFiles.Where(e => !e.Matched).ToList();
         try {
-            var selected = SelectOne(validEpisodes, e => e.Item, "mapping", startingIndex: 1,
-                supportsSpecial: true, reverse: true);
+            var selected = SelectOne(validEpisodes, e => e.Item, "target media file", startingIndex: 1, reverse: true);
             if (selected.Status != KifaActionStatus.OK) {
                 return selected;
             }
 
-            var (choice, _, special) = selected.Response!;
-            if (special) {
-                var newName = Confirm($"Confirm linking {subtitleFile} to (without suffix):",
-                    choice.Item);
-                if (newName == null) {
-                    return new KifaActionResult {
-                        Status = KifaActionStatus.Skipped,
-                        Message = "Cancelled by user."
-                    };
-                }
-                var newFile =
-                    new KifaFile($"{subtitleFile.Host}{newName}.{ReleaseId}.{suffix}");
+            var choice = selected.Response!.Choice;
+            var newFile = new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
 
-                subtitleFile.Copy(newFile, true);
-                if (suffix == "ass") {
-                    FixSubtitle(newFile, new KifaFile(newName).Name, ReleaseId);
-                }
-                if (Confirm($"Remove info item {choice.Item}?")) {
-                    selected.Value.Choice.Matched = true;
-                }
-            } else {
-                var newFile =
-                    new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
-                subtitleFile.Copy(newFile, true);
-                if (suffix == "ass") {
-                    FixSubtitle(newFile, new KifaFile(choice.Item).Name, ReleaseId);
-                }
-                choice.Matched = true;
+            subtitleFile.Copy(newFile, true);
+            if (suffix == "ass") {
+                FixSubtitle(newFile, new KifaFile(choice.Item).Name, ReleaseId);
             }
+
+            choice.Matched = true;
 
             return KifaActionResult.Success();
         } catch (InvalidChoiceException ex) {
