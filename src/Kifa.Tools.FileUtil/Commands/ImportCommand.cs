@@ -225,7 +225,7 @@ class ImportCommand : KifaCommand {
             var result = FileInformation.Client.Link(file, targetPath);
             if (result.Status == KifaActionStatus.OK) {
                 if (special || part != null) {
-                    if (Confirm($"Remove infoList item {choice.Path}?")) {
+                    if (Confirm($"Remove info item {choice.Path}?")) {
                         MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
                     }
                 } else {
