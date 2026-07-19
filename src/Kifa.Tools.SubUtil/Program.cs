@@ -7,6 +7,6 @@ class Program {
     static int Main(string[] args)
         => KifaCommand.Run(
             Parser.Default
-                .ParseArguments<GenerateCommand, FixCommand, UpdateCommand, CleanCommand,
+                .ParseArguments<GenerateCommand, UpdateCommand, CleanCommand,
                     ImportCommand, ExtractCommand, SyncCommand, DownloadSubcatCommand>, args);
 }

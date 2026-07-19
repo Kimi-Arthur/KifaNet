@@ -10,7 +10,7 @@ using NLog;
 namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Sources folder with resource id.")]
-class ImportCommand : KifaCommand {
+partial class ImportCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target subtitle file(s) to import.")]
@@ -71,6 +71,9 @@ class ImportCommand : KifaCommand {
                     new KifaFile($"{subtitleFile.Host}{newName}.{ReleaseId}.{suffix}");
 
                 subtitleFile.Copy(newFile, true);
+                if (suffix == "ass") {
+                    FixSubtitle(newFile, new KifaFile(newName).Name, ReleaseId);
+                }
                 if (Confirm($"Remove info item {choice.Item}?")) {
                     selected.Value.Choice.Matched = true;
                 }
@@ -78,6 +81,9 @@ class ImportCommand : KifaCommand {
                 var newFile =
                     new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
                 subtitleFile.Copy(newFile, true);
+                if (suffix == "ass") {
+                    FixSubtitle(newFile, new KifaFile(choice.Item).Name, ReleaseId);
+                }
                 choice.Matched = true;
             }
 
