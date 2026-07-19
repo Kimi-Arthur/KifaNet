@@ -218,10 +218,10 @@ public class AssStyle : AssLine {
                     style.StrikeOut = AssFormatter.ParseBool(p.Item1);
                     break;
                 case "ScaleX":
-                    style.ScaleX = int.Parse(p.Item1);
+                    style.ScaleX = double.Parse(p.Item1).RoundUp();
                     break;
                 case "ScaleY":
-                    style.ScaleY = int.Parse(p.Item1);
+                    style.ScaleY = double.Parse(p.Item1).RoundUp();
                     break;
                 case "Spacing":
                     style.Spacing = double.Parse(p.Item1);
