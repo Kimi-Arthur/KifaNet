@@ -16,21 +16,26 @@ public abstract partial class KifaCommand {
     static Dictionary<string, bool> alwaysDefaultForSelectOne = new();
     static Dictionary<string, int> defaultIndexForSelectOne = new();
 
-    static readonly Regex SingleChoiceRegex = new(@"^(\d*)([asi]*)$");
+    // Matches single choice prompt input: ^[index][p<part>][flags]$
+    // Group 1: Index (e.g. 3). Empty falls back to default choice index.
+    // Group 2: Sub-part number after literal 'p' (e.g. 4 in 3p4 for split episodes).
+    // Group 3: Flags - 'a' (always choose same index), 's' (special handling), 'i' (ignore).
+    // Examples: "" (default), "3" (choice 3), "3p4" (choice 3 part 4), "3s" (choice 3 special), "3a" (always choice 3).
+    static readonly Regex SingleChoiceRegex = new(@"^(\d*)(?:p(\d+))?([asi]*)$");
 
     [Option('y', "yes",
         HelpText = "Always yes to all confirmations with default value (not always yes).")]
     public bool AutoConfirmDefault { get; set; } = false;
 
-    public KifaActionResult<(TChoice Choice, int Index, bool Special)> SelectOne<TChoice>(
+    public KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)> SelectOne<TChoice>(
         List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
-        string? choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
-        bool reverse = false, string selectionKey = "") {
+        string? choiceName = null, int startingIndex = 0, string? specialHelpText = null,
+        string? partHelpText = null, bool reverse = false, string selectionKey = "") {
         choiceName ??= "items";
 
         if (choices.Count == 0) {
             Logger.Debug($"No {choiceName} available to select from.");
-            return KifaActionResult<(TChoice Choice, int Index, bool Special)>.Warning(
+            return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>.Warning(
                 $"No {choiceName} available to select from.");
         }
 
@@ -66,14 +71,18 @@ public abstract partial class KifaCommand {
         if (alwaysDefaultForSelectOne[selectionKey]) {
             Console.WriteLine(
                 $"Automatically chose [{defaultIndex + startingIndex}] as previously instructed.\n");
-            return (choices[defaultIndex], defaultIndex, false);
+            return (choices[defaultIndex], null, defaultIndex, false);
         }
 
         Console.WriteLine(
             $"Choose one from the {choiceName} above [{startingIndex} - {choices.Count - 1 + startingIndex}].");
         Console.WriteLine("Append 'a' to always choose the same index,");
-        if (supportsSpecial) {
-            Console.WriteLine("Append 's' to use special handling,");
+        if (specialHelpText != null) {
+            Console.WriteLine($"Append 's' {specialHelpText},");
+        }
+
+        if (partHelpText != null) {
+            Console.WriteLine($"Use '<index>p<part>' {partHelpText},");
         }
 
         Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
@@ -85,14 +94,17 @@ public abstract partial class KifaCommand {
         }
 
         var choiceText = match.Groups[1].Value;
+        var partText = match.Groups[2].Value;
+        int? part = string.IsNullOrEmpty(partText) ? null : int.Parse(partText);
+
         var chosenIndex = string.IsNullOrEmpty(choiceText)
             ? defaultIndex
             : int.Parse(choiceText) - startingIndex;
 
-        var flags = match.Groups[2].Value;
+        var flags = match.Groups[3].Value;
 
         if (flags.Contains('i')) {
-            return KifaActionResult<(TChoice Choice, int Index, bool Special)>.Skipped(
+            return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>.Skipped(
                 "Ignored by user.");
         }
 
@@ -101,8 +113,12 @@ public abstract partial class KifaCommand {
         }
 
         var special = flags.Contains('s');
-        if (!supportsSpecial && special) {
+        if (specialHelpText == null && special) {
             throw new InvalidChoiceException("Special is not supported...");
+        }
+
+        if (partHelpText == null && part.HasValue) {
+            throw new InvalidChoiceException("Part selection is not supported...");
         }
 
         defaultIndexForSelectOne[selectionKey] = chosenIndex;
@@ -110,7 +126,7 @@ public abstract partial class KifaCommand {
             throw new InvalidChoiceException($"Choice {chosenIndex} is out of range.");
         }
 
-        return (choices[chosenIndex], chosenIndex, special);
+        return (choices[chosenIndex], part, chosenIndex, special);
     }
 
     static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)$|^/(.*)$");

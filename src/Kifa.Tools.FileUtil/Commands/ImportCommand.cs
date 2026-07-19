@@ -198,35 +198,42 @@ class ImportCommand : KifaCommand {
         var validEpisodes = infoList.Items.Where(e => !e.Matched).ToList();
         try {
             var selected = SelectOne(validEpisodes, e => $"{file}\n=>\t{e.Path}{suffix}",
-                "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
+                "target episode", startingIndex: 1,
+                specialHelpText: "to customize the title",
+                partHelpText: "for split episodes (e.g. '3p4')",
+                reverse: true);
             if (selected.Status != KifaActionStatus.OK) {
                 return selected;
             }
 
-            var (choice, _, special) = selected.Response!;
+            var (choice, part, _, special) = selected.Response!;
+            var targetPath = part != null
+                ? $"{choice.Path}.part{part}{suffix}"
+                : $"{choice.Path}{suffix}";
+
             if (special) {
-                var newName = Confirm($"Confirm linking {file} to:", $"{choice.Path}{suffix}");
+                var newName = Confirm($"Confirm linking {file} to:", targetPath);
                 if (newName == null) {
                     return new KifaActionResult {
                         Status = KifaActionStatus.Skipped,
                         Message = "Import cancelled by user."
                     };
                 }
-
-                var result = FileInformation.Client.Link(file, newName);
-                if (result.Status == KifaActionStatus.OK && Confirm($"Remove infoList item {choice.Path}?")) {
-                    MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
-                }
-
-                return result;
-            } else {
-                var result = FileInformation.Client.Link(file, $"{choice.Path}{suffix}");
-                if (result.Status == KifaActionStatus.OK) {
-                    MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
-                }
-
-                return result;
+                targetPath = newName;
             }
+
+            var result = FileInformation.Client.Link(file, targetPath);
+            if (result.Status == KifaActionStatus.OK) {
+                if (special || part != null) {
+                    if (Confirm($"Remove infoList item {choice.Path}?")) {
+                        MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
+                    }
+                } else {
+                    MarkMatched(infoList.Items, choice.SeasonId, choice.EpisodeId);
+                }
+            }
+
+            return result;
         } catch (InvalidChoiceException ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
