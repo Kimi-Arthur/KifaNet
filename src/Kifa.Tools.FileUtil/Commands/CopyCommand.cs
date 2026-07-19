@@ -65,12 +65,12 @@ class CopyCommand : KifaCommand {
         var selected = SelectMany(localFileCopyPairs, pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}",
             "files to link");
 
-        if (selected.Count == 0) {
-            Logger.Warn("No files selected to link.");
-            return 0;
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to link", () => selected);
+            return LogSummary();
         }
 
-        foreach (var (sourceFile, destinationFile) in selected) {
+        foreach (var (sourceFile, destinationFile) in selected.Value) {
             ExecuteItem(sourceFile.ToString(), () => LinkLocalFile(sourceFile, destinationFile));
         }
 
@@ -109,12 +109,12 @@ class CopyCommand : KifaCommand {
         var selected = SelectMany(idFileCopyPairs, pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}",
             "files to link");
 
-        if (selected.Count == 0) {
-            Logger.Warn("No files selected to link.");
-            return 0;
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to link", () => selected);
+            return LogSummary();
         }
 
-        foreach (var (sourceId, destinationId) in selected) {
+        foreach (var (sourceId, destinationId) in selected.Value) {
             ExecuteItem(sourceId, () => LinkFileEntry(sourceId, destinationId));
         }
 

@@ -56,9 +56,9 @@ public class ImportWordListCommand : KifaCommand {
         var unusedWords = SelectMany(course.GetUnusedWords().ToList(), word => word.ToString(),
             "unused words to remove");
 
-        if (unusedWords.Count > 0) {
-            ExecuteItem($"Remove {unusedWords.Count} words not used by any level.",
-                () => memriseClient.RemoveWords(unusedWords));
+        if (unusedWords.Status == KifaActionStatus.OK) {
+            ExecuteItem($"Remove {unusedWords.Value.Count} words not used by any level.",
+                () => memriseClient.RemoveWords(unusedWords.Value));
         }
 
         return 0;

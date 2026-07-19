@@ -3,6 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.Tencent;
 using Newtonsoft.Json;
 using NLog;
@@ -23,9 +24,13 @@ class GetTencentChatCommand : KifaCommand {
         if (VideoId != null) {
             var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames),
                 file => file.ToString(), "files to get tencent chat for");
-            foreach (var file in selectedFiles) {
-                var subtitleFile = file.GetSubtitleFile($".{VideoId}.json");
-                ExecuteItem(file.ToString(), () => GetChat(subtitleFile, VideoId));
+            if (selectedFiles.Status == KifaActionStatus.OK) {
+                foreach (var file in selectedFiles.Value) {
+                    var subtitleFile = file.GetSubtitleFile($".{VideoId}.json");
+                    ExecuteItem(file.ToString(), () => GetChat(subtitleFile, VideoId));
+                }
+            } else {
+                ExecuteItem("files to get tencent chat for", () => selectedFiles);
             }
         }
 

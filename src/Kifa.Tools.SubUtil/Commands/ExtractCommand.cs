@@ -53,8 +53,12 @@ class ExtractCommand : KifaCommand {
                 s => $"{ExtractLanguage(s.Language)} ({s.Language})" +
                      (s.Tags?.ContainsKey("title") ?? false ? $": {s.Tags["title"]}" : "") +
                      $" => {GetExtractedSubtitleFile(file, s)}");
+            if (selected.Status != KifaActionStatus.OK) {
+                ExecuteItem(file.ToString(), () => selected);
+                continue;
+            }
 
-            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, selected.Value.Choice));
+            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, selected.Response!.Choice));
         }
 
         return LogSummary();

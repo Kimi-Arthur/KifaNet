@@ -199,14 +199,11 @@ class ImportCommand : KifaCommand {
         try {
             var selected = SelectOne(validEpisodes, e => $"{file}\n=>\t{e.Path}{suffix}",
                 "mapping", startingIndex: 1, supportsSpecial: true, reverse: true);
-            if (selected == null) {
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Skipped,
-                    Message = $"Ignored {file}."
-                };
+            if (selected.Status != KifaActionStatus.OK) {
+                return selected;
             }
 
-            var (choice, _, special) = selected.Value;
+            var (choice, _, special) = selected.Response!;
             if (special) {
                 var newName = Confirm($"Confirm linking {file} to:", $"{choice.Path}{suffix}");
                 if (newName == null) {
@@ -258,7 +255,9 @@ class ImportCommand : KifaCommand {
             file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to register before importing"));
-        toRegister.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
+        if (toRegister.Status == KifaActionStatus.OK) {
+            toRegister.Value.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
+        }
         return files.Where(f => f.Registered);
     }
 

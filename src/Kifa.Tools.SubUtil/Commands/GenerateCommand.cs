@@ -29,7 +29,12 @@ class GenerateCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
             "files to generate merged subtitle for");
-        foreach (var file in selected) {
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to generate merged subtitle for", () => selected);
+            return LogSummary();
+        }
+
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => GenerateSubtitle(file));
         }
 
@@ -58,15 +63,16 @@ class GenerateCommand : KifaCommand {
         var selectedSubtitles = SelectMany(rawSubtitles,
             subtitle => $"{subtitle.Id} ({subtitle.Dialogs.Count} lines)", "subtitles to include",
             selectionKey: "subtitles");
-        events.Events.AddRange(selectedSubtitles.SelectMany(sub => sub.Dialogs));
-
-        // TODO: Do duplication check.
-        styles.AddRange(selectedSubtitles.SelectMany(sub => sub.Styles));
+        if (selectedSubtitles.Status == KifaActionStatus.OK) {
+            events.Events.AddRange(selectedSubtitles.Value.SelectMany(sub => sub.Dialogs));
+            styles.AddRange(selectedSubtitles.Value.SelectMany(sub => sub.Styles));
+        }
 
         var bilibiliChats = SelectMany(GetBilibiliChats(file),
             chat => $"{chat.Id} ({chat.Comments.Count} chats)", "Bilibili chats to include",
             selectionKey: "bili_chats");
-        var comments = bilibiliChats.SelectMany(chat => chat.Comments).ToList();
+        var biliChatList = bilibiliChats.Status == KifaActionStatus.OK ? bilibiliChats.Value : [];
+        var comments = biliChatList.SelectMany(chat => chat.Comments).ToList();
         PositionNormalComments(comments.Where(c => c.Style == AssStyle.NormalCommentStyle)
             .OrderBy(c => c.Start).ToList());
         PositionTopComments(comments.Where(c => c.Style == AssStyle.TopCommentStyle)
@@ -78,24 +84,27 @@ class GenerateCommand : KifaCommand {
         var qqChats = SelectMany(GetTencentChats(file),
             chat => $"{chat.Id} ({chat.Comments.Count} chats)", "QQ chats to include",
             selectionKey: "qq_chats");
-        if (qqChats.Count > 0) {
-            PositionNormalComments(qqChats[0].Comments.OrderBy(c => c.Start).ToList());
-            events.Events.AddRange(qqChats[0].Comments);
+        var qqChatList = qqChats.Status == KifaActionStatus.OK ? qqChats.Value : [];
+        if (qqChatList.Count > 0) {
+            PositionNormalComments(qqChatList[0].Comments.OrderBy(c => c.Start).ToList());
+            events.Events.AddRange(qqChatList[0].Comments);
         }
 
         document.Sections.Add(events);
 
-        if (selectedSubtitles.Count == 0 && bilibiliChats.Count == 0 && qqChats.Count == 0) {
+        var subList = selectedSubtitles.Status == KifaActionStatus.OK ? selectedSubtitles.Value : [];
+
+        if (subList.Count == 0 && biliChatList.Count == 0 && qqChatList.Count == 0) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
                 Message = $"No subtitles or danmaku selected for {file}."
             };
         }
 
-        var subtitleIds = selectedSubtitles.Select(sub => sub.Id).ToList();
+        var subtitleIds = subList.Select(sub => sub.Id).ToList();
 
         var danmakuGroups = new List<string>();
-        foreach (var chat in bilibiliChats) {
+        foreach (var chat in biliChatList) {
             var parts = chat.Id.Split('-');
             var group = parts.Length > 1 ? parts[1] : "bilibili";
             if (!danmakuGroups.Contains(group)) {
@@ -103,7 +112,7 @@ class GenerateCommand : KifaCommand {
             }
         }
 
-        foreach (var chat in qqChats) {
+        foreach (var chat in qqChatList) {
             var group = "qq";
             if (!danmakuGroups.Contains(group)) {
                 danmakuGroups.Add(group);
@@ -124,7 +133,7 @@ class GenerateCommand : KifaCommand {
             };
         }
 
-        scriptInfo.OriginalScript = string.Join(", ", subtitleIds.Concat(bilibiliChats.Select(c => c.Id)));
+        scriptInfo.OriginalScript = string.Join(", ", subtitleIds.Concat(biliChatList.Select(c => c.Id)));
 
         finalFile.Delete();
         finalFile.Write(document.ToString());
@@ -132,7 +141,7 @@ class GenerateCommand : KifaCommand {
         return new KifaActionResult {
             Status = KifaActionStatus.OK,
             Message =
-                $"Created {finalFile} with {selectedSubtitles.Count} subtitles, {bilibiliChats.Count} Bilibili chats."
+                $"Created {finalFile} with {subList.Count} subtitles, {biliChatList.Count} Bilibili chats."
         };
     }
 

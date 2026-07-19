@@ -3,6 +3,7 @@ using System.IO;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
@@ -14,7 +15,12 @@ class CleanCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
             "subtitle files to clean");
-        foreach (var file in selected) {
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("subtitle files to clean", () => selected);
+            return LogSummary();
+        }
+
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => CleanUpSubtitle(file));
         }
 

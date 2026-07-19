@@ -18,12 +18,12 @@ public class LinkCommand : BiliCommand {
     public override int Execute(KifaTask? task = null) {
         var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames, pattern: "*.mp4"),
             file => file.ToString());
-        if (selectedFiles.Count == 0) {
-            Logger.Warn("No files found or selected to link.");
-            return 1;
+        if (selectedFiles.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to link", () => selectedFiles);
+            return LogSummary();
         }
 
-        foreach (var file in selectedFiles) {
+        foreach (var file in selectedFiles.Value) {
             ExecuteItem(file.ToString(), () => LinkFile(file));
         }
 

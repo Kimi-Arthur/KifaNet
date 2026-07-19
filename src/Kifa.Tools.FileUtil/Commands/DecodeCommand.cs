@@ -4,6 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.GameHacking.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 using Newtonsoft.Json;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -16,8 +17,12 @@ class DecodeCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var files = FileNames.SelectMany(path => new KifaFile(path).List()).ToList();
         var selected = SelectMany(files, file => file.ToString(), "files to decode");
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to decode", () => selected);
+            return LogSummary();
+        }
 
-        foreach (var file in selected) {
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => DecodeFile(file));
         }
 

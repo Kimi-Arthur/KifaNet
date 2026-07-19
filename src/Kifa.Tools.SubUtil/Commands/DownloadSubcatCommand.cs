@@ -27,8 +27,12 @@ class DownloadSubcatCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var files = FileNames.Select(f => new KifaFile(f)).ToList();
         var selected = SelectMany(files, file => file.ToString(), "files to download subtitle for");
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to download subtitle for", () => selected);
+            return LogSummary();
+        }
 
-        foreach (var file in selected) {
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => DownloadSubtitle(file));
         }
 

@@ -48,7 +48,12 @@ class GetCommand : KifaCommand {
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to get"));
 
-        foreach (var file in selected) {
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to get", () => selected);
+            return LogSummary();
+        }
+
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => GetFile(file));
         }
 

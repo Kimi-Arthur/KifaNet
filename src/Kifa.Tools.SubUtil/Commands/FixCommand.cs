@@ -19,7 +19,12 @@ class FixCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
             "subtitle files to fix");
-        foreach (var file in selected) {
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("subtitle files to fix", () => selected);
+            return LogSummary();
+        }
+
+        foreach (var file in selected.Value) {
             ExecuteItem($"Fix subtitle file {file}", () => FixSubtitle(file));
         }
 

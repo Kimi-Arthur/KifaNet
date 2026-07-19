@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.Subtitle.Ass;
 using NLog;
 
@@ -41,6 +42,10 @@ class TimeShiftAction : Action {
         var selectedLines = command.SelectMany(
             sub.Sections.OfType<AssEventsSection>().First().Events.ToList(),
             line => line.ToString());
+        if (selectedLines.Status != KifaActionStatus.OK) {
+            return;
+        }
+
         var shift = command.Confirm("Input the amount of time to shift:", "10s")
             ?.ParseTimeSpanString();
         if (shift == null) {
@@ -48,7 +53,7 @@ class TimeShiftAction : Action {
             return;
         }
 
-        ShiftTime(selectedLines, shift.Value);
+        ShiftTime(selectedLines.Value, shift.Value);
     }
 
     static void ShiftTime(IEnumerable<AssEvent> selectedLines, TimeSpan shift) {

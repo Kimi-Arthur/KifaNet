@@ -16,7 +16,12 @@ class TruncateCommand : KifaCommand {
     public override int Execute(KifaTask? task = null) {
         var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
             "files to truncate");
-        foreach (var file in selected) {
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to truncate", () => selected);
+            return LogSummary();
+        }
+
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => TruncateFile(file));
         }
 

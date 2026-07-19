@@ -4,6 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Graphics;
 using Kifa.Jobs;
+using Kifa.Service;
 using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
@@ -48,12 +49,19 @@ public class CreatePdfMangaCommand : KifaCommand {
 
         var grouped = pairedFiles.GroupBy(f => f.Odd).ToDictionary(g => g.Key, g => g.ToList());
 
-        var selectedDoublePages = SelectMany(grouped[1],
+        var selectedDoublePages1 = SelectMany(grouped[1],
             pair => GetPrintImages(pair.File, pair.LastFile),
-            "pages to be the start page of double pages").Select(pair => pair.LastFile).ToHashSet();
-        selectedDoublePages.UnionWith(SelectMany(grouped[0],
+            "pages to be the start page of double pages");
+        var selectedDoublePages = selectedDoublePages1.Status == KifaActionStatus.OK
+            ? selectedDoublePages1.Value.Select(pair => pair.LastFile).ToHashSet()
+            : [];
+
+        var selectedDoublePages0 = SelectMany(grouped[0],
             pair => GetPrintImages(pair.File, pair.LastFile),
-            "pages to be the start page of double pages").Select(pair => pair.LastFile));
+            "pages to be the start page of double pages");
+        if (selectedDoublePages0.Status == KifaActionStatus.OK) {
+            selectedDoublePages.UnionWith(selectedDoublePages0.Value.Select(pair => pair.LastFile));
+        }
 
         XImage? doublePage = null;
         foreach (var file in files) {

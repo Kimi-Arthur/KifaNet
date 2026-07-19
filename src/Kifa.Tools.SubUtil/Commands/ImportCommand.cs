@@ -53,14 +53,11 @@ class ImportCommand : KifaCommand {
         try {
             var selected = SelectOne(validEpisodes, e => e.Item, "mapping", startingIndex: 1,
                 supportsSpecial: true, reverse: true);
-            if (selected == null) {
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Skipped,
-                    Message = $"Ignored {subtitleFile}."
-                };
+            if (selected.Status != KifaActionStatus.OK) {
+                return selected;
             }
 
-            var (choice, _, special) = selected.Value;
+            var (choice, _, special) = selected.Response!;
             if (special) {
                 var newName = Confirm($"Confirm linking {subtitleFile} to (without suffix):",
                     choice.Item);

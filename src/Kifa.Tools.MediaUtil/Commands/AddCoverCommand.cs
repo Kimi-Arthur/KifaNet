@@ -43,7 +43,12 @@ public class AddCoverCommand : KifaCommand {
             choice => $"{choice.source} + {choice.cover} => {choice.target}",
             "files to add cover for");
 
-        foreach (var file in selectedFiles) {
+        if (selectedFiles.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to add cover for", () => selectedFiles);
+            return LogSummary();
+        }
+
+        foreach (var file in selectedFiles.Value) {
             ExecuteItem($"{file.source} + {file.cover} => {file.target}", () => AddCover(file));
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -29,21 +30,25 @@ public class DownloadUploaderCommand : DownloadCommand {
             return 1;
         }
 
-        DownloadVideos(uploader,
-            SelectMany(
-                BilibiliVideo.Client
-                    .Get(OldestFirst ? uploader.Aids : Enumerable.Reverse(uploader.Aids).ToList())
-                    .ExceptNull().ToList(),
-                video => $"{video.Id} {video.Title} ({video.Pages.Count})", "videos to download"));
+        var videos = SelectMany(
+            BilibiliVideo.Client
+                .Get(OldestFirst ? uploader.Aids : Enumerable.Reverse(uploader.Aids).ToList())
+                .ExceptNull().ToList(),
+            video => $"{video.Id} {video.Title} ({video.Pages.Count})", "videos to download");
+        if (videos.Status == KifaActionStatus.OK) {
+            DownloadVideos(uploader, videos.Value);
+        }
 
-        DownloadVideos(uploader,
-            SelectMany(
-                BilibiliVideo.Client
-                    .Get(OldestFirst
-                        ? uploader.RemovedAids
-                        : Enumerable.Reverse(uploader.RemovedAids).ToList()).ExceptNull().ToList(),
-                video => $"{video.Id} {video.Title} ({video.Pages.Count})",
-                "deleted videos to download"));
+        var deletedVideos = SelectMany(
+            BilibiliVideo.Client
+                .Get(OldestFirst
+                    ? uploader.RemovedAids
+                    : Enumerable.Reverse(uploader.RemovedAids).ToList()).ExceptNull().ToList(),
+            video => $"{video.Id} {video.Title} ({video.Pages.Count})",
+            "deleted videos to download");
+        if (deletedVideos.Status == KifaActionStatus.OK) {
+            DownloadVideos(uploader, deletedVideos.Value);
+        }
 
         return LogSummary();
     }

@@ -4,6 +4,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -39,7 +40,12 @@ class DedupCommand : KifaCommand {
 
         var confirmedDeletion = SelectMany(filesToDelete,
             tuple => $"{tuple.toDelete.Id} ({tuple.truth})", "files to delete");
-        foreach (var tuple in confirmedDeletion) {
+        if (confirmedDeletion.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to delete", () => confirmedDeletion);
+            return LogSummary();
+        }
+
+        foreach (var tuple in confirmedDeletion.Value) {
             ExecuteItem(tuple.toDelete.Id, () => RemoveLogicalFile(tuple.toDelete));
         }
 

@@ -4,8 +4,13 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using CommandLine;
 using GlobExpressions;
+using Kifa.Service;
 
 namespace Kifa.Tools;
+
+
+
+
 
 public abstract partial class KifaCommand {
     static Dictionary<string, bool> alwaysDefaultForSelectOne = new();
@@ -17,15 +22,16 @@ public abstract partial class KifaCommand {
         HelpText = "Always yes to all confirmations with default value (not always yes).")]
     public bool AutoConfirmDefault { get; set; } = false;
 
-    public (TChoice Choice, int Index, bool Special)? SelectOne<TChoice>(List<TChoice> choices,
-        Func<TChoice, string>? choiceToString = null, string? choiceName = null,
-        int startingIndex = 0, bool supportsSpecial = false, bool reverse = false,
-        string selectionKey = "") {
+    public KifaActionResult<(TChoice Choice, int Index, bool Special)> SelectOne<TChoice>(
+        List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
+        string? choiceName = null, int startingIndex = 0, bool supportsSpecial = false,
+        bool reverse = false, string selectionKey = "") {
         choiceName ??= "items";
 
         if (choices.Count == 0) {
-            Logger.Warn($"No {choiceName} available to select from.");
-            return null;
+            Logger.Debug($"No {choiceName} available to select from.");
+            return KifaActionResult<(TChoice Choice, int Index, bool Special)>.Warning(
+                $"No {choiceName} available to select from.");
         }
 
         defaultIndexForSelectOne.TryAdd(selectionKey, 0);
@@ -86,7 +92,8 @@ public abstract partial class KifaCommand {
         var flags = match.Groups[2].Value;
 
         if (flags.Contains('i')) {
-            return null;
+            return KifaActionResult<(TChoice Choice, int Index, bool Special)>.Skipped(
+                "Ignored by user.");
         }
 
         if (flags.Contains('a')) {
@@ -111,12 +118,13 @@ public abstract partial class KifaCommand {
     static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
 
-    public List<TChoice> SelectMany<TChoice>(List<TChoice> choices,
+    public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceItemString,
         FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
         string selectionKey = "", bool skipIfEmpty = true) {
         if (skipIfEmpty && choices.Count == 0) {
-            return [];
+            return KifaActionResult<List<TChoice>>.Warning(
+                $"No {choiceSummaryString?.Get(choices) ?? "items"} available to select from.");
         }
 
         AlwaysDefaultForSelectMany.TryAdd(selectionKey, AutoConfirmDefault);
@@ -183,7 +191,7 @@ public abstract partial class KifaCommand {
 
             if (reply == "^") {
                 chosenIndexes = [];
-                return [];
+                return KifaActionResult<List<TChoice>>.Skipped("Deselected by user.");
             }
 
             chosenIndexes = reply.Split(',').Select(selection => {

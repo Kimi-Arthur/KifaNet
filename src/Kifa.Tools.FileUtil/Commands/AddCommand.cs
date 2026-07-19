@@ -4,6 +4,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.FileUtil.Commands;
@@ -32,12 +33,12 @@ class AddCommand : KifaCommand {
         var files = KifaFile.FindExistingFiles(FileNames);
         var selected = SelectMany(files, file => file.ToString(), "files to add");
 
-        if (selected.Count == 0) {
-            Logger.Warn("No files selected or found to be checked.");
-            return 0;
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to add", () => selected);
+            return LogSummary();
         }
 
-        foreach (var file in selected) {
+        foreach (var file in selected.Value) {
             file.MirrorHost = MirrorHost;
             ExecuteItem(file.ToString(), () => AddFile(file));
             file.Dispose();

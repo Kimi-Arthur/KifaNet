@@ -172,7 +172,24 @@ public class KifaActionResult<TValue> : KifaActionResult {
 
     public TValue? Response { get; set; }
 
+    public TValue Value => Response!;
+
+    public static new KifaActionResult<TValue> Warning(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Warning,
+            Message = message
+        };
+
+    public static new KifaActionResult<TValue> Skipped(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Skipped,
+            Message = message
+        };
+
     public static implicit operator KifaActionResult<TValue>(TValue value) => new(value);
+
+    public static implicit operator TValue?(KifaActionResult<TValue>? result)
+        => result != null && result.Status == KifaActionStatus.OK ? result.Response : default;
 
     public static KifaActionResult<TValue> FromAction(Func<TValue> action) {
         try {

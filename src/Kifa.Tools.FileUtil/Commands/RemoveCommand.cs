@@ -80,9 +80,9 @@ class RemoveCommand : KifaCommand {
             var selected = SelectMany(fileInfos, file => file.Id,
                 "file entries to remove along all relevant instances");
 
-            if (selected.Count == 0) {
-                Logger.Warn("No files found or selected.");
-                return 0;
+            if (selected.Status != KifaActionStatus.OK) {
+                ExecuteItem("file entries to remove", () => selected);
+                return LogSummary();
             }
 
             if (Force && !Confirm(
@@ -91,7 +91,7 @@ class RemoveCommand : KifaCommand {
                 return 2;
             }
 
-            selected.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
+            selected.Value.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
             return LogSummary();
         }
 
@@ -101,12 +101,11 @@ class RemoveCommand : KifaCommand {
             var selected = SelectMany(localFiles, file => file.ToString(),
                 $"local files to delete{removalText}");
 
-            if (selected.Count == 0) {
-                Logger.Warn("No files found or selected to be deleted.");
-                return 2;
+            if (selected.Status == KifaActionStatus.OK) {
+                selected.Value.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+            } else {
+                ExecuteItem("local files to delete", () => selected);
             }
-
-            selected.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
         }
 
         var phantomFiles = KifaFile.FindPhantomFiles(FileNames);

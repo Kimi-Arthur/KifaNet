@@ -38,6 +38,11 @@ class TrashCommand : KifaCommand {
         if (Restore) {
             var selectedFileIds =
                 SelectMany(foundFiles, file => file.ToString(), "files to restore");
+            if (selectedFileIds.Status != KifaActionStatus.OK) {
+                ExecuteItem("files to restore", () => selectedFileIds);
+                return LogSummary();
+            }
+
             Logger.Info("Should restore the files above.");
             return 1;
         } else {
@@ -52,12 +57,20 @@ class TrashCommand : KifaCommand {
 
             var selectedFiles = SelectMany(foundFiles, file => file.ToString(),
                 $"files to trash to {trashPath}");
-            var selectedFileIds = selectedFiles.Select(file => file.Id).ToHashSet();
+            if (selectedFiles.Status != KifaActionStatus.OK) {
+                ExecuteItem("files to trash", () => selectedFiles);
+                return LogSummary();
+            }
 
-            var extraFileIds = selectedFiles.SelectMany(f => f.FileInfo.Checked().GetAllLinks())
+            var selectedFileIds = selectedFiles.Value.Select(file => file.Id).ToHashSet();
+
+            var extraFileIds = selectedFiles.Value.SelectMany(f => f.FileInfo.Checked().GetAllLinks())
                 .ToList();
-            selectedFileIds.UnionWith(SelectMany(extraFileIds, file => file,
-                "extra versions of trashed files to trash"));
+            var extraSelected = SelectMany(extraFileIds, file => file,
+                "extra versions of trashed files to trash");
+            if (extraSelected.Status == KifaActionStatus.OK) {
+                selectedFileIds.UnionWith(extraSelected.Value);
+            }
 
             selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId, trashPath)));
             return LogSummary();

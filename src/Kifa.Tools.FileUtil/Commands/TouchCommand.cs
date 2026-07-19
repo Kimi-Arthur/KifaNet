@@ -23,8 +23,12 @@ class TouchCommand : KifaCommand {
         if (files.Count > 0) {
             var selected = SelectMany(files.Select(f => new KifaFile(target.Host + f)).ToList(),
                 f => f.ToString(), "files to touch");
-            foreach (var file in selected) {
-                ExecuteItem(file.ToString(), () => TouchFile(file));
+            if (selected.Status == KifaActionStatus.OK) {
+                foreach (var file in selected.Value) {
+                    ExecuteItem(file.ToString(), () => TouchFile(file));
+                }
+            } else {
+                ExecuteItem("files to touch", () => selected);
             }
         } else {
             ExecuteItem(target.ToString(), () => TouchFile(target));

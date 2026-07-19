@@ -23,7 +23,12 @@ public class DownloadVideoCommand : KifaCommand {
             YouTubeVideo.Client.Get(ids.ToList()).ExceptNull()
                 .OrderBy(video => video.GetDesiredName()).ToList(),
             video => video.GetDesiredName() ?? video.Id.Checked(), "YouTube videos to download");
-        foreach (var video in selectedVideos) {
+        if (selectedVideos.Status != KifaActionStatus.OK) {
+            ExecuteItem("YouTube videos to download", () => selectedVideos);
+            return LogSummary();
+        }
+
+        foreach (var video in selectedVideos.Value) {
             ExecuteItem(video.GetDesiredName() ?? video.Id.Checked(),
                 () => KifaActionResult.FromAction(() => DownloadVideo(video)));
         }

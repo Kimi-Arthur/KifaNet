@@ -61,17 +61,16 @@ class UploadCommand : KifaCommand {
         var downloadText = DownloadLocal ? " and download to local" : "";
         var removalText = DeleteSource ? " and remove source afterwards" : "";
 
-        // TODO: somehow make this type auto inferred.
         var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.Length).ToSizeString()})" : "")} to {string.Join(", ", targets)}{verifyText}{downloadText}{removalText}"));
 
-        if (selected.Count == 0) {
-            Logger.Warn("No files found or selected.");
-            return 0;
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to upload", () => selected);
+            return LogSummary();
         }
 
-        foreach (var file in selected) {
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(),
                 () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
                     DownloadLocal, QuickMode, true));

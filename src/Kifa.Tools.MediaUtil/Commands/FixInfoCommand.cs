@@ -25,12 +25,12 @@ public class FixInfoCommand : KifaCommand {
 
         var selectedFiles = SelectMany(files, choice => choice.ToString(), "files to fix NFO for");
 
-        if (selectedFiles.Count == 0) {
-            Logger.Warn("No files selected to fix NFO file.");
-            return 1;
+        if (selectedFiles.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to fix NFO for", () => selectedFiles);
+            return LogSummary();
         }
 
-        foreach (var file in selectedFiles) {
+        foreach (var file in selectedFiles.Value) {
             ExecuteItem($"Fix of {file}", () => FixOneFile(file));
         }
 

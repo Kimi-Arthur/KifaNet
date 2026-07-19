@@ -42,10 +42,14 @@ class GetChatCommand : KifaCommand {
         var selectedFiles = SelectMany(KifaFile.FindExistingFiles(FileNames),
             file => file.ToString(), "files to download bilibili danmaku for");
 
-        if (chats.Count > 0) {
-            GetChatsWithIds(selectedFiles, chats);
+        if (selectedFiles.Status == KifaActionStatus.OK) {
+            if (chats.Count > 0) {
+                GetChatsWithIds(selectedFiles.Value, chats);
+            } else {
+                GetChatsWithLinks(selectedFiles.Value);
+            }
         } else {
-            GetChatsWithLinks(selectedFiles);
+            ExecuteItem("files to download bilibili danmaku for", () => selectedFiles);
         }
 
         return LogSummary();

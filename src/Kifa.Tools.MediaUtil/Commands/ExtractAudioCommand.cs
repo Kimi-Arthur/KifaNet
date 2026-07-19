@@ -30,14 +30,14 @@ public class ExtractAudioCommand : KifaCommand {
         files = files.Where(file => file.Extension != "m4a").ToList();
 
         var selected = SelectMany(files, file => file.ToString(), "files to extract audio from");
-        if (selected.Count == 0) {
-            Logger.Warn("No files selected.");
-            return 0;
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to extract audio from", () => selected);
+            return LogSummary();
         }
 
-        var trackNumbers = GatherTrackNumbers(selected);
+        var trackNumbers = GatherTrackNumbers(selected.Value);
 
-        foreach (var file in selected) {
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => ExtractAudioFile(file, trackNumbers[file.ToString()]));
         }
 

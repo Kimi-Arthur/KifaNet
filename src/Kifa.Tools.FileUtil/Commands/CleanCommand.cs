@@ -30,12 +30,12 @@ class CleanCommand : KifaCommand {
 
         var selected = SelectMany(filesToRemove, f => f.ToString(), "non-existing files to remove");
 
-        if (selected.Count == 0) {
-            Logger.Info("No missing files found or selected.");
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("non-existing files to remove", () => selected);
             return;
         }
 
-        foreach (var file in selected) {
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => file.Unregister());
         }
     }

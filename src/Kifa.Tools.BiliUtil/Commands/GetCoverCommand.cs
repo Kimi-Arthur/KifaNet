@@ -22,7 +22,12 @@ public class GetCoverCommand : KifaCommand {
         var selectedFiles = SelectMany(foundFiles, file => file.ToString(),
             "files to download cover images for");
 
-        foreach (var file in selectedFiles) {
+        if (selectedFiles.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to download cover images for", () => selectedFiles);
+            return LogSummary();
+        }
+
+        foreach (var file in selectedFiles.Value) {
             ExecuteItem(file.ToString(), () => GetCover(file));
         }
 

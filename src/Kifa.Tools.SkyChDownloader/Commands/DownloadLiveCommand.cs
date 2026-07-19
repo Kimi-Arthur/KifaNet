@@ -65,13 +65,14 @@ public class DownloadLiveCommand : KifaCommand {
         var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
         var selected = SelectMany(audioStreamGetters, _ => "audio", "audio tracks to include");
+        var selectedAudioTrackGetters = selected.Status == KifaActionStatus.OK ? selected.Value : [];
 
         var parts = new List<KifaFile>();
         var videoFile = targetFile.GetIgnoredFile("v.mp4");
         parts.Add(videoFile);
 
         Parallel.Invoke(() => videoFile.Write(videoStreamGetter), () => {
-            foreach (var (streamGetter, index) in selected.Select((x, i) => (x, i))) {
+            foreach (var (streamGetter, index) in selectedAudioTrackGetters.Select((x, i) => (x, i))) {
                 var audioFile = targetFile.GetIgnoredFile($"a{index}.m4a");
                 audioFile.Write(streamGetter);
                 parts.Add(audioFile);

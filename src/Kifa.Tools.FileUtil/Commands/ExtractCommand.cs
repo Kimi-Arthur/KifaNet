@@ -49,7 +49,12 @@ class ExtractCommand : KifaCommand {
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to extract from"));
 
-        foreach (var file in selected) {
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to extract from", () => selected);
+            return LogSummary();
+        }
+
+        foreach (var file in selected.Value) {
             ExecuteItem(file.ToString(), () => ExtractFile(file));
             file.Dispose();
         }
@@ -108,11 +113,8 @@ class ExtractCommand : KifaCommand {
 
         var results = new KifaBatchActionResult();
 
-        if (selected.Count == 0) {
-            results.Add("extract", new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = "No more files selected to be extracted."
-            });
+        if (selected.Status != KifaActionStatus.OK) {
+            results.Add("extract", selected);
             results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile.ToString()));
             return results;
         }
@@ -120,7 +122,7 @@ class ExtractCommand : KifaCommand {
         // The enumerator way is adopted due to the issue mentioned in
         // https://stackoverflow.com/a/44379540.
         using var reader = archive.ExtractAllEntries();
-        var enumerator = selected.GetEnumerator();
+        var enumerator = selected.Value.GetEnumerator();
         var valid = enumerator.MoveNext();
 
         var extractedCount = 0;
@@ -163,11 +165,11 @@ class ExtractCommand : KifaCommand {
             }
         }
 
-        if (extractedCount < selected.Count) {
+        if (extractedCount < selected.Value.Count) {
             var missingFilesResult = new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message =
-                    $"Only extracted {extractedCount} files when {selected.Count} is requested."
+                    $"Only extracted {extractedCount} files when {selected.Value.Count} is requested."
             };
             Logger.Error(missingFilesResult);
             results.Add(archiveFile.ToString(), missingFilesResult);
@@ -193,7 +195,11 @@ class ExtractCommand : KifaCommand {
             var toBeRemoved = SelectMany(volumeFiles, f => f,
                 $"source archive files");
 
-            return toBeRemoved.Select(v => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
+            if (toBeRemoved.Status != KifaActionStatus.OK) {
+                return [("source archive files", toBeRemoved)];
+            }
+
+            return toBeRemoved.Value.Select(v => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
         }
 
         return [];
