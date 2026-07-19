@@ -17,7 +17,11 @@ class FixCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
+        var filesToFix = KifaFile.FindExistingFiles(FileNames, pattern: "*.ass")
+            .Where(file => !file.Path.Split('/').Contains("Sources"))
+            .ToList();
+
+        var selected = SelectMany(filesToFix, file => file.ToString(),
             "subtitle files to fix");
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("subtitle files to fix", () => selected);
