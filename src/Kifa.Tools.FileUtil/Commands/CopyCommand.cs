@@ -155,7 +155,7 @@ class CopyCommand : KifaCommand {
 
                     if (!sourceFile.IsCompatible(destinationFile)) {
                         return KifaActionResult.Skipped(
-                            $"File {destinationFile} already exists as a different instance on disk (same content).");
+                            $"File {destinationFile} already exists on another device (same content).");
                     }
 
                     return KifaActionResult.Warning(
