@@ -153,6 +153,11 @@ class CopyCommand : KifaCommand {
                     destinationFile.Register(true);
                     destinationFile.Add();
 
+                    if (!sourceFile.IsCompatible(destinationFile)) {
+                        return KifaActionResult.Skipped(
+                            $"File {destinationFile} already exists as a different instance on disk (same content).");
+                    }
+
                     return KifaActionResult.Warning(
                         $"File {destinationFile} already exists as a different instance on disk (same content). Run 'filex clean' to deduplicate.");
                 }
