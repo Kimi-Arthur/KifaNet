@@ -61,7 +61,7 @@ partial class ImportCommand : KifaCommand {
 
             subtitleFile.Copy(newFile, true);
             if (suffix == "ass") {
-                FixSubtitle(newFile, new KifaFile(choice.Item).Name, ReleaseId);
+                FixSubtitle(newFile, choice.Item.Split('/').Last(), ReleaseId);
             }
 
             choice.Matched = true;
