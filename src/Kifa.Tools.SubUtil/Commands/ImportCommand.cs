@@ -59,11 +59,12 @@ partial class ImportCommand : KifaCommand {
             var choice = selected.Response!.Choice;
             var newFile = new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
 
-            subtitleFile.Copy(newFile, true);
             if (suffix == "ass") {
-                FixSubtitle(newFile, choice.Item.Split('/').Last(), ReleaseId);
+                newFile.Write(FixSubtitle(subtitleFile.OpenRead(), choice.Item.Split('/').Last(), ReleaseId));
             } else if (suffix == "srt") {
-                CleanSubtitle(newFile);
+                newFile.Write(CleanSubtitle(subtitleFile.OpenRead()));
+            } else {
+                subtitleFile.Copy(newFile, true);
             }
 
             choice.Matched = true;

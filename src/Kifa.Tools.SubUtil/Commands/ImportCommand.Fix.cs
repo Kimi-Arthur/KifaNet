@@ -7,32 +7,26 @@ using Kifa.Subtitle.Ass;
 namespace Kifa.Tools.SubUtil.Commands;
 
 partial class ImportCommand {
-    static void FixSubtitle(KifaFile file, string title, string releaseId) {
-        if (file.Extension != "ass") {
-            return;
-        }
-
-        var sub = AssDocument.Parse(file.OpenRead());
+    static string FixSubtitle(Stream stream, string title, string releaseId) {
+        var sub = AssDocument.Parse(stream);
         sub = FixSubtitleResolution(sub);
         sub = RemoveFadElement(sub);
         sub = FixStyles(sub);
         sub = FixTitle(sub, title, releaseId);
 
-        file.Delete();
-        file.Write(sub.ToString());
+        return sub.ToString();
     }
 
-    static void CleanSubtitle(KifaFile file) {
+    static string CleanSubtitle(Stream stream) {
         var lines = new List<string>();
-        using (var sr = new StreamReader(file.OpenRead())) {
+        using (var sr = new StreamReader(stream)) {
             string? line;
             while ((line = sr.ReadLine()) != null) {
                 lines.Add(line);
             }
         }
 
-        file.Delete();
-        file.Write(string.Join("\n", lines) + "\n");
+        return string.Join("\n", lines) + "\n";
     }
 
     static AssDocument FixStyles(AssDocument sub) {
