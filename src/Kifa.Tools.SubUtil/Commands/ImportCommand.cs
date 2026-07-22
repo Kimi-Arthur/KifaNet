@@ -62,6 +62,8 @@ partial class ImportCommand : KifaCommand {
             subtitleFile.Copy(newFile, true);
             if (suffix == "ass") {
                 FixSubtitle(newFile, choice.Item.Split('/').Last(), ReleaseId);
+            } else if (suffix == "srt") {
+                CleanSubtitle(newFile);
             }
 
             choice.Matched = true;

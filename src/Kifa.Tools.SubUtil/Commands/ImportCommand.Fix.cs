@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Kifa.Api.Files;
 using Kifa.Subtitle.Ass;
@@ -18,6 +20,19 @@ partial class ImportCommand {
 
         file.Delete();
         file.Write(sub.ToString());
+    }
+
+    static void CleanSubtitle(KifaFile file) {
+        var lines = new List<string>();
+        using (var sr = new StreamReader(file.OpenRead())) {
+            string? line;
+            while ((line = sr.ReadLine()) != null) {
+                lines.Add(line);
+            }
+        }
+
+        file.Delete();
+        file.Write(string.Join("\n", lines) + "\n");
     }
 
     static AssDocument FixStyles(AssDocument sub) {

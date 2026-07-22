@@ -11,7 +11,7 @@ Commands
 - `subx fix`
 - `subx generate`
 - `subx update`
-- `subx clean`
+- `subx import`
 
 Current Version:
 ---
