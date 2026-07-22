@@ -116,6 +116,8 @@ class ImportCommand : KifaCommand {
                     baseName = baseName[..dotIndex];
                 }
 
+                fileVersion ??= VersionSuffix;
+
                 if (files.Count == 1) {
                     var file = files.Single();
                     ExecuteItem(file, () => ImportDefaultFile(file, folder, baseName, fileVersion, null));
@@ -153,7 +155,7 @@ class ImportCommand : KifaCommand {
                 continue;
             }
 
-            ExecuteItem(file, () => ImportFile(file, infoList, VersionSuffix));
+            ExecuteItem(file, () => ImportFile(file, infoList));
         }
 
         return LogSummary();
@@ -193,7 +195,7 @@ class ImportCommand : KifaCommand {
         return FileInformation.Client.Link(file, targetFileName);
     }
 
-    KifaActionResult ImportFile(string file, ItemInfoList infoList, string? versionSuffix) {
+    KifaActionResult ImportFile(string file, ItemInfoList infoList) {
         var suffix = file[file.LastIndexOf('.')..];
         var validEpisodes = infoList.Items.Where(e => !e.Matched).ToList();
         try {
