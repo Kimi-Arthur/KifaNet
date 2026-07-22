@@ -197,8 +197,8 @@ class ImportCommand : KifaCommand {
         var suffix = file[file.LastIndexOf('.')..];
         var validEpisodes = infoList.Items.Where(e => !e.Matched).ToList();
         try {
-            var selected = SelectOne(validEpisodes, e => $"{file}\n=>\t{e.Path}{suffix}",
-                "target episode", startingIndex: 1,
+            var selected = SelectOne(validEpisodes, e => $"{e.Path}{suffix}",
+                $"target episode for {file}", startingIndex: 1,
                 specialHelpText: "to customize the title",
                 partHelpText: "for split episodes (e.g. '3p4')",
                 reverse: true);
