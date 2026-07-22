@@ -119,7 +119,7 @@ class GenerateCommand : KifaCommand {
             }
         }
 
-        var danmakuTag = danmakuGroups.Count > 0 ? $"<{string.Join("+", danmakuGroups)}>" : null;
+        var danmakuTag = danmakuGroups.Count > 0 ? $"^{string.Join("+", danmakuGroups)}^" : null;
         var langTag = subtitleIds.Count > 0 ? string.Join("+", subtitleIds) : null;
         var filenameTag = string.Join(".", new[] { danmakuTag, langTag }.Where(t => t != null));
 

@@ -26,13 +26,13 @@ Assuming the original video file is named `[Name].mp4`:
   * `咲-Saki- S01E25 全国.c123456-华盟BD.xml`
 
 ### 3. Final Generated Subtitle Files
-* **Format**: `[Name].<[danmaku-tag]>.[lang-tag].ass`
-* **Danmaku Tag (`<[danmaku-tag]>`)**: Always enclosed within angle brackets `< >`.
-  * `bilibili` for official Bilibili danmaku or unknown Bilibili group (e.g., `<bilibili>`).
-  * `[group]` for known groups/versions (e.g., `<华盟BD>`).
-  * Combined danmaku sources are joined with `+` inside `< >` (e.g., `<华盟DVD+华盟BD>`).
+* **Format**: `[Name].^[danmaku-tag]^.[lang-tag].ass`
+* **Danmaku Tag (`^[danmaku-tag]^`)**: Always enclosed within carets `^ ^`.
+  * `bilibili` for official Bilibili danmaku or unknown Bilibili group (e.g., `^bilibili^`).
+  * `[group]` for known groups/versions (e.g., `^华盟BD^`).
+  * Combined danmaku sources are joined with `+` inside `^ ^` (e.g., `^华盟DVD+华盟BD^`).
 * **Language Tag (`[lang-tag]`)**: Included only when subtitles of that language are available. May include group info if necessary (e.g., `华盟字幕社.zh`).
 * **Examples**:
-  * `咲-Saki- S01E25 全国.<华盟DVD+华盟BD>.华盟字幕社.zh.ass` (Chinese subtitles + danmaku from 华盟DVD & 华盟BD)
-  * `咲-Saki- S01E25 全国.<华盟DVD+华盟BD>.ass` (Danmaku from 华盟DVD & 华盟BD, no subtitles)
-  * `咲-Saki- S01E25 全国.<bilibili>.ass` (Danmaku from Bilibili, no subtitles)
+  * `咲-Saki- S01E25 全国.^华盟DVD+华盟BD^.华盟字幕社.zh.ass` (Chinese subtitles + danmaku from 华盟DVD & 华盟BD)
+  * `咲-Saki- S01E25 全国.^华盟DVD+华盟BD^.ass` (Danmaku from 华盟DVD & 华盟BD, no subtitles)
+  * `咲-Saki- S01E25 全国.^bilibili^.ass` (Danmaku from Bilibili, no subtitles)
