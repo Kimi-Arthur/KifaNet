@@ -13,3 +13,6 @@
 ## Temporary Files Rules
 - Always place all temporary files, crawler state/progress files, local logs, intermediate scripts, or certificates generated during agent operations in the `.agent_temp/` directory.
 - Do not write temporary or untracked files to the root directory of the workspace or other source/test folders.
+
+## Code Modification Rules
+- Automatically apply code edits and file modifications directly without prompting for pre-approval. The user reviews changes with external tools.
