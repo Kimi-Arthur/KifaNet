@@ -63,6 +63,9 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
     [YamlIgnore]
     string Title => Id.Checked().Split("/").Last();
 
+    string GetBaseFolder(string? version = null)
+        => $"{Id}{string.FormatOrEmpty($" [{version}]")}";
+
     public string? Format(Season season, Episode episode, string? version = null) {
         var seasonIdWidth = episode.SeasonIdWidth ?? season.SeasonIdWidth ?? SeasonIdWidth ?? 2;
         var episodeIdWidth = episode.EpisodeIdWidth ?? season.EpisodeIdWidth ?? EpisodeIdWidth ?? 2;
@@ -79,21 +82,24 @@ public class Series : DataModel, WithModelId<Series>, Formattable, WithFormatInf
         var epCode = season.Id == 0 ? $"SP{episode.Id}" : $"S{sid}E{eid}";
         var epCodeSingle = season.Id == 0 ? $"SP{episode.Id}" : $"EP{eid}";
 
+        var baseFolder = GetBaseFolder(version);
+
         // season.Title and episode.Title can be empty.
         return PatternId switch {
-            "multi_season" => $"{Id}" + seasonFolder +
+            "multi_season" => $"{baseFolder}" + seasonFolder +
                               $"/{Title} {epCode} {episode.Title}".TrimEnd(),
-            "single_season" => $"{Id}/{Title} {epCodeSingle} {episode.Title}".TrimEnd(),
-            "date" => $"{Id}/{Title} {date} {episode.Title}".TrimEnd(),
+            "single_season" => $"{baseFolder}/{Title} {epCodeSingle} {episode.Title}".TrimEnd(),
+            "date" => $"{baseFolder}/{Title} {date} {episode.Title}".TrimEnd(),
             _ => null
         };
     }
 
     public (Season Season, Episode Episode)? Parse(string formatted, string? version = null) {
+        var baseFolder = GetBaseFolder(version);
         var pattern = PatternId switch {
             "multi_season" =>
-                $@"{Id}/(Season \d+|Specials|\d+)([^/]*)/{Title} (S(?<season_id>\d+)E(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
-            "single_season" => $@"{Id}/{Title} (EP(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
+                $@"{Regex.Escape(baseFolder)}/(Season \d+|Specials|\d+)([^/]*)/{Title} (S(?<season_id>\d+)E(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
+            "single_season" => $@"{Regex.Escape(baseFolder)}/{Title} (EP(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
             _ => null
         };
 
