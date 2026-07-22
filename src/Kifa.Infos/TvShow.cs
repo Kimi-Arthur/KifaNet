@@ -89,7 +89,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
             }).ToList();
 
             if (seasonInfo.SeasonNumber > 0) {
-                var seasonName = Helper.NormalizeTitle(seasonInfo.Name);
+                var seasonName = Helper.NormalizeTitle(seasonInfo.Name, prefix: Title,
+                    language: Language);
                 Seasons.Add(new Season {
                     AirDate = seasonInfo.AirDate,
                     Id = seasonInfo.SeasonNumber,

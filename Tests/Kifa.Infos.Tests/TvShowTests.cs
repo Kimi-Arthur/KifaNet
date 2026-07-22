@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
+using Kifa.Infos.Tmdb;
 using Xunit;
 
 namespace Kifa.Infos.Tests;
@@ -165,5 +166,16 @@ public class TvShowTests {
 
         var formatted = show.Format(parsed.Value.Season, parsed.Value.Episode);
         formatted.Should().Be("/TV Shows/United States/Westworld (2016)/Specials/Westworld SP1 Special Episode");
+    }
+
+    [Theory]
+    [InlineData("Season 1", null)]
+    [InlineData("2012年版", null)]
+    [InlineData("2013年版", null)]
+    [InlineData("2020年版", null)]
+    [InlineData("第 1 季", null)]
+    [InlineData("The Door", "The Door")]
+    public void NormalizeSeasonTitleTest(string input, string? expected) {
+        TmdbClient.NormalizeSeasonTitle(input).Should().Be(expected);
     }
 }

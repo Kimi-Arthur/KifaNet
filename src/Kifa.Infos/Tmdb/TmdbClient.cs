@@ -20,7 +20,7 @@ public class TmdbClient {
 
     static readonly List<(Regex Pattern, MatchEvaluator Replacement)> SeasonNameReplacements =
         new() {
-            (new Regex(@"Season \d+|Staffel \d+|Stagione \d+|シーズン\d+|第 *[零一二三四五六七八九十百千万0-9]+ *季"),
+            (new Regex(@"Season \d+|Staffel \d+|Stagione \d+|シーズン\d+|第 *[零一二三四五六七八九十百千万0-9]+ *季|\d{4}年?版?"),
                 _ => ""),
             (new Regex(@"Season \w+:"), _ => ""),
         };
