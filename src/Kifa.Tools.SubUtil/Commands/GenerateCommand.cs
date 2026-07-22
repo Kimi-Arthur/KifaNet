@@ -249,18 +249,16 @@ class GenerateCommand : KifaCommand {
 
     static List<(string Id, List<AssDialogue> Dialogs, List<AssStyle> Styles)>
         GetSrtSubtitles(KifaFile rawFile)
-        => rawFile.GetSubtitleFile().Parent
-            .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.srt").Select(file => {
-                using var sr = new StreamReader(file.OpenRead());
-                return (file.BaseName[(rawFile.BaseName.Length + 1)..],
-                    SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(),
-                    new List<AssStyle>());
-            }).ToList();
+        => rawFile.GetSubtitleFiles("*.srt").Select(file => {
+            using var sr = new StreamReader(file.OpenRead());
+            return (file.BaseName[(rawFile.BaseName.Length + 1)..],
+                SrtDocument.Parse(sr.ReadToEnd()).Lines.Select(x => x.ToAss()).ToList(),
+                new List<AssStyle>());
+        }).ToList();
 
     static List<(string Id, List<AssDialogue> Dialogs, List<AssStyle> Styles)>
         GetAssSubtitles(KifaFile rawFile)
-        => rawFile.GetSubtitleFile().Parent
-            .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.ass")
+        => rawFile.GetSubtitleFiles("*.ass")
             .Where(file => !file.BaseName.EndsWith(".default")).Select(file => {
                 var document = AssDocument.Parse(file.OpenRead());
                 return (file.BaseName[(rawFile.BaseName.Length + 1)..],
@@ -271,8 +269,7 @@ class GenerateCommand : KifaCommand {
 
     static List<(string Id, List<AssDialogue> Comments)> GetBilibiliChats(KifaFile rawFile) {
         var result = new List<(string Id, List<AssDialogue> Comments)>();
-        foreach (var file in rawFile.GetSubtitleFile().Parent
-                     .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.xml")) {
+        foreach (var file in rawFile.GetSubtitleFiles("*.xml")) {
             var chat = new BilibiliChat();
             chat.Load(file.OpenRead());
             result.Add((file.BaseName.Split('.').Last(),
@@ -283,11 +280,10 @@ class GenerateCommand : KifaCommand {
     }
 
     static List<(string Id, List<AssDialogue> Comments)> GetTencentChats(KifaFile rawFile) {
-        return rawFile.GetSubtitleFile().Parent
-            .List(ignoreFiles: false, pattern: $"{rawFile.BaseName}.*.json").Select(file => (
-                file.BaseName.Split('.').Last(),
-                JsonConvert.DeserializeObject<List<TencentDanmu>>(file.ReadAsString(),
-                        KifaJsonSerializerSettings.Default)!.Select(x => x.GenerateAssDialogue())
-                    .ToList())).ToList();
+        return rawFile.GetSubtitleFiles("*.json").Select(file => (
+            file.BaseName.Split('.').Last(),
+            JsonConvert.DeserializeObject<List<TencentDanmu>>(file.ReadAsString(),
+                    KifaJsonSerializerSettings.Default)!.Select(x => x.GenerateAssDialogue())
+                .ToList())).ToList();
     }
 }

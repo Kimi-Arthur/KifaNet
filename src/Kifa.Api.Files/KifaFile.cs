@@ -815,7 +815,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public KifaFile GetTruncatedFile() => new($"{Host}{PathWithoutSuffix}.truncated.{Extension}");
 
     public KifaFile GetSubtitleFile(string? suffix = null)
-        => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? "???"}");
+        => new($"{SubtitlesHost}{PathWithoutSuffix}.{suffix ?? "*"}");
+
+    public IEnumerable<KifaFile> GetSubtitleFiles(string pattern = "*")
+        => GetSubtitleFile().Parent.List(ignoreFiles: false, pattern: $"{BaseName}.{pattern}");
 
     public KifaFile GetNfoFile() => new($"{NfosHost}{PathWithoutSuffix}.nfo");
 
