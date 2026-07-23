@@ -19,8 +19,10 @@ public class BilibiliChat {
 
     XmlDocument rawDocument;
 
+    // Page id with the video.
     public int Id { get; set; }
 
+    // Unique chat id that corresponds to the comments file.
     public string Cid { get; set; }
 
     public string Title { get; set; } = "";
