@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using Kifa.Html;
+using Kifa.Subtitle.Srt;
 using NLog;
 
 namespace Kifa.Subtitle.Subcat;
@@ -140,20 +141,15 @@ public static class SubcatClient {
 
     public static (string Content, string DetectedSourceLanguage) TranslateSrt(string srtContent,
         string targetLang) {
-        var lines = srtContent.Replace("\r\n", "\n").Split('\n');
-        var translatedLines = (string[]) lines.Clone();
+        var srtDoc = SrtDocument.Parse(srtContent);
         var detectedSourceLang = "auto";
 
         var batches = new List<List<int>>();
         var currentBatch = new List<int>();
         var currentBatchLength = 0;
 
-        for (var i = 0; i < lines.Length; i++) {
-            if (IsTimecodeOrIndex(lines[i])) {
-                continue;
-            }
-
-            var lineText = NormalizeSrtLine(lines[i]);
+        for (var i = 0; i < srtDoc.Lines.Count; i++) {
+            var lineText = NormalizeSrtLine(srtDoc.Lines[i].Text.Content);
 
             if (currentBatchLength + lineText.Length + 1 > 500 && currentBatch.Count > 0) {
                 batches.Add(currentBatch);
@@ -170,14 +166,15 @@ public static class SubcatClient {
         }
 
         foreach (var batch in batches) {
-            var batchText = string.Join("\n", batch.Select(idx => NormalizeSrtLine(lines[idx])));
+            var batchText =
+                string.Join("\n", batch.Select(idx => NormalizeSrtLine(srtDoc.Lines[idx].Text.Content)));
 
             try {
                 var url =
                     $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl={targetLang}&dt=t&q={Uri.EscapeDataString(batchText)}";
                 var responseJson = HttpClient.SendWithRetry(url).GetString();
-                using var doc = JsonDocument.Parse(responseJson);
-                var root = doc.RootElement;
+                using var jsonDoc = JsonDocument.Parse(responseJson);
+                var root = jsonDoc.RootElement;
                 if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 2 &&
                     root[2].ValueKind == JsonValueKind.String) {
                     var srcLang = root[2].GetString();
@@ -202,11 +199,11 @@ public static class SubcatClient {
                 var translatedLinesInBatch = sb.ToString().Split('\n');
                 if (translatedLinesInBatch.Length == batch.Count) {
                     for (var j = 0; j < batch.Count; j++) {
-                        translatedLines[batch[j]] = translatedLinesInBatch[j];
+                        srtDoc.Lines[batch[j]].Text.Content = translatedLinesInBatch[j];
                     }
                 } else {
                     foreach (var lineIdx in batch) {
-                        var singleText = NormalizeSrtLine(lines[lineIdx]);
+                        var singleText = NormalizeSrtLine(srtDoc.Lines[lineIdx].Text.Content);
                         var singleUrl =
                             $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl={targetLang}&dt=t&q={Uri.EscapeDataString(singleText)}";
                         var singleResponse = HttpClient.SendWithRetry(singleUrl).GetString();
@@ -221,7 +218,7 @@ public static class SubcatClient {
                                 }
                             }
 
-                            translatedLines[lineIdx] = sSb.ToString();
+                            srtDoc.Lines[lineIdx].Text.Content = sSb.ToString();
                         }
                     }
                 }
@@ -230,30 +227,7 @@ public static class SubcatClient {
             }
         }
 
-        return (string.Join("\n", translatedLines), detectedSourceLang);
-    }
-
-    static readonly Regex IndexRegex = new(@"^\d+$", RegexOptions.Compiled);
-
-    static readonly Regex TimecodeRegex =
-        new(@"^\d{2}:\d{2}:\d{2}[,\.]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[,\.]\d{3}",
-            RegexOptions.Compiled);
-
-    static bool IsTimecodeOrIndex(string line) {
-        var trimmed = line.Trim();
-        if (string.IsNullOrWhiteSpace(trimmed)) {
-            return true;
-        }
-
-        if (IndexRegex.IsMatch(trimmed)) {
-            return true;
-        }
-
-        if (TimecodeRegex.IsMatch(trimmed)) {
-            return true;
-        }
-
-        return false;
+        return (srtDoc.ToString(), detectedSourceLang);
     }
 
     public static string GetSubcatLanguage(Language lang)
