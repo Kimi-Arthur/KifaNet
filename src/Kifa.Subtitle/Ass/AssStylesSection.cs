@@ -5,8 +5,8 @@ using NLog;
 
 namespace Kifa.Subtitle.Ass;
 
-public class AssStylesSection : AssSection {
-    public const string SectionHeader = "[V4+ Styles]";
+public class AssStylesSection : AssSection, AssSection<AssStylesSection> {
+    public static string SectionHeader => "[V4+ Styles]";
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public override string SectionTitle => SectionHeader;
 
@@ -51,7 +51,8 @@ public class AssStylesSection : AssSection {
         }
     }
 
-    public static AssStylesSection Parse(IEnumerable<string> lines) {
+    public static AssStylesSection Parse(AssStylesSection? stylesSection,
+        IEnumerable<string> lines) {
         var section = new AssStylesSection();
         List<string>? headers = null;
         foreach (var line in lines) {

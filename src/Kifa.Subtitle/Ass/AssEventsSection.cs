@@ -5,8 +5,8 @@ using NLog;
 
 namespace Kifa.Subtitle.Ass;
 
-public class AssEventsSection : AssSection {
-    public const string SectionHeader = "[Events]";
+public class AssEventsSection : AssSection, AssSection<AssEventsSection> {
+    public static string SectionHeader => "[Events]";
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public override string SectionTitle => SectionHeader;
 
