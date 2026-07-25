@@ -1,3 +1,5 @@
+#nullable enable
+
 using Kifa.Html;
 using Kifa.Subtitle.Subcat;
 using Xunit;
@@ -34,10 +36,11 @@ public class SubcatTests {
             Language = "en",
             NeedsGeneration = needsGeneration.Value
         };
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-en.srt",
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-en.srt",
             choice.DownloadLink);
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-orig.srt",
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-orig.srt",
             choice.GenerateLink);
+        Assert.Equal("[en] TEST TEST TEST", choice.ToString());
     }
 
     [Fact]
@@ -53,10 +56,11 @@ public class SubcatTests {
             Language = "zh",
             NeedsGeneration = needsGeneration.Value
         };
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-zh-CN.srt",
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-zh-CN.srt",
             choice.DownloadLink);
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-orig.srt",
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-orig.srt",
             choice.GenerateLink);
+        Assert.Equal("[zh*] TEST TEST TEST", choice.ToString());
     }
 
     [Fact]
@@ -82,6 +86,8 @@ public class SubcatTests {
     [InlineData("subs/1133/growing_pains_s03e02_aloha_2.html", "1133",
         "growing_pains_s03e02_aloha_2")]
     [InlineData("https://www.subtitlecat.com/index.php", null, "index")]
+    [InlineData("https://www.subtitlecat.com/subs/1509/Life%20on%20Top%201x11%20-%20Growing%20Pains.html", "1509", "Life on Top 1x11 - Growing Pains")]
+    [InlineData("/subs/486/Krypto%20the%20Superdog%20-%20S02%20E05-E06%20-%20Growing%20Pains%20and%20K-9%20Crusader%20%28720p%20-%20AMZN%20Web-DL%29.html", "486", "Krypto the Superdog - S02 E05-E06 - Growing Pains and K-9 Crusader (720p - AMZN Web-DL)")]
     public void ParseSubcatUrlTest(string url, string? expectedId, string expectedTitle) {
         var (id, title) = SubcatClient.ParseSubcatUrl(url);
         Assert.Equal(expectedId, id);
@@ -101,6 +107,16 @@ public class SubcatTests {
 
         Assert.Equal(
             "/Sources/TV/Growing Pains/Season 3/growing_pains_s03e02_aloha_2.1133.subcat.zh.srt",
+            targetPath);
+    }
+
+    [Fact]
+    public void GetSubtitlePathPercentEncodedTest() {
+        var targetPath = SubcatClient.GetSubtitlePath("/TV/Growing Pains/Season 3",
+            "https://www.subtitlecat.com/subs/1509/Life%20on%20Top%201x11%20-%20Growing%20Pains.html", "zh");
+
+        Assert.Equal(
+            "/Sources/TV/Growing Pains/Season 3/Life on Top 1x11 - Growing Pains.1509.subcat.zh.srt",
             targetPath);
     }
 }

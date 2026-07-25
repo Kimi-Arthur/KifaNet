@@ -54,7 +54,7 @@ public class DownloadSubcatCommand : KifaCommand {
         }
 
         var selected = SelectMany(expandedChoices, choice => choice.ToString(),
-            $"subtitles for {searchBaseName}");
+            $"subtitles for {searchBaseName}", reverse: true);
 
         if (selected.Status != KifaActionStatus.OK) {
             return new KifaActionResult {

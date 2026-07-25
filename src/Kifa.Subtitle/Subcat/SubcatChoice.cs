@@ -1,3 +1,5 @@
+using System;
+
 namespace Kifa.Subtitle.Subcat;
 
 public record SubcatChoice {
@@ -7,11 +9,11 @@ public record SubcatChoice {
     public bool NeedsGeneration { get; init; }
 
     public string DownloadLink
-        => $"{SubcatClient.UrlPrefix}/subs/{string.FormatOrEmpty($"{Id}/")}{Title}-{SubcatClient.GetSubcatLanguage(Language)}.srt";
+        => $"{SubcatClient.UrlPrefix}/subs/{string.FormatOrEmpty($"{Id}/")}{Uri.EscapeDataString(Title)}-{SubcatClient.GetSubcatLanguage(Language)}.srt";
 
     public string GenerateLink
-        => $"{SubcatClient.UrlPrefix}/subs/{string.FormatOrEmpty($"{Id}/")}{Title}-orig.srt";
+        => $"{SubcatClient.UrlPrefix}/subs/{string.FormatOrEmpty($"{Id}/")}{Uri.EscapeDataString(Title)}-orig.srt";
 
     public override string ToString()
-        => $"[{Language.Code}{(NeedsGeneration ? "*" : "")}] {Title}: {(NeedsGeneration ? GenerateLink : DownloadLink)}";
+        => $"[{Language.Code}{(NeedsGeneration ? "*" : "")}] {Title}";
 }

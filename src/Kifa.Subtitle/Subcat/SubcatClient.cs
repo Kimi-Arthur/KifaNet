@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.IO;
 using AngleSharp.Dom;
 using Kifa.Html;
 using NLog;
@@ -267,13 +268,18 @@ public static class SubcatClient {
     public static (string? Id, string Title) ParseSubcatUrl(string url) {
         var match = SubcatUrlRegex.Match(url);
         if (match.Success) {
-            return (match.Groups[1].Value, match.Groups[2].Value);
+            return (match.Groups[1].Value, Unescape(match.Groups[2].Value));
         }
 
         var title = Path.GetFileNameWithoutExtension(url);
         title = Regex.Replace(title, @"-orig$", "");
-        return (null, title.Trim());
+        return (null, Unescape(title.Trim()));
     }
+
+    public static string Unescape(string text)
+        => string.IsNullOrEmpty(text)
+            ? text
+            : WebUtility.HtmlDecode(Uri.UnescapeDataString(WebUtility.HtmlDecode(text)));
 
     public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice) {
         var idSegment = string.FormatOrEmpty($"{choice.Id}.");
