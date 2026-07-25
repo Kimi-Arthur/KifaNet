@@ -67,8 +67,11 @@ public class DownloadSubcatCommand : KifaCommand {
         var totalBytes = 0L;
 
         foreach (var choice in selected.Value) {
-            var path = SubcatClient.GetSubtitlePath(videoFile.ParentPath, choice);
-            var target = new KifaFile($"{KifaFile.SubtitlesHost}{path}");
+            // We may be able to skip downloading but it complicates the logic for generation.
+            var (content, filename) = SubcatClient.DownloadOrGenerate(choice);
+            var sourcesPath = SubcatClient.GetSourcesPath(videoFile.ParentPath);
+            var target = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{filename}");
+
             if (target.Exists()) {
                 if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
                     Logger.Info($"Skipped already downloaded subtitle {target}.");
@@ -76,7 +79,6 @@ public class DownloadSubcatCommand : KifaCommand {
                 }
             }
 
-            var content = SubcatClient.DownloadOrGenerate(choice);
             target.Write(content);
             downloadedCount++;
             totalBytes += content.Length;

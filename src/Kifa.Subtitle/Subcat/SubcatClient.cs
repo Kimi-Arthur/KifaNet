@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using Kifa.Html;
+using Kifa.Rpc;
 using Kifa.Subtitle.Srt;
 using NLog;
 
@@ -76,7 +77,7 @@ public static class SubcatClient {
         return new Uri(fullUrl).AbsoluteUri;
     }
 
-    public static string DownloadOrGenerate(SubcatChoice choice) {
+    public static (string Content, string Filename) DownloadOrGenerate(SubcatChoice choice) {
         if (choice.NeedsGeneration) {
             Logger.Debug(
                 $"Will generate subtitle for {choice.Language.Code} from {choice.OriginalLink}");
@@ -89,44 +90,41 @@ public static class SubcatClient {
             var serverUrl =
                 UploadTranslation(savingFileName, content, subcatLang, detectedSourceLang);
 
+            var subcatLink = serverUrl ?? choice.OriginalLink;
+            var filename = GetSubtitleFileName(subcatLink, choice.Language);
+
             if (serverUrl != null) {
+                var fullUrl = GetFullUrl(serverUrl);
                 try {
-                    var fullUrl = GetFullUrl(serverUrl);
                     Logger.Debug($"Fetching uploaded translation from server: {fullUrl}");
-                    return HttpClient.SendWithRetry(fullUrl).GetString();
+                    var downloadedContent = HttpClient.SendWithRetry(fullUrl).GetString();
+                    return (downloadedContent, filename);
                 } catch (Exception ex) {
                     Logger.Warn(ex,
                         "Failed to download uploaded translation from server, falling back to local generated content.");
+                    return (content, filename);
                 }
             }
 
-            return content;
+            return (content, filename);
         }
 
         Logger.Debug(
             $"Will download subtitle for {choice.Language.Code} from {choice.DownloadLink}");
-        return HttpClient.SendWithRetry(choice.DownloadLink.Checked()).GetString();
+        var downloadLink = choice.DownloadLink.Checked();
+        var downloadContent = HttpClient.SendWithRetry(downloadLink).GetString();
+        var downloadFilename = GetSubtitleFileName(downloadLink, choice.Language);
+        return (downloadContent, downloadFilename);
     }
 
     public static string? UploadTranslation(string filename, string content, string language,
         string originalLanguage = "auto") {
         try {
-            var contentParams = new Dictionary<string, string> {
-                { "filename", filename },
-                { "content", content },
-                { "language", language },
-                { "orig_language", originalLanguage }
-            };
-            var response = HttpClient.SendWithRetry(()
-                => new HttpRequestMessage(HttpMethod.Post, $"{UrlPrefix}/upload_subtitles.php") {
-                    Content = new FormUrlEncodedContent(contentParams)
-                }).GetString();
-            Logger.Debug($"Uploaded translation to SubtitleCat response: {response}");
-
-            using var doc = JsonDocument.Parse(response);
-            if (doc.RootElement.TryGetProperty("url", out var urlElement)) {
-                return urlElement.GetString();
-            }
+            var response =
+                HttpClient.Call(new SubcatUploadRpc(filename, content, language, originalLanguage));
+            Logger.Debug(
+                $"Uploaded translation to SubtitleCat response: echo={response?.Echo}, url={response?.Url}");
+            return response?.Url;
         } catch (Exception ex) {
             Logger.Warn(ex, "Failed to upload generated translation to SubtitleCat.");
         }
@@ -167,8 +165,8 @@ public static class SubcatClient {
         }
 
         foreach (var batch in batches) {
-            var batchText =
-                string.Join("\n", batch.Select(idx => NormalizeSrtLine(srtDoc.Lines[idx].Text.Content)));
+            var batchText = string.Join("\n",
+                batch.Select(idx => NormalizeSrtLine(srtDoc.Lines[idx].Text.Content)));
 
             try {
                 var url =
@@ -261,15 +259,17 @@ public static class SubcatClient {
             ? text
             : WebUtility.HtmlDecode(Uri.UnescapeDataString(WebUtility.HtmlDecode(text)));
 
+    public static string GetSubtitleFileName(string subcatLink, Language language) {
+        var (subcatId, title) = ParseSubcatUrl(subcatLink);
+        var idSegment = string.FormatOrEmpty($"{subcatId}.");
+        return $"{title}.{idSegment}subcat.{language.Code}.srt";
+    }
+
     public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice)
         => GetSubtitlePath(videoParentPath, choice.DownloadLink ?? choice.OriginalLink,
             choice.Language);
 
     public static string GetSubtitlePath(string videoParentPath, string subcatLink,
-        Language language) {
-        var (subcatId, title) = ParseSubcatUrl(subcatLink);
-        var idSegment = string.FormatOrEmpty($"{subcatId}.");
-        var sourcesPath = GetSourcesPath(videoParentPath);
-        return $"{sourcesPath}/{title}.{idSegment}subcat.{language.Code}.srt";
-    }
+        Language language)
+        => $"{GetSourcesPath(videoParentPath)}/{GetSubtitleFileName(subcatLink, language)}";
 }

@@ -146,4 +146,11 @@ public class SubcatTests {
             "/Sources/TV/Growing Pains/Season 3/Life on Top 1x11 - Growing Pains.1509.subcat.zh.srt",
             targetPath);
     }
+
+    [Fact]
+    public void GetSubtitleFileNameTest() {
+        var fileName = SubcatClient.GetSubtitleFileName(
+            "https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-zh.srt", "zh");
+        Assert.Equal("growing_pains_s03e02_aloha_2.1133.subcat.zh.srt", fileName);
+    }
 }
