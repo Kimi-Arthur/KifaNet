@@ -31,72 +31,65 @@ public static class SubcatClient {
 
         var rawSubtitles = elements.Take(10).Select(element => {
             var href = element.Attributes["href"].Checked().Value;
-            var (id, title) = ParseSubcatUrl(href);
-            return (Id: id, Title: title, Link: href);
+            var originalLink = Path.ChangeExtension(href, "-orig.srt");
+            return (Link: href, OriginalLink: originalLink);
         }).ToList();
 
         return rawSubtitles.SelectMany(sub => {
-            var pageLink = $"{UrlPrefix}/{sub.Link.TrimStart('/')}";
+            var pageLink = GetFullUrl(sub.Link);
             var pageContent = HttpClient.SendWithRetry(pageLink).GetString().GetDocument();
-            var downloadLinks = GetDownloadLinks(pageContent, languages);
-            return downloadLinks.Select(kv => new SubcatChoice {
-                Id = sub.Id,
-                Title = sub.Title,
-                Language = kv.Key,
-                NeedsGeneration = kv.Value
+            var downloadUrls = GetDownloadUrls(pageContent, languages);
+            return downloadUrls.Select(kv => new SubcatChoice {
+                OriginalLink = GetFullUrl(sub.OriginalLink),
+                DownloadLink = kv.Value != null ? GetFullUrl(kv.Value) : null,
+                Language = kv.Key
             });
         }).ToList();
     }
 
-    public static Dictionary<Language, bool> GetDownloadLinks(IDocument doc,
-        List<Language> languages) {
-        var links = new Dictionary<Language, bool>();
-        foreach (var lang in languages) {
-            var needsGeneration = GetDownloadLink(doc, lang);
-            if (needsGeneration != null) {
-                links[lang] = needsGeneration.Value;
-            }
-        }
+    // Parses a single subtitle page HTML document and retrieves download URLs (or null if generation is needed) for target languages.
+    public static Dictionary<Language, string?>
+        GetDownloadUrls(IDocument doc, List<Language> languages)
+        => languages.Select(lang => (Language: lang, Url: GetDownloadUrl(doc, lang)))
+            .Where(x => x.Url != null).ToDictionary(x => x.Language,
+                x => x.Url == "" ? null : x.Url);
 
-        return links;
-    }
-
-    public static bool? GetDownloadLink(IDocument doc, Language lang) {
+    // Returns relative download URL string if direct link exists, "" if translation button exists, or null if absent.
+    public static string? GetDownloadUrl(IDocument doc, Language lang) {
         var subcatLang = GetSubcatLanguage(lang);
-        if (doc.GetElementById($"download_{subcatLang}") != null) {
-            return false;
+        var downloadElement = doc.GetElementById($"download_{subcatLang}");
+        if (downloadElement != null) {
+            return downloadElement.Attributes["href"]?.Value ?? "";
         }
 
         if (doc.GetElementById(subcatLang) != null) {
-            return true;
+            return "";
         }
 
         return null;
     }
 
+    public static string GetFullUrl(string link) {
+        var fullUrl = link.StartsWith("http") ? link : $"{UrlPrefix}/{link.TrimStart('/')}";
+        return new Uri(fullUrl).AbsoluteUri;
+    }
+
     public static string DownloadOrGenerate(SubcatChoice choice) {
         if (choice.NeedsGeneration) {
             Logger.Debug(
-                $"Will generate subtitle for {choice.Language.Code} from {choice.GenerateLink}");
+                $"Will generate subtitle for {choice.Language.Code} from {choice.OriginalLink}");
             var subcatLang = GetSubcatLanguage(choice.Language);
-            var origContent = HttpClient.SendWithRetry(choice.GenerateLink).GetString();
-            var (content, detectedSourceLang) = TranslateSrt(origContent, subcatLang);
+            var originalContent = HttpClient.SendWithRetry(choice.OriginalLink).GetString();
+            var (content, detectedSourceLang) = TranslateSrt(originalContent, subcatLang);
 
-            var origFileName = choice.GenerateLink.Split('/').Last();
-            var savingFileName = origFileName.Replace("-orig.srt", ".srt");
+            var originalFileName = choice.OriginalLink.Split('/').Last();
+            var savingFileName = originalFileName.Replace("-orig.srt", ".srt");
             var serverUrl =
                 UploadTranslation(savingFileName, content, subcatLang, detectedSourceLang);
 
-            if (!string.IsNullOrEmpty(serverUrl)) {
+            if (serverUrl != null) {
                 try {
-                    var fullUrl = serverUrl.StartsWith("http")
-                        ? serverUrl
-                        : $"{UrlPrefix}/{serverUrl.TrimStart('/')}";
-                    if (fullUrl != choice.DownloadLink) {
-                        Logger.Warn(
-                            $"Uploaded translation server URL '{fullUrl}' does not match expected download link '{choice.DownloadLink}'.");
-                    }
-
+                    var fullUrl = GetFullUrl(serverUrl);
                     Logger.Debug($"Fetching uploaded translation from server: {fullUrl}");
                     return HttpClient.SendWithRetry(fullUrl).GetString();
                 } catch (Exception ex) {
@@ -110,17 +103,17 @@ public static class SubcatClient {
 
         Logger.Debug(
             $"Will download subtitle for {choice.Language.Code} from {choice.DownloadLink}");
-        return HttpClient.SendWithRetry(choice.DownloadLink).GetString();
+        return HttpClient.SendWithRetry(choice.DownloadLink.Checked()).GetString();
     }
 
     public static string? UploadTranslation(string filename, string content, string language,
-        string origLanguage = "auto") {
+        string originalLanguage = "auto") {
         try {
             var contentParams = new Dictionary<string, string> {
                 { "filename", filename },
                 { "content", content },
                 { "language", language },
-                { "orig_language", origLanguage }
+                { "orig_language", originalLanguage }
             };
             var response = HttpClient.SendWithRetry(()
                 => new HttpRequestMessage(HttpMethod.Post, $"{UrlPrefix}/upload_subtitles.php") {
@@ -139,6 +132,12 @@ public static class SubcatClient {
         return null;
     }
 
+    static readonly Regex FontTagRegex =
+        new(@"</?font[^>]*>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    static string NormalizeSrtLine(string line)
+        => FontTagRegex.Replace(line, "").Replace("&", "and");
+
     public static (string Content, string DetectedSourceLanguage) TranslateSrt(string srtContent,
         string targetLang) {
         var lines = srtContent.Replace("\r\n", "\n").Split('\n');
@@ -154,9 +153,7 @@ public static class SubcatClient {
                 continue;
             }
 
-            var lineText = Regex.Replace(lines[i], @"<font[^>]*>", "", RegexOptions.IgnoreCase);
-            lineText = Regex.Replace(lineText, @"</font>", "", RegexOptions.IgnoreCase);
-            lineText = lineText.Replace("&", "and");
+            var lineText = NormalizeSrtLine(lines[i]);
 
             if (currentBatchLength + lineText.Length + 1 > 500 && currentBatch.Count > 0) {
                 batches.Add(currentBatch);
@@ -173,12 +170,7 @@ public static class SubcatClient {
         }
 
         foreach (var batch in batches) {
-            var batchText = string.Join("\n", batch.Select(idx => {
-                var lineText =
-                    Regex.Replace(lines[idx], @"<font[^>]*>", "", RegexOptions.IgnoreCase);
-                lineText = Regex.Replace(lineText, @"</font>", "", RegexOptions.IgnoreCase);
-                return lineText.Replace("&", "and");
-            }));
+            var batchText = string.Join("\n", batch.Select(idx => NormalizeSrtLine(lines[idx])));
 
             try {
                 var url =
@@ -189,7 +181,7 @@ public static class SubcatClient {
                 if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 2 &&
                     root[2].ValueKind == JsonValueKind.String) {
                     var srcLang = root[2].GetString();
-                    if (!string.IsNullOrEmpty(srcLang)) {
+                    if (srcLang != null) {
                         detectedSourceLang = srcLang;
                     }
                 }
@@ -214,11 +206,7 @@ public static class SubcatClient {
                     }
                 } else {
                     foreach (var lineIdx in batch) {
-                        var singleText = Regex.Replace(lines[lineIdx], @"<font[^>]*>", "",
-                            RegexOptions.IgnoreCase);
-                        singleText = Regex
-                            .Replace(singleText, @"</font>", "", RegexOptions.IgnoreCase)
-                            .Replace("&", "and");
+                        var singleText = NormalizeSrtLine(lines[lineIdx]);
                         var singleUrl =
                             $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl={targetLang}&dt=t&q={Uri.EscapeDataString(singleText)}";
                         var singleResponse = HttpClient.SendWithRetry(singleUrl).GetString();
@@ -245,15 +233,26 @@ public static class SubcatClient {
         return (string.Join("\n", translatedLines), detectedSourceLang);
     }
 
+    static readonly Regex IndexRegex = new(@"^\d+$", RegexOptions.Compiled);
+
+    static readonly Regex TimecodeRegex =
+        new(@"^\d{2}:\d{2}:\d{2}[,\.]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[,\.]\d{3}",
+            RegexOptions.Compiled);
+
     static bool IsTimecodeOrIndex(string line) {
         var trimmed = line.Trim();
-        if (string.IsNullOrWhiteSpace(trimmed))
+        if (string.IsNullOrWhiteSpace(trimmed)) {
             return true;
-        if (Regex.IsMatch(trimmed, @"^\d+$"))
+        }
+
+        if (IndexRegex.IsMatch(trimmed)) {
             return true;
-        if (Regex.IsMatch(trimmed,
-                @"^\d{2}:\d{2}:\d{2}[,\.]\d{3}\s*-->\s*\d{2}:\d{2}:\d{2}[,\.]\d{3}"))
+        }
+
+        if (TimecodeRegex.IsMatch(trimmed)) {
             return true;
+        }
+
         return false;
     }
 
@@ -263,16 +262,22 @@ public static class SubcatClient {
     public static string GetSourcesPath(string videoParentPath) => $"/Sources{videoParentPath}";
 
     static readonly Regex SubcatUrlRegex =
-        new(@"(?:^|/)subs/(\d+)/([^/]+?)(?:-orig)?(?:\.(?:html|srt|ass))?$", RegexOptions.Compiled);
+        new(
+            @"(?:^|/)subs/(?:(\d+)/)?([^/]+?)(?:-[a-z]{2}(?:-[A-Z]{2})?)?(?:-orig)?(?:\.(?:html|srt|ass))?$",
+            RegexOptions.Compiled);
+
+    static readonly Regex TitleSuffixRegex =
+        new(@"-(?:orig|[a-z]{2}(?:-[A-Z]{2})?)$", RegexOptions.Compiled);
 
     public static (string? Id, string Title) ParseSubcatUrl(string url) {
         var match = SubcatUrlRegex.Match(url);
         if (match.Success) {
-            return (match.Groups[1].Value, Unescape(match.Groups[2].Value));
+            var id = match.Groups[1].Success ? match.Groups[1].Value : null;
+            return (id, Unescape(match.Groups[2].Value));
         }
 
         var title = Path.GetFileNameWithoutExtension(url);
-        title = Regex.Replace(title, @"-orig$", "");
+        title = TitleSuffixRegex.Replace(title, "");
         return (null, Unescape(title.Trim()));
     }
 
@@ -281,17 +286,15 @@ public static class SubcatClient {
             ? text
             : WebUtility.HtmlDecode(Uri.UnescapeDataString(WebUtility.HtmlDecode(text)));
 
-    public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice) {
-        var idSegment = string.FormatOrEmpty($"{choice.Id}.");
-        var sourcesPath = GetSourcesPath(videoParentPath);
-        return $"{sourcesPath}/{choice.Title}.{idSegment}subcat.{choice.Language.Code}.srt";
-    }
+    public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice)
+        => GetSubtitlePath(videoParentPath, choice.DownloadLink ?? choice.OriginalLink,
+            choice.Language);
 
     public static string GetSubtitlePath(string videoParentPath, string subcatLink,
         Language language) {
         var (subcatId, title) = ParseSubcatUrl(subcatLink);
+        var idSegment = string.FormatOrEmpty($"{subcatId}.");
         var sourcesPath = GetSourcesPath(videoParentPath);
-        return
-            $"{sourcesPath}/{title}.{string.FormatOrEmpty($"{subcatId}.")}subcat.{language.Code}.srt";
+        return $"{sourcesPath}/{title}.{idSegment}subcat.{language.Code}.srt";
     }
 }

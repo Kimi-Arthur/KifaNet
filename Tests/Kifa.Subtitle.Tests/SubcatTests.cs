@@ -24,65 +24,92 @@ public class SubcatTests {
                               """;
 
     [Fact]
-    public void GetDownloadLinkExistingLanguageTest() {
+    public void GetDownloadUrlExistingLanguageTest() {
         var doc = SampleHtml.GetDocument();
-        var needsGeneration = SubcatClient.GetDownloadLink(doc, "en");
-        Assert.NotNull(needsGeneration);
-        Assert.False(needsGeneration!.Value);
+        var downloadUrl = SubcatClient.GetDownloadUrl(doc, "en");
+        Assert.Equal("/subs/1436/TEST TEST TEST-en.srt", downloadUrl);
 
         var choice = new SubcatChoice {
-            Id = "1436",
-            Title = "TEST TEST TEST",
-            Language = "en",
-            NeedsGeneration = needsGeneration.Value
+            OriginalLink = SubcatClient.GetFullUrl("/subs/1436/TEST%20TEST%20TEST-orig.srt"),
+            DownloadLink = SubcatClient.GetFullUrl(downloadUrl.Checked()),
+            Language = "en"
         };
         Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-en.srt",
             choice.DownloadLink);
         Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-orig.srt",
-            choice.GenerateLink);
+            choice.OriginalLink);
+        Assert.False(choice.NeedsGeneration);
+        Assert.Equal("TEST TEST TEST", choice.Title);
         Assert.Equal("[en] TEST TEST TEST", choice.ToString());
     }
 
     [Fact]
-    public void GetDownloadLinkNonExistingRequestedLanguageTest() {
+    public void GetDownloadUrlNonExistingRequestedLanguageTest() {
         var doc = SampleHtml.GetDocument();
-        var needsGeneration = SubcatClient.GetDownloadLink(doc, "zh");
-        Assert.NotNull(needsGeneration);
-        Assert.True(needsGeneration!.Value);
+        var downloadUrl = SubcatClient.GetDownloadUrl(doc, "zh");
+        Assert.Equal("", downloadUrl);
 
         var choice = new SubcatChoice {
-            Id = "1436",
-            Title = "TEST TEST TEST",
-            Language = "zh",
-            NeedsGeneration = needsGeneration.Value
+            OriginalLink = SubcatClient.GetFullUrl("/subs/1436/TEST%20TEST%20TEST-orig.srt"),
+            DownloadLink = null,
+            Language = "zh"
         };
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-zh-CN.srt",
-            choice.DownloadLink);
+        Assert.Null(choice.DownloadLink);
         Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST%20TEST%20TEST-orig.srt",
-            choice.GenerateLink);
+            choice.OriginalLink);
+        Assert.True(choice.NeedsGeneration);
         Assert.Equal("[zh*] TEST TEST TEST", choice.ToString());
     }
 
     [Fact]
-    public void GetDownloadLinkNotFoundTest() {
+    public void GetDownloadUrlNotFoundTest() {
         var doc = SampleHtml.GetDocument();
-        var needsGeneration = SubcatClient.GetDownloadLink(doc, "fr");
-        Assert.Null(needsGeneration);
+        var downloadUrl = SubcatClient.GetDownloadUrl(doc, "fr");
+        Assert.Null(downloadUrl);
     }
 
     [Fact]
-    public void GetDownloadLinksTest() {
+    public void GetDownloadUrlsTest() {
         var doc = SampleHtml.GetDocument();
-        var links = SubcatClient.GetDownloadLinks(doc, ["en", "zh", "fr"]);
-        Assert.Equal(2, links.Count);
-        Assert.False(links["en"]);
-        Assert.True(links["zh"]);
+        var urls = SubcatClient.GetDownloadUrls(doc, ["en", "zh", "fr"]);
+        Assert.Equal(2, urls.Count);
+        Assert.Equal("/subs/1436/TEST TEST TEST-en.srt", urls["en"]);
+        Assert.Null(urls["zh"]);
+        Assert.False(urls.ContainsKey("fr"));
+    }
+
+    [Fact]
+    public void GetDownloadUrlCustomHrefTest() {
+        const string customHtml = """
+                                  <!DOCTYPE html>
+                                  <html>
+                                  <body>
+                                      <div class="sub-single">
+                                          <span>English</span>
+                                          <span><a id="download_en" href="/subs/5678/TEST_CUSTOM-en.srt" class="green-link">Download</a></span>
+                                      </div>
+                                  </body>
+                                  </html>
+                                  """;
+        var doc = customHtml.GetDocument();
+        var downloadUrl = SubcatClient.GetDownloadUrl(doc, "en");
+        Assert.Equal("/subs/5678/TEST_CUSTOM-en.srt", downloadUrl);
+
+        var choice = new SubcatChoice {
+            OriginalLink = SubcatClient.GetFullUrl("/subs/1436/TEST_CUSTOM-orig.srt"),
+            DownloadLink = SubcatClient.GetFullUrl(downloadUrl.Checked()),
+            Language = "en"
+        };
+        Assert.Equal("https://www.subtitlecat.com/subs/5678/TEST_CUSTOM-en.srt", choice.DownloadLink);
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST_CUSTOM-orig.srt", choice.OriginalLink);
     }
 
     [Theory]
     [InlineData("https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2.html", "1133",
         "growing_pains_s03e02_aloha_2")]
     [InlineData("/subs/1436/TEST_TEST_TEST-orig.srt", "1436", "TEST_TEST_TEST")]
+    [InlineData("/subs/1436/TEST_TEST_TEST-en.srt", "1436", "TEST_TEST_TEST")]
+    [InlineData("/subs/1436/TEST_TEST_TEST-zh-CN.srt", "1436", "TEST_TEST_TEST")]
     [InlineData("subs/1133/growing_pains_s03e02_aloha_2.html", "1133",
         "growing_pains_s03e02_aloha_2")]
     [InlineData("https://www.subtitlecat.com/index.php", null, "index")]
