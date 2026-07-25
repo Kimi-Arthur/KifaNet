@@ -32,7 +32,8 @@ public static class SubcatClient {
 
         var rawSubtitles = elements.Take(10).Select(element => {
             var href = element.Attributes["href"].Checked().Value;
-            var originalLink = Path.ChangeExtension(href, "-orig.srt");
+            var lastDot = href.LastIndexOf('.');
+            var originalLink = (lastDot >= 0 ? href[..lastDot] : href) + "-orig.srt";
             return (Link: href, OriginalLink: originalLink);
         }).ToList();
 
