@@ -5,14 +5,19 @@ using System.Text.RegularExpressions;
 namespace Kifa.Subtitle.Srt;
 
 public class SrtDocument {
-    static readonly Regex linePattern = new(@"\d+([^\n]*\n){2}([^\n]+\n)*(\n|$)");
-
     public List<SrtLine> Lines { get; set; } = [];
 
-    public static SrtDocument Parse(string s)
-        => new() {
-            Lines = linePattern.Matches(s).Select(m => SrtLine.Parse(m.Value)).ToList()
+    public static SrtDocument Parse(string s) {
+        var normalized = s.Replace("\r\n", "\n").Trim();
+        if (string.IsNullOrWhiteSpace(normalized)) {
+            return new SrtDocument();
+        }
+
+        var blocks = Regex.Split(normalized, @"\n{2,}");
+        return new SrtDocument {
+            Lines = blocks.Select(SrtLine.Parse).ToList()
         };
+    }
 
     public void Sort() {
         Lines.Sort((lineA, lineB) => lineA.StartTime.CompareTo(lineB.StartTime));
