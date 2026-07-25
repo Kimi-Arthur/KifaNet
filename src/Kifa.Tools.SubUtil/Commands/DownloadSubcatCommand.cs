@@ -17,8 +17,6 @@ public class DownloadSubcatCommand : KifaCommand {
 
     static readonly HttpClient HttpClient = new();
 
-    const string UrlPrefix = SubcatClient.UrlPrefix;
-
     [Value(0, Required = true, HelpText = "Target files to download subtitles for.")]
     public IEnumerable<string> FileNames { get; set; }
 
@@ -47,6 +45,8 @@ public class DownloadSubcatCommand : KifaCommand {
         return LogSummary();
     }
 
+    const string UrlPrefix = SubcatClient.UrlPrefix;
+
     KifaActionResult DownloadSubtitle(KifaFile videoFile) {
         var searchBaseName = videoFile.GetSubtitleFile().BaseName;
         var doc = HttpClient.SendWithRetry($"{UrlPrefix}/index.php?search={searchBaseName}")
@@ -69,12 +69,8 @@ public class DownloadSubcatCommand : KifaCommand {
             var pageLink = $"{UrlPrefix}/{sub.Link}";
             var pageContent = HttpClient.SendWithRetry(pageLink).GetString().GetDocument();
             var downloadLinks = SubcatClient.GetDownloadLinks(pageContent, TargetLanguages);
-            return downloadLinks.Select(kv => (
-                Language: kv.Key,
-                Title: sub.Title,
-                Link: sub.Link,
-                DownloadLink: kv.Value
-            ));
+            return downloadLinks.Select(kv => (Language: kv.Key, Title: sub.Title, Link: sub.Link,
+                DownloadLink: kv.Value));
         }).ToList();
 
         if (expandedChoices.Count == 0) {
@@ -85,8 +81,9 @@ public class DownloadSubcatCommand : KifaCommand {
             };
         }
 
-        var selected = SelectMany(expandedChoices, choice =>
-                $"[{choice.Language.Code}{(choice.DownloadLink.NeedsGeneration ? "*" : "")}] {choice.Title}: {choice.Link}",
+        var selected = SelectMany(expandedChoices,
+            choice
+                => $"[{choice.Language.Code}{(choice.DownloadLink.NeedsGeneration ? "*" : "")}] {choice.Title}: {choice.Link}",
             $"subtitles for {searchBaseName}");
 
         if (selected.Status != KifaActionStatus.OK) {
@@ -100,7 +97,9 @@ public class DownloadSubcatCommand : KifaCommand {
         var totalBytes = 0L;
 
         foreach (var choice in selected.Value) {
-            var target = videoFile.GetSubtitleFile($"{choice.Language.Code}.srt");
+            var path =
+                SubcatClient.GetSubtitlePath(videoFile.ParentPath, choice.Link, choice.Language);
+            var target = new KifaFile($"{KifaFile.SubtitlesHost}{path}");
             if (target.Exists()) {
                 if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
                     Logger.Info($"Skipped already downloaded subtitle {target}.");
@@ -128,4 +127,3 @@ public class DownloadSubcatCommand : KifaCommand {
         };
     }
 }
-

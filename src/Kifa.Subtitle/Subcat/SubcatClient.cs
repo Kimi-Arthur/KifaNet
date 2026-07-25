@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.IO;
 using AngleSharp.Dom;
 using NLog;
 
@@ -236,4 +237,28 @@ public static class SubcatClient {
 
     public static string GetSubcatLanguage(Language lang)
         => lang.Code == "zh" ? "zh-CN" : lang.Code;
+
+    public static string GetSourcesPath(string videoParentPath) => $"/Sources{videoParentPath}";
+
+    static readonly Regex SubcatUrlRegex =
+        new(@"(?:^|/)subs/(\d+)/([^/]+?)(?:-orig)?(?:\.(?:html|srt|ass))?$", RegexOptions.Compiled);
+
+    public static (string? Id, string Title) ParseSubcatUrl(string url) {
+        var match = SubcatUrlRegex.Match(url);
+        if (match.Success) {
+            return (match.Groups[1].Value, match.Groups[2].Value);
+        }
+
+        var title = Path.GetFileNameWithoutExtension(url);
+        title = Regex.Replace(title, @"-orig$", "");
+        return (null, title.Trim());
+    }
+
+    public static string GetSubtitlePath(string videoParentPath, string subcatLink,
+        Language language) {
+        var (subcatId, title) = ParseSubcatUrl(subcatLink);
+        var sourcesPath = GetSourcesPath(videoParentPath);
+        return
+            $"{sourcesPath}/{title}.{string.FormatOrEmpty($"{subcatId}.")}subcat.{language.Code}.srt";
+    }
 }
