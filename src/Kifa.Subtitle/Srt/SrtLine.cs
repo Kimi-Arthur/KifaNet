@@ -10,7 +10,7 @@ public class SrtLine {
     public int Index { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
-    public SrtTextElement Text { get; set; }
+    public SrtTextElement Text { get; set; } = new();
 
     public static SrtLine Parse(string s) {
         Logger.Trace($"Parsing srt line: {s}");

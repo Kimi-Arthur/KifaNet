@@ -6,7 +6,7 @@ using Kifa.Subtitle.Ass;
 namespace Kifa.Subtitle.Srt;
 
 public class SrtTextElement {
-    public string Content { get; set; }
+    public string Content { get; set; } = "";
 
     public bool Bold { get; set; }
 

@@ -28,7 +28,7 @@ public class SubcatTests {
         var doc = SampleHtml.GetDocument();
         var needsGeneration = SubcatClient.GetDownloadLink(doc, "en");
         Assert.NotNull(needsGeneration);
-        Assert.False(needsGeneration.Value);
+        Assert.False(needsGeneration!.Value);
 
         var choice = new SubcatChoice {
             Id = "1436",
@@ -48,7 +48,7 @@ public class SubcatTests {
         var doc = SampleHtml.GetDocument();
         var needsGeneration = SubcatClient.GetDownloadLink(doc, "zh");
         Assert.NotNull(needsGeneration);
-        Assert.True(needsGeneration.Value);
+        Assert.True(needsGeneration!.Value);
 
         var choice = new SubcatChoice {
             Id = "1436",

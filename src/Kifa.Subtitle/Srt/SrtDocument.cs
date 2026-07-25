@@ -7,7 +7,7 @@ namespace Kifa.Subtitle.Srt;
 public class SrtDocument {
     static readonly Regex linePattern = new(@"\d+([^\n]*\n){2}([^\n]+\n)*(\n|$)");
 
-    public List<SrtLine> Lines { get; set; }
+    public List<SrtLine> Lines { get; set; } = [];
 
     public static SrtDocument Parse(string s)
         => new() {

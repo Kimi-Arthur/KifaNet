@@ -85,7 +85,7 @@ public class AssStyle : AssLine {
             RtlCommentStyle
         };
 
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
 
     public string FontName { get; set; } = DefaultFontName;
 

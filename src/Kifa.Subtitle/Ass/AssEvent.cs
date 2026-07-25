@@ -23,7 +23,7 @@ public class AssEvent : AssLine {
 
     public AssDialogueEffect Effect { get; set; } = new();
 
-    public AssDialogueText Text { get; set; }
+    public AssDialogueText Text { get; set; } = new();
 
     public override IEnumerable<string> Values
         => new List<string> {
@@ -39,9 +39,9 @@ public class AssEvent : AssLine {
             Text.ToString()
         };
 
-    public static AssEvent Parse(Dictionary<string, AssStyle> styles, string eventType,
+    public static AssEvent? Parse(Dictionary<string, AssStyle>? styles, string eventType,
         IEnumerable<string> content, IEnumerable<string> headers) {
-        AssEvent assEvent = null;
+        AssEvent? assEvent = null;
         switch (eventType) {
             case AssDialogue.EventType:
                 assEvent = new AssDialogue();
@@ -64,8 +64,8 @@ public class AssEvent : AssLine {
                     assEvent.End = TimeSpan.Parse(p.Item1);
                     break;
                 case "Style":
-                    assEvent.Style = styles.GetValueOrDefault(p.Item1) ??
-                                     styles.GetValueOrDefault("Default");
+                    assEvent.Style = styles?.GetValueOrDefault(p.Item1) ??
+                                     styles?.GetValueOrDefault("Default") ?? AssStyle.DefaultStyle;
                     break;
                 case "Actor":
                 case "Name":

@@ -15,8 +15,8 @@ public class AssLine {
         Values = values;
     }
 
-    public virtual string Key { get; protected set; }
-    public virtual IEnumerable<string> Values { get; protected set; }
+    public virtual string Key { get; protected set; } = "";
+    public virtual IEnumerable<string> Values { get; protected set; } = [];
 
     public override string ToString() => $"{Key}: {string.Join(",", Values.Select(FormatValue))}";
 

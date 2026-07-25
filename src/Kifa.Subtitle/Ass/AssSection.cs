@@ -11,7 +11,7 @@ public abstract class AssSection {
     public override string ToString()
         => $"{SectionTitle}\n{string.Join("\n", AssLines.Select(line => line.ToString()))}\n";
 
-    public static AssSection Parse(AssStylesSection stylesSection, string title,
+    public static AssSection? Parse(AssStylesSection? stylesSection, string title,
         IEnumerable<string> lines) {
         switch (title) {
             case AssScriptInfoSection.SectionHeader:

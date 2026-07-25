@@ -38,9 +38,9 @@ public class AssStylesSection : AssSection {
         };
 
     // TODO: solve sync problem between these two.
-    public List<AssStyle> Styles { get; set; } = new();
+    public List<AssStyle> Styles { get; set; } = [];
 
-    public Dictionary<string, AssStyle> NamedStyles { get; set; } = new();
+    public Dictionary<string, AssStyle> NamedStyles { get; set; } = [];
 
     public override IEnumerable<AssLine> AssLines {
         get {
@@ -53,7 +53,7 @@ public class AssStylesSection : AssSection {
 
     public static AssStylesSection Parse(IEnumerable<string> lines) {
         var section = new AssStylesSection();
-        List<string> headers = null;
+        List<string>? headers = null;
         foreach (var line in lines) {
             var separatorIndex = line.IndexOf(AssLine.Separator, StringComparison.Ordinal);
             if (separatorIndex >= 0) {

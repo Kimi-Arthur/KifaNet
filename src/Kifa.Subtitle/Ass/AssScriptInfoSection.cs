@@ -13,9 +13,9 @@ public class AssScriptInfoSection : AssSection {
     public const string SectionHeader = "[Script Info]";
     public override string SectionTitle => SectionHeader;
 
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
-    public string OriginalScript { get; set; }
+    public string? OriginalScript { get; set; }
 
     public string ScriptType { get; set; } = "V4.00+";
 
