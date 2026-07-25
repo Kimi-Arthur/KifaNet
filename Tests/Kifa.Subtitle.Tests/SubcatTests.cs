@@ -24,28 +24,46 @@ public class SubcatTests {
     [Fact]
     public void GetDownloadLinkExistingLanguageTest() {
         var doc = SampleHtml.GetDocument();
-        var link = SubcatClient.GetDownloadLink(doc, "en");
-        Assert.NotNull(link);
+        var needsGeneration = SubcatClient.GetDownloadLink(doc, "en");
+        Assert.NotNull(needsGeneration);
+        Assert.False(needsGeneration.Value);
+
+        var choice = new SubcatChoice {
+            Id = "1436",
+            Title = "TEST TEST TEST",
+            Language = "en",
+            NeedsGeneration = needsGeneration.Value
+        };
         Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-en.srt",
-            link.Value.Link);
-        Assert.False(link.Value.NeedsGeneration);
+            choice.DownloadLink);
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-orig.srt",
+            choice.GenerateLink);
     }
 
     [Fact]
     public void GetDownloadLinkNonExistingRequestedLanguageTest() {
         var doc = SampleHtml.GetDocument();
-        var link = SubcatClient.GetDownloadLink(doc, "zh");
-        Assert.NotNull(link);
+        var needsGeneration = SubcatClient.GetDownloadLink(doc, "zh");
+        Assert.NotNull(needsGeneration);
+        Assert.True(needsGeneration.Value);
+
+        var choice = new SubcatChoice {
+            Id = "1436",
+            Title = "TEST TEST TEST",
+            Language = "zh",
+            NeedsGeneration = needsGeneration.Value
+        };
+        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-zh-CN.srt",
+            choice.DownloadLink);
         Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-orig.srt",
-            link.Value.Link);
-        Assert.True(link.Value.NeedsGeneration);
+            choice.GenerateLink);
     }
 
     [Fact]
     public void GetDownloadLinkNotFoundTest() {
         var doc = SampleHtml.GetDocument();
-        var link = SubcatClient.GetDownloadLink(doc, "fr");
-        Assert.Null(link);
+        var needsGeneration = SubcatClient.GetDownloadLink(doc, "fr");
+        Assert.Null(needsGeneration);
     }
 
     [Fact]
@@ -53,12 +71,8 @@ public class SubcatTests {
         var doc = SampleHtml.GetDocument();
         var links = SubcatClient.GetDownloadLinks(doc, ["en", "zh", "fr"]);
         Assert.Equal(2, links.Count);
-        Assert.False(links["en"].NeedsGeneration);
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-en.srt",
-            links["en"].Link);
-        Assert.True(links["zh"].NeedsGeneration);
-        Assert.Equal("https://www.subtitlecat.com/subs/1436/TEST TEST TEST-orig.srt",
-            links["zh"].Link);
+        Assert.False(links["en"]);
+        Assert.True(links["zh"]);
     }
 
     [Theory]
