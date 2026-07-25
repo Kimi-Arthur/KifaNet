@@ -26,38 +26,48 @@ public sealed class
 
     public class Channel {
         public object[] ChannelConfig { get; set; }
-        public ChannelData ChannelData { get; set; }
+        public object ChannelData { get; set; }
         public object ServerFetched { get; set; }
     }
 
-    public class ChannelData {
-    }
-
-    public class Common {
-        public UserInfo UserInfo { get; set; }
-        public ServerConfig ServerConfig { get; set; }
-        public Abtest Abtest { get; set; }
-        public string Ua { get; set; }
-        public Dictionary<string, bool> Browser { get; set; }
-        public string DefDomain { get; set; }
-        public bool IsWxTagLaunch { get; set; }
-        public bool NoCallApp { get; set; }
-        public Switch Switch { get; set; }
-    }
-
-    public class Abtest {
-        public string SearchHomepageAwake { get; set; }
-        public long H5LabordayStyle { get; set; }
-    }
 
     public class ServerConfig {
         public Constants Constants { get; set; }
+
+        [JsonProperty("limitChannel")]
         public LimitChannel LimitChannel { get; set; }
+
+        [JsonProperty("customChannel")]
         public CustomChannel CustomChannel { get; set; }
+
         public Switch Switch { get; set; }
+
+        [JsonProperty("openappDialogConfig")]
+        public OpenappDialogConfig OpenappDialogConfig { get; set; }
+    }
+
+    public class OpenappDialogConfig {
+        [JsonProperty("commonOpenappFailedLimit")]
+        public long CommonOpenappFailedLimit { get; set; }
+
+        [JsonProperty("autoOpenappLimit")]
+        public long AutoOpenappLimit { get; set; }
+
+        [JsonProperty("naturalSearchPlayerPlayOpenappLimit")]
+        public long NaturalSearchPlayerPlayOpenappLimit { get; set; }
+
+        [JsonProperty("naturalSearchPlayerPauseOpenappLimit")]
+        public long NaturalSearchPlayerPauseOpenappLimit { get; set; }
+
+        [JsonProperty("sharePlayerPlayOpenappLimit")]
+        public long SharePlayerPlayOpenappLimit { get; set; }
+
+        [JsonProperty("sharePlayerPauseOpenappLimit")]
+        public long SharePlayerPauseOpenappLimit { get; set; }
     }
 
     public class Constants {
+        [JsonProperty("newClipboard")]
         public bool NewClipboard { get; set; }
     }
 
@@ -72,14 +82,89 @@ public sealed class
     }
 
     public class Switch {
+        [JsonProperty("searchH5Style")]
         public string SearchH5Style { get; set; }
     }
 
     public class UserInfo {
+        [JsonProperty("isLogin")]
         public bool IsLogin { get; set; }
+
         public string Face { get; set; }
+
+        [JsonProperty("vipStatus")]
         public long VipStatus { get; set; }
+
+        [JsonProperty("vipType")]
         public long VipType { get; set; }
+
+        public bool Completed { get; set; }
+    }
+
+    public class AutoFallback {
+        [JsonProperty("defDomain")]
+        public string DefDomain { get; set; }
+
+        public bool On { get; set; }
+        public AutoFallbackConfig Config { get; set; }
+        public object[] Wl { get; set; }
+
+        [JsonProperty("defUpdated")]
+        public bool DefUpdated { get; set; }
+
+        public object Connectivities { get; set; }
+        public long X { get; set; }
+
+        [JsonProperty("suffixConfigs")]
+        public object SuffixConfigs { get; set; }
+
+        [JsonProperty("hasSuffixesConfig")]
+        public bool HasSuffixesConfig { get; set; }
+
+        [JsonProperty("defFallbackThreshold")]
+        public long DefFallbackThreshold { get; set; }
+    }
+
+    public class AutoFallbackConfig {
+        public bool Fr { get; set; }
+        public string Def { get; set; }
+        public object[] Dl { get; set; }
+        public object Suffixes { get; set; }
+
+        [JsonProperty("hasSuffixesConfig")]
+        public bool HasSuffixesConfig { get; set; }
+    }
+
+    public class Common {
+        [JsonProperty("userInfo")]
+        public UserInfo UserInfo { get; set; }
+
+        [JsonProperty("serverConfig")]
+        public ServerConfig ServerConfig { get; set; }
+
+        public Abtest Abtest { get; set; }
+        public string Ua { get; set; }
+        public Dictionary<string, bool> Browser { get; set; }
+
+        [JsonProperty("defDomain")]
+        public string DefDomain { get; set; }
+
+        [JsonProperty("autoFallback")]
+        public AutoFallback AutoFallback { get; set; }
+
+        [JsonProperty("isWxTagLaunch")]
+        public bool IsWxTagLaunch { get; set; }
+
+        [JsonProperty("noCallApp")]
+        public bool NoCallApp { get; set; }
+
+        public Switch Switch { get; set; }
+    }
+
+    public class Abtest {
+        public string SearchHomepageAwake { get; set; }
+        public long H5LabordayStyle { get; set; }
+        public string H5Resolution { get; set; }
     }
 
     public class Home {
@@ -88,7 +173,7 @@ public sealed class
 
     public class HotList {
         public object[] Result { get; set; }
-        public ChannelData Extra { get; set; }
+        public object Extra { get; set; }
         public bool Error { get; set; }
         public bool? NoMore { get; set; }
         public long? Total { get; set; }
@@ -123,7 +208,7 @@ public sealed class
         public object[] MediaList { get; set; }
         public object[] RandomList { get; set; }
         public long VideoIndex { get; set; }
-        public ChannelData VideoInfo { get; set; }
+        public object VideoInfo { get; set; }
         public string PlayMode { get; set; }
         public object[] PlayUrl { get; set; }
         public bool ForbidPreview { get; set; }
@@ -142,10 +227,10 @@ public sealed class
         public string Name { get; set; }
         public string Path { get; set; }
         public string Hash { get; set; }
-        public ChannelData Query { get; set; }
+        public object Query { get; set; }
         public Params Params { get; set; }
         public string FullPath { get; set; }
-        public ChannelData Meta { get; set; }
+        public object Meta { get; set; }
         public From From { get; set; }
     }
 
@@ -153,14 +238,14 @@ public sealed class
         public object Name { get; set; }
         public string Path { get; set; }
         public string Hash { get; set; }
-        public ChannelData Query { get; set; }
-        public ChannelData Params { get; set; }
+        public object Query { get; set; }
+        public object Params { get; set; }
         public string FullPath { get; set; }
-        public ChannelData Meta { get; set; }
+        public object Meta { get; set; }
     }
 
     public class Params {
-        public long Id { get; set; }
+        public string Id { get; set; }
     }
 
     public class Search {
@@ -172,6 +257,7 @@ public sealed class
         public string Keyword { get; set; }
         public bool IsCustom { get; set; }
         public string Bsource { get; set; }
+        public object[] BlacklistArchive { get; set; }
     }
 
     public class SearchAllResult {
@@ -208,6 +294,10 @@ public sealed class
         public HotList FeedList { get; set; }
     }
 
+    public class School {
+        public string Name { get; set; }
+    }
+
     public class Info {
         public long Mid { get; set; }
         public string Name { get; set; }
@@ -221,6 +311,7 @@ public sealed class
         public long Jointime { get; set; }
         public long Moral { get; set; }
         public long Silence { get; set; }
+        public long Control { get; set; }
         public long Coins { get; set; }
         public bool FansBadge { get; set; }
         public FansMedal FansMedal { get; set; }
@@ -231,10 +322,10 @@ public sealed class
         public UserHonourInfo UserHonourInfo { get; set; }
         public bool IsFollowed { get; set; }
         public string TopPhoto { get; set; }
-        public ChannelData SysNotice { get; set; }
+        public object SysNotice { get; set; }
         public LiveRoom LiveRoom { get; set; }
         public string Birthday { get; set; }
-        public object School { get; set; }
+        public School School { get; set; }
         public Profession Profession { get; set; }
         public object Tags { get; set; }
         public Series Series { get; set; }
@@ -280,12 +371,18 @@ public sealed class
         public string Title { get; set; }
         public string Icon { get; set; }
         public string JumpUrl { get; set; }
+        public long Total { get; set; }
+        public object List { get; set; }
+        public bool UpowerCountShow { get; set; }
+        public string LongTitle { get; set; }
+        public string JumpUrlWeb { get; set; }
     }
 
     public class FansMedal {
         public bool Show { get; set; }
         public bool Wear { get; set; }
         public object Medal { get; set; }
+        public object Detail { get; set; }
     }
 
     public class LiveRoom {
@@ -361,6 +458,18 @@ public sealed class
         public long IsLatest100Honour { get; set; }
     }
 
+    public class OttInfo {
+        public long VipType { get; set; }
+        public long PayType { get; set; }
+        public string PayChannelId { get; set; }
+        public long Status { get; set; }
+        public long OverdueTime { get; set; }
+    }
+
+    public class SuperVip {
+        public bool IsSuperVip { get; set; }
+    }
+
     public class Vip {
         public long Type { get; set; }
         public long Status { get; set; }
@@ -376,11 +485,13 @@ public sealed class
         public long TvVipPayType { get; set; }
         public long TvDueDate { get; set; }
         public AvatarIcon AvatarIcon { get; set; }
+        public OttInfo OttInfo { get; set; }
+        public SuperVip SuperVip { get; set; }
     }
 
     public class AvatarIcon {
         public long IconType { get; set; }
-        public ChannelData IconResource { get; set; }
+        public object IconResource { get; set; }
     }
 
     public class Label {
@@ -396,18 +507,23 @@ public sealed class
         public string ImgLabelUriHant { get; set; }
         public string ImgLabelUriHansStatic { get; set; }
         public string ImgLabelUriHantStatic { get; set; }
+        public string ImgLabelUriI18n { get; set; }
+        public string ImgLabelUriI18nStatic { get; set; }
+        public long LabelId { get; set; }
+        public object LabelGoto { get; set; }
+        public long LabelType { get; set; }
     }
 
     public class Tag {
-        public ChannelData TagInfo { get; set; }
+        public object TagInfo { get; set; }
         public object[] TagSimilar { get; set; }
         public HotList TagRelated { get; set; }
     }
 
     public class Topic {
-        public ChannelData TopicDetail { get; set; }
-        public ChannelData Activities { get; set; }
-        public ChannelData Ads { get; set; }
+        public object TopicDetail { get; set; }
+        public object Activities { get; set; }
+        public object Ads { get; set; }
         public long TopicId { get; set; }
         public HotList TopicListResult { get; set; }
         public object[] RelevantTopics { get; set; }
@@ -416,37 +532,73 @@ public sealed class
     }
 
     public class Tribee {
-        public ChannelData TribeeBaseInfo { get; set; }
+        public object TribeeBaseInfo { get; set; }
         public object[] TribeeList { get; set; }
         public long TribeeListTotal { get; set; }
+        public object TribeeInviteDefer { get; set; }
+        public object TribeeInviteInfo { get; set; }
+        public object TribeeSteamHomeInfo { get; set; }
+    }
+
+    public class EventConfig {
+        public string TopBannerImage { get; set; }
+        public UrlConfig TopSearchUrl { get; set; }
+        public UrlConfig TopButtonUrl { get; set; }
+        public string BottomBannerImage { get; set; }
+        public UrlConfig BottomBannerUrl { get; set; }
+        public string MainCallButtonText { get; set; }
+        public RelatedTabText RelatedTabText { get; set; }
+        public object[] RelatedTabList { get; set; }
+    }
+
+    public class UrlConfig {
+        public string Type { get; set; }
+        public string UrlH5 { get; set; }
+        public string SearchKeyword { get; set; }
+    }
+
+    public class RelatedTabText {
+        public string Text { get; set; }
+        public string VideoListId { get; set; }
     }
 
     public class Video {
         public long Error { get; set; }
         public bool IsClient { get; set; }
-        public ChannelData Breadcrumb { get; set; }
-        public ChannelData ViewInfo { get; set; }
-        public ChannelData UpInfo { get; set; }
+        public object Breadcrumb { get; set; }
+        public object ViewInfo { get; set; }
+        public object UpInfo { get; set; }
         public HotList Related { get; set; }
         public object[] Tags { get; set; }
-        public ChannelData Elec { get; set; }
+        public object Elec { get; set; }
         public long P { get; set; }
         public long Avid { get; set; }
         public string Bvid { get; set; }
-        public ChannelData Quality { get; set; }
-        public ChannelData PlayUrlInfo { get; set; }
+        public long Quality { get; set; }
+        public long StreamQuality { get; set; }
+        public object PlayUrlInfo { get; set; }
+        public object[] SupportFormats { get; set; }
         public string PlayState { get; set; }
         public string Bsource { get; set; }
         public bool GameMode { get; set; }
         public string Keyword { get; set; }
+        public string TrackId { get; set; }
         public bool TogglePlay { get; set; }
         public bool IsTab3 { get; set; }
         public bool IsCustom { get; set; }
         public bool IsSem { get; set; }
-        public ChannelData ReportMsg { get; set; }
+        public object ReportMsg { get; set; }
         public string PageType { get; set; }
-        public ChannelData PlayerSettings { get; set; }
+        public bool IsFromNaturalSearch { get; set; }
+        public object PlayerSettings { get; set; }
+        public object VideoPageSettings { get; set; }
         public bool IsRelatedUp { get; set; }
+        public long ArchiveType { get; set; }
+        public string ArchiveConfigId { get; set; }
+        public EventConfig EventConfig { get; set; }
+        public string HotWord { get; set; }
+        public object[] HotSearchVideoList { get; set; }
+        public object QnExp { get; set; }
         public bool IsHitLabourDayActivity { get; set; }
         public bool IsHitLabourDayAbTest { get; set; }
     }
