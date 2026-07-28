@@ -1,3 +1,4 @@
+using System;
 using CommandLine;
 using Kifa.Tools.YoutubeUtil.Commands;
 
@@ -7,6 +8,9 @@ class Program {
     static int Main(string[] args)
         => KifaCommand.Run(
             parameters
-                => new Parser(settings => { settings.EnableDashDash = true; }).ParseArguments(
-                    parameters, typeof(DownloadVideoCommand)), args);
+                => new Parser(settings => {
+                    settings.CaseInsensitiveEnumValues = true;
+                    settings.HelpWriter = Console.Error;
+                    settings.EnableDashDash = true;
+                }).ParseArguments(parameters, typeof(DownloadVideoCommand)), args);
 }

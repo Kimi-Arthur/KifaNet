@@ -23,6 +23,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public string? Title { get; set; }
     public string? Author { get; set; }
+    public string? AuthorId { get; set; }
     public Date? UploadDate { get; set; }
     public string? Description { get; set; }
     public List<string> Categories { get; set; } = new();
@@ -67,6 +68,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         var videoData = metadata.Data;
         Title = videoData.Title;
         Author = videoData.Uploader;
+        AuthorId = videoData.UploaderID ?? videoData.ChannelID;
         UploadDate = videoData.UploadDate;
         Description = videoData.Description;
         Categories = videoData.Categories.ToList();
@@ -124,6 +126,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
         Title = archiveFileContent.Title;
         Author = archiveFileContent.Uploader;
+        AuthorId = archiveFileContent.UploaderId;
         UploadDate = Date.Parse(archiveFileContent.UploadDate, "yyyyMMdd");
         Description = archiveFileContent.Description;
         Categories = archiveFileContent.Categories.ToList();
@@ -188,7 +191,27 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public List<string> GetCanonicalNames(string? formatId = null)
         => [$"{Id}.{formatId ?? FormatId}", Id.Checked()];
 
-    public string? GetDesiredName(string? formatId = null)
-        => string.FormatOr(
-            $"{Author?.NormalizeFileName()}/{Title?.NormalizeFileName()}.{Id}.{formatId ?? FormatId}");
+    public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
+        string? prefix = null) {
+        var defaultFolder = string.FormatOr($"{Author?.NormalizeFileName()}.{AuthorId?.NormalizeFileName()}") ?? Author?.NormalizeFileName();
+        var folder = (alternativeFolder ?? defaultFolder)?.NormalizeFileName();
+        if (folder != null) {
+            var folderSegments = folder.Split('/').ToList();
+            folderSegments[0] += ".youtube";
+            folder = folderSegments.JoinBy("/");
+        }
+
+        var title = Title?.NormalizeFileName();
+        var fid = formatId ?? FormatId;
+
+        if (folder != null) {
+            return prefix != null
+                ? string.FormatOr($"{folder}/{prefix} {title}.{Id}.{fid}")
+                : string.FormatOr($"{folder}/{title}.{Id}.{fid}");
+        }
+
+        return prefix != null
+            ? string.FormatOr($"{prefix} {title}.{Id}.{fid}")
+            : string.FormatOr($"{title}.{Id}.{fid}");
+    }
 }
