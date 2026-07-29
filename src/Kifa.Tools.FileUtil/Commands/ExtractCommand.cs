@@ -115,51 +115,39 @@ class ExtractCommand : KifaCommand {
                 => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"),
             selectionKey: "extract");
 
-        var results = new KifaBatchActionResult();
-
         if (selected.Status != KifaActionStatus.OK) {
+            var results = new KifaBatchActionResult();
             results.Add("extract", selected);
             results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile.ToString()));
             return results;
         }
 
+        try {
+            return ExtractSolidArchive(archive, selected.Value, archiveFile.ToString());
+        } catch (Exception ex) {
+            Logger.Warn(ex,
+                $"Failed to extract as solid archive: {ex.Message}. Falling back to normal archive extraction.");
+            return ExtractNormalArchive(archive, selected.Value, archiveFile.ToString());
+        }
+    }
+
+    KifaBatchActionResult ExtractSolidArchive(IArchive archive,
+        List<(IArchiveEntry Entry, KifaFile File)> selected, string archiveFile) {
+        var results = new KifaBatchActionResult();
+
         // The enumerator way is adopted due to the issue mentioned in
         // https://stackoverflow.com/a/44379540.
         using var reader = archive.ExtractAllEntries();
-        var enumerator = selected.Value.GetEnumerator();
+        var enumerator = selected.GetEnumerator();
         var valid = enumerator.MoveNext();
 
         var extractedCount = 0;
         while (reader.MoveToNextEntry()) {
             if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
+                var current = enumerator.Current;
                 results.Add(reader.Entry.Key.Checked(), KifaActionResult.FromAction(() => {
-                    var file = enumerator.Current.File;
-                    var entry = enumerator.Current.Entry;
-
-                    file.EnsureLocalParent();
-                    var tempFile = file.GetIgnoredFile();
-
-                    Logger.Debug($"Write {entry.Key} to {file}");
-                    Logger.Debug($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
-                    reader.WriteEntryTo(tempFile.GetLocalPath());
-                    tempFile.Add();
-
-                    var expectedCrc = entry.GetCrc32InHex();
-                    if (tempFile.FileInfo?.Size != entry.Size ||
-                        tempFile.FileInfo?.Crc32 != expectedCrc) {
-                        throw new FileCorruptedException(
-                            $"File {tempFile} should have size={entry.Size}, crc32={expectedCrc}, but has size={tempFile.FileInfo?.Size}, crc32={tempFile.FileInfo?.Crc32}.");
-                    }
-
-                    Logger.Debug(
-                        $"File {tempFile} has the expected size={entry.Size} and crc32={expectedCrc}. Fast copy to {file}");
-                    tempFile.Copy(file);
-
-                    file.Add();
-                    tempFile.Delete();
-                    FileInformation.Client.RemoveLocation(tempFile.Id, tempFile.ToString());
-                    Logger.LogResult(FileInformation.Client.Delete(tempFile.Id),
-                        $"Removal of file info {tempFile.Id}");
+                    ExtractOneEntry(current.Entry, current.File,
+                        targetPath => reader.WriteEntryTo(targetPath));
                     extractedCount++;
                 }));
 
@@ -169,19 +157,56 @@ class ExtractCommand : KifaCommand {
             }
         }
 
-        if (extractedCount < selected.Value.Count) {
-            var missingFilesResult = new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message =
-                    $"Only extracted {extractedCount} files when {selected.Value.Count} is requested."
-            };
-            Logger.Error(missingFilesResult);
-            results.Add(archiveFile.ToString(), missingFilesResult);
-        } else if (results.IsAcceptable) {
-            results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile.ToString()));
+        if (extractedCount < selected.Count || !results.IsAcceptable) {
+            throw new Exception(
+                $"Only extracted {extractedCount} files out of {selected.Count} requested, or encountered extraction errors.");
+        }
+
+        results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile));
+        return results;
+    }
+
+    KifaBatchActionResult ExtractNormalArchive(IArchive archive,
+        List<(IArchiveEntry Entry, KifaFile File)> selected, string archiveFile) {
+        var results = new KifaBatchActionResult();
+        foreach (var (entry, file) in selected) {
+            results.Add(entry.Key.Checked(), KifaActionResult.FromAction(() => {
+                ExtractOneEntry(entry, file, targetPath => entry.WriteToFile(targetPath));
+            }));
+        }
+
+        if (results.IsAcceptable) {
+            results.AddRange(RemoveArchiveFilesIfRequested(archive, archiveFile));
         }
 
         return results;
+    }
+
+    void ExtractOneEntry(IArchiveEntry entry, KifaFile file, Action<string> extractAction) {
+        file.EnsureLocalParent();
+        var tempFile = file.GetIgnoredFile();
+
+        Logger.Debug($"Write {entry.Key} to {file}");
+        Logger.Debug($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
+        extractAction(tempFile.GetLocalPath());
+        tempFile.Add();
+
+        var expectedCrc = entry.GetCrc32InHex();
+        if (tempFile.FileInfo?.Size != entry.Size ||
+            tempFile.FileInfo?.Crc32 != expectedCrc) {
+            throw new FileCorruptedException(
+                $"File {tempFile} should have size={entry.Size}, crc32={expectedCrc}, but has size={tempFile.FileInfo?.Size}, crc32={tempFile.FileInfo?.Crc32}.");
+        }
+
+        Logger.Debug(
+            $"File {tempFile} has the expected size={entry.Size} and crc32={expectedCrc}. Fast copy to {file}");
+        tempFile.Copy(file);
+
+        file.Add();
+        tempFile.Delete();
+        FileInformation.Client.RemoveLocation(tempFile.Id, tempFile.ToString());
+        Logger.LogResult(FileInformation.Client.Delete(tempFile.Id),
+            $"Removal of file info {tempFile.Id}");
     }
 
     IEnumerable<(string item, KifaActionResult result)> RemoveArchiveFilesIfRequested(
