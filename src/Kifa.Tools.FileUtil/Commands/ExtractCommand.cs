@@ -45,7 +45,8 @@ class ExtractCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
-        var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+        var selected = SelectMany(files,
+            file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to extract from"));
 
@@ -73,9 +74,11 @@ class ExtractCommand : KifaCommand {
 
     KifaActionResult ExtractFile(KifaFile archiveFile) {
         var folder = archiveFile.Parent;
-        var archive = ArchiveFactory.Open(archiveFile.GetLocalPath(), new ReaderOptions {
+        var archive = ArchiveFactory.OpenArchive(archiveFile.GetLocalPath(), new ReaderOptions {
             Password = Password,
-            ArchiveEncoding = new ArchiveEncoding(Encoding, Encoding)
+            ArchiveEncoding = new ArchiveEncoding {
+                Default = Encoding
+            }
         });
 
         var entries = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => (
@@ -109,7 +112,8 @@ class ExtractCommand : KifaCommand {
             entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
             new Func<List<(IArchiveEntry Entry, KifaFile File)>, string>(choices
-                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"), selectionKey: "extract");
+                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"),
+            selectionKey: "extract");
 
         var results = new KifaBatchActionResult();
 
@@ -192,14 +196,14 @@ class ExtractCommand : KifaCommand {
         }
 
         if (DeleteSource) {
-            var toBeRemoved = SelectMany(volumeFiles, f => f,
-                $"source archive files");
+            var toBeRemoved = SelectMany(volumeFiles, f => f, $"source archive files");
 
             if (toBeRemoved.Status != KifaActionStatus.OK) {
                 return [("source archive files", toBeRemoved)];
             }
 
-            return toBeRemoved.Value.Select(v => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
+            return toBeRemoved.Value.Select(v
+                => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
         }
 
         return [];
