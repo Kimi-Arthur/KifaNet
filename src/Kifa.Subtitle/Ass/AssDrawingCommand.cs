@@ -5,8 +5,8 @@ using System.Linq;
 namespace Kifa.Subtitle.Ass;
 
 public class AssDrawingCommand {
-    public string Name { get; set; }
-    public List<PointF> Points { get; set; } = new();
+    public string Name { get; set; } = "";
+    public List<PointF> Points { get; set; } = [];
 
 
     public void Scale(double scaleX, double scaleY) {

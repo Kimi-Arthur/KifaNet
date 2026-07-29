@@ -1,28 +1,30 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using CommandLine;
 using Kifa.Api.Files;
-using Kifa.Html;
 using Kifa.Jobs;
 using Kifa.Service;
+using Kifa.Subtitle.Subcat;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;
 
 [Verb("subcat", HelpText = "Download subtitle files from https://www.subtitlecat.com/.")]
-class DownloadSubcatCommand : KifaCommand {
+public class DownloadSubcatCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    static readonly HttpClient HttpClient = new();
-
-    const string UrlPrefix = "https://www.subtitlecat.com";
 
     [Value(0, Required = true, HelpText = "Target files to download subtitles for.")]
     public IEnumerable<string> FileNames { get; set; }
 
     [Option('f', "force", HelpText = "Try to get the subtitle even if it exists.")]
     public bool Force { get; set; }
+
+    [Option('l', "languages", Separator = ',',
+        HelpText = "Languages to download. Default is 'zh'.")]
+    public IEnumerable<string> Languages { get; set; } = ["zh"];
+
+    public List<Language> TargetLanguages
+        => Languages.Select(l => (Language) l).Distinct().ToList();
 
     public override int Execute(KifaTask? task = null) {
         var files = FileNames.Select(f => new KifaFile(f)).ToList();
@@ -33,58 +35,66 @@ class DownloadSubcatCommand : KifaCommand {
         }
 
         foreach (var file in selected.Value) {
-            ExecuteItem(file.ToString(), () => DownloadSubtitle(file));
+            ExecuteItem(file.ToString(), () => DownloadSubtitles(file));
         }
 
         return LogSummary();
     }
 
-    KifaActionResult DownloadSubtitle(KifaFile videoFile) {
-        var target = videoFile.GetSubtitleFile("zh.srt");
-        if (target.Exists()) {
-            if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Skipped,
-                    Message = $"Skipped already downloaded subtitle {target}."
-                };
-            }
-        }
+    KifaActionResult DownloadSubtitles(KifaFile videoFile) {
+        var searchBaseName = videoFile.GetSubtitleFile().BaseName;
+        var expandedChoices = SubcatClient.FindSubtitles(searchBaseName, TargetLanguages);
 
-        var doc = HttpClient.GetAsync($"{UrlPrefix}/index.php?search={target.BaseName}")
-            .GetAwaiter().GetResult().GetString().GetDocument();
-        var elements = doc.GetElementsByClassName("sub-table").Single().QuerySelectorAll("a");
-        var subtitles = elements.Take(10).Select(element => (
-            Title: element.Parent.Checked().TextContent,
-            Link: element.Attributes["href"].Checked().Value)).ToList();
-
-        var choice = SelectOne(subtitles, sub => $"{sub.Title}: {sub.Link}",
-            $"subtitles for {target}", startingIndex: 1, reverse: true);
-
-        if (choice == null) {
+        if (expandedChoices.Count == 0) {
             return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = "No choice given. Download is canceled."
+                Status = KifaActionStatus.Error,
+                Message =
+                    $"No subtitles found with requested languages ({TargetLanguages.Select(l => l.Code).JoinBy(", ")}) for {videoFile}."
             };
         }
 
-        var pageLink = $"{UrlPrefix}/{choice.Value.Choice.Link}";
-        Logger.Debug($"Will obtain download link from {pageLink}");
+        var selected = SelectMany(expandedChoices, choice => choice.ToString(),
+            $"subtitles for {searchBaseName}", reverse: true);
 
-        var pageContent = HttpClient.GetAsync(pageLink).GetAwaiter().GetResult().GetString()
-            .GetDocument();
-        ;
+        if (selected.Status != KifaActionStatus.OK) {
+            return new KifaActionResult {
+                Status = selected.Status,
+                Message = selected.Message
+            };
+        }
 
-        var link =
-            $"{UrlPrefix}/{pageContent.GetElementById("download_zh-CN").Checked().Attributes["href"]
-                .Checked().Value}";
-        Logger.Debug($"Will download subtitle from {link}");
+        var downloadedCount = 0;
+        var totalBytes = 0L;
 
-        var content = HttpClient.GetAsync(link).GetAwaiter().GetResult().GetString();
-        target.Write(content);
+        foreach (var choice in selected.Value) {
+            // We may be able to skip downloading but it complicates the logic for generation.
+            var (content, filename) = SubcatClient.DownloadOrGenerate(choice);
+            var sourcesPath = SubcatClient.GetSourcesPath(videoFile.ParentPath);
+            var target = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{filename}");
+
+            if (target.Exists()) {
+                if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
+                    Logger.Info($"Skipped already downloaded subtitle {target}.");
+                    continue;
+                }
+            }
+
+            target.Write(content);
+            downloadedCount++;
+            totalBytes += content.Length;
+        }
+
+        if (downloadedCount == 0) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"Skipped downloading subtitles for {videoFile}."
+            };
+        }
 
         return new KifaActionResult {
             Status = KifaActionStatus.OK,
-            Message = $"Successfully written {content.Length} bytes to {target}."
+            Message =
+                $"Successfully written {totalBytes} bytes to {downloadedCount} subtitle file(s)."
         };
     }
 }

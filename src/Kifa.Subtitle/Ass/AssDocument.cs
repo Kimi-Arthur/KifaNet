@@ -9,7 +9,7 @@ public class AssDocument {
     static readonly Regex sectionHeaderPattern = new(@"^\[.*\]$");
     static readonly Regex separator = new("(\r)?\n");
 
-    public List<AssSection> Sections { get; set; } = new();
+    public List<AssSection> Sections { get; set; } = [];
 
     public override string ToString() => string.Join("\n", Sections.Select(s => s.ToString()));
 
@@ -21,7 +21,7 @@ public class AssDocument {
     public static AssDocument Parse(string content) {
         var document = new AssDocument();
 
-        AssStylesSection stylesSection = null;
+        AssStylesSection? stylesSection = null;
         var lines = separator.Split(content);
         var startLine = -1;
         for (var i = 0; i < lines.Length; i++) {

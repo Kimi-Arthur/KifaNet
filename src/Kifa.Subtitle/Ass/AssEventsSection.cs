@@ -5,8 +5,8 @@ using NLog;
 
 namespace Kifa.Subtitle.Ass;
 
-public class AssEventsSection : AssSection {
-    public const string SectionHeader = "[Events]";
+public class AssEventsSection : AssSection, AssSection<AssEventsSection> {
+    public static string SectionHeader => "[Events]";
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public override string SectionTitle => SectionHeader;
 
@@ -24,7 +24,7 @@ public class AssEventsSection : AssSection {
             "Text"
         };
 
-    public List<AssEvent> Events { get; set; } = new();
+    public List<AssEvent> Events { get; set; } = [];
 
     public override IEnumerable<AssLine> AssLines {
         get {
@@ -35,10 +35,10 @@ public class AssEventsSection : AssSection {
         }
     }
 
-    public static AssEventsSection Parse(AssStylesSection stylesSection,
+    public static AssEventsSection Parse(AssStylesSection? stylesSection,
         IEnumerable<string> lines) {
         var section = new AssEventsSection();
-        List<string> headers = null;
+        List<string>? headers = null;
         foreach (var line in lines) {
             var separatorIndex = line.IndexOf(AssLine.Separator, StringComparison.Ordinal);
             if (separatorIndex >= 0) {
@@ -57,8 +57,11 @@ public class AssEventsSection : AssSection {
                         }
 
                         try {
-                            section.Events.Add(AssEvent.Parse(stylesSection.NamedStyles, type,
-                                content.Split(",", headers.Count).Select(s => s.Trim()), headers));
+                            var evt = AssEvent.Parse(stylesSection?.NamedStyles, type,
+                                content.Split(",", headers.Count).Select(s => s.Trim()), headers);
+                            if (evt != null) {
+                                section.Events.Add(evt);
+                            }
                         } catch (Exception ex) {
                             Logger.Error(ex, $"Error parsing event: {content}");
                             throw new Exception($"Error parsing event: {content}", ex);

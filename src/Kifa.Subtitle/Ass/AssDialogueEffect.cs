@@ -6,9 +6,9 @@ namespace Kifa.Subtitle.Ass;
 public class AssDialogueEffect {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public virtual string EffectType => null;
+    public virtual string? EffectType => null;
 
-    public virtual IEnumerable<string> EffectParameters => null;
+    public virtual IEnumerable<string>? EffectParameters => null;
 
     public static AssDialogueEffect Parse(string content) {
         if (content.Length == 0) {
@@ -26,5 +26,5 @@ public class AssDialogueEffect {
     }
 
     public override string ToString()
-        => EffectType == null ? "" : $"{EffectType};{string.Join(";", EffectParameters)}";
+        => string.FormatOrEmpty($"{EffectType};{EffectParameters?.JoinBy(";")}");
 }

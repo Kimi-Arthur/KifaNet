@@ -213,7 +213,7 @@ class ImportCommand : KifaCommand {
                 ? $"{choice.Path}.part{part}{suffix}"
                 : $"{choice.Path}{suffix}";
 
-            if (special) {
+            if (special || part != null) {
                 var newName = Confirm($"Confirm linking {file} to:", targetPath);
                 if (newName == null) {
                     return new KifaActionResult {

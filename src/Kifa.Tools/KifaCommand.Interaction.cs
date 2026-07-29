@@ -8,10 +8,6 @@ using Kifa.Service;
 
 namespace Kifa.Tools;
 
-
-
-
-
 public abstract partial class KifaCommand {
     static Dictionary<string, bool> alwaysDefaultForSelectOne = new();
     static Dictionary<string, int> defaultIndexForSelectOne = new();
@@ -27,10 +23,10 @@ public abstract partial class KifaCommand {
         HelpText = "Always yes to all confirmations with default value (not always yes).")]
     public bool AutoConfirmDefault { get; set; } = false;
 
-    public KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)> SelectOne<TChoice>(
-        List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
-        string? choiceName = null, int startingIndex = 0, string? specialHelpText = null,
-        string? partHelpText = null, bool reverse = false, string selectionKey = "") {
+    public KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+        SelectOne<TChoice>(List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
+            string? choiceName = null, int startingIndex = 0, string? specialHelpText = null,
+            string? partHelpText = null, bool reverse = false, string selectionKey = "") {
         choiceName ??= "items";
 
         if (choices.Count == 0) {
@@ -137,7 +133,7 @@ public abstract partial class KifaCommand {
     public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceItemString,
         FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
-        string selectionKey = "", bool skipIfEmpty = true) {
+        string selectionKey = "", bool skipIfEmpty = true, bool reverse = false) {
         if (skipIfEmpty && choices.Count == 0) {
             return KifaActionResult<List<TChoice>>.Warning(
                 $"No {choiceSummaryString?.Get(choices) ?? "items"} available to select from.");
@@ -150,8 +146,16 @@ public abstract partial class KifaCommand {
 
         while (true) {
             var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
-            for (var i = 0; i < selectedChoices.Count; i++) {
-                Console.WriteLine($"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
+            if (reverse) {
+                for (var i = selectedChoices.Count - 1; i >= 0; i--) {
+                    Console.WriteLine(
+                        $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
+                }
+            } else {
+                for (var i = 0; i < selectedChoices.Count; i++) {
+                    Console.WriteLine(
+                        $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
+                }
             }
 
             var reply = "";

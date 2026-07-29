@@ -114,12 +114,19 @@ public class YouTubeVideoTests {
             Id = "RWrSo_7RmgQ",
             Title = "我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409",
             Author = "中国湖南卫视官方频道 China HunanTV Official Channel",
+            AuthorId = "HunanTV",
             FormatId = "137+22"
         };
 
         video.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.137+22", "RWrSo_7RmgQ"]);
         video.GetDesiredName().Should()
             .Be(
-                "中国湖南卫视官方频道 China HunanTV Official Channel/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.137+22");
+                "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.137+22");
+        video.GetDesiredName(alternativeFolder: $"{video.Title}.{video.Id}").Should()
+            .Be(
+                "我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.137+22");
+        video.GetDesiredName(prefix: "2014-04-09").Should()
+            .Be(
+                "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/2014-04-09 我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.137+22");
     }
 }

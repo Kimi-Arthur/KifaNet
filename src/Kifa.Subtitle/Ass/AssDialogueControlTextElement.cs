@@ -15,7 +15,7 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
 
     static readonly Regex ValuePattern = new(@"\(|\d|-");
 
-    public List<AssControlElement> Elements { get; set; } = new();
+    public List<AssControlElement> Elements { get; set; } = [];
 
     public override string ToString()
         => Elements.Count == 0
@@ -133,7 +133,7 @@ public class AssDialogueControlTextElement : AssDialogueTextElement {
                     s = new FadeTimeFunction();
                     break;
                 case ClipFunction.Key:
-                    var commaCount = (valueContent ?? "").Count(c => c == ',');
+                    var commaCount = valueContent.Count(c => c == ',');
                     if (commaCount < 2) {
                         s = new DrawingClipFunction();
                     } else if (commaCount == 3) {
@@ -176,7 +176,7 @@ public class UnknownElement : AssControlElement {
 
     public override string Name { get; }
 
-    public string Value { get; set; }
+    public string Value { get; set; } = "";
 
     public override AssControlElement ParseValue(string content) {
         Value = content;
@@ -220,7 +220,7 @@ public abstract class FloatElement : AssControlElement {
 }
 
 public abstract class StringElement : AssControlElement {
-    public string Value { get; set; }
+    public string Value { get; set; } = "";
 
     public override AssControlElement ParseValue(string content) {
         Value = content;
@@ -422,7 +422,7 @@ public class AnimationFunction : AssControlElement {
 
     public double Acceleration { get; set; } = -1;
 
-    public List<AssControlElement> Inner { get; set; }
+    public List<AssControlElement> Inner { get; set; } = [];
 
     public override AssControlElement ParseValue(string content) {
         var segments = content.Substring(1, content.Length - 2).Split('\\', 2).Select(s => s.Trim())
@@ -574,7 +574,7 @@ public class TwoPointsClipFunction : ClipFunction {
 public class DrawingClipFunction : ClipFunction {
     const int DefaultScaleDownLevel = 1;
     public int ScaleDownLevel { get; set; } = DefaultScaleDownLevel;
-    public List<AssDrawingCommand> DrawingCommands { get; set; } = new();
+    public List<AssDrawingCommand> DrawingCommands { get; set; } = [];
 
     public override AssControlElement ParseValue(string content) {
         var segments = content.Substring(1, content.Length - 2).Split(',').Select(s => s.Trim())
@@ -583,7 +583,7 @@ public class DrawingClipFunction : ClipFunction {
             ScaleDownLevel = int.Parse(segments[0]);
         }
 
-        AssDrawingCommand current = null;
+        AssDrawingCommand? current = null;
         float? currentX = null;
         foreach (var s in segments.Last().Split(' ')) {
             if (char.IsLetter(s, 0)) {

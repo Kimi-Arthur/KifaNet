@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace Kifa.Subtitle.Ass;
 
-public class AssScriptInfoSection : AssSection {
+public class AssScriptInfoSection : AssSection, AssSection<AssScriptInfoSection> {
     public const int DefaultPlayResX = 384;
     public const int DefaultPlayResY = 288;
 
     public const int PreferredPlayResX = 1920;
     public const int PreferredPlayResY = 1080;
 
-    public const string SectionHeader = "[Script Info]";
+    public static string SectionHeader => "[Script Info]";
     public override string SectionTitle => SectionHeader;
 
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
-    public string OriginalScript { get; set; }
+    public string? OriginalScript { get; set; }
 
     public string ScriptType { get; set; } = "V4.00+";
 
@@ -65,7 +65,8 @@ public class AssScriptInfoSection : AssSection {
         }
     }
 
-    public static AssScriptInfoSection Parse(IEnumerable<string> lines) {
+    public static AssScriptInfoSection Parse(AssStylesSection? stylesSection,
+        IEnumerable<string> lines) {
         var section = new AssScriptInfoSection();
         foreach (var line in lines) {
             var separatorIndex = line.IndexOf(AssLine.Separator, StringComparison.Ordinal);
