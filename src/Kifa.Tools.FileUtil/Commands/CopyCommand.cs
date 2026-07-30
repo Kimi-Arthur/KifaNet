@@ -27,11 +27,7 @@ class CopyCommand : KifaCommand {
     public bool ById { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        if (ById) {
-            return ExecuteById();
-        }
-
-        return ExecuteLocal();
+        return ById ? ExecuteById() : ExecuteLocal();
     }
 
     int ExecuteLocal() {
@@ -44,7 +40,8 @@ class CopyCommand : KifaCommand {
         foreach (var sourceItem in sourceItems) {
             if (!sourceItem.Exists() && sourceItem.List(recursive: true).Any()) {
                 var childFiles = sourceItem.List(recursive: true).ToList();
-                var sourceFolderId = sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
+                var sourceFolderId =
+                    sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
                 var baseDestId = isDestFolder
                     ? $"{destination.Host}{destination.Id.TrimEnd('/')}/{sourceItem.Name}"
                     : $"{destination.Host}{destination.Id.TrimEnd('/')}";
@@ -55,15 +52,13 @@ class CopyCommand : KifaCommand {
                     localFileCopyPairs.Add((childFile, targetFile));
                 }
             } else {
-                var targetFile = isDestFolder
-                    ? destination.GetFile(sourceItem.Name)
-                    : destination;
+                var targetFile = isDestFolder ? destination.GetFile(sourceItem.Name) : destination;
                 localFileCopyPairs.Add((sourceItem, targetFile));
             }
         }
 
-        var selected = SelectMany(localFileCopyPairs, pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}",
-            "files to link");
+        var selected = SelectMany(localFileCopyPairs,
+            pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}", "files to link");
 
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to link", () => selected);
@@ -106,8 +101,8 @@ class CopyCommand : KifaCommand {
             }
         }
 
-        var selected = SelectMany(idFileCopyPairs, pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}",
-            "files to link");
+        var selected = SelectMany(idFileCopyPairs,
+            pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}", "files to link");
 
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to link", () => selected);
