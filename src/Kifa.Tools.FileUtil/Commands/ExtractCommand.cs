@@ -125,7 +125,7 @@ class ExtractCommand : KifaCommand {
         try {
             return ExtractSolidArchive(archive, selected.Value, archiveFile.ToString());
         } catch (Exception ex) {
-            Logger.Warn(ex,
+            Logger.Trace(ex,
                 $"Failed to extract as solid archive: {ex.Message}. Falling back to normal archive extraction.");
             return ExtractNormalArchive(archive, selected.Value, archiveFile.ToString());
         }
@@ -170,9 +170,10 @@ class ExtractCommand : KifaCommand {
         List<(IArchiveEntry Entry, KifaFile File)> selected, string archiveFile) {
         var results = new KifaBatchActionResult();
         foreach (var (entry, file) in selected) {
-            results.Add(entry.Key.Checked(), KifaActionResult.FromAction(() => {
-                ExtractOneEntry(entry, file, targetPath => entry.WriteToFile(targetPath));
-            }));
+            results.Add(entry.Key.Checked(),
+                KifaActionResult.FromAction(() => {
+                    ExtractOneEntry(entry, file, targetPath => entry.WriteToFile(targetPath));
+                }));
         }
 
         if (results.IsAcceptable) {
@@ -192,8 +193,7 @@ class ExtractCommand : KifaCommand {
         tempFile.Add();
 
         var expectedCrc = entry.GetCrc32InHex();
-        if (tempFile.FileInfo?.Size != entry.Size ||
-            tempFile.FileInfo?.Crc32 != expectedCrc) {
+        if (tempFile.FileInfo?.Size != entry.Size || tempFile.FileInfo?.Crc32 != expectedCrc) {
             throw new FileCorruptedException(
                 $"File {tempFile} should have size={entry.Size}, crc32={expectedCrc}, but has size={tempFile.FileInfo?.Size}, crc32={tempFile.FileInfo?.Crc32}.");
         }
