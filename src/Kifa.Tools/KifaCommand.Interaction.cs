@@ -134,8 +134,9 @@ public abstract partial class KifaCommand {
         Func<TChoice, string> choiceItemString,
         FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
         string selectionKey = "", bool skipIfEmpty = true, bool reverse = false) {
-        if (skipIfEmpty && choices.Count == 0) {
-            return KifaActionResult<List<TChoice>>.Warning(
+        if (choices.Count == 0) {
+            return new KifaActionResult<List<TChoice>>(
+                skipIfEmpty ? KifaActionStatus.Skipped : KifaActionStatus.Warning,
                 $"No {choiceSummaryString?.Get(choices) ?? "items"} available to select from.");
         }
 
