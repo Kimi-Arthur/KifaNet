@@ -76,6 +76,7 @@ class ImportCommand : KifaCommand {
         SourceId ??= InferSourceId(pathSegments[2]);
         ItemInfoList infoList;
         switch (Type) {
+            case "R18":
             case "TV Shows": {
                 infoList = TvShow.GetItems([
                     Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
