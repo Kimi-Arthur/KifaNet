@@ -180,7 +180,7 @@ public abstract partial class KifaCommand {
             } else {
                 var messages = new[] {
                     $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
-                    "      '?' to restart, '/xxx' for a glob matching with xxx",
+                    "      '?' to restart, '/<glob>' (e.g. '/*EP[0-9]*.mp4') to filter choices",
                     $"Select 0 or more from the above {selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} [{startingIndex}-{startingIndex + selectedChoices.Count - 1}]: "
                 };
 
@@ -189,8 +189,7 @@ public abstract partial class KifaCommand {
                 var match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
                 while (!match.Success) {
                     Console.WriteLine("Invalid choice. Try again:");
-                    Console.WriteLine(messages[0]);
-                    Console.Write(messages[1]);
+                    Console.Write(messages.JoinBy("\n"));
                     match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
                 }
 
