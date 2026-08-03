@@ -131,14 +131,12 @@ public abstract partial class KifaCommand {
         return (choices[chosenIndex], part, chosenIndex, special);
     }
 
-    static readonly Regex ManyChoiceRegex = new(@"^([\d^,-]*)(a*)$|^/(.*)$");
-
     static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
 
     public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceItemString,
-        FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
+        FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 0,
         string? selectionKey = null, bool skipIfEmpty = true, bool reverse = false,
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0) {
@@ -170,48 +168,37 @@ public abstract partial class KifaCommand {
                 }
             }
 
-            var reply = "";
-            var flags = "";
-            Glob? glob = null;
+            var line = "";
 
             if (AlwaysDefaultForSelectMany[selectionKey]) {
-                reply = DefaultReplyForSelectMany[selectionKey];
-                Console.WriteLine($"Automatically chose [{reply}] as previously instructed.\n");
+                line = DefaultReplyForSelectMany[selectionKey];
+                Console.WriteLine($"Automatically chose [{line}] as previously instructed.\n");
             } else {
                 var messages = new[] {
-                    $"Hint: Default for all, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2})'.",
-                    "      '?' to restart, '/<glob>' (e.g. '/*EP[0-9]*.mp4') to filter choices",
+                    $"Hint: Default for all, prefix 'a' for always choice, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2}'.",
+                    "      '?' to restart, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices",
                     $"Select 0 or more from the above {selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} [{startingIndex}-{startingIndex + selectedChoices.Count - 1}]: "
                 };
 
                 Console.Write(messages.JoinBy("\n"));
-
-                var match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
-                while (!match.Success) {
-                    Console.WriteLine("Invalid choice. Try again:");
-                    Console.Write(messages.JoinBy("\n"));
-                    match = ManyChoiceRegex.Match(Console.ReadLine() ?? "");
-                }
-
-                if (match.Groups[3].Success) {
-                    glob = new Glob(match.Groups[3].Value);
-                } else {
-                    reply = match.Groups[1].Value;
-                    flags = match.Groups[2].Value;
-                }
+                line = Console.ReadLine() ?? "";
             }
 
-            if (glob != null) {
-                chosenIndexes = chosenIndexes.Zip(selectedChoices)
-                    .Where(item => glob.IsMatch(choiceItemString(item.Second)))
-                    .Select(item => item.First).ToList();
+            if (line == "?") {
+                chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
                 continue;
             }
 
-            if (reply == "") {
+            var flags = "";
+            if (line.StartsWith('a')) {
+                flags = "a";
+                line = line[1..];
+            }
+
+            if (line == "") {
                 if (flags.Contains('a')) {
                     // Only used when alwaysDefault is true. Otherwise, all is always the default.
-                    DefaultReplyForSelectMany[selectionKey] = reply;
+                    DefaultReplyForSelectMany[selectionKey] = line;
                     AlwaysDefaultForSelectMany[selectionKey] = true;
                 }
 
@@ -220,46 +207,91 @@ public abstract partial class KifaCommand {
                 return selectedChoices;
             }
 
-            if (reply == "^") {
+            if (line == "^") {
                 chosenIndexes = [];
                 return KifaActionResult<List<TChoice>>.Skipped("Deselected by user.");
             }
 
-            chosenIndexes = reply.Split(',').Select(selection => {
-                var excluded = selection.StartsWith('^');
-                selection = selection.TrimStart('^');
+            try {
+                var newIndexes = ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
+                chosenIndexes = newIndexes.Select(i => chosenIndexes[i]).ToList();
+                if (flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
+                    DefaultReplyForSelectMany[selectionKey] = line;
+                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                    return chosenIndexes.Select(i => choices[i]).ToList();
+                }
+            } catch (Exception) {
+                Console.WriteLine("Invalid choice. Try again:");
+            }
+        }
+    }
+
+    public static List<int> ParseSelection<TChoice>(string line, List<TChoice> selectedChoices,
+        Func<TChoice, string> choiceItemString, int startingIndex = 0) {
+        var tokens = line.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        HashSet<int>? currentSelection = null;
+
+        foreach (var rawToken in tokens) {
+            var token = rawToken;
+            var excluded = token.StartsWith('^');
+            if (excluded) {
+                token = token[1..];
+            }
+
+            List<int> matchingIndices = new();
+
+            if (token.StartsWith('/')) {
+                var glob = new Glob(token[1..]);
+                for (var i = 0; i < selectedChoices.Count; i++) {
+                    if (glob.IsMatch(choiceItemString(selectedChoices[i]))) {
+                        matchingIndices.Add(i);
+                    }
+                }
+            } else {
                 int rangeStart, rangeEnd;
-                if (selection.Contains('-')) {
-                    var indexes = selection.Split('-');
-                    rangeStart = indexes[0].Length > 0 ? int.Parse(indexes[0]) - startingIndex : 0;
-                    rangeEnd = indexes[1].Length > 0
-                        ? int.Parse(indexes[1]) - startingIndex + 1
-                        : chosenIndexes.Count;
+                if (token.Contains('-')) {
+                    var parts = token.Split('-');
+                    rangeStart = parts[0].Length > 0 ? int.Parse(parts[0]) - startingIndex : 0;
+                    rangeEnd = parts[1].Length > 0
+                        ? int.Parse(parts[1]) - startingIndex + 1
+                        : selectedChoices.Count;
                 } else {
-                    rangeStart = int.Parse(selection) - startingIndex;
+                    rangeStart = int.Parse(token) - startingIndex;
                     rangeEnd = rangeStart + 1;
                 }
 
-                return (Excluded: excluded, RangeStart: rangeStart, RangeEnd: rangeEnd);
-            }).Aggregate<(bool Excluded, int RangeStart, int RangeEnd), IEnumerable<int>?>(null,
-                (result, next) => {
-                    if (result == null) {
-                        return next.Excluded
-                            ? Enumerable.Range(0, next.RangeStart).Concat(
-                                Enumerable.Range(next.RangeEnd,
-                                    chosenIndexes.Count - next.RangeEnd))
-                            : Enumerable.Range(next.RangeStart, next.RangeEnd - next.RangeStart);
-                    }
+                if (rangeStart < 0 || rangeEnd < 0 || rangeStart > selectedChoices.Count ||
+                    rangeEnd > selectedChoices.Count || rangeStart >= rangeEnd) {
+                    throw new ArgumentOutOfRangeException(nameof(line), "Index out of range.");
+                }
 
-                    if (next.Excluded) {
-                        return result.Except(Enumerable.Range(next.RangeStart,
-                            next.RangeEnd - next.RangeStart));
-                    }
+                for (var i = rangeStart; i < rangeEnd; i++) {
+                    matchingIndices.Add(i);
+                }
+            }
 
-                    return result.Union(Enumerable.Range(next.RangeStart,
-                        next.RangeEnd - next.RangeStart));
-                }).Checked().Select(index => chosenIndexes[index]).ToList();
+            if (currentSelection == null) {
+                if (excluded) {
+                    currentSelection =
+                        new HashSet<int>(Enumerable.Range(0, selectedChoices.Count));
+                    currentSelection.ExceptWith(matchingIndices);
+                } else {
+                    currentSelection = new HashSet<int>(matchingIndices);
+                }
+            } else {
+                if (excluded) {
+                    currentSelection.ExceptWith(matchingIndices);
+                } else {
+                    currentSelection.UnionWith(matchingIndices);
+                }
+            }
         }
+
+        if (currentSelection == null) {
+            throw new InvalidOperationException("No valid selection tokens.");
+        }
+
+        return currentSelection.OrderBy(x => x).ToList();
     }
 
     public string? Confirm(string prefix, string suggested,

@@ -12,6 +12,7 @@
   </Folder>
   <Folder Name="/Experimental/">
     <Project Path="benchmarks\Kifa.Benchmarks\Kifa.Benchmarks.csproj" Type="Classic C#" />
+    <Project Path="Experimental\Kifa.Experimental.Generator\Kifa.Experimental.Generator.csproj" />
     <Project Path="Experimental\ConcurrentProcessorTests\ConcurrentProcessorTests.csproj" Type="Classic C#" />
     <Project Path="Experimental\Experiments\Experiments.csproj" Type="Classic C#" />
     <Project Path="Experimental\KeyValuePairDefault\KeyValuePairDefault.csproj" Type="Classic C#" />
@@ -102,4 +103,5 @@
   <Project Path="src\Kifa.Tools.SkyChDownloader\Kifa.Tools.SkyChDownloader.csproj" Type="Classic C#" />
   <Project Path="src\Kifa.Tools.SubUtil\Kifa.Tools.SubUtil.csproj" Type="Classic C#" />
   <Project Path="src\Kifa.Tools\Kifa.Tools.csproj" Type="Classic C#" />
+  <Project Path="Tests\Kifa.Tools.Tests\Kifa.Tools.Tests.csproj" Type="Classic C#" />
 </Solution>
