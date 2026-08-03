@@ -64,16 +64,14 @@ class GenerateCommand : KifaCommand {
         var rawSubtitles = GetSrtSubtitles(file);
         rawSubtitles.AddRange(GetAssSubtitles(file));
         var selectedSubtitles = SelectMany(rawSubtitles,
-            subtitle => $"{subtitle.Id} ({subtitle.Dialogs.Count} lines)", "subtitles to include",
-            selectionKey: "subtitles");
+            subtitle => $"{subtitle.Id} ({subtitle.Dialogs.Count} lines)", "subtitles to include");
         if (selectedSubtitles.Status == KifaActionStatus.OK) {
             events.Events.AddRange(selectedSubtitles.Value.SelectMany(sub => sub.Dialogs));
             styles.AddRange(selectedSubtitles.Value.SelectMany(sub => sub.Styles));
         }
 
         var bilibiliChats = SelectMany(GetBilibiliChats(file),
-            chat => $"{chat.Id} ({chat.Comments.Count} chats)", "Bilibili chats to include",
-            selectionKey: "bili_chats");
+            chat => $"{chat.Id} ({chat.Comments.Count} chats)", "Bilibili chats to include");
         var biliChatList = bilibiliChats.Status == KifaActionStatus.OK ? bilibiliChats.Value : [];
         var comments = biliChatList.SelectMany(chat => chat.Comments).ToList();
         PositionNormalComments(comments.Where(c => c.Style == AssStyle.NormalCommentStyle)
@@ -85,8 +83,7 @@ class GenerateCommand : KifaCommand {
         events.Events.AddRange(comments);
 
         var qqChats = SelectMany(GetTencentChats(file),
-            chat => $"{chat.Id} ({chat.Comments.Count} chats)", "QQ chats to include",
-            selectionKey: "qq_chats");
+            chat => $"{chat.Id} ({chat.Comments.Count} chats)", "QQ chats to include");
         var qqChatList = qqChats.Status == KifaActionStatus.OK ? qqChats.Value : [];
         if (qqChatList.Count > 0) {
             PositionNormalComments(qqChatList[0].Comments.OrderBy(c => c.Start).ToList());

@@ -112,8 +112,7 @@ class ExtractCommand : KifaCommand {
             entry
                 => $"{entry.Entry.Key}: {entry.Entry.Size} ({entry.Entry.GetCrc32InHex()}) => {entry.File}",
             new Func<List<(IArchiveEntry Entry, KifaFile File)>, string>(choices
-                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"),
-            selectionKey: "extract");
+                => $"entries ({choices.Sum(c => c.Entry.Size).ToSizeString()}) to extract"));
 
         if (selected.Status != KifaActionStatus.OK) {
             var results = new KifaBatchActionResult();

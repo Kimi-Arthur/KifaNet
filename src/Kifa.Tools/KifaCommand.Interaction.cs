@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using CommandLine;
 using GlobExpressions;
@@ -26,8 +27,13 @@ public abstract partial class KifaCommand {
     public KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
         SelectOne<TChoice>(List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
             string? choiceName = null, int startingIndex = 0, string? specialHelpText = null,
-            string? partHelpText = null, bool reverse = false, string selectionKey = "") {
+            string? partHelpText = null, bool reverse = false, string? selectionKey = null,
+            [CallerFilePath] string callerFilePath = "",
+            [CallerLineNumber] int callerLineNumber = 0) {
         choiceName ??= "items";
+        selectionKey = string.IsNullOrEmpty(selectionKey)
+            ? $"{callerFilePath}:{callerLineNumber}"
+            : selectionKey;
 
         if (choices.Count == 0) {
             Logger.Debug($"No {choiceName} available to select from.");
@@ -133,7 +139,12 @@ public abstract partial class KifaCommand {
     public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceItemString,
         FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
-        string selectionKey = "", bool skipIfEmpty = true, bool reverse = false) {
+        string? selectionKey = null, bool skipIfEmpty = true, bool reverse = false,
+        [CallerFilePath] string callerFilePath = "",
+        [CallerLineNumber] int callerLineNumber = 0) {
+        selectionKey = string.IsNullOrEmpty(selectionKey)
+            ? $"{callerFilePath}:{callerLineNumber}"
+            : selectionKey;
         if (choices.Count == 0) {
             return new KifaActionResult<List<TChoice>>(
                 skipIfEmpty ? KifaActionStatus.Skipped : KifaActionStatus.Warning,
