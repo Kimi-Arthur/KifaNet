@@ -17,6 +17,8 @@ public class AssScriptInfoSection : AssSection, AssSection<AssScriptInfoSection>
 
     public string? OriginalScript { get; set; }
 
+    public string? UpdateDetails { get; set; }
+
     public string ScriptType { get; set; } = "V4.00+";
 
     public string Collisions { get; set; } = "Normal";
@@ -36,6 +38,12 @@ public class AssScriptInfoSection : AssSection, AssSection<AssScriptInfoSection>
             if (!string.IsNullOrEmpty(OriginalScript)) {
                 yield return new AssLine("Original Script", new List<string> {
                     OriginalScript
+                });
+            }
+
+            if (!string.IsNullOrEmpty(UpdateDetails)) {
+                yield return new AssLine("Update Details", new List<string> {
+                    UpdateDetails
                 });
             }
 
@@ -80,6 +88,9 @@ public class AssScriptInfoSection : AssSection, AssSection<AssScriptInfoSection>
                         break;
                     case "Original Script":
                         section.OriginalScript = content;
+                        break;
+                    case "Update Details":
+                        section.UpdateDetails = content;
                         break;
                     case "Script Type":
                         section.ScriptType = content;
