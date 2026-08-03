@@ -220,10 +220,10 @@ class ExtractCommand : KifaCommand {
         }
 
         if (DeleteSource) {
-            var toBeRemoved = SelectMany(volumeFiles, f => f, $"source archive files");
+            var toBeRemoved = SelectMany(volumeFiles, f => f, "source archive files to remove");
 
             if (toBeRemoved.Status != KifaActionStatus.OK) {
-                return [("source archive files", toBeRemoved)];
+                return [("source archive files to remove", toBeRemoved)];
             }
 
             return toBeRemoved.Value.Select(v
