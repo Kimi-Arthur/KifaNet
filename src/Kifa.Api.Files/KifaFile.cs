@@ -255,10 +255,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public override string ToString() => $"{Host}{Path}";
 
-    public bool Exists()
-        => FileInfo?.Size != null && FileFormat is RawFileFormat
-            ? Client.Exists(Path, FileInfo.Size.Value)
+    public bool Exists(long? expectedLength = null) {
+        var expected = expectedLength ?? FileInfo?.Size;
+        return expected != null && FileFormat is RawFileFormat
+            ? Client.Exists(Path, expected.Value)
             : Client.Exists(Path);
+    }
 
     public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
 
@@ -537,9 +539,25 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     /// If it's null (default case), it will do a quick check for known instance.</param>
     /// <exception cref="FileNotFoundException">The file doesn't exist.</exception>
     /// <exception cref="FileCorruptedException">File check failed for known file.</exception>
-    public void Add(bool? shouldCheckKnown = null) {
-        if (shouldCheckKnown != false && !Exists()) {
-            throw new FileNotFoundException(ToString());
+    public void Add(bool? shouldCheckKnown = null, long? expectedSize = null) {
+        if (expectedSize != null) {
+            FileInfo ??= new FileInformation {
+                Id = Id,
+                Size = expectedSize
+            };
+            FileInfo.Size ??= expectedSize;
+        }
+
+        if (shouldCheckKnown != false && !Exists(expectedSize)) {
+            try {
+                var length = Client.Length(Path);
+                FileInfo ??= new FileInformation {
+                    Id = Id
+                };
+                FileInfo.Size = length;
+            } catch (FileNotFoundException) {
+                throw new FileNotFoundException(ToString());
+            }
         }
 
         var file = this;

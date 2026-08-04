@@ -17,7 +17,7 @@ public abstract class StorageClient : IDisposable {
 
     public bool Exists(string path, long expectedLength = -1) {
         try {
-            return expectedLength == 0 ? Length(path) >= 0 : Length(path) > 0;
+            return expectedLength >= 0 ? Length(path) == expectedLength : Length(path) > 0;
         } catch (FileNotFoundException) {
             return false;
         }

@@ -87,7 +87,7 @@ class ExtractCommand : KifaCommand {
                 ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
                 : entry.Key.Checked()))).Where(entry => {
             Logger.Notice(()
-                => $"File:\t{entry.File} {entry.File.ExistsSomewhere()}, {entry.File.Exists()}");
+                => $"File:\t{entry.File} {entry.File.ExistsSomewhere()}, {entry.File.Exists(entry.Entry.Size)}");
             Logger.Notice(()
                 => $"Expected:\tsize={entry.Entry.Size}, crc32={entry.Entry.GetCrc32InHex()}");
             Logger.Notice(()
@@ -100,7 +100,7 @@ class ExtractCommand : KifaCommand {
                 return false;
             }
 
-            if (entry.File.Exists()) {
+            if (entry.File.Exists(entry.Entry.Size)) {
                 Logger.Debug($"File {entry.Entry.Key} already exists locally. Skipped.");
                 return false;
             }
@@ -189,7 +189,7 @@ class ExtractCommand : KifaCommand {
         Logger.Debug($"Write {entry.Key} to {file}");
         Logger.Debug($"Extract {entry.Key} to temp location {tempFile.GetLocalPath()}");
         extractAction(tempFile.GetLocalPath());
-        tempFile.Add();
+        tempFile.Add(expectedSize: entry.Size);
 
         var expectedCrc = entry.GetCrc32InHex();
         if (tempFile.FileInfo?.Size != entry.Size || tempFile.FileInfo?.Crc32 != expectedCrc) {
@@ -201,7 +201,7 @@ class ExtractCommand : KifaCommand {
             $"File {tempFile} has the expected size={entry.Size} and crc32={expectedCrc}. Fast copy to {file}");
         tempFile.Copy(file);
 
-        file.Add();
+        file.Add(expectedSize: entry.Size);
         tempFile.Delete();
         FileInformation.Client.RemoveLocation(tempFile.Id, tempFile.ToString());
         Logger.LogResult(FileInformation.Client.Delete(tempFile.Id),
