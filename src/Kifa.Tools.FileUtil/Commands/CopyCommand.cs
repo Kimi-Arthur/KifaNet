@@ -26,6 +26,9 @@ class CopyCommand : KifaCommand {
     [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
     public bool ById { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         return ById ? ExecuteById() : ExecuteLocal();
     }
@@ -38,8 +41,10 @@ class CopyCommand : KifaCommand {
         var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
         foreach (var sourceItem in sourceItems) {
-            if (!sourceItem.Exists() && sourceItem.List(recursive: true).Any()) {
-                var childFiles = sourceItem.List(recursive: true).ToList();
+            var childFiles = KifaFile.FindExistingFiles([sourceItem.ToString()], recursive: true,
+                ignoreFiles: !IncludeAll);
+
+            if (!sourceItem.Exists() && childFiles.Count > 0) {
                 var sourceFolderId =
                     sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
                 var baseDestId = isDestFolder
