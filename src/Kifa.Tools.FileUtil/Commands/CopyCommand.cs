@@ -128,14 +128,14 @@ class CopyCommand : KifaCommand {
             if (destinationFile.Exists()) {
                 if (sourceFile.IsLinked(destinationFile)) {
                     var linkResult = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
-                    if (linkResult.Status != KifaActionStatus.OK) {
+                    if (linkResult.Status != KifaActionStatus.OK && linkResult.Status != KifaActionStatus.Skipped) {
                         return linkResult;
                     }
 
                     destinationFile.Register(true);
                     destinationFile.Add();
 
-                    return KifaActionResult.Success(
+                    return KifaActionResult.Skipped(
                         $"File {destinationFile} is already linked to {sourceFile} on disk.");
                 }
 

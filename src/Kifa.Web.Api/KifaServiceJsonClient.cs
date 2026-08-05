@@ -406,7 +406,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                         var realLinkId = link.RealId;
                         if (realLinkId == realTargetId) {
                             return LogAndReturn(new KifaActionResult {
-                                Status = KifaActionStatus.OK,
+                                Status = KifaActionStatus.Skipped,
                                 Message =
                                     $"Link {linkId} ({realLinkId}) is already linked to {targetId} ({realTargetId})."
                             });
