@@ -26,7 +26,7 @@ public class ExtractAudioCommand : KifaCommand {
     }
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames, recursive: false);
+        var files = KifaFile.FindExistingFiles(FileNames);
         files = files.Where(file => file.Extension != "m4a").ToList();
 
         var selected = SelectMany(files, file => file.ToString(), "files to extract audio from");
