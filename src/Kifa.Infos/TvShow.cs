@@ -124,7 +124,8 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         var pattern = PatternId switch {
             "multi_season" =>
                 $@"{Regex.Escape(baseFolder)}/(Season \d+|Specials|\d+)([^/]*)/{Title} (S(?<season_id>\d+)E(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
-            "single_season" => $@"{Regex.Escape(baseFolder)}/{Title} (EP(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
+            "single_season" =>
+                $@"{Regex.Escape(baseFolder)}/{Title} (EP(?<episode_id>\d+)|SP(?<special_episode_id>\d+))",
             _ => null
         };
 
@@ -134,14 +135,12 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
 
         var match = Regex.Match(formatted, pattern);
         if (match.Success) {
-            var seasonId = match.Groups["special_episode_id"].Success
-                ? 0
-                : match.Groups["season_id"].Success
-                    ? int.Parse(match.Groups["season_id"].Value)
-                    : 1;
+            var seasonId = match.Groups["special_episode_id"].Success ? 0 :
+                match.Groups["season_id"].Success ? int.Parse(match.Groups["season_id"].Value) : 1;
 
             var episodeId = match.Groups["special_episode_id"].Success
-                ? int.Parse(match.Groups["special_episode_id"].Value)
+                ?
+                int.Parse(match.Groups["special_episode_id"].Value)
                 : match.Groups["episode_id"].Success
                     ? int.Parse(match.Groups["episode_id"].Value)
                     : -1;
@@ -192,8 +191,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         return patternId switch {
             "multi_season" => baseFolder + seasonFolder +
                               $"/{Title} {epCode} {episodeTitle}".TrimEnd(),
-            "single_season" => baseFolder +
-                               $"/{Title} {epCodeSingle} {episodeTitle}".TrimEnd(),
+            "single_season" => baseFolder + $"/{Title} {epCodeSingle} {episodeTitle}".TrimEnd(),
             _ => null
         };
     }
@@ -226,7 +224,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
     }
 
     public static ItemInfoList? GetItems(string[] spec, string? version = null) {
-        if (spec[0] != "TV Shows" || spec.Length is < 2 or > 4) {
+        if (spec[0] != "TV Shows" && spec[0] != "R18" || spec.Length is < 2 or > 4) {
             return null;
         }
 

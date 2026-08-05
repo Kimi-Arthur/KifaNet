@@ -64,27 +64,30 @@ class ImportCommand : KifaCommand {
         //     /Downloads/Movies/Death Note Trilogy/1. Death Note (2006).mkv
 
         var pathSegments = files[0].Split("/", options: StringSplitOptions.RemoveEmptyEntries);
-        Type ??= pathSegments[1];
-        var prefix = $"/Downloads/{Type}/";
-        foreach (var file in files.Skip(1)) {
-            if (!file.StartsWith(prefix)) {
-                Logger.Error($"File {file} don't share a common prefix {prefix}. Exit.");
-                return 1;
+        if (Type == null) {
+            Type ??= pathSegments[1];
+            var prefix = $"/Downloads/{Type}/";
+            foreach (var file in files.Skip(1)) {
+                if (!file.StartsWith(prefix)) {
+                    Logger.Error($"File {file} don't share a common prefix {prefix}. Exit.");
+                    return 1;
+                }
             }
         }
 
         SourceId ??= InferSourceId(pathSegments[2]);
         ItemInfoList infoList;
         switch (Type) {
+            case "R18":
             case "TV Shows": {
                 infoList = TvShow.GetItems([
-                    Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                    Type, .. SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
                 ], VersionSuffix).Checked();
                 break;
             }
             case "Anime": {
                 infoList = Anime.GetItems([
-                    Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                    Type, .. SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
                 ], VersionSuffix).Checked();
                 break;
             }
@@ -99,7 +102,7 @@ class ImportCommand : KifaCommand {
                     // Example:
                     // /Gaming/黑桐谷歌/漫威蜘蛛侠2
                     infoList = Series.GetItems([
-                        Type, ..SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
+                        Type, .. SourceId.Split("/", StringSplitOptions.RemoveEmptyEntries)
                     ], VersionSuffix).Checked();
                     break;
                 }
@@ -120,14 +123,17 @@ class ImportCommand : KifaCommand {
 
                 if (files.Count == 1) {
                     var file = files.Single();
-                    ExecuteItem(file, () => ImportDefaultFile(file, folder, baseName, fileVersion, null));
+                    ExecuteItem(file,
+                        () => ImportDefaultFile(file, folder, baseName, fileVersion, null));
                     return LogSummary();
                 }
 
                 var counter = 1;
                 foreach (var file in files) {
                     var currentCounter = counter;
-                    ExecuteItem(file, () => ImportDefaultFile(file, folder, baseName, fileVersion, currentCounter));
+                    ExecuteItem(file,
+                        () => ImportDefaultFile(file, folder, baseName, fileVersion,
+                            currentCounter));
                     counter++;
                 }
 
@@ -175,10 +181,12 @@ class ImportCommand : KifaCommand {
         return FileInformation.Client.Link(file, targetFileName);
     }
 
-    KifaActionResult ImportDefaultFile(string file, string folder, string baseName, string? fileVersion, int? part) {
+    KifaActionResult ImportDefaultFile(string file, string folder, string baseName,
+        string? fileVersion, int? part) {
         var ext = file[(file.LastIndexOf(".") + 1)..];
         var targetFileName = fileVersion != null
-            ? part != null
+            ?
+            part != null
                 ? $"{folder}/{baseName}/{baseName}.{fileVersion}.part{part}.{ext}"
                 : $"{folder}/{baseName}/{baseName}.{fileVersion}.{ext}"
             : part != null
@@ -202,8 +210,7 @@ class ImportCommand : KifaCommand {
             var selected = SelectOne(validEpisodes, e => $"{e.Path}{suffix}",
                 $"target episode for {file}", startingIndex: 1,
                 specialHelpText: "to customize the title",
-                partHelpText: "for split episodes (e.g. '3p4')",
-                reverse: true);
+                partHelpText: "for split episodes (e.g. '3p4')", reverse: true);
             if (selected.Status != KifaActionStatus.OK) {
                 return selected;
             }
@@ -221,6 +228,7 @@ class ImportCommand : KifaCommand {
                         Message = "Import cancelled by user."
                     };
                 }
+
                 targetPath = newName;
             }
 
@@ -267,6 +275,7 @@ class ImportCommand : KifaCommand {
         if (toRegister.Status == KifaActionStatus.OK) {
             toRegister.Value.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
         }
+
         return files.Where(f => f.Registered);
     }
 
