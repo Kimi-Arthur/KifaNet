@@ -8,5 +8,5 @@ if [ ! -f "$key_file" ]; then
 fi
 key=$(cat "$key_file")
 
-dotnet nuget push publish/*.symbols.nupkg -s https://api.nuget.org/v3/index.json -k "$key"
+dotnet nuget push publish/*.symbols.nupkg -s https://api.nuget.org/v3/index.json -k "$key" --skip-duplicate
 

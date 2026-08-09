@@ -15,7 +15,7 @@ class DecodeCommand : KifaCommand {
     public IEnumerable<string> FileNames { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var files = FileNames.SelectMany(path => new KifaFile(path).List()).ToList();
+        var files = KifaFile.FindExistingFiles(FileNames);
         var selected = SelectMany(files, file => file.ToString(), "files to decode");
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to decode", () => selected);

@@ -26,12 +26,11 @@ class CopyCommand : KifaCommand {
     [Option('i', "id", HelpText = "Treat all file names as id. And only file ids are linked")]
     public bool ById { get; set; } = false;
 
-    public override int Execute(KifaTask? task = null) {
-        if (ById) {
-            return ExecuteById();
-        }
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
 
-        return ExecuteLocal();
+    public override int Execute(KifaTask? task = null) {
+        return ById ? ExecuteById() : ExecuteLocal();
     }
 
     int ExecuteLocal() {
@@ -42,9 +41,12 @@ class CopyCommand : KifaCommand {
         var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
         foreach (var sourceItem in sourceItems) {
-            if (!sourceItem.Exists() && sourceItem.List(recursive: true).Any()) {
-                var childFiles = sourceItem.List(recursive: true).ToList();
-                var sourceFolderId = sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
+            var childFiles = KifaFile.FindExistingFiles([sourceItem.ToString()], recursive: true,
+                ignoreFiles: !IncludeAll);
+
+            if (!sourceItem.Exists() && childFiles.Count > 0) {
+                var sourceFolderId =
+                    sourceItem.Id.EndsWith('/') ? sourceItem.Id : sourceItem.Id + "/";
                 var baseDestId = isDestFolder
                     ? $"{destination.Host}{destination.Id.TrimEnd('/')}/{sourceItem.Name}"
                     : $"{destination.Host}{destination.Id.TrimEnd('/')}";
@@ -55,15 +57,13 @@ class CopyCommand : KifaCommand {
                     localFileCopyPairs.Add((childFile, targetFile));
                 }
             } else {
-                var targetFile = isDestFolder
-                    ? destination.GetFile(sourceItem.Name)
-                    : destination;
+                var targetFile = isDestFolder ? destination.GetFile(sourceItem.Name) : destination;
                 localFileCopyPairs.Add((sourceItem, targetFile));
             }
         }
 
-        var selected = SelectMany(localFileCopyPairs, pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}",
-            "files to link");
+        var selected = SelectMany(localFileCopyPairs,
+            pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}", "files to link");
 
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to link", () => selected);
@@ -106,8 +106,8 @@ class CopyCommand : KifaCommand {
             }
         }
 
-        var selected = SelectMany(idFileCopyPairs, pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}",
-            "files to link");
+        var selected = SelectMany(idFileCopyPairs,
+            pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}", "files to link");
 
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to link", () => selected);
@@ -128,14 +128,14 @@ class CopyCommand : KifaCommand {
             if (destinationFile.Exists()) {
                 if (sourceFile.IsLinked(destinationFile)) {
                     var linkResult = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
-                    if (linkResult.Status != KifaActionStatus.OK) {
+                    if (linkResult.Status != KifaActionStatus.OK && linkResult.Status != KifaActionStatus.Skipped) {
                         return linkResult;
                     }
 
                     destinationFile.Register(true);
                     destinationFile.Add();
 
-                    return KifaActionResult.Success(
+                    return KifaActionResult.Skipped(
                         $"File {destinationFile} is already linked to {sourceFile} on disk.");
                 }
 

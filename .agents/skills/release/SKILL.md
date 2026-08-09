@@ -27,11 +27,19 @@ Automate version incrementing, git commits, and package/tool publishing followin
      * Other bug fixes, performance improvements, or refactoring -> **PATCH** bump (`X.Y.Z`).
    * Calculate proposed `<new_version>`.
 
-3. **Draft Release Commit Message**:
-   * Follow format: `release(<tool_name> <new_version>): <concise description of main changes>`
+3. **Handle Pending Changes (Two-Commit Workflow)**:
+   * **If there are pending code changes**:
+     * Split the release process into two separate, sequential commits:
+       1. **First Commit (Functional Changes)**: Stage and commit the functional changes first. Follow the **Selective Commit Skill** for this step, using standard conventional commit formats (e.g. `feat(filex): ...` or `fix(filex): ...`).
+       2. **Second Commit (Version Bump & Release)**: Perform the version bump in the `.csproj` file. Stage and commit the version bump using the `release` prefix with the detailed description of the release content (e.g. `release(filex 5.6.4): interactive multi-source file linking`).
+   * **If there are no pending changes**:
+     * Proceed directly to the version bump and release as a single commit using the `release` prefix and detailed description of the changes being released.
+
+4. **Draft Release Commit Message**:
+   * Follow format: `release(<tool_name> <new_version>): <detailed description of the release content/changes>`
    * Example: `release(filex 5.6.4): interactive multi-source file linking`
 
-4. **Prompt User for Confirmation**:
+5. **Prompt User for Confirmation**:
    * Present release details formatted as **one information item per line**:
      * **Tool**: `<tool_name>`
      * **Target Project**: `<path_to_csproj>`
@@ -40,8 +48,8 @@ Automate version incrementing, git commits, and package/tool publishing followin
      * **Commit Message**: `release(<tool_name> <new_version>): <description>`
    * Always ask for explicit user confirmation on version and release details before updating files, committing, or publishing.
 
-5. **Execute Version Bump, Commit & Publish**:
+6. **Execute Version Bump, Commit & Publish**:
    * Update `<Version>X.Y.Z</Version>` in the target `.csproj`.
-   * Stage modified files and commit with the confirmed message (`git add . && git commit -m "..."`).
+   * Stage the modified `.csproj` and commit with the confirmed message (`git add <path_to_csproj> && git commit -m "..."`).
    * Run release publication script (e.g., `./scripts/publish.sh <path_to_csproj>`).
    * Verify output and report publication status to the user.
