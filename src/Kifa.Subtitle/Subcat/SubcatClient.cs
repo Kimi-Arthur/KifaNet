@@ -9,7 +9,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using AngleSharp.Dom;
 using Kifa.Html;
-using Kifa.Rpc;
 using Kifa.Subtitle.Srt;
 using NLog;
 
@@ -21,33 +20,88 @@ public static class SubcatClient {
 
     public const string UrlPrefix = "https://www.subtitlecat.com";
 
+    static readonly Regex TranslatedFromRegex = new(@"\(translated from ([^)]+)\)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    static readonly Regex SizeRegex = new(@"SIZE\s*(\d+(?:\.\d+)?\s*[KMG]?B)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    static readonly Regex DownloadsRegex =
+        new(@"(\d+)\s+downloads?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    static readonly Regex LanguagesRegex =
+        new(@"(\d+)\s+languages?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     public static List<SubcatChoice> FindSubtitles(string keyword, List<Language> languages) {
         var doc = HttpClient.SendWithRetry($"{UrlPrefix}/index.php?search={keyword}").GetString()
             .GetDocument();
-        var table = doc.GetElementsByClassName("sub-table").FirstOrDefault();
-        var elements = table?.QuerySelectorAll("a");
-
-        if (elements == null || !elements.Any()) {
-            return [];
-        }
-
-        var rawSubtitles = elements.Take(10).Select(element => {
-            var href = element.Attributes["href"].Checked().Value;
-            var lastDot = href.LastIndexOf('.');
-            var originalLink = (lastDot >= 0 ? href[..lastDot] : href) + "-orig.srt";
-            return (Link: href, OriginalLink: originalLink);
-        }).ToList();
-
-        return rawSubtitles.SelectMany(sub => {
+        return ParseSearchResults(doc).SelectMany(sub => {
             var pageLink = GetFullUrl(sub.Link);
             var pageContent = HttpClient.SendWithRetry(pageLink).GetString().GetDocument();
             var downloadUrls = GetDownloadUrls(pageContent, languages);
             return downloadUrls.Select(kv => new SubcatChoice {
                 OriginalLink = GetFullUrl(sub.OriginalLink),
                 DownloadLink = kv.Value != null ? GetFullUrl(kv.Value) : null,
-                Language = kv.Key
+                Language = kv.Key,
+                SourceLanguage = sub.SourceLanguage,
+                Size = sub.Size,
+                DownloadCount = sub.DownloadCount,
+                LanguageCount = sub.LanguageCount
             });
         }).ToList();
+    }
+
+    public static List<(string Link, string OriginalLink, string? SourceLanguage, string? Size, int
+        DownloadCount, int LanguageCount)> ParseSearchResults(IDocument doc) {
+        var table = doc.GetElementsByClassName("sub-table").FirstOrDefault();
+        return table?.QuerySelectorAll("tr").SelectMany(ExtractSubtitle).Take(10).ToList() ?? [];
+    }
+
+    static IEnumerable<(string Link, string OriginalLink, string? SourceLanguage, string? Size, int
+        DownloadCount, int LanguageCount)> ExtractSubtitle(IElement row) {
+        var anchor = row.QuerySelector("a");
+        if (anchor == null) {
+            yield break;
+        }
+
+        var href = anchor.Attributes["href"]?.Value;
+        if (string.IsNullOrEmpty(href)) {
+            yield break;
+        }
+
+        var lastDot = href.LastIndexOf('.');
+        var originalLink = (lastDot >= 0 ? href[..lastDot] : href) + "-orig.srt";
+
+        var rowText = row.TextContent;
+
+        string? sourceLanguage = null;
+        var translatedMatch = TranslatedFromRegex.Match(rowText);
+        if (translatedMatch.Success) {
+            sourceLanguage = translatedMatch.Groups[1].Value.Trim();
+        }
+
+        var size = row.QuerySelector(".sub-table__metric-value")?.TextContent?.Trim();
+        if (string.IsNullOrEmpty(size)) {
+            var sizeMatch = SizeRegex.Match(rowText);
+            if (sizeMatch.Success) {
+                size = sizeMatch.Groups[1].Value.Trim();
+            }
+        }
+
+        var downloads = 0;
+        var downloadsMatch = DownloadsRegex.Match(rowText);
+        if (downloadsMatch.Success) {
+            downloads = int.Parse(downloadsMatch.Groups[1].Value);
+        }
+
+        var languagesCount = 0;
+        var languagesMatch = LanguagesRegex.Match(rowText);
+        if (languagesMatch.Success) {
+            languagesCount = int.Parse(languagesMatch.Groups[1].Value);
+        }
+
+        yield return (Link: href, OriginalLink: originalLink, SourceLanguage: sourceLanguage,
+            Size: size, DownloadCount: downloads, LanguageCount: languagesCount);
     }
 
     // Parses a single subtitle page HTML document and retrieves download URLs (or null if generation is needed) for target languages.

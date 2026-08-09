@@ -12,4 +12,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kifa.Subtitle\Kifa.Subtitle.csproj"/>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Subcat\*.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
