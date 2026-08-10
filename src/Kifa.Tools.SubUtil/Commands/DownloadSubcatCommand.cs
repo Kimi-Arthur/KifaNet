@@ -42,7 +42,16 @@ public class DownloadSubcatCommand : KifaCommand {
     }
 
     KifaActionResult DownloadSubtitles(KifaFile videoFile) {
-        var searchBaseName = videoFile.GetSubtitleFile().BaseName;
+        var searchBaseName = Confirm($"Confirm search text for {videoFile}:",
+            videoFile.GetSubtitleFile().BaseName);
+
+        if (searchBaseName == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"Search cancelled for {videoFile}."
+            };
+        }
+
         var expandedChoices = SubcatClient.FindSubtitles(searchBaseName, TargetLanguages);
 
         if (expandedChoices.Count == 0) {

@@ -65,7 +65,7 @@ public static class SubcatClient {
         }
 
         var href = anchor.Attributes["href"]?.Value;
-        if (string.IsNullOrEmpty(href)) {
+        if (href == null) {
             yield break;
         }
 
@@ -80,8 +80,8 @@ public static class SubcatClient {
             sourceLanguage = translatedMatch.Groups[1].Value.Trim();
         }
 
-        var size = row.QuerySelector(".sub-table__metric-value")?.TextContent?.Trim();
-        if (string.IsNullOrEmpty(size)) {
+        var size = row.QuerySelector(".sub-table__metric-value")?.TextContent.Trim();
+        if (size == null) {
             var sizeMatch = SizeRegex.Match(rowText);
             if (sizeMatch.Success) {
                 size = sizeMatch.Groups[1].Value.Trim();
