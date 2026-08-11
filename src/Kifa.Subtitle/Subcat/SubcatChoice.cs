@@ -1,23 +1,29 @@
+using System.Linq;
+
 namespace Kifa.Subtitle.Subcat;
 
 public record SubcatChoice {
-    public required Language Language { get; init; }
     public required string OriginalLink { get; init; }
-    public string? DownloadLink { get; init; }
+    public string? OriginalContent { get; set; }
+    public string? Preview { get; init; }
 
     public string? SourceLanguage { get; init; }
     public string? Size { get; init; }
     public int DownloadCount { get; init; }
     public int LanguageCount { get; init; }
 
-    public bool NeedsGeneration => DownloadLink == null;
-
     public string Title => SubcatClient.ParseSubcatUrl(OriginalLink).Title;
 
     public override string ToString() {
-        var sourceLangSegment = string.FormatOrEmpty($" (translated from {SourceLanguage})");
+        var sourceLangSegment = string.FormatOrEmpty($" (from {SourceLanguage})");
         var sizeSegment = string.FormatOrEmpty($"{Size}, ");
+        var previewSegment = "";
+        if (!string.IsNullOrEmpty(Preview)) {
+            var indentedLines = Preview.Split('\n').Select(line => $"\t{line}");
+            previewSegment = "\n" + string.Join("\n", indentedLines);
+        }
+
         return
-            $"[{Language.Code}{(NeedsGeneration ? "*" : "")}] {Title}{sourceLangSegment} ({sizeSegment}{DownloadCount} downloads, {LanguageCount} languages)";
+            $"{Title}{sourceLangSegment} ({sizeSegment}{DownloadCount} downloads): {OriginalLink}{previewSegment}";
     }
 }

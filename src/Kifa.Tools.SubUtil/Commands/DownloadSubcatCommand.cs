@@ -52,13 +52,12 @@ public class DownloadSubcatCommand : KifaCommand {
             };
         }
 
-        var expandedChoices = SubcatClient.FindSubtitles(searchBaseName, TargetLanguages);
+        var expandedChoices = SubcatClient.FindSubtitles(searchBaseName);
 
         if (expandedChoices.Count == 0) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
-                Message =
-                    $"No subtitles found with requested languages ({TargetLanguages.Select(l => l.Code).JoinBy(", ")}) for {videoFile}."
+                Message = $"No subtitles found for {videoFile}."
             };
         }
 
@@ -76,21 +75,43 @@ public class DownloadSubcatCommand : KifaCommand {
         var totalBytes = 0L;
 
         foreach (var choice in selected.Value) {
-            // We may be able to skip downloading but it complicates the logic for generation.
-            var (content, filename) = SubcatClient.DownloadOrGenerate(choice);
             var sourcesPath = SubcatClient.GetSourcesPath(videoFile.ParentPath);
-            var target = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{filename}");
+            var (origContent, origFilename) = SubcatClient.DownloadOriginal(choice);
 
-            if (target.Exists()) {
-                if (!Force || !Confirm($"Subtitle file {target} already exists. Replace it?")) {
-                    Logger.Info($"Skipped already downloaded subtitle {target}.");
-                    continue;
+            // Save original subtitle
+            var origTarget = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{origFilename}");
+            if (origTarget.Exists()) {
+                if (Force && Confirm($"Subtitle file {origTarget} already exists. Replace it?")) {
+                    origTarget.Write(origContent);
+                    downloadedCount++;
+                    totalBytes += origContent.Length;
+                } else {
+                    Logger.Info($"Skipped already downloaded subtitle {origTarget}.");
                 }
+            } else {
+                origTarget.Write(origContent);
+                downloadedCount++;
+                totalBytes += origContent.Length;
             }
 
-            target.Write(content);
-            downloadedCount++;
-            totalBytes += content.Length;
+            // Translate locally and save target language subtitles
+            foreach (var lang in TargetLanguages) {
+                var langSubcatCode = SubcatClient.GetSubcatLanguage(lang);
+                var langFilename = SubcatClient.GetSubtitleFileName(choice.OriginalLink, lang);
+                var langTarget = new KifaFile($"{KifaFile.SubtitlesHost}{sourcesPath}/{langFilename}");
+
+                if (langTarget.Exists()) {
+                    if (!Force || !Confirm($"Subtitle file {langTarget} already exists. Replace it?")) {
+                        Logger.Info($"Skipped already downloaded subtitle {langTarget}.");
+                        continue;
+                    }
+                }
+
+                var (translatedContent, _) = SubcatClient.TranslateSrt(origContent, langSubcatCode);
+                langTarget.Write(translatedContent);
+                downloadedCount++;
+                totalBytes += translatedContent.Length;
+            }
         }
 
         if (downloadedCount == 0) {

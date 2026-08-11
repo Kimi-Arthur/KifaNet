@@ -32,23 +32,45 @@ public static class SubcatClient {
     static readonly Regex LanguagesRegex =
         new(@"(\d+)\s+languages?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public static List<SubcatChoice> FindSubtitles(string keyword, List<Language> languages) {
+    public static List<SubcatChoice> FindSubtitles(string keyword) {
         var doc = HttpClient.SendWithRetry($"{UrlPrefix}/index.php?search={keyword}").GetString()
             .GetDocument();
-        return ParseSearchResults(doc).SelectMany(sub => {
-            var pageLink = GetFullUrl(sub.Link);
-            var pageContent = HttpClient.SendWithRetry(pageLink).GetString().GetDocument();
-            var downloadUrls = GetDownloadUrls(pageContent, languages);
-            return downloadUrls.Select(kv => new SubcatChoice {
-                OriginalLink = GetFullUrl(sub.OriginalLink),
-                DownloadLink = kv.Value != null ? GetFullUrl(kv.Value) : null,
-                Language = kv.Key,
+        return ParseSearchResults(doc).Select(sub => {
+            var originalLink = GetFullUrl(sub.OriginalLink);
+            string? originalContent = null;
+            string? preview = null;
+            try {
+                originalContent = HttpClient.SendWithRetry(originalLink).GetString();
+                preview = GetSrtPreview(originalContent);
+            } catch (Exception ex) {
+                Logger.Warn(ex, $"Failed to download preview from {originalLink}");
+            }
+
+            return new SubcatChoice {
+                OriginalLink = originalLink,
+                OriginalContent = originalContent,
+                Preview = preview,
                 SourceLanguage = sub.SourceLanguage,
                 Size = sub.Size,
                 DownloadCount = sub.DownloadCount,
                 LanguageCount = sub.LanguageCount
-            });
+            };
         }).ToList();
+    }
+
+    public static string GetSrtPreview(string srtContent, int maxLines = 4, int maxCharsPerLine = 120) {
+        try {
+            var doc = SrtDocument.Parse(srtContent);
+            var dialogueLines = doc.Lines
+                .Select(line => NormalizeSrtLine(line.Text.Content).Trim())
+                .Where(text => !string.IsNullOrWhiteSpace(text))
+                .Select(text => text.Length > maxCharsPerLine ? text[..maxCharsPerLine] + "..." : text)
+                .Take(maxLines)
+                .ToList();
+            return string.Join("\n", dialogueLines);
+        } catch {
+            return "";
+        }
     }
 
     public static List<(string Link, string OriginalLink, string? SourceLanguage, string? Size, int
@@ -131,44 +153,11 @@ public static class SubcatClient {
         return new Uri(fullUrl).AbsoluteUri;
     }
 
-    public static (string Content, string Filename) DownloadOrGenerate(SubcatChoice choice) {
-        if (choice.NeedsGeneration) {
-            Logger.Debug(
-                $"Will generate subtitle for {choice.Language.Code} from {choice.OriginalLink}");
-            var subcatLang = GetSubcatLanguage(choice.Language);
-            var originalContent = HttpClient.SendWithRetry(choice.OriginalLink).GetString();
-            var (content, detectedSourceLang) = TranslateSrt(originalContent, subcatLang);
-
-            var originalFileName = choice.OriginalLink.Split('/').Last();
-            var savingFileName = originalFileName.Replace("-orig.srt", ".srt");
-            var serverUrl =
-                UploadTranslation(savingFileName, content, subcatLang, detectedSourceLang);
-
-            var subcatLink = serverUrl ?? choice.OriginalLink;
-            var filename = GetSubtitleFileName(subcatLink, choice.Language);
-
-            if (serverUrl != null) {
-                var fullUrl = GetFullUrl(serverUrl);
-                try {
-                    Logger.Debug($"Fetching uploaded translation from server: {fullUrl}");
-                    var downloadedContent = HttpClient.SendWithRetry(fullUrl).GetString();
-                    return (downloadedContent, filename);
-                } catch (Exception ex) {
-                    Logger.Warn(ex,
-                        "Failed to download uploaded translation from server, falling back to local generated content.");
-                    return (content, filename);
-                }
-            }
-
-            return (content, filename);
-        }
-
-        Logger.Debug(
-            $"Will download subtitle for {choice.Language.Code} from {choice.DownloadLink}");
-        var downloadLink = choice.DownloadLink.Checked();
-        var downloadContent = HttpClient.SendWithRetry(downloadLink).GetString();
-        var downloadFilename = GetSubtitleFileName(downloadLink, choice.Language);
-        return (downloadContent, downloadFilename);
+    public static (string Content, string Filename) DownloadOriginal(SubcatChoice choice) {
+        Logger.Debug($"Will download original subtitle from {choice.OriginalLink}");
+        var originalContent = choice.OriginalContent ?? HttpClient.SendWithRetry(choice.OriginalLink).GetString();
+        var originalFilename = GetSubtitleFileName(choice.OriginalLink, "orig");
+        return (originalContent, originalFilename);
     }
 
     public static string? UploadTranslation(string filename, string content, string language,
@@ -313,17 +302,28 @@ public static class SubcatClient {
             ? text
             : WebUtility.HtmlDecode(Uri.UnescapeDataString(WebUtility.HtmlDecode(text)));
 
-    public static string GetSubtitleFileName(string subcatLink, Language language) {
+    public static string GetSubtitleFileName(string subcatLink, Language language)
+        => GetSubtitleFileName(subcatLink, language.Code);
+
+    public static string GetSubtitleFileName(string subcatLink, string languageCode) {
         var (subcatId, title) = ParseSubcatUrl(subcatLink);
         var idSegment = string.FormatOrEmpty($"{subcatId}.");
-        return $"{title}.{idSegment}subcat.{language.Code}.srt";
+        return $"{title}.{idSegment}subcat.{languageCode}.srt";
     }
 
-    public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice)
-        => GetSubtitlePath(videoParentPath, choice.DownloadLink ?? choice.OriginalLink,
-            choice.Language);
+    public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice,
+        string languageCode = "orig")
+        => GetSubtitlePath(videoParentPath, choice.OriginalLink, languageCode);
+
+    public static string GetSubtitlePath(string videoParentPath, SubcatChoice choice,
+        Language language)
+        => GetSubtitlePath(videoParentPath, choice.OriginalLink, language.Code);
 
     public static string GetSubtitlePath(string videoParentPath, string subcatLink,
         Language language)
-        => $"{GetSourcesPath(videoParentPath)}/{GetSubtitleFileName(subcatLink, language)}";
+        => GetSubtitlePath(videoParentPath, subcatLink, language.Code);
+
+    public static string GetSubtitlePath(string videoParentPath, string subcatLink,
+        string languageCode)
+        => $"{GetSourcesPath(videoParentPath)}/{GetSubtitleFileName(subcatLink, languageCode)}";
 }

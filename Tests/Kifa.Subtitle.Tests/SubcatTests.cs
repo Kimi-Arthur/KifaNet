@@ -14,72 +14,26 @@ public class SubcatTests {
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Subcat", "search.html"));
 
     [Fact]
-    public void GetDownloadUrlExistingLanguageTest() {
-        var doc = SampleSubtitlePageHtml.GetDocument();
-        var downloadUrl = SubcatClient.GetDownloadUrl(doc, "en");
-        Assert.Equal("/subs/1499/growing_pains_s03e02_aloha_2-en.srt", downloadUrl);
-
-        var choice = new SubcatChoice {
-            OriginalLink =
-                SubcatClient.GetFullUrl("/subs/1133/growing_pains_s03e02_aloha_2-orig.srt"),
-            DownloadLink = SubcatClient.GetFullUrl(downloadUrl.Checked()),
-            Language = "en",
-            SourceLanguage = "English",
-            Size = "25 KB",
-            DownloadCount = 2,
-            LanguageCount = 2
-        };
-        Assert.Equal("https://www.subtitlecat.com/subs/1499/growing_pains_s03e02_aloha_2-en.srt",
-            choice.DownloadLink);
-        Assert.Equal("https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-orig.srt",
-            choice.OriginalLink);
-        Assert.False(choice.NeedsGeneration);
-        Assert.Equal("growing_pains_s03e02_aloha_2", choice.Title);
-        Assert.Equal(
-            "[en] growing_pains_s03e02_aloha_2 (translated from English) (25 KB, 2 downloads, 2 languages)",
-            choice.ToString());
-    }
-
-    [Fact]
-    public void GetDownloadUrlNonExistingRequestedLanguageTest() {
-        var doc = SampleSubtitlePageHtml.GetDocument();
-        var downloadUrl = SubcatClient.GetDownloadUrl(doc, "zh");
-        Assert.Equal("", downloadUrl);
-
-        var choice = new SubcatChoice {
-            OriginalLink =
-                SubcatClient.GetFullUrl("/subs/1133/growing_pains_s03e02_aloha_2-orig.srt"),
-            DownloadLink = null,
-            Language = "zh",
-            SourceLanguage = "English",
-            Size = "25 KB",
-            DownloadCount = 2,
-            LanguageCount = 2
-        };
-        Assert.Null(choice.DownloadLink);
-        Assert.Equal("https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-orig.srt",
-            choice.OriginalLink);
-        Assert.True(choice.NeedsGeneration);
-        Assert.Equal(
-            "[zh*] growing_pains_s03e02_aloha_2 (translated from English) (25 KB, 2 downloads, 2 languages)",
-            choice.ToString());
-    }
-
-    [Fact]
     public void SubcatChoiceToStringWithSourceAndCountsTest() {
         var choice = new SubcatChoice {
             OriginalLink =
                 SubcatClient.GetFullUrl("/subs/1133/growing_pains_s03e02_aloha_2-orig.srt"),
-            DownloadLink = null,
-            Language = "zh",
+            Preview = "Hi, welcome to Growing Pains.\nToday we are in Hawaii!",
             SourceLanguage = "English",
             Size = "25 KB",
             DownloadCount = 2,
             LanguageCount = 2
         };
         Assert.Equal(
-            "[zh*] growing_pains_s03e02_aloha_2 (translated from English) (25 KB, 2 downloads, 2 languages)",
+            "growing_pains_s03e02_aloha_2 (from English) (25 KB, 2 downloads): https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-orig.srt\n\tHi, welcome to Growing Pains.\n\tToday we are in Hawaii!",
             choice.ToString());
+    }
+
+    [Fact]
+    public void GetSrtPreviewTest() {
+        var srt = "1\n00:00:01,000 --> 00:00:04,000\nHello World\n\n2\n00:00:05,000 --> 00:00:08,000\nSecond Line";
+        var preview = SubcatClient.GetSrtPreview(srt);
+        Assert.Equal("Hello World\nSecond Line", preview);
     }
 
     [Fact]
@@ -181,5 +135,22 @@ public class SubcatTests {
         var fileName = SubcatClient.GetSubtitleFileName(
             "https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-zh.srt", "zh");
         Assert.Equal("growing_pains_s03e02_aloha_2.1133.subcat.zh.srt", fileName);
+    }
+
+    [Fact]
+    public void GetSubtitleFileNameOrigTest() {
+        var fileName = SubcatClient.GetSubtitleFileName(
+            "https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-orig.srt", "orig");
+        Assert.Equal("growing_pains_s03e02_aloha_2.1133.subcat.orig.srt", fileName);
+    }
+
+    [Fact]
+    public void GetSubtitlePathOrigTest() {
+        var targetPath = SubcatClient.GetSubtitlePath("/TV/Growing Pains/Season 3",
+            "https://www.subtitlecat.com/subs/1133/growing_pains_s03e02_aloha_2-orig.srt", "orig");
+
+        Assert.Equal(
+            "/Sources/TV/Growing Pains/Season 3/growing_pains_s03e02_aloha_2.1133.subcat.orig.srt",
+            targetPath);
     }
 }
