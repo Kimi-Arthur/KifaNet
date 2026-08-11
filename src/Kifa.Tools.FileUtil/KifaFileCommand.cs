@@ -1,14 +1,60 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.Service;
+using NLog;
 
-namespace Kifa.Api.Files;
+namespace Kifa.Tools.FileUtil;
 
-public partial class KifaFile {
-    public static KifaActionResult RemoveLogicalFile(FileInformation? info,
-        bool removeLinkOnly = false, bool force = false,
-        Func<string, bool>? confirm = null) {
+public abstract class KifaFileCommand : KifaCommand {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    public static List<FileInformation> FindFileInfosByIds(IEnumerable<string> sources,
+        bool recursive = true) {
+        var fileIds = sources.SelectMany(f => FileInformation.Client.ListFolder(f, recursive))
+            .Distinct().ToList();
+        var infos = FileInformation.Client.Get(fileIds);
+        return fileIds.Zip(infos).Select(item => item.Second ?? new FileInformation {
+            Id = item.First
+        }).ToList();
+    }
+
+    public static List<FileInformation> FindFileInfos(IEnumerable<string> sources, bool byId = false,
+        bool recursive = true, string pattern = "*", bool ignoreFiles = true)
+        => byId
+            ? FindFileInfosByIds(sources, recursive)
+            : KifaFile.FindPotentialFiles(sources, recursive, pattern, ignoreFiles)
+                .Select(f => f.FileInfo ?? new FileInformation {
+                    Id = f.Id
+                }).ToList();
+
+    public List<KifaFile> RegisterUnregisteredFiles(List<KifaFile> files,
+        bool showSize = false, string actionVerb = "processing") {
+        var notRegisteredFiles = files.Where(f => !f.Registered).ToList();
+        if (notRegisteredFiles.Count == 0) {
+            return files;
+        }
+
+        var toRegister = SelectMany(notRegisteredFiles,
+            file => showSize && file.FileInfo?.Size != null
+                ? $"{file} ({file.FileInfo.Size.ToSizeString()})"
+                : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(showSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to register before {actionVerb}"));
+
+        if (toRegister.Status == KifaActionStatus.OK) {
+            toRegister.Value.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
+        } else {
+            ExecuteItem("files to register", () => toRegister);
+        }
+
+        return files.Where(f => f.Registered).ToList();
+    }
+
+    public KifaActionResult RemoveLogicalFile(FileInformation? info,
+        bool removeLinkOnly = false, bool force = false) {
         var id = info?.Id;
         if (id == null) {
             return new KifaActionResult {
@@ -45,7 +91,7 @@ public partial class KifaFile {
         }
 
         if (onlyFile && !force &&
-            (confirm == null || !confirm($"{info.Id} is the last instance. Should it be removed?"))) {
+            !Confirm($"{info.Id} is the last instance. Should it be removed?")) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
                 Message = $"Since {info.Id} is the last instance, we skipped removing it."
@@ -61,8 +107,8 @@ public partial class KifaFile {
                 var toRemove = file.Id == info.Id && !file.IsCloud || onlyFile && force;
                 if (!toRemove) {
                     if (onlyFile || file.Id == info.Id) {
-                        toRemove = !file.Exists() || (confirm != null && confirm(
-                            $"Confirm removing dangling instance {file}, not matching file name and in cloud"));
+                        toRemove = !file.Exists() || Confirm(
+                            $"Confirm removing dangling instance {file}, not matching file name and in cloud");
                     } else {
                         Logger.Debug(
                             $"File {file} is not removed as there are other file entries, like {links.First()}");
@@ -94,7 +140,7 @@ public partial class KifaFile {
         return result;
     }
 
-    public static KifaActionResult RemoveFileInstance(KifaFile file, bool removeLinkOnly = false) {
+    public KifaActionResult RemoveFileInstance(KifaFile file, bool removeLinkOnly = false) {
         var result = new KifaBatchActionResult();
 
         var fileExists = file.Exists();

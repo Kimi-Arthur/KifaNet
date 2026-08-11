@@ -13,7 +13,7 @@ using NLog;
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("import", HelpText = "Import files from /Downloads folder with resource id.")]
-class ImportCommand : KifaCommand {
+class ImportCommand : KifaFileCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     // Folder to models with search/match function. For example, "TV Shows" => "tv_shows".
@@ -41,7 +41,12 @@ class ImportCommand : KifaCommand {
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var files = (ById ? GetFromFileIds() : GetFromLocalFiles()).ToList();
+        if (!ById) {
+            var localFiles = KifaFile.FindExistingFiles(FileNames);
+            RegisterUnregisteredFiles(localFiles, ShowSize, "importing");
+        }
+
+        var files = FindFileInfos(FileNames, ById).Select(f => f.Id.Checked()).ToList();
         if (files.Count == 0) {
             Logger.Error("No files found. Action canceled.");
             return 1;
@@ -252,32 +257,7 @@ class ImportCommand : KifaCommand {
         }
     }
 
-    IEnumerable<string> GetFromFileIds()
-        => FileNames.SelectMany(f => FileInformation.Client.ListFolder(f, true));
-
-    IEnumerable<string> GetFromLocalFiles()
-        => FilterRegisteredFiles(KifaFile.FindExistingFiles(FileNames)).Select(f => f.Id);
-
-    string InferSourceId(string title) {
-        return title;
-    }
-
-    IEnumerable<KifaFile> FilterRegisteredFiles(List<KifaFile> files) {
-        var notRegisteredFiles = files.Where(f => !f.Registered).ToList();
-        if (notRegisteredFiles.Count == 0) {
-            return files;
-        }
-
-        var toRegister = SelectMany(notRegisteredFiles,
-            file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
-            new Func<List<KifaFile>, string>(choices
-                => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to register before importing"));
-        if (toRegister.Status == KifaActionStatus.OK) {
-            toRegister.Value.ForEach(f => ExecuteItem($"register {f}", () => f.Add()));
-        }
-
-        return files.Where(f => f.Registered);
-    }
+    string InferSourceId(string title) => title;
 
     static void MarkMatched(List<ItemInfo> episodes, int matchSeason, int matchEpisode) {
         for (var i = 0; i < episodes.Count; i++) {

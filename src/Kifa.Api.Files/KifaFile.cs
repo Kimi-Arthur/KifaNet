@@ -135,7 +135,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         // segments[0] is the client spec.
         var segments = uri.Split('/');
-        PathSegments = [..segments[1..]];
+        PathSegments = [.. segments[1..]];
         ParentPath = "/" + string.Join("/", segments[1..^1]);
 
         var name = segments.Last();

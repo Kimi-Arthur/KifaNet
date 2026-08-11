@@ -13,7 +13,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 [Verb("rm",
     HelpText =
         "Remove the FILE. Can be either logic path like: /Software/... or real path like: local:desk/Software....")]
-class RemoveCommand : KifaCommand {
+class RemoveCommand : KifaFileCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to remove.")]
@@ -127,8 +127,8 @@ class RemoveCommand : KifaCommand {
     }
 
     public KifaActionResult RemoveLogicalFile(FileInformation? info)
-        => KifaFile.RemoveLogicalFile(info, RemoveLinkOnly, Force, msg => Confirm(msg));
+        => RemoveLogicalFile(info, RemoveLinkOnly, Force);
 
     public KifaActionResult RemoveFileInstance(KifaFile file)
-        => KifaFile.RemoveFileInstance(file, RemoveLinkOnly);
+        => RemoveFileInstance(file, RemoveLinkOnly);
 }
