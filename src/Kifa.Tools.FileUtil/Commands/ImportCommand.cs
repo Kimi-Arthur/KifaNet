@@ -46,20 +46,19 @@ class ImportCommand : KifaFileCommand {
             RegisterUnregisteredFiles(localFiles, ShowSize, "importing");
         }
 
-        var files = FindFileInfos(FileNames, ById).Select(f => f.Id.Checked()).ToList();
-        if (files.Count == 0) {
+        var foundFiles = FindFileInfos(FileNames, ById).Select(f => f.Id.Checked()).ToList();
+        if (foundFiles.Count == 0) {
             Logger.Error("No files found. Action canceled.");
             return 1;
         }
 
-        foreach (var file in files) {
-            Console.WriteLine(file);
+        var selected = SelectMany(foundFiles, f => f, "files to import");
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to import", () => selected);
+            return LogSummary();
         }
 
-        if (!Confirm($"Confirm processing the {files.Count} files above?")) {
-            Logger.Error("Action canceled.");
-            return 1;
-        }
+        var files = selected.Value;
 
         // All source files are assumed to be in a path like
         //     /Downloads/<Type>/<Title>/<Subpaths>
