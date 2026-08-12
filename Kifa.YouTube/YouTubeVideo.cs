@@ -19,7 +19,10 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public override bool FillByDefault => true;
 
-    public static string? YoutubeDownloaderPath { get; set; }
+    public static string YoutubeDownloaderPath {
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
+    }
 
     public string? Title { get; set; }
     public string? Author { get; set; }

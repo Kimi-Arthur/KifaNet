@@ -73,6 +73,7 @@ public class YouTubeVideoTests {
                                        "id": "-mvEt8ZLsX4",
                                        "title": "AKB48 恋するフォーチュンクッキー KOREA COVER DANCE ' HHO48 ' IN 사통팔달",
                                        "author": "베레스트(Verest) 360 VR",
+                                       "author_id": "Verest2014",
                                        "upload_date": "2015-01-03",
                                        "description": "사통팔달 행사영상\n커버댄스 걸그룹 HHO48\nAKB48-恋するフォーチュンクッキー\n재미있게 봐주세요.^^\n다른 팀들의 영상도 차후 업로드 됩니다.",
                                        "categories": [
