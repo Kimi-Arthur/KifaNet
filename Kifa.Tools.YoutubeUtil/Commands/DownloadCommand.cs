@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.YouTube;
@@ -11,8 +9,7 @@ namespace Kifa.Tools.YoutubeUtil.Commands;
 public abstract class DownloadCommand : YoutubeCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Option('p', "prefix",
-        HelpText = "Prefix of file name. Possible values: date, number")]
+    [Option('p', "prefix", HelpText = "Prefix of file name. Possible values: date, number")]
     public string? Prefix { get; set; }
 
     [Option('o', "output-folder",
@@ -25,8 +22,7 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     protected void Download(YouTubeVideo video, string? alternativeFolder = null) {
         var outputFolder = BaseFolder;
-        var desiredName = video.GetDesiredName(
-            alternativeFolder: alternativeFolder,
+        var desiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,
             prefix: GetPrefix(video));
         if (desiredName == null) {
             throw new KifaExecutionException($"No desired name is found for {video.Id}");
@@ -52,15 +48,16 @@ public abstract class DownloadCommand : YoutubeCommand {
         var ytdl = new YoutubeDL {
             YoutubeDLPath = YouTubeVideo.YoutubeDownloaderPath,
             OutputFolder = canonicalTargetFile.Parent.GetLocalPath(),
-            OutputFileTemplate = $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.%(ext)s"
+            OutputFileTemplate =
+                $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.%(ext)s"
         };
 
         Logger.Debug($"Downloading video {video.Id} with yt-dlp to {canonicalTargetFile}...");
         var tempFile = canonicalTargetFile.Parent.GetFile(
             $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.mp4");
 
-        var downloadResult = ytdl.RunVideoDownload(
-            $"https://www.youtube.com/watch?v={video.Id}").GetAwaiter().GetResult();
+        var downloadResult = ytdl.RunVideoDownload($"https://www.youtube.com/watch?v={video.Id}")
+            .GetAwaiter().GetResult();
 
         if (!downloadResult.Success) {
             throw new KifaExecutionException(
