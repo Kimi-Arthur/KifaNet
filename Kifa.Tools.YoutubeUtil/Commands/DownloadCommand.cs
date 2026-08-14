@@ -2,17 +2,11 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.YouTube;
 using NLog;
-using YoutubeDLSharp;
-using YoutubeDLSharp.Options;
 
 namespace Kifa.Tools.YoutubeUtil.Commands;
 
 public abstract class DownloadCommand : YoutubeCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-
-    static YoutubeDL YoutubeDL => new() {
-        YoutubeDLPath = YouTubeVideo.YoutubeDownloaderPath
-    };
 
     [Option('p', "prefix", HelpText = "Prefix of file name. Possible values: date, number")]
     public string? Prefix { get; set; }
@@ -49,20 +43,12 @@ public abstract class DownloadCommand : YoutubeCommand {
         }
 
         var canonicalTargetFile = targetFiles[0];
-        var tempFile = canonicalTargetFile.GetIgnoredFile();
 
         Logger.Debug($"Downloading video {video.Id} with yt-dlp to {canonicalTargetFile}...");
+        var tempFile = canonicalTargetFile.Parent.GetFile(
+            $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.mp4");
 
-        var downloadResult = YoutubeDL.RunVideoDownload(video.Id,
-            mergeFormat: DownloadMergeFormat.Mp4,
-            overrideOptions: new OptionSet {
-                Output = tempFile.GetLocalPath()
-            }).GetAwaiter().GetResult();
-
-        if (!downloadResult.Success) {
-            throw new KifaExecutionException(
-                $"Failed to download video {video.Id}: {string.Join("\n", downloadResult.ErrorOutput)}");
-        }
+        YouTubeVideo.DownloadVideo(video.Id.Checked(), tempFile.GetLocalPath());
 
         tempFile.Move(canonicalTargetFile);
         Logger.Debug($"Downloaded video {video.Id} to {canonicalTargetFile}.");

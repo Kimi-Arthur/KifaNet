@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using Kifa.ArchiveOrg;
@@ -8,6 +9,7 @@ using Kifa.Html;
 using Kifa.Service;
 using NLog;
 using YoutubeDLSharp;
+using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube;
 
@@ -22,6 +24,43 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static string YoutubeDownloaderPath {
         get => Late.Get(field);
         set => Late.Set(ref field, value);
+    }
+
+    public static string CookiesPath {
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
+    }
+
+    public static YoutubeDL YoutubeDL => new() {
+        YoutubeDLPath = YoutubeDownloaderPath
+    };
+
+    public static OptionSet OptionSet => new() {
+        Cookies = CookiesPath
+    };
+
+    public static void DownloadVideo(string videoId, string? filePath = null, string? outputFolder = null, string? outputFileTemplate = null) {
+        var ytdl = YoutubeDL;
+        if (filePath != null) {
+            ytdl.OutputFolder = Path.GetDirectoryName(filePath);
+            ytdl.OutputFileTemplate = $"{Path.GetFileNameWithoutExtension(filePath)}.%(ext)s";
+        }
+
+        if (outputFolder != null) {
+            ytdl.OutputFolder = outputFolder;
+        }
+
+        if (outputFileTemplate != null) {
+            ytdl.OutputFileTemplate = outputFileTemplate;
+        }
+
+        var downloadResult = ytdl.RunVideoDownload(
+            videoId, overrideOptions: OptionSet).GetAwaiter().GetResult();
+
+        if (!downloadResult.Success) {
+            throw new Exception(
+                $"Failed to download video {videoId}: {string.Join("\n", downloadResult.ErrorOutput)}");
+        }
     }
 
     public string? Title { get; set; }
@@ -59,10 +98,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     }
 
     DateTimeOffset? FillWithYoutubeDl() {
-        var ytdl = new YoutubeDL {
-            YoutubeDLPath = YoutubeDownloaderPath
-        };
-        var metadata = ytdl.RunVideoDataFetch(Id).GetAwaiter().GetResult();
+        var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter().GetResult();
         if (!metadata.Success) {
             throw new UnableToFillException(
                 $"Cannot find video info for {Id}: {metadata.ErrorOutput.JoinBy("\n")}");
