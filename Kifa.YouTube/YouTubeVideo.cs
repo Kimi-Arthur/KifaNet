@@ -31,15 +31,18 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         set => Late.Set(ref field, value);
     }
 
-    public static YoutubeDL YoutubeDL => new() {
-        YoutubeDLPath = YoutubeDownloaderPath
-    };
+    public static YoutubeDL YoutubeDL
+        => new() {
+            YoutubeDLPath = YoutubeDownloaderPath
+        };
 
-    public static OptionSet OptionSet => new() {
-        Cookies = CookiesPath
-    };
+    public static OptionSet OptionSet
+        => new() {
+            Cookies = CookiesPath
+        };
 
-    public static void DownloadVideo(string videoId, string? filePath = null, string? outputFolder = null, string? outputFileTemplate = null) {
+    public static void DownloadVideo(string videoId, string? filePath = null,
+        string? outputFolder = null, string? outputFileTemplate = null) {
         var ytdl = YoutubeDL;
         if (filePath != null) {
             ytdl.OutputFolder = Path.GetDirectoryName(filePath);
@@ -55,7 +58,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
 
         var downloadResult = ytdl.RunVideoDownload(
-            videoId, overrideOptions: OptionSet).GetAwaiter().GetResult();
+                videoId, mergeFormat: DownloadMergeFormat.Mp4, overrideOptions: OptionSet)
+            .GetAwaiter()
+            .GetResult();
 
         if (!downloadResult.Success) {
             throw new Exception(
@@ -98,7 +103,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     }
 
     DateTimeOffset? FillWithYoutubeDl() {
-        var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter().GetResult();
+        var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter()
+            .GetResult();
         if (!metadata.Success) {
             throw new UnableToFillException(
                 $"Cannot find video info for {Id}: {metadata.ErrorOutput.JoinBy("\n")}");
@@ -232,7 +238,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
         string? prefix = null) {
-        var defaultFolder = string.FormatOr($"{Author?.NormalizeFileName()}.{AuthorId?.NormalizeFileName()}") ?? Author?.NormalizeFileName();
+        var defaultFolder =
+            string.FormatOr($"{Author?.NormalizeFileName()}.{AuthorId?.NormalizeFileName()}") ??
+            Author?.NormalizeFileName();
         var folder = (alternativeFolder ?? defaultFolder)?.NormalizeFileName();
         if (folder != null) {
             var folderSegments = folder.Split('/').ToList();
