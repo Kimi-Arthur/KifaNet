@@ -10,7 +10,7 @@ namespace Kifa.Languages.German;
 public class GermanWord : DataModel, WithModelId<GermanWord> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public static string ModelId => "languages/german/words";
+    public static string ModelId => "Languages/german/words";
 
     public override int CurrentVersion => 18;
 

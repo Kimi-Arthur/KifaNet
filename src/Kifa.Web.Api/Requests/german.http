@@ -1,15 +1,15 @@
 ### Set
-GET {{server}}/api/languages/german/words/Aussage?refresh=true
+GET {{server}}/api/Languages/german/words/Aussage?refresh=true
 
 ### Set
-POST {{server}}/api/languages/german/words/kommen
+POST {{server}}/api/Languages/german/words/kommen
 Accept: application/x-yaml
 Content-Type: application/x-yaml
 
 {}
 
 ### Get
-GET {{server}}/api/languages/german/verbs/wandern
+GET {{server}}/api/Languages/german/verbs/wandern
 Accept: application/x-yaml
 
 {}

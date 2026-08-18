@@ -10,7 +10,7 @@ namespace Kifa.Tools.DataUtil.Commands;
 public class SyncCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    [Option('t', "type", HelpText = "Type of data. Allowed values: goethe/words, goethe/lists")]
+    [Option('t', "type", HelpText = "Type of data. Allowed values: Languages/goethe/words, Languages/goethe/lists")]
     public string Type { get; set; }
 
     [Option('a', "get-all",

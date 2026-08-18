@@ -43,7 +43,7 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
 
     static KifaServiceClient<MemriseLevel> LevelClient => MemriseLevel.Client;
 
-    public static string ModelId => "memrise/courses";
+    public static string ModelId => "Languages/memrise/courses";
 
     public string CourseName { get; set; }
     public string CourseId { get; set; }

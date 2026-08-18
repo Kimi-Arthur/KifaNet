@@ -11,7 +11,7 @@ using YamlDotNet.Serialization;
 namespace Kifa.Memrise;
 
 public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
-    public static string ModelId => "memrise/levels";
+    public static string ModelId => "Languages/memrise/levels";
 
     public override bool FillByDefault => true;
 

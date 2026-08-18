@@ -11,7 +11,7 @@ using NLog;
 namespace Kifa.Languages.Oxford;
 
 public class OxfordPage : DataModel, WithModelId<OxfordPage> {
-    public static string ModelId => "languages/oald/pages";
+    public static string ModelId => "Languages/oald/pages";
 
     public static KifaServiceClient<OxfordPage> Client { get; set; } =
         new KifaServiceRestClient<OxfordPage>();

@@ -5,7 +5,7 @@ using Kifa.Service;
 namespace Kifa.Memrise;
 
 public class MemriseWord : DataModel, WithModelId<MemriseWord> {
-    public static string ModelId => "memrise/words";
+    public static string ModelId => "Languages/memrise/words";
 
     public static KifaServiceClient<MemriseWord> Client { get; set; } =
         new KifaServiceRestClient<MemriseWord>();
