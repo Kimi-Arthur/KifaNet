@@ -1,11 +1,15 @@
 #!/bin/bash
 set -e
 
-CLEAN_LATEST=true
+CLEAN_LATEST=false
 KEEP_RELEASES=10
 
 while [[ $# -gt 0 ]]; do
   case $1 in
+    -c|--clean)
+      CLEAN_LATEST=true
+      shift
+      ;;
     --no-clean|--skip-clean)
       CLEAN_LATEST=false
       shift
