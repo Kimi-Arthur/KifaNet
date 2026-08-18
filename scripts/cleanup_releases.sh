@@ -7,26 +7,35 @@ SSH_CMD="ssh -p 2222 -o IdentitiesOnly=yes"
 
 echo "Cleaning up old releases on $SERVER (keeping latest $KEEP)..."
 
-$SSH_CMD "$SERVER" bash -s <<EOF
+$SSH_CMD "$SERVER" "bash -s -- $KEEP" <<'EOF'
+KEEP_COUNT="${1:-10}"
+
 cd /var/www || exit 1
 
-releases=\$(ls -d 20[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] 2>/dev/null | sort -n || true)
+# Find all 14-digit timestamped release directories
+mapfile -t releases < <(find /var/www -maxdepth 1 -mindepth 1 -type d -name '20[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' | sort)
 
-total=\$(echo "\$releases" | grep -c . || true)
-if [ "\$total" -le "$KEEP" ]; then
-    echo "Found \$total release(s), which is <= $KEEP. No cleanup needed."
+total=${#releases[@]}
+if [ "$total" -eq 0 ]; then
+    echo "No timestamped release directories found."
     exit 0
 fi
 
-remove_count=\$((total - KEEP))
-echo "Found \$total releases. Removing oldest \$remove_count release(s)..."
+if [ "$total" -le "$KEEP_COUNT" ]; then
+    echo "Found $total release(s), which is <= $KEEP_COUNT. No cleanup needed."
+    exit 0
+fi
 
-echo "\$releases" | head -n "\$remove_count" | while read -r dir; do
-    if [ -n "\$dir" ] && [ -d "\$dir" ]; then
-        echo "  Removing /var/www/\$dir"
-        rm -rf "\$dir"
+remove_count=$((total - KEEP_COUNT))
+echo "Found $total release(s). Removing oldest $remove_count release(s)..."
+
+for (( i=0; i<remove_count; i++ )); do
+    dir="${releases[i]}"
+    if [ -n "$dir" ] && [ -d "$dir" ]; then
+        echo "  Removing $dir"
+        rm -rf "$dir"
     fi
 done
 
-echo "Cleanup complete. Retained latest $KEEP releases."
+echo "Cleanup complete. Retained latest $KEEP_COUNT releases."
 EOF
