@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Selenium.WebDriver" Version="4.35.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kifa\Kifa.csproj" />
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
+    <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
+    <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
+    <ProjectReference Include="..\Kifa.Languages.German\Kifa.Languages.German.csproj" />
+    <ProjectReference Include="..\Kifa.Languages.Goethe\Kifa.Languages.Goethe.csproj" />
+    <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+  </ItemGroup>
+
+</Project>

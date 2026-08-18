@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Jobs;
-using Kifa.Languages.German.Goethe;
-using Kifa.Memrise;
+using Kifa.Languages.Goethe;
+using Kifa.Languages.Memrise;
 using Kifa.Service;
 using NLog;
 

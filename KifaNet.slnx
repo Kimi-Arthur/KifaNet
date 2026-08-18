@@ -65,9 +65,15 @@
   </Folder>
   <Folder Name="/Languages/">
     <Project Path="src\Kifa.Languages\Kifa.Languages.csproj" Type="Classic C#" />
-    <Project Path="src\Kifa.Memrise\Kifa.Memrise.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.Biaori\Kifa.Languages.Biaori.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.Cambridge\Kifa.Languages.Cambridge.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.Dwds\Kifa.Languages.Dwds.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.German\Kifa.Languages.German.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.Goethe\Kifa.Languages.Goethe.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.Memrise\Kifa.Languages.Memrise.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Languages.Oxford\Kifa.Languages.Oxford.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Languages.Tests\Kifa.Languages.Tests.csproj" Type="Classic C#" />
-    <Project Path="Tests\Kifa.Memrise.Tests\Kifa.Memrise.Tests.csproj" Type="Classic C#" />
+    <Project Path="Tests\Kifa.Languages.Memrise.Tests\Kifa.Languages.Memrise.Tests.csproj" Type="Classic C#" />
   </Folder>
   <Folder Name="/Languages/Markdown/">
     <Project Path="src\Kifa.Markdown\Kifa.Markdown.csproj" Type="Classic C#" />

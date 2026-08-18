@@ -21,7 +21,9 @@
         <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
         <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
         <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj"/>
-        <ProjectReference Include="..\Kifa.Memrise\Kifa.Memrise.csproj"/>
+        <ProjectReference Include="..\Kifa.Languages.German\Kifa.Languages.German.csproj"/>
+        <ProjectReference Include="..\Kifa.Languages.Goethe\Kifa.Languages.Goethe.csproj"/>
+        <ProjectReference Include="..\Kifa.Languages.Memrise\Kifa.Languages.Memrise.csproj"/>
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
         <ProjectReference Include="..\Kifa.Tools.DataUtil\Kifa.Tools.DataUtil.csproj"/>
         <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>

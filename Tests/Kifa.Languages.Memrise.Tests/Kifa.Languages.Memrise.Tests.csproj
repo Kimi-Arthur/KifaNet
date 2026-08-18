@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NUnit" Version="3.12.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="3.16.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj"/>
+        <ProjectReference Include="..\..\src\Kifa.Languages\Kifa.Languages.csproj"/>
+        <ProjectReference Include="..\..\src\Kifa.Languages.German\Kifa.Languages.German.csproj"/>
+        <ProjectReference Include="..\..\src\Kifa.Languages.Goethe\Kifa.Languages.Goethe.csproj"/>
+        <ProjectReference Include="..\..\src\Kifa.Languages.Memrise\Kifa.Languages.Memrise.csproj"/>
+        <ProjectReference Include="..\..\src\Kifa.Service\Kifa.Service.csproj"/>
+    </ItemGroup>
+
+</Project>

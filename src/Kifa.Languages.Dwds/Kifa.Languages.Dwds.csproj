@@ -7,14 +7,13 @@
 
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.1.2" />
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.10" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="NLog" Version="5.3.4" />
         <PackageReference Include="YamlDotNet" Version="12.0.2" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Kifa\Kifa.csproj" />
+        <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj" />
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
     </ItemGroup>
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,6 +21,12 @@
     <ProjectReference Include="..\..\src\Kifa\Kifa.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Configs\Kifa.Configs.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Languages\Kifa.Languages.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages.Biaori\Kifa.Languages.Biaori.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages.Cambridge\Kifa.Languages.Cambridge.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages.Dwds\Kifa.Languages.Dwds.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages.German\Kifa.Languages.German.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages.Goethe\Kifa.Languages.Goethe.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Languages.Oxford\Kifa.Languages.Oxford.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Service\Kifa.Service.csproj" />
   </ItemGroup>
 

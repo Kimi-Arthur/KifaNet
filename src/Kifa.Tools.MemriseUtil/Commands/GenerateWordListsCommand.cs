@@ -3,7 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
-using Kifa.Languages.German.Goethe;
+using Kifa.Languages.Goethe;
 using Kifa.Tools.DataUtil;
 
 namespace Kifa.Tools.MemriseUtil.Commands;

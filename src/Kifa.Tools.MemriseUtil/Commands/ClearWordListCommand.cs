@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Jobs;
-using Kifa.Memrise;
+using Kifa.Languages.Memrise;
 using Kifa.Service;
 using NLog;
 

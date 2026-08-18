@@ -1,4 +1,4 @@
-using Kifa.Memrise;
+using Kifa.Languages.Memrise;
 using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
 

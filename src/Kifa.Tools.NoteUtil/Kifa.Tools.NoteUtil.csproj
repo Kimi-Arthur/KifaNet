@@ -10,6 +10,7 @@
         <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>
         <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
         <ProjectReference Include="..\Kifa.Languages\Kifa.Languages.csproj"/>
+        <ProjectReference Include="..\Kifa.Languages.German\Kifa.Languages.German.csproj"/>
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
         <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
     </ItemGroup>
