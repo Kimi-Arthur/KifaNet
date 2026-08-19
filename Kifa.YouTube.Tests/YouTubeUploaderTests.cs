@@ -1,6 +1,5 @@
 using FluentAssertions;
 using Kifa.Configs;
-using Xunit;
 
 namespace Kifa.YouTube.Tests;
 
