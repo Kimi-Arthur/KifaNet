@@ -55,7 +55,10 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public static OptionSet OptionSet {
         get {
-            var options = new OptionSet();
+            var options = new OptionSet {
+                EmbedMetadata = true,
+                EmbedThumbnail = true
+            };
             try {
                 options.Cookies = CookiesPath;
             } catch (NullReferenceException) {
