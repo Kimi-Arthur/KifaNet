@@ -31,15 +31,39 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         set => Late.Set(ref field, value);
     }
 
-    public static YoutubeDL YoutubeDL
-        => new() {
-            YoutubeDLPath = YoutubeDownloaderPath
-        };
+    public static YoutubeDL YoutubeDL {
+        get {
+            var ytdl = new YoutubeDL();
+            try {
+                if (File.Exists(YoutubeDownloaderPath)) {
+                    ytdl.YoutubeDLPath = YoutubeDownloaderPath;
+                }
+            } catch (NullReferenceException) {
+            }
 
-    public static OptionSet OptionSet
-        => new() {
-            Cookies = CookiesPath
-        };
+            if (string.IsNullOrEmpty(ytdl.YoutubeDLPath) || !File.Exists(ytdl.YoutubeDLPath)) {
+                if (File.Exists("/Users/jingbian/homebrew/bin/yt-dlp")) {
+                    ytdl.YoutubeDLPath = "/Users/jingbian/homebrew/bin/yt-dlp";
+                } else if (File.Exists("/opt/homebrew/bin/yt-dlp")) {
+                    ytdl.YoutubeDLPath = "/opt/homebrew/bin/yt-dlp";
+                }
+            }
+
+            return ytdl;
+        }
+    }
+
+    public static OptionSet OptionSet {
+        get {
+            var options = new OptionSet();
+            try {
+                options.Cookies = CookiesPath;
+            } catch (NullReferenceException) {
+            }
+
+            return options;
+        }
+    }
 
     public static void DownloadVideo(string videoId, string? filePath = null,
         string? outputFolder = null, string? outputFileTemplate = null) {
