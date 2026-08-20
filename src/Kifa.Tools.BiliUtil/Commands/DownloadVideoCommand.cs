@@ -40,16 +40,17 @@ public class DownloadVideoCommand : DownloadCommand {
 
         if (segments.Length == 2) {
             var pid = int.Parse(segments.Last());
-            Download(video, pid,
-                alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
-            return KifaActionResult.Success();
+            return KifaActionResult.FromAction(() => Download(video, pid,
+                alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null));
         }
 
+        var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
-            Download(video, page.Id,
-                alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+            results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                KifaActionResult.FromAction(() => Download(video, page.Id,
+                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null)));
         }
 
-        return KifaActionResult.Success();
+        return results;
     }
 }

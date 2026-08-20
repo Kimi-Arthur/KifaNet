@@ -34,10 +34,12 @@ public class DownloadArchiveCommand : DownloadCommand {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
+        var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
-            Download(video, page.Id, extraFolder: archive.GetArchiveFolder());
+            results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                KifaActionResult.FromAction(() => Download(video, page.Id, extraFolder: archive.GetArchiveFolder())));
         }
 
-        return KifaActionResult.Success();
+        return results;
     }
 }

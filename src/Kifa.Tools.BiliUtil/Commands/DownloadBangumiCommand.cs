@@ -52,11 +52,14 @@ public class DownloadBangumiCommand : DownloadCommand {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
+        var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
-            Download(video, page.Id, alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
-                extraFolder: extraFolder);
+            results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                KifaActionResult.FromAction(() => Download(video, page.Id,
+                    alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
+                    extraFolder: extraFolder)));
         }
 
-        return KifaActionResult.Success();
+        return results;
     }
 }

@@ -55,10 +55,17 @@ public class DownloadUploaderCommand : DownloadCommand {
 
     void DownloadVideos(BilibiliUploader uploader, List<BilibiliVideo> videos) {
         foreach (var video in videos) {
-            foreach (var page in video.Pages) {
-                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                    () => Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder));
-            }
+            ExecuteItem(video.Id, () => DownloadVideo(uploader, video));
         }
+    }
+
+    KifaActionResult DownloadVideo(BilibiliUploader uploader, BilibiliVideo video) {
+        var results = new KifaBatchActionResult();
+        foreach (var page in video.Pages) {
+            results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                KifaActionResult.FromAction(() => Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder)));
+        }
+
+        return results;
     }
 }

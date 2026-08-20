@@ -39,12 +39,14 @@ public class DownloadPlaylistCommand : DownloadCommand {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
+        var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
-            Download(video, page.Id,
-                alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
-                includeUploaderInFileTitle: true);
+            results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
+                KifaActionResult.FromAction(() => Download(video, page.Id,
+                    alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
+                    includeUploaderInFileTitle: true)));
         }
 
-        return KifaActionResult.Success();
+        return results;
     }
 }

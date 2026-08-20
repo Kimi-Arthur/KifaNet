@@ -38,8 +38,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
-        Download(video,
-            alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}");
-        return KifaActionResult.Success();
+        return KifaActionResult.FromAction(() => Download(video,
+            alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}"));
     }
 }
