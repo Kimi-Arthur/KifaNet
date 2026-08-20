@@ -11,9 +11,9 @@ public class KifaDataOptions {
     // Only these fields should retrieve Link<> target values.
     public List<string> LinkedFields { get; set; } = [];
 
-    public IEnumerable<string> GetUrlParameters()
+    public IEnumerable<(string Key, object? Value)> GetUrlParameters()
         => [
-            ..Fields.Select(field => $"fields={field}"),
-            ..LinkedFields.Select(field => $"linked_fields={field}")
+            ..Fields.Select(field => ("fields", (object?) field)),
+            ..LinkedFields.Select(field => ("linked_fields", (object?) field))
         ];
 }

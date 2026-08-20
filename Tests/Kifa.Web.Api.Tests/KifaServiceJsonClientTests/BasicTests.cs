@@ -170,7 +170,7 @@ public class BasicTests : IDisposable {
         client.Link(newId1, newId2);
         var result = client.Link(id, newId2);
 
-        result.Status.Should().Be(KifaActionStatus.OK);
+        result.Status.Should().Be(KifaActionStatus.Skipped);
 
         client.Get(id).Metadata.Linking.Links.Should().HaveCount(2).And.Contain(newId1).And
             .Contain(newId2);

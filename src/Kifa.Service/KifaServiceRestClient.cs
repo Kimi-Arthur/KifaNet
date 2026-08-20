@@ -99,7 +99,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         bool recursive = true, KifaDataOptions? options = null)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                GetUrl("", [$"recursive={recursive}", $"folder={folder}"], options));
+                GetUrl("", [("recursive", recursive), ("folder", folder)], options));
 
             var result = KifaServiceRestClient.Client
                              .GetObject<SortedDictionary<string, TDataModel>>(request) ??
@@ -115,7 +115,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         KifaDataOptions? options = null)
         => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Get,
-                GetUrl(Uri.EscapeDataString(id), [$"refresh={refresh}", $"rewrite={rewrite}"], options));
+                GetUrl(Uri.EscapeDataString(id), [("refresh", refresh), ("rewrite", rewrite)], options));
 
             return KifaServiceRestClient.Client.GetObject<TDataModel>(request);
         }, (ex, i) => HandleException(ex, i, $"Failure in GET {ModelId}({id})"));
@@ -201,16 +201,22 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         }, (ex, i) => HandleException(ex, i, $"Failure in CALL {ModelId}.{action}"));
     }
 
-    string GetUrl(string path, List<string>? parameters = null, KifaDataOptions? options = null) {
-        parameters ??= [];
+    string GetUrl(string path, IEnumerable<(string Key, object? Value)>? parameters = null,
+        KifaDataOptions? options = null) {
+        var paramList = parameters?.Where(p => p.Value != null)
+            .Select(p => $"{p.Key}={FormatValue(p.Value!)}").ToList() ?? [];
         if (options != null) {
-            parameters.AddRange(options.GetUrlParameters());
+            paramList.AddRange(options.GetUrlParameters().Where(p => p.Value != null)
+                .Select(p => $"{p.Key}={FormatValue(p.Value!)}"));
         }
 
-        return $"{KifaServiceRestClient.ServerAddress}/{ModelId}/" + path + (parameters.Count > 0
-            ? $"?{parameters.JoinBy("&")}"
+        return $"{KifaServiceRestClient.ServerAddress}/{ModelId}/" + path + (paramList.Count > 0
+            ? $"?{string.Join("&", paramList)}"
             : "");
     }
+
+    static string FormatValue(object value)
+        => Uri.EscapeDataString(value.ToString()!);
 
     static void HandleException(Exception ex, int index, string message) {
         if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException {
