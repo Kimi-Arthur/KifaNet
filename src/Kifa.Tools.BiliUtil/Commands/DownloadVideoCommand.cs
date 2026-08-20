@@ -3,6 +3,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -22,36 +23,33 @@ public class DownloadVideoCommand : DownloadCommand {
 
     public override int Execute(KifaTask? task = null) {
         foreach (var aidWithPage in Aids) {
-            var segments = aidWithPage.Split('p');
-            var aid = segments.First();
-
-            var video = BilibiliVideo.Client.Get(aid);
-            if (video == null) {
-                Logger.Fatal($"Cannot find video ({aid}). Exiting.");
-                continue;
-            }
-
-            if (segments.Length == 2) {
-                var pid = int.Parse(segments.Last());
-                Logger.Info($"Downloading part {pid} of video {video.Id}...");
-                ExecuteItem($"{video.Id} {video.Title}",
-                    () => Download(video, pid,
-                        alternativeFolder: UseVideoNameFolder
-                            ? $"{video.Title}.{video.Id}"
-                            : null));
-                continue;
-            }
-
-            Logger.Info($"Downloading all parts of video {video.Id}...");
-            foreach (var page in video.Pages) {
-                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                    () => Download(video, page.Id,
-                        alternativeFolder: UseVideoNameFolder
-                            ? $"{video.Title}.{video.Id}"
-                            : null));
-            }
+            ExecuteItem(aidWithPage, () => DownloadVideo(aidWithPage));
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(string aidWithPage) {
+        var segments = aidWithPage.Split('p');
+        var aid = segments.First();
+
+        var video = BilibiliVideo.Client.Get(aid);
+        if (video == null) {
+            return KifaActionResult.Error($"Cannot find video ({aid}).");
+        }
+
+        if (segments.Length == 2) {
+            var pid = int.Parse(segments.Last());
+            Download(video, pid,
+                alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+            return KifaActionResult.Success();
+        }
+
+        foreach (var page in video.Pages) {
+            Download(video, page.Id,
+                alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+        }
+
+        return KifaActionResult.Success();
     }
 }

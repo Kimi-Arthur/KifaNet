@@ -26,18 +26,20 @@ public class DownloadPlaylistCommand : DownloadCommand {
         }
 
         foreach (var videoId in playlist.Videos) {
-            var video = YouTubeVideo.Client.Get(videoId);
-            if (video == null) {
-                ExecuteItem(videoId,
-                    () => KifaActionResult.Error($"Cannot find video ({videoId})."));
-                continue;
-            }
-
-            ExecuteItem($"{video.Id} {video.Title}",
-                () => Download(video,
-                    alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}"));
+            ExecuteItem(videoId, () => DownloadVideo(playlist, videoId));
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(YouTubePlaylist playlist, string videoId) {
+        var video = YouTubeVideo.Client.Get(videoId);
+        if (video == null) {
+            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+        }
+
+        Download(video,
+            alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}");
+        return KifaActionResult.Success();
     }
 }

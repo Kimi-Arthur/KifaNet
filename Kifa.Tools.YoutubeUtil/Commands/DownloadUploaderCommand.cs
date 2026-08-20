@@ -31,17 +31,19 @@ public class DownloadUploaderCommand : DownloadCommand {
             : uploader.Videos;
 
         foreach (var videoId in videosToDownload) {
-            var video = YouTubeVideo.Client.Get(videoId);
-            if (video == null) {
-                ExecuteItem(videoId,
-                    () => KifaActionResult.Error($"Cannot find video ({videoId})."));
-                continue;
-            }
-
-            ExecuteItem($"{video.Id} {video.Title}",
-                () => Download(video, alternativeFolder: InnerFolder));
+            ExecuteItem(videoId, () => DownloadVideo(videoId));
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(string videoId) {
+        var video = YouTubeVideo.Client.Get(videoId);
+        if (video == null) {
+            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+        }
+
+        Download(video, alternativeFolder: InnerFolder);
+        return KifaActionResult.Success();
     }
 }

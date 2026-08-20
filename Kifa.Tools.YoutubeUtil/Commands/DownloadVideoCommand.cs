@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using CommandLine;
 using Kifa.Jobs;
+using Kifa.Service;
 using Kifa.YouTube;
 using NLog;
 
@@ -20,20 +21,20 @@ public class DownloadVideoCommand : DownloadCommand {
 
     public override int Execute(KifaTask? task = null) {
         foreach (var id in Ids) {
-            var video = YouTubeVideo.Client.Get(id);
-            if (video == null) {
-                Logger.Fatal($"Cannot find video ({id}). Exiting.");
-                continue;
-            }
-
-            Logger.Info($"Downloading video {video.Id}...");
-            ExecuteItem($"{video.Id} {video.Title}",
-                () => Download(video,
-                    alternativeFolder: UseVideoNameFolder
-                        ? $"{video.Title}.{video.Id}"
-                        : null));
+            ExecuteItem(id, () => DownloadVideo(id));
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(string id) {
+        var video = YouTubeVideo.Client.Get(id);
+        if (video == null) {
+            return KifaActionResult.Error($"Cannot find video ({id}).");
+        }
+
+        Download(video,
+            alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+        return KifaActionResult.Success();
     }
 }

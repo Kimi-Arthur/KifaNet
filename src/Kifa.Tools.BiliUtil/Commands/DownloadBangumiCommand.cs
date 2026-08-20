@@ -2,6 +2,7 @@ using System.Linq;
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -31,38 +32,31 @@ public class DownloadBangumiCommand : DownloadCommand {
         }
 
         foreach (var videoId in bangumi.Aids.Distinct()) {
-            var video = BilibiliVideo.Client.Get(videoId);
-            if (video == null) {
-                Logger.Error($"Cannot find video ({videoId}). Skipping.");
-                continue;
-            }
-
-            foreach (var page in video.Pages) {
-                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                    () => Download(video, page.Id,
-                        alternativeFolder: $"{bangumi.Title}.{bangumi.Id}"));
-            }
+            ExecuteItem(videoId, () => DownloadVideo(bangumi, videoId, extraFolder: null));
         }
 
         if (IncludeExtras) {
             Logger.Info("Download extra video files.");
 
             foreach (var videoId in bangumi.ExtraAids.Distinct()) {
-                var video = BilibiliVideo.Client.Get(videoId);
-                if (video == null) {
-                    Logger.Error($"Cannot find video ({videoId}). Skipping.");
-                    continue;
-                }
-
-                foreach (var page in video.Pages) {
-                    ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                        () => Download(video, page.Id,
-                            alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
-                            extraFolder: "Extras"));
-                }
+                ExecuteItem(videoId, () => DownloadVideo(bangumi, videoId, extraFolder: "Extras"));
             }
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(BilibiliBangumi bangumi, string videoId, string? extraFolder) {
+        var video = BilibiliVideo.Client.Get(videoId);
+        if (video?.Pages == null) {
+            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+        }
+
+        foreach (var page in video.Pages) {
+            Download(video, page.Id, alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
+                extraFolder: extraFolder);
+        }
+
+        return KifaActionResult.Success();
     }
 }

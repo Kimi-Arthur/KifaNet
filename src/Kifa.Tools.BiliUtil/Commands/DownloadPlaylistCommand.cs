@@ -27,21 +27,24 @@ public class DownloadPlaylistCommand : DownloadCommand {
         }
 
         foreach (var videoId in playlist.Videos.Reverse<string>()) {
-            var video = BilibiliVideo.Client.Get(videoId);
-            if (video?.Pages == null) {
-                ExecuteItem(videoId,
-                    () => KifaActionResult.Error($"Cannot find video ({videoId})."));
-                continue;
-            }
-
-            foreach (var page in video.Pages) {
-                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                    () => Download(video, page.Id,
-                        alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
-                        includeUploaderInFileTitle: true));
-            }
+            ExecuteItem(videoId, () => DownloadVideo(playlist, videoId));
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(BilibiliPlaylist playlist, string videoId) {
+        var video = BilibiliVideo.Client.Get(videoId);
+        if (video?.Pages == null) {
+            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+        }
+
+        foreach (var page in video.Pages) {
+            Download(video, page.Id,
+                alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
+                includeUploaderInFileTitle: true);
+        }
+
+        return KifaActionResult.Success();
     }
 }

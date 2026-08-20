@@ -1,6 +1,7 @@
 using CommandLine;
 using Kifa.Bilibili;
 using Kifa.Jobs;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -21,20 +22,22 @@ public class DownloadArchiveCommand : DownloadCommand {
         }
 
         foreach (var videoId in archive.Videos) {
-            var video = BilibiliVideo.Client.Get(videoId);
-            if (video == null) {
-                Logger.Error($"Cannot find video ({videoId}). Skipping.");
-                continue;
-            }
-
-            Logger.Trace($"To download video {video}");
-
-            foreach (var page in video.Pages) {
-                ExecuteItem($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                    () => Download(video, page.Id, extraFolder: archive.GetArchiveFolder()));
-            }
+            ExecuteItem(videoId, () => DownloadVideo(archive, videoId));
         }
 
         return LogSummary();
+    }
+
+    KifaActionResult DownloadVideo(BilibiliArchive archive, string videoId) {
+        var video = BilibiliVideo.Client.Get(videoId);
+        if (video?.Pages == null) {
+            return KifaActionResult.Error($"Cannot find video ({videoId}).");
+        }
+
+        foreach (var page in video.Pages) {
+            Download(video, page.Id, extraFolder: archive.GetArchiveFolder());
+        }
+
+        return KifaActionResult.Success();
     }
 }
