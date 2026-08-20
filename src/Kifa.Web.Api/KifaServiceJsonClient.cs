@@ -75,6 +75,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             return new SortedDictionary<string, TDataModel>();
         }
 
+        Logger.Trace($"List folder {subFolder}");
+
         var directory = new DirectoryInfo(subFolder);
 
         // We actually exclude virtual items twice here.
