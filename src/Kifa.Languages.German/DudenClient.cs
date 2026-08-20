@@ -6,21 +6,18 @@ using Newtonsoft.Json;
 namespace Kifa.Languages.German;
 
 public class DudenClient {
-    static Dictionary<string, string>? audioLinks;
-
     static Dictionary<string, string> AudioLinks {
         get {
-            if (audioLinks == null) {
+            if (field == null) {
                 using var stream = Assembly.GetExecutingAssembly()
                     .GetManifestResourceStream($"{typeof(DudenClient).Namespace}.duden_audio.json");
                 if (stream != null) {
-                    audioLinks =
-                        JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                            new StreamReader(stream).ReadToEnd());
+                    field = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                        new StreamReader(stream).ReadToEnd()).Checked();
                 }
             }
 
-            return audioLinks!;
+            return field!;
         }
     }
 
