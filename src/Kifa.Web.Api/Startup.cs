@@ -61,6 +61,8 @@ public class Startup {
             app.UseHsts();
         }
 
+        app.UseMiddleware<RequestLoggingMiddleware>();
+
         app.UseMvc();
         app.UseStaticFiles(new StaticFileOptions {
             FileProvider = new KifaFileProvider(),

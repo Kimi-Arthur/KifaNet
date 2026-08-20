@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Text.RegularExpressions;
-using Kifa.Web.Api.Controllers;
 using Kifa.Web.Api.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 using NLog;
@@ -22,15 +20,18 @@ public class UserFilter : ActionFilterAttribute {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public static string GetUser(HttpRequest request) {
+        var values = request.Headers.GetValueOrDefault("X-SSL-USER", StringValues.Empty);
+        var match = NamePattern.Match(values.Count == 0 ? "" : values[0] ?? "");
+        return match.Success ? match.Groups[2].Value : DefaultUser;
+    }
+
     public override void OnActionExecuting(ActionExecutingContext context) {
         if (context.Result != null) {
             return;
         }
 
-        var values =
-            context.HttpContext.Request.Headers.GetValueOrDefault("X-SSL-USER", StringValues.Empty);
-        var match = NamePattern.Match(values.Count == 0 ? "" : values[0] ?? "");
-        var user = match.Success ? match.Groups[2].Value : DefaultUser;
+        var user = GetUser(context.HttpContext.Request);
         Logger.Trace($"Configuring for user {user}");
         if (Configs.TryGetValue(user, out var config)) {
             Logger.Trace($"Found config for {user}.");
