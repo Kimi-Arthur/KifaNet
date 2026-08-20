@@ -12,5 +12,6 @@ class Program {
                     settings.CaseInsensitiveEnumValues = true;
                     settings.HelpWriter = Console.Error;
                     settings.EnableDashDash = true;
-                }).ParseArguments(parameters, typeof(DownloadVideoCommand)), args);
+                }).ParseArguments(parameters, typeof(DownloadVideoCommand),
+                    typeof(DownloadPlaylistCommand), typeof(DownloadUploaderCommand)), args);
 }
