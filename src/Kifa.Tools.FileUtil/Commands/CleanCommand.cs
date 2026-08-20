@@ -63,15 +63,8 @@ class CleanCommand : KifaCommand {
     KifaActionResult DedupFileGroup(List<IGrouping<string?, KifaFile>> filesById) {
         var selected = SelectOne(filesById,
             group
-                => $"{group.Key} ({group.Count()} refs, {group.First().GetRefCount()} refs in OS):\n{group.Select(f => f.ToString()).JoinBy("\n")})",
-            "file to keep");
-
-        if (selected == null) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message = "No proper file is selected"
-            };
-        }
+                => $"{group.Key} ({group.Count()} refs, {Convert.ToInt32(group.First().GetRefCount()) - group.Count()} more refs in OS):\n" +
+                   $"{group.Select(f => $"\t{f}").JoinBy("\n")}", "file to keep");
 
         foreach (var group in filesById) {
             if (group == selected.Value.Choice) {
