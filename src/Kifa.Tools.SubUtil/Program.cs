@@ -8,5 +8,5 @@ class Program {
         => KifaCommand.Run(
             Parser.Default
                 .ParseArguments<GenerateCommand, UpdateCommand,
-                    ImportCommand, ExtractCommand, SyncCommand, DownloadSubcatCommand>, args);
+                    ImportCommand, ExtractCommand, SyncCommand, DownloadSubcatCommand, MoveCommand>, args);
 }
