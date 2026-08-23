@@ -63,7 +63,7 @@ class UniqCommand : KifaFileCommand {
             if (confirmedInfoEntries.Status == KifaActionStatus.OK) {
                 foreach (var tuple in confirmedInfoEntries.Value) {
                     ExecuteItem(tuple.toDelete.Id.Checked(),
-                        () => RemoveLogicalFile(tuple.toDelete, force: true));
+                        () => KifaFile.RemoveLogical(tuple.toDelete.Id, force: true));
                 }
             } else {
                 ExecuteItem("info entries to remove", () => confirmedInfoEntries);
@@ -102,7 +102,7 @@ class UniqCommand : KifaFileCommand {
             if (confirmedInstances.Status == KifaActionStatus.OK) {
                 foreach (var tuple in confirmedInstances.Value) {
                     ExecuteItem($"{tuple.location} ({tuple.info.Id})",
-                        () => RemoveFileInstance(new KifaFile(tuple.location)));
+                        () => new KifaFile(tuple.location).RemoveInstance());
                 }
             } else {
                 ExecuteItem("file instances to remove", () => confirmedInstances);

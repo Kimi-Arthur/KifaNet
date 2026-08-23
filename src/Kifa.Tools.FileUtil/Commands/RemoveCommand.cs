@@ -91,7 +91,8 @@ class RemoveCommand : KifaFileCommand {
                 return 2;
             }
 
-            selected.Value.ForEach(f => ExecuteItem(f.Id.Checked(), () => RemoveLogicalFile(f)));
+            selected.Value.ForEach(f => ExecuteItem(f.Id.Checked(),
+                () => KifaFile.RemoveLogical(f.Id, RemoveLinkOnly, Force)));
             return LogSummary();
         }
 
@@ -102,7 +103,8 @@ class RemoveCommand : KifaFileCommand {
                 $"local files to delete{removalText}");
 
             if (selected.Status == KifaActionStatus.OK) {
-                selected.Value.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+                selected.Value.ForEach(f => ExecuteItem(f.ToString(),
+                    () => f.RemoveInstance(RemoveLinkOnly)));
             } else {
                 ExecuteItem("local files to delete", () => selected);
             }
@@ -120,15 +122,10 @@ class RemoveCommand : KifaFileCommand {
                 return 2;
             }
 
-            phantomFiles.ForEach(f => ExecuteItem(f.ToString(), () => RemoveFileInstance(f)));
+            phantomFiles.ForEach(f => ExecuteItem(f.ToString(),
+                () => f.RemoveInstance(RemoveLinkOnly)));
         }
 
         return LogSummary();
     }
-
-    public KifaActionResult RemoveLogicalFile(FileInformation? info)
-        => RemoveLogicalFile(info, RemoveLinkOnly, Force);
-
-    public KifaActionResult RemoveFileInstance(KifaFile file)
-        => RemoveFileInstance(file, RemoveLinkOnly);
 }

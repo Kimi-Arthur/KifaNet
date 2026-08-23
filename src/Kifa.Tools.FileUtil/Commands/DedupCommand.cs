@@ -46,26 +46,10 @@ class DedupCommand : KifaCommand {
         }
 
         foreach (var tuple in confirmedDeletion.Value) {
-            ExecuteItem(tuple.toDelete.Id, () => RemoveLogicalFile(tuple.toDelete));
+            ExecuteItem(tuple.toDelete.Id.Checked(),
+                () => KifaFile.RemoveLogical(tuple.toDelete.Id, force: true));
         }
 
         return LogSummary();
-    }
-
-    void RemoveLogicalFile(FileInformation fileInfo) {
-        var id = fileInfo.Id;
-        foreach (var fileName in fileInfo.Locations.Keys) {
-            var file = new KifaFile(fileName);
-            if (file.Id == id) {
-                Logger.Info($"Removing {file}...");
-                file.Delete();
-                Logger.Info($"Removing {file} from locations...");
-                file.Unregister();
-            }
-        }
-
-        Logger.Info($"Removing file info {fileInfo.Id}...");
-        FileInformation.Client.Delete(fileInfo.Id);
-        Logger.Info($"Successfully removed {fileInfo.Id}.");
     }
 }
