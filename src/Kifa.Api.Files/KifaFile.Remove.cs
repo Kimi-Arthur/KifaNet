@@ -5,8 +5,20 @@ using Kifa.Service;
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    public KifaActionResult RemoveInstance(bool removeLinkOnly = false) {
+    public KifaActionResult RemoveInstance(bool removeLinkOnly = false, bool force = false) {
         var result = new KifaBatchActionResult();
+
+        var info = FileInfoClient.Get(Id);
+        var otherLocations =
+            info?.Locations.Count(kv => kv.Key != ToString() && kv.Value != null) ?? 0;
+
+        if (otherLocations == 0 && !force) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message =
+                    $"Since {this} is the last instance and force is not specified, we skipped removing it."
+            };
+        }
 
         var fileExists = Exists();
         if (!Registered) {
