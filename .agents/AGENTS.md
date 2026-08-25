@@ -12,6 +12,7 @@
 ## Code Structure & Style Rules
 - Place `const` values (e.g., string/numeric constants) and helper `static` fields (such as `Regex` instances or pattern constants) together just above where they are used (or above the first method using them), rather than placing all constants/statics at the top of the class.
 - Common class utility statics (such as `Logger`, `HttpClient`, or service client instances) should remain at the top of the class.
+- Avoid using `IsNullOrEmpty` (or `IsNullOrWhiteSpace`) when `null` is the normal definition of a default/unset value (e.g., for hash fields like `Sha256` or string properties where `null` explicitly represents the missing or default state). Prefer explicit null checks (`== null` or `!= null`) instead.
 
 ## Temporary Files Rules
 - Always place all temporary files, crawler state/progress files, local logs, intermediate scripts, or certificates generated during agent operations in the `.agent_temp/` directory.
