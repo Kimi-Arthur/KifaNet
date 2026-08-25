@@ -113,7 +113,7 @@ public class MoveCommand : KifaCommand {
         if (sourceFile.Registered) {
             KifaFile.RemoveLogical(sourceFile.Id, force: true);
         } else {
-            sourceFile.RemoveInstance();
+            sourceFile.RemoveInstance(force: true);
         }
     }
 }
