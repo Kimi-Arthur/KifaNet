@@ -52,6 +52,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     PartModeType partMode;
 
+    const int MissingCodec = 0;
     const int DefaultCodec = 7;
 
     static readonly List<int> DesiredCodecs = new() {
@@ -377,7 +378,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
-        var codecString = codec == DefaultCodec ? "" : $"-{CodecNames[codec]}";
+        var codecString = codec is DefaultCodec or MissingCodec ? "" : $"-{CodecNames[codec]}";
         var aidString = aid == null ? "" : $"{aid}p{pid}.";
         return $"{aidString}c{cid}.{quality}{codecString}";
     }
