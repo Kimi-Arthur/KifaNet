@@ -146,7 +146,7 @@ class CopyCommand : KifaCommand {
 
                 if (isSameContent) {
                     var linkResult = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
-                    if (linkResult.Status != KifaActionStatus.OK) {
+                    if (linkResult.Status != KifaActionStatus.OK && linkResult.Status != KifaActionStatus.Skipped) {
                         return linkResult;
                     }
 
@@ -167,7 +167,7 @@ class CopyCommand : KifaCommand {
             }
 
             var result = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
-            if (result.Status != KifaActionStatus.OK) {
+            if (result.Status != KifaActionStatus.OK && result.Status != KifaActionStatus.Skipped) {
                 return result;
             }
 
