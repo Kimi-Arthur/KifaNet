@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -35,6 +36,18 @@ class UniqCommand : KifaFileCommand {
             Logger.Warn("No files found.");
             return 1;
         }
+
+        var selected = SelectMany(infos,
+            info => ShowSize ? $"{info.Id} ({info.Size.ToSizeString()})" : info.Id.Checked(),
+            new Func<List<FileInformation>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.Size ?? 0).ToSizeString()})" : "")} to make unique"));
+
+        if (selected.Status != KifaActionStatus.OK) {
+            ExecuteItem("files to make unique", () => selected);
+            return LogSummary();
+        }
+
+        infos = selected.Value;
 
         var filesWithoutSha = infos.Where(f => f.Sha256 == null).ToList();
         if (filesWithoutSha.Count > 0) {
