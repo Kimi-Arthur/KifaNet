@@ -357,4 +357,40 @@ public class SelectManySelectionTests {
             Console.SetIn(originalIn);
         }
     }
+
+    [Fact]
+    public void SelectMany_IterativeRefinementAndConfirm() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // 1) Select 1-3 from [a, b, c, d] -> [a, b, c]
+            // 2) Select ^2 (exclude b) -> [a, c]
+            // 3) Enter to confirm -> [a, c]
+            Console.SetIn(new System.IO.StringReader("1-3\n^2\n\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d" }, key);
+            Assert.Equal(new[] { "a", "c" }, res.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_RestartSelectionWithQuestionMark() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // 1) Select 1 -> [a]
+            // 2) '?' to restart -> back to [a, b, c]
+            // 3) Enter to select default all -> [a, b, c]
+            Console.SetIn(new System.IO.StringReader("1\n?\n\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b", "c" }, res.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
 }

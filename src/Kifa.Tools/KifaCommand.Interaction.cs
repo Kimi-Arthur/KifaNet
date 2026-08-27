@@ -210,25 +210,35 @@ public abstract partial class KifaCommand {
                 }
             }
 
-            var defaultCountSummary = string.IsNullOrEmpty(defaultReply)
-                ? $"{choices.Count} items"
-                : $"{ParseSelection(defaultReply, choices, choiceItemString, startingIndex).Count} items";
-
             Console.WriteLine();
-            var messages = new[] {
-                $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
-                $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
-                "\t'?' to restart, '*' or 'all' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
-                $"Default is [{defaultDisplay}] ({defaultCountSummary}): "
-            };
+            if (isFirstPrompt) {
+                var defaultCountSummary = string.IsNullOrEmpty(defaultReply)
+                    ? $"{choices.Count} items"
+                    : $"{ParseSelection(defaultReply, choices, choiceItemString, startingIndex).Count} items";
 
-            Console.Write(messages.JoinBy("\n"));
+                var messages = new[] {
+                    $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
+                    $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
+                    "\t'?' to restart, '*' or 'all' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
+                    $"Default is [{defaultDisplay}] ({defaultCountSummary}): "
+                };
+
+                Console.Write(messages.JoinBy("\n"));
+            } else {
+                var countText = $"{selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} selected";
+                var rangeText = selectedChoices.Count > 0
+                    ? $" [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}]"
+                    : "";
+                Console.Write(
+                    $"{countText}{rangeText}. Press Enter to confirm, or enter further filter ('?' to restart, '^' to cancel): ");
+            }
+
             var line = (Console.ReadLine() ?? "").Trim();
 
             if (line == "?") {
                 chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
                 isFirstPrompt = true;
-                lastSelectionString = "";
+                lastSelectionString = defaultReply;
                 continue;
             }
 
@@ -238,10 +248,6 @@ public abstract partial class KifaCommand {
                 line = line[1..].Trim();
             }
 
-            if (flags.Contains('a')) {
-                AlwaysDefaultForSelectMany[selectionKey] = true;
-            }
-
             if (line == "^") {
                 chosenIndexes = [];
                 return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
@@ -249,12 +255,20 @@ public abstract partial class KifaCommand {
 
             if (line == "*" || line.Equals("all", StringComparison.OrdinalIgnoreCase)) {
                 DefaultReplyForSelectMany[selectionKey] = "";
+                if (flags.Contains('a')) {
+                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                }
+
                 Logger.Debug(
                     $"Selected {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
                 return choices;
             }
 
             if (line == "") {
+                if (flags.Contains('a')) {
+                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                }
+
                 if (isFirstPrompt) {
                     if (string.IsNullOrEmpty(defaultReply)) {
                         DefaultReplyForSelectMany[selectionKey] = "";

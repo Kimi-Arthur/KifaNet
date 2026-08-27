@@ -113,7 +113,7 @@ class UniqCommand : KifaFileCommand {
         }
 
         result.Message =
-            $"Kept {confirmedKeep.Value.Count} info entry(ies), removed {filesToRemove.Count} duplicate(s).";
+            $"Kept {confirmedKeep.Value.Count} info entries, removed {filesToRemove.Count} duplicates.";
 
         return result;
     }
