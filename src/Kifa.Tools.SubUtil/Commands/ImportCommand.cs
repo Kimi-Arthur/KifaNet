@@ -52,7 +52,7 @@ partial class ImportCommand : KifaCommand {
         var validEpisodes = targetFiles.Where(e => !e.Matched).ToList();
         try {
             var selected = SelectOne(validEpisodes, e => $"{e.Item}.{ReleaseId}.{suffix}",
-                $"target media file for {subtitleFile}", startingIndex: 1, reverse: true);
+                $"target media file for {subtitleFile}", reverse: true);
             if (selected.Status != KifaActionStatus.OK) {
                 return selected;
             }

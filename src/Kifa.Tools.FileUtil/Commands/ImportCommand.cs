@@ -212,7 +212,7 @@ class ImportCommand : KifaFileCommand {
         var validEpisodes = infoList.Items.Where(e => !e.Matched).ToList();
         try {
             var selected = SelectOne(validEpisodes, e => $"{e.Path}{suffix}",
-                $"target episode for {file}", startingIndex: 1,
+                $"target episode for {file}",
                 specialHelpText: "to customize the title",
                 partHelpText: "for split episodes (e.g. '3p4')", reverse: true);
             if (selected.Status != KifaActionStatus.OK) {

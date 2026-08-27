@@ -147,7 +147,7 @@ class GetChatCommand : KifaCommand {
                     c => c.Video != null
                         ? $"{c.Video.Title} - {c.Chat.Title} {c.Video.Id}p{c.Chat.Id} (cid={c.Chat.Cid})"
                         : $"cid={c.Chat.Cid}",
-                    $"danmaku to download for {file}", startingIndex: 1, reverse: true);
+                    $"danmaku to download for {file}", reverse: true);
 
                 if (selected == null) {
                     return new KifaActionResult {

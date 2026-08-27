@@ -15,7 +15,20 @@ public class SelectManySelectionTests {
             "item3",
             "item4"
         };
-        var selected = KifaCommand.ParseSelection("0-2", items, s => s);
+        var selected = KifaCommand.ParseSelection("1-3", items, s => s);
+        Assert.Equal(new[] { 0, 1, 2 }, selected);
+    }
+
+    [Fact]
+    public void ParseSelection_NumericRange_ZeroBased() {
+        var items = new List<string> {
+            "item0",
+            "item1",
+            "item2",
+            "item3",
+            "item4"
+        };
+        var selected = KifaCommand.ParseSelection("0-2", items, s => s, startingIndex: 0);
         Assert.Equal(new[] { 0, 1, 2 }, selected);
     }
 
@@ -28,7 +41,7 @@ public class SelectManySelectionTests {
             "item3",
             "item4"
         };
-        var selected = KifaCommand.ParseSelection("0-4,^2", items, s => s);
+        var selected = KifaCommand.ParseSelection("1-5,^3", items, s => s);
         Assert.Equal(new[] { 0, 1, 3, 4 }, selected);
     }
 
@@ -42,7 +55,7 @@ public class SelectManySelectionTests {
             "item4",
             "item5"
         };
-        var selected = KifaCommand.ParseSelection("0-2,5", items, s => s);
+        var selected = KifaCommand.ParseSelection("1-3,6", items, s => s);
         Assert.Equal(new[] { 0, 1, 2, 5 }, selected);
     }
 
@@ -56,7 +69,7 @@ public class SelectManySelectionTests {
             "item4",
             "item5"
         };
-        var selected = KifaCommand.ParseSelection("0,3-", items, s => s);
+        var selected = KifaCommand.ParseSelection("1,4-", items, s => s);
         Assert.Equal(new[] { 0, 3, 4, 5 }, selected);
     }
 
@@ -70,7 +83,7 @@ public class SelectManySelectionTests {
             "item4",
             "item5"
         };
-        var selected = KifaCommand.ParseSelection("-2", items, s => s);
+        var selected = KifaCommand.ParseSelection("-3", items, s => s);
         Assert.Equal(new[] { 0, 1, 2 }, selected);
     }
 
@@ -84,7 +97,7 @@ public class SelectManySelectionTests {
             "item4",
             "item5"
         };
-        var selected = KifaCommand.ParseSelection("0-1,4-5", items, s => s);
+        var selected = KifaCommand.ParseSelection("1-2,5-6", items, s => s);
         Assert.Equal(new[] { 0, 1, 4, 5 }, selected);
     }
 
@@ -98,7 +111,7 @@ public class SelectManySelectionTests {
             "item4",
             "item5"
         };
-        var selected = KifaCommand.ParseSelection("0-5,^1-3", items, s => s);
+        var selected = KifaCommand.ParseSelection("1-6,^2-4", items, s => s);
         Assert.Equal(new[] { 0, 4, 5 }, selected);
     }
 
@@ -111,7 +124,7 @@ public class SelectManySelectionTests {
             "item3",
             "item4"
         };
-        var selected = KifaCommand.ParseSelection("^1", items, s => s);
+        var selected = KifaCommand.ParseSelection("^2", items, s => s);
         Assert.Equal(new[] { 0, 2, 3, 4 }, selected);
     }
 
@@ -178,7 +191,7 @@ public class SelectManySelectionTests {
             "EP03.mp4",
             "EP04.mp4"
         };
-        var selected = KifaCommand.ParseSelection("0-3,^/*EP02*", items, s => s);
+        var selected = KifaCommand.ParseSelection("1-4,^/*EP02*", items, s => s);
         Assert.Equal(new[] { 0, 2, 3 }, selected);
     }
 

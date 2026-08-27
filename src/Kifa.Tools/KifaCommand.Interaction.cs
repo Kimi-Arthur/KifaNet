@@ -26,7 +26,7 @@ public abstract partial class KifaCommand {
 
     public KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
         SelectOne<TChoice>(List<TChoice> choices, Func<TChoice, string>? choiceToString = null,
-            string? choiceName = null, int startingIndex = 0, string? specialHelpText = null,
+            string? choiceName = null, int startingIndex = 1, string? specialHelpText = null,
             string? partHelpText = null, bool reverse = false, string? selectionKey = null,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0) {
@@ -136,7 +136,7 @@ public abstract partial class KifaCommand {
 
     public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string> choiceItemString,
-        FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 0,
+        FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
         string? selectionKey = null, bool skipIfEmpty = true, bool reverse = false,
         [CallerFilePath] string callerFilePath = "",
         [CallerLineNumber] int callerLineNumber = 0) {
@@ -227,7 +227,7 @@ public abstract partial class KifaCommand {
     }
 
     public static List<int> ParseSelection<TChoice>(string line, List<TChoice> selectedChoices,
-        Func<TChoice, string> choiceItemString, int startingIndex = 0) {
+        Func<TChoice, string> choiceItemString, int startingIndex = 1) {
         var tokens = line.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         HashSet<int>? currentSelection = null;
 
