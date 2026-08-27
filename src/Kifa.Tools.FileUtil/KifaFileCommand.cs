@@ -28,7 +28,7 @@ public abstract class KifaFileCommand : KifaCommand {
             : KifaFile.FindPotentialFiles(sources, recursive, pattern, ignoreFiles).Select(f
                 => f.FileInfo ?? new FileInformation {
                     Id = f.Id
-                }).ToList();
+                }).DistinctBy(f => f.Id).OrderBy(f => f.Id.Checked().GetNaturalSortKey()).ToList();
 
     public List<KifaFile> RegisterUnregisteredFiles(List<KifaFile> files, bool showSize = false,
         string actionVerb = "processing") {
