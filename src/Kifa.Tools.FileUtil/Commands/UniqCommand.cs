@@ -60,65 +60,62 @@ class UniqCommand : KifaFileCommand {
         }
 
         foreach (var sameFiles in infos.GroupBy(f => f.Sha256)) {
-            DeduplicateGroup(sameFiles.ToList());
+            var fileList = sameFiles.ToList();
+            var sha = fileList[0].Sha256.Checked();
+            ExecuteItem(fileList.Count == 1 ? fileList[0].Id.Checked() : $"info entries for group {sha}",
+                () => DeduplicateGroup(fileList));
         }
 
         return LogSummary();
     }
 
-    void DeduplicateGroup(List<FileInformation> fileList) {
+    KifaActionResult DeduplicateGroup(List<FileInformation> fileList) {
         if (fileList.Count == 0) {
-            return;
+            return KifaActionResult.Skipped("No file entries.");
         }
 
         var sha = fileList[0].Sha256.Checked();
 
         var checkResult = CheckCloud(fileList);
         if (checkResult.Status != KifaActionStatus.OK) {
-            ExecuteItem($"info entries for group {sha}", () => checkResult);
-            return;
+            return checkResult;
         }
 
         if (fileList.Count == 1) {
-            ExecuteItem(fileList[0].Id.Checked(),
-                () => KifaActionResult.Skipped("No duplicate info entries."));
-            return;
+            return KifaActionResult.Skipped("No duplicate info entries.");
         }
 
         var confirmedKeep = SelectMany(fileList, f => f.Id.Checked(),
             $"info entries to keep for group {sha}");
 
         if (confirmedKeep.Status != KifaActionStatus.OK) {
-            ExecuteItem($"info entries for group {sha}", () => confirmedKeep);
-            return;
+            return confirmedKeep;
         }
 
         var keepIds = confirmedKeep.Value.Select(f => f.Id).ToHashSet();
         if (keepIds.Count == 0) {
-            ExecuteItem($"info entries for group {sha}",
-                () => KifaActionResult.Error("No info entries selected to keep."));
-            return;
+            return KifaActionResult.Error("No info entries selected to keep.");
         }
 
         var filesToRemove = fileList.Where(f => !keepIds.Contains(f.Id)).ToList();
+        if (filesToRemove.Count == 0) {
+            return KifaActionResult.Skipped($"Kept all {fileList.Count} info entries.");
+        }
 
-        ExecuteItem($"info entries for group {sha}", () => {
-            var result = new KifaBatchActionResult();
+        var result = new KifaBatchActionResult();
 
-            foreach (var file in confirmedKeep.Value) {
-                result.Add(file.Id.Checked(), KifaActionResult.Success("Kept info entry."));
-            }
+        foreach (var file in confirmedKeep.Value) {
+            result.Add(file.Id.Checked(), KifaActionResult.Skipped("Kept info entry."));
+        }
 
-            foreach (var file in filesToRemove) {
-                result.Add(file.Id.Checked(), KifaFile.RemoveLogical(file.Id, force: true));
-            }
+        foreach (var file in filesToRemove) {
+            result.Add(file.Id.Checked(), KifaFile.RemoveLogical(file.Id, force: true));
+        }
 
-            result.Message = filesToRemove.Count > 0
-                ? $"Kept {confirmedKeep.Value.Count} info entry(ies), removed {filesToRemove.Count} duplicate(s)."
-                : $"Kept all {fileList.Count} info entries.";
+        result.Message =
+            $"Kept {confirmedKeep.Value.Count} info entry(ies), removed {filesToRemove.Count} duplicate(s).";
 
-            return result;
-        });
+        return result;
     }
 
     KifaActionResult CheckCloud(List<FileInformation> fileList) {
