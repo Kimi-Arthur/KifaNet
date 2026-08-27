@@ -81,11 +81,11 @@ public abstract partial class KifaCommand {
         };
 
         if (specialHelpText != null) {
-            messages.Add($"      's' {specialHelpText}.");
+            messages.Add($"\t's' {specialHelpText}.");
         }
 
         if (partHelpText != null) {
-            messages.Add($"      '<index>p<part>' {partHelpText}.");
+            messages.Add($"\t'<index>p<part>' {partHelpText}.");
         }
 
         messages.Add($"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
@@ -218,7 +218,7 @@ public abstract partial class KifaCommand {
             var messages = new[] {
                 $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
                 $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
-                "      '?' to restart, '*' or 'all' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
+                "\t'?' to restart, '*' or 'all' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
                 $"Default is [{defaultDisplay}] ({defaultCountSummary}): "
             };
 
