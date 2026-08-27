@@ -19,7 +19,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
     public string? AlternateFolder { get; set; }
 
     public override int Execute(KifaTask? task = null) {
-        var playlist = YouTubePlaylist.Client.Get(PlaylistId);
+        var playlist = YouTubePlaylist.Client.Get(PlaylistId, refresh: Refresh);
         if (playlist == null) {
             Logger.Fatal($"Cannot find playlist ({PlaylistId}). Exiting.");
             return 1;
@@ -33,7 +33,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
     }
 
     KifaActionResult DownloadVideo(YouTubePlaylist playlist, string videoId) {
-        var video = YouTubeVideo.Client.Get(videoId);
+        var video = YouTubeVideo.Client.Get(videoId, refresh: Refresh);
         if (video == null) {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }

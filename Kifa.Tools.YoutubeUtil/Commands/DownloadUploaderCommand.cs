@@ -20,7 +20,7 @@ public class DownloadUploaderCommand : DownloadCommand {
     public bool OldestFirst { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var uploader = YouTubeUploader.Client.Get(UploaderId);
+        var uploader = YouTubeUploader.Client.Get(UploaderId, refresh: Refresh);
         if (uploader == null) {
             Logger.Fatal($"Cannot find uploader ({UploaderId}). Exiting.");
             return 1;
@@ -38,7 +38,7 @@ public class DownloadUploaderCommand : DownloadCommand {
     }
 
     KifaActionResult DownloadVideo(string videoId) {
-        var video = YouTubeVideo.Client.Get(videoId);
+        var video = YouTubeVideo.Client.Get(videoId, refresh: Refresh);
         if (video == null) {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
