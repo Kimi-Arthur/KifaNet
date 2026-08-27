@@ -262,7 +262,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public List<string> GetCanonicalNames(string? formatId = null, bool includeFormat = true) {
         var fid = includeFormat ? formatId ?? FormatId : null;
-        return fid != null ? [$"{Id}.{fid}", Id.Checked()] : [Id.Checked()];
+        return fid != null ? [$"{Id}.{fid}"] : [Id.Checked()];
     }
 
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,

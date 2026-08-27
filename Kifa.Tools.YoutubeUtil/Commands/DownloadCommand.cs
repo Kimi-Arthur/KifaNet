@@ -35,14 +35,13 @@ public abstract class DownloadCommand : YoutubeCommand {
             .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
             .ToList();
 
-        var bestFiles = video.FormatId != null ? [targetFiles[0], desiredFile] : targetFiles;
-        var foundBest = KifaFile.FindOne(bestFiles);
-        if (foundBest != null) {
-            var message = foundBest.ExistsSomewhere()
-                ? $"{foundBest.Id} exists in the system"
-                : $"{foundBest} exists locally";
+        var found = KifaFile.FindOne(targetFiles);
+        if (found != null) {
+            var message = found.ExistsSomewhere()
+                ? $"{found.Id} exists in the system"
+                : $"{found} exists locally";
             Logger.Info($"Found {message}. Will link instead.");
-            KifaFile.LinkAll(foundBest, targetFiles);
+            KifaFile.LinkAll(found, targetFiles);
             return;
         }
 
@@ -67,25 +66,24 @@ public abstract class DownloadCommand : YoutubeCommand {
                 }
             }
 
-            var nonsuffixFile = GetCanonicalFile(desiredFile.Host, $"{video.Id}.mp4");
-            var foundNonsuffix = KifaFile.FindOne([nonsuffixFile]);
+            var nonsuffixDesiredName = video.GetDesiredName(
+                alternativeFolder: alternativeFolder, prefix: GetPrefix(video),
+                includeFormat: false);
+            var nonsuffixDesiredFile = nonsuffixDesiredName != null
+                ? outputFolder.GetFile($"{nonsuffixDesiredName}.mp4")
+                : null;
+            var nonsuffixTargetFiles = video.GetCanonicalNames(includeFormat: false)
+                .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4"))
+                .Concat(nonsuffixDesiredFile != null ? [nonsuffixDesiredFile] : [])
+                .ToList();
+
+            var foundNonsuffix = KifaFile.FindOne(nonsuffixTargetFiles);
             if (foundNonsuffix != null) {
                 var message = foundNonsuffix.ExistsSomewhere()
                     ? $"{foundNonsuffix.Id} exists in the system"
                     : $"{foundNonsuffix} exists locally";
                 Logger.Warn(ex,
                     $"Failed to download video {video.Id}. Found nonsuffix version {message}. Will link instead.");
-
-                var nonsuffixDesiredName = video.GetDesiredName(
-                    alternativeFolder: alternativeFolder, prefix: GetPrefix(video),
-                    includeFormat: false);
-                var nonsuffixDesiredFile = nonsuffixDesiredName != null
-                    ? outputFolder.GetFile($"{nonsuffixDesiredName}.mp4")
-                    : null;
-                var nonsuffixTargetFiles = video.GetCanonicalNames(includeFormat: false)
-                    .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4"))
-                    .Concat(nonsuffixDesiredFile != null ? [nonsuffixDesiredFile] : [])
-                    .ToList();
 
                 KifaFile.LinkAll(foundNonsuffix, nonsuffixTargetFiles);
                 return;
