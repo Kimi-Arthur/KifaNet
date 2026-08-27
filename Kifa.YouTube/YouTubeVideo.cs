@@ -260,11 +260,13 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return true;
     }
 
-    public List<string> GetCanonicalNames(string? formatId = null)
-        => [$"{Id}.{formatId ?? FormatId}", Id.Checked()];
+    public List<string> GetCanonicalNames(string? formatId = null, bool includeFormat = true) {
+        var fid = includeFormat ? formatId ?? FormatId : null;
+        return fid != null ? [$"{Id}.{fid}", Id.Checked()] : [Id.Checked()];
+    }
 
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
-        string? prefix = null) {
+        string? prefix = null, bool includeFormat = true) {
         var defaultFolder =
             string.FormatOr($"{Author?.NormalizeFileName()}.{AuthorId?.NormalizeFileName()}") ??
             Author?.NormalizeFileName();
@@ -276,16 +278,17 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
 
         var title = Title?.NormalizeFileName();
-        var fid = formatId ?? FormatId;
+        var fid = includeFormat ? formatId ?? FormatId : null;
+        var suffix = fid != null ? $".{fid}" : "";
 
         if (folder != null) {
             return prefix != null
-                ? string.FormatOr($"{folder}/{prefix} {title}.{Id}.{fid}")
-                : string.FormatOr($"{folder}/{title}.{Id}.{fid}");
+                ? string.FormatOr($"{folder}/{prefix} {title}.{Id}{suffix}")
+                : string.FormatOr($"{folder}/{title}.{Id}{suffix}");
         }
 
         return prefix != null
-            ? string.FormatOr($"{prefix} {title}.{Id}.{fid}")
-            : string.FormatOr($"{title}.{Id}.{fid}");
+            ? string.FormatOr($"{prefix} {title}.{Id}{suffix}")
+            : string.FormatOr($"{title}.{Id}{suffix}");
     }
 }

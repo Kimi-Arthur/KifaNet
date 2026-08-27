@@ -32,28 +32,64 @@ public abstract class DownloadCommand : YoutubeCommand {
             .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4")).Append(desiredFile)
             .ToList();
 
-        var found = KifaFile.FindOne(targetFiles);
-        if (found != null) {
-            var message = found.ExistsSomewhere()
-                ? $"{found.Id} exists in the system"
-                : $"{found} exists locally";
+        var bestFiles = video.FormatId != null ? [targetFiles[0], desiredFile] : targetFiles;
+        var foundBest = KifaFile.FindOne(bestFiles);
+        if (foundBest != null) {
+            var message = foundBest.ExistsSomewhere()
+                ? $"{foundBest.Id} exists in the system"
+                : $"{foundBest} exists locally";
             Logger.Info($"Found {message}. Will link instead.");
-            KifaFile.LinkAll(found, targetFiles);
+            KifaFile.LinkAll(foundBest, targetFiles);
             return;
         }
 
         var canonicalTargetFile = targetFiles[0];
 
-        Logger.Debug($"Downloading video {video.Id} with yt-dlp to {canonicalTargetFile}...");
         var tempFile = canonicalTargetFile.Parent.GetFile(
             $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.mp4");
 
-        YouTubeVideo.DownloadVideo(video.Id.Checked(), tempFile.GetLocalPath());
+        try {
+            Logger.Debug($"Downloading video {video.Id} with yt-dlp to {canonicalTargetFile}...");
+            YouTubeVideo.DownloadVideo(video.Id.Checked(), tempFile.GetLocalPath());
 
-        tempFile.Move(canonicalTargetFile);
-        Logger.Debug($"Downloaded video {video.Id} to {canonicalTargetFile}.");
+            tempFile.Move(canonicalTargetFile);
+            Logger.Debug($"Downloaded video {video.Id} to {canonicalTargetFile}.");
 
-        KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+            KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+        } catch (Exception ex) {
+            if (tempFile.Exists()) {
+                try {
+                    tempFile.Delete();
+                } catch {
+                }
+            }
+
+            var nonsuffixFile = GetCanonicalFile(desiredFile.Host, $"{video.Id}.mp4");
+            var foundNonsuffix = KifaFile.FindOne([nonsuffixFile]);
+            if (foundNonsuffix != null) {
+                var message = foundNonsuffix.ExistsSomewhere()
+                    ? $"{foundNonsuffix.Id} exists in the system"
+                    : $"{foundNonsuffix} exists locally";
+                Logger.Warn(ex,
+                    $"Failed to download video {video.Id}. Found nonsuffix version {message}. Will link instead.");
+
+                var nonsuffixDesiredName = video.GetDesiredName(
+                    alternativeFolder: alternativeFolder, prefix: GetPrefix(video),
+                    includeFormat: false);
+                var nonsuffixDesiredFile = nonsuffixDesiredName != null
+                    ? outputFolder.GetFile($"{nonsuffixDesiredName}.mp4")
+                    : null;
+                var nonsuffixTargetFiles = video.GetCanonicalNames(includeFormat: false)
+                    .Select(f => GetCanonicalFile(desiredFile.Host, $"{f}.mp4"))
+                    .Concat(nonsuffixDesiredFile != null ? [nonsuffixDesiredFile] : [])
+                    .ToList();
+
+                KifaFile.LinkAll(foundNonsuffix, nonsuffixTargetFiles);
+                return;
+            }
+
+            throw;
+        }
     }
 
     string? GetPrefix(YouTubeVideo video)
