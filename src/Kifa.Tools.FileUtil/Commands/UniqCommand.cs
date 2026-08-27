@@ -67,38 +67,22 @@ class UniqCommand : KifaFileCommand {
     }
 
     void DeduplicateGroup(List<FileInformation> fileList) {
-        if (fileList.Count <= 1) {
-            if (fileList.Count == 1) {
-                ExecuteItem(fileList[0].Id.Checked(),
-                    () => KifaActionResult.Success("No duplicate info entries."));
-            }
-
+        if (fileList.Count == 0) {
             return;
         }
 
         var sha = fileList[0].Sha256.Checked();
 
-        var defaultTargets = (UploadCommand.DefaultTargets ?? []).Select(CloudTarget.Parse).ToList();
-        var allLocations = fileList.SelectMany(f => f.Locations)
-            .Where(kv => kv.Value != null).Select(kv => kv.Key).ToHashSet();
+        var checkResult = CheckCloud(fileList);
+        if (checkResult.Status != KifaActionStatus.OK) {
+            ExecuteItem($"info entries for group {sha}", () => checkResult);
+            return;
+        }
 
-        if (defaultTargets.Count > 0) {
-            var missingTargets = defaultTargets.Where(target
-                => !allLocations.Any(l => l.StartsWith($"{target.ServiceType.ToString().ToLower()}:") &&
-                                          l.EndsWith($"/$/{sha}.{target.FormatType}"))).ToList();
-            if (missingTargets.Count > 0) {
-                ExecuteItem($"info entries for group {sha}",
-                    () => KifaActionResult.Error(
-                        $"File is not fully uploaded to cloud targets. Missing: {missingTargets.Select(t => t.ToString()).JoinBy(", ")}."));
-                return;
-            }
-        } else {
-            var hasCloudInstance = allLocations.Any(l => l.Contains($"/$/{sha}."));
-            if (!hasCloudInstance) {
-                ExecuteItem($"info entries for group {sha}",
-                    () => KifaActionResult.Error("No cloud instances found."));
-                return;
-            }
+        if (fileList.Count == 1) {
+            ExecuteItem(fileList[0].Id.Checked(),
+                () => KifaActionResult.Skipped("No duplicate info entries."));
+            return;
         }
 
         var confirmedKeep = SelectMany(fileList, f => f.Id.Checked(),
@@ -135,5 +119,31 @@ class UniqCommand : KifaFileCommand {
 
             return result;
         });
+    }
+
+    KifaActionResult CheckCloud(List<FileInformation> fileList) {
+        var sha = fileList[0].Sha256.Checked();
+
+        var defaultTargets = (UploadCommand.DefaultTargets ?? []).Select(CloudTarget.Parse).ToList();
+        var allLocations = fileList.SelectMany(f => f.Locations)
+            .Where(kv => kv.Value != null).Select(kv => kv.Key).ToHashSet();
+
+        if (defaultTargets.Count > 0) {
+            var missingTargets = defaultTargets.Where(target
+                => !allLocations.Any(l => l.StartsWith($"{target.ServiceType.ToString().ToLower()}:") &&
+                                          l.EndsWith($"/$/{sha}.{target.FormatType}"))).ToList();
+            if (missingTargets.Count > 0) {
+                return KifaActionResult.Error(
+                    $"File is not fully uploaded to cloud targets. Missing: {missingTargets.Select(t => t.ToString()).JoinBy(", ")}.");
+            }
+        } else {
+            var hasCloudInstance = allLocations.Any(l => l.Contains($"/$/{sha}."));
+            if (!hasCloudInstance) {
+                return KifaActionResult.Error("No cloud instances found.");
+            }
+        }
+
+        Logger.Info($"Group {sha} is fully uploaded to cloud.");
+        return KifaActionResult.Success();
     }
 }
