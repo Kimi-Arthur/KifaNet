@@ -10,15 +10,16 @@ using Kifa.Service;
 namespace Kifa.Tools;
 
 public abstract partial class KifaCommand {
-    static Dictionary<string, bool> alwaysDefaultForSelectOne = new();
-    static Dictionary<string, int> defaultIndexForSelectOne = new();
+    // Matches single choice prompt input: ^([a]?)(\d*)(?:p(\d+))?(s?)$
+    // Group 1: Prefix flag 'a' (always choose same index).
+    // Group 2: Index (e.g. 3). Empty falls back to default choice index.
+    // Group 3: Sub-part number after literal 'p' (e.g. 4 in 3p4 for split episodes).
+    // Group 4: Suffix flag 's' (special handling).
+    // Examples: "" (default), "3" (choice 3), "a" or "a3" (always choice), "3p4" (choice 3 part 4), "3s" (choice 3 special), "^" (ignore).
+    static readonly Regex SingleChoiceRegex = new(@"^([a]?)(\d*)(?:p(\d+))?(s?)$");
 
-    // Matches single choice prompt input: ^[index][p<part>][flags]$
-    // Group 1: Index (e.g. 3). Empty falls back to default choice index.
-    // Group 2: Sub-part number after literal 'p' (e.g. 4 in 3p4 for split episodes).
-    // Group 3: Flags - 'a' (always choose same index), 's' (special handling), 'i' (ignore).
-    // Examples: "" (default), "3" (choice 3), "3p4" (choice 3 part 4), "3s" (choice 3 special), "3a" (always choice 3).
-    static readonly Regex SingleChoiceRegex = new(@"^(\d*)(?:p(\d+))?([asi]*)$");
+    static readonly Dictionary<string, bool> AlwaysDefaultForSelectOne = new();
+    static readonly Dictionary<string, int> DefaultIndexForSelectOne = new();
 
     [Option('y', "yes",
         HelpText = "Always yes to all confirmations with default value (not always yes).")]
@@ -41,11 +42,11 @@ public abstract partial class KifaCommand {
                 $"No {choiceName} available to select from.");
         }
 
-        defaultIndexForSelectOne.TryAdd(selectionKey, 0);
-        alwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
+        DefaultIndexForSelectOne.TryAdd(selectionKey, 0);
+        AlwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
 
         var choiceStrings = choiceToString == null
-            ? choices.Select(c => c.ToString()).ToList()
+            ? choices.Select(c => c?.ToString() ?? "").ToList()
             : choices.Select(choiceToString).ToList();
 
         if (reverse) {
@@ -58,88 +59,102 @@ public abstract partial class KifaCommand {
             }
         }
 
-        if (defaultIndexForSelectOne[selectionKey] >= choices.Count) {
-            defaultIndexForSelectOne[selectionKey] = 0;
+        if (DefaultIndexForSelectOne[selectionKey] >= choices.Count) {
+            DefaultIndexForSelectOne[selectionKey] = 0;
 
             // Cancel alwaysDefault when the value is updated.
-            alwaysDefaultForSelectOne[selectionKey] = false;
+            AlwaysDefaultForSelectOne[selectionKey] = false;
         }
 
-        var defaultIndex = defaultIndexForSelectOne[selectionKey];
+        var defaultIndex = DefaultIndexForSelectOne[selectionKey];
 
-        Console.WriteLine(
-            $"\nDefault [{defaultIndex + startingIndex}]: {choiceStrings[defaultIndex]}\n");
-
-        if (alwaysDefaultForSelectOne[selectionKey]) {
+        if (AlwaysDefaultForSelectOne[selectionKey]) {
             Console.WriteLine(
                 $"Automatically chose [{defaultIndex + startingIndex}] as previously instructed.\n");
             return (choices[defaultIndex], null, defaultIndex, false);
         }
 
-        Console.WriteLine(
-            $"Choose one from the {choiceName} above [{startingIndex} - {choices.Count - 1 + startingIndex}].");
-        Console.WriteLine("Append 'a' to always choose the same index,");
+        Console.WriteLine();
+        var messages = new List<string> {
+            $"Choose one from the {choiceName} above [{startingIndex} - {choices.Count - 1 + startingIndex}].",
+            "Hint: Prefix 'a' to always choose, '^' to ignore."
+        };
+
         if (specialHelpText != null) {
-            Console.WriteLine($"Append 's' {specialHelpText},");
+            messages.Add($"      's' {specialHelpText}.");
         }
 
         if (partHelpText != null) {
-            Console.WriteLine($"Use '<index>p<part>' {partHelpText},");
+            messages.Add($"      '<index>p<part>' {partHelpText}.");
         }
 
-        Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
-        var match = SingleChoiceRegex.Match(Console.ReadLine() ?? "");
-        while (!match.Success) {
-            Console.WriteLine("Invalid choice. Try again:");
-            Console.Write($"Default is [{defaultIndex + startingIndex}]: ");
-            match = SingleChoiceRegex.Match(Console.ReadLine() ?? "");
+        messages.Add($"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+        Console.Write(messages.JoinBy("\n"));
+
+        while (true) {
+            var rawLine = (Console.ReadLine() ?? "").Trim();
+            if (rawLine == "^") {
+                return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+                    .Skipped("Ignored by user.");
+            }
+
+            var match = SingleChoiceRegex.Match(rawLine);
+            if (!match.Success) {
+                Console.WriteLine("Invalid choice. Try again:");
+                Console.Write(
+                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                continue;
+            }
+
+            var always = match.Groups[1].Value == "a";
+            var choiceText = match.Groups[2].Value;
+            var partText = match.Groups[3].Value;
+            var special = match.Groups[4].Value == "s";
+
+            int? part = string.IsNullOrEmpty(partText) ? null : int.Parse(partText);
+            var chosenIndex = string.IsNullOrEmpty(choiceText)
+                ? defaultIndex
+                : int.Parse(choiceText) - startingIndex;
+
+            if (chosenIndex < 0 || chosenIndex >= choices.Count) {
+                Console.WriteLine("Invalid choice. Try again:");
+                Console.Write(
+                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                continue;
+            }
+
+            if (specialHelpText == null && special) {
+                Console.WriteLine("Special is not supported. Try again:");
+                Console.Write(
+                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                continue;
+            }
+
+            if (partHelpText == null && part.HasValue) {
+                Console.WriteLine("Part selection is not supported. Try again:");
+                Console.Write(
+                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                continue;
+            }
+
+            if (always) {
+                AlwaysDefaultForSelectOne[selectionKey] = true;
+            }
+
+            DefaultIndexForSelectOne[selectionKey] = chosenIndex;
+            return (choices[chosenIndex], part, chosenIndex, special);
         }
-
-        var choiceText = match.Groups[1].Value;
-        var partText = match.Groups[2].Value;
-        int? part = string.IsNullOrEmpty(partText) ? null : int.Parse(partText);
-
-        var chosenIndex = string.IsNullOrEmpty(choiceText)
-            ? defaultIndex
-            : int.Parse(choiceText) - startingIndex;
-
-        var flags = match.Groups[3].Value;
-
-        if (flags.Contains('i')) {
-            return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>.Skipped(
-                "Ignored by user.");
-        }
-
-        if (flags.Contains('a')) {
-            alwaysDefaultForSelectOne[selectionKey] = true;
-        }
-
-        var special = flags.Contains('s');
-        if (specialHelpText == null && special) {
-            throw new InvalidChoiceException("Special is not supported...");
-        }
-
-        if (partHelpText == null && part.HasValue) {
-            throw new InvalidChoiceException("Part selection is not supported...");
-        }
-
-        defaultIndexForSelectOne[selectionKey] = chosenIndex;
-        if (chosenIndex < 0 || chosenIndex >= choices.Count) {
-            throw new InvalidChoiceException($"Choice {chosenIndex} is out of range.");
-        }
-
-        return (choices[chosenIndex], part, chosenIndex, special);
     }
 
     static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
 
     public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
-        Func<TChoice, string> choiceItemString,
+        Func<TChoice, string>? choiceToString = null,
         FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
         string? selectionKey = null, bool skipIfEmpty = true, bool reverse = false,
-        [CallerFilePath] string callerFilePath = "",
-        [CallerLineNumber] int callerLineNumber = 0) {
+        [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0) {
+        var choiceItemString = choiceToString ?? (c => c?.ToString() ?? "");
         selectionKey = string.IsNullOrEmpty(selectionKey)
             ? $"{callerFilePath}:{callerLineNumber}"
             : selectionKey;
@@ -152,7 +167,34 @@ public abstract partial class KifaCommand {
         AlwaysDefaultForSelectMany.TryAdd(selectionKey, AutoConfirmDefault);
         DefaultReplyForSelectMany.TryAdd(selectionKey, "");
 
+        if (!string.IsNullOrEmpty(DefaultReplyForSelectMany[selectionKey])) {
+            try {
+                ParseSelection(DefaultReplyForSelectMany[selectionKey], choices, choiceItemString,
+                    startingIndex);
+            } catch {
+                DefaultReplyForSelectMany[selectionKey] = "";
+                AlwaysDefaultForSelectMany[selectionKey] = false;
+            }
+        }
+
+        var defaultReply = DefaultReplyForSelectMany[selectionKey];
+        var defaultDisplay = string.IsNullOrEmpty(defaultReply) ? "all" : defaultReply;
+
+        if (AlwaysDefaultForSelectMany[selectionKey]) {
+            Console.WriteLine(
+                $"Automatically chose [{defaultDisplay}] as previously instructed.\n");
+            if (string.IsNullOrEmpty(defaultReply)) {
+                return choices;
+            }
+
+            var initialIndexes = ParseSelection(defaultReply, choices, choiceItemString,
+                startingIndex);
+            return initialIndexes.Select(i => choices[i]).ToList();
+        }
+
         var chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
+        var isFirstPrompt = true;
+        var lastSelectionString = defaultReply;
 
         while (true) {
             var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
@@ -168,56 +210,90 @@ public abstract partial class KifaCommand {
                 }
             }
 
-            var line = "";
+            var defaultCountSummary = string.IsNullOrEmpty(defaultReply)
+                ? $"{choices.Count} items"
+                : $"{ParseSelection(defaultReply, choices, choiceItemString, startingIndex).Count} items";
 
-            if (AlwaysDefaultForSelectMany[selectionKey]) {
-                line = DefaultReplyForSelectMany[selectionKey];
-                Console.WriteLine($"Automatically chose [{line}] as previously instructed.\n");
-            } else {
-                var messages = new[] {
-                    $"Hint: Default for all, prefix 'a' for always choice, prefix '^' for invert, '-' for inclusive range, ',' for combination, eg '{startingIndex}' '-{startingIndex + 3}' '^{startingIndex + 2}'.",
-                    "      '?' to restart, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices",
-                    $"Select 0 or more from the above {selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} [{startingIndex}-{startingIndex + selectedChoices.Count - 1}]: "
-                };
+            Console.WriteLine();
+            var messages = new[] {
+                $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
+                $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
+                "      '?' to restart, '*' or 'all' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
+                $"Default is [{defaultDisplay}] ({defaultCountSummary}): "
+            };
 
-                Console.Write(messages.JoinBy("\n"));
-                line = Console.ReadLine() ?? "";
-            }
+            Console.Write(messages.JoinBy("\n"));
+            var line = (Console.ReadLine() ?? "").Trim();
 
             if (line == "?") {
                 chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
+                isFirstPrompt = true;
+                lastSelectionString = "";
                 continue;
             }
 
             var flags = "";
-            if (line.StartsWith('a')) {
+            if (line.StartsWith('a') && line != "all") {
                 flags = "a";
-                line = line[1..];
+                line = line[1..].Trim();
+            }
+
+            if (flags.Contains('a')) {
+                AlwaysDefaultForSelectMany[selectionKey] = true;
+            }
+
+            if (line == "^") {
+                chosenIndexes = [];
+                return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
+            }
+
+            if (line == "*" || line.Equals("all", StringComparison.OrdinalIgnoreCase)) {
+                DefaultReplyForSelectMany[selectionKey] = "";
+                Logger.Debug(
+                    $"Selected {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
+                return choices;
             }
 
             if (line == "") {
-                if (flags.Contains('a')) {
-                    // Only used when alwaysDefault is true. Otherwise, all is always the default.
-                    DefaultReplyForSelectMany[selectionKey] = line;
-                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                if (isFirstPrompt) {
+                    if (string.IsNullOrEmpty(defaultReply)) {
+                        DefaultReplyForSelectMany[selectionKey] = "";
+                        Logger.Debug(
+                            $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
+                        return selectedChoices;
+                    }
+
+                    try {
+                        var defaultIndexes = ParseSelection(defaultReply, choices, choiceItemString,
+                            startingIndex);
+                        DefaultReplyForSelectMany[selectionKey] = defaultReply;
+                        Logger.Debug(
+                            $"Selected {defaultIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
+                        return defaultIndexes.Select(i => choices[i]).ToList();
+                    } catch {
+                        Console.WriteLine("Invalid default choice. Resetting to all:");
+                        DefaultReplyForSelectMany[selectionKey] = "";
+                        defaultReply = "";
+                        defaultDisplay = "all";
+                        chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
+                        continue;
+                    }
                 }
 
+                DefaultReplyForSelectMany[selectionKey] = lastSelectionString;
                 Logger.Debug(
                     $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
                 return selectedChoices;
             }
 
-            if (line == "^") {
-                chosenIndexes = [];
-                return KifaActionResult<List<TChoice>>.Skipped("Deselected by user.");
-            }
-
             try {
-                var newIndexes = ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
+                var newIndexes =
+                    ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
                 chosenIndexes = newIndexes.Select(i => chosenIndexes[i]).ToList();
+                isFirstPrompt = false;
+                lastSelectionString = line;
+                DefaultReplyForSelectMany[selectionKey] = line;
                 if (flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
-                    DefaultReplyForSelectMany[selectionKey] = line;
-                    AlwaysDefaultForSelectMany[selectionKey] = true;
                     return chosenIndexes.Select(i => choices[i]).ToList();
                 }
             } catch (Exception) {
@@ -228,7 +304,8 @@ public abstract partial class KifaCommand {
 
     public static List<int> ParseSelection<TChoice>(string line, List<TChoice> selectedChoices,
         Func<TChoice, string> choiceItemString, int startingIndex = 1) {
-        var tokens = line.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var tokens = line.Split(',',
+            StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         HashSet<int>? currentSelection = null;
 
         foreach (var rawToken in tokens) {
@@ -272,8 +349,7 @@ public abstract partial class KifaCommand {
 
             if (currentSelection == null) {
                 if (excluded) {
-                    currentSelection =
-                        new HashSet<int>(Enumerable.Range(0, selectedChoices.Count));
+                    currentSelection = new HashSet<int>(Enumerable.Range(0, selectedChoices.Count));
                     currentSelection.ExceptWith(matchingIndices);
                 } else {
                     currentSelection = new HashSet<int>(matchingIndices);

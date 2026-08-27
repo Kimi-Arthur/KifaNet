@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using GlobExpressions;
+using Kifa.Jobs;
+using Kifa.Service;
 using Xunit;
 
 namespace Kifa.Tools.Tests;
@@ -223,5 +225,136 @@ public class SelectManySelectionTests {
         };
         Assert.Throws<GlobPatternException>(()
             => KifaCommand.ParseSelection("/[abc", items, s => s));
+    }
+
+    class DummyCommand : KifaCommand {
+        public override int Execute(KifaTask? task = null) => 0;
+
+        public KifaActionResult<List<string>> TestSelectMany(List<string> choices, string selectionKey) {
+            return SelectMany(choices, s => s, selectionKey: selectionKey);
+        }
+
+        public KifaActionResult<(string Choice, int? Part, int Index, bool Special)> TestSelectOne(
+            List<string> choices, string selectionKey) {
+            return SelectOne(choices, s => s, selectionKey: selectionKey);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_DefaultChoice() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal("a", res.Response.Choice);
+            Assert.Equal(0, res.Response.Index);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_PrefixAlwaysFlag() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("a2\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal("b", res1.Response.Choice);
+
+            var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" }, key);
+            Assert.Equal("y", res2.Response.Choice);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_PrefixAlwaysDefaultFlag() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("a\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal("a", res1.Response.Choice);
+
+            var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" }, key);
+            Assert.Equal("x", res2.Response.Choice);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_Ignore() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("^\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(KifaActionStatus.Skipped, res.Status);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_RemembersPreviousSelectionAsDefault() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("1-2\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b" }, res1.Response);
+
+            var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key);
+            Assert.Equal(new[] { "x", "y" }, res2.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_AlwaysDefaultFlag() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("a1-2\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b" }, res1.Response);
+
+            var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key);
+            Assert.Equal(new[] { "x", "y" }, res2.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_AllKeywordSelectsAll() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("all\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b", "c" }, res.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
     }
 }
