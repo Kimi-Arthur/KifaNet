@@ -344,15 +344,33 @@ public class SelectManySelectionTests {
     }
 
     [Fact]
-    public void SelectMany_AllKeywordSelectsAll() {
+    public void SelectMany_AsteriskSelectsAll() {
         var originalIn = Console.In;
         try {
             var key = $"test_key_{Guid.NewGuid()}";
-            Console.SetIn(new System.IO.StringReader("all\n"));
+            Console.SetIn(new System.IO.StringReader("*\n"));
 
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
             Assert.Equal(new[] { "a", "b", "c" }, res.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_AlwaysAsteriskSelectsAll() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("a*\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b", "c" }, res1.Response);
+
+            var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key);
+            Assert.Equal(new[] { "x", "y", "z" }, res2.Response);
         } finally {
             Console.SetIn(originalIn);
         }
@@ -371,6 +389,46 @@ public class SelectManySelectionTests {
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d" }, key);
             Assert.Equal(new[] { "a", "c" }, res.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_IterativeRefinementResetsDefaultToAll() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // First invocation: 2-5 -> [b, c, d, e], then 3 -> [d], then Enter to confirm
+            // Second invocation: Enter -> should use default all (*) -> [1, 2, 3, 4, 5, 6]
+            Console.SetIn(new System.IO.StringReader("2-5\n3\n\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d", "e", "f" }, key);
+            Assert.Equal(new[] { "d" }, res1.Response);
+
+            var res2 = cmd.TestSelectMany(new List<string> { "1", "2", "3", "4", "5", "6" }, key);
+            Assert.Equal(new[] { "1", "2", "3", "4", "5", "6" }, res2.Response);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_SingleFilterConfirmsKeepsDefault() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // First invocation: 3-5 -> [c, d, e], then Enter to confirm
+            // Second invocation: Enter -> should use default [3-5] -> [3, 4, 5]
+            Console.SetIn(new System.IO.StringReader("3-5\n\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d", "e", "f" }, key);
+            Assert.Equal(new[] { "c", "d", "e" }, res1.Response);
+
+            var res2 = cmd.TestSelectMany(new List<string> { "1", "2", "3", "4", "5", "6" }, key);
+            Assert.Equal(new[] { "3", "4", "5" }, res2.Response);
         } finally {
             Console.SetIn(originalIn);
         }

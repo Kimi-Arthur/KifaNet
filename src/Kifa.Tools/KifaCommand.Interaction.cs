@@ -178,7 +178,7 @@ public abstract partial class KifaCommand {
         }
 
         var defaultReply = DefaultReplyForSelectMany[selectionKey];
-        var defaultDisplay = string.IsNullOrEmpty(defaultReply) ? "all" : defaultReply;
+        var defaultDisplay = string.IsNullOrEmpty(defaultReply) ? "*" : defaultReply;
 
         if (AlwaysDefaultForSelectMany[selectionKey]) {
             Console.WriteLine(
@@ -194,7 +194,8 @@ public abstract partial class KifaCommand {
 
         var chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
         var isFirstPrompt = true;
-        var lastSelectionString = defaultReply;
+        var filterRounds = 0;
+        var firstFilter = "";
 
         while (true) {
             var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
@@ -219,7 +220,7 @@ public abstract partial class KifaCommand {
                 var messages = new[] {
                     $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
                     $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
-                    "\t'?' to restart, '*' or 'all' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
+                    "\t'?' to restart, '*' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
                     $"Default is [{defaultDisplay}] ({defaultCountSummary}): "
                 };
 
@@ -238,12 +239,15 @@ public abstract partial class KifaCommand {
             if (line == "?") {
                 chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
                 isFirstPrompt = true;
-                lastSelectionString = defaultReply;
+                filterRounds = 0;
+                firstFilter = "";
+                defaultReply = "";
+                defaultDisplay = "*";
                 continue;
             }
 
             var flags = "";
-            if (line.StartsWith('a') && line != "all") {
+            if (line.StartsWith('a')) {
                 flags = "a";
                 line = line[1..].Trim();
             }
@@ -253,7 +257,7 @@ public abstract partial class KifaCommand {
                 return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
             }
 
-            if (line == "*" || line.Equals("all", StringComparison.OrdinalIgnoreCase)) {
+            if (line == "*") {
                 DefaultReplyForSelectMany[selectionKey] = "";
                 if (flags.Contains('a')) {
                     AlwaysDefaultForSelectMany[selectionKey] = true;
@@ -285,16 +289,16 @@ public abstract partial class KifaCommand {
                             $"Selected {defaultIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
                         return defaultIndexes.Select(i => choices[i]).ToList();
                     } catch {
-                        Console.WriteLine("Invalid default choice. Resetting to all:");
+                        Console.WriteLine("Invalid default choice. Resetting to *:");
                         DefaultReplyForSelectMany[selectionKey] = "";
                         defaultReply = "";
-                        defaultDisplay = "all";
+                        defaultDisplay = "*";
                         chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
                         continue;
                     }
                 }
 
-                DefaultReplyForSelectMany[selectionKey] = lastSelectionString;
+                DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : "";
                 Logger.Debug(
                     $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
                 return selectedChoices;
@@ -304,10 +308,18 @@ public abstract partial class KifaCommand {
                 var newIndexes =
                     ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
                 chosenIndexes = newIndexes.Select(i => chosenIndexes[i]).ToList();
+                filterRounds++;
+                if (filterRounds == 1) {
+                    firstFilter = line;
+                }
+
                 isFirstPrompt = false;
-                lastSelectionString = line;
-                DefaultReplyForSelectMany[selectionKey] = line;
+                DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : "";
                 if (flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
+                    if (flags.Contains('a')) {
+                        AlwaysDefaultForSelectMany[selectionKey] = true;
+                    }
+
                     return chosenIndexes.Select(i => choices[i]).ToList();
                 }
             } catch (Exception) {
