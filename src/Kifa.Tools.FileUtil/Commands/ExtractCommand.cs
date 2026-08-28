@@ -94,7 +94,8 @@ class ExtractCommand : KifaCommand {
                 => $"Found:\tsize={entry.File.FileInfo?.Size}, crc32={entry.File.FileInfo?.Crc32}");
 
             if (entry.File.ExistsSomewhere() && entry.File.FileInfo?.Size == entry.Entry.Size &&
-                entry.File.FileInfo?.Crc32 == entry.Entry.GetCrc32InHex()) {
+                (entry.Entry.GetCrc32InHex() == null ||
+                 entry.File.FileInfo?.Crc32 == entry.Entry.GetCrc32InHex())) {
                 Logger.Debug(
                     $"File {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.GetCrc32InHex()}). Skipped.");
                 return false;
@@ -192,7 +193,8 @@ class ExtractCommand : KifaCommand {
         tempFile.Add(expectedSize: entry.Size);
 
         var expectedCrc = entry.GetCrc32InHex();
-        if (tempFile.FileInfo?.Size != entry.Size || tempFile.FileInfo?.Crc32 != expectedCrc) {
+        if (tempFile.FileInfo?.Size != entry.Size ||
+            (expectedCrc != null && tempFile.FileInfo?.Crc32 != expectedCrc)) {
             throw new FileCorruptedException(
                 $"File {tempFile} should have size={entry.Size}, crc32={expectedCrc}, but has size={tempFile.FileInfo?.Size}, crc32={tempFile.FileInfo?.Crc32}.");
         }
@@ -253,5 +255,6 @@ class ExtractCommand : KifaCommand {
 }
 
 public static class IEntryExtension {
-    public static string GetCrc32InHex(this IEntry entry) => ((int) entry.Crc).ToHexString();
+    public static string? GetCrc32InHex(this IEntry entry)
+        => (int) entry.Crc == 0 || entry.Size == 0 ? null : ((int) entry.Crc).ToHexString();
 }
