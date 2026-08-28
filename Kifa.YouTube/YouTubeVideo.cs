@@ -31,10 +31,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         set => Late.Set(ref field, value);
     }
 
-    public static string PluginPath {
-        get => Late.Get(field);
-        set => Late.Set(ref field, value);
-    }
+    public static string? PluginPath { get; set; }
 
     public static YoutubeDL YoutubeDL {
         get {
@@ -60,9 +57,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         } catch (NullReferenceException) {
         }
 
-        try {
+        if (PluginPath != null) {
             options.PluginDirs = PluginPath;
-        } catch (NullReferenceException) {
         }
 
         return options;
