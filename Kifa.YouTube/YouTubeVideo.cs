@@ -21,6 +21,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public override bool FillByDefault => true;
 
+    public override int CurrentVersion => 1;
+
     public static string YoutubeDownloaderPath {
         get => Late.Get(field);
         set => Late.Set(ref field, value);
@@ -111,6 +113,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public double Fps { get; set; }
     public long Width { get; set; }
     public long Height { get; set; }
+    public string? Codec { get; set; }
     public string? FormatId { get; set; }
     public string? Thumbnail { get; set; }
 
@@ -157,6 +160,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Fps = videoFormat.FrameRate.Checked();
         Width = videoFormat.Width.Checked();
         Height = videoFormat.Height.Checked();
+        Codec = NormalizeCodec(videoFormat.VideoCodec);
         Thumbnail = videoData.Thumbnail;
 
         return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
@@ -213,6 +217,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Fps = archiveFileContent.Fps;
         Width = archiveFileContent.Width;
         Height = archiveFileContent.Height;
+        Codec = NormalizeCodec(archiveFileContent.Vcodec);
         Thumbnail = archiveFileContent.Thumbnail;
 
         return DateTimeOffset.Now + TimeSpan.FromDays(365 * 10);
@@ -264,10 +269,42 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return true;
     }
 
+    static string? NormalizeCodec(string? rawCodec) {
+        if (rawCodec == null) {
+            return null;
+        }
+
+        var codec = rawCodec.ToLowerInvariant();
+        if (codec.StartsWith("avc") || codec.StartsWith("h264")) {
+            return "avc";
+        }
+
+        if (codec.StartsWith("vp09") || codec.StartsWith("vp9")) {
+            return "vp9";
+        }
+
+        if (codec.StartsWith("av01") || codec.StartsWith("av1")) {
+            return "av1";
+        }
+
+        if (codec.StartsWith("hev1") || codec.StartsWith("hvc1") || codec.StartsWith("hevc") ||
+            codec.StartsWith("h265")) {
+            return "hevc";
+        }
+
+        return codec.Split('.')[0];
+    }
+
     public string? GetSuffix(string? formatId = null) {
         var segments = new List<string>();
         if (Width > 0 && Height > 0) {
-            segments.Add(Fps > 0 ? $"{Width}x{Height}p{Fps}" : $"{Width}x{Height}p");
+            var resolution = Fps > 0 ? $"{Width}x{Height}p{Fps}" : $"{Width}x{Height}p";
+            var codec = NormalizeCodec(Codec);
+            if (codec != null && codec != "avc") {
+                resolution += $"-{codec}";
+            }
+
+            segments.Add(resolution);
         }
 
         var fid = formatId ?? FormatId;

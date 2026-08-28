@@ -33,6 +33,7 @@ public class YouTubeVideoTests {
                                        "fps": 25.0,
                                        "width": 1280,
                                        "height": 720,
+                                       "codec": "avc",
                                        "format_id": "136+140",
                                        "thumbnail": "https://i.ytimg.com/vi/_ox9gJZ8ENo/maxresdefault.jpg"
                                      }
@@ -70,10 +71,14 @@ public class YouTubeVideoTests {
         const string expectedVideo = """
                                      {
                                        "id": "0iNrY1ixR8I",
-                                       "title": "Taylor Swift - Red Carpet Interview (2013 AMAs)",
-                                       "author": "TaylorSwiftVEVO",
-                                       "description": "Lance Bass and Jordin Sparks interview Taylor Swift on the red carpet at the American Music Awards 2013. She discusses her AMA nominations, being named the biggest Pop Star in the world by New York Magazine and her new movie.",
-                                       "duration": "00:03:21",
+                                       "title": "A Day in the Life of a Software Engineer in London",
+                                       "author": "Mayuko",
+                                       "upload_date": "2019-10-09",
+                                       "description": "I spent a week in London and decided to film a Day in the Life video as a Software Engineer there! Thank you so much to Indeed Prime for sponsoring this video! If you're a Software Engineer looking for a job in London or the UK, check them out here: https://indeed.com/mayuko\n\nHope you guys enjoy this Day in the Life of a Software Engineer in London! Definitely miss being there, hope you guys have an awesome rest of the week!\n\n---\n\nDon't forget to subscribe!  http://bit.ly/2qfc1tP\n\n\nSpecial thanks to:\nKasia - http://instagram.com/kasiarun\nDan - https://www.instagram.com/d_a_n_w_o_o_d/\n\nEquipment used:\nCanon G7X Mark II - https://amzn.to/2J2eM8x\nSony A6500 - http://amzn.to/2p4bBVx\nSony 16-50mm f/3.5-5.6 OSS Lens - http://amzn.to/2p5jXo7\nSony 35mm f/1.8 - http://amzn.to/2oB5Kk1\nSony 10-18mm f/4 - http://amzn.to/2nDEmiz\n\n\nMusic by:\nEpidemic Sound - https://share.epidemicsound.com/mhellonearth\n\n\nAbout Mayuko:\nHello! My name is Mayuko, and I'm a Content Creator. Previously, I was an iOS Software Engineer working in Silicon Valley for over 6 years, working at companies like Intuit, Patreon, & Chewse. On this channel, I produce videos around technology, career, and lifestyle through the lens of a software engineer. \n\nCheck out my other videos!\nDay in the Life of a Software Engineer in Silicon Valley: \nhttps://youtu.be/4voHu_sM2AU\nHow I Became a Software Engineer: \nhttps://youtu.be/cKzpnffE3Vo\nA Day in the Life of a Senior Software Engineer: \nhttps://youtu.be/44ptms_0D4Y\n\n\nAll things Mayuko:\nSite - http://hellomayuko.com\nInstagram - https://www.instagram.com/hellomayuko/\nTwitter - https://twitter.com/hellomayuko\n\n\nFTC: This video is sponsored by Indeed Prime.",
+                                       "categories": [
+                                         "Science & Technology"
+                                       ],
+                                       "duration": "00:09:44",
                                        "width": 1280,
                                        "height": 720
                                      }
@@ -121,6 +126,7 @@ public class YouTubeVideoTests {
                                        "fps": 24.0,
                                        "width": 1920,
                                        "height": 1080,
+                                       "codec": "vp9",
                                        "format_id": "248+171",
                                        "thumbnail": "https://i.ytimg.com/vi/-mvEt8ZLsX4/maxresdefault.jpg"
                                      }
@@ -180,6 +186,54 @@ public class YouTubeVideoTests {
         videoWithFormatIdOnly.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.137+22"]);
         videoWithFormatIdOnly.GetDesiredName().Should().Be(
             "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.137+22");
+
+        var videoWithAvc = new YouTubeVideo {
+            Id = "RWrSo_7RmgQ",
+            Title = "我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409",
+            Author = "中国湖南卫视官方频道 China HunanTV Official Channel",
+            AuthorId = "HunanTV",
+            Width = 1920,
+            Height = 1080,
+            Fps = 60,
+            Codec = "avc1.640028",
+            FormatId = "137+22"
+        };
+
+        videoWithAvc.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.1920x1080p60.137+22"]);
+        videoWithAvc.GetDesiredName().Should().Be(
+            "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.1920x1080p60.137+22");
+
+        var videoWithVp9 = new YouTubeVideo {
+            Id = "RWrSo_7RmgQ",
+            Title = "我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409",
+            Author = "中国湖南卫视官方频道 China HunanTV Official Channel",
+            AuthorId = "HunanTV",
+            Width = 1920,
+            Height = 1080,
+            Fps = 60,
+            Codec = "vp09.00.41.08",
+            FormatId = "248+171"
+        };
+
+        videoWithVp9.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.1920x1080p60-vp9.248+171"]);
+        videoWithVp9.GetDesiredName().Should().Be(
+            "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.1920x1080p60-vp9.248+171");
+
+        var videoWithAv1 = new YouTubeVideo {
+            Id = "RWrSo_7RmgQ",
+            Title = "我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409",
+            Author = "中国湖南卫视官方频道 China HunanTV Official Channel",
+            AuthorId = "HunanTV",
+            Width = 1920,
+            Height = 1080,
+            Fps = 60,
+            Codec = "av01.0.08M.08",
+            FormatId = "399+140"
+        };
+
+        videoWithAv1.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.1920x1080p60-av1.399+140"]);
+        videoWithAv1.GetDesiredName().Should().Be(
+            "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.1920x1080p60-av1.399+140");
 
         var videoWithoutFormat = new YouTubeVideo {
             Id = "RWrSo_7RmgQ",
