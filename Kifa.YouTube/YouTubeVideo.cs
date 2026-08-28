@@ -33,6 +33,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public static string? PluginPath { get; set; }
 
+    public static List<string>? ExtractorArgs { get; set; }
+
     public static YoutubeDL YoutubeDL {
         get {
             var ytdl = new YoutubeDL();
@@ -59,6 +61,10 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
         if (PluginPath != null) {
             options.PluginDirs = PluginPath;
+        }
+
+        if (ExtractorArgs != null) {
+            options.ExtractorArgs = new MultiValue<string>(ExtractorArgs.ToArray());
         }
 
         return options;
