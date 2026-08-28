@@ -29,15 +29,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
             url = $"https://www.youtube.com/user/{Id}/videos";
         }
 
-        var options = new OptionSet {
-            FlatPlaylist = true
-        };
-
-        try {
-            options.Cookies = YouTubeVideo.CookiesPath;
-        } catch (NullReferenceException) {
-        }
-
+        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
         var result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(url, overrideOptions: options)
             .GetAwaiter().GetResult();
 

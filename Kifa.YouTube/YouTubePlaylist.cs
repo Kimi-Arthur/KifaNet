@@ -23,15 +23,7 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
             ? Id
             : $"https://www.youtube.com/playlist?list={Id}";
 
-        var options = new OptionSet {
-            FlatPlaylist = true
-        };
-
-        try {
-            options.Cookies = YouTubeVideo.CookiesPath;
-        } catch (NullReferenceException) {
-        }
-
+        var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
         var result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(playlistUrl, overrideOptions: options)
             .GetAwaiter().GetResult();
 

@@ -31,6 +31,11 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         set => Late.Set(ref field, value);
     }
 
+    public static string PluginPath {
+        get => Late.Get(field);
+        set => Late.Set(ref field, value);
+    }
+
     public static YoutubeDL YoutubeDL {
         get {
             var ytdl = new YoutubeDL();
@@ -53,20 +58,35 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
     }
 
-    public static OptionSet OptionSet {
-        get {
-            var options = new OptionSet {
-                EmbedMetadata = true,
-                EmbedThumbnail = true
-            };
-            try {
-                options.Cookies = CookiesPath;
-            } catch (NullReferenceException) {
-            }
+    public static OptionSet GetOptionSet(bool flatPlaylist = false) {
+        var options = new OptionSet {
+            FlatPlaylist = flatPlaylist,
+            EmbedMetadata = !flatPlaylist,
+            EmbedThumbnail = !flatPlaylist
+        };
 
-            return options;
+        try {
+            options.Cookies = CookiesPath;
+        } catch (NullReferenceException) {
         }
+
+        try {
+            if (Directory.Exists(PluginPath)) {
+                options.PluginDirs = PluginPath;
+            }
+        } catch (NullReferenceException) {
+        }
+
+        if (options.PluginDirs == null) {
+            if (Directory.Exists("/home/kimi/yt-dlp-plugins/")) {
+                options.PluginDirs = "/home/kimi/yt-dlp-plugins/";
+            }
+        }
+
+        return options;
     }
+
+    public static OptionSet OptionSet => GetOptionSet();
 
     public static void DownloadVideo(string videoId, string? filePath = null,
         string? outputFolder = null, string? outputFileTemplate = null) {
