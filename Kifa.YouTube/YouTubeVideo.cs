@@ -40,18 +40,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         get {
             var ytdl = new YoutubeDL();
             try {
-                if (File.Exists(YoutubeDownloaderPath)) {
-                    ytdl.YoutubeDLPath = YoutubeDownloaderPath;
-                }
+                ytdl.YoutubeDLPath = YoutubeDownloaderPath;
             } catch (NullReferenceException) {
-            }
-
-            if (string.IsNullOrEmpty(ytdl.YoutubeDLPath) || !File.Exists(ytdl.YoutubeDLPath)) {
-                if (File.Exists("/Users/jingbian/homebrew/bin/yt-dlp")) {
-                    ytdl.YoutubeDLPath = "/Users/jingbian/homebrew/bin/yt-dlp";
-                } else if (File.Exists("/opt/homebrew/bin/yt-dlp")) {
-                    ytdl.YoutubeDLPath = "/opt/homebrew/bin/yt-dlp";
-                }
             }
 
             return ytdl;
@@ -71,16 +61,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
 
         try {
-            if (Directory.Exists(PluginPath)) {
-                options.PluginDirs = PluginPath;
-            }
+            options.PluginDirs = PluginPath;
         } catch (NullReferenceException) {
-        }
-
-        if (options.PluginDirs == null) {
-            if (Directory.Exists("/home/kimi/yt-dlp-plugins/")) {
-                options.PluginDirs = "/home/kimi/yt-dlp-plugins/";
-            }
         }
 
         return options;
