@@ -264,9 +264,23 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return true;
     }
 
+    public string? GetSuffix(string? formatId = null) {
+        var segments = new List<string>();
+        if (Width > 0 && Height > 0) {
+            segments.Add(Fps > 0 ? $"{Width}x{Height}p{Fps}" : $"{Width}x{Height}p");
+        }
+
+        var fid = formatId ?? FormatId;
+        if (fid != null) {
+            segments.Add(fid);
+        }
+
+        return segments.Count > 0 ? segments.JoinBy(".") : null;
+    }
+
     public List<string> GetCanonicalNames(string? formatId = null, bool includeFormat = true) {
-        var fid = includeFormat ? formatId ?? FormatId : null;
-        return fid != null ? [$"{Id}.{fid}"] : [Id.Checked()];
+        var suffix = includeFormat ? GetSuffix(formatId) : null;
+        return suffix != null ? [$"{Id}.{suffix}"] : [Id.Checked()];
     }
 
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
@@ -282,17 +296,17 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
 
         var title = Title?.NormalizeFileName();
-        var fid = includeFormat ? formatId ?? FormatId : null;
-        var suffix = fid != null ? $".{fid}" : "";
+        var suffix = includeFormat ? GetSuffix(formatId) : null;
+        var suffixString = suffix != null ? $".{suffix}" : "";
 
         if (folder != null) {
             return prefix != null
-                ? string.FormatOr($"{folder}/{prefix} {title}.{Id}{suffix}")
-                : string.FormatOr($"{folder}/{title}.{Id}{suffix}");
+                ? string.FormatOr($"{folder}/{prefix} {title}.{Id}{suffixString}")
+                : string.FormatOr($"{folder}/{title}.{Id}{suffixString}");
         }
 
         return prefix != null
-            ? string.FormatOr($"{prefix} {title}.{Id}{suffix}")
-            : string.FormatOr($"{title}.{Id}{suffix}");
+            ? string.FormatOr($"{prefix} {title}.{Id}{suffixString}")
+            : string.FormatOr($"{title}.{Id}{suffixString}");
     }
 }
