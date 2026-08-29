@@ -32,19 +32,18 @@ public static class HttpExtensions {
     public static JToken GetJToken(this HttpResponseMessage response)
         => JToken.Parse(GetString(response));
 
-    public static T? GetObject<T>(this HttpResponseMessage response, bool camelCase = false) {
+    public static T? GetObject<T>(this HttpResponseMessage response, bool camelCase = false)
+        where T : class {
         var content = GetString(response);
         try {
-            return JsonConvert.DeserializeObject<T>(content,
-                camelCase
-                    ? KifaJsonSerializerSettings.CamelCase
-                    : KifaJsonSerializerSettings.Default);
+            return camelCase ? content.FromCamelCaseJson<T>() : content.FromJson<T>();
         } catch (JsonReaderException ex) {
             throw new Exception($"Failed to get object from {content}", ex);
         }
     }
 
-    public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request) {
+    public static T? GetObject<T>(this HttpClient client, HttpRequestMessage request)
+        where T : class {
         Logger.Trace(request);
         if (request.Content != null) {
             Logger.Trace($"Content: {request.Content.ReadAsStringAsync().Result}");

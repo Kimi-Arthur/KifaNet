@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using YamlDotNet.Serialization;
 
 namespace Kifa.Service;
@@ -54,7 +53,7 @@ public interface WithModelId<T> where T : DataModel, WithModelId<T> {
 /// <summary>
 /// When used, specify a public const string field named ModelId.
 /// </summary>
-public abstract class DataModel {
+public abstract class DataModel : IEquatable<DataModel> {
     public const string VirtualItemPrefix = "/$/";
 
     [YamlMember(Order = -1)]
@@ -89,50 +88,27 @@ public abstract class DataModel {
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
 
-    // Not finished
-    public string Compare<TDataModel>(TDataModel other) {
-        if (!(this is TDataModel model)) {
-            return "<Different type>";
+    public string ToDataJson() => this.ToJson(KifaJsonSerializerSettings.DataContent);
+
+    public virtual bool Equals(DataModel? other) {
+        if (other is null) {
+            return false;
         }
 
-        var myJson = JToken.Parse(ToString());
-        var otherJson = JToken.Parse(ToString());
-        var diffToken = CompareJToken(myJson, otherJson);
-        return diffToken.ToString();
+        if (ReferenceEquals(this, other)) {
+            return true;
+        }
+
+        if (GetType() != other.GetType()) {
+            return false;
+        }
+
+        return ToDataJson() == other.ToDataJson();
     }
 
-    JToken CompareJToken(JToken myJson, JToken otherJson) {
-        var result = new JArray();
-        if (myJson.Type != otherJson.Type) {
-            var myToken = new JObject();
-            myToken["-"] = myJson;
-            result.Add(myToken);
-            var otherToken = new JObject();
-            otherToken["+"] = otherJson;
-            result.Add(otherToken);
-            return result;
-        }
+    public override bool Equals(object? obj) => Equals(obj as DataModel);
 
-        if (myJson.Type == JTokenType.Array) {
-            foreach (var childPair in myJson.Children().Zip(otherJson.Children())) {
-                if (childPair.First != childPair.Second) {
-                    if (childPair.First != null) {
-                        var myToken = new JObject();
-                        myToken["-"] = myJson;
-                        result.Add(myToken);
-                    }
-                }
-            }
-        }
+    public override int GetHashCode() => ToDataJson().GetHashCode();
 
-        return result;
-    }
-
-    public override string ToString()
-        => JsonConvert.SerializeObject(this, KifaJsonSerializerSettings.Pretty);
-
-    public override int GetHashCode() => ToString().GetHashCode();
-
-    public override bool Equals(object? obj)
-        => GetType().IsInstanceOfType(obj) && ToString() == obj?.ToString();
+    public override string ToString() => this.ToPrettyJson();
 }

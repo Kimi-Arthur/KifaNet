@@ -6,7 +6,7 @@ namespace Kifa.Service.Tests;
 
 public class LinkTests {
     string serialized =
-        "{\"a_dict\":{\"very\":\"good\"},\"a_item\":\"15\",\"a_list\":[\"10\",\"12\"],\"id\":\"id\"}";
+        "{\"id\":\"id\",\"a_list\":[\"10\",\"12\"],\"a_dict\":{\"very\":\"good\"},\"a_item\":\"15\"}";
 
     DataB data = new DataB {
         Id = "id",
@@ -25,14 +25,12 @@ public class LinkTests {
 
     [Fact]
     public void LinkSerializationTest() {
-        Assert.Equal(serialized,
-            JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default));
+        Assert.Equal(serialized, data.ToJson());
     }
 
     [Fact]
     public void LinkDeserializationTest() {
-        Assert.Equal(data,
-            JsonConvert.DeserializeObject<DataB>(serialized, KifaJsonSerializerSettings.Default));
+        Assert.Equal(data, serialized.FromJson<DataB>());
     }
 
     [Fact]

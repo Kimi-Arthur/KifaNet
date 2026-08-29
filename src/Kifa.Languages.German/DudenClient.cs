@@ -12,8 +12,8 @@ public class DudenClient {
                 using var stream = Assembly.GetExecutingAssembly()
                     .GetManifestResourceStream($"{typeof(DudenClient).Namespace}.duden_audio.json");
                 if (stream != null) {
-                    field = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                        new StreamReader(stream).ReadToEnd()).Checked();
+                    field = new StreamReader(stream).ReadToEnd()
+                        .FromJson<Dictionary<string, string>>().Checked();
                 }
             }
 

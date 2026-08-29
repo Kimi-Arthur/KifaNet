@@ -39,7 +39,6 @@ class GetTencentChatCommand : KifaCommand {
 
     void GetChat(KifaFile chatFile, string videoId) {
         var danmuList = TencentVideo.GetDanmuList(videoId);
-        chatFile.Write(
-            $"{JsonConvert.SerializeObject(danmuList, KifaJsonSerializerSettings.Pretty)}\n");
+        chatFile.Write($"{danmuList.ToPrettyJson()}\n");
     }
 }

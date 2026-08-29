@@ -9,6 +9,8 @@ using Newtonsoft.Json.Serialization;
 namespace Kifa;
 
 public class OrderedContractResolver : DefaultContractResolver {
+    public HashSet<string>? IgnoredProperties { get; init; }
+
     protected override IList<JsonProperty> CreateProperties(Type type,
         MemberSerialization memberSerialization) {
         return base.CreateProperties(type, memberSerialization).ToList();
@@ -19,6 +21,13 @@ public class OrderedContractResolver : DefaultContractResolver {
     protected override JsonProperty CreateProperty(MemberInfo member,
         MemberSerialization memberSerialization) {
         var property = base.CreateProperty(member, memberSerialization);
+
+        if (IgnoredProperties != null &&
+            (IgnoredProperties.Contains(member.Name) ||
+             (property.PropertyName != null && IgnoredProperties.Contains(property.PropertyName)))) {
+            property.Ignored = true;
+            return property;
+        }
 
         if (IsNullable(member)) {
             // Don't do anything special for nullable reference types.

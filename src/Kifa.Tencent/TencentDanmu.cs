@@ -40,10 +40,7 @@ public class TencentDanmu {
     static readonly TimeSpan DefaultDuration = TimeSpan.FromSeconds(8);
 
     public AssDialogue GenerateAssDialogue() {
-        var colorString = !string.IsNullOrEmpty(ContentStyle)
-            ? JsonConvert.DeserializeObject<ContentStyle>(ContentStyle,
-                KifaJsonSerializerSettings.Default)?.GradientColors?[0]
-            : null;
+        var colorString = ContentStyle.FromJson<ContentStyle>()?.GradientColors?[0];
         if (colorString == "ffffff") {
             colorString = null;
         }

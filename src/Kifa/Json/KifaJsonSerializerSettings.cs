@@ -7,14 +7,15 @@ namespace Kifa;
 
 public static class KifaJsonSerializerSettings {
     static JsonSerializerSettings GetSettings(bool indented = false, bool merge = false,
-        bool camelCase = false)
+        bool camelCase = false, bool ignoreMetadata = false)
         => new() {
             EqualityComparer = ReferenceEqualityComparer.Instance,
             DateFormatString = "yyyy-MM-dd HH:mm:ss.ffffff",
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             ContractResolver = new OrderedContractResolver {
                 NamingStrategy =
-                    camelCase ? new CamelCaseNamingStrategy() : new SnakeCaseNamingStrategy()
+                    camelCase ? new CamelCaseNamingStrategy() : new SnakeCaseNamingStrategy(),
+                IgnoredProperties = ignoreMetadata ? ["Metadata", "$metadata"] : null
             },
             Converters = new List<JsonConverter> {
                 new StringEnumConverter(new SnakeCaseNamingStrategy()),
@@ -36,4 +37,6 @@ public static class KifaJsonSerializerSettings {
     public static readonly JsonSerializerSettings Pretty = GetSettings(indented: true);
 
     public static readonly JsonSerializerSettings Merge = GetSettings(merge: true);
+
+    public static readonly JsonSerializerSettings DataContent = GetSettings(ignoreMetadata: true);
 }

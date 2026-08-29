@@ -292,9 +292,7 @@ class GenerateCommand : KifaCommand {
 
     static List<(string Id, List<AssDialogue> Comments)> GetTencentChats(KifaFile rawFile) {
         return rawFile.GetSubtitleFiles("*.json").Select(file => (file.BaseName.Split('.').Last(),
-                JsonConvert.DeserializeObject<List<TencentDanmu>>(file.ReadAsString(),
-                    KifaJsonSerializerSettings.Default)!.Select(x => x.GenerateAssDialogue())
-                .ToList()))
-            .ToList();
+                file.ReadAsString().FromJson<List<TencentDanmu>>()!
+                    .Select(x => x.GenerateAssDialogue()).ToList())).ToList();
     }
 }

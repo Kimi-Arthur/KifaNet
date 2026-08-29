@@ -628,8 +628,18 @@ public sealed class
 
     public Response? ParseResponse(HttpResponseMessage responseMessage) {
         var html = responseMessage.GetString();
-        html = html[(html.IndexOf(JsonPrefix) + JsonPrefix.Length)..];
-        var json = html[..html.IndexOf(JsonSuffix)];
-        return JsonConvert.DeserializeObject<Response>(json, KifaJsonSerializerSettings.Default);
+        var startIndex = html.IndexOf(JsonPrefix);
+        if (startIndex < 0) {
+            return null;
+        }
+
+        html = html[(startIndex + JsonPrefix.Length)..];
+        var endIndex = html.IndexOf(JsonSuffix);
+        if (endIndex < 0) {
+            return null;
+        }
+
+        var json = html[..endIndex];
+        return json.FromJson<Response>();
     }
 }

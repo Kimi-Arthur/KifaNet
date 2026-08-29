@@ -130,7 +130,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                             foreach (var (property, suffix) in TDataModel.ExternalProperties) {
                                 property.SetValue(clonedForChecking, "");
                             }
-                            var expectedRawData = $"{JsonConvert.SerializeObject(clonedForChecking, KifaJsonSerializerSettings.Pretty)}\n";
+                            var expectedRawData = $"{clonedForChecking.ToPrettyJson()}\n";
                             if (rawData != expectedRawData) {
                                 Logger.Info($"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
                                 WriteTarget(data.Clone());
@@ -452,8 +452,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return null;
             }
 
-            var data = JsonConvert.DeserializeObject<TDataModel>(rawData,
-                KifaJsonSerializerSettings.Default).Checked();
+            var data = rawData.FromJson<TDataModel>().Checked();
 
             ReadAndFillExternalProperties(data);
             return data;
@@ -464,8 +463,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void Write(TDataModel data) {
-        WriteRaw($"{JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Pretty)}\n",
-            data.Id);
+        WriteRaw($"{data.ToPrettyJson()}\n", data.Id);
     }
 
     void WriteRaw(string content, string id, string suffix = "json") {

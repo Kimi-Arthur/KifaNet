@@ -43,9 +43,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         => KifaActionResult.FromAction(() => Retry.Run(() => {
             var request = new HttpRequestMessage(new HttpMethod("PATCH"),
                 GetUrl(Uri.EscapeDataString(data.Id.Checked()))) {
-                Content = new StringContent(
-                    JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
-                    Encoding.UTF8, "application/json")
+                Content = new StringContent(data.ToJson(), Encoding.UTF8, "application/json")
             };
 
             return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -55,9 +53,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Update(List<TDataModel> data)
         => KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(new HttpMethod("PATCH"), GetUrl("$")) {
-                    Content = new StringContent(
-                        JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
-                        Encoding.UTF8, "application/json")
+                    Content = new StringContent(data.ToJson(), Encoding.UTF8, "application/json")
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -71,9 +67,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
         => KifaActionResult.FromAction(() => Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Post,
                 GetUrl(Uri.EscapeDataString(data.Id.Checked()))) {
-                Content = new StringContent(
-                    JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
-                    Encoding.UTF8, "application/json")
+                Content = new StringContent(data.ToJson(), Encoding.UTF8, "application/json")
             };
 
             return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -83,9 +77,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Set(List<TDataModel> data)
         => KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Post, GetUrl("$")) {
-                    Content = new StringContent(
-                        JsonConvert.SerializeObject(data, KifaJsonSerializerSettings.Default),
-                        Encoding.UTF8, "application/json")
+                    Content = new StringContent(data.ToJson(), Encoding.UTF8, "application/json")
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -126,10 +118,8 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     var request =
                         new HttpRequestMessage(HttpMethod.Get, GetUrl("$", options: options)) {
                             // Not supported by HTTP spec.
-                            Content = new StringContent(
-                                JsonConvert.SerializeObject(ids,
-                                    KifaJsonSerializerSettings.Default),
-                                Encoding.UTF8, "application/json")
+                            Content = new StringContent(ids.ToJson(), Encoding.UTF8,
+                                "application/json")
                         };
 
                     return KifaServiceRestClient.Client.GetObject<List<TDataModel?>>(request)!;
@@ -141,10 +131,10 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Link(string targetId, string linkId)
         => KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Post, GetUrl("^")) {
-                    Content = new StringContent(JsonConvert.SerializeObject(new List<string> {
+                    Content = new StringContent(new List<string> {
                         targetId,
                         linkId
-                    }, KifaJsonSerializerSettings.Default), Encoding.UTF8, "application/json")
+                    }.ToJson(), Encoding.UTF8, "application/json")
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -165,9 +155,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public override KifaActionResult Delete(List<string> ids)
         => KifaActionResult.FromAction(() => Retry.Run(() => {
                 var request = new HttpRequestMessage(HttpMethod.Delete, GetUrl("$")) {
-                    Content = new StringContent(
-                        JsonConvert.SerializeObject(ids, KifaJsonSerializerSettings.Default),
-                        Encoding.UTF8, "application/json")
+                    Content = new StringContent(ids.ToJson(), Encoding.UTF8, "application/json")
                 };
 
                 return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
@@ -184,9 +172,8 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl($"${action}"));
 
             if (parameters != null) {
-                request.Content = new StringContent(
-                    JsonConvert.SerializeObject(parameters, KifaJsonSerializerSettings.Default),
-                    Encoding.UTF8, "application/json");
+                request.Content = new StringContent(parameters.ToJson(), Encoding.UTF8,
+                    "application/json");
             }
 
             var result =
