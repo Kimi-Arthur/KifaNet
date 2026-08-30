@@ -64,9 +64,9 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
     static DateTime lastFilled = DateTime.MinValue;
 
     // Should not be called frequently.
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         if (Title != null) {
-            return null;
+            return;
         }
 
         WaitCooldown();
@@ -109,8 +109,6 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
         }
 
         Channel = root.SelectSingleNode("//img[@class='channel-logo']").Attributes["alt"].Value;
-
-        return null;
     }
 
     static void WaitCooldown() {

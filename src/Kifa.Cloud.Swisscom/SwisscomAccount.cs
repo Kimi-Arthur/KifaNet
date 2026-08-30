@@ -13,8 +13,6 @@ namespace Kifa.Cloud.Swisscom;
 public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
     public static string ModelId => "swisscom/accounts";
 
-    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7) - TimeSpan.FromHours(1);
-
     public static string WebDriverUrl {
         get => Late.Get(field);
         set => Late.Set(ref field, value);
@@ -55,15 +53,21 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
 
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(7) - TimeSpan.FromHours(1);
+
+    public override TimeSpan? RefreshInterval => TokenValidDuration;
+
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         if (Username == null || Password == null) {
             throw new UnableToFillException($"No account info provided for {Id}.");
         }
 
         AccessToken = GetRegistrationStatus().Token;
-        return AccessToken != null ? DateTimeOffset.UtcNow + TokenValidDuration : Date.Zero;
+        if (AccessToken == null) {
+            throw new UnableToFillException($"Failed to get access token for {Id}.");
+        }
     }
 
     public AccountRegistrationStatus Register() {

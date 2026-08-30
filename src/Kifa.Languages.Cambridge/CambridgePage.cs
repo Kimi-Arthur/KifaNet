@@ -31,11 +31,11 @@ public class CambridgePage : DataModel, WithModelId<CambridgePage> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient HttpClient = new();
 
-    public override DateTimeOffset? Fill() {
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+
+    public override void Fill() {
         FillPageContent();
         FillNeighbouringPages();
-
-        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
     }
 
     void FillPageContent() {

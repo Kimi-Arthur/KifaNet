@@ -20,7 +20,6 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
         new KifaServiceRestClient<GoetheGermanWord>();
 
     public override bool FillByDefault => true;
-    public override int CurrentVersion => 3;
 
     static readonly Regex RootWordPattern =
         new(@"^(das |der |die |\(.*\) |sich |der/die )?(.+?)(-$| \(.*\)| sein| gehen)?$");
@@ -50,26 +49,29 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     [YamlIgnore]
     public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var word = GermanWord.Client.Get(RootWord);
 
         if (word == null) {
             throw new UnableToFillException($"Failed to find root word ({RootWord}) for {Id}.");
         }
 
-        Form ??= word.KeyForm;
-        Meaning ??= word.Meaning;
+        if (NeedRefreshFrom(word)) {
+            Form ??= word.KeyForm;
+            Meaning ??= word.Meaning;
+            Wiki = string.Join("; ", word.Meanings.Select(m => m.Translation)).Trim();
+        }
 
         var cambridge = CambridgeGlobalGermanWord.Client.Get(RootWord);
-        Cambridge = cambridge == null
-            ? ""
-            : string.Join("; ",
-                cambridge.Entries
-                    .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
-                    .ExceptNull().Where(x => x != "").Distinct()).Trim();
-
-        Wiki = string.Join("; ", word.Meanings.Select(m => m.Translation)).Trim();
-
-        return null;
+        if (cambridge != null) {
+            if (NeedRefreshFrom(cambridge)) {
+                Cambridge = string.Join("; ",
+                    cambridge.Entries
+                        .SelectMany(e => e.Senses.Select(s => s.Definition?.Translation?.Trim()))
+                        .ExceptNull().Where(x => x != "").Distinct()).Trim();
+            }
+        } else {
+            Cambridge ??= "";
+        }
     }
 }

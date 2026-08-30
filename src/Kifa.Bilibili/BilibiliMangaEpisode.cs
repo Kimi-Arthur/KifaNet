@@ -37,7 +37,9 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
 
     public List<BilibiliMangaPage> Pages { get; set; } = new();
 
-    public override DateTimeOffset? Fill() {
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+
+    public override void Fill() {
         Pages = HttpClients.BiliplusHttpClient
             .Call(new BiliplusMangaEpisodeRpc(MangaId[2..], EpisodeId)).Select((p, index)
                 => new BilibiliMangaPage {
@@ -46,10 +48,8 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
                 }).ToList();
 
         if (Pages.Count < PageCount) {
-            return Date.Zero;
+            throw new UnableToFillException($"Expected {PageCount} pages, but only found {Pages.Count}.");
         }
-
-        return DateTimeOffset.Now + TimeSpan.FromDays(365);
     }
 
     static readonly HttpClient NoAuthClient = new();

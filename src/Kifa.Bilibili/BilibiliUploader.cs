@@ -24,7 +24,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(Id));
         if (info == null) {
             throw new DataNotFoundException(
@@ -40,8 +40,6 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         RemovedAids = removed.OrderBy(v => long.Parse(v[2..])).ToList();
         Aids = list;
         Aids.Reverse();
-
-        return null;
     }
 
     static List<string> MergeVideos(List<string> newVideos, List<string> oldVideos) {

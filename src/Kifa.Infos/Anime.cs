@@ -135,7 +135,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
     string GetBaseFolder(string? version = null)
         => $"/Anime/{Title} ({AirDate.Checked().Year}){string.FormatOrEmpty($" [{version}]")}";
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         if (TmdbId == null) {
             throw new UnableToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
         }
@@ -178,8 +178,6 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
                 Specials = episodes;
             }
         }
-
-        return null;
     }
 
     public static ItemInfoList? GetItems(string[] spec, string? version = null) {

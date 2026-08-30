@@ -19,7 +19,7 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var data = HttpClients.GetBilibiliClient().Call(new PlaylistRpc(Id))?.Data;
         if (data == null) {
             throw new DataNotFoundException($"Failed to find playlist ({Id}).");
@@ -39,6 +39,5 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
         }
 
         Videos.Reverse();
-        return null;
     }
 }

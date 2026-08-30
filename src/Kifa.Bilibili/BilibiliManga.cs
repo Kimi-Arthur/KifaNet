@@ -35,7 +35,9 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
 
     static readonly HttpClient NoAuthClient = new();
 
-    public override DateTimeOffset? Fill() {
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(7);
+
+    public override void Fill() {
         var data = NoAuthClient.Call(new MangaRpc(Id[2..]))!.Data;
 
         Title = data.Title;
@@ -76,8 +78,6 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
 
         Episodes.AddRange(newEpisodes.Skip(Episodes.Count)
             .Select(ep => (Link<BilibiliMangaEpisode>) ep));
-
-        return DateTimeOffset.Now + TimeSpan.FromDays(7);
     }
 
     public IEnumerable<(string DesiredName, string CanonicalName)>

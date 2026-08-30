@@ -15,14 +15,21 @@ public class DwdsGermanWord : DataModel, WithModelId<DwdsGermanWord> {
     public HashSet<string> AudioLinks { get; set; } = new();
     public List<string> Etymology { get; set; } = new();
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
+        var page = DwdsPage.Client.Get(Id);
+        if (page?.PageContent == null) {
+            return;
+        }
+
+        if (!NeedRefreshFrom(page)) {
+            return;
+        }
+
         var doc = new HtmlDocument();
-        doc.LoadHtml(DwdsPage.Client.Get(Id)!.PageContent);
+        doc.LoadHtml(page.PageContent);
 
         AudioLinks = ExtractAudioLinks(doc);
         Etymology = ExtractEtymology(doc);
-
-        return null;
     }
 
     static HashSet<string> ExtractAudioLinks(HtmlDocument doc) {

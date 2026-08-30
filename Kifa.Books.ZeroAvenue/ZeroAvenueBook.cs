@@ -48,7 +48,7 @@ public class ZeroAvenueBook : DataModel, WithModelId<ZeroAvenueBook> {
         }
     }
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var content = HttpClient.SendWithRetry(Url).GetString();
         var doc = new HtmlDocument();
         doc.LoadHtml(content);
@@ -62,8 +62,6 @@ public class ZeroAvenueBook : DataModel, WithModelId<ZeroAvenueBook> {
             .NextSibling.InnerText.Checked().Trim().Split(",").ToList();
 
         Link = LinkPattern.Match(content).Groups[1].Value;
-
-        return null;
     }
 
     public IEnumerable<(Stream Stream, string name)> GetDownloads() {

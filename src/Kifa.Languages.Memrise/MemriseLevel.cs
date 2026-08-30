@@ -44,7 +44,7 @@ public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
     public string? Title { get; set; }
     public List<string> Words { get; set; } = new();
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var rendered = HttpClient.Call(new GetLevelRpc(DatabaseUrl, LevelId)).Rendered;
 
         if (rendered == null) {
@@ -63,7 +63,5 @@ public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
         if (nodes != null) {
             Words.AddRange(nodes.Select(n => n.Attributes["data-thing-id"].Value));
         }
-
-        return null;
     }
 }

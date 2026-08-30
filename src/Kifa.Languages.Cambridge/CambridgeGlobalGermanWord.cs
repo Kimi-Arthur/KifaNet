@@ -12,7 +12,7 @@ namespace Kifa.Languages.Cambridge;
 public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalGermanWord> {
     public static string ModelId => "Languages/cambridge/german";
 
-    public override int CurrentVersion => 1;
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
     public static KifaServiceClient<CambridgeGlobalGermanWord> Client { get; set; } =
         new KifaServiceRestClient<CambridgeGlobalGermanWord>();
@@ -23,11 +23,15 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalG
 
     const string PagePrefix = "german-english";
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var page = CambridgePage.Client.Get($"{PagePrefix}/{Id}");
         if (page?.PageContent == null) {
             Logger.Error($"Raw page not found {PagePrefix}/{Id}.");
-            return DateTimeOffset.Now + TimeSpan.FromDays(365);
+            return;
+        }
+
+        if (!NeedRefreshFrom(page)) {
+            return;
         }
 
         var document = page.PageContent.GetDocument();
@@ -36,7 +40,7 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalG
 
         if (root == null) {
             Logger.Error("No GLOBAL element found on page.");
-            return DateTimeOffset.Now + TimeSpan.FromDays(365);
+            return;
         }
 
         var heads = root.GetElementsByClassName("normal-entry");
@@ -57,8 +61,6 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalG
                     Senses = entry.body.GetElementsByClassName("sense-body")
                         .Select(CambridgeGlobalGermanSense.FromElement).ToList()
                 }).ToList();
-
-        return DateTimeOffset.Now + TimeSpan.FromDays(365);
     }
 
     static WordType GetWordType(string text, IEnumerable<string> notes) {

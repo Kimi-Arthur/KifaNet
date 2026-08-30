@@ -17,7 +17,9 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+
+    public override void Fill() {
         string url;
         if (Id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
             url = Id;
@@ -51,7 +53,5 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
             .Select(e => e.ID)
             .Where(id => !string.IsNullOrEmpty(id))
             .ToList() ?? new List<string>();
-
-        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
     }
 }

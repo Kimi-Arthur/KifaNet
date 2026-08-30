@@ -12,8 +12,6 @@ public class GermanWord : DataModel, WithModelId<GermanWord> {
 
     public static string ModelId => "Languages/german/words";
 
-    public override int CurrentVersion => 18;
-
     public static KifaServiceClient<GermanWord> Client { get; set; } =
         new KifaServiceRestClient<GermanWord>();
 
@@ -133,6 +131,12 @@ public class GermanWord : DataModel, WithModelId<GermanWord> {
             ? $"{GetArticle(Gender, formCase, formNumber)} {NounForms[formCase][formNumber]}"
             : "-";
 
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+
+    public override void Fill() {
+        FillWithData(GetWords());
+    }
+
     public static string? GetArticle(Gender? gender, Case formCase, Number formNumber)
         => formCase switch {
             Case.Nominative => formNumber switch {
@@ -201,17 +205,12 @@ public class GermanWord : DataModel, WithModelId<GermanWord> {
         return (wiki, enWiki, duden, dwds);
     }
 
-    public override DateTimeOffset? Fill() {
-        FillWithData(GetWords());
-        // Maybe some data will update.
-        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
-    }
-
     protected void FillWithData(
         (GermanWord? wiki, GermanWord? enWiki, GermanWord? duden, DwdsGermanWord? dwds) words) {
         var (wiki, enWiki, duden, dwds) = words;
         Pronunciation = wiki?.Pronunciation;
 
+        var existingDwdsAudio = PronunciationAudioLinks.GetValueOrDefault(Source.Dwds);
         PronunciationAudioLinks.Clear();
 
         if (duden?.PronunciationAudioLinks[Source.Duden].Count > 0) {
@@ -223,8 +222,17 @@ public class GermanWord : DataModel, WithModelId<GermanWord> {
                 wiki.PronunciationAudioLinks[Source.Wiktionary];
         }
 
-        if (dwds?.AudioLinks.Count > 0) {
-            PronunciationAudioLinks[Source.Dwds] = dwds.AudioLinks;
+        if (dwds != null && NeedRefreshFrom(dwds)) {
+            if (dwds.AudioLinks.Count > 0) {
+                PronunciationAudioLinks[Source.Dwds] = dwds.AudioLinks;
+            }
+
+            if (dwds.Etymology.Count > 0) {
+                Etymology.Clear();
+                Etymology.AddRange(dwds.Etymology);
+            }
+        } else if (existingDwdsAudio != null && existingDwdsAudio.Count > 0) {
+            PronunciationAudioLinks[Source.Dwds] = existingDwdsAudio;
         }
 
         Meanings = enWiki?.Meanings ?? new List<Meaning>();
@@ -248,10 +256,6 @@ public class GermanWord : DataModel, WithModelId<GermanWord> {
                          wiki?.Type is WordType.Adjective or WordType.Adverb
             ? words.wiki?.AdjectiveForms
             : null;
-
-        if (Etymology.Count == 0 && dwds?.Etymology is { Count: > 0 }) {
-            Etymology.AddRange(dwds.Etymology);
-        }
     }
 
     public IEnumerable<string> GetTopPronunciationAudioLinks()

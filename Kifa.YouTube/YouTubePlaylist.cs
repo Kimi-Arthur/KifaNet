@@ -18,7 +18,9 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
+
+    public override void Fill() {
         var playlistUrl = Id.StartsWith("http", StringComparison.OrdinalIgnoreCase)
             ? Id
             : $"https://www.youtube.com/playlist?list={Id}";
@@ -38,7 +40,5 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
             .Select(e => e.ID)
             .Where(id => !string.IsNullOrEmpty(id))
             .ToList() ?? new List<string>();
-
-        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
     }
 }

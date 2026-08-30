@@ -156,25 +156,17 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     // true -> rewrite needed.
     bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null, bool refresh = false) {
         data ??= new TDataModel {
-            Id = id,
-            Metadata = new DataMetadata {
-                Freshness = new FreshnessMetadata {
-                    NextRefresh = Date.Zero
-                }
-            }
+            Id = id
         };
 
-        if (refresh) {
-            data.Metadata ??= new DataMetadata();
-            data.Metadata.Freshness = new FreshnessMetadata {
-                NextRefresh = Date.Zero
-            };
-        }
+        if (refresh || data.NeedRefresh()) {
+            var isCodeLogicChange = data.ForceRefreshBefore != null &&
+                                    (data.Metadata?.Version == null || data.Metadata.Version < data.ForceRefreshBefore);
+            var isNewItem = data.Metadata?.Version == null;
+            var originalContent = data.Clone();
 
-        if (data.NeedRefresh()) {
-            DateTimeOffset? nextUpdate;
             try {
-                nextUpdate = data.Fill();
+                data.Fill();
             } catch (DataIsLinkedException ex) {
                 Delete(data.Id);
                 Link(ex.TargetId, data.Id);
@@ -184,10 +176,6 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 // New data is written in Link. No need to save more.
                 return false;
             } catch (NoNeedToFillException) {
-                if (data.Metadata?.Freshness != null) {
-                    data.Metadata.Freshness = null;
-                }
-
                 return false;
             } catch (UnableToFillException ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with a predefined error.");
@@ -197,14 +185,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return false;
             }
 
+            var contentChanged = isNewItem || isCodeLogicChange || !data.Equals(originalContent);
+
+            var now = DateTimeOffset.UtcNow;
             data.Metadata ??= new DataMetadata();
-            data.Metadata.Version = data.CurrentVersion;
-            if (nextUpdate != null) {
-                data.Metadata.Freshness = new FreshnessMetadata {
-                    NextRefresh = nextUpdate
-                };
-            } else {
-                data.Metadata.Freshness = null;
+            data.Metadata.LastRefreshed = now;
+
+            if (contentChanged) {
+                data.Metadata.Version = now;
             }
 
             return true;
@@ -288,11 +276,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 // If it's new data, we should try Fill it.
                 var original = Retrieve(data.Id);
                 if (original == null) {
-                    data.Metadata = new DataMetadata {
-                        Freshness = new FreshnessMetadata {
-                            NextRefresh = Date.Zero
-                        }
-                    };
+                    data.Metadata = new DataMetadata();
+                    data.ResetRefreshDate();
                 } else {
                     data = original.Merge(data);
                 }

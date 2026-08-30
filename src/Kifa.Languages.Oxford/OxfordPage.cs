@@ -27,7 +27,7 @@ public class OxfordPage : DataModel, WithModelId<OxfordPage> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     static readonly HttpClient HttpClient = new();
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var response = HttpClient.SendWithRetry(UrlPrefix + Id);
         var responseId = GetId(response.RequestMessage.Checked().RequestUri.Checked().ToString());
         if (responseId != RealId) {
@@ -38,8 +38,6 @@ public class OxfordPage : DataModel, WithModelId<OxfordPage> {
 
         FillPageContent(doc);
         FillNeighbouringPages(doc);
-
-        return null;
     }
 
     static readonly string[] UnwantedSelectors = ["#ring-links-box", ".am-entry_long"];

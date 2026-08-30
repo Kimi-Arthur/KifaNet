@@ -22,7 +22,7 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var ids = Id.Split("/");
         AuthorId = ids[0];
         SeasonId = ids[1];
@@ -53,8 +53,6 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
 
             Videos.AddRange(data.Aids.Select(m => $"av{m}"));
         }
-
-        return null;
     }
 
     const string ArchivePrefix = "合集·";

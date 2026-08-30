@@ -87,12 +87,10 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
         }
     }
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         FillHeaders();
         FillWords();
         FillLevels();
-
-        return null;
     }
 
     void FillHeaders() {

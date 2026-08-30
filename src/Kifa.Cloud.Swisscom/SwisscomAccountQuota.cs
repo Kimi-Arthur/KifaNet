@@ -61,7 +61,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var account = SwisscomAccount.Client.Get(Id);
         if (account == null) {
             throw new UnableToFillException($"Account {Id} is missing.");
@@ -73,7 +73,6 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
         }
 
         ReconcileQuota();
-        return null;
     }
 
     // TODO(#2): Should implement in server side.

@@ -74,13 +74,37 @@ public abstract class DataModel : IEquatable<DataModel> {
 
     [JsonIgnore]
     [YamlIgnore]
-    public virtual int CurrentVersion => 0;
+    public virtual TimeSpan? RefreshInterval => null;
 
-    // Return value is the next refresh time.
-    // Or null if no refresh is planned.
-    // If this is not implemented,
-    // FillByDefault and CurrentVersion should not be implemented, either.
-    public virtual DateTimeOffset? Fill() => throw new NoNeedToFillException();
+    [JsonIgnore]
+    [YamlIgnore]
+    public virtual DateTimeOffset? ForceRefreshBefore => null;
+
+    public virtual DateTimeOffset? GetNextRefresh() =>
+        Metadata?.Version != null && RefreshInterval != null
+            ? (Metadata.LastRefreshed ?? Metadata.Version) + RefreshInterval
+            : null;
+
+    public virtual bool NeedRefreshFrom(DataModel? upstream)
+        => NeedRefreshFrom(upstream?.Metadata?.Version);
+
+    public virtual bool NeedRefreshFrom(DateTimeOffset? upstreamVersion) {
+        if (Metadata?.Version == null) {
+            return true;
+        }
+
+        if (ForceRefreshBefore != null && Metadata.Version < ForceRefreshBefore) {
+            return true;
+        }
+
+        if (upstreamVersion == null) {
+            return true;
+        }
+
+        return upstreamVersion > Metadata.Version;
+    }
+
+    public virtual void Fill() => throw new NoNeedToFillException();
 
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);
@@ -88,27 +112,17 @@ public abstract class DataModel : IEquatable<DataModel> {
     public SortedSet<string> GetAllLinks()
         => Metadata?.Linking?.Links == null ? [RealId] : [..Metadata.Linking.Links, RealId];
 
-    public string ToDataJson() => this.ToJson(KifaJsonSerializerSettings.DataContent);
+    public override string ToString() => this.ToPrettyJson();
 
-    public virtual bool Equals(DataModel? other) {
-        if (other is null) {
+    public bool Equals(DataModel? other) {
+        if (other == null || other.GetType() != GetType()) {
             return false;
         }
 
-        if (ReferenceEquals(this, other)) {
-            return true;
-        }
-
-        if (GetType() != other.GetType()) {
-            return false;
-        }
-
-        return ToDataJson() == other.ToDataJson();
+        return ReferenceEquals(this, other) || this.ToDataJson() == other.ToDataJson();
     }
 
     public override bool Equals(object? obj) => Equals(obj as DataModel);
 
-    public override int GetHashCode() => ToDataJson().GetHashCode();
-
-    public override string ToString() => this.ToPrettyJson();
+    public override int GetHashCode() => this.ToDataJson().GetHashCode();
 }

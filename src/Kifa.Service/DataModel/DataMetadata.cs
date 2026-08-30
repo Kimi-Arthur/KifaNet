@@ -8,17 +8,27 @@ namespace Kifa.Service;
 public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }
 
-    // If the data version is different from current code, a refresh is needed.
-    public int Version { get; set; }
+    // Content version date (when the content was modified or ForceRefreshBefore applied).
+    [JsonConverter(typeof(DataMetadataVersionJsonConverter))]
+    public DateTimeOffset? Version { get; set; }
 
-    public FreshnessMetadata? Freshness { get; set; }
+    DateTimeOffset? lastRefreshed;
+
+    // When Fill() was last executed against remote sources.
+    [JsonConverter(typeof(DataMetadataVersionJsonConverter))]
+    public DateTimeOffset? LastRefreshed {
+        get => lastRefreshed ?? Version;
+        set => lastRefreshed = value;
+    }
+
+    public bool ShouldSerializeLastRefreshed() => lastRefreshed != null && lastRefreshed != Version;
 
     // Overrides that will apply after Fill() is called.
     public Dictionary<string, object> Overrides { get; set; } = new();
 
     [JsonIgnore]
     [YamlIgnore]
-    public bool IsEmpty => Linking == null && Freshness == null && Version == 0;
+    public bool IsEmpty => Linking == null && Version == null && lastRefreshed == null && (Overrides == null || Overrides.Count == 0);
 }
 
 public class LinkingMetadata {
@@ -32,25 +42,72 @@ public class LinkingMetadata {
     public SortedSet<string>? VirtualLinks { get; set; }
 }
 
-public class FreshnessMetadata {
-    public DateTimeOffset? NextRefresh { get; set; }
-}
-
-public static class FreshnessMetadataExtensions {
-    public static void ResetRefreshDate(this DataModel data) {
-        data.Metadata ??= new DataMetadata();
-        data.Metadata.Freshness = new FreshnessMetadata {
-            NextRefresh = Date.Zero
-        };
+public class DataMetadataVersionJsonConverter : JsonConverter<DateTimeOffset?> {
+    public override void WriteJson(JsonWriter writer, DateTimeOffset? value, JsonSerializer serializer) {
+        if (value == null) {
+            writer.WriteNull();
+        } else {
+            writer.WriteValue(value.Value.ToString("yyyy-MM-ddTHH:mm:ss.ffffffzzz"));
+        }
     }
 
-    // Cases when refresh is needed:
-    //   1. CurrentVersion < 0 = in development phase
-    //   2. data version is older than code version
-    //   3. FillByDefault and no refresh date set
-    //   4. Now is beyond the set refresh date
-    public static bool NeedRefresh(this DataModel data)
-        => data.CurrentVersion < 0 || data.CurrentVersion > (data.Metadata?.Version ?? 0) ||
-           data.FillByDefault && data.Metadata?.Freshness?.NextRefresh == null ||
-           data.Metadata?.Freshness?.NextRefresh < DateTimeOffset.UtcNow;
+    public override DateTimeOffset? ReadJson(JsonReader reader, Type objectType, DateTimeOffset? existingValue,
+        bool hasExistingValue, JsonSerializer serializer) {
+        if (reader.TokenType == JsonToken.Null) {
+            return null;
+        }
+
+        if (reader.TokenType == JsonToken.Integer) {
+            // Legacy integer version: treat as null so it is refreshed with date version.
+            return null;
+        }
+
+        if (reader.TokenType == JsonToken.Date) {
+            if (reader.Value is DateTime dt) {
+                return new DateTimeOffset(dt);
+            }
+
+            if (reader.Value is DateTimeOffset dto) {
+                return dto;
+            }
+        }
+
+        if (reader.TokenType == JsonToken.String) {
+            var str = (string?) reader.Value;
+            if (str == null || str.Length == 0) {
+                return null;
+            }
+
+            if (DateTimeOffset.TryParse(str, out var parsed)) {
+                return parsed;
+            }
+        }
+
+        return null;
+    }
+}
+
+public static class DataFreshnessExtensions {
+    public static void ResetRefreshDate(this DataModel data) {
+        data.Metadata ??= new DataMetadata();
+        data.Metadata.Version = null;
+        data.Metadata.LastRefreshed = null;
+    }
+
+    public static bool NeedRefresh(this DataModel data) {
+        if (data.Metadata?.Version == null) {
+            return data.FillByDefault;
+        }
+
+        if (data.ForceRefreshBefore != null && data.Metadata.Version < data.ForceRefreshBefore) {
+            return true;
+        }
+
+        var lastChecked = data.Metadata.LastRefreshed ?? data.Metadata.Version;
+        if (data.RefreshInterval != null && lastChecked + data.RefreshInterval < DateTimeOffset.UtcNow) {
+            return true;
+        }
+
+        return false;
+    }
 }

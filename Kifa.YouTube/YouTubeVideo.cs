@@ -21,7 +21,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public override bool FillByDefault => true;
 
-    public override int CurrentVersion => 1;
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
     public static string YoutubeDownloaderPath {
         get => Late.Get(field);
@@ -120,23 +120,27 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     static readonly HttpClient HttpClient = new();
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         try {
-            return FillWithYoutubeDl();
+            FillWithYoutubeDl();
+            return;
         } catch (Exception e) {
             Logger.Warn(e);
         }
 
         try {
-            return FillWithFindYoutubeVideo();
+            FillWithFindYoutubeVideo();
+            return;
         } catch (Exception e) {
             Logger.Warn(e);
         }
 
-        return FillWithWayback();
+        if (!FillWithWayback()) {
+            throw new UnableToFillException($"Failed to find info for {Id}");
+        }
     }
 
-    DateTimeOffset? FillWithYoutubeDl() {
+    void FillWithYoutubeDl() {
         var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter()
             .GetResult();
         if (!metadata.Success) {
@@ -162,11 +166,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Height = videoFormat.Height.Checked();
         Codec = NormalizeCodec(videoFormat.VideoCodec);
         Thumbnail = videoData.Thumbnail;
-
-        return DateTimeOffset.UtcNow + TimeSpan.FromDays(365);
     }
 
-    DateTimeOffset? FillWithFindYoutubeVideo() {
+    void FillWithFindYoutubeVideo() {
         var fybResponse = HttpClient.Call(new FindYoutubeVideoRpc(Id.Checked()));
         var archiveItem =
             fybResponse?.Keys.FirstOrDefault(key
@@ -219,22 +221,20 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Height = archiveFileContent.Height;
         Codec = NormalizeCodec(archiveFileContent.Vcodec);
         Thumbnail = archiveFileContent.Thumbnail;
-
-        return DateTimeOffset.Now + TimeSpan.FromDays(365 * 10);
     }
 
 
-    DateTimeOffset? FillWithWayback() {
+    bool FillWithWayback() {
         var watchUrl = $"https://www.youtube.com/watch?v={Id}";
         var cdxResults = HttpClient.Call(new CdxSearchRpc(watchUrl));
         foreach (var entry in cdxResults.OrderByDescending(r => r.Length)) {
             if (FillWithPageContent(
                     HttpClient.Call(new ArchiveContentRpc(entry.Original, entry.Timestamp)))) {
-                return DateTimeOffset.Now + TimeSpan.FromDays(365 * 10);
+                return true;
             }
         }
 
-        return null;
+        return false;
     }
 
     bool FillWithPageContent(string? body) {

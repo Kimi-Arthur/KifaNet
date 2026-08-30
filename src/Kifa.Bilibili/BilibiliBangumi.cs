@@ -23,7 +23,7 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
 
     public override bool FillByDefault => true;
 
-    public override DateTimeOffset? Fill() {
+    public override void Fill() {
         var mediaData = HttpClients.GetBilibiliClient().Call(new MediaRpc(Id))?.Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";
         Title = mediaData.Media.Title.Trim();
@@ -37,7 +37,5 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
         Aids = seasonData.MainSection.Episodes.Select(e => $"av{e.Aid}").ToList();
         ExtraAids = seasonData.Section.SelectMany(s => s.Episodes.Select(e => $"av{e.Aid}"))
             .ToList();
-
-        return null;
     }
 }
