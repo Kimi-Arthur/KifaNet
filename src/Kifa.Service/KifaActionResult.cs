@@ -155,8 +155,8 @@ public class KifaActionResult<TValue> : KifaActionResult {
     public KifaActionResult() {
     }
 
-    public KifaActionResult(TValue response) {
-        Response = response;
+    public KifaActionResult(TValue value) {
+        Value = value;
         Status = KifaActionStatus.OK;
     }
 
@@ -170,9 +170,7 @@ public class KifaActionResult<TValue> : KifaActionResult {
         Message = result.Message;
     }
 
-    public TValue? Response { get; set; }
-
-    public TValue Value => Response!;
+    public TValue? Value { get; set; }
 
     public static new KifaActionResult<TValue> Warning(string? message = null)
         => new() {
@@ -189,7 +187,7 @@ public class KifaActionResult<TValue> : KifaActionResult {
     public static implicit operator KifaActionResult<TValue>(TValue value) => new(value);
 
     public static implicit operator TValue?(KifaActionResult<TValue>? result)
-        => result != null && result.Status == KifaActionStatus.OK ? result.Response : default;
+        => result != null && result.Status == KifaActionStatus.OK ? result.Value : default;
 
     public static KifaActionResult<TValue> FromAction(Func<TValue> action) {
         try {

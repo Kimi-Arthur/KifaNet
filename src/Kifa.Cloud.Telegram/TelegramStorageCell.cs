@@ -30,7 +30,7 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
                 $"Failed to locate a session to use: {response.Message}");
         }
 
-        var newSession = response.Response.Checked();
+        var newSession = response.Value.Checked();
 
         if (!new ReadOnlySpan<byte>(newSession.Data).SequenceEqual(currentSession?.Data)) {
             currentClient?.Dispose();

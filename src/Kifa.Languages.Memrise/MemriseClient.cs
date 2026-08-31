@@ -120,7 +120,7 @@ public class MemriseClient : IDisposable {
             var addedWord = AddWord(word, rootWord);
             Logger.LogResult(addedWord, $"upload word {word}");
             if (addedWord.IsAcceptable) {
-                var added = addedWord.Response.Checked();
+                var added = addedWord.Value.Checked();
                 Logger.Debug($"Update Memrise record: {added}.");
                 CourseClient.AddWord(Course.Id, added);
                 yield return added.Id;

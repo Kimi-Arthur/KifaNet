@@ -45,7 +45,7 @@ class DedupCommand : KifaCommand {
             return LogSummary();
         }
 
-        foreach (var tuple in confirmedDeletion.Value) {
+        foreach (var tuple in confirmedDeletion.Value.Checked()) {
             ExecuteItem(tuple.toDelete.Id.Checked(),
                 () => KifaFile.RemoveLogical(tuple.toDelete.Id, force: true));
         }

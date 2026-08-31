@@ -249,8 +249,8 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal("a", res.Response.Choice);
-            Assert.Equal(0, res.Response.Index);
+            Assert.Equal("a", res.Value.Checked().Choice);
+            Assert.Equal(0, res.Value.Checked().Index);
         } finally {
             Console.SetIn(originalIn);
         }
@@ -265,10 +265,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal("b", res1.Response.Choice);
+            Assert.Equal("b", res1.Value.Checked().Choice);
 
             var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" }, key);
-            Assert.Equal("y", res2.Response.Choice);
+            Assert.Equal("y", res2.Value.Checked().Choice);
         } finally {
             Console.SetIn(originalIn);
         }
@@ -283,10 +283,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal("a", res1.Response.Choice);
+            Assert.Equal("a", res1.Value.Checked().Choice);
 
             var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" }, key);
-            Assert.Equal("x", res2.Response.Choice);
+            Assert.Equal("x", res2.Value.Checked().Choice);
         } finally {
             Console.SetIn(originalIn);
         }
@@ -316,10 +316,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal(new[] { "a", "b" }, res1.Response);
+            Assert.Equal(new[] { "a", "b" }, res1.Value.Checked());
 
             var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key);
-            Assert.Equal(new[] { "x", "y" }, res2.Response);
+            Assert.Equal(new[] { "x", "y" }, res2.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -334,10 +334,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal(new[] { "a", "b" }, res1.Response);
+            Assert.Equal(new[] { "a", "b" }, res1.Value.Checked());
 
             var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key);
-            Assert.Equal(new[] { "x", "y" }, res2.Response);
+            Assert.Equal(new[] { "x", "y" }, res2.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -352,7 +352,7 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal(new[] { "a", "b", "c" }, res.Response);
+            Assert.Equal(new[] { "a", "b", "c" }, res.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -367,10 +367,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal(new[] { "a", "b", "c" }, res1.Response);
+            Assert.Equal(new[] { "a", "b", "c" }, res1.Value.Checked());
 
             var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key);
-            Assert.Equal(new[] { "x", "y", "z" }, res2.Response);
+            Assert.Equal(new[] { "x", "y", "z" }, res2.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -388,7 +388,7 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d" }, key);
-            Assert.Equal(new[] { "a", "c" }, res.Response);
+            Assert.Equal(new[] { "a", "c" }, res.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -405,10 +405,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d", "e", "f" }, key);
-            Assert.Equal(new[] { "d" }, res1.Response);
+            Assert.Equal(new[] { "d" }, res1.Value.Checked());
 
             var res2 = cmd.TestSelectMany(new List<string> { "1", "2", "3", "4", "5", "6" }, key);
-            Assert.Equal(new[] { "1", "2", "3", "4", "5", "6" }, res2.Response);
+            Assert.Equal(new[] { "1", "2", "3", "4", "5", "6" }, res2.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -425,10 +425,10 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c", "d", "e", "f" }, key);
-            Assert.Equal(new[] { "c", "d", "e" }, res1.Response);
+            Assert.Equal(new[] { "c", "d", "e" }, res1.Value.Checked());
 
             var res2 = cmd.TestSelectMany(new List<string> { "1", "2", "3", "4", "5", "6" }, key);
-            Assert.Equal(new[] { "3", "4", "5" }, res2.Response);
+            Assert.Equal(new[] { "3", "4", "5" }, res2.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }
@@ -446,7 +446,7 @@ public class SelectManySelectionTests {
 
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
-            Assert.Equal(new[] { "a", "b", "c" }, res.Response);
+            Assert.Equal(new[] { "a", "b", "c" }, res.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
         }

@@ -65,7 +65,8 @@ public class DownloadLiveCommand : KifaCommand {
         var (videoStreamGetter, audioStreamGetters) = mpegDash.GetStreams();
 
         var selected = SelectMany(audioStreamGetters, _ => "audio", "audio tracks to include");
-        var selectedAudioTrackGetters = selected.Status == KifaActionStatus.OK ? selected.Value : [];
+        var selectedAudioTrackGetters =
+            selected.Status == KifaActionStatus.OK ? selected.Value.Checked() : [];
 
         var parts = new List<KifaFile>();
         var videoFile = targetFile.GetIgnoredFile("v.mp4");

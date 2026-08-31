@@ -66,7 +66,7 @@ class UploadCommand : KifaCommand {
             return LogSummary();
         }
 
-        foreach (var file in selected.Value) {
+        foreach (var file in selected.Value.Checked()) {
             ExecuteItem(file.ToString(),
                 () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
                     DownloadLocal, QuickMode, true));

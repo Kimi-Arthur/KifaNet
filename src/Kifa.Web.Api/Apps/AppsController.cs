@@ -22,7 +22,7 @@ public class AppsController : ControllerBase {
         }
 
         return new KifaActionResult<Dictionary<string, object>> {
-            Response = data.Data,
+            Value = data.Data,
             Status = KifaActionStatus.OK
         };
     }

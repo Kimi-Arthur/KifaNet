@@ -58,7 +58,7 @@ class ExtractCommand : KifaCommand {
                 continue;
             }
 
-            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, selected.Response!.Choice));
+            ExecuteItem(file.ToString(), () => ExtractSubtitle(file, selected.Value.Checked().Choice));
         }
 
         return LogSummary();

@@ -46,9 +46,9 @@ public class SyncCommand : KifaCommand {
             return (int) result.Status;
         }
 
-        if (result.Response != null) {
+        if (result.Value != null) {
             file.Delete();
-            file.Write(result.Response);
+            file.Write(result.Value);
         }
 
         return 0;

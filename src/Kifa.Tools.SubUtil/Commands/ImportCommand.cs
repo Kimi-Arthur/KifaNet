@@ -57,7 +57,7 @@ partial class ImportCommand : KifaCommand {
                 return selected;
             }
 
-            var choice = selected.Response!.Choice;
+            var choice = selected.Value.Checked().Choice;
             var newFile = new KifaFile($"{subtitleFile.Host}{choice.Item}.{ReleaseId}.{suffix}");
 
             if (suffix == "ass") {

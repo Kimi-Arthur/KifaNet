@@ -41,7 +41,7 @@ public class ExportCommand : KifaCommand {
         }
 
         file.Delete();
-        file.Write(result.Response);
+        file.Write(result.Value.Checked());
 
         return 0;
     }

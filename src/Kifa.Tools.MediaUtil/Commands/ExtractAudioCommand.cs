@@ -134,12 +134,12 @@ public class ExtractAudioCommand : KifaCommand {
 
         var result = GetCoverFromEmbedded(file, name);
         if (result.Status == KifaActionStatus.OK) {
-            return result.Response!;
+            return result.Value.Checked();
         }
 
         result = GetCoverFromThumbnail(file, name);
         if (result.Status == KifaActionStatus.OK) {
-            return result.Response!;
+            return result.Value.Checked();
         }
 
         throw new Exception("Failed to extract raw cover image.");
@@ -176,7 +176,7 @@ public class ExtractAudioCommand : KifaCommand {
             }
             : new KifaActionResult<KifaFile> {
                 Status = KifaActionStatus.OK,
-                Response = coverFile
+                Value = coverFile
             };
     }
 
@@ -225,7 +225,7 @@ public class ExtractAudioCommand : KifaCommand {
             }
             : new KifaActionResult<KifaFile> {
                 Status = KifaActionStatus.OK,
-                Response = coverFile
+                Value = coverFile
             };
     }
 

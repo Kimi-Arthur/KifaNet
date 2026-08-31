@@ -21,7 +21,7 @@ public class
         [FromBody] TelegramAccount.ObtainSessionRequest request) {
         Logger.Trace($"Got request: obtain_session({request.ToJson()})");
         var result = Client.ObtainSession(request.AccountId, request.SessionId);
-        Logger.Trace($"Processed request: {result.Response.ToJson()}");
+        Logger.Trace($"Processed request: {result.Value.ToJson()}");
 
         return result;
     }

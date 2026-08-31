@@ -181,7 +181,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             if (result is {
                     Status: KifaActionStatus.OK
                 }) {
-                return result.Response!;
+                return result.Value.Checked();
             }
 
             throw new KifaActionFailedException(result ?? KifaActionResult.UnknownError());

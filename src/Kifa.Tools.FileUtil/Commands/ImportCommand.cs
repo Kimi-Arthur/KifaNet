@@ -219,7 +219,7 @@ class ImportCommand : KifaFileCommand {
                 return selected;
             }
 
-            var (choice, part, _, special) = selected.Response!;
+            var (choice, part, _, special) = selected.Value.Checked();
             var targetPath = part != null
                 ? $"{choice.Path}.part{part}{suffix}"
                 : $"{choice.Path}{suffix}";
