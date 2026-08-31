@@ -9,14 +9,12 @@ public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }
 
     // Content version date (when the content was modified or ForceRefreshBefore applied).
-    [JsonConverter(typeof(DataMetadataVersionJsonConverter))]
-    public DateTimeOffset? Version { get; set; }
+    public DataVersion? Version { get; set; }
 
-    DateTimeOffset? lastRefreshed;
+    DataVersion? lastRefreshed;
 
     // When Fill() was last executed against remote sources.
-    [JsonConverter(typeof(DataMetadataVersionJsonConverter))]
-    public DateTimeOffset? LastRefreshed {
+    public DataVersion? LastRefreshed {
         get => lastRefreshed ?? Version;
         set => lastRefreshed = value;
     }
@@ -28,7 +26,9 @@ public class DataMetadata {
 
     [JsonIgnore]
     [YamlIgnore]
-    public bool IsEmpty => Linking == null && Version == null && lastRefreshed == null && (Overrides == null || Overrides.Count == 0);
+    public bool IsEmpty
+        => Linking == null && Version == null && lastRefreshed == null &&
+           (Overrides == null || Overrides.Count == 0);
 }
 
 public class LinkingMetadata {
@@ -40,51 +40,6 @@ public class LinkingMetadata {
 
     // If this one is the source, this field will be populated with all other instances with the data.
     public SortedSet<string>? VirtualLinks { get; set; }
-}
-
-public class DataMetadataVersionJsonConverter : JsonConverter<DateTimeOffset?> {
-    public override void WriteJson(JsonWriter writer, DateTimeOffset? value, JsonSerializer serializer) {
-        if (value == null) {
-            writer.WriteNull();
-        } else {
-            writer.WriteValue(value.Value.ToString("yyyy-MM-ddTHH:mm:ss.ffffffzzz"));
-        }
-    }
-
-    public override DateTimeOffset? ReadJson(JsonReader reader, Type objectType, DateTimeOffset? existingValue,
-        bool hasExistingValue, JsonSerializer serializer) {
-        if (reader.TokenType == JsonToken.Null) {
-            return null;
-        }
-
-        if (reader.TokenType == JsonToken.Integer) {
-            // Legacy integer version: treat as null so it is refreshed with date version.
-            return null;
-        }
-
-        if (reader.TokenType == JsonToken.Date) {
-            if (reader.Value is DateTime dt) {
-                return new DateTimeOffset(dt);
-            }
-
-            if (reader.Value is DateTimeOffset dto) {
-                return dto;
-            }
-        }
-
-        if (reader.TokenType == JsonToken.String) {
-            var str = (string?) reader.Value;
-            if (str == null || str.Length == 0) {
-                return null;
-            }
-
-            if (DateTimeOffset.TryParse(str, out var parsed)) {
-                return parsed;
-            }
-        }
-
-        return null;
-    }
 }
 
 public static class DataFreshnessExtensions {
@@ -104,7 +59,8 @@ public static class DataFreshnessExtensions {
         }
 
         var lastChecked = data.Metadata.LastRefreshed ?? data.Metadata.Version;
-        if (data.RefreshInterval != null && lastChecked + data.RefreshInterval < DateTimeOffset.UtcNow) {
+        if (data.RefreshInterval != null &&
+            (lastChecked + data.RefreshInterval)?.Value < DateTimeOffset.UtcNow) {
             return true;
         }
 

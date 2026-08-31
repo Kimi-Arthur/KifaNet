@@ -78,9 +78,9 @@ public abstract class DataModel : IEquatable<DataModel> {
 
     [JsonIgnore]
     [YamlIgnore]
-    public virtual DateTimeOffset? ForceRefreshBefore => null;
+    public virtual DataVersion? ForceRefreshBefore => null;
 
-    public virtual DateTimeOffset? GetNextRefresh() =>
+    public virtual DataVersion? GetNextRefresh() =>
         Metadata?.Version != null && RefreshInterval != null
             ? (Metadata.LastRefreshed ?? Metadata.Version) + RefreshInterval
             : null;
@@ -88,7 +88,7 @@ public abstract class DataModel : IEquatable<DataModel> {
     public virtual bool NeedRefreshFrom(DataModel? upstream)
         => NeedRefreshFrom(upstream?.Metadata?.Version);
 
-    public virtual bool NeedRefreshFrom(DateTimeOffset? upstreamVersion) {
+    public virtual bool NeedRefreshFrom(DataVersion? upstreamVersion) {
         if (Metadata?.Version == null) {
             return true;
         }

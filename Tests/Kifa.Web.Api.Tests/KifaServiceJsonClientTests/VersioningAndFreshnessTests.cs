@@ -15,7 +15,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
         new KifaServiceRestClient<TestFillDataModel>();
 
     public static TimeSpan? GlobalRefreshInterval { get; set; }
-    public static DateTimeOffset? GlobalForceRefreshBefore { get; set; }
+    public static DataVersion? GlobalForceRefreshBefore { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
     public string? Content { get; set; }
@@ -26,7 +26,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public override TimeSpan? RefreshInterval => GlobalRefreshInterval;
 
-    public override DateTimeOffset? ForceRefreshBefore => GlobalForceRefreshBefore;
+    public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
     public override void Fill() {
         Content = RemoteSourceContent;
@@ -79,7 +79,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         data!.Content.Should().Be("initial content");
         data.Metadata.Should().NotBeNull();
         data.Metadata!.Version.Should().NotBeNull();
-        data.Metadata.Version.Should().BeOnOrAfter(initialTime);
+        data.Metadata.Version!.Value.Should().BeOnOrAfter(initialTime);
         data.Metadata.LastRefreshed.Should().Be(data.Metadata.Version);
     }
 
@@ -108,7 +108,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         secondGet.Metadata!.Version.Should().Be(originalVersion);
 
         // LastRefreshed should advance to current timestamp
-        secondGet.Metadata.LastRefreshed.Should().BeAfter(originalLastRefreshed!.Value);
+        secondGet.Metadata.LastRefreshed!.Value.Should().BeAfter(originalLastRefreshed!.Value);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         secondGet.Metadata.Should().NotBeNull();
 
         // Version should advance because content actually changed
-        secondGet.Metadata!.Version.Should().BeAfter(originalVersion!.Value);
+        secondGet.Metadata!.Version!.Value.Should().BeAfter(originalVersion!.Value);
         secondGet.Metadata.LastRefreshed.Should().Be(secondGet.Metadata.Version);
     }
 
@@ -157,7 +157,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         Thread.Sleep(50);
 
         // Simulate code logic update by setting ForceRefreshBefore after originalVersion
-        var futureForceRefresh = DateTimeOffset.UtcNow;
+        var futureForceRefresh = (DataVersion) DateTimeOffset.UtcNow;
         TestFillDataModel.GlobalForceRefreshBefore = futureForceRefresh;
 
         // Get() should detect NeedRefresh because Version < ForceRefreshBefore
@@ -166,8 +166,8 @@ public class VersioningAndFreshnessTests : IDisposable {
         secondGet!.Metadata.Should().NotBeNull();
 
         // Version must update because ForceRefreshBefore invalidated the previous version
-        secondGet.Metadata!.Version.Should().BeAfter(originalVersion!.Value);
-        secondGet.Metadata.Version.Should().BeOnOrAfter(futureForceRefresh);
+        secondGet.Metadata!.Version!.Value.Should().BeAfter(originalVersion!.Value);
+        secondGet.Metadata.Version!.Value.Should().BeOnOrAfter(futureForceRefresh.Value);
     }
 
     [Fact]
@@ -240,7 +240,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         // When downstream is refreshed, Fill() checks NeedRefreshFrom(upstream) and updates UpstreamContent
         var updatedDownstream = client.Get(downstreamId, refresh: true);
         updatedDownstream!.UpstreamContent.Should().Be("upstream v2");
-        updatedDownstream.Metadata!.Version.Should().BeAfter(downstreamVersionBefore!.Value);
+        updatedDownstream.Metadata!.Version!.Value.Should().BeAfter(downstreamVersionBefore!.Value);
     }
 
     [Fact]
@@ -268,13 +268,44 @@ public class VersioningAndFreshnessTests : IDisposable {
         data.Should().NotBeNull();
         data!.Metadata.Should().NotBeNull();
         data.Metadata!.Version.Should().NotBeNull();
-        data.Metadata.Version.Should().BeOnOrAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+        data.Metadata.Version!.Value.Should().BeOnOrAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
 
-        // Read the written JSON on disk to verify legacy freshness is stripped and version is ISO string
+        // Read the written JSON on disk to verify legacy freshness is stripped and version is pure UTC digits
         var writtenJson = File.ReadAllText(filePath);
         writtenJson.Should().NotContain("freshness");
         writtenJson.Should().NotContain("\"version\": 18");
         writtenJson.Should().Contain("\"version\":");
+    }
+
+    [Fact]
+    public void PureNumberVersionWithMicrosecondsSerializesAndDeserializesCorrectly() {
+        var metadata = new DataMetadata {
+            Version = new DateTimeOffset(2026, 8, 31, 15, 41, 26, 123, 456, TimeSpan.FromHours(2))
+        };
+
+        var json = metadata.ToJson();
+        // Should serialize in UTC without timezone as pure 20-digit number string: 20260831134126123456
+        json.Should().Contain("\"version\":\"20260831134126123456\"");
+
+        var deserialized = json.FromJson<DataMetadata>();
+        deserialized.Should().NotBeNull();
+        deserialized!.Version.Should().Be(new DateTimeOffset(2026, 8, 31, 13, 41, 26, 123, 456, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void PureNumberIntegerVersionDeserializesCorrectly() {
+        var json = @"{ ""version"": 20260831154126 }";
+        var deserialized = json.FromJson<DataMetadata>();
+        deserialized.Should().NotBeNull();
+        deserialized!.Version.Should().Be(new DateTimeOffset(2026, 8, 31, 15, 41, 26, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void LegacyIsoStringVersionDeserializesCorrectly() {
+        var json = @"{ ""version"": ""2026-08-29T12:00:00.000000+02:00"" }";
+        var deserialized = json.FromJson<DataMetadata>();
+        deserialized.Should().NotBeNull();
+        deserialized!.Version.Should().Be(new DateTimeOffset(2026, 8, 29, 10, 0, 0, TimeSpan.Zero));
     }
 
     [Fact]

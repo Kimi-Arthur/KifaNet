@@ -11,13 +11,21 @@ public class GenericJsonConverter : JsonConverter<JsonSerializable?> {
 
     public override JsonSerializable? ReadJson(JsonReader reader, Type objectType,
         JsonSerializable? existingValue, bool hasExistingValue, JsonSerializer serializer) {
-        var value = (string?) reader.Value;
+        if (reader.Value == null) {
+            return null;
+        }
+
+        var value = reader.Value switch {
+            DateTime dt => dt.ToUniversalTime().ToString("yyyyMMddHHmmssffffff"),
+            DateTimeOffset dto => dto.ToUniversalTime().ToString("yyyyMMddHHmmssffffff"),
+            _ => reader.Value.ToString()
+        };
+
         if (value == null) {
             return null;
         }
 
-        return existingValue ??
-               objectType.GetMethod("op_Implicit", new[] { typeof(string) })
+        return objectType.GetMethod("op_Implicit", new[] { typeof(string) })
                    ?.Invoke(null, new object?[] { value }) as JsonSerializable;
     }
 }

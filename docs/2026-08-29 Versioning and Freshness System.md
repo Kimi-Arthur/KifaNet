@@ -61,7 +61,7 @@ Example persisted JSON:
 {
   "id": "sample_item",
   "$metadata": {
-    "version": "2026-08-29T00:00:00.000000+00:00"
+    "version": "20260829000000000000"
   }
 }
 ```
@@ -229,9 +229,10 @@ Existing data files on disk may contain legacy metadata:
 - `"version": 18` (integer)
 - `"freshness": { "next_refresh": "..." }`
 
-The custom `DataMetadataVersionJsonConverter`:
-1. Reads string ISO-8601 timestamps (e.g. `"2026-08-29T00:00:00+00:00"`).
-2. If an integer or null token is encountered, returns `null`.
+The `DataVersion` type (implementing `JsonSerializable`):
+1. Serializes date timestamps as pure UTC number strings with microsecond precision (`yyyyMMddHHmmssffffff`, e.g. `"20260831154126123456"`).
+2. Reads pure number strings/integers, legacy ISO-8601 strings (e.g. `"2026-08-29T00:00:00+00:00"`), and standard JSON dates.
+3. If a legacy small integer (< 20000101) or null token is encountered, returns `null`.
 
 When a legacy file is read:
 1. `Metadata.Version` resolves to `null`.
