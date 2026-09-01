@@ -26,7 +26,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
 
     public class RestServiceClient : KifaServiceRestClient<SwisscomAccountQuota>, ServiceClient {
         public List<SwisscomAccountQuota> GetTopAccounts()
-            => Call<List<SwisscomAccountQuota>>("get_top_accounts");
+            => Call<List<SwisscomAccountQuota>>("get_top_accounts").Checked();
 
         public KifaActionResult ReserveQuota(string id, string path, long length)
             => Call("reserve_quota", new Dictionary<string, object> {

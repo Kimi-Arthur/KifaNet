@@ -145,5 +145,5 @@ public class GuitarChordRestServiceClient : KifaServiceRestClient<GuitarChord>,
         => SvgDocument.FromSvg<SvgDocument>(Call<string>("get_picture",
             new Dictionary<string, object> {
                 { "id", id }
-            }));
+            }).Checked());
 }

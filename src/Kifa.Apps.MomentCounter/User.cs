@@ -22,13 +22,13 @@ public class User : DataModel, WithModelId<User> {
             => Call<string>("add_counter", new AddCounterRequest {
                 UserId = user.Id,
                 Counter = counter
-            });
+            }).Checked();
 
         public string RemoveCounter(User user, string counterId)
             => Call<string>("remove_counter", new RemoveCounterRequest {
                 UserId = user.Id,
                 CounterId = counterId
-            });
+            }).Checked();
 
         public string AddEvent(User user, Counter counter, Event @event)
             => throw new NotImplementedException();

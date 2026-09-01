@@ -167,7 +167,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     public KifaActionResult Call(string action, object? parameters = null)
         => KifaActionResult.FromAction(() => Call<object>(action, parameters));
 
-    public TResponse Call<TResponse>(string action, object? parameters = null) {
+    public TResponse? Call<TResponse>(string action, object? parameters = null) {
         return Retry.Run(() => {
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl($"${action}"));
 
@@ -181,7 +181,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
             if (result is {
                     Status: KifaActionStatus.OK
                 }) {
-                return result.Value.Checked();
+                return result.Value;
             }
 
             throw new KifaActionFailedException(result ?? KifaActionResult.UnknownError());

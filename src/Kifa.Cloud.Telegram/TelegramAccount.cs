@@ -58,7 +58,7 @@ public class TelegramAccount : DataModel, WithModelId<TelegramAccount> {
             => Call<TelegramSession>("obtain_session", new ObtainSessionRequest {
                 AccountId = accountId,
                 SessionId = sessionId
-            });
+            }).Checked();
 
         public KifaActionResult RenewSession(string accountId, int sessionId)
             => Call("renew_session", new RenewSessionRequest {

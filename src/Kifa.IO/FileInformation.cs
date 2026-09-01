@@ -349,14 +349,14 @@ public class FileInformationRestServiceClient : KifaServiceRestClient<FileInform
         => Call<List<FolderInfo>>("get_folder", new Dictionary<string, object> {
             ["folder"] = folder,
             ["targets"] = targets
-        });
+        }).Checked();
 
 
     public List<string> ListFolder(string folder, bool recursive = false)
         => Call<List<string>>("list_folder", new Dictionary<string, object> {
             ["folder"] = folder,
             ["recursive"] = recursive
-        });
+        }).Checked();
 
     public KifaActionResult AddLocation(string id, string location, bool verified = false)
         => Call("add_location", new Dictionary<string, object> {
