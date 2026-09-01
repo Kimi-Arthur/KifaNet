@@ -45,8 +45,10 @@ public class GetCoverCommand : KifaCommand {
                 => file.Parent.GetFile($"{file.BaseName}.{ext}").Exists());
             if (foundCoverExtension != null) {
                 var foundCoverFile = file.Parent.GetFile($"{file.BaseName}.{foundCoverExtension}");
-                Logger.Info($"Found cover file {foundCoverFile} for {file}. Skipped.");
-                return;
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Found cover file {foundCoverFile} for {file}."
+                };
             }
 
             var video = BilibiliVideo.Parse(file.Id);
@@ -59,5 +61,6 @@ public class GetCoverCommand : KifaCommand {
             var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLinkFile.Extension}");
             coverFile.Delete();
             coverLinkFile.Copy(coverFile);
+            return KifaActionResult.Success();
         });
 }

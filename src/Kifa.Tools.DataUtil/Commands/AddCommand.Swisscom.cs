@@ -35,7 +35,7 @@ public partial class AddCommand {
                 var quota = SwisscomAccountQuota.Client.Get(account.Id, true);
                 if (quota?.TotalQuota > 0) {
                     return new KifaActionResult {
-                        Status = KifaActionStatus.OK,
+                        Status = KifaActionStatus.Skipped,
                         Message = "Account already registered."
                     };
                 }

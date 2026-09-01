@@ -223,7 +223,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
                     .Where(l => ((FileLocation) l.Key).Server == fromServer).ToList();
                 if (locationsFromServer.Count == 0) {
                     return (file.Id, new KifaActionResult {
-                        Status = KifaActionStatus.OK,
+                        Status = KifaActionStatus.Skipped,
                         Message = $"No files to move for {file.Id}."
                     });
                 }
@@ -248,7 +248,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             }
 
             return (file.Id, new KifaActionResult {
-                Status = KifaActionStatus.OK,
+                Status = KifaActionStatus.Skipped,
                 Message = $"No files to move for {file.Id}."
             });
         }));
@@ -261,8 +261,8 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
                        ((FileLocation) l.Key).ServerType == serverType).ToList();
                 if (locationsOnServer.Count == 0) {
                     return (file.Id, new KifaActionResult {
-                        Status = KifaActionStatus.OK,
-                        Message = $"No files to move for {file.Id}."
+                        Status = KifaActionStatus.Skipped,
+                        Message = $"No files to remove for {file.Id}."
                     });
                 }
 
@@ -280,7 +280,7 @@ public class FileInformationJsonServiceClient : KifaServiceJsonClient<FileInform
             }
 
             return (file.Id, new KifaActionResult {
-                Status = KifaActionStatus.OK,
+                Status = KifaActionStatus.Skipped,
                 Message = $"No files to remove for {file.Id}."
             });
         }));

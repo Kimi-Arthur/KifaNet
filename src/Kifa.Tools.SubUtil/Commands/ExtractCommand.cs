@@ -69,7 +69,7 @@ class ExtractCommand : KifaCommand {
         if (subtitleFile.Exists()) {
             if (!Force) {
                 return new KifaActionResult {
-                    Status = KifaActionStatus.OK,
+                    Status = KifaActionStatus.Skipped,
                     Message = $"Subtitle file {subtitleFile} already exists. Skipped"
                 };
             }

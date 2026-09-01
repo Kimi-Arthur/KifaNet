@@ -95,7 +95,7 @@ public partial class KifaFile {
         try {
             CheckDestination(destination, skipVerify);
             return new KifaActionResult {
-                Status = KifaActionStatus.OK,
+                Status = KifaActionStatus.Skipped,
                 Message = $"Destination {destination} is already uploaded."
             };
         } catch (FileNotFoundException ex) {

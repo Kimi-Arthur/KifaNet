@@ -26,7 +26,7 @@ public class RemoveEmptyCommand : KifaCommand {
     static KifaActionResult CleanFolder(string folderName) {
         var hasRemaining = RecursivelyRemoveEmptyFolders(folderName);
         return new KifaActionResult {
-            Status = KifaActionStatus.OK,
+            Status = hasRemaining ? KifaActionStatus.Skipped : KifaActionStatus.OK,
             Message = hasRemaining ? "Folder not empty." : "Folder deleted."
         };
     }

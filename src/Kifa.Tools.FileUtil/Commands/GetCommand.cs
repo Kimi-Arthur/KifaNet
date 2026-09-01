@@ -64,7 +64,7 @@ class GetCommand : KifaCommand {
         try {
             file.Add();
             return new KifaActionResult {
-                Status = KifaActionStatus.OK,
+                Status = KifaActionStatus.Skipped,
                 Message = "Already got!"
             };
         } catch (FileNotFoundException) {
@@ -111,7 +111,7 @@ class GetCommand : KifaCommand {
 
         if (LightweightOnly) {
             return new KifaActionResult {
-                Status = KifaActionStatus.OK,
+                Status = KifaActionStatus.Skipped,
                 Message = "Not getting file, which requires downloading."
             };
         }

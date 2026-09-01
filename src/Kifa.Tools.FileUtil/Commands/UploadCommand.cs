@@ -76,7 +76,7 @@ class UploadCommand : KifaCommand {
         if (SkipPotentiallyUploadFiles) {
             foreach (var file in pendingFiles) {
                 ExecuteItem(file, () => new KifaActionResult {
-                    Status = KifaActionStatus.OK,
+                    Status = KifaActionStatus.Skipped,
                     Message = "File skipped as it's uploaded, though not verified."
                 });
             }
