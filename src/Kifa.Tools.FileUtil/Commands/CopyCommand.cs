@@ -36,7 +36,7 @@ class CopyCommand : KifaCommand {
     int ExecuteLocal() {
         var destination = new KifaFile(Destination);
         var sourceItems = Sources.Select(s => new KifaFile(s)).ToList();
-        var isDestFolder = Destination.EndsWith('/') || sourceItems.Count > 1;
+        var isDestFolder = Destination.EndsWith('/') || sourceItems.Count > 1 || destination.IsFolder();
 
         var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
@@ -53,7 +53,7 @@ class CopyCommand : KifaCommand {
 
                 foreach (var childFile in childFiles) {
                     var relativePath = childFile.Id[sourceFolderId.Length..];
-                    var targetFile = new KifaFile($"{baseDestId}/{relativePath}");
+                    var targetFile = new KifaFile($"{baseDestId.TrimEnd('/')}/{relativePath.TrimStart('/')}");
                     localFileCopyPairs.Add((childFile, targetFile));
                 }
             } else {
@@ -86,7 +86,9 @@ class CopyCommand : KifaCommand {
             return 1;
         }
 
-        var isDestFolder = Destination.EndsWith('/') || sourceIds.Count > 1;
+        var destFiles = FileInformation.Client.ListFolder(destinationPath, false);
+        var isDestFolder = Destination.EndsWith('/') || sourceIds.Count > 1 ||
+                           destFiles.Any(f => f != destinationPath);
         var idFileCopyPairs = new List<(string SourceId, string DestinationId)>();
 
         foreach (var sourceId in sourceIds) {

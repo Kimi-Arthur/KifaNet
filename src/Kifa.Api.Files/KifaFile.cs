@@ -132,6 +132,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         uri = NormalizeUri(uri);
+        if (uri.EndsWith('/') && !uri.EndsWith("://") && uri.Count(c => c == '/') > 1) {
+            uri = uri.TrimEnd('/');
+        }
 
         // segments[0] is the client spec.
         var segments = uri.Split('/');
@@ -244,9 +247,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public KifaFile GetFile(string name, FileInformation? fileInfo = null)
-        => new($"{Host}{Path}/{name}", fileInfo: fileInfo);
+        => new($"{Host}{Path.TrimEnd('/')}/{name.TrimStart('/')}", fileInfo: fileInfo);
 
-    public KifaFile GetFilePrefixed(string prefix) => new($"{Host}{prefix}{Path}");
+    public KifaFile GetFilePrefixed(string prefix)
+        => new($"{Host}{prefix.TrimEnd('/')}/{Path.TrimStart('/')}");
 
     public KifaFile GetIgnoredFile(string? type = null)
         => type != null
@@ -263,6 +267,18 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
+
+    public bool IsFolder() {
+        if (IsLocal) {
+            try {
+                return Directory.Exists(GetLocalPath());
+            } catch (Exception) {
+                return false;
+            }
+        }
+
+        return !Exists() && Client.List(Path).Any();
+    }
 
     public Stream OpenRead()
         => new VerifiableStream(
