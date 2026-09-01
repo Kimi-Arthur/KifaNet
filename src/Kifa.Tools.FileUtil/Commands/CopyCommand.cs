@@ -29,6 +29,9 @@ class CopyCommand : KifaCommand {
     [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
     public bool IncludeAll { get; set; } = false;
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         return ById ? ExecuteById() : ExecuteLocal();
     }
@@ -63,7 +66,11 @@ class CopyCommand : KifaCommand {
         }
 
         var selected = SelectMany(localFileCopyPairs,
-            pair => $"{pair.SourceFile}\n=>\t{pair.DestinationFile}", "files to link");
+            pair => ShowSize
+                ? $"{pair.SourceFile} ({pair.SourceFile.Length.ToSizeString()})\n=>\t{pair.DestinationFile}"
+                : $"{pair.SourceFile}\n=>\t{pair.DestinationFile}",
+            new Func<List<(KifaFile SourceFile, KifaFile DestinationFile)>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.SourceFile.Length).ToSizeString()})" : "")} to link"));
 
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to link", () => selected);

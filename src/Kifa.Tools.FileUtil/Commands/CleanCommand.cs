@@ -17,6 +17,9 @@ class CleanCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         RemoveMissingFiles();
         DeduplicateFiles();
@@ -28,7 +31,12 @@ class CleanCommand : KifaCommand {
         var files = KifaFile.FindPotentialFiles(FileNames);
         var filesToRemove = files.Where(file => file.HasEntry && !file.Exists()).ToList();
 
-        var selected = SelectMany(filesToRemove, f => f.ToString(), "non-existing files to remove");
+        var selected = SelectMany(filesToRemove,
+            f => ShowSize && f.FileInfo?.Size != null
+                ? $"{f} ({f.FileInfo.Size.ToSizeString()})"
+                : f.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"non-existing files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to remove"));
 
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("non-existing files to remove", () => selected);

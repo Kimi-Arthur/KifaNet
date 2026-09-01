@@ -29,6 +29,9 @@ class TrashCommand : KifaCommand {
     [Option('r', "restore", HelpText = "Restore trashed files")]
     public bool Restore { get; set; } = false;
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public string DateString {
         get => Late.Get(field);
         set => Late.Set(ref field, value);
@@ -40,8 +43,10 @@ class TrashCommand : KifaCommand {
         DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {
-            var selectedFileIds =
-                SelectMany(foundFiles, file => file.ToString(), "files to restore");
+            var selectedFileIds = SelectMany(foundFiles,
+                file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+                new Func<List<KifaFile>, string>(choices
+                    => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to restore"));
             if (selectedFileIds.Status != KifaActionStatus.OK) {
                 ExecuteItem("files to restore", () => selectedFileIds);
                 return LogSummary();
@@ -58,8 +63,10 @@ class TrashCommand : KifaCommand {
             var trashPath =
                 $"/Trash/{Category.Trim('/')}/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}";
 
-            var selectedFiles = SelectMany(foundFiles, file => file.ToString(),
-                $"files to trash to {trashPath}");
+            var selectedFiles = SelectMany(foundFiles,
+                file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
+                new Func<List<KifaFile>, string>(choices
+                    => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to trash to {trashPath}"));
             if (selectedFiles.Status != KifaActionStatus.OK) {
                 ExecuteItem("files to trash", () => selectedFiles);
                 return LogSummary();

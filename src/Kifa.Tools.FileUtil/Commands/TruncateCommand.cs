@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
@@ -13,9 +15,15 @@ class TruncateCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
     public IEnumerable<string> FileNames { get; set; } = [];
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
-        var selected = SelectMany(KifaFile.FindExistingFiles(FileNames), file => file.ToString(),
-            "files to truncate");
+        var files = KifaFile.FindExistingFiles(FileNames);
+        var selected = SelectMany(files,
+            file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.Length).ToSizeString()})" : "")} to truncate"));
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to truncate", () => selected);
             return LogSummary();

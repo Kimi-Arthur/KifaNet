@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -21,6 +22,9 @@ class DedupCommand : KifaCommand {
             "Files to be deleted don't need to have a name sequence containing the base file.")]
     public bool Unsafe { get; set; } = false;
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindPotentialFiles(FileNames).Select(f => f.FileInfo);
         var filesToDelete = new List<(string truth, FileInformation toDelete)>();
@@ -39,7 +43,11 @@ class DedupCommand : KifaCommand {
         }
 
         var confirmedDeletion = SelectMany(filesToDelete,
-            tuple => $"{tuple.toDelete.Id} ({tuple.truth})", "files to delete");
+            tuple => ShowSize && tuple.toDelete.Size != null
+                ? $"{tuple.toDelete.Id} ({tuple.toDelete.Size.ToSizeString()}) ({tuple.truth})"
+                : $"{tuple.toDelete.Id} ({tuple.truth})",
+            new Func<List<(string truth, FileInformation toDelete)>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.toDelete.Size ?? 0).ToSizeString()})" : "")} to delete"));
         if (confirmedDeletion.Status != KifaActionStatus.OK) {
             ExecuteItem("files to delete", () => confirmedDeletion);
             return LogSummary();

@@ -36,6 +36,9 @@ class RemoveCommand : KifaFileCommand {
             "Force remove files even if no other instances exist. Only use when a file is actually removed.")]
     public bool Force { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         FileNames = FileNames.ToList();
         var removalText = RemoveLinkOnly ? "" : " and remove them from file system";
@@ -55,7 +58,7 @@ class RemoveCommand : KifaFileCommand {
 
                 fileInfos.AddRange(FileInformation.Client.List(folder: fileName,
                     options: new KifaDataOptions {
-                        Fields = ["Id", "Metadata"]
+                        Fields = ["Id", "Metadata", "Size"]
                     }).Values);
             }
 
@@ -77,8 +80,12 @@ class RemoveCommand : KifaFileCommand {
                     }).ToList();
             }
 
-            var selected = SelectMany(fileInfos, file => file.Id,
-                "file entries to remove along all relevant instances");
+            var selected = SelectMany(fileInfos,
+                file => ShowSize && file.Size != null
+                    ? $"{file.Id} ({file.Size.ToSizeString()})"
+                    : file.Id,
+                new Func<List<FileInformation>, string>(choices
+                    => $"file entries{(ShowSize ? $" ({choices.Sum(c => c.Size ?? 0).ToSizeString()})" : "")} to remove along all relevant instances"));
 
             if (selected.Status != KifaActionStatus.OK) {
                 ExecuteItem("file entries to remove", () => selected);
@@ -99,8 +106,10 @@ class RemoveCommand : KifaFileCommand {
         var localFiles = KifaFile.FindExistingFiles(FileNames);
 
         if (localFiles.Count > 0) {
-            var selected = SelectMany(localFiles, file => file.ToString(),
-                $"local files to delete{removalText}");
+            var selected = SelectMany(localFiles,
+                file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
+                new Func<List<KifaFile>, string>(choices
+                    => $"local files{(ShowSize ? $" ({choices.Sum(c => c.Length).ToSizeString()})" : "")} to delete{removalText}"));
 
             if (selected.Status == KifaActionStatus.OK) {
                 selected.Value.ForEach(f => ExecuteItem(f.ToString(),

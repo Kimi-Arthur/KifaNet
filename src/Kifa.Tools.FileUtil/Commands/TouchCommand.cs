@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
@@ -16,13 +17,20 @@ class TouchCommand : KifaCommand {
     [Value(0, Required = true, MetaName = "File URL")]
     public string FileUri { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var target = new KifaFile(FileUri);
 
         var files = FileInformation.Client.ListFolder(target.Id, true);
         if (files.Count > 0) {
             var selected = SelectMany(files.Select(f => new KifaFile(target.Host + f)).ToList(),
-                f => f.ToString(), "files to touch");
+                f => ShowSize && f.FileInfo?.Size != null
+                    ? $"{f} ({f.FileInfo.Size.ToSizeString()})"
+                    : f.ToString(),
+                new Func<List<KifaFile>, string>(choices
+                    => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to touch"));
             if (selected.Status == KifaActionStatus.OK) {
                 foreach (var file in selected.Value) {
                     ExecuteItem(file.ToString(), () => TouchFile(file));

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
@@ -14,9 +15,15 @@ class DecodeCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target file(s) to import.")]
     public IEnumerable<string> FileNames { get; set; }
 
+    [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
+    public bool ShowSize { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var files = KifaFile.FindExistingFiles(FileNames);
-        var selected = SelectMany(files, file => file.ToString(), "files to decode");
+        var selected = SelectMany(files,
+            file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
+            new Func<List<KifaFile>, string>(choices
+                => $"files{(ShowSize ? $" ({choices.Sum(c => c.Length).ToSizeString()})" : "")} to decode"));
         if (selected.Status != KifaActionStatus.OK) {
             ExecuteItem("files to decode", () => selected);
             return LogSummary();
