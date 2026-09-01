@@ -17,10 +17,14 @@ class TrashCommand : KifaCommand {
     [Value(0, Required = true, HelpText = "Target files to trash.")]
     public IEnumerable<string> FileNames { get; set; }
 
-    [Option('w', "reason",
+    [Option('c', "category", Required = true,
+        HelpText = "Category of the files to trash. Suggested: Anime, Covers, etc.")]
+    public string Category { get; set; }
+
+    [Option('w', "reason", Required = true,
         HelpText =
             "Attach reason to the trashed files after the top datetime folder. No space should be here.")]
-    public virtual string? Reason { get; set; }
+    public virtual string Reason { get; set; }
 
     [Option('r', "restore", HelpText = "Restore trashed files")]
     public bool Restore { get; set; } = false;
@@ -51,9 +55,8 @@ class TrashCommand : KifaCommand {
                 return 1;
             }
 
-            var trashPath = Reason == null
-                ? $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}"
-                : $"/Trash/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}";
+            var trashPath =
+                $"/Trash/{Category.Trim('/')}/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}";
 
             var selectedFiles = SelectMany(foundFiles, file => file.ToString(),
                 $"files to trash to {trashPath}");
@@ -71,6 +74,14 @@ class TrashCommand : KifaCommand {
             if (extraSelected.Status == KifaActionStatus.OK) {
                 selectedFileIds.UnionWith(extraSelected.Value);
             }
+
+            var confirmedTrashPath = Confirm("Confirm target folder to trash:", trashPath);
+            if (confirmedTrashPath == null) {
+                Logger.Warn("Action canceled.");
+                return 2;
+            }
+
+            trashPath = confirmedTrashPath.TrimEnd('/');
 
             selectedFileIds.ForEach(fileId => ExecuteItem(fileId, () => Trash(fileId, trashPath)));
             return LogSummary();
