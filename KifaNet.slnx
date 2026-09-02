@@ -47,14 +47,14 @@
     <Project Path="src\Kifa.Bilibili\Kifa.Bilibili.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Graphics\Kifa.Graphics.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Infos\Kifa.Infos.csproj" Type="Classic C#" />
-    <Project Path="src\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj" Type="Classic C#" />
+    <Project Path="src\Kifa.Media\Kifa.Media.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Subtitle\Kifa.Subtitle.csproj" Type="Classic C#" />
     <Project Path="src\Kifa.Tencent\Kifa.Tencent.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.ArchiveOrg.Tests\Kifa.ArchiveOrg.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Bilibili.Tests\Kifa.Bilibili.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Graphics.Tests\Kifa.Graphics.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Infos.Tests\Kifa.Infos.Tests.csproj" Type="Classic C#" />
-    <Project Path="Tests\Kifa.Media.MpegDash.Tests\Kifa.Media.MpegDash.Tests.csproj" Type="Classic C#" />
+    <Project Path="tests\Kifa.Media.Tests\Kifa.Media.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Subtitle.Tests\Kifa.Subtitle.Tests.csproj" Type="Classic C#" />
     <Project Path="Tests\Kifa.Tencent.Tests\Kifa.Tencent.Tests.csproj" Type="Classic C#" />
   </Folder>

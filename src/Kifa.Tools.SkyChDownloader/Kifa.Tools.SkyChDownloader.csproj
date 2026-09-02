@@ -21,7 +21,7 @@
         <ProjectReference Include="..\..\Kifa.Jobs\Kifa.Jobs.csproj"/>
         <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj"/>
         <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj"/>
-        <ProjectReference Include="..\Kifa.Media.MpegDash\Kifa.Media.MpegDash.csproj"/>
+        <ProjectReference Include="..\Kifa.Media\Kifa.Media.csproj"/>
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
         <ProjectReference Include="..\Kifa.SkyCh\Kifa.SkyCh.csproj"/>
         <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>

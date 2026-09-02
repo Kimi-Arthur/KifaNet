@@ -1,12 +1,13 @@
 using System.IO;
+using Kifa.Media.MpegDash;
 using Xunit;
 
-namespace Kifa.Media.MpegDash.Tests;
+namespace Kifa.Media.Tests;
 
 public class MpegDashFileTests {
     [Fact]
     public void DeserializeSkyChTest() {
-        using var stream = File.OpenRead("KELLMFAAMAOJEBDG.mpd");
+        using var stream = File.OpenRead("3995788.mpd");
         var mpeg = new MpegDashFile("https://tvoosa-pez0406.sctv.ch/dash/BKLHAGAAJGDOFBDG.mpd",
             stream);
         Assert.Equal(3, mpeg.DashInfo.Period.AdaptationSet.Count);
