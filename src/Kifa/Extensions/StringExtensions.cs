@@ -20,18 +20,6 @@ public static class StringExtensions {
         .Prepend("").Select((value, index) => (value, factor: 1L << (10 * index)))
         .ToDictionary(item => item.value, item => item.factor);
 
-    static readonly Dictionary<string, string> SafeCharacterMapping = new() {
-        ["/"] = "／",
-        ["\\"] = "＼",
-        [": "] = "：",
-        ["|"] = "｜",
-        ["?"] = "？",
-        ["*"] = "＊",
-        ["<"] = "＜",
-        [">"] = "＞",
-        ["\n"] = " "
-    };
-
     public static string Format(this string format, params (string Key, object Value)[] parameters)
         => parameters.Aggregate(format,
             (current, p) => current.Replace("{" + p.Key + "}", p.Value.ToString()));
@@ -138,18 +126,65 @@ public static class StringExtensions {
             ? path
             : NumberPattern.Replace(path, m => $"{long.Parse(m.Value):D8}");
 
-    public static string NormalizeFileName(this string fileName, int maxNameByteCount = -1)
-        => SafeCharacterMapping.Aggregate(fileName.Normalize(NormalizationForm.FormC).Trim(),
-                (current, mapping) => current.Replace(mapping.Key, mapping.Value))
-            .RemoveUnnecessarySpaces().ChopEndToByteCount(maxNameByteCount);
+    public const int MaxPathSegmentByteCount = 255;
+    public const int MaxFileNameByteCount = 250;
 
-    public static string NormalizeFilePath(this string fileName)
-        => string.Join("/", fileName.Split('/').Select(NormalizeFileName));
+    static readonly Dictionary<string, string> SafeCharacterMapping = new() {
+        ["/"] = "／",
+        ["\\"] = "＼",
+        [": "] = "：",
+        ["|"] = "｜",
+        ["?"] = "？",
+        ["*"] = "＊",
+        ["<"] = "＜",
+        [">"] = "＞",
+        ["\n"] = " "
+    };
 
     static readonly Regex MultipleSpacesPattern = new(" +");
 
     static string RemoveUnnecessarySpaces(this string text)
         => MultipleSpacesPattern.Replace(text.Trim(), " ");
+
+    static string NormalizeSegment(string segment)
+        => SafeCharacterMapping.Aggregate(segment.Normalize(NormalizationForm.FormC).Trim(),
+                (current, mapping) => current.Replace(mapping.Key, mapping.Value))
+            .RemoveUnnecessarySpaces();
+
+    public static string NormalizeFileName(this string prefix, string? suffix = null,
+        int maxFileNameByteCount = MaxFileNameByteCount) {
+        var normalizedPrefix = NormalizeSegment(prefix);
+        var normalizedSuffix = suffix == null ? "" : NormalizeSegment(suffix);
+
+        if (maxFileNameByteCount < 0) {
+            return $"{normalizedPrefix}{normalizedSuffix}";
+        }
+
+        var suffixByteCount = Encoding.UTF8.GetByteCount(normalizedSuffix);
+        var prefixMaxByteCount = maxFileNameByteCount - suffixByteCount;
+        if (prefixMaxByteCount < 0) {
+            throw new ArgumentException(
+                $"Suffix '{normalizedSuffix}' ({suffixByteCount} bytes) exceeds maximum byte count of {maxFileNameByteCount}.",
+                nameof(suffix));
+        }
+
+        return $"{normalizedPrefix.ChopEndToByteCount(prefixMaxByteCount)}{normalizedSuffix}";
+    }
+
+    public static string NormalizeFilePath(this string path, string? suffix = null,
+        int maxFileNameByteCount = MaxFileNameByteCount,
+        int maxPathSegmentByteCount = MaxPathSegmentByteCount) {
+        var segments = path.Split('/');
+        var normalizedSegments = new string[segments.Length];
+        for (var i = 0; i < segments.Length - 1; i++) {
+            normalizedSegments[i] =
+                segments[i].NormalizeFileName(maxFileNameByteCount: maxPathSegmentByteCount);
+        }
+
+        normalizedSegments[^1] =
+            segments[^1].NormalizeFileName(suffix, maxFileNameByteCount);
+        return string.Join("/", normalizedSegments);
+    }
 
     public static byte[] FromBase64(this string text) => Convert.FromBase64String(text);
 
@@ -198,7 +233,8 @@ public static class StringExtensions {
         var charLength = 0;
         foreach (var rune in str.EnumerateRunes()) {
             if (length + rune.Utf8SequenceLength + 1 > maxByteCount) {
-                Logger.Debug($"Chopped {str} to {str[..charLength]} due to byte limit of {maxByteCount}");
+                Logger.Debug(
+                    $"Chopped {str} to {str[..charLength]} due to byte limit of {maxByteCount}");
                 return str[..charLength] + "+";
             }
 

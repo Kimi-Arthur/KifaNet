@@ -57,4 +57,64 @@ public class StringTests {
         var actNegative = () => "hello".ChopEndToByteCount(-2);
         actNegative.Should().NotThrow(); // negative means no limit
     }
+
+    [Fact]
+    public void NormalizeFileNameTest() {
+        "  a/b\\c: d|e?f*g<h>i\nj  ".NormalizeFileName()
+            .Should().Be("a／b＼c：d｜e？f＊g＜h＞i j");
+
+        // Default max byte count is 250.
+        var valid250 = new string('a', 250);
+        valid250.NormalizeFileName().Should().Be(valid250);
+
+        var overlong251 = new string('a', 251);
+        overlong251.NormalizeFileName().Should().Be(new string('a', 249) + "+");
+
+        // Custom maxFileNameByteCount
+        "hello world".NormalizeFileName(maxFileNameByteCount: 6).Should().Be("hello+");
+
+        // With suffix
+        "hello".NormalizeFileName(".mp4", 10).Should().Be("hello.mp4");
+        "hello world".NormalizeFileName(".mp4", 9).Should().Be("hell+.mp4");
+        "hello world".NormalizeFileName(".mp4", 10).Should().Be("hello+.mp4");
+
+        // Multibyte with suffix
+        "你好世界".NormalizeFileName(".mp4", 10).Should().Be("你+.mp4");
+
+        // Overlong suffix
+        var actOverlongSuffix = () => "hello".NormalizeFileName("overlong_suffix", 5);
+        actOverlongSuffix.Should().Throw<System.ArgumentException>();
+
+        // Negative limit means no chopping
+        "hello world".NormalizeFileName(".mp4", -1).Should().Be("hello world.mp4");
+    }
+
+    [Fact]
+    public void NormalizeFilePathTest() {
+        // Single file segment follows 250 limit
+        var valid250 = new string('a', 250);
+        valid250.NormalizeFilePath().Should().Be(valid250);
+
+        var overlong251 = new string('a', 251);
+        overlong251.NormalizeFilePath().Should().Be(new string('a', 249) + "+");
+
+        // Multi-segment: directory follows 255 limit, file follows 250 limit
+        var dir255 = new string('d', 255);
+        var dir256 = new string('d', 256);
+        $"{dir255}/{valid250}".NormalizeFilePath().Should().Be($"{dir255}/{valid250}");
+        $"{dir256}/{overlong251}".NormalizeFilePath()
+            .Should().Be($"{new string('d', 254)}+/{new string('a', 249)}+");
+
+        // Named parameter limits
+        "folder/hello world".NormalizeFilePath(maxFileNameByteCount: 6).Should().Be("folder/hello+");
+        "folder_long/hello world".NormalizeFilePath(maxFileNameByteCount: 6, maxPathSegmentByteCount: 8)
+            .Should().Be("folder_+/hello+");
+
+        // With suffix on final file segment
+        "folder/hello world".NormalizeFilePath(suffix: ".mp4", maxFileNameByteCount: 10,
+            maxPathSegmentByteCount: 15).Should().Be("folder/hello+.mp4");
+
+        // Safe characters mapping preserved across path segments
+        "dir: 1/file? 2".NormalizeFilePath().Should().Be("dir：1/file？ 2");
+    }
 }

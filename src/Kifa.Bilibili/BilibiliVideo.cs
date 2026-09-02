@@ -374,9 +374,9 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         }
 
         var suffix = GetSuffix(Id, pid, p.Cid, quality, codec);
-        // -2 is for dots and -5 is for .json suffix on the server side.
+        // -1 is for dot and -5 is for .json suffix on the server side.
         return
-            $"{folderSegments.JoinBy('/')}/{filenameSegments.JoinBy(" ").NormalizeFileName(MaxFilenameByteLength - suffix.Length - TypeSuffixLength - 2 - 5)}.{suffix}";
+            $"{folderSegments.JoinBy('/')}/{filenameSegments.JoinBy(" ").NormalizeFileName(suffix: $".{suffix}", maxFileNameByteCount: MaxFilenameByteLength - TypeSuffixLength - 1 - 5)}";
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
