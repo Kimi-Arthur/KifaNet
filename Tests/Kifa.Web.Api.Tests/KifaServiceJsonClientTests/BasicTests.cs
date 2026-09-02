@@ -439,6 +439,60 @@ public class BasicTests : IDisposable {
         deserializedJsonModel.ExternalData.Should().BeNullOrEmpty();
     }
 
+    [Fact]
+    public void SetGetWithMaxAllowedSegmentLengthTest() {
+        // 250 ASCII chars + ".json" (5 chars) = 255 bytes, which is allowed.
+        var validSegment = new string('a', 250);
+        var result = client.Set(new TestDataModel {
+            Id = validSegment,
+            Data = "valid length"
+        });
+
+        result.Status.Should().Be(KifaActionStatus.OK);
+        var data = client.Get(validSegment);
+        data.Should().NotBeNull();
+        data!.Data.Should().Be("valid length");
+    }
+
+    [Fact]
+    public void SetWithOverlongSegmentFailsTest() {
+        // 251 ASCII chars + ".json" (5 chars) = 256 bytes, which exceeds 255 bytes limit.
+        var overlongSegment = new string('a', 251);
+        var result = client.Set(new TestDataModel {
+            Id = overlongSegment,
+            Data = "overlong"
+        });
+
+        result.Status.Should().Be(KifaActionStatus.Error);
+        result.Message.Should().Contain("exceeds the maximum allowed length of 255 UTF-8 bytes");
+    }
+
+    [Fact]
+    public void SetWithOverlongDirectorySegmentFailsTest() {
+        // Directory segment of 256 bytes
+        var overlongDir = new string('d', 256);
+        var result = client.Set(new TestDataModel {
+            Id = $"{overlongDir}/valid_file",
+            Data = "overlong directory"
+        });
+
+        result.Status.Should().Be(KifaActionStatus.Error);
+        result.Message.Should().Contain("exceeds the maximum allowed length of 255 UTF-8 bytes");
+    }
+
+    [Fact]
+    public void SetWithOverlongUtf8MultiByteSegmentFailsTest() {
+        // 85 Chinese characters = 255 bytes + ".json" (5 bytes) = 260 bytes > 255 bytes
+        var overlongChineseSegment = new string('中', 85);
+        var result = client.Set(new TestDataModel {
+            Id = overlongChineseSegment,
+            Data = "overlong utf8"
+        });
+
+        result.Status.Should().Be(KifaActionStatus.Error);
+        result.Message.Should().Contain("exceeds the maximum allowed length of 255 UTF-8 bytes");
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

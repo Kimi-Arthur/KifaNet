@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -451,8 +452,26 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         WriteRaw($"{data.ToPrettyJson()}\n", data.Id);
     }
 
+    const int MaxPathSegmentByteLength = 255;
+
+    string GetPath(string id, string suffix = "json") {
+        var trimmedId = id.Trim('/');
+        var segments = trimmedId.Split('/');
+        for (var i = 0; i < segments.Length; i++) {
+            var segment = i == segments.Length - 1 ? $"{segments[i]}.{suffix}" : segments[i];
+            var byteCount = Encoding.UTF8.GetByteCount(segment);
+            if (byteCount > MaxPathSegmentByteLength) {
+                throw new ArgumentException(
+                    $"Path segment '{segment}' in ID '{id}' exceeds the maximum allowed length of {MaxPathSegmentByteLength} UTF-8 bytes (actual: {byteCount} bytes).",
+                    nameof(id));
+            }
+        }
+
+        return $"{DataFolder}/{ModelId}/{trimmedId}.{suffix}";
+    }
+
     void WriteRaw(string content, string id, string suffix = "json") {
-        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.{suffix}";
+        var path = GetPath(id, suffix);
         MakeParent(path);
         File.WriteAllText(path, content);
     }
@@ -485,12 +504,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     string? ReadRaw(string id, string suffix = "json") {
-        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.{suffix}";
+        var path = GetPath(id, suffix);
         return !File.Exists(path) ? null : File.ReadAllText(path);
     }
 
     void Remove(string id) {
-        var path = $"{DataFolder}/{ModelId}/{id.Trim('/')}.json";
+        var path = GetPath(id);
         try {
             File.Delete(path);
             Logger.Trace($"Deleted {path}");

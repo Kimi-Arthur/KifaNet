@@ -20,11 +20,16 @@ public static class HttpExtensions {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string GetString(this HttpResponseMessage response) {
-        response.EnsureSuccessStatusCode();
         using var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result,
             Encoding.GetEncoding("UTF-8"));
         var data = sr.ReadToEnd();
         Logger.Trace($"Response ({response.StatusCode:D}): {data}");
+        if (!response.IsSuccessStatusCode) {
+            response.Dispose();
+            throw new HttpRequestException(
+                $"Response status code does not indicate success: {(int) response.StatusCode} ({response.ReasonPhrase}). Response content: {data}");
+        }
+
         response.Dispose();
         return data;
     }
