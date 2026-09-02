@@ -179,7 +179,8 @@ public static class StringExtensions {
     public static string ChopPrefix(this string source, string prefix)
         => source.StartsWith(prefix) ? source[prefix.Length..] : source;
 
-    // Chops the given string to the given byte length with a trailing '+' if it's cut.
+    // Chops the string to fit within maxByteCount UTF-8 bytes along Rune boundaries, appending a trailing '+' (1 byte) if truncated.
+    // Returns the original string unmodified if it already fits.
     public static string ChopEndToByteCount(this string str, int maxByteCount = -1) {
         if (maxByteCount < 0 || Encoding.UTF8.GetByteCount(str) <= maxByteCount) {
             return str;
@@ -194,12 +195,15 @@ public static class StringExtensions {
         }
 
         var length = 0;
-        for (var i = 0; i < str.Length; i++) {
-            length += Encoding.UTF8.GetByteCount(str[i..(i + 1)]);
-            if (length + 1 > maxByteCount) {
-                Logger.Debug($"Chopped {str} to {str[..i]} due to byte limit of {maxByteCount}");
-                return str[..i] + "+";
+        var charLength = 0;
+        foreach (var rune in str.EnumerateRunes()) {
+            if (length + rune.Utf8SequenceLength + 1 > maxByteCount) {
+                Logger.Debug($"Chopped {str} to {str[..charLength]} due to byte limit of {maxByteCount}");
+                return str[..charLength] + "+";
             }
+
+            length += rune.Utf8SequenceLength;
+            charLength += rune.Utf16SequenceLength;
         }
 
         throw new UnreachableException(
