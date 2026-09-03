@@ -329,9 +329,9 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             return null;
         }
 
-        var title = Title.NormalizeFileName(-1);
-        var uploaderName = Author?.NormalizeFileName(-1);
-        var uploaderId = AuthorId?.NormalizeFileName(-1);
+        var title = Title.NormalizeFileName();
+        var uploaderName = Author?.NormalizeFileName();
+        var uploaderId = AuthorId?.NormalizeFileName();
 
         var defaultFolder = uploaderName != null
             ? (uploaderId != null ? $"{uploaderName.Choppable()}.{uploaderId}" : uploaderName.Choppable())
@@ -347,7 +347,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
         var filenameSegments = new List<string>();
         if (prefix != null) {
-            filenameSegments.Add(prefix.NormalizeFileName(-1));
+            filenameSegments.Add(prefix.NormalizeFileName());
         }
 
         filenameSegments.Add(title);

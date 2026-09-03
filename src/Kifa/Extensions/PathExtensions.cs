@@ -47,15 +47,21 @@ public static class PathExtensions {
         public int Priority { get; set; }
     }
 
-    public static string NormalizeFileName(this string fileName, int reservedBytes = 0,
+    public static string NormalizeFileName(this string fileName, int? reservedBytes = null,
         int maxByteCount = MaxFileNameByteCount) {
+        if (reservedBytes < 0) {
+            throw new ArgumentException(
+                $"Reserved bytes '{reservedBytes}' cannot be negative.",
+                nameof(reservedBytes));
+        }
+
         if (reservedBytes > maxByteCount) {
             throw new ArgumentException(
                 $"Reserved bytes '{reservedBytes}' exceeds maximum byte count of {maxByteCount}.",
                 nameof(reservedBytes));
         }
 
-        var maxFileNameByteCount = reservedBytes < 0 ? -1 : maxByteCount - reservedBytes;
+        var maxFileNameByteCount = reservedBytes == null ? -1 : maxByteCount - reservedBytes.Value;
         var parts = new List<SegmentPart>();
         var currentText = new StringBuilder();
         var seenPriorities = new HashSet<int>();

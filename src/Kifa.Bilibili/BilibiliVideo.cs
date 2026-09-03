@@ -329,14 +329,14 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         string? alternativeFolder = null, string? extraFolder = null, string? prefix = null,
         BilibiliUploader? uploader = null, bool includeUploaderInFileTitle = false,
         bool limitFileLength = false) {
-        var title = Title.NormalizeFileName(-1);
+        var title = Title.NormalizeFileName();
 
         uploader ??= new BilibiliUploader {
             Id = AuthorId,
             Name = Author
         };
 
-        var uploaderName = uploader.Name.NormalizeFileName(-1);
+        var uploaderName = uploader.Name.NormalizeFileName();
 
         var folder = alternativeFolder != null
             ? $"{alternativeFolder.Split('/')[0].Choppable()}.bilibili/{alternativeFolder.Split('/').Skip(1).JoinBy('/')}".TrimEnd('/')
@@ -348,7 +348,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
         var filenameSegments = new List<string>();
         if (prefix != null) {
-            filenameSegments.Add(prefix.NormalizeFileName(-1));
+            filenameSegments.Add(prefix.NormalizeFileName());
         }
 
         if (includeUploaderInFileTitle) {
@@ -363,7 +363,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             filenameSegments.Add($"P{pid.ToString("D" + Pages.Count.ToString().Length)}");
         }
 
-        var partName = p.Title.NormalizeFileName(-1);
+        var partName = p.Title.NormalizeFileName();
         if (includePageTitle && !title.Contains(partName)) {
             if (partName.StartsWith(title)) {
                 partName = partName[title.Length..].Trim();

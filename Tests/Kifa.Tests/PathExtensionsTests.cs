@@ -48,21 +48,25 @@ public class PathExtensionsTests {
             $"{"a".Choppable()}{"b".Choppable()}c".NormalizeFileName();
         actDuplicateMarkers.Should().Throw<ArgumentException>();
 
-        // Default max byte count is 250.
-        var valid250 = new string('a', 250);
-        valid250.NormalizeFileName().Should().Be(valid250);
-
-        // Overlength without chop markers throws ArgumentException
+        // Default is unlimited length (reservedBytes = null), character normalization only
         var overlong251 = new string('a', 251);
-        var actOverlong = () => overlong251.NormalizeFileName();
+        overlong251.NormalizeFileName().Should().Be(overlong251);
+        $"{"hello world".Choppable()}.mp4".NormalizeFileName().Should().Be("hello world.mp4");
+
+        // When reservedBytes: 0 is specified, default max byte count (250) is enforced.
+        var valid250 = new string('a', 250);
+        valid250.NormalizeFileName(reservedBytes: 0).Should().Be(valid250);
+
+        // Overlength without chop markers throws ArgumentException when limited
+        var actOverlong = () => overlong251.NormalizeFileName(reservedBytes: 0);
         actOverlong.Should().Throw<ArgumentException>();
 
-        // Overlength with only .NoChop() stop markers throws ArgumentException
-        var actOverlongStopOnly = () => overlong251.NoChop().NormalizeFileName();
+        // Overlength with only .NoChop() stop markers throws ArgumentException when limited
+        var actOverlongStopOnly = () => overlong251.NoChop().NormalizeFileName(reservedBytes: 0);
         actOverlongStopOnly.Should().Throw<ArgumentException>();
 
-        // Overlength with .Choppable() at the end chops
-        overlong251.Choppable().NormalizeFileName()
+        // Overlength with .Choppable() at the end chops when limited
+        overlong251.Choppable().NormalizeFileName(reservedBytes: 0)
             .Should().Be(new string('a', 249) + "~");
 
         // Custom reservedBytes with .Choppable() (250 - 244 = 6 max bytes)
@@ -81,6 +85,10 @@ public class PathExtensionsTests {
         var actOverlongSuffix = () => $"{"hello".Choppable()}overlong_suffix".NormalizeFileName(reservedBytes: 245);
         actOverlongSuffix.Should().Throw<ArgumentException>();
 
+        // Negative reservedBytes throws ArgumentException
+        var actNegative = () => "hello".NormalizeFileName(reservedBytes: -1);
+        actNegative.Should().Throw<ArgumentException>();
+
         // Reserved bytes exceeding MaxFileNameByteCount throws ArgumentException
         var actExceedsMax = () => "hello".NormalizeFileName(reservedBytes: 300);
         actExceedsMax.Should().Throw<ArgumentException>();
@@ -98,9 +106,6 @@ public class PathExtensionsTests {
         // When reserving 228 bytes (capacity 22 bytes): LONG_EPISODE_ (1) is fully removed, SERIES_TITLE_ (2) is cut
         multiLevelTemplate.NormalizeFileName(reservedBytes: 228)
             .Should().Be("PREFIX_SERIES_TIT~.mp4");
-
-        // Negative limit means no chopping (unlimited)
-        $"{"hello world".Choppable()}.mp4".NormalizeFileName(-1).Should().Be("hello world.mp4");
     }
 
     [Fact]
