@@ -374,7 +374,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
         var suffix = GetSuffix(Id, pid, p.Cid, quality, codec);
         return $"{folder}/{filenameSegments.JoinBy(" ").Choppable()}.{suffix}".NormalizeFilePath(
-            maxFileNameByteCount: StringExtensions.MaxFileNameByteCount - TypeSuffixLength);
+            maxFileNameByteCount: PathExtensions.MaxFileNameByteCount - TypeSuffixLength);
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {
