@@ -218,7 +218,7 @@ public class BilibiliVideoTests {
         Assert.EndsWith(".123.bilibili/Short Title.av170001p1.c279786.64", longAuthorDesiredName);
         var authorFolder = longAuthorDesiredName.Split('/')[0];
         Assert.True(System.Text.Encoding.UTF8.GetByteCount(authorFolder) <= 255);
-        Assert.EndsWith("+.123.bilibili", authorFolder);
+        Assert.EndsWith("~.123.bilibili", authorFolder);
 
         // Title and Author with '/' should be normalized to '／' without creating extra path segments
         var slashVideo = new BilibiliVideo {

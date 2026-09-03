@@ -9,24 +9,24 @@ public class PathExtensionsTests {
     public void ChopEndToByteCountTest() {
         "hello".ChopEndToByteCount(10).Should().Be("hello");
         "hello".ChopEndToByteCount(5).Should().Be("hello");
-        "hello".ChopEndToByteCount(4).Should().Be("hel+");
-        "hello".ChopEndToByteCount(3).Should().Be("he+");
-        "hello".ChopEndToByteCount(2).Should().Be("h+");
-        "hello".ChopEndToByteCount(1).Should().Be("+");
+        "hello".ChopEndToByteCount(4).Should().Be("hel~");
+        "hello".ChopEndToByteCount(3).Should().Be("he~");
+        "hello".ChopEndToByteCount(2).Should().Be("h~");
+        "hello".ChopEndToByteCount(1).Should().Be("~");
 
         // Multibyte CJK (3 bytes each)
         "你好世界".ChopEndToByteCount(12).Should().Be("你好世界");
-        "你好世界".ChopEndToByteCount(11).Should().Be("你好世+"); // 3+3+3+1 = 10 bytes <= 11
-        "你好世界".ChopEndToByteCount(10).Should().Be("你好世+"); // 3+3+3+1 = 10 bytes <= 10
-        "你好世界".ChopEndToByteCount(9).Should().Be("你好+"); // 3+3+1 = 7 bytes <= 9
-        "你好世界".ChopEndToByteCount(7).Should().Be("你好+"); // 3+3+1 = 7 bytes <= 7
-        "你好世界".ChopEndToByteCount(6).Should().Be("你+"); // 3+1 = 4 bytes <= 6
+        "你好世界".ChopEndToByteCount(11).Should().Be("你好世~"); // 3+3+3+1 = 10 bytes <= 11
+        "你好世界".ChopEndToByteCount(10).Should().Be("你好世~"); // 3+3+3+1 = 10 bytes <= 10
+        "你好世界".ChopEndToByteCount(9).Should().Be("你好~"); // 3+3+1 = 7 bytes <= 9
+        "你好世界".ChopEndToByteCount(7).Should().Be("你好~"); // 3+3+1 = 7 bytes <= 7
+        "你好世界".ChopEndToByteCount(6).Should().Be("你~"); // 3+1 = 4 bytes <= 6
 
         // Surrogate pairs / Emojis (4 bytes UTF-8, 2 chars in UTF-16)
         "😀😁😂".ChopEndToByteCount(12).Should().Be("😀😁😂");
-        "😀😁😂".ChopEndToByteCount(10).Should().Be("😀😁+"); // 4+4+1 = 9 bytes <= 10
-        "😀😁😂".ChopEndToByteCount(5).Should().Be("😀+"); // 4+1 = 5 bytes <= 5
-        "😀😁😂".ChopEndToByteCount(4).Should().Be("+"); // 1 byte <= 4
+        "😀😁😂".ChopEndToByteCount(10).Should().Be("😀😁~"); // 4+4+1 = 9 bytes <= 10
+        "😀😁😂".ChopEndToByteCount(5).Should().Be("😀~"); // 4+1 = 5 bytes <= 5
+        "😀😁😂".ChopEndToByteCount(4).Should().Be("~"); // 1 byte <= 4
 
         var actZero = () => "hello".ChopEndToByteCount(0);
         actZero.Should().Throw<ArgumentException>();
@@ -63,19 +63,19 @@ public class PathExtensionsTests {
 
         // Overlength with .Choppable() at the end chops
         overlong251.Choppable().NormalizeFileName()
-            .Should().Be(new string('a', 249) + "+");
+            .Should().Be(new string('a', 249) + "~");
 
         // Custom reservedBytes with .Choppable() (250 - 244 = 6 max bytes)
         "hello world".Choppable().NormalizeFileName(reservedBytes: 244)
-            .Should().Be("hello+");
+            .Should().Be("hello~");
 
         // With suffix after .Choppable()
         $"{"hello".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("hello.mp4");
-        $"{"hello world".Choppable()}.mp4".NormalizeFileName(reservedBytes: 241).Should().Be("hell+.mp4");
-        $"{"hello world".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("hello+.mp4");
+        $"{"hello world".Choppable()}.mp4".NormalizeFileName(reservedBytes: 241).Should().Be("hell~.mp4");
+        $"{"hello world".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("hello~.mp4");
 
         // Multibyte with suffix
-        $"{"你好世界".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("你+.mp4");
+        $"{"你好世界".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("你~.mp4");
 
         // Overlong suffix (non-choppable) exceeding available capacity throws ArgumentException
         var actOverlongSuffix = () => $"{"hello".Choppable()}overlong_suffix".NormalizeFileName(reservedBytes: 245);
@@ -93,11 +93,11 @@ public class PathExtensionsTests {
         
         // When reserving 220 bytes (capacity 30 bytes): cuts LONG_EPISODE_ (1) to fit
         multiLevelTemplate.NormalizeFileName(reservedBytes: 220)
-            .Should().Be("PREFIX_LONG_+SERIES_TITLE_.mp4");
+            .Should().Be("PREFIX_LONG_~SERIES_TITLE_.mp4");
 
         // When reserving 228 bytes (capacity 22 bytes): LONG_EPISODE_ (1) is fully removed, SERIES_TITLE_ (2) is cut
         multiLevelTemplate.NormalizeFileName(reservedBytes: 228)
-            .Should().Be("PREFIX_SERIES_TIT+.mp4");
+            .Should().Be("PREFIX_SERIES_TIT~.mp4");
 
         // Negative limit means no chopping (unlimited)
         $"{"hello world".Choppable()}.mp4".NormalizeFileName(-1).Should().Be("hello world.mp4");
@@ -124,15 +124,15 @@ public class PathExtensionsTests {
 
         // Multi-segment with .Choppable() chops directory at 255 and file at 250
         $"{dir256.Choppable()}/{overlong251.Choppable()}".NormalizeFilePath()
-            .Should().Be($"{new string('d', 254)}+/{new string('a', 249)}+");
+            .Should().Be($"{new string('d', 254)}~/{new string('a', 249)}~");
 
         // Custom reserved bytes with .Choppable() (file 250-244=6, folder 255-247=8)
         $"{"folder_long".Choppable()}/{"hello world".Choppable()}".NormalizeFilePath(reservedFileBytes: 244, reservedFolderBytes: 247)
-            .Should().Be("folder_+/hello+");
+            .Should().Be("folder_~/hello~");
 
         // Folder and file suffix retention with .Choppable()
         $"{new string('u', 300).Choppable()}.123.bilibili/extra/folder/{"video title".Choppable()}.av123.mp4".NormalizeFilePath()
-            .Should().Be($"{new string('u', 255 - ".123.bilibili".Length - 1)}+.123.bilibili/extra/folder/video title.av123.mp4");
+            .Should().Be($"{new string('u', 255 - ".123.bilibili".Length - 1)}~.123.bilibili/extra/folder/video title.av123.mp4");
 
         // Safe characters mapping preserved across path segments
         "dir: 1/file? 2".NormalizeFilePath().Should().Be("dir：1/file？ 2");

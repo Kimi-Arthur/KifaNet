@@ -163,7 +163,7 @@ public static class PathExtensions {
         return string.Join("/", normalizedSegments);
     }
 
-    // Chops the string to fit within maxByteCount UTF-8 bytes along Rune boundaries, appending a trailing '+' (1 byte) if truncated.
+    // Chops the string to fit within maxByteCount UTF-8 bytes along Rune boundaries, appending a trailing '~' (1 byte) if truncated.
     // Returns the original string unmodified if it already fits.
     public static string ChopEndToByteCount(this string str, int maxByteCount = -1) {
         if (maxByteCount < 0 || Encoding.UTF8.GetByteCount(str) <= maxByteCount) {
@@ -184,7 +184,7 @@ public static class PathExtensions {
             if (length + rune.Utf8SequenceLength + 1 > maxByteCount) {
                 Logger.Debug(
                     $"Chopped {str} to {str[..charLength]} due to byte limit of {maxByteCount}");
-                return str[..charLength] + "+";
+                return str[..charLength] + "~";
             }
 
             length += rune.Utf8SequenceLength;
