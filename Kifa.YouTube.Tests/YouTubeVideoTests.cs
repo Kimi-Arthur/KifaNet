@@ -245,5 +245,49 @@ public class YouTubeVideoTests {
         videoWithoutFormat.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ"]);
         videoWithoutFormat.GetDesiredName().Should().Be(
             "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ");
+
+        // Long title chopped with suffix preserved
+        var longVideo = new YouTubeVideo {
+            Id = "RWrSo_7RmgQ",
+            Title = new string('a', 300),
+            Author = "Author",
+            AuthorId = "123",
+            Width = 1920,
+            Height = 1080,
+            Fps = 60,
+            FormatId = "137+22"
+        };
+
+        var longDesiredName = longVideo.GetDesiredName();
+        var expectedSuffix = ".RWrSo_7RmgQ.1920x1080p60.137+22";
+        longDesiredName.Should().StartWith("Author.123.youtube/");
+        longDesiredName.Should().EndWith(expectedSuffix);
+        var filePart = longDesiredName!["Author.123.youtube/".Length..];
+        System.Text.Encoding.UTF8.GetByteCount(filePart).Should().BeLessThanOrEqualTo(246);
+
+        // Long author chopped with .123.youtube suffix preserved
+        var longAuthorVideo = new YouTubeVideo {
+            Id = "RWrSo_7RmgQ",
+            Title = "Short Title",
+            Author = new string('x', 300),
+            AuthorId = "123"
+        };
+
+        var longAuthorDesiredName = longAuthorVideo.GetDesiredName();
+        longAuthorDesiredName.Should().EndWith(".123.youtube/Short Title.RWrSo_7RmgQ");
+        var authorFolder = longAuthorDesiredName!.Split('/')[0];
+        System.Text.Encoding.UTF8.GetByteCount(authorFolder).Should().BeLessThanOrEqualTo(255);
+        authorFolder.Should().EndWith("~.123.youtube");
+
+        // Special character normalization
+        var slashVideo = new YouTubeVideo {
+            Id = "RWrSo_7RmgQ",
+            Title = "Fate/Zero: Episode 01? *Prologue*",
+            Author = "Studio/Trigger",
+            AuthorId = "123"
+        };
+
+        var slashDesiredName = slashVideo.GetDesiredName();
+        slashDesiredName.Should().Be("Studio／Trigger.123.youtube/Fate／Zero：Episode 01？ ＊Prologue＊.RWrSo_7RmgQ");
     }
 }

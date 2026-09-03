@@ -320,30 +320,44 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return suffix != null ? [$"{Id}.{suffix}"] : [Id.Checked()];
     }
 
+    // Common file extension suffix (e.g., ".mp4") length.
+    const int TypeSuffixLength = 4;
+
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
-        string? prefix = null, bool includeFormat = true) {
-        var defaultFolder =
-            string.FormatOr($"{Author?.NormalizeFileName()}.{AuthorId?.NormalizeFileName()}") ??
-            Author?.NormalizeFileName();
-        var folder = (alternativeFolder ?? defaultFolder)?.NormalizeFileName();
-        if (folder != null) {
-            var folderSegments = folder.Split('/').ToList();
-            folderSegments[0] += ".youtube";
-            folder = folderSegments.JoinBy("/");
+        string? extraFolder = null, string? prefix = null, bool includeFormat = true) {
+        if (Title == null || Id == null) {
+            return null;
         }
 
-        var title = Title?.NormalizeFileName();
+        var title = Title.NormalizeFileName(-1);
+        var uploaderName = Author?.NormalizeFileName(-1);
+        var uploaderId = AuthorId?.NormalizeFileName(-1);
+
+        var defaultFolder = uploaderName != null
+            ? (uploaderId != null ? $"{uploaderName.Choppable()}.{uploaderId}" : uploaderName.Choppable())
+            : uploaderId;
+
+        var folder = alternativeFolder != null
+            ? $"{alternativeFolder.Split('/')[0].Choppable()}.youtube/{alternativeFolder.Split('/').Skip(1).JoinBy('/')}".TrimEnd('/')
+            : (defaultFolder != null ? $"{defaultFolder}.youtube" : null);
+
+        if (extraFolder != null && folder != null) {
+            folder = $"{folder}/{extraFolder}";
+        }
+
+        var filenameSegments = new List<string>();
+        if (prefix != null) {
+            filenameSegments.Add(prefix.NormalizeFileName(-1));
+        }
+
+        filenameSegments.Add(title);
+
         var suffix = includeFormat ? GetSuffix(formatId) : null;
         var suffixString = suffix != null ? $".{suffix}" : "";
+        var fileName = $"{filenameSegments.JoinBy(" ").Choppable()}.{Id}{suffixString}";
 
-        if (folder != null) {
-            return prefix != null
-                ? string.FormatOr($"{folder}/{prefix} {title}.{Id}{suffixString}")
-                : string.FormatOr($"{folder}/{title}.{Id}{suffixString}");
-        }
-
-        return prefix != null
-            ? string.FormatOr($"{prefix} {title}.{Id}{suffixString}")
-            : string.FormatOr($"{title}.{Id}{suffixString}");
+        return folder != null
+            ? $"{folder}/{fileName}".NormalizeFilePath(TypeSuffixLength)
+            : fileName.NormalizeFilePath(TypeSuffixLength);
     }
 }

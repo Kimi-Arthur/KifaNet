@@ -43,6 +43,6 @@ public class DownloadUploaderCommand : DownloadCommand {
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
-        return KifaActionResult.FromAction(() => Download(video, alternativeFolder: InnerFolder));
+        return KifaActionResult.FromAction(() => Download(video, extraFolder: InnerFolder));
     }
 }

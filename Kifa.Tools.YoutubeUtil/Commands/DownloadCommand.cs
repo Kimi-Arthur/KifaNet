@@ -22,10 +22,11 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     int downloadCounter;
 
-    protected void Download(YouTubeVideo video, string? alternativeFolder = null) {
+    protected void Download(YouTubeVideo video, string? alternativeFolder = null,
+        string? extraFolder = null) {
         var outputFolder = BaseFolder;
         var desiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,
-            prefix: GetPrefix(video));
+            extraFolder: extraFolder, prefix: GetPrefix(video));
         if (desiredName == null) {
             throw new KifaExecutionException($"No desired name is found for {video.Id}");
         }
@@ -67,8 +68,8 @@ public abstract class DownloadCommand : YoutubeCommand {
             }
 
             var nonsuffixDesiredName = video.GetDesiredName(
-                alternativeFolder: alternativeFolder, prefix: GetPrefix(video),
-                includeFormat: false);
+                alternativeFolder: alternativeFolder, extraFolder: extraFolder,
+                prefix: GetPrefix(video), includeFormat: false);
             var nonsuffixDesiredFile = nonsuffixDesiredName != null
                 ? outputFolder.GetFile($"{nonsuffixDesiredName}.mp4")
                 : null;
