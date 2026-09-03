@@ -146,4 +146,96 @@ public class BilibiliVideoTests {
         Assert.Equal(expectedQuality, result.quality);
         Assert.Equal(expectedCodec, result.codec);
     }
+
+    [Fact]
+    public void GetDesiredNameTest() {
+        var video = new BilibiliVideo {
+            Id = "av170001",
+            Title = "【MV】保加利亚妖王AZIS视频合辑",
+            Author = "冰封.虾子",
+            AuthorId = "122541",
+            Pages = new List<BilibiliChat> {
+                new() {
+                    Id = 1,
+                    Cid = "279786",
+                    Title = "Хоп"
+                },
+                new() {
+                    Id = 2,
+                    Cid = "275431",
+                    Title = "Part 2"
+                }
+            }
+        };
+
+        var desiredName = video.GetDesiredName(1, 64, 0, includePageTitle: true);
+        Assert.Equal("冰封.虾子.122541.bilibili/【MV】保加利亚妖王AZIS视频合辑 P1 Хоп.av170001p1.c279786.64", desiredName);
+
+        var desiredNameWithFolder = video.GetDesiredName(2, 64, 0, includePageTitle: false,
+            extraFolder: "Extra/Sub", prefix: "2020-01-01");
+        Assert.Equal("冰封.虾子.122541.bilibili/Extra/Sub/2020-01-01 【MV】保加利亚妖王AZIS视频合辑 P2.av170001p2.c275431.64",
+            desiredNameWithFolder);
+
+        // Long title chopped with suffix preserved
+        var longVideo = new BilibiliVideo {
+            Id = "av170001",
+            Title = new string('a', 300),
+            Author = "Author",
+            AuthorId = "123",
+            Pages = new List<BilibiliChat> {
+                new() {
+                    Id = 1,
+                    Cid = "279786",
+                    Title = "P1"
+                }
+            }
+        };
+
+        var longDesiredName = longVideo.GetDesiredName(1, 64, 0, includePageTitle: false);
+        var expectedSuffix = ".av170001p1.c279786.64";
+        Assert.StartsWith("Author.123.bilibili/", longDesiredName);
+        Assert.EndsWith(expectedSuffix, longDesiredName);
+        var filePart = longDesiredName["Author.123.bilibili/".Length..];
+        // filePart + 4 (for .mp4) should be <= 250 (MaxFileNameByteCount)
+        Assert.True(System.Text.Encoding.UTF8.GetByteCount(filePart) <= 246);
+
+        // Long author chopped with .123.bilibili suffix preserved
+        var longAuthorVideo = new BilibiliVideo {
+            Id = "av170001",
+            Title = "Short Title",
+            Author = new string('x', 300),
+            AuthorId = "123",
+            Pages = new List<BilibiliChat> {
+                new() {
+                    Id = 1,
+                    Cid = "279786",
+                    Title = "P1"
+                }
+            }
+        };
+
+        var longAuthorDesiredName = longAuthorVideo.GetDesiredName(1, 64, 0, includePageTitle: false);
+        Assert.EndsWith(".123.bilibili/Short Title.av170001p1.c279786.64", longAuthorDesiredName);
+        var authorFolder = longAuthorDesiredName.Split('/')[0];
+        Assert.True(System.Text.Encoding.UTF8.GetByteCount(authorFolder) <= 255);
+        Assert.EndsWith("+.123.bilibili", authorFolder);
+
+        // Title and Author with '/' should be normalized to '／' without creating extra path segments
+        var slashVideo = new BilibiliVideo {
+            Id = "av170001",
+            Title = "Fate/Zero - Episode 01 / Prologue",
+            Author = "Studio/Trigger",
+            AuthorId = "123",
+            Pages = new List<BilibiliChat> {
+                new() {
+                    Id = 1,
+                    Cid = "279786",
+                    Title = "P1 / Prologue"
+                }
+            }
+        };
+
+        var slashDesiredName = slashVideo.GetDesiredName(1, 64, 0, includePageTitle: false);
+        Assert.Equal("Studio／Trigger.123.bilibili/Fate／Zero - Episode 01 ／ Prologue.av170001p1.c279786.64", slashDesiredName);
+    }
 }

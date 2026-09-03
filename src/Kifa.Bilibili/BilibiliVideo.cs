@@ -322,38 +322,37 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         };
     }
 
-    // Limit imposed by Linux kernel for filename: UTF-8 encoded length <= 255.
-    const int MaxFilenameByteLength = 255;
-
-    // Common suffixes are mp4, flv.
-    const int TypeSuffixLength = 3;
+    // Common file extension suffix (e.g., ".mp4") length.
+    const int TypeSuffixLength = 4;
 
     public string GetDesiredName(int pid, int quality, int codec, bool includePageTitle,
         string? alternativeFolder = null, string? extraFolder = null, string? prefix = null,
         BilibiliUploader? uploader = null, bool includeUploaderInFileTitle = false,
         bool limitFileLength = false) {
-        var title = Title.NormalizeFileName();
+        var title = Title.NormalizeFileName(-1);
 
         uploader ??= new BilibiliUploader {
             Id = AuthorId,
             Name = Author
         };
 
-        var folderSegments = (alternativeFolder ?? $"{uploader.Name}.{uploader.Id}")
-            .NormalizeFileName().Split('/').ToList();
-        if (extraFolder != null) {
-            folderSegments.Add(extraFolder.NormalizeFileName());
-        }
+        var uploaderName = uploader.Name.NormalizeFileName(-1);
 
-        folderSegments[0] += ".bilibili";
+        var folder = alternativeFolder != null
+            ? $"{alternativeFolder.Split('/')[0].Choppable()}.bilibili/{alternativeFolder.Split('/').Skip(1).JoinBy('/')}".TrimEnd('/')
+            : $"{uploaderName.Choppable()}.{uploader.Id}.bilibili";
+
+        if (extraFolder != null) {
+            folder = $"{folder}/{extraFolder}";
+        }
 
         var filenameSegments = new List<string>();
         if (prefix != null) {
-            filenameSegments.Add(prefix);
+            filenameSegments.Add(prefix.NormalizeFileName(-1));
         }
 
         if (includeUploaderInFileTitle) {
-            filenameSegments.Add($"[{uploader.Name}.{uploader.Id}]");
+            filenameSegments.Add($"[{uploaderName}.{uploader.Id}]");
         }
 
         filenameSegments.Add(title);
@@ -364,7 +363,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
             filenameSegments.Add($"P{pid.ToString("D" + Pages.Count.ToString().Length)}");
         }
 
-        var partName = p.Title.NormalizeFileName();
+        var partName = p.Title.NormalizeFileName(-1);
         if (includePageTitle && !title.Contains(partName)) {
             if (partName.StartsWith(title)) {
                 partName = partName[title.Length..].Trim();
@@ -374,9 +373,8 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
         }
 
         var suffix = GetSuffix(Id, pid, p.Cid, quality, codec);
-        // -1 is for dot and -5 is for .json suffix on the server side.
-        return
-            $"{folderSegments.JoinBy('/')}/{filenameSegments.JoinBy(" ").NormalizeFileName(suffix: $".{suffix}", maxFileNameByteCount: MaxFilenameByteLength - TypeSuffixLength - 1 - 5)}";
+        return $"{folder}/{filenameSegments.JoinBy(" ").Choppable()}.{suffix}".NormalizeFilePath(
+            maxFileNameByteCount: StringExtensions.MaxFileNameByteCount - TypeSuffixLength);
     }
 
     static string GetSuffix(string? aid, int pid, string cid, int quality, int codec) {

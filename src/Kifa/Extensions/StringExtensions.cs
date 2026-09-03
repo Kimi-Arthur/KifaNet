@@ -151,27 +151,107 @@ public static class StringExtensions {
                 (current, mapping) => current.Replace(mapping.Key, mapping.Value))
             .RemoveUnnecessarySpaces();
 
-    public static string NormalizeFileName(this string prefix, string? suffix = null,
-        int maxFileNameByteCount = MaxFileNameByteCount) {
-        var normalizedPrefix = NormalizeSegment(prefix);
-        var normalizedSuffix = suffix == null ? "" : NormalizeSegment(suffix);
+    public static readonly char[] ChopMarkers = [.. Enumerable.Range(0, 10).Select(i => (char) i)];
 
-        if (maxFileNameByteCount < 0) {
-            return $"{normalizedPrefix}{normalizedSuffix}";
-        }
+    public static string Choppable(this string text, int priority = 1) => $"{text}{ChopMarkers[priority]}";
 
-        var suffixByteCount = Encoding.UTF8.GetByteCount(normalizedSuffix);
-        var prefixMaxByteCount = maxFileNameByteCount - suffixByteCount;
-        if (prefixMaxByteCount < 0) {
-            throw new ArgumentException(
-                $"Suffix '{normalizedSuffix}' ({suffixByteCount} bytes) exceeds maximum byte count of {maxFileNameByteCount}.",
-                nameof(suffix));
-        }
+    public static string NoChop(this string text) => $"{text}{ChopMarkers[0]}";
 
-        return $"{normalizedPrefix.ChopEndToByteCount(prefixMaxByteCount)}{normalizedSuffix}";
+    class SegmentPart {
+        public string Text { get; set; } = "";
+        public int Priority { get; set; }
     }
 
-    public static string NormalizeFilePath(this string path, string? suffix = null,
+    public static string NormalizeFileName(this string fileName,
+        int maxFileNameByteCount = MaxFileNameByteCount) {
+        var parts = new List<SegmentPart>();
+        var currentText = new StringBuilder();
+        var seenPriorities = new HashSet<int>();
+
+        for (var i = 0; i < fileName.Length; i++) {
+            var c = fileName[i];
+            var priority = Array.IndexOf(ChopMarkers, c);
+            if (priority >= 0) {
+                if (priority > 0 && !seenPriorities.Add(priority)) {
+                    throw new ArgumentException(
+                        $"File name '{fileName}' contains duplicate '\\{priority}' chop marker.",
+                        nameof(fileName));
+                }
+
+                parts.Add(new SegmentPart {
+                    Text = NormalizeSegment(currentText.ToString()),
+                    Priority = priority
+                });
+                currentText.Clear();
+            } else {
+                currentText.Append(c);
+            }
+        }
+
+        if (currentText.Length > 0 || parts.Count == 0) {
+            parts.Add(new SegmentPart {
+                Text = NormalizeSegment(currentText.ToString()),
+                Priority = 0
+            });
+        }
+
+        var choppableParts = parts.Where(p => p.Priority > 0)
+            .OrderBy(p => p.Priority)
+            .ToList();
+
+        if (choppableParts.Count == 0) {
+            var result = string.Concat(parts.Select(p => p.Text));
+            if (maxFileNameByteCount >= 0 &&
+                Encoding.UTF8.GetByteCount(result) > maxFileNameByteCount) {
+                throw new ArgumentException(
+                    $"File name '{result}' exceeds maximum byte count of {maxFileNameByteCount} and contains no chop markers.",
+                    nameof(fileName));
+            }
+
+            return result;
+        }
+
+        if (maxFileNameByteCount < 0) {
+            return string.Concat(parts.Select(p => p.Text));
+        }
+
+        var nonChoppableBytes = parts.Where(p => p.Priority == 0)
+            .Sum(p => Encoding.UTF8.GetByteCount(p.Text));
+        var availableBytesForChoppable = maxFileNameByteCount - nonChoppableBytes;
+        if (availableBytesForChoppable < 0) {
+            throw new ArgumentException(
+                $"Non-choppable parts ({nonChoppableBytes} bytes) exceed maximum byte count of {maxFileNameByteCount}.",
+                nameof(fileName));
+        }
+
+        var totalBytes = parts.Sum(p => Encoding.UTF8.GetByteCount(p.Text));
+        var excess = totalBytes - maxFileNameByteCount;
+
+        if (excess > 0) {
+            foreach (var part in choppableParts) {
+                var currentBytes = Encoding.UTF8.GetByteCount(part.Text);
+                var targetBytes = currentBytes - excess;
+                if (targetBytes > 0) {
+                    part.Text = part.Text.ChopEndToByteCount(targetBytes);
+                    excess = 0;
+                    break;
+                }
+
+                part.Text = "";
+                excess -= currentBytes;
+            }
+        }
+
+        if (excess > 0) {
+            throw new ArgumentException(
+                $"Non-choppable parts exceed maximum byte count of {maxFileNameByteCount}.",
+                nameof(fileName));
+        }
+
+        return string.Concat(parts.Select(p => p.Text));
+    }
+
+    public static string NormalizeFilePath(this string path,
         int maxFileNameByteCount = MaxFileNameByteCount,
         int maxPathSegmentByteCount = MaxPathSegmentByteCount) {
         var segments = path.Split('/');
@@ -181,8 +261,11 @@ public static class StringExtensions {
                 segments[i].NormalizeFileName(maxFileNameByteCount: maxPathSegmentByteCount);
         }
 
-        normalizedSegments[^1] =
-            segments[^1].NormalizeFileName(suffix, maxFileNameByteCount);
+        if (segments.Length > 0) {
+            normalizedSegments[^1] =
+                segments[^1].NormalizeFileName(maxFileNameByteCount: maxFileNameByteCount);
+        }
+
         return string.Join("/", normalizedSegments);
     }
 
