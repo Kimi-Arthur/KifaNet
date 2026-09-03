@@ -65,21 +65,25 @@ public class PathExtensionsTests {
         overlong251.Choppable().NormalizeFileName()
             .Should().Be(new string('a', 249) + "+");
 
-        // Custom maxFileNameByteCount with .Choppable()
-        "hello world".Choppable().NormalizeFileName(maxFileNameByteCount: 6)
+        // Custom reservedBytes with .Choppable() (250 - 244 = 6 max bytes)
+        "hello world".Choppable().NormalizeFileName(reservedBytes: 244)
             .Should().Be("hello+");
 
         // With suffix after .Choppable()
-        $"{"hello".Choppable()}.mp4".NormalizeFileName(10).Should().Be("hello.mp4");
-        $"{"hello world".Choppable()}.mp4".NormalizeFileName(9).Should().Be("hell+.mp4");
-        $"{"hello world".Choppable()}.mp4".NormalizeFileName(10).Should().Be("hello+.mp4");
+        $"{"hello".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("hello.mp4");
+        $"{"hello world".Choppable()}.mp4".NormalizeFileName(reservedBytes: 241).Should().Be("hell+.mp4");
+        $"{"hello world".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("hello+.mp4");
 
         // Multibyte with suffix
-        $"{"你好世界".Choppable()}.mp4".NormalizeFileName(10).Should().Be("你+.mp4");
+        $"{"你好世界".Choppable()}.mp4".NormalizeFileName(reservedBytes: 240).Should().Be("你+.mp4");
 
-        // Overlong suffix (non-choppable) throws ArgumentException
-        var actOverlongSuffix = () => $"{"hello".Choppable()}overlong_suffix".NormalizeFileName(5);
+        // Overlong suffix (non-choppable) exceeding available capacity throws ArgumentException
+        var actOverlongSuffix = () => $"{"hello".Choppable()}overlong_suffix".NormalizeFileName(reservedBytes: 245);
         actOverlongSuffix.Should().Throw<ArgumentException>();
+
+        // Reserved bytes exceeding MaxFileNameByteCount throws ArgumentException
+        var actExceedsMax = () => "hello".NormalizeFileName(reservedBytes: 300);
+        actExceedsMax.Should().Throw<ArgumentException>();
 
         // Multi-level chopping: text1<stop>text2<chop1>text3<chop2>.suffix
         // text1 (NoChop) untouched, text2 (Choppable 1) cut first, text3 (Choppable 2) cut second
@@ -87,15 +91,15 @@ public class PathExtensionsTests {
             $"{"PREFIX_".NoChop()}{"LONG_EPISODE_".Choppable(1)}{"SERIES_TITLE_".Choppable(2)}.mp4";
         // PREFIX_ (7 bytes) + LONG_EPISODE_ (13 bytes) + SERIES_TITLE_ (13 bytes) + .mp4 (4 bytes) = 37 bytes
         
-        // When limit is 30 bytes: cuts LONG_EPISODE_ (1) to fit
-        multiLevelTemplate.NormalizeFileName(30)
+        // When reserving 220 bytes (capacity 30 bytes): cuts LONG_EPISODE_ (1) to fit
+        multiLevelTemplate.NormalizeFileName(reservedBytes: 220)
             .Should().Be("PREFIX_LONG_+SERIES_TITLE_.mp4");
 
-        // When limit is 22 bytes: LONG_EPISODE_ (1) is fully removed, SERIES_TITLE_ (2) is cut
-        multiLevelTemplate.NormalizeFileName(22)
+        // When reserving 228 bytes (capacity 22 bytes): LONG_EPISODE_ (1) is fully removed, SERIES_TITLE_ (2) is cut
+        multiLevelTemplate.NormalizeFileName(reservedBytes: 228)
             .Should().Be("PREFIX_SERIES_TIT+.mp4");
 
-        // Negative limit means no chopping
+        // Negative limit means no chopping (unlimited)
         $"{"hello world".Choppable()}.mp4".NormalizeFileName(-1).Should().Be("hello world.mp4");
     }
 
@@ -122,8 +126,8 @@ public class PathExtensionsTests {
         $"{dir256.Choppable()}/{overlong251.Choppable()}".NormalizeFilePath()
             .Should().Be($"{new string('d', 254)}+/{new string('a', 249)}+");
 
-        // Custom limits with .Choppable()
-        $"{"folder_long".Choppable()}/{"hello world".Choppable()}".NormalizeFilePath(maxFileNameByteCount: 6, maxPathSegmentByteCount: 8)
+        // Custom reserved bytes with .Choppable() (file 250-244=6, folder 255-247=8)
+        $"{"folder_long".Choppable()}/{"hello world".Choppable()}".NormalizeFilePath(reservedFileBytes: 244, reservedFolderBytes: 247)
             .Should().Be("folder_+/hello+");
 
         // Folder and file suffix retention with .Choppable()

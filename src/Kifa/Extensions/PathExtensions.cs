@@ -47,8 +47,15 @@ public static class PathExtensions {
         public int Priority { get; set; }
     }
 
-    public static string NormalizeFileName(this string fileName,
-        int maxFileNameByteCount = MaxFileNameByteCount) {
+    public static string NormalizeFileName(this string fileName, int reservedBytes = 0,
+        int maxByteCount = MaxFileNameByteCount) {
+        if (reservedBytes > maxByteCount) {
+            throw new ArgumentException(
+                $"Reserved bytes '{reservedBytes}' exceeds maximum byte count of {maxByteCount}.",
+                nameof(reservedBytes));
+        }
+
+        var maxFileNameByteCount = reservedBytes < 0 ? -1 : maxByteCount - reservedBytes;
         var parts = new List<SegmentPart>();
         var currentText = new StringBuilder();
         var seenPriorities = new HashSet<int>();
@@ -137,18 +144,20 @@ public static class PathExtensions {
     }
 
     public static string NormalizeFilePath(this string path,
-        int maxFileNameByteCount = MaxFileNameByteCount,
-        int maxPathSegmentByteCount = MaxPathSegmentByteCount) {
+        int reservedFileBytes = 0,
+        int reservedFolderBytes = 0) {
         var segments = path.Split('/');
         var normalizedSegments = new string[segments.Length];
         for (var i = 0; i < segments.Length - 1; i++) {
             normalizedSegments[i] =
-                segments[i].NormalizeFileName(maxFileNameByteCount: maxPathSegmentByteCount);
+                segments[i].NormalizeFileName(reservedBytes: reservedFolderBytes,
+                    maxByteCount: MaxPathSegmentByteCount);
         }
 
         if (segments.Length > 0) {
             normalizedSegments[^1] =
-                segments[^1].NormalizeFileName(maxFileNameByteCount: maxFileNameByteCount);
+                segments[^1].NormalizeFileName(reservedBytes: reservedFileBytes,
+                    maxByteCount: MaxFileNameByteCount);
         }
 
         return string.Join("/", normalizedSegments);
