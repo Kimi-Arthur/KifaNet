@@ -180,7 +180,7 @@ public abstract class DownloadCommand : BiliCommand {
             string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
             $" -i \"{cover.GetLocalPath()}\" " +
             string.Join(" ", parts.Select((_, index) => $"-map {index}")) + " -c copy" +
-            $" -map {parts.Count} -disposition:v:1 attached_pic " +
+            $" -map {parts.Count} -disposition:v:1 attached_pic -bitexact " +
             $" \"{target.GetLocalPath()}\"");
 
         if (result.ExitCode != 0) {

@@ -53,8 +53,8 @@ public class CombineCommand : KifaCommand {
 
         var processor = arguments.OutputToFile(target.GetLocalPath(), addArguments: options => {
             options.WithArgument(new CustomArgument(FirstAudio
-                ? "-map 0:v -map 0:a:0 -c copy"
-                : "-map 0 -c copy"));
+                ? "-map 0:v -map 0:a:0 -c copy -bitexact"
+                : "-map 0 -c copy -bitexact"));
 
             if (Cover != null) {
                 options.WithCustomArgument("-map 1 -disposition:v:1 attached_pic");

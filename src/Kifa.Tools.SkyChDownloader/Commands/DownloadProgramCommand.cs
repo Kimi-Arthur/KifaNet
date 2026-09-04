@@ -102,10 +102,10 @@ public class DownloadProgramCommand : KifaCommand {
 
     static void MergeParts(List<KifaFile> parts, KifaFile? cover, KifaFile target) {
         var arguments = cover == null
-            ? $"{string.Join(" ", parts.Select((_, index) => $"-map {index}"))} -c copy"
+            ? $"{string.Join(" ", parts.Select((_, index) => $"-map {index}"))} -c copy -bitexact"
             : $"-i \"{cover.GetLocalPath()}\" " +
               string.Join(" ", parts.Select((_, index) => $"-map {index}")) + " -c copy " +
-              $"-map {parts.Count} -disposition:v:1 attached_pic";
+              $"-map {parts.Count} -disposition:v:1 attached_pic -bitexact";
         var result = Executor.Run("ffmpeg",
             string.Join(" ", parts.Select(f => $"-i \"{f.GetLocalPath()}\"")) +
             $" {arguments} \"{target.GetLocalPath()}\"");

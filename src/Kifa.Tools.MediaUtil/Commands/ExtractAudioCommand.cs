@@ -93,7 +93,7 @@ public class ExtractAudioCommand : KifaCommand {
 
             // Inline image: https://ffmpeg.org/ffmpeg-protocols.html#data
             var arguments = $"-i \"{sourcePath}\" -i \"{coverFile.GetLocalPath()}\" " +
-                            $"-map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadataString} \"{targetPath}\"";
+                            $"-map 0:a -acodec copy -map 1 -c copy -disposition:v:0 attached_pic {metadataString} -bitexact \"{targetPath}\"";
             Logger.Trace($"Executing: ffmpeg {arguments}");
             using var proc = new Process {
                 StartInfo = {
@@ -158,7 +158,7 @@ public class ExtractAudioCommand : KifaCommand {
 
         // https://superuser.com/a/1328212
         var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
-                        $"-map 0:v -map -0:V -c copy \"{coverFile.GetLocalPath()}\"";
+                        $"-map 0:v -map -0:V -c copy -bitexact \"{coverFile.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
@@ -207,7 +207,7 @@ public class ExtractAudioCommand : KifaCommand {
 
         // https://ffmpeg.org/ffmpeg.html#:~:text=%2Dframes%5B%3Astream_specifier,after%20framecount%20frames.
         var arguments = $"-i \"{sourceFile.GetLocalPath()}\" " +
-                        $"-frames:v 1 \"{coverFile.GetLocalPath()}\"";
+                        $"-frames:v 1 -bitexact \"{coverFile.GetLocalPath()}\"";
         Logger.Trace($"Executing: ffmpeg {arguments}");
         using var proc = new Process {
             StartInfo = {
