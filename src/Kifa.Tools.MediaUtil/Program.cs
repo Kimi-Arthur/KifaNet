@@ -5,4 +5,4 @@ using Kifa.Tools.MediaUtil.Commands;
 KifaCommand.Run(
     Parser.Default
         .ParseArguments<ExtractAudioCommand, AddCoverCommand, CombineCommand, ViewCommand,
-            FixInfoCommand, OrganizeCommand>, args);
+            FixInfoCommand, OrganizeCommand, CompareCommand>, args);

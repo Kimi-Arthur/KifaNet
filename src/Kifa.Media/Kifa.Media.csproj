@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Kifa\Kifa.csproj" />
     <ProjectReference Include="..\Kifa.IO\Kifa.IO.csproj" />
     <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj" />
+    <ProjectReference Include="..\Kifa.Api.Files\Kifa.Api.Files.csproj" />
   </ItemGroup>
 
   <ItemGroup>
