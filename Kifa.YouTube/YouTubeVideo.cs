@@ -13,6 +13,12 @@ using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube;
 
+public class YouTubeChapter {
+    public double StartTime { get; set; }
+    public double EndTime { get; set; }
+    public string? Title { get; set; }
+}
+
 public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static string ModelId => "youtube/videos";
 
@@ -101,6 +107,80 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
     }
 
+    public static (List<string> TrackPaths, string? CoverPath) DownloadTracks(string videoId,
+        string targetPath, YouTubeVideo? video = null) {
+        var parentFolder = Path.GetDirectoryName(targetPath) ?? ".";
+        var basePrefix = Path.GetFileNameWithoutExtension(targetPath);
+
+        var ytdl = YoutubeDL;
+        ytdl.OutputFolder = parentFolder;
+
+        var options = GetOptionSet();
+        options.EmbedMetadata = false;
+        options.EmbedThumbnail = false;
+        options.WriteThumbnail = true;
+        options.ConvertThumbnails = "png";
+        options.Output = $"{basePrefix}.%(format_id)s.%(ext)s";
+        options.AddCustomOption("-o", $"thumbnail:{basePrefix}.c.%(ext)s");
+
+        List<string> formatIds = [];
+        if (video?.FormatId != null) {
+            formatIds = video.FormatId.Split("+").ToList();
+            options.Format = string.Join(",", formatIds);
+        } else {
+            options.Format = "bestvideo,bestaudio/best";
+        }
+
+        var result = ytdl.RunVideoDownload(videoId, overrideOptions: options).GetAwaiter()
+            .GetResult();
+        if (!result.Success) {
+            throw new Exception(
+                $"Failed to download video tracks for {videoId}: {string.Join("\n", result.ErrorOutput)}");
+        }
+
+        var downloadedFiles = Directory.GetFiles(parentFolder);
+        var trackPaths = new List<string>();
+
+        if (formatIds.Count > 0) {
+            foreach (var fId in formatIds) {
+                var match = downloadedFiles.FirstOrDefault(f =>
+                    Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.{fId}");
+                if (match != null) {
+                    trackPaths.Add(match);
+                }
+            }
+        }
+
+        if (trackPaths.Count == 0) {
+            trackPaths = downloadedFiles
+                .Where(f => {
+                    var name = Path.GetFileNameWithoutExtension(f);
+                    return name.StartsWith($"{basePrefix}.") && !name.EndsWith(".c");
+                })
+                .OrderBy(f => f)
+                .ToList();
+        }
+
+        var coverPath = downloadedFiles.FirstOrDefault(f =>
+            Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.c");
+        if (coverPath != null &&
+            Path.GetExtension(coverPath).Equals(".webp", StringComparison.OrdinalIgnoreCase)) {
+            var pngCover = Path.Combine(parentFolder, $"{basePrefix}.c.png");
+            var convertResult = Executor.Run("ffmpeg",
+                $"-i \"{coverPath}\" -update 1 -bitexact -y \"{pngCover}\"");
+            if (convertResult.ExitCode == 0) {
+                try {
+                    File.Delete(coverPath);
+                } catch {
+                }
+
+                coverPath = pngCover;
+            }
+        }
+
+        return (trackPaths, coverPath);
+    }
+
     public string? Title { get; set; }
     public string? Author { get; set; }
     public string? AuthorId { get; set; }
@@ -108,6 +188,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public string? Description { get; set; }
     public List<string> Categories { get; set; } = new();
     public List<string> Tags { get; set; } = new();
+    public List<YouTubeChapter> Chapters { get; set; } = new();
 
     public TimeSpan Duration { get; set; }
     public double Fps { get; set; }
@@ -166,6 +247,11 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         Height = videoFormat.Height.Checked();
         Codec = NormalizeCodec(videoFormat.VideoCodec);
         Thumbnail = videoData.Thumbnail;
+        Chapters = videoData.Chapters?.Select(c => new YouTubeChapter {
+            StartTime = c.StartTime ?? 0,
+            EndTime = c.EndTime ?? 0,
+            Title = c.Title
+        }).ToList() ?? new();
     }
 
     void FillWithFindYoutubeVideo() {

@@ -1,6 +1,7 @@
 using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
+using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube.Tests;
 
@@ -60,6 +61,23 @@ public class YouTubeVideoTests {
         flags.Should().ContainMatch("*--extractor-args*");
         flags.Should().ContainMatch("*youtube:player_client=ios,android*");
         flags.Should().ContainMatch("*youtubetab:approximate_date*");
+    }
+
+    [Fact]
+    public void TrackDownloadOptionsTest() {
+        var options = new OptionSet {
+            Format = "395,251",
+            WriteThumbnail = true,
+            ConvertThumbnails = "png",
+            Output = "/tmp/test.%(format_id)s.%(ext)s"
+        };
+        options.AddCustomOption("-o", "thumbnail:/tmp/test.c.%(ext)s");
+        var flags = options.GetOptionFlags().ToList();
+        flags.Should().ContainMatch("*-o \"/tmp/test.%(format_id)s.%(ext)s\"*");
+        flags.Should().ContainMatch("*-o \"thumbnail:/tmp/test.c.%(ext)s\"*");
+        flags.Should().ContainMatch("*-f \"395,251\"*");
+        flags.Should().Contain("--write-thumbnail");
+        flags.Should().ContainMatch("*--convert-thumbnails \"png\"*");
     }
 
     [Fact]
