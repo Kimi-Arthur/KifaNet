@@ -75,14 +75,16 @@ Whether a data model needs refreshing is determined dynamically by `data.NeedRef
 ```mermaid
 flowchart TD
     Start([Check NeedRefresh]) --> NullVersion{Version == null?}
-    NullVersion -- Yes --> FillByDefault[Return FillByDefault]
+    NullVersion -- Yes --> True0[Return true<br/><i>Initial fill needed</i>]
     NullVersion -- No --> ForceCheck{ForceRefreshBefore != null<br/>&& Version < ForceRefreshBefore?}
     
     ForceCheck -- Yes --> True1[Return true<br/><i>Code logic invalidated</i>]
-    ForceCheck -- No --> IntervalCheck{RefreshInterval != null<br/>&& LastRefreshed + RefreshInterval < UtcNow?}
+    ForceCheck -- No --> HasInterval{RefreshInterval != null?}
     
+    HasInterval -- Yes --> IntervalCheck{LastRefreshed + RefreshInterval < UtcNow?}
     IntervalCheck -- Yes --> True2[Return true<br/><i>Interval elapsed</i>]
     IntervalCheck -- No --> False[Return false<br/><i>Data is fresh</i>]
+    HasInterval -- No --> True3[Return true<br/><i>Default: always refresh without interval</i>]
 ```
 
 ### 3.1 Code-Managed Invalidation (`ForceRefreshBefore`)
@@ -98,7 +100,7 @@ Any item with `Version < ForceRefreshBefore` is treated as stale. Upon retrieval
 
 ### 3.2 Code-Managed Refresh Interval (`RefreshInterval`)
 
-For models with dynamic lifespans (e.g. cloud accounts, quotas, live program schedules):
+For models with scheduled lifespans (e.g. cloud accounts, quotas, live program schedules, long-cached dictionary pages):
 ```csharp
 public class BaiduAccount : DataModel, WithModelId<BaiduAccount> {
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(7);
@@ -107,13 +109,13 @@ public class BaiduAccount : DataModel, WithModelId<BaiduAccount> {
 The next refresh timestamp is computed on demand via `GetNextRefresh()`:
 $$\text{NextRefresh} = (\text{LastRefreshed} \mathbin{??} \text{Version}) + \text{RefreshInterval}$$
 
-### 3.3 Non-Upstream Models (e.g., `FileInformation`)
+### 3.3 Default Refresh Without Interval (`RefreshInterval == null`)
 
-Models representing user data or metadata without external upstream sources (such as `FileInformation`) do not override `FillByDefault` (remains `false`) and do not implement `Fill()`:
-- `data.NeedRefresh()` immediately returns `false` (via `data.FillByDefault`).
-- No `$metadata` (such as `Version` or `LastRefreshed`) is generated or written to disk.
-- `CleanupForWriting()` strips empty metadata objects, keeping the on-disk JSON file pure and free of unnecessary metadata fields.
-- If a client explicitly passes `refresh: true` for such a model, `DataModel.Fill()` throws `NoNeedToFillException`, which `KifaServiceJsonClient` catches cleanly without modifying metadata.
+When no interval is configured, `NeedRefresh()` defaults to `true`:
+- **Models with `Fill()`** (e.g. `BilibiliPlaylist`, `BilibiliUploader`, `TvShow`, `Anime`):
+  `Fill()` queries the remote API. If the upstream content changed (e.g. new playlist videos or episodes), `Version` and `LastRefreshed` advance. If upstream content is unchanged, `Version` remains untouched and only `LastRefreshed` updates.
+- **Models without `Fill()`** (e.g. `FileInformation`):
+  Base `DataModel.Fill()` throws `NoNeedToFillException`, which `KifaServiceJsonClient` catches cleanly, skipping metadata generation and saving without writes. No `$metadata` (such as `Version` or `LastRefreshed`) is generated or written to disk.
 
 ---
 

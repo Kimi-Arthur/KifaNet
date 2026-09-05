@@ -57,7 +57,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         folder = $"{Path.GetTempPath()}/{nameof(VersioningAndFreshnessTests)}_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
         client.DataFolder = folder;
         TestFillDataModel.Client = client;
-        TestFillDataModel.GlobalRefreshInterval = null;
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.FromDays(7);
         TestFillDataModel.GlobalForceRefreshBefore = null;
         TestFillDataModel.UpstreamLinks.Clear();
     }
@@ -200,6 +200,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         var downstreamId = $"{nameof(UpstreamFreshnessCheckInFillRefreshesDependentRegion)}_downstream";
 
         TestFillDataModel.UpstreamLinks[downstreamId] = upstreamId;
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.FromDays(7);
 
         var upstream = new TestFillDataModel {
             Id = upstreamId,
@@ -241,6 +242,31 @@ public class VersioningAndFreshnessTests : IDisposable {
         var updatedDownstream = client.Get(downstreamId, refresh: true);
         updatedDownstream!.UpstreamContent.Should().Be("upstream v2");
         updatedDownstream.Metadata!.Version!.Value.Should().BeAfter(downstreamVersionBefore!.Value);
+    }
+
+    [Fact]
+    public void ModelWithoutRefreshIntervalAlwaysRefreshesByDefault() {
+        var id = nameof(ModelWithoutRefreshIntervalAlwaysRefreshesByDefault);
+        TestFillDataModel.GlobalRefreshInterval = null;
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        };
+
+        client.Set(model);
+
+        var firstGet = client.Get(id);
+        firstGet.Should().NotBeNull();
+        firstGet!.NeedRefresh().Should().BeTrue();
+
+        // Simulate remote source updating content
+        firstGet.RemoteSourceContent = "v2";
+        client.Update(firstGet);
+
+        // Next Get() without refresh: true should automatically refresh
+        var secondGet = client.Get(id);
+        secondGet.Should().NotBeNull();
+        secondGet!.Content.Should().Be("v2");
     }
 
     [Fact]
@@ -351,7 +377,6 @@ public class VersioningAndFreshnessTests : IDisposable {
         var data = nonUpstreamClient.Get(id);
         data.Should().NotBeNull();
         data!.Content.Should().Be("user provided data");
-        data.NeedRefresh().Should().BeFalse();
         data.Metadata.Should().BeNull();
 
         // Check on-disk file: should not have $metadata or version

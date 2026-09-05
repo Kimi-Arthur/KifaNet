@@ -51,7 +51,7 @@ public static class DataFreshnessExtensions {
 
     public static bool NeedRefresh(this DataModel data) {
         if (data.Metadata?.Version == null) {
-            return data.FillByDefault;
+            return true;
         }
 
         if (data.ForceRefreshBefore != null && data.Metadata.Version < data.ForceRefreshBefore) {
@@ -59,11 +59,10 @@ public static class DataFreshnessExtensions {
         }
 
         var lastChecked = data.Metadata.LastRefreshed ?? data.Metadata.Version;
-        if (data.RefreshInterval != null &&
-            (lastChecked + data.RefreshInterval)?.Value < DateTimeOffset.UtcNow) {
-            return true;
+        if (data.RefreshInterval != null) {
+            return (lastChecked + data.RefreshInterval)?.Value < DateTimeOffset.UtcNow;
         }
 
-        return false;
+        return true;
     }
 }
