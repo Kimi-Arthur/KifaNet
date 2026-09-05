@@ -22,7 +22,6 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public string? RemoteSourceContent { get; set; }
     public string? UpstreamContent { get; set; }
 
-    public override bool FillByDefault => true;
 
     public override TimeSpan? RefreshInterval => GlobalRefreshInterval;
 

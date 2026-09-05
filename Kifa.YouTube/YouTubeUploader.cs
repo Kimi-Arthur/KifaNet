@@ -15,7 +15,6 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public string? Name { get; set; }
     public List<string> Videos { get; set; } = new();
 
-    public override bool FillByDefault => true;
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 

@@ -21,7 +21,6 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
     public List<string> Aids { get; set; }
     public List<string> ExtraAids { get; set; } = new();
 
-    public override bool FillByDefault => true;
 
     public override void Fill() {
         var mediaData = HttpClients.GetBilibiliClient().Call(new MediaRpc(Id))?.Result;

@@ -59,7 +59,6 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
 
     readonly HttpClient httpClient = new();
 
-    public override bool FillByDefault => true;
 
     public override void Fill() {
         var account = SwisscomAccount.Client.Get(Id);

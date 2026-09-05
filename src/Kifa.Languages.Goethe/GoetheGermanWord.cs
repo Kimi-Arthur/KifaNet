@@ -19,7 +19,6 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     public static KifaServiceClient<GoetheGermanWord> Client { get; set; } =
         new KifaServiceRestClient<GoetheGermanWord>();
 
-    public override bool FillByDefault => true;
 
     static readonly Regex RootWordPattern =
         new(@"^(das |der |die |\(.*\) |sich |der/die )?(.+?)(-$| \(.*\)| sein| gehen)?$");

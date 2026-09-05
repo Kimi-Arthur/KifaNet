@@ -22,7 +22,6 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     public List<string> Aids { get; set; } = new();
     public List<string> RemovedAids { get; set; } = new();
 
-    public override bool FillByDefault => true;
 
     public override void Fill() {
         var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(Id));

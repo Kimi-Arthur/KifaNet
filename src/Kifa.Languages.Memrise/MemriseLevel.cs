@@ -13,7 +13,6 @@ namespace Kifa.Languages.Memrise;
 public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
     public static string ModelId => "Languages/memrise/levels";
 
-    public override bool FillByDefault => true;
 
     public static KifaServiceClient<MemriseLevel> Client { get; set; } =
         new KifaServiceRestClient<MemriseLevel>();

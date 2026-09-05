@@ -48,7 +48,6 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
 
     public override TimeSpan? RefreshInterval => TokenValidDuration;
 
-    public override bool FillByDefault => true;
 
     public override void Fill() {
         if (string.IsNullOrEmpty(RefreshToken)) {

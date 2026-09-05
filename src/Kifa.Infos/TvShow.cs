@@ -104,9 +104,6 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
         }
     }
 
-    // TODO: Always refresh for now.
-    // It should determine how frequent it's published and last updated episode to predict.
-    public override bool FillByDefault => true;
 
     public string? Format(Season season, Episode episode, string? version = null)
         => Format(season, new List<Episode> {

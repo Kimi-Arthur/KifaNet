@@ -17,7 +17,6 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
 
     public List<string> Videos { get; set; }
 
-    public override bool FillByDefault => true;
 
     public override void Fill() {
         var data = HttpClients.GetBilibiliClient().Call(new PlaylistRpc(Id))?.Data;

@@ -25,7 +25,6 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static KifaServiceClient<YouTubeVideo> Client { get; set; } =
         new KifaServiceRestClient<YouTubeVideo>();
 
-    public override bool FillByDefault => true;
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 

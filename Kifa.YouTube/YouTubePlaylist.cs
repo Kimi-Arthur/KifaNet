@@ -16,7 +16,6 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
     public string? Author { get; set; }
     public List<string> Videos { get; set; } = new();
 
-    public override bool FillByDefault => true;
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 

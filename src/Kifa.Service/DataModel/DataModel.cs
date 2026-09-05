@@ -68,9 +68,6 @@ public abstract class DataModel : IEquatable<DataModel> {
     [YamlIgnore]
     public DataMetadata? Metadata { get; set; }
 
-    [JsonIgnore]
-    [YamlIgnore]
-    public virtual bool FillByDefault => false;
 
     [JsonIgnore]
     [YamlIgnore]

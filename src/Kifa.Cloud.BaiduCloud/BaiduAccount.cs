@@ -35,12 +35,9 @@ public class BaiduAccount : OAuthAccount, WithModelId<BaiduAccount> {
             redirectUrl: redirectUrl);
 
     public override KifaActionResult FillUserInfo() => throw new NotImplementedException();
-
     static readonly TimeSpan TokenValidDuration = TimeSpan.FromDays(30) - TimeSpan.FromHours(1);
 
     public override TimeSpan? RefreshInterval => TokenValidDuration;
-
-    public override bool FillByDefault => true;
 
     public override void Fill() {
         var response = HttpClient.FetchJToken(() => Rpcs.OauthRefresh.GetRequest(
