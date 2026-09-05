@@ -18,6 +18,9 @@ public class DownloadPlaylistCommand : DownloadCommand {
             "Alternate folder to use. Playlist Id will be appended as {folder}.p{id}.youtube")]
     public string? AlternateFolder { get; set; }
 
+    [Option('l', "oldest-first", HelpText = "Download oldest video first.")]
+    public bool OldestFirst { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var playlist = YouTubePlaylist.Client.Get(PlaylistId, refresh: Refresh);
         if (playlist == null) {
@@ -25,7 +28,11 @@ public class DownloadPlaylistCommand : DownloadCommand {
             return 1;
         }
 
-        foreach (var videoId in playlist.Videos) {
+        var videosToDownload = OldestFirst
+            ? playlist.Videos
+            : playlist.Videos.AsEnumerable().Reverse().ToList();
+
+        foreach (var videoId in videosToDownload) {
             ExecuteItem(videoId, () => DownloadVideo(playlist, videoId));
         }
 
