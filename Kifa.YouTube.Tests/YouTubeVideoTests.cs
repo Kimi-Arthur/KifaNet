@@ -176,9 +176,9 @@ public class YouTubeVideoTests {
         video.GetDesiredName(prefix: "2014-04-09").Should().Be(
             "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/2014-04-09 我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.1920x1080p60.137+22");
 
-        video.GetCanonicalNames(includeFormat: false).Should().BeEquivalentTo(["RWrSo_7RmgQ"]);
-        video.GetDesiredName(includeFormat: false).Should().Be(
+        video.GetDesiredName(explicitSuffix: "").Should().Be(
             "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ");
+
 
         var videoWithResolutionOnly = new YouTubeVideo {
             Id = "RWrSo_7RmgQ",
@@ -236,7 +236,6 @@ public class YouTubeVideoTests {
         videoWithVp9.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.1920x1080p60-vp9.248+171"]);
         videoWithVp9.GetDesiredName().Should().Be(
             "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.1920x1080p60-vp9.248+171");
-
         var videoWithAv1 = new YouTubeVideo {
             Id = "RWrSo_7RmgQ",
             Title = "我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409",
@@ -252,6 +251,10 @@ public class YouTubeVideoTests {
         videoWithAv1.GetCanonicalNames().Should().BeEquivalentTo(["RWrSo_7RmgQ.1920x1080p60-av1.399+140"]);
         videoWithAv1.GetDesiredName().Should().Be(
             "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.1920x1080p60-av1.399+140");
+        videoWithAv1.GetDesiredName(explicitSuffix: "custom.suffix").Should().Be(
+            "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ.custom.suffix");
+        videoWithAv1.GetDesiredName(explicitSuffix: "").Should().Be(
+            "中国湖南卫视官方频道 China HunanTV Official Channel.HunanTV.youtube/我是歌手-第二季-品冠演唱串烧-【湖南卫视官方版1080P】20140409.RWrSo_7RmgQ");
 
         var videoWithoutFormat = new YouTubeVideo {
             Id = "RWrSo_7RmgQ",

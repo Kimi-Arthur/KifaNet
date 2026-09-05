@@ -143,8 +143,8 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
         if (formatIds.Count > 0) {
             foreach (var fId in formatIds) {
-                var match = downloadedFiles.FirstOrDefault(f =>
-                    Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.{fId}");
+                var match = downloadedFiles.FirstOrDefault(f
+                    => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.{fId}");
                 if (match != null) {
                     trackPaths.Add(match);
                 }
@@ -152,19 +152,16 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
 
         if (trackPaths.Count == 0) {
-            trackPaths = downloadedFiles
-                .Where(f => {
-                    var name = Path.GetFileNameWithoutExtension(f);
-                    return name.StartsWith($"{basePrefix}.") && !name.EndsWith(".c");
-                })
-                .OrderBy(f => f)
-                .ToList();
+            trackPaths = downloadedFiles.Where(f => {
+                var name = Path.GetFileNameWithoutExtension(f);
+                return name.StartsWith($"{basePrefix}.") && !name.EndsWith(".c");
+            }).OrderBy(f => f).ToList();
         }
 
-        var coverPath = downloadedFiles.FirstOrDefault(f =>
-            Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.c");
-        if (coverPath != null &&
-            Path.GetExtension(coverPath).Equals(".webp", StringComparison.OrdinalIgnoreCase)) {
+        var coverPath = downloadedFiles.FirstOrDefault(f
+            => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.c");
+        if (coverPath != null && Path.GetExtension(coverPath)
+                .Equals(".webp", StringComparison.OrdinalIgnoreCase)) {
             var pngCover = Path.Combine(parentFolder, $"{basePrefix}.c.png");
             var convertResult = Executor.Run("ffmpeg",
                 $"-i \"{coverPath}\" -update 1 -bitexact -y \"{pngCover}\"");
@@ -401,16 +398,16 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return segments.Count > 0 ? segments.JoinBy(".") : null;
     }
 
-    public List<string> GetCanonicalNames(string? formatId = null, bool includeFormat = true) {
-        var suffix = includeFormat ? GetSuffix(formatId) : null;
-        return suffix != null ? [$"{Id}.{suffix}"] : [Id.Checked()];
+    public List<string> GetCanonicalNames(string? formatId = null) {
+        var suffix = GetSuffix(formatId);
+        return [string.FormatOr($"{Id}.{suffix}", Id.Checked())];
     }
 
     // Common file extension suffix (e.g., ".mp4") length.
     const int TypeSuffixLength = 4;
 
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
-        string? extraFolder = null, string? prefix = null, bool includeFormat = true) {
+        string? extraFolder = null, string? prefix = null, string? explicitSuffix = null) {
         if (Title == null || Id == null) {
             return null;
         }
@@ -419,17 +416,15 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         var uploaderName = Author?.NormalizeFileName();
         var uploaderId = AuthorId?.NormalizeFileName();
 
-        var defaultFolder = uploaderName != null
-            ? (uploaderId != null ? $"{uploaderName.Choppable()}.{uploaderId}" : uploaderName.Choppable())
-            : uploaderId;
+        var defaultFolder = string.FormatOr($"{uploaderName?.Choppable()}.{uploaderId}",
+            uploaderName?.Choppable() ?? uploaderId);
 
         var folder = alternativeFolder != null
-            ? $"{alternativeFolder.Split('/')[0].Choppable()}.youtube/{alternativeFolder.Split('/').Skip(1).JoinBy('/')}".TrimEnd('/')
-            : (defaultFolder != null ? $"{defaultFolder}.youtube" : null);
+            ? $"{alternativeFolder.Split('/')[0].Choppable()}.youtube/{alternativeFolder.Split('/').Skip(1).JoinBy('/')}"
+                .TrimEnd('/')
+            : string.FormatOr($"{defaultFolder}.youtube");
 
-        if (extraFolder != null && folder != null) {
-            folder = $"{folder}/{extraFolder}";
-        }
+        folder = string.FormatOr($"{folder}/{extraFolder}", folder);
 
         var filenameSegments = new List<string>();
         if (prefix != null) {
@@ -438,12 +433,13 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
         filenameSegments.Add(title);
 
-        var suffix = includeFormat ? GetSuffix(formatId) : null;
-        var suffixString = suffix != null ? $".{suffix}" : "";
-        var fileName = $"{filenameSegments.JoinBy(" ").Choppable()}.{Id}{suffixString}";
+        var suffix = explicitSuffix != null
+            ? explicitSuffix.Length > 0 ? explicitSuffix : null
+            : GetSuffix(formatId);
+        var fileName =
+            $"{filenameSegments.JoinBy(" ").Choppable()}.{Id}{string.FormatOrEmpty($".{suffix}")}";
 
-        return folder != null
-            ? $"{folder}/{fileName}".NormalizeFilePath(TypeSuffixLength)
-            : fileName.NormalizeFilePath(TypeSuffixLength);
+        return string.FormatOr($"{folder}/{fileName}", fileName)
+            .NormalizeFilePath(TypeSuffixLength);
     }
 }
