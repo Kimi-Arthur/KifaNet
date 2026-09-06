@@ -146,13 +146,17 @@ public abstract partial class KifaCommand {
         }
     }
 
-    static readonly Dictionary<string, string> DefaultReplyForSelectMany = new();
+    static readonly Dictionary<string, string?> DefaultReplyForSelectMany = new();
     static readonly Dictionary<string, bool> AlwaysDefaultForSelectMany = new();
+
+    protected static string? GetDefaultReplyForSelectMany(string selectionKey)
+        => DefaultReplyForSelectMany.GetValueOrDefault(selectionKey);
 
     public KifaActionResult<List<TChoice>> SelectMany<TChoice>(List<TChoice> choices,
         Func<TChoice, string>? choiceToString = null,
         FuncOrValue<List<TChoice>, string>? choiceSummaryString = null, int startingIndex = 1,
         string? selectionKey = null, bool skipIfEmpty = true, bool reverse = false,
+        string? defaultReply = null,
         [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0) {
         var choiceItemString = choiceToString ?? (c => c?.ToString() ?? "");
         selectionKey = string.IsNullOrEmpty(selectionKey)
@@ -165,37 +169,34 @@ public abstract partial class KifaCommand {
         }
 
         AlwaysDefaultForSelectMany.TryAdd(selectionKey, AutoConfirmDefault);
-        DefaultReplyForSelectMany.TryAdd(selectionKey, "");
 
-        if (!string.IsNullOrEmpty(DefaultReplyForSelectMany[selectionKey])) {
+        var loggedDefault = DefaultReplyForSelectMany.GetValueOrDefault(selectionKey);
+        if (loggedDefault != null && loggedDefault != "*") {
             try {
-                ParseSelection(DefaultReplyForSelectMany[selectionKey], choices, choiceItemString,
-                    startingIndex);
+                ParseSelection(loggedDefault, choices, choiceItemString, startingIndex);
             } catch {
-                DefaultReplyForSelectMany[selectionKey] = "";
+                DefaultReplyForSelectMany[selectionKey] = null;
                 AlwaysDefaultForSelectMany[selectionKey] = false;
+                loggedDefault = null;
             }
         }
 
-        var defaultReply = DefaultReplyForSelectMany[selectionKey];
-        var defaultDisplay = string.IsNullOrEmpty(defaultReply) ? "*" : defaultReply;
+        var effectiveDefault = loggedDefault ?? defaultReply ?? "*";
+        var defaultDisplay = effectiveDefault;
 
         if (AlwaysDefaultForSelectMany[selectionKey]) {
             Console.WriteLine(
                 $"Automatically chose [{defaultDisplay}] as previously instructed.\n");
-            if (string.IsNullOrEmpty(defaultReply)) {
-                return choices;
-            }
-
-            var initialIndexes = ParseSelection(defaultReply, choices, choiceItemString,
-                startingIndex);
-            return initialIndexes.Select(i => choices[i]).ToList();
+            return effectiveDefault == "*"
+                ? choices
+                : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)
+                    .Select(i => choices[i]).ToList();
         }
 
         var chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
         var isFirstPrompt = true;
         var filterRounds = 0;
-        var firstFilter = "";
+        string? firstFilter = null;
 
         while (true) {
             var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
@@ -213,9 +214,9 @@ public abstract partial class KifaCommand {
 
             Console.WriteLine();
             if (isFirstPrompt) {
-                var defaultCountSummary = string.IsNullOrEmpty(defaultReply)
+                var defaultCountSummary = effectiveDefault == "*"
                     ? $"{choices.Count} items"
-                    : $"{ParseSelection(defaultReply, choices, choiceItemString, startingIndex).Count} items";
+                    : $"{ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex).Count} items";
 
                 var messages = new[] {
                     $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
@@ -240,9 +241,10 @@ public abstract partial class KifaCommand {
                 chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
                 isFirstPrompt = true;
                 filterRounds = 0;
-                firstFilter = "";
-                defaultReply = "";
-                defaultDisplay = "*";
+                firstFilter = null;
+                DefaultReplyForSelectMany[selectionKey] = null;
+                effectiveDefault = defaultReply ?? "*";
+                defaultDisplay = effectiveDefault;
                 continue;
             }
 
@@ -257,8 +259,28 @@ public abstract partial class KifaCommand {
                 return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
             }
 
+            var isDefaultReply = false;
+            if (line == "") {
+                if (flags.Contains('a')) {
+                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                }
+
+                if (isFirstPrompt) {
+                    line = effectiveDefault;
+                    isDefaultReply = true;
+                } else {
+                    DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
+                    Logger.Debug(
+                        $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
+                    return selectedChoices;
+                }
+            }
+
             if (line == "*") {
-                DefaultReplyForSelectMany[selectionKey] = "";
+                if (!isDefaultReply) {
+                    DefaultReplyForSelectMany[selectionKey] = "*";
+                }
+
                 if (flags.Contains('a')) {
                     AlwaysDefaultForSelectMany[selectionKey] = true;
                 }
@@ -268,62 +290,37 @@ public abstract partial class KifaCommand {
                 return choices;
             }
 
-            if (line == "") {
-                if (flags.Contains('a')) {
-                    AlwaysDefaultForSelectMany[selectionKey] = true;
-                }
-
-                if (isFirstPrompt) {
-                    if (string.IsNullOrEmpty(defaultReply)) {
-                        DefaultReplyForSelectMany[selectionKey] = "";
-                        Logger.Debug(
-                            $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
-                        return selectedChoices;
-                    }
-
-                    try {
-                        var defaultIndexes = ParseSelection(defaultReply, choices, choiceItemString,
-                            startingIndex);
-                        DefaultReplyForSelectMany[selectionKey] = defaultReply;
-                        Logger.Debug(
-                            $"Selected {defaultIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
-                        return defaultIndexes.Select(i => choices[i]).ToList();
-                    } catch {
-                        Console.WriteLine("Invalid default choice. Resetting to *:");
-                        DefaultReplyForSelectMany[selectionKey] = "";
-                        defaultReply = "";
-                        defaultDisplay = "*";
-                        chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
-                        continue;
-                    }
-                }
-
-                DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : "";
-                Logger.Debug(
-                    $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
-                return selectedChoices;
-            }
-
             try {
                 var newIndexes =
                     ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
                 chosenIndexes = newIndexes.Select(i => chosenIndexes[i]).ToList();
                 filterRounds++;
-                if (filterRounds == 1) {
+                if (filterRounds == 1 && !isDefaultReply) {
                     firstFilter = line;
                 }
 
-                isFirstPrompt = false;
-                DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : "";
-                if (flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
+                if (isDefaultReply || flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
                     if (flags.Contains('a')) {
                         AlwaysDefaultForSelectMany[selectionKey] = true;
                     }
 
+                    if (!isDefaultReply) {
+                        DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
+                    }
+
+                    Logger.Debug(
+                        $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
                     return chosenIndexes.Select(i => choices[i]).ToList();
                 }
+
+                isFirstPrompt = false;
             } catch (Exception) {
                 Console.WriteLine("Invalid choice. Try again:");
+                if (isDefaultReply) {
+                    effectiveDefault = "*";
+                    defaultDisplay = "*";
+                    DefaultReplyForSelectMany[selectionKey] = null;
+                }
             }
         }
     }

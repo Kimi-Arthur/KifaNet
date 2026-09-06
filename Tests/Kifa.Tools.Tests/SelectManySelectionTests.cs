@@ -230,14 +230,18 @@ public class SelectManySelectionTests {
     class DummyCommand : KifaCommand {
         public override int Execute(KifaTask? task = null) => 0;
 
-        public KifaActionResult<List<string>> TestSelectMany(List<string> choices, string selectionKey) {
-            return SelectMany(choices, s => s, selectionKey: selectionKey);
+        public KifaActionResult<List<string>> TestSelectMany(List<string> choices, string selectionKey,
+            string? defaultReply = null) {
+            return SelectMany(choices, s => s, selectionKey: selectionKey, defaultReply: defaultReply);
         }
 
         public KifaActionResult<(string Choice, int? Part, int Index, bool Special)> TestSelectOne(
             List<string> choices, string selectionKey) {
             return SelectOne(choices, s => s, selectionKey: selectionKey);
         }
+
+        public string? GetLoggedDefaultReply(string selectionKey)
+            => GetDefaultReplyForSelectMany(selectionKey);
     }
 
     [Fact]
@@ -447,6 +451,130 @@ public class SelectManySelectionTests {
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
             Assert.Equal(new[] { "a", "b", "c" }, res.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_DynamicDefault_EnterAcceptsDynamicDefault() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "item1", "item2", "item3" }, key,
+                defaultReply: "2");
+            Assert.Equal(new[] { "item2" }, res.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_DynamicDefault_AlwaysFlagAutoSelectsSubsequentDynamicDefaults() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // User types "a\n" on the first prompt
+            Console.SetIn(new System.IO.StringReader("a\n"));
+
+            var cmd = new DummyCommand();
+            // Call 1: dynamic default chooses "item1" (index 1)
+            var res1 = cmd.TestSelectMany(new List<string> { "item1", "item2" }, key,
+                defaultReply: "1");
+            Assert.Equal(new[] { "item1" }, res1.Value.Checked());
+
+            // Call 2: dynamic default chooses "itemB" (index 2) - should auto-select without needing input
+            var res2 = cmd.TestSelectMany(new List<string> { "itemA", "itemB" }, key,
+                defaultReply: "2");
+            Assert.Equal(new[] { "itemB" }, res2.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_DynamicDefault_AutoConfirmDefaultAutoSelectsDynamicDefaults() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader(""));
+
+            var cmd = new DummyCommand { AutoConfirmDefault = true };
+            var res1 = cmd.TestSelectMany(new List<string> { "item1", "item2" }, key,
+                defaultReply: "2");
+            Assert.Equal(new[] { "item2" }, res1.Value.Checked());
+
+            var res2 = cmd.TestSelectMany(new List<string> { "itemA", "itemB" }, key,
+                defaultReply: "1");
+            Assert.Equal(new[] { "itemA" }, res2.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_DynamicDefault_MultipleMatchingItemsDefault() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "item1", "item2", "item3" }, key,
+                defaultReply: "1,3");
+            Assert.Equal(new[] { "item1", "item3" }, res.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_LoggedDefaultReply_IsNullWhenNotExplicitlyProvided() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b", "c" }, res.Value.Checked());
+            Assert.Null(cmd.GetLoggedDefaultReply(key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_LoggedDefaultReply_IsNullWhenEmptyInputWithAlwaysFlag() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("a\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key,
+                defaultReply: "2");
+            Assert.Equal(new[] { "b" }, res.Value.Checked());
+            Assert.Null(cmd.GetLoggedDefaultReply(key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_LoggedDefaultReply_IsLoggedWhenExplicitFilterEntered() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("1-2\n\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key);
+            Assert.Equal(new[] { "a", "b" }, res.Value.Checked());
+            Assert.Equal("1-2", cmd.GetLoggedDefaultReply(key));
         } finally {
             Console.SetIn(originalIn);
         }

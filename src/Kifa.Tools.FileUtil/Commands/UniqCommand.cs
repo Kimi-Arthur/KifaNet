@@ -22,11 +22,20 @@ class UniqCommand : KifaFileCommand {
     [Option('i', "id", HelpText = "Treat input files as logical ids.")]
     public bool ById { get; set; } = false;
 
+    [Option('p', "preferred-folder", HelpText = "Preferred folder to keep instances in.")]
+    public string? PreferredFolder { get; set; }
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size.")]
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        if (!ById) {
+        if (ById) {
+            if (PreferredFolder != null && !PreferredFolder.StartsWith('/')) {
+                throw new ArgumentException(
+                    $"Logical ID '{PreferredFolder}' must start with '/'.",
+                    nameof(PreferredFolder));
+            }
+        } else {
             var localFiles = KifaFile.FindExistingFiles(FileNames);
             RegisterUnregisteredFiles(localFiles, ShowSize, "making unique");
         }
@@ -85,8 +94,25 @@ class UniqCommand : KifaFileCommand {
             return KifaActionResult.Skipped("No duplicate info entries.");
         }
 
+        string? defaultReply = null;
+        if (PreferredFolder != null) {
+            var preferredFolderId = ById ? PreferredFolder : new KifaFile(PreferredFolder).Id;
+            var folderPrefix = preferredFolderId.TrimEnd('/') + "/";
+            var matchingIndexes = new List<int>();
+            for (var i = 0; i < fileList.Count; i++) {
+                var fileId = fileList[i].Id.Checked();
+                if (fileId == preferredFolderId.TrimEnd('/') || fileId.StartsWith(folderPrefix)) {
+                    matchingIndexes.Add(i + 1);
+                }
+            }
+
+            if (matchingIndexes.Count > 0) {
+                defaultReply = string.Join(",", matchingIndexes);
+            }
+        }
+
         var confirmedKeep = SelectMany(fileList, f => f.Id.Checked(),
-            $"info entries to keep for group {sha}");
+            $"info entries to keep for group {sha}", defaultReply: defaultReply);
 
         if (confirmedKeep.Status != KifaActionStatus.OK) {
             return confirmedKeep;
