@@ -13,7 +13,14 @@ public abstract class KifaFileCommand : KifaCommand {
 
     public static List<FileInformation> FindFileInfosByIds(IEnumerable<string> sources,
         bool recursive = true) {
-        var fileIds = sources.SelectMany(f => FileInformation.Client.ListFolder(f, recursive))
+        var sourceList = sources.ToList();
+        var invalid = sourceList.FirstOrDefault(s => !s.StartsWith('/'));
+        if (invalid != null) {
+            throw new ArgumentException($"Logical ID '{invalid}' must start with '/'.",
+                nameof(sources));
+        }
+
+        var fileIds = sourceList.SelectMany(f => FileInformation.Client.ListFolder(f, recursive))
             .Distinct().OrderBy(f => f.GetNaturalSortKey()).ToList();
         var infos = FileInformation.Client.Get(fileIds);
         return fileIds.Zip(infos).Select(item => item.Second ?? new FileInformation {
