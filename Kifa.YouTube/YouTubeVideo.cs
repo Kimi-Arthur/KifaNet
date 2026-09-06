@@ -106,15 +106,10 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         }
     }
 
-    public static (List<string> TrackPaths, string? CoverPath) DownloadTracks(string videoId,
-        string targetPath, YouTubeVideo? video = null) {
-        var parentFolder = Path.GetDirectoryName(targetPath) ?? ".";
-        var basePrefix = Path.GetFileNameWithoutExtension(targetPath);
-
-        var ytdl = YoutubeDL;
-        ytdl.OutputFolder = parentFolder;
-
+    public static OptionSet GetTrackDownloadOptionSet(string parentFolder, string basePrefix,
+        YouTubeVideo? video = null) {
         var options = GetOptionSet();
+        options.Paths = parentFolder;
         options.EmbedMetadata = false;
         options.EmbedThumbnail = false;
         options.WriteThumbnail = true;
@@ -122,13 +117,34 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         options.Output = $"{basePrefix}.%(format_id)s.%(ext)s";
         options.AddCustomOption("-o", $"thumbnail:{basePrefix}.c.%(ext)s");
 
-        List<string> formatIds = [];
         if (video?.FormatId != null) {
-            formatIds = video.FormatId.Split("+").ToList();
+            var formatIds = video.FormatId.Split("+").ToList();
             options.Format = string.Join(",", formatIds);
         } else {
             options.Format = "bestvideo,bestaudio/best";
         }
+
+        return options;
+    }
+
+    public static (List<string> TrackPaths, string? CoverPath) DownloadTracks(string videoId,
+        string targetPath, YouTubeVideo? video = null) {
+        var parentFolder = Path.GetFullPath(Path.GetDirectoryName(targetPath) ?? ".");
+        var basePrefix = Path.GetFileNameWithoutExtension(targetPath);
+
+        Directory.CreateDirectory(parentFolder);
+
+        foreach (var file in Directory.GetFiles(parentFolder, $"{basePrefix}.*")) {
+            try {
+                File.Delete(file);
+            } catch {
+            }
+        }
+
+        var ytdl = YoutubeDL;
+        ytdl.OutputFolder = parentFolder;
+
+        var options = GetTrackDownloadOptionSet(parentFolder, basePrefix, video);
 
         var result = ytdl.RunVideoDownload(videoId, overrideOptions: options).GetAwaiter()
             .GetResult();
@@ -140,6 +156,11 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         var downloadedFiles = Directory.GetFiles(parentFolder);
         var trackPaths = new List<string>();
 
+        List<string> formatIds = [];
+        if (video?.FormatId != null) {
+            formatIds = video.FormatId.Split("+").ToList();
+        }
+
         if (formatIds.Count > 0) {
             foreach (var fId in formatIds) {
                 var match = downloadedFiles.FirstOrDefault(f
@@ -150,11 +171,16 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             }
         }
 
-        if (trackPaths.Count == 0) {
+        if (trackPaths.Count == 0 || (formatIds.Count > 0 && trackPaths.Count < formatIds.Count)) {
             trackPaths = downloadedFiles.Where(f => {
                 var name = Path.GetFileNameWithoutExtension(f);
                 return name.StartsWith($"{basePrefix}.") && !name.EndsWith(".c");
             }).OrderBy(f => f).ToList();
+        }
+
+        if (trackPaths.Count == 0) {
+            throw new Exception(
+                $"No downloaded tracks found for {videoId} with prefix {basePrefix} in {parentFolder}.");
         }
 
         var coverPath = downloadedFiles.FirstOrDefault(f

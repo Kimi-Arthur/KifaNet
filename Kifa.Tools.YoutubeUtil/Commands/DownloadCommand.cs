@@ -64,6 +64,7 @@ public abstract class DownloadCommand : YoutubeCommand {
         }
 
         var canonicalTargetFile = targetFiles[0];
+        canonicalTargetFile.EnsureLocalParent();
 
         var tempTargetFile = canonicalTargetFile.Parent.GetFile(
             $"{KifaFile.DefaultIgnoredPrefix}{canonicalTargetFile.BaseName}.mp4");
@@ -105,6 +106,10 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     static void MergePartFiles(List<KifaFile> parts, KifaFile? cover, KifaFile target,
         YouTubeVideo video) {
+        if (parts.Count == 0) {
+            throw new ArgumentException("No parts to merge.");
+        }
+
         if (parts.Count == 2 && !HasVideoStream(parts[0]) && HasVideoStream(parts[1])) {
             (parts[0], parts[1]) = (parts[1], parts[0]);
         }

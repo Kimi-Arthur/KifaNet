@@ -65,16 +65,14 @@ public class YouTubeVideoTests {
 
     [Fact]
     public void TrackDownloadOptionsTest() {
-        var options = new OptionSet {
-            Format = "395,251",
-            WriteThumbnail = true,
-            ConvertThumbnails = "png",
-            Output = "/tmp/test.%(format_id)s.%(ext)s"
-        };
-        options.AddCustomOption("-o", "thumbnail:/tmp/test.c.%(ext)s");
+        var options = YouTubeVideo.GetTrackDownloadOptionSet("/tmp/test", "myprefix",
+            new YouTubeVideo {
+                FormatId = "395+251"
+            });
         var flags = options.GetOptionFlags().ToList();
-        flags.Should().ContainMatch("*-o \"/tmp/test.%(format_id)s.%(ext)s\"*");
-        flags.Should().ContainMatch("*-o \"thumbnail:/tmp/test.c.%(ext)s\"*");
+        flags.Should().ContainMatch("*--paths \"/tmp/test\"*");
+        flags.Should().ContainMatch("*-o \"myprefix.%(format_id)s.%(ext)s\"*");
+        flags.Should().ContainMatch("*-o \"thumbnail:myprefix.c.%(ext)s\"*");
         flags.Should().ContainMatch("*-f \"395,251\"*");
         flags.Should().Contain("--write-thumbnail");
         flags.Should().ContainMatch("*--convert-thumbnails \"png\"*");
