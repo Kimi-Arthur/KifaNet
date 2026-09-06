@@ -287,30 +287,7 @@ public class BaiduCloudStorageClient : StorageClient {
         }
     }
 
-    public long GetDownloadLength(string path) {
-        while (true) {
-            try {
-                var response = client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken));
-                if (response == null) {
-                    throw new InvalidOperationException();
-                }
-                if (response.Errno != 0) {
-                    throw new IOException($"Get download length failed: {response.ShowMsg} ({response.Errno})");
-                }
-                return response.List.Checked()[0].Size;
-            } catch (AggregateException ae) {
-                ae.Handle(x => {
-                    if (x is HttpRequestException) {
-                        Logger.Warn(x, "Get download length failed once");
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                        return true;
-                    }
-
-                    return false;
-                });
-            }
-        }
-    }
+    public long GetDownloadLength(string path) => Length(path);
 
     public override Stream OpenRead(string path)
         => new SeekableReadStream(GetDownloadLength(path),

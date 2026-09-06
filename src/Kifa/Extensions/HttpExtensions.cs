@@ -128,8 +128,13 @@ public static class HttpExtensions {
                     body = "(failed to read body)";
                 }
 
-                Logger.Error(
-                    $"HTTP Request failed with status {response.StatusCode}. Response: {body}");
+                if (response.StatusCode == HttpStatusCode.NotFound) {
+                    Logger.Debug(
+                        $"HTTP Request failed with status {response.StatusCode}. Response: {body}");
+                } else {
+                    Logger.Error(
+                        $"HTTP Request failed with status {response.StatusCode}. Response: {body}");
+                }
             }
 
             return response.EnsureSuccessStatusCode();
@@ -148,6 +153,8 @@ public static class HttpExtensions {
                 InnerException: SocketException {
                     Message: "Device not configured"
                 }
+            } || ex is HttpRequestException {
+                StatusCode: HttpStatusCode.NotFound or HttpStatusCode.Forbidden
             }) {
             throw ex;
         }
