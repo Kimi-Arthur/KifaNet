@@ -34,7 +34,7 @@ public abstract class DownloadCommand : BiliCommand {
         HelpText = "Folder to output video files to. Defaults to current folder.")]
     public string? OutputFolder { get; set; }
 
-    KifaFile BaseFolder => OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
+    protected KifaFile BaseFolder => OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
 
     [Option('t', "include-page-title",
         HelpText =

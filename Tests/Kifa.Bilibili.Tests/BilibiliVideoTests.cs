@@ -118,16 +118,18 @@ public class BilibiliVideoTests {
         "av170001", 1, "279786", 64)]
     public void VideoFileNameParsing(string fileName, string? aid, int pid, string cid,
         int quality) {
+        Assert.Equal(aid, BilibiliVideo.ParseParts(fileName).Aid);
+
         var result = BilibiliVideo.Parse(fileName);
         if (aid == null) {
-            Assert.Null(result.video);
+            Assert.Null(result.Video);
             return;
         }
 
-        Assert.Equal(aid, result.video.Id);
-        Assert.Equal(pid, result.pid);
-        Assert.Equal(cid, result.video.Pages[pid - 1].Cid);
-        Assert.Equal(quality, result.quality);
+        Assert.Equal(aid, result.Video.Id);
+        Assert.Equal(pid, result.Pid);
+        Assert.Equal(cid, result.Video.Pages[pid - 1].Cid);
+        Assert.Equal(quality, result.Quality);
     }
 
     [Theory]

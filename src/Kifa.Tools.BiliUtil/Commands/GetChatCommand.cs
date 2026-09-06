@@ -198,7 +198,7 @@ class GetChatCommand : KifaCommand {
                 }
 
                 var (video, pid, _, _) = links.Select(BilibiliVideo.Parse)
-                    .FirstOrDefault(v => v.video != null, (null, 0, 0, 0));
+                    .FirstOrDefault(v => v.Video != null, (null, 0, 0, 0));
                 if (video == null) {
                     throw new KifaExecutionException($"Cannot find video for {file}");
                 }

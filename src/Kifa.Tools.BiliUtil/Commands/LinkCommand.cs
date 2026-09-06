@@ -32,14 +32,14 @@ public class LinkCommand : BiliCommand {
 
     static KifaActionResult LinkFile(KifaFile file) {
         var video = BilibiliVideo.Parse(file.Id);
-        if (video.video == null) {
+        if (video.Video == null) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Video info not found for {file.Id}."
             };
         }
 
-        var canonicalNames = video.video.GetCanonicalNames(video.pid, video.quality, video.codec);
+        var canonicalNames = video.Video.GetCanonicalNames(video.Pid, video.Quality, video.Codec);
         var results = new KifaBatchActionResult();
         foreach (var canonicalName in canonicalNames) {
             var canonicalFile =

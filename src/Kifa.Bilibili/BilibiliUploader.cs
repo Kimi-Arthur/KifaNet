@@ -22,6 +22,9 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
     public List<string> Aids { get; set; } = new();
     public List<string> RemovedAids { get; set; } = new();
 
+    public string GetUploaderFolder()
+        => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.bilibili".NormalizeFileName(
+            reservedBytes: 0, maxByteCount: PathExtensions.MaxPathSegmentByteCount);
 
     public override void Fill() {
         var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(Id));

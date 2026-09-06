@@ -52,11 +52,11 @@ public class GetCoverCommand : KifaCommand {
             }
 
             var video = BilibiliVideo.Parse(file.Id);
-            if (video.video == null) {
+            if (video.Video == null) {
                 throw new Exception($"Video not found for {file.Id}.");
             }
 
-            var coverLink = video.video.Cover.ToString();
+            var coverLink = video.Video.Cover.ToString();
             var coverLinkFile = new KifaFile(coverLink);
             var coverFile = file.Parent.GetFile($"{file.BaseName}.{coverLinkFile.Extension}");
             coverFile.Delete();

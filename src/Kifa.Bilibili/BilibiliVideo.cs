@@ -300,16 +300,22 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
     static readonly Regex FileNamePattern =
         new(@"[-./](av\d+)(p\d+)?\.(c\d+)\.(\d+)(?:-(\w+))?.mp4");
 
-    public static (BilibiliVideo? video, int pid, int quality, int codec) Parse(string file) {
+    public static (string? Aid, int Pid, int Quality, int Codec) ParseParts(string file) {
         var match = FileNamePattern.Match(file);
         if (!match.Success) {
             return (null, 1, 0, DefaultCodec);
         }
 
-        return (Client.Get(match.Groups[1].Value),
+        return (match.Groups[1].Value,
             match.Groups[2].Success ? int.Parse(match.Groups[2].Value[1..]) : 1,
             match.Groups[4].Success ? int.Parse(match.Groups[4].Value) : 0,
             match.Groups[5].Success ? GetCodecId(match.Groups[5].Value) : DefaultCodec);
+    }
+
+    public static (BilibiliVideo? Video, int Pid, int Quality, int Codec) Parse(string file) {
+        var parts = ParseParts(file);
+        return (parts.Aid != null ? Client.Get(parts.Aid) : null, parts.Pid, parts.Quality,
+            parts.Codec);
     }
 
     public List<string> GetCanonicalNames(int pid, int quality, int codec) {
