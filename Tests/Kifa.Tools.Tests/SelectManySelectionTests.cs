@@ -312,6 +312,55 @@ public class SelectManySelectionTests {
     }
 
     [Fact]
+    public void SelectOne_HighlightsDefaultChoiceInGreen() {
+        var originalIn = Console.In;
+        var originalOut = Console.Out;
+        ConsoleColorExtensions.ForceEnabled = true;
+        try {
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectOne(new List<string> { "item1", "item2" }, "key_test_color_one");
+            var output = stringWriter.ToString();
+
+            Assert.Contains("\u001b[32m[1]\titem1\u001b[0m", output);
+            Assert.Contains("[2]\titem2", output);
+            Assert.DoesNotContain("\u001b[32m[2]\titem2\u001b[0m", output);
+        } finally {
+            Console.SetIn(originalIn);
+            Console.SetOut(originalOut);
+            ConsoleColorExtensions.ForceEnabled = null;
+        }
+    }
+
+    [Fact]
+    public void SelectMany_HighlightsChosenItemsInGreen() {
+        var originalIn = Console.In;
+        var originalOut = Console.Out;
+        ConsoleColorExtensions.ForceEnabled = true;
+        try {
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "item1", "item2" }, "key_test_color_many",
+                defaultReply: "2");
+            var output = stringWriter.ToString();
+
+            Assert.Contains("\u001b[32m[2]\titem2\u001b[0m", output);
+            Assert.Contains("[1]\titem1", output);
+            Assert.DoesNotContain("\u001b[32m[1]\titem1\u001b[0m", output);
+        } finally {
+            Console.SetIn(originalIn);
+            Console.SetOut(originalOut);
+            ConsoleColorExtensions.ForceEnabled = null;
+        }
+    }
+
+    [Fact]
     public void SelectMany_RemembersPreviousSelectionAsDefault() {
         var originalIn = Console.In;
         try {
@@ -577,6 +626,31 @@ public class SelectManySelectionTests {
             Assert.Equal("1-2", cmd.GetLoggedDefaultReply(key));
         } finally {
             Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_GlobSelection_WithColoring() {
+        var originalIn = Console.In;
+        var originalOut = Console.Out;
+        ConsoleColorExtensions.ForceEnabled = true;
+        try {
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            Console.SetIn(new System.IO.StringReader("/*EP*\n\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "EP01.mp4", "EP02.mp4", "Trailer.mp4" },
+                "key_glob_color");
+            Assert.Equal(new[] { "EP01.mp4", "EP02.mp4" }, res.Value.Checked());
+
+            var output = stringWriter.ToString();
+            Assert.Contains("\u001b[32m[1]\tEP01.mp4\u001b[0m", output);
+            Assert.Contains("\u001b[32m[2]\tEP02.mp4\u001b[0m", output);
+        } finally {
+            Console.SetIn(originalIn);
+            Console.SetOut(originalOut);
+            ConsoleColorExtensions.ForceEnabled = null;
         }
     }
 }

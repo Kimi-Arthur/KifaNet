@@ -45,20 +45,6 @@ public abstract partial class KifaCommand {
         DefaultIndexForSelectOne.TryAdd(selectionKey, 0);
         AlwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
 
-        var choiceStrings = choiceToString == null
-            ? choices.Select(c => c?.ToString() ?? "").ToList()
-            : choices.Select(choiceToString).ToList();
-
-        if (reverse) {
-            for (var i = choices.Count - 1; i >= 0; i--) {
-                Console.WriteLine($"[{i + startingIndex}]\t{choiceStrings[i]}");
-            }
-        } else {
-            for (var i = 0; i < choices.Count; i++) {
-                Console.WriteLine($"[{i + startingIndex}]\t{choiceStrings[i]}");
-            }
-        }
-
         if (DefaultIndexForSelectOne[selectionKey] >= choices.Count) {
             DefaultIndexForSelectOne[selectionKey] = 0;
 
@@ -68,9 +54,25 @@ public abstract partial class KifaCommand {
 
         var defaultIndex = DefaultIndexForSelectOne[selectionKey];
 
+        var choiceStrings = choiceToString == null
+            ? choices.Select(c => c?.ToString() ?? "").ToList()
+            : choices.Select(choiceToString).ToList();
+
+        if (reverse) {
+            for (var i = choices.Count - 1; i >= 0; i--) {
+                var line = $"[{i + startingIndex}]\t{choiceStrings[i]}";
+                Console.WriteLine(i == defaultIndex ? line.Info() : line);
+            }
+        } else {
+            for (var i = 0; i < choices.Count; i++) {
+                var line = $"[{i + startingIndex}]\t{choiceStrings[i]}";
+                Console.WriteLine(i == defaultIndex ? line.Info() : line);
+            }
+        }
+
         if (AlwaysDefaultForSelectOne[selectionKey]) {
             Console.WriteLine(
-                $"Automatically chose [{defaultIndex + startingIndex}] as previously instructed.\n");
+                $"Automatically chose [{($"{defaultIndex + startingIndex}").Info()}] as previously instructed.\n");
             return (choices[defaultIndex], null, defaultIndex, false);
         }
 
@@ -88,7 +90,7 @@ public abstract partial class KifaCommand {
             messages.Add($"\t'<index>p<part>' {partHelpText}.");
         }
 
-        messages.Add($"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+        messages.Add($"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
         Console.Write(messages.JoinBy("\n"));
 
         while (true) {
@@ -102,7 +104,7 @@ public abstract partial class KifaCommand {
             if (!match.Success) {
                 Console.WriteLine("Invalid choice. Try again:");
                 Console.Write(
-                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
                 continue;
             }
 
@@ -119,21 +121,21 @@ public abstract partial class KifaCommand {
             if (chosenIndex < 0 || chosenIndex >= choices.Count) {
                 Console.WriteLine("Invalid choice. Try again:");
                 Console.Write(
-                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
                 continue;
             }
 
             if (specialHelpText == null && special) {
                 Console.WriteLine("Special is not supported. Try again:");
                 Console.Write(
-                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
                 continue;
             }
 
             if (partHelpText == null && part.HasValue) {
                 Console.WriteLine("Part selection is not supported. Try again:");
                 Console.Write(
-                    $"Default is [{defaultIndex + startingIndex}] ({choiceStrings[defaultIndex]}): ");
+                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
                 continue;
             }
 
@@ -186,7 +188,7 @@ public abstract partial class KifaCommand {
 
         if (AlwaysDefaultForSelectMany[selectionKey]) {
             Console.WriteLine(
-                $"Automatically chose [{defaultDisplay}] as previously instructed.\n");
+                $"Automatically chose [{defaultDisplay.Info()}] as previously instructed.\n");
             return effectiveDefault == "*"
                 ? choices
                 : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)
@@ -200,15 +202,28 @@ public abstract partial class KifaCommand {
 
         while (true) {
             var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
+            HashSet<int>? initialChosenIndices = null;
+            if (isFirstPrompt) {
+                try {
+                    initialChosenIndices = (effectiveDefault == "*"
+                        ? Enumerable.Range(0, choices.Count)
+                        : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)).ToHashSet();
+                } catch {
+                    initialChosenIndices = Enumerable.Range(0, choices.Count).ToHashSet();
+                }
+            }
+
             if (reverse) {
                 for (var i = selectedChoices.Count - 1; i >= 0; i--) {
-                    Console.WriteLine(
-                        $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
+                    var isChosen = isFirstPrompt ? initialChosenIndices!.Contains(i) : true;
+                    var choiceLine = $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}";
+                    Console.WriteLine(isChosen ? choiceLine.Info() : choiceLine);
                 }
             } else {
                 for (var i = 0; i < selectedChoices.Count; i++) {
-                    Console.WriteLine(
-                        $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}");
+                    var isChosen = isFirstPrompt ? initialChosenIndices!.Contains(i) : true;
+                    var choiceLine = $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}";
+                    Console.WriteLine(isChosen ? choiceLine.Info() : choiceLine);
                 }
             }
 
@@ -222,12 +237,12 @@ public abstract partial class KifaCommand {
                     $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
                     $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
                     "\t'?' to restart, '*' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
-                    $"Default is [{defaultDisplay}] ({defaultCountSummary}): "
+                    $"Default is [{defaultDisplay.Info()}] ({defaultCountSummary.Info()}): "
                 };
 
                 Console.Write(messages.JoinBy("\n"));
             } else {
-                var countText = $"{selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} selected";
+                var countText = $"{selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} selected".Info();
                 var rangeText = selectedChoices.Count > 0
                     ? $" [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}]"
                     : "";
