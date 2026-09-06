@@ -96,9 +96,16 @@ class GetCommand : KifaCommand {
 
         foreach (var (location, verifyTime) in info.Locations) {
             if (verifyTime != null) {
-                var linkSource = new KifaFile(location);
+                var linkSource = new KifaFile(location, fileInfo: info);
 
                 if (linkSource.IsLocal && linkSource.IsCompatible(file) && linkSource.Exists()) {
+                    try {
+                        linkSource.Add();
+                    } catch (Exception ex) {
+                        Logger.Warn(ex, $"Quick check failed for {linkSource}.");
+                        continue;
+                    }
+
                     linkSource.Copy(file);
                     file.Register(true);
                     return new KifaActionResult {
