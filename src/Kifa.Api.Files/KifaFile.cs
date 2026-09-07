@@ -413,30 +413,61 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public static KifaFile? FindOne(List<KifaFile> files)
         => files.Find(file => file.Exists() || file.ExistsSomewhere());
 
-    public static void LinkAll(KifaFile source, List<KifaFile> links) {
+    public static KifaActionResult LinkAll(KifaFile source, List<KifaFile> links) {
+        var linkedCount = 0;
         if (source.ExistsSomewhere()) {
-            Logger.Debug("Source is alreay in system. Link files virtually.");
-            foreach (var link in links) {
-                if (link.Equals(source)) {
-                    continue;
-                }
+            Logger.Debug("Source is already in system. Link files virtually.");
+            var targetLinks = links.Where(link => !link.Equals(source) && link.Id != source.Id)
+                .DistinctBy(link => link.Id)
+                .ToList();
 
-                FileInfoClient.Link(source.Id, link.Id);
-                Logger.Debug($"Linked virtually {link.Id} => {source.Id}.");
+            if (targetLinks.Count == 0) {
+                return KifaActionResult.Skipped("No files to link virtually.");
             }
 
-            return;
+            foreach (var link in targetLinks) {
+                var result = FileInfoClient.Link(source.Id, link.Id);
+                if (!result.IsAcceptable) {
+                    return result;
+                }
+
+                if (result.Status == KifaActionStatus.OK) {
+                    linkedCount++;
+                    Logger.Debug($"Linked virtually {link.Id} => {source.Id}.");
+                }
+            }
+
+            return linkedCount > 0
+                ? KifaActionResult.Success(
+                    $"Linked virtually {linkedCount}/{targetLinks.Count} files.")
+                : KifaActionResult.Skipped(
+                    $"All {targetLinks.Count} files are already linked virtually.");
         }
 
         Logger.Debug("Source is not in system. Link locally.");
-        foreach (var link in links) {
+        var localTargetLinks = links.Where(link => !link.Equals(source))
+            .DistinctBy(link => link.ToString())
+            .ToList();
+
+        if (localTargetLinks.Count == 0) {
+            return KifaActionResult.Skipped("No files to link locally.");
+        }
+
+        foreach (var link in localTargetLinks) {
             if (link.Exists()) {
                 continue;
             }
 
             source.Copy(link);
+            linkedCount++;
             Logger.Debug($"Linked locally {link} => {source}.");
         }
+
+        return linkedCount > 0
+            ? KifaActionResult.Success(
+                $"Linked locally {linkedCount}/{localTargetLinks.Count} files.")
+            : KifaActionResult.Skipped(
+                $"All {localTargetLinks.Count} files are already linked locally.");
     }
 
     static bool IsMatch(string path, string pattern) {

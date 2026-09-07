@@ -3,6 +3,7 @@ using System.IO;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
+using Kifa.Service;
 using Xunit;
 
 namespace Kifa.Tools.Tests;
@@ -96,5 +97,67 @@ public class KifaFileTests : IDisposable {
         Assert.Equal("/file.txt", child.Path);
         Assert.Equal("/file.txt", child.Id);
         Assert.Equal("local:test_temp/file.txt", child.ToString());
+    }
+
+    [Fact]
+    public void LinkAll_LocalLinking_CreatesLinksAndReturnsSuccess() {
+        var sourcePath = $"{tempDir}/source.txt";
+        File.WriteAllText(sourcePath, "source content");
+
+        var source = new KifaFile(sourcePath, fileInfo: new FileInformation());
+        var link1 = new KifaFile($"{tempDir}/link1.txt", fileInfo: new FileInformation());
+        var link2 = new KifaFile($"{tempDir}/link2.txt", fileInfo: new FileInformation());
+
+        var result = KifaFile.LinkAll(source, [source, link1, link2]);
+        Assert.Equal(KifaActionStatus.OK, result.Status);
+        Assert.Equal("Linked locally 2/2 files.", result.Message);
+        Assert.True(link1.Exists());
+        Assert.True(link2.Exists());
+    }
+
+    [Fact]
+    public void LinkAll_LocalLinking_PartialLinks_ReturnsSuccessWithMessage() {
+        var sourcePath = $"{tempDir}/source.txt";
+        File.WriteAllText(sourcePath, "source content");
+
+        var link1Path = $"{tempDir}/link1.txt";
+        File.WriteAllText(link1Path, "source content");
+
+        var source = new KifaFile(sourcePath, fileInfo: new FileInformation());
+        var link1 = new KifaFile(link1Path, fileInfo: new FileInformation());
+        var link2 = new KifaFile($"{tempDir}/link2.txt", fileInfo: new FileInformation());
+
+        var result = KifaFile.LinkAll(source, [source, link1, link2]);
+        Assert.Equal(KifaActionStatus.OK, result.Status);
+        Assert.Equal("Linked locally 1/2 files.", result.Message);
+        Assert.True(link2.Exists());
+    }
+
+    [Fact]
+    public void LinkAll_LocalLinking_WhenAllExist_ReturnsSkipped() {
+        var sourcePath = $"{tempDir}/source.txt";
+        File.WriteAllText(sourcePath, "source content");
+
+        var link1Path = $"{tempDir}/link1.txt";
+        File.WriteAllText(link1Path, "source content");
+
+        var source = new KifaFile(sourcePath, fileInfo: new FileInformation());
+        var link1 = new KifaFile(link1Path, fileInfo: new FileInformation());
+
+        var result = KifaFile.LinkAll(source, [source, link1]);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.Equal("All 1 files are already linked locally.", result.Message);
+    }
+
+    [Fact]
+    public void LinkAll_NoTargetFiles_ReturnsSkipped() {
+        var sourcePath = $"{tempDir}/source.txt";
+        File.WriteAllText(sourcePath, "source content");
+
+        var source = new KifaFile(sourcePath, fileInfo: new FileInformation());
+
+        var result = KifaFile.LinkAll(source, [source]);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.Equal("No files to link locally.", result.Message);
     }
 }
