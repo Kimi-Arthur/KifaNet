@@ -6,6 +6,7 @@ using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Bilibili;
 using Kifa.Bilibili.BilibiliApi;
+using Kifa.Service;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;
@@ -23,16 +24,16 @@ public abstract class DownloadCommand : BiliCommand {
             "Region of the video(s). Possible values: cn, hk, any. Default is any for direct downloading.")]
     public virtual string Region { get; set; } = "any";
 
+    [Option('o', "output-folder",
+        HelpText = "Folder to output video files to. Defaults to current folder.")]
+    public string? OutputFolder { get; set; }
+
     [Option('c', "preferred-codec",
         HelpText = "Codec preferred to download. Supported: avc, hevc, av1. Default is hevc.")]
     public string? PreferredCodec { get; set; }
 
     [Option('q', "max-quality", HelpText = "Max quality to download. 120: 4K.")]
     public int MaxQuality { get; set; }
-
-    [Option('o', "output-folder",
-        HelpText = "Folder to output video files to. Defaults to current folder.")]
-    public string? OutputFolder { get; set; }
 
     protected KifaFile BaseFolder => OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
 
@@ -43,7 +44,7 @@ public abstract class DownloadCommand : BiliCommand {
 
     int downloadCounter;
 
-    protected void Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
+    protected KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         string? extraFolder = null, BilibiliUploader? uploader = null,
         bool includeUploaderInFileTitle = false) {
         string? extension;
@@ -94,9 +95,8 @@ public abstract class DownloadCommand : BiliCommand {
             var message = found.ExistsSomewhere()
                 ? $"{found.Id} exists in the system"
                 : $"{found} exists locally";
-            Logger.Info($"Found {message}. Will link instead.");
-            KifaFile.LinkAll(found, targetFiles);
-            return;
+            Logger.Info($"Found {message}.");
+            return KifaFile.LinkAll(found, targetFiles);
         }
 
         var canonicalTargetFile = targetFiles[0];
@@ -144,7 +144,10 @@ public abstract class DownloadCommand : BiliCommand {
         coverFile.Delete();
         Logger.Debug("Removed temp files.");
 
-        KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+        var linkResult = KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+        return KifaActionResult.Success(linkResult.Status == KifaActionStatus.OK
+            ? $"Downloaded. {linkResult.Message}"
+            : "Downloaded.");
     }
 
     (string? extension, int quality, int codec) InferVideoInfo(BilibiliVideo video, int pid) {

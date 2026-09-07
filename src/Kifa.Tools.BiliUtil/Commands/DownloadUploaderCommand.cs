@@ -106,8 +106,8 @@ public class DownloadUploaderCommand : DownloadCommand {
         var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
             results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                KifaActionResult.FromAction(()
-                    => Download(video, page.Id, uploader: uploader, extraFolder: InnerFolder)));
+                KifaActionResult.FromAction(() => Download(video, page.Id, uploader: uploader,
+                    extraFolder: InnerFolder)));
         }
 
         return results;

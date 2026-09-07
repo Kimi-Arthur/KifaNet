@@ -37,7 +37,8 @@ public class DownloadArchiveCommand : DownloadCommand {
         var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
             results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                KifaActionResult.FromAction(() => Download(video, page.Id, extraFolder: archive.GetArchiveFolder())));
+                KifaActionResult.FromAction(() => Download(video, page.Id,
+                    extraFolder: archive.GetArchiveFolder())));
         }
 
         return results;
