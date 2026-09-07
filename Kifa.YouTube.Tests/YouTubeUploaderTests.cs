@@ -30,6 +30,17 @@ public class YouTubeUploaderTests {
         uploader.Fill();
         uploader.Name.Should().Be("Google");
         uploader.Videos.Count.Should().BeGreaterThanOrEqualTo(2000);
-        uploader.Videos[0].Should().Be("bSp-foRDH5M");
+        uploader.Videos.Should().Contain("bSp-foRDH5M");
+    }
+
+    [Fact]
+    public void FillShortsTest() {
+        var uploader = new YouTubeUploader {
+            Id = "@fcbayern"
+        };
+
+        uploader.Fill();
+        uploader.Name.Should().Be("FC Bayern Munich");
+        uploader.Videos.Should().Contain("WUj_TgtrTJE");
     }
 }

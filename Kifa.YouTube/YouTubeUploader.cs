@@ -23,11 +23,11 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         if (Id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
             url = Id;
         } else if (Id.StartsWith("@")) {
-            url = $"https://www.youtube.com/{Id}/videos";
+            url = $"https://www.youtube.com/{Id}";
         } else if (Id.StartsWith("UC", StringComparison.OrdinalIgnoreCase)) {
-            url = $"https://www.youtube.com/channel/{Id}/videos";
+            url = $"https://www.youtube.com/channel/{Id}";
         } else {
-            url = $"https://www.youtube.com/user/{Id}/videos";
+            url = $"https://www.youtube.com/@{Id}";
         }
 
         var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
@@ -36,7 +36,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
 
         if (!result.Success || result.Data == null) {
             if (!Id.StartsWith("http") && !Id.StartsWith("@") && !Id.StartsWith("UC")) {
-                url = $"https://www.youtube.com/@{Id}/videos";
+                url = $"https://www.youtube.com/user/{Id}";
                 result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(url, overrideOptions: options)
                     .GetAwaiter().GetResult();
             }
@@ -48,9 +48,6 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         }
 
         Name = result.Data.Uploader ?? result.Data.Channel ?? result.Data.Title;
-        Videos = result.Data.Entries?
-            .Select(e => e.ID)
-            .Where(id => !string.IsNullOrEmpty(id))
-            .ToList() ?? new List<string>();
+        Videos = YouTubeVideo.ExtractVideoIds(result.Data.Entries);
     }
 }

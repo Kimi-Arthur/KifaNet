@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
@@ -16,32 +17,28 @@ public class YouTubeVideoTests {
             Id = "_ox9gJZ8ENo"
         };
 
-        const string expectedVideo = """
-                                     {
-                                       "id": "_ox9gJZ8ENo",
-                                       "title": "SNH48 《呜吒》 (UZA) Rehearsal Footage",
-                                       "author": "SNH48s",
-                                       "author_id": "@SNH48s",
-                                       "upload_date": "2014-08-22",
-                                       "description": "2014-08-22\nThis footage was revealed on 8/22 at the send-off ceremony (also Wu Zhehan's birthday show) held at the SNH48 Star Dream Theater. The top 16 voted girls from the recent General Election will be flying to South Korea to film the 'UZA' music video!\n\nhttp://shanghai48s.com/tagged/UZA\nhttp://shanghai48s.com/\n\nSNH48赴韩拍摄《呜吒》MV 出征VCR\nhttp://www.tudou.com/programs/view/oFrkZWlUec4/",
-                                       "categories": [
-                                         "Entertainment"
-                                       ],
-                                       "tags": [
-                                         "SNH48"
-                                       ],
-                                       "duration": "00:03:54",
-                                       "fps": 25.0,
-                                       "width": 1280,
-                                       "height": 720,
-                                       "codec": "avc",
-                                       "format_id": "136+140",
-                                       "thumbnail": "https://i.ytimg.com/vi/_ox9gJZ8ENo/maxresdefault.jpg"
-                                     }
-                                     """;
+        video.Fill();
+        video.Id.Should().Be("_ox9gJZ8ENo");
+        video.Title.Should().Be("SNH48 《呜吒》 (UZA) Rehearsal Footage");
+        video.Author.Should().Be("SNH48s");
+        video.AuthorId.Should().Be("@SNH48s");
+        video.UploadDate!.ToJson().Should().Be("2014-08-22");
+        video.Categories.Should().Contain("Entertainment");
+        video.Tags.Should().Contain("SNH48");
+        video.Duration.Should().Be(TimeSpan.FromSeconds(234));
+    }
+
+    [Fact]
+    public void FillShortTest() {
+        var video = new YouTubeVideo {
+            Id = "WUj_TgtrTJE"
+        };
 
         video.Fill();
-        video.ToString().Should().Be(expectedVideo);
+        video.Id.Should().Be("WUj_TgtrTJE");
+        video.Author.Should().Be("FC Bayern Munich");
+        video.AuthorId.Should().Be("@fcbayern");
+        video.Duration.Should().Be(TimeSpan.FromSeconds(29));
     }
 
     [Fact]

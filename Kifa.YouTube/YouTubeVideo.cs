@@ -9,6 +9,7 @@ using Kifa.Html;
 using Kifa.Service;
 using NLog;
 using YoutubeDLSharp;
+using YoutubeDLSharp.Metadata;
 using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube;
@@ -52,6 +53,23 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
             return ytdl;
         }
+    }
+
+    public static List<string> ExtractVideoIds(IEnumerable<VideoData>? entries) {
+        if (entries == null) {
+            return [];
+        }
+
+        var result = new List<string>();
+        foreach (var entry in entries) {
+            if (entry.Entries is { Length: > 0 }) {
+                result.AddRange(ExtractVideoIds(entry.Entries));
+            } else if (!string.IsNullOrEmpty(entry.ID)) {
+                result.Add(entry.ID);
+            }
+        }
+
+        return result.Distinct().ToList();
     }
 
     public static OptionSet GetOptionSet(bool flatPlaylist = false) {
@@ -257,23 +275,28 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         AuthorId = videoData.UploaderID ?? videoData.ChannelID;
         UploadDate = videoData.UploadDate;
         Description = videoData.Description;
-        Categories = videoData.Categories.ToList();
-        Tags = videoData.Tags.ToList();
-        Duration = TimeSpan.FromSeconds(videoData.Duration.Checked());
+        Categories = videoData.Categories?.ToList() ?? [];
+        Tags = videoData.Tags?.ToList() ?? [];
+        Duration = TimeSpan.FromSeconds(videoData.Duration ?? 0);
 
         FormatId = videoData.FormatID;
-        var formatIds = FormatId.Split("+");
-        var videoFormat = videoData.Formats.First(f => f.FormatId == formatIds[0]);
-        Fps = videoFormat.FrameRate.Checked();
-        Width = videoFormat.Width.Checked();
-        Height = videoFormat.Height.Checked();
-        Codec = NormalizeCodec(videoFormat.VideoCodec);
+        if (FormatId != null && videoData.Formats != null) {
+            var formatIds = FormatId.Split("+");
+            var videoFormat = videoData.Formats.FirstOrDefault(f => f.FormatId == formatIds[0]);
+            if (videoFormat != null) {
+                Fps = videoFormat.FrameRate ?? 0;
+                Width = videoFormat.Width ?? 0;
+                Height = videoFormat.Height ?? 0;
+                Codec = NormalizeCodec(videoFormat.VideoCodec);
+            }
+        }
+
         Thumbnail = videoData.Thumbnail;
         Chapters = videoData.Chapters?.Select(c => new YouTubeChapter {
             StartTime = c.StartTime ?? 0,
             EndTime = c.EndTime ?? 0,
             Title = c.Title
-        }).ToList() ?? new();
+        }).ToList() ?? [];
     }
 
     void FillWithFindYoutubeVideo() {

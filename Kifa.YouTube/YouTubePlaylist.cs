@@ -35,9 +35,6 @@ public class YouTubePlaylist : DataModel, WithModelId<YouTubePlaylist> {
 
         Title = result.Data.Title;
         Author = result.Data.Uploader ?? result.Data.Channel;
-        Videos = result.Data.Entries?
-            .Select(e => e.ID)
-            .Where(id => !string.IsNullOrEmpty(id))
-            .ToList() ?? new List<string>();
+        Videos = YouTubeVideo.ExtractVideoIds(result.Data.Entries);
     }
 }
