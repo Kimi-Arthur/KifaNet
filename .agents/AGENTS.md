@@ -5,7 +5,13 @@
 ## Release & Git Rules
 - Strictly DO NOT update project versions, publish packages to NuGet, or perform `git commit`/`git push` unless explicitly requested by the user in that specific query; a commit/release request applies strictly to the single turn in which it was asked and NEVER carries over to subsequent turns.
 
-## Git Commit Rules
+## Configuration Management Rules
+- Strictly DO NOT modify, update, commit, or push configuration repositories or files (e.g., `Configs` repository, `/etc/kimily/`, `/var/server/Configs`) unless explicitly requested by the user. If a configuration change seems necessary, ask for explicit approval first.
+- Strictly DO NOT overwrite, discard, or reset existing uncommitted config changes on local or remote environments.
+
+## Git & Stash Safety Rules
+- NEVER perform destructive git commands (such as `git stash drop`, `git reset --hard`, `git clean -fd`, or discarding uncommitted files) that can cause local or remote uncommitted work, working trees, or stashes to be lost.
+- If stashing is ever used temporarily, it MUST be safely restored and never dropped.
 - Use meaningful, concise commit messages following conventional commit standards.
 - Keep commits focused and atomic.
 
