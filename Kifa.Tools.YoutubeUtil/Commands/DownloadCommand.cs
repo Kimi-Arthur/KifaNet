@@ -1,6 +1,7 @@
 using System.Text;
 using CommandLine;
 using Kifa.Api.Files;
+using Kifa.Service;
 using Kifa.YouTube;
 using NLog;
 
@@ -27,7 +28,7 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     int downloadCounter;
 
-    protected void Download(YouTubeVideo video, string? alternativeFolder = null,
+    protected KifaActionResult Download(YouTubeVideo video, string? alternativeFolder = null,
         string? extraFolder = null) {
         var outputFolder = BaseFolder;
         var desiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,
@@ -50,16 +51,17 @@ public abstract class DownloadCommand : YoutubeCommand {
             }
 
             if (existingRepoFiles.Count == 1) {
-                LinkExistingRepoFile(existingRepoFiles[0], video, alternativeFolder, extraFolder,
+                return LinkExistingRepoFile(existingRepoFiles[0], video, alternativeFolder, extraFolder,
                     outputFolder);
-                return;
             }
         } else {
-            var found = KifaFile.FindOne(canonicalFiles);
+            var found = KifaFile.FindOne(targetFiles);
             if (found != null) {
-                Logger.Info($"Found existing repo file {found}. Linking to {desiredFile}.");
-                KifaFile.LinkAll(found, targetFiles);
-                return;
+                var message = found.ExistsSomewhere()
+                    ? $"{found.Id} exists in the system"
+                    : $"{found} exists locally";
+                Logger.Info($"Found {message}.");
+                return KifaFile.LinkAll(found, targetFiles);
             }
         }
 
@@ -89,7 +91,10 @@ public abstract class DownloadCommand : YoutubeCommand {
             coverFile?.Delete();
             Logger.Debug("Removed temp files.");
 
-            KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+            var linkResult = KifaFile.LinkAll(canonicalTargetFile, targetFiles);
+            return KifaActionResult.Success(linkResult.Status == KifaActionStatus.OK
+                ? $"Downloaded. {linkResult.Message}"
+                : "Downloaded.");
         } catch {
             foreach (var file in canonicalTargetFile.Parent.List().Where(f
                          => f.BaseName.StartsWith(
@@ -213,7 +218,7 @@ public abstract class DownloadCommand : YoutubeCommand {
             _ => null
         };
 
-    void LinkExistingRepoFile(KifaFile repoFile, YouTubeVideo video,
+    KifaActionResult LinkExistingRepoFile(KifaFile repoFile, YouTubeVideo video,
         string? alternativeFolder, string? extraFolder, KifaFile outputFolder) {
         var explicitSuffix = repoFile.BaseName == video.Id
             ? ""
@@ -227,12 +232,8 @@ public abstract class DownloadCommand : YoutubeCommand {
             ? new List<KifaFile> { repoFile, matchedDesiredFile }
             : new List<KifaFile> { repoFile };
 
-        if (matchedDesiredFile != null) {
-            Logger.Info($"Found existing repo file {repoFile}. Linking to {matchedDesiredFile}.");
-        } else {
-            Logger.Info($"Found existing repo file {repoFile}.");
-        }
-        KifaFile.LinkAll(repoFile, matchedTargetFiles);
+        Logger.Info($"Found existing repo file {repoFile}.");
+        return KifaFile.LinkAll(repoFile, matchedTargetFiles);
     }
 
     static List<KifaFile> FindExistingRepoFiles(YouTubeVideo video, string host)
