@@ -160,4 +160,11 @@ public class KifaFileTests : IDisposable {
         Assert.Equal(KifaActionStatus.Skipped, result.Status);
         Assert.Equal("No files to link locally.", result.Message);
     }
+
+    [Fact]
+    public void NormalizeUri_UnknownPath_ThrowsInformativeMessage() {
+        var ex = Assert.Throws<FileNotFoundException>(() => new KifaFile("/some/random/unconfigured/path", fileInfo: new FileInformation()));
+        Assert.Contains("Path '/some/random/unconfigured/path'", ex.Message);
+        Assert.Contains("test_temp", ex.Message);
+    }
 }

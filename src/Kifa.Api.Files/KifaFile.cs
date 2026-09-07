@@ -199,7 +199,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             }
         }
 
-        throw new FileNotFoundException($"Path {uri} is not valid.");
+        throw new FileNotFoundException(
+            $"Path '{uri}' (resolved to '{fullPath}') is not under any configured storage server prefix in FileStorageClient.ServerConfigs. Configured prefixes: [{string.Join(", ", FileStorageClient.ServerConfigs.Select(c => $"{c.Key}: {c.Value.Prefix}"))}].");
     }
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {
