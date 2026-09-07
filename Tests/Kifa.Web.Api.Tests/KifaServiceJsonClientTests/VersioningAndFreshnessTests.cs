@@ -16,18 +16,25 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public static TimeSpan? GlobalRefreshInterval { get; set; }
     public static DataVersion? GlobalForceRefreshBefore { get; set; }
+    public static bool GlobalShouldFailFill { get; set; }
+    public static int GlobalFillCount { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
     public string? Content { get; set; }
     public string? RemoteSourceContent { get; set; }
     public string? UpstreamContent { get; set; }
-
+    public bool ShouldFailFill { get; set; }
 
     public override TimeSpan? RefreshInterval => GlobalRefreshInterval;
 
     public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
     public override void Fill() {
+        GlobalFillCount++;
+        if (GlobalShouldFailFill || ShouldFailFill) {
+            throw new UnableToFillException($"Simulated fill failure for {Id}.");
+        }
+
         Content = RemoteSourceContent;
 
         if (Id != null && UpstreamLinks.TryGetValue(Id, out var upstreamId)) {
@@ -390,9 +397,107 @@ public class VersioningAndFreshnessTests : IDisposable {
         refreshed!.Metadata.Should().BeNull();
     }
 
+    [Fact]
+    public void UnableToFillOnNewItemPersistsNotFoundTombstoneAndReturnsNull() {
+        var id = nameof(UnableToFillOnNewItemPersistsNotFoundTombstoneAndReturnsNull);
+        TestFillDataModel.GlobalShouldFailFill = true;
+
+        var item = client.Get(id);
+        item.Should().BeNull();
+
+        var filePath = $"{folder}/test_fills/{id}.json";
+        File.Exists(filePath).Should().BeTrue();
+        var writtenJson = File.ReadAllText(filePath);
+        writtenJson.Should().Contain("\"status\": \"not_found\"");
+        writtenJson.Should().Contain("version");
+
+        // List should not include NotFound items
+        var list = client.List();
+        list.ContainsKey(id).Should().BeFalse();
+
+        // Subsequent Get returns null without re-running Fill (FillCount does not increase)
+        var countBefore = TestFillDataModel.GlobalFillCount;
+        var secondGet = client.Get(id);
+        secondGet.Should().BeNull();
+        TestFillDataModel.GlobalFillCount.Should().Be(countBefore);
+
+        // If upstream becomes available, a forced refresh recovers the item
+        TestFillDataModel.GlobalShouldFailFill = false;
+        var recovered = client.Get(id, refresh: true);
+        recovered.Should().NotBeNull();
+        recovered!.Metadata!.Status.Should().Be(DataStatus.OK);
+
+        var updatedJson = File.ReadAllText(filePath);
+        updatedJson.Should().NotContain("\"status\"");
+
+        var listAfter = client.List();
+        listAfter.ContainsKey(id).Should().BeTrue();
+    }
+
+    [Fact]
+    public void UnableToFillOnExistingItemSetsRemovedStatusAndPreservesData() {
+        var id = nameof(UnableToFillOnExistingItemSetsRemovedStatusAndPreservesData);
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "initial content"
+        };
+
+        client.Set(model);
+
+        var firstGet = client.Get(id);
+        firstGet.Should().NotBeNull();
+        firstGet!.Metadata!.Status.Should().Be(DataStatus.OK);
+        var originalVersion = firstGet.Metadata.Version;
+        var originalLastRefreshed = firstGet.Metadata.LastRefreshed;
+
+        var initialJson = File.ReadAllText($"{folder}/test_fills/{id}.json");
+        initialJson.Should().NotContain("\"status\"");
+
+        Thread.Sleep(50);
+
+        // Simulate remote resource becoming unavailable (e.g. video deleted/removed)
+        firstGet.ShouldFailFill = true;
+        client.Update(firstGet);
+
+        // Trigger refresh
+        var secondGet = client.Get(id, refresh: true);
+        secondGet.Should().NotBeNull();
+        secondGet!.Content.Should().Be("initial content");
+        secondGet.Metadata.Should().NotBeNull();
+        secondGet.Metadata!.Status.Should().Be(DataStatus.Removed);
+
+        // Version is preserved
+        secondGet.Metadata.Version.Should().Be(originalVersion);
+
+        // LastRefreshed is updated to current time
+        secondGet.Metadata.LastRefreshed!.Value.Should().BeAfter(originalLastRefreshed!.Value);
+
+        // File on disk has status: removed and last_refreshed
+        var filePath = $"{folder}/test_fills/{id}.json";
+        var writtenJson = File.ReadAllText(filePath);
+        writtenJson.Should().Contain("\"status\": \"removed\"");
+        writtenJson.Should().Contain("last_refreshed");
+
+        // NeedRefresh is now false because LastRefreshed + RefreshInterval (7 days) > UtcNow
+        secondGet.NeedRefresh().Should().BeFalse();
+
+        // List still includes Removed items
+        var list = client.List();
+        list.ContainsKey(id).Should().BeTrue();
+
+        // Next standard Get() returns the item without re-filling
+        var countBefore = TestFillDataModel.GlobalFillCount;
+        var thirdGet = client.Get(id);
+        thirdGet.Should().NotBeNull();
+        thirdGet!.Metadata!.Status.Should().Be(DataStatus.Removed);
+        TestFillDataModel.GlobalFillCount.Should().Be(countBefore);
+    }
+
     public void Dispose() {
         TestFillDataModel.GlobalRefreshInterval = null;
         TestFillDataModel.GlobalForceRefreshBefore = null;
+        TestFillDataModel.GlobalShouldFailFill = false;
+        TestFillDataModel.GlobalFillCount = 0;
         TestFillDataModel.UpstreamLinks.Clear();
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

@@ -91,6 +91,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             .Where(p => folder != "" || !p.FullName.StartsWith(virtualItemPrefix)).AsParallel()
             .Select(i => Read(i.FullName[prefix.Length..^5])).ExceptNull()
             .Where(i => folder != "" || !i.Id.StartsWith(DataModel.VirtualItemPrefix))
+            .Where(i => i.Metadata?.Status != DataStatus.NotFound)
             .ToDictionary(i => i.Id, i => i);
 
         return new SortedDictionary<string, TDataModel>(items.AsParallel().ToDictionary(i => i.Key,
@@ -140,8 +141,13 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                     }
                 }
 
+                var result = Retrieve(id);
+                if (result?.Metadata?.Status == DataStatus.NotFound) {
+                    return null;
+                }
+
                 // TODO: Not sure...
-                return FormatData(Retrieve(id), options);
+                return FormatData(result, options);
             } catch (Exception ex) {
                 Logger.Error(ex, $"Failed to get {id}.");
                 return null;
@@ -161,10 +167,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         };
 
         if (refresh || data.NeedRefresh()) {
+            var lastChecked = data.Metadata?.LastRefreshed ?? data.Metadata?.Version;
             var isCodeLogicChange = data.ForceRefreshBefore != null &&
-                                    (data.Metadata?.Version == null || data.Metadata.Version < data.ForceRefreshBefore);
+                                    (lastChecked == null || lastChecked < data.ForceRefreshBefore);
             var isNewItem = data.Metadata?.Version == null;
             var originalContent = data.Clone();
+            var now = DateTimeOffset.UtcNow;
 
             try {
                 data.Fill();
@@ -180,16 +188,28 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return false;
             } catch (UnableToFillException ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with a predefined error.");
-                return false;
+                data.Metadata ??= new DataMetadata();
+                if (isNewItem || data.Metadata.Status == DataStatus.NotFound) {
+                    data.Metadata.Status = DataStatus.NotFound;
+                    data.Metadata.Version = now;
+                    data.Metadata.LastRefreshed = now;
+                } else {
+                    data.Metadata.Status = DataStatus.Removed;
+                    data.Metadata.LastRefreshed = now;
+                }
+
+                return true;
             } catch (Exception ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with an unexpected error.");
                 return false;
             }
 
-            var contentChanged = isNewItem || isCodeLogicChange || !data.Equals(originalContent);
+            var contentChanged = isNewItem || isCodeLogicChange ||
+                                 originalContent.Metadata?.Status == DataStatus.NotFound ||
+                                 !data.Equals(originalContent);
 
-            var now = DateTimeOffset.UtcNow;
             data.Metadata ??= new DataMetadata();
+            data.Metadata.Status = DataStatus.OK;
             data.Metadata.LastRefreshed = now;
 
             if (contentChanged) {

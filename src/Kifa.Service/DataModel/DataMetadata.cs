@@ -8,6 +8,8 @@ namespace Kifa.Service;
 public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }
 
+    public DataStatus Status { get; set; } = DataStatus.OK;
+
     // Content version date (when the content was modified or ForceRefreshBefore applied).
     public DataVersion? Version { get; set; }
 
@@ -27,7 +29,7 @@ public class DataMetadata {
     [JsonIgnore]
     [YamlIgnore]
     public bool IsEmpty
-        => Linking == null && Version == null && lastRefreshed == null &&
+        => Linking == null && Status == DataStatus.OK && Version == null && lastRefreshed == null &&
            (Overrides == null || Overrides.Count == 0);
 }
 
@@ -45,6 +47,7 @@ public class LinkingMetadata {
 public static class DataFreshnessExtensions {
     public static void ResetRefreshDate(this DataModel data) {
         data.Metadata ??= new DataMetadata();
+        data.Metadata.Status = DataStatus.OK;
         data.Metadata.Version = null;
         data.Metadata.LastRefreshed = null;
     }
@@ -54,11 +57,11 @@ public static class DataFreshnessExtensions {
             return true;
         }
 
-        if (data.ForceRefreshBefore != null && data.Metadata.Version < data.ForceRefreshBefore) {
+        var lastChecked = data.Metadata.LastRefreshed ?? data.Metadata.Version;
+        if (data.ForceRefreshBefore != null && lastChecked < data.ForceRefreshBefore) {
             return true;
         }
 
-        var lastChecked = data.Metadata.LastRefreshed ?? data.Metadata.Version;
         if (data.RefreshInterval != null) {
             return (lastChecked + data.RefreshInterval)?.Value < DateTimeOffset.UtcNow;
         }
