@@ -35,4 +35,14 @@ public class YouTubePlaylistTests {
         playlist.Videos.Count.Should().BeGreaterThanOrEqualTo(100);
         playlist.Videos.Should().Contain("17WoOqgXsRM");
     }
+
+    [Fact]
+    public void FillUnlistedPlaylistTest() {
+        var playlist = new YouTubePlaylist {
+            Id = "PLgK1iAEEioHYcAfLrVyq9UX6n7uz3sHeG"
+        };
+
+        playlist.Fill();
+        playlist.Videos.Should().NotBeEmpty();
+    }
 }

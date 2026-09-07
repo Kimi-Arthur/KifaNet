@@ -41,7 +41,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     public static string? PluginPath { get; set; }
 
-    public static List<string>? ExtractorArgs { get; set; }
+    public static List<string>? ExtractorArgs { get; set; } = ["youtubetab:skip=authcheck"];
 
     public static YoutubeDL YoutubeDL {
         get {
