@@ -17,6 +17,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static TimeSpan? GlobalRefreshInterval { get; set; }
     public static DataVersion? GlobalForceRefreshBefore { get; set; }
     public static bool GlobalShouldFailFill { get; set; }
+    public static bool GlobalShouldThrowFailedToFill { get; set; }
     public static int GlobalFillCount { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
@@ -24,6 +25,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public string? RemoteSourceContent { get; set; }
     public string? UpstreamContent { get; set; }
     public bool ShouldFailFill { get; set; }
+    public bool ShouldThrowFailedToFill { get; set; }
 
     public override TimeSpan? RefreshInterval => GlobalRefreshInterval;
 
@@ -31,8 +33,12 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public override void Fill() {
         GlobalFillCount++;
+        if (GlobalShouldThrowFailedToFill || ShouldThrowFailedToFill) {
+            throw new FailedToFillException($"Simulated process failure for {Id}.");
+        }
+
         if (GlobalShouldFailFill || ShouldFailFill) {
-            throw new UnableToFillException($"Simulated fill failure for {Id}.");
+            throw new DataNotFoundException($"Simulated not found for {Id}.");
         }
 
         Content = RemoteSourceContent;
@@ -398,8 +404,8 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void UnableToFillOnNewItemPersistsNotFoundTombstoneAndReturnsNull() {
-        var id = nameof(UnableToFillOnNewItemPersistsNotFoundTombstoneAndReturnsNull);
+    public void DataNotFoundOnNewItemPersistsNotFoundTombstoneAndReturnsNull() {
+        var id = nameof(DataNotFoundOnNewItemPersistsNotFoundTombstoneAndReturnsNull);
         TestFillDataModel.GlobalShouldFailFill = true;
 
         var item = client.Get(id);
@@ -435,8 +441,8 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void UnableToFillOnExistingItemSetsRemovedStatusAndPreservesData() {
-        var id = nameof(UnableToFillOnExistingItemSetsRemovedStatusAndPreservesData);
+    public void DataNotFoundOnExistingItemSetsRemovedStatusAndPreservesData() {
+        var id = nameof(DataNotFoundOnExistingItemSetsRemovedStatusAndPreservesData);
         var model = new TestFillDataModel {
             Id = id,
             RemoteSourceContent = "initial content"
@@ -494,9 +500,9 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void UnableToFillOnLegacyFileWithoutMetadataSetsRemovedStatusAndGivesVersion() {
+    public void DataNotFoundOnLegacyFileWithoutMetadataSetsRemovedStatusAndGivesVersion() {
         Directory.CreateDirectory($"{folder}/test_fills");
-        var id = nameof(UnableToFillOnLegacyFileWithoutMetadataSetsRemovedStatusAndGivesVersion);
+        var id = nameof(DataNotFoundOnLegacyFileWithoutMetadataSetsRemovedStatusAndGivesVersion);
         TestFillDataModel.GlobalShouldFailFill = true;
 
         var legacyJson = @$"{{
@@ -524,8 +530,8 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void UnableToFillOnSettingLegacyModelWithoutMetadataSetsRemovedStatusAndGivesVersion() {
-        var id = nameof(UnableToFillOnSettingLegacyModelWithoutMetadataSetsRemovedStatusAndGivesVersion);
+    public void DataNotFoundOnSettingLegacyModelWithoutMetadataSetsRemovedStatusAndGivesVersion() {
+        var id = nameof(DataNotFoundOnSettingLegacyModelWithoutMetadataSetsRemovedStatusAndGivesVersion);
         var model = new TestFillDataModel {
             Id = id,
             Content = "set content",
@@ -544,10 +550,33 @@ public class VersioningAndFreshnessTests : IDisposable {
         data.Metadata.LastRefreshed.Should().Be(data.Metadata.Version);
     }
 
+    [Fact]
+    public void FailedToFillPreservesStatusAndDoesNotWriteTombstone() {
+        Directory.CreateDirectory($"{folder}/test_fills");
+        var id = nameof(FailedToFillPreservesStatusAndDoesNotWriteTombstone);
+        var filePath = $"{folder}/test_fills/{id}.json";
+        File.WriteAllText(filePath, "{\n  \"content\": \"original legacy content\"\n}");
+
+        var model = new TestFillDataModel {
+            Id = id,
+            Content = "original legacy content",
+            ShouldThrowFailedToFill = true
+        };
+
+        client.Set(model);
+
+        var data = client.Get(id);
+        data.Should().NotBeNull();
+        data!.Content.Should().Be("original legacy content");
+        // Status should remain default OK (not Removed, not NotFound)
+        data.Metadata?.Status.Should().Be(DataStatus.OK);
+    }
+
     public void Dispose() {
         TestFillDataModel.GlobalRefreshInterval = null;
         TestFillDataModel.GlobalForceRefreshBefore = null;
         TestFillDataModel.GlobalShouldFailFill = false;
+        TestFillDataModel.GlobalShouldThrowFailedToFill = false;
         TestFillDataModel.GlobalFillCount = 0;
         TestFillDataModel.UpstreamLinks.Clear();
         if (Directory.Exists(folder)) {
