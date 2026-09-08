@@ -11,6 +11,8 @@ namespace Kifa;
 public class OrderedContractResolver : DefaultContractResolver {
     public HashSet<string>? IgnoredProperties { get; init; }
 
+    public bool IgnoreExternalProperties { get; init; } = false;
+
     protected override IList<JsonProperty> CreateProperties(Type type,
         MemberSerialization memberSerialization) {
         return base.CreateProperties(type, memberSerialization).ToList();
@@ -21,6 +23,11 @@ public class OrderedContractResolver : DefaultContractResolver {
     protected override JsonProperty CreateProperty(MemberInfo member,
         MemberSerialization memberSerialization) {
         var property = base.CreateProperty(member, memberSerialization);
+
+        if (IgnoreExternalProperties &&
+            member.CustomAttributes.Any(a => a.AttributeType.Name == "ExternalPropertyAttribute")) {
+            property.ShouldSerialize = _ => false;
+        }
 
         if (IgnoredProperties != null &&
             (IgnoredProperties.Contains(member.Name) ||

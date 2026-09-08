@@ -18,6 +18,9 @@ public static class JsonExtensions {
     public static string ToDataJson<T>(this T data)
         => data.ToJson(KifaJsonSerializerSettings.DataContent);
 
+    public static string ToDiskJson<T>(this T data)
+        => data.ToJson(KifaJsonSerializerSettings.Disk);
+
     public static T? FromJson<T>(this string? json, JsonSerializerSettings settings)
         => json == null ? default : JsonConvert.DeserializeObject<T>(json, settings);
 
@@ -26,4 +29,7 @@ public static class JsonExtensions {
 
     public static T? FromCamelCaseJson<T>(this string? json)
         => json.FromJson<T>(KifaJsonSerializerSettings.CamelCase);
+
+    public static T? FromDiskJson<T>(this string? json)
+        => json.FromJson<T>(KifaJsonSerializerSettings.Disk);
 }

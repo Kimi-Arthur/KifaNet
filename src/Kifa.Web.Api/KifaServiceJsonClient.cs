@@ -129,12 +129,10 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                         if (rawData != null) {
                             var clonedForChecking = data.Clone();
                             CleanupForWriting(clonedForChecking);
-                            foreach (var (property, suffix) in TDataModel.ExternalProperties) {
-                                property.SetValue(clonedForChecking, "");
-                            }
-                            var expectedRawData = $"{clonedForChecking.ToPrettyJson()}\n";
+                            var expectedRawData = $"{clonedForChecking.ToDiskJson()}\n";
                             if (rawData != expectedRawData) {
-                                Logger.Info($"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
+                                Logger.Info(
+                                    $"Rewriting {ModelId}/{data.RealId} as its JSON layout on disk did not match the expected structure.");
                                 WriteTarget(data.Clone());
                             }
                         }
@@ -458,6 +456,9 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return null;
             }
 
+            // Using FromJson (Default settings) instead of FromDiskJson allows legacy files that
+            // still have external properties embedded directly in the JSON to be read into the model
+            // so they can be migrated and extracted into separate files on rewrite.
             var data = rawData.FromJson<TDataModel>().Checked();
 
             ReadAndFillExternalProperties(data);
@@ -469,7 +470,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     void Write(TDataModel data) {
-        WriteRaw($"{data.ToPrettyJson()}\n", data.Id);
+        WriteRaw($"{data.ToDiskJson()}\n", data.Id);
     }
 
     const int MaxPathSegmentByteLength = 255;
@@ -501,15 +502,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             originalVirtualLinks ??
             data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>());
         CleanupForWriting(data);
-        WriteAndClearExternalProperties(data);
+        WriteExternalProperties(data);
         Write(data);
     }
 
-    void WriteAndClearExternalProperties(TDataModel data) {
+    void WriteExternalProperties(TDataModel data) {
         foreach (var (property, suffix) in TDataModel.ExternalProperties) {
             if (property.GetValue(data) is string content) {
                 WriteRaw(content, data.Id, suffix);
-                property.SetValue(data, "");
             }
         }
     }

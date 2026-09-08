@@ -406,13 +406,8 @@ public class BasicTests : IDisposable {
         Directory.CreateDirectory(folder + "/tests");
         var id = nameof(GetExpectedRewriteTest);
 
-        var model = new TestDataModel {
-            Id = id,
-            Data = "some data",
-            ExternalData = "this should be in an external file!"
-        };
-
-        var rawJson = JsonConvert.SerializeObject(model, KifaJsonSerializerSettings.Pretty) + "\n";
+        var rawJson =
+            $"{{\n  \"data\": \"some data\",\n  \"external_data\": \"this should be in an external file!\",\n  \"id\": \"{id}\"\n}}\n";
         File.WriteAllText(folder + $"/tests/{id}.json", rawJson);
 
         var txtFilePath = folder + $"/tests/{id}.txt";
