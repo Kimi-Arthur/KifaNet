@@ -36,9 +36,15 @@ public class CdxSearchRpc : KifaParameterizedRpc, KifaRpc<List<CdxSearchRpc.Arch
 
 
     protected override string Url
-        => "http://web.archive.org/cdx/search/cdx?url={encoded_url}&output=json";
+        => "https://web.archive.org/cdx/search/cdx?url={encoded_url}&output=json";
 
     protected override HttpMethod Method => HttpMethod.Get;
+
+    protected override Dictionary<string, string> Headers
+        => new() {
+            ["User-Agent"] =
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        };
 
     public CdxSearchRpc(string url) {
         Parameters = new Dictionary<string, FuncOrValue<string>> {
