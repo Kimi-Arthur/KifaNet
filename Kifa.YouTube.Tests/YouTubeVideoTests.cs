@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
+using Kifa.Service;
 using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube.Tests;
@@ -305,5 +306,14 @@ public class YouTubeVideoTests {
 
         var slashDesiredName = slashVideo.GetDesiredName();
         slashDesiredName.Should().Be("Studio／Trigger.123.youtube/Fate／Zero：Episode 01？ ＊Prologue＊.RWrSo_7RmgQ");
+    }
+
+    [Fact]
+    public void FillUnavailableVideoThrowsUnableToFillException() {
+        var video = new YouTubeVideo {
+            Id = "ut_owWNGYcA"
+        };
+
+        video.Invoking(v => v.Fill()).Should().Throw<UnableToFillException>();
     }
 }

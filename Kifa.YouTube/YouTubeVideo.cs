@@ -256,9 +256,15 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             Logger.Warn(e);
         }
 
-        if (!FillWithWayback()) {
-            throw new UnableToFillException($"Failed to find info for {Id}");
+        try {
+            if (FillWithWayback()) {
+                return;
+            }
+        } catch (Exception e) {
+            Logger.Warn(e);
         }
+
+        throw new UnableToFillException($"Failed to find info for {Id}");
     }
 
     void FillWithYoutubeDl() {
@@ -358,6 +364,10 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     bool FillWithWayback() {
         var watchUrl = $"https://www.youtube.com/watch?v={Id}";
         var cdxResults = HttpClient.Call(new CdxSearchRpc(watchUrl));
+        if (cdxResults == null) {
+            return false;
+        }
+
         foreach (var entry in cdxResults.OrderByDescending(r => r.Length)) {
             if (FillWithPageContent(
                     HttpClient.Call(new ArchiveContentRpc(entry.Original, entry.Timestamp)))) {
