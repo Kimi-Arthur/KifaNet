@@ -493,6 +493,57 @@ public class VersioningAndFreshnessTests : IDisposable {
         TestFillDataModel.GlobalFillCount.Should().Be(countBefore);
     }
 
+    [Fact]
+    public void UnableToFillOnLegacyFileWithoutMetadataSetsRemovedStatusAndGivesVersion() {
+        Directory.CreateDirectory($"{folder}/test_fills");
+        var id = nameof(UnableToFillOnLegacyFileWithoutMetadataSetsRemovedStatusAndGivesVersion);
+        TestFillDataModel.GlobalShouldFailFill = true;
+
+        var legacyJson = @$"{{
+  ""id"": ""{id}"",
+  ""content"": ""legacy preserved content""
+}}";
+        var filePath = $"{folder}/test_fills/{id}.json";
+        File.WriteAllText(filePath, legacyJson);
+
+        var data = client.Get(id);
+        data.Should().NotBeNull();
+        data!.Content.Should().Be("legacy preserved content");
+        data.Metadata.Should().NotBeNull();
+        data.Metadata!.Status.Should().Be(DataStatus.Removed);
+        data.Metadata.Version.Should().NotBeNull();
+        data.Metadata.Version!.Value.Should().BeOnOrAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+        data.Metadata.LastRefreshed.Should().Be(data.Metadata.Version);
+
+        var list = client.List();
+        list.ContainsKey(id).Should().BeTrue();
+
+        var writtenJson = File.ReadAllText(filePath);
+        writtenJson.Should().Contain("\"status\": \"removed\"");
+        writtenJson.Should().Contain("\"version\":");
+    }
+
+    [Fact]
+    public void UnableToFillOnSettingLegacyModelWithoutMetadataSetsRemovedStatusAndGivesVersion() {
+        var id = nameof(UnableToFillOnSettingLegacyModelWithoutMetadataSetsRemovedStatusAndGivesVersion);
+        var model = new TestFillDataModel {
+            Id = id,
+            Content = "set content",
+            ShouldFailFill = true
+        };
+
+        client.Set(model);
+
+        var data = client.Get(id);
+        data.Should().NotBeNull();
+        data!.Content.Should().Be("set content");
+        data.Metadata.Should().NotBeNull();
+        data.Metadata!.Status.Should().Be(DataStatus.Removed);
+        data.Metadata.Version.Should().NotBeNull();
+        data.Metadata.Version!.Value.Should().BeOnOrAfter(DateTimeOffset.UtcNow.AddMinutes(-1));
+        data.Metadata.LastRefreshed.Should().Be(data.Metadata.Version);
+    }
+
     public void Dispose() {
         TestFillDataModel.GlobalRefreshInterval = null;
         TestFillDataModel.GlobalForceRefreshBefore = null;

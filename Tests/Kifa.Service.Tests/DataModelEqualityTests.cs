@@ -278,4 +278,25 @@ public class DataModelEqualityTests {
         jsonOverrides.Should().Contain("$metadata");
         jsonOverrides.Should().Contain("\"overrides\":{\"str_prop\":\"overridden\"}");
     }
+
+    [Fact]
+    public void IsEmptyTests() {
+        var emptyModel = new FakeDataModel();
+        emptyModel.IsEmpty().Should().BeTrue();
+
+        var emptyWithId = new FakeDataModel { Id = "some_id" };
+        emptyWithId.IsEmpty().Should().BeTrue();
+
+        var emptyWithMetadata = new FakeDataModel {
+            Id = "some_id",
+            Metadata = new DataMetadata { Status = DataStatus.Removed }
+        };
+        emptyWithMetadata.IsEmpty().Should().BeTrue();
+
+        var populatedModel = new FakeDataModel {
+            Id = "some_id",
+            StrProp = "some content"
+        };
+        populatedModel.IsEmpty().Should().BeFalse();
+    }
 }

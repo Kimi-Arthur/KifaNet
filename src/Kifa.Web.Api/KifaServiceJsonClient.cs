@@ -187,12 +187,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             } catch (UnableToFillException ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with a predefined error.");
                 data.Metadata ??= new DataMetadata();
-                if (isNewItem || data.Metadata.Status == DataStatus.NotFound) {
+                var isEmpty = originalContent.Metadata?.Version == null && originalContent.IsEmpty();
+                if (isEmpty || originalContent.Metadata?.Status == DataStatus.NotFound) {
                     data.Metadata.Status = DataStatus.NotFound;
                     data.Metadata.Version = now;
                     data.Metadata.LastRefreshed = now;
                 } else {
                     data.Metadata.Status = DataStatus.Removed;
+                    data.Metadata.Version ??= now;
                     data.Metadata.LastRefreshed = now;
                 }
 

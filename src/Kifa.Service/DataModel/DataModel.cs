@@ -113,6 +113,15 @@ public abstract class DataModel : IEquatable<DataModel> {
 
     public override string ToString() => this.ToPrettyJson();
 
+    public virtual bool IsEmpty() {
+        var empty = Activator.CreateInstance(GetType()) as DataModel;
+        if (empty != null) {
+            empty.Id = Id;
+        }
+
+        return Equals(empty);
+    }
+
     public bool Equals(DataModel? other) {
         if (other == null || other.GetType() != GetType()) {
             return false;

@@ -35,7 +35,8 @@ public enum DataStatus {
 
 When `data.Fill()` encounters `UnableToFillException` (or `DataNotFoundException`):
 
-1. **Non-Existing Items (`isNewItem` or `Status == DataStatus.NotFound`)**:
+1. **Non-Existing / Empty Items (`isEmpty` or `Status == DataStatus.NotFound`)**:
+   - An item is considered empty if it has no `Metadata.Version` and `data.IsEmpty()` evaluates to `true` (no content properties populated).
    - `Metadata.Status = DataStatus.NotFound`
    - `Metadata.Version = now`
    - `Metadata.LastRefreshed = now`
@@ -43,10 +44,11 @@ When `data.Fill()` encounters `UnableToFillException` (or `DataNotFoundException
    - `Get(id)` returns `null` (caller receives 404/null).
    - **Negative Caching**: Subsequent `Get(id)` requests read the cached tombstone from disk. Because `NeedRefresh()` is `false` during `RefreshInterval`, `Fill()` is skipped completely (zero upstream scraping or network traffic).
 
-2. **Existing Items (`!isNewItem` with valid content)**:
+2. **Existing Items (including legacy unversioned items with content)**:
+   - For items with existing content (or previously versioned items):
    - `Metadata.Status = DataStatus.Removed`
+   - `Metadata.Version ??= now` (assigns a new version timestamp for legacy unversioned items, preserving previous version for already versioned items).
    - `Metadata.LastRefreshed = now`
-   - `Metadata.Version` is preserved (protecting historical content).
    - Persists `{ "id": "...", ..., "$metadata": { "status": "removed", "version": "...", "last_refreshed": "..." } }` to disk.
    - `Get(id)` returns the historical cached content.
 
