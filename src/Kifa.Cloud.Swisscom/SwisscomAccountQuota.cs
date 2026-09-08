@@ -63,12 +63,12 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
     public override void Fill() {
         var account = SwisscomAccount.Client.Get(Id);
         if (account == null) {
-            throw new UnableToFillException($"Account {Id} is missing.");
+            throw new DataNotFoundException($"Account {Id} is missing.");
         }
 
         var result = UpdateQuota(account);
         if (result.Status != KifaActionStatus.OK) {
-            throw new UnableToFillException(result.Message!);
+            throw new FailedToFillException(result.Message!);
         }
 
         ReconcileQuota();

@@ -184,8 +184,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return false;
             } catch (NoNeedToFillException) {
                 return false;
-            } catch (UnableToFillException ex) {
-                Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with a predefined error.");
+            } catch (DataNotFoundException ex) {
+                Logger.Warn(ex, $"{ModelId}/{data.Id} was not found upstream.");
                 data = originalContent;
                 data.Metadata ??= new DataMetadata();
                 var isEmpty = originalContent.Metadata?.Version == null && originalContent.IsEmpty();
@@ -200,8 +200,13 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 }
 
                 return true;
+            } catch (FailedToFillException ex) {
+                Logger.Warn(ex, $"Failed to fill {ModelId}/{data.Id} during process.");
+                data = originalContent;
+                return false;
             } catch (Exception ex) {
                 Logger.Error(ex, $"Failed to fill {ModelId}/{data.Id} with an unexpected error.");
+                data = originalContent;
                 return false;
             }
 

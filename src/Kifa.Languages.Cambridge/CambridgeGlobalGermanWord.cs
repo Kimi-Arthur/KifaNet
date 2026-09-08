@@ -47,7 +47,7 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalG
         var bodies = root.GetElementsByClassName("normal-entry-body");
 
         if (heads.Length != bodies.Length) {
-            throw new UnableToFillException($"The normal-entry count {heads.Length} and " +
+            throw new FailedToFillException($"The normal-entry count {heads.Length} and " +
                                             $"normal-entry-body count {bodies.Length}" +
                                             "don't match unexpectedly.");
         }

@@ -56,14 +56,14 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
                               0 + Specials?.Count ?? 0;
 
         if (TmdbId == null || Language?.Code == null) {
-            throw new UnableToFillException(
+            throw new FailedToFillException(
                 $"Not enough info to fill TvShow (TmdbId = {TmdbId}, Language = {Language})");
         }
 
         var tmdb = new TmdbClient();
         var series = tmdb.GetSeries(TmdbId, Language);
         if (series == null) {
-            throw new UnableToFillException(
+            throw new DataNotFoundException(
                 $"Failed to find series with {TmdbId}, {Language.Code}.");
         }
 

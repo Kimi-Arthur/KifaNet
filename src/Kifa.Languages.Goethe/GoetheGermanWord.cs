@@ -52,7 +52,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
         var word = GermanWord.Client.Get(RootWord);
 
         if (word == null) {
-            throw new UnableToFillException($"Failed to find root word ({RootWord}) for {Id}.");
+            throw new DataNotFoundException($"Failed to find root word ({RootWord}) for {Id}.");
         }
 
         if (NeedRefreshFrom(word)) {

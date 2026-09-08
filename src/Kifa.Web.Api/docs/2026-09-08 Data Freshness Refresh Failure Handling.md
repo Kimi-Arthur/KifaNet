@@ -7,7 +7,7 @@ When an upstream entity (e.g., a deleted or private YouTube video, an archived B
 
 ### The Problem
 Previously:
-1. `data.Fill()` threw an `UnableToFillException` (or derived `DataNotFoundException`).
+1. `data.Fill()` threw a `DataNotFoundException`.
 2. `KifaServiceJsonClient.Fill()` caught this exception and returned `false`.
 3. Because `false` was returned, `Metadata.LastRefreshed` was never updated on disk.
 4. Consequently, on every subsequent `Get(id)` call, `data.NeedRefresh()` evaluated to `true`, repeatedly triggering heavy network operations (`yt-dlp`, archive lookups, Wayback Machine) only to fail again.
@@ -33,7 +33,7 @@ public enum DataStatus {
 
 ### Handling Failures in `KifaServiceJsonClient.Fill()`
 
-When `data.Fill()` encounters `UnableToFillException` (or `DataNotFoundException`):
+When `data.Fill()` encounters `DataNotFoundException`:
 
 1. **Non-Existing / Empty Items (`isEmpty` or `Status == DataStatus.NotFound`)**:
    - An item is considered empty if it has no `Metadata.Version` and `data.IsEmpty()` evaluates to `true` (no content properties populated).
@@ -85,10 +85,12 @@ if (data.RefreshInterval != null) {
 - Even when `ForceRefreshBefore` is set (e.g. following code logic updates), `lastChecked < ForceRefreshBefore` ensures the attempt runs only once after the code change, rather than repeating on every request.
 
 ### Exception Granularity
-- **`UnableToFillException` (and derived `DataNotFoundException`)**:
-  Predefined business conditions indicating the resource could not be found or populated. Status and timestamps are updated.
+- **`DataNotFoundException`**:
+  Predefined business/domain condition indicating the resource definitively does not exist upstream. Status is advanced (`NotFound` or `Removed`) and persisted to disk.
+- **`FailedToFillException`**:
+  Process execution failure (such as incomplete page downloads, parsing structure mismatches, or missing auth tokens). Status and timestamps are **not** advanced, preserving historical data without tombstoning.
 - **General `Exception`**:
-  Unexpected errors (such as intermittent network disconnection or unexpected runtime bugs). Status and timestamps are **not** advanced, allowing immediate retry when transient issues resolve.
+  Unexpected runtime errors (such as unhandled socket errors or runtime bugs). Status and timestamps are **not** advanced.
 
 ---
 

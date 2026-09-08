@@ -48,7 +48,7 @@ public class BilibiliMangaEpisode : DataModel, WithModelId<BilibiliMangaEpisode>
                 }).ToList();
 
         if (Pages.Count < PageCount) {
-            throw new UnableToFillException($"Expected {PageCount} pages, but only found {Pages.Count}.");
+            throw new FailedToFillException($"Expected {PageCount} pages, but only found {Pages.Count}.");
         }
     }
 

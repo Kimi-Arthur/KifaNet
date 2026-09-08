@@ -60,12 +60,12 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
 
     public override void Fill() {
         if (Username == null || Password == null) {
-            throw new UnableToFillException($"No account info provided for {Id}.");
+            throw new FailedToFillException($"No account info provided for {Id}.");
         }
 
         AccessToken = GetRegistrationStatus().Token;
         if (AccessToken == null) {
-            throw new UnableToFillException($"Failed to get access token for {Id}.");
+            throw new FailedToFillException($"Failed to get access token for {Id}.");
         }
     }
 

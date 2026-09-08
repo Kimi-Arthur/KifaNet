@@ -264,14 +264,14 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             Logger.Warn(e);
         }
 
-        throw new UnableToFillException($"Failed to find info for {Id}");
+        throw new DataNotFoundException($"Failed to find info for {Id}");
     }
 
     void FillWithYoutubeDl() {
         var metadata = YoutubeDL.RunVideoDataFetch(Id, overrideOptions: OptionSet).GetAwaiter()
             .GetResult();
         if (!metadata.Success) {
-            throw new UnableToFillException(
+            throw new DataNotFoundException(
                 $"Cannot find video info for {Id}: {metadata.ErrorOutput.JoinBy("\n")}");
         }
 
@@ -311,35 +311,35 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
             fybResponse?.Keys.FirstOrDefault(key
                 => key.Archived && key.Name == "Archive.org Details");
         if (archiveItem == null) {
-            throw new UnableToFillException(
+            throw new DataNotFoundException(
                 $"Cannot find video history with FindYoutubeVideo service: {fybResponse.ToJson()}");
         }
 
         var archiveLink = archiveItem.Available.FirstOrDefault(link => link.Url != null)?.Url;
 
         if (archiveLink == null) {
-            throw new UnableToFillException(
+            throw new DataNotFoundException(
                 $"Cannot find link with FindYoutubeVideo service: {fybResponse.ToJson()}");
         }
 
         var archiveId = archiveLink.Split("/").Last();
         var archiveMetadata = HttpClient.Call(new ArchiveMetadataRpc(archiveId));
         if (archiveMetadata == null) {
-            throw new UnableToFillException($"Cannot find archive for {archiveId}");
+            throw new DataNotFoundException($"Cannot find archive for {archiveId}");
         }
 
         var archiveFile =
             archiveMetadata.Files.FirstOrDefault(f => f.Name.EndsWith($"-{Id}.info.json"));
 
         if (archiveFile == null) {
-            throw new UnableToFillException($"Cannot find item {Id} in archive {archiveId}");
+            throw new DataNotFoundException($"Cannot find item {Id} in archive {archiveId}");
         }
 
         var archiveFileContent = HttpClient.Call(new ArchiveItemDetailRpc(archiveMetadata.D1,
             archiveMetadata.Dir, archiveFile.Name));
 
         if (archiveFileContent == null) {
-            throw new UnableToFillException(
+            throw new DataNotFoundException(
                 $"Cannot find file {archiveFile.Name} in archive {archiveId}");
         }
 

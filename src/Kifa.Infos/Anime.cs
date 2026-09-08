@@ -135,7 +135,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
 
     public override void Fill() {
         if (TmdbId == null) {
-            throw new UnableToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
+            throw new FailedToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
         }
 
         Language ??= DefaultLanguage;
@@ -143,7 +143,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
         var tmdb = new TmdbClient();
         var series = tmdb.GetSeries(TmdbId, Language);
         if (series == null) {
-            throw new UnableToFillException($"Failed to find series with {TmdbId}.");
+            throw new DataNotFoundException($"Failed to find series with {TmdbId}.");
         }
 
         Title ??= Id;

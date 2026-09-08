@@ -309,11 +309,11 @@ public class YouTubeVideoTests {
     }
 
     [Fact]
-    public void FillUnavailableVideoThrowsUnableToFillException() {
+    public void FillUnavailableVideoThrowsDataNotFoundException() {
         var video = new YouTubeVideo {
             Id = "ut_owWNGYcA"
         };
 
-        video.Invoking(v => v.Fill()).Should().Throw<UnableToFillException>();
+        video.Invoking(v => v.Fill()).Should().Throw<DataNotFoundException>();
     }
 }

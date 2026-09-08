@@ -153,7 +153,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     public override void Fill() {
         var word = GermanWord.Client.Get(RootWord);
         if (word == null) {
-            throw new UnableToFillException($"Failed to find root word ({RootWord}) for {Id}.");
+            throw new DataNotFoundException($"Failed to find root word ({RootWord}) for {Id}.");
         }
 
         // Region 1: Base German word details

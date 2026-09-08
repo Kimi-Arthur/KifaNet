@@ -29,7 +29,7 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
         Type = mediaData.Media.TypeName;
         var seasonData = HttpClients.GetBilibiliClient().Call(new MediaSeasonRpc(SeasonId))?.Result;
         if (seasonData == null) {
-            throw new UnableToFillException(
+            throw new FailedToFillException(
                 $"Failed to get data for season ({SeasonId}) from Bilibili.");
         }
 

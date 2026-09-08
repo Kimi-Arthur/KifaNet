@@ -68,7 +68,7 @@ public class BilibiliManga : DataModel, WithModelId<BilibiliManga> {
 
         for (var i = 0; i < Episodes.Count; i++) {
             if (newEpisodes[i].Id != Episodes[i].Id) {
-                throw new UnableToFillException("Episode ids mismatch unexpectedly.");
+                throw new FailedToFillException("Episode ids mismatch unexpectedly.");
             }
 
             JsonConvert.PopulateObject(

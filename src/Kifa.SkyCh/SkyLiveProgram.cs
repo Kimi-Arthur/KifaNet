@@ -80,7 +80,7 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
         var imageLinks = root.SelectNodes("//div[@class='img-container']/img");
 
         if (imageLinks == null) {
-            throw new UnableToFillException($"Could not get image link node for {pageUrl}");
+            throw new FailedToFillException($"Could not get image link node for {pageUrl}");
         }
 
         ImageLink = imageLinks[0].Attributes["src"].Value.Split("?")[0];
