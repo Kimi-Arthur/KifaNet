@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
@@ -62,5 +63,69 @@ public class JsonExtensionsTests {
         string? nullString = null;
         nullString.FromJson<SampleModel>().Should().BeNull();
         nullString.FromCamelCaseJson<SampleModel>().Should().BeNull();
+        nullString.FromDiskJson<SampleModel>().Should().BeNull();
+    }
+
+    class NonNullableCollectionsModel {
+        public List<string> List { get; set; } = new();
+        public SortedSet<string> SortedSet { get; set; } = new();
+        public HashSet<string> HashSet { get; set; } = new();
+        public Dictionary<string, int> Dict { get; set; } = new();
+        public string[] Array { get; set; } = [];
+    }
+
+    [Fact]
+    public void NonNullableEmptyCollectionsAreOmitted() {
+        var obj = new NonNullableCollectionsModel();
+        obj.ToJson().Should().Be("{}");
+    }
+
+    [Fact]
+    public void NonNullablePopulatedCollectionsAreSerialized() {
+        var obj = new NonNullableCollectionsModel {
+            List = ["a"],
+            SortedSet = ["b"],
+            HashSet = ["c"],
+            Dict = new() {
+                { "key", 1 }
+            },
+            Array = ["d"]
+        };
+
+        var json = obj.ToJson();
+        json.Should().Contain("\"list\":[\"a\"]");
+        json.Should().Contain("\"sorted_set\":[\"b\"]");
+        json.Should().Contain("\"hash_set\":[\"c\"]");
+        json.Should().Contain("\"dict\":{\"key\":1}");
+        json.Should().Contain("\"array\":[\"d\"]");
+    }
+
+    class NullableCollectionsModel {
+        public List<string>? List { get; set; }
+        public SortedSet<string>? SortedSet { get; set; }
+        public Dictionary<string, int>? Dict { get; set; }
+    }
+
+    [Fact]
+    public void NullableCollectionsOmittedWhenNull() {
+        var obj = new NullableCollectionsModel {
+            List = null,
+            SortedSet = null,
+            Dict = null
+        };
+        obj.ToJson().Should().Be("{}");
+    }
+
+    [Fact]
+    public void NullableCollectionsSerializedWhenEmpty() {
+        var obj = new NullableCollectionsModel {
+            List = new(),
+            SortedSet = new(),
+            Dict = new()
+        };
+        var json = obj.ToJson();
+        json.Should().Contain("\"list\":[]");
+        json.Should().Contain("\"sorted_set\":[]");
+        json.Should().Contain("\"dict\":{}");
     }
 }

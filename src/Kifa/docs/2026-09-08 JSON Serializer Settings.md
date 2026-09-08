@@ -28,7 +28,8 @@ All serializer settings use `OrderedContractResolver`, which adds the following 
 
 1. **Deterministic Ordering**: Properties are ordered predictably for deterministic JSON diffs and on-disk consistency.
 2. **Empty Collection Suppression**:
-   - Collections implementing `ICollection`, `IDictionary`, `ICollection<T>`, `IReadOnlyCollection<T>`, or `IDictionary<TKey, TValue>` with `Count == 0` are automatically excluded from serialization.
+   - For **non-nullable collection properties** (e.g., `List<T>`, `HashSet<T>`, `SortedSet<T>`, `Dictionary<K, V>`, `T[]`), empty instances (`Count == 0`) are automatically excluded from serialization as they represent the default unpopulated state.
+   - For **nullable collection properties** (e.g., `List<T>?`, `SortedSet<T>?`, `Dictionary<K, V>?`), `null` values are omitted, while explicitly instantiated empty collections (`new()`) are preserved to allow intentionally serializing empty `[]` or `{}`.
 3. **Default Value Suppression**:
    - Non-nullable value types and enums (e.g., `DataStatus.OK = 0`) have default values populated so that default values are omitted when `DefaultValueHandling.IgnoreAndPopulate` or `Ignore` is active.
 4. **External Property Suppression**:

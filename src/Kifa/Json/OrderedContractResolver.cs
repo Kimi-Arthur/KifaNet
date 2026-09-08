@@ -49,25 +49,39 @@ public class OrderedContractResolver : DefaultContractResolver {
             property.DefaultValue = 0;
         }
 
-        if (property.PropertyType?.IsGenericType ?? false) {
-            if (property.PropertyType.GetInterface(typeof(IList<>).Name) != null) {
-                property.ShouldSerialize = instance
-                    => (property.ValueProvider?.GetValue(instance) as IList) is {
-                        Count: > 0
-                    };
-                property.DefaultValueHandling = DefaultValueHandling.Ignore;
-            }
-
-            if (property.PropertyType.GetInterface(typeof(IDictionary<,>).Name) != null) {
-                property.ShouldSerialize = instance
-                    => (property.ValueProvider?.GetValue(instance) as IDictionary) is {
-                        Count: > 0
-                    };
-                property.DefaultValueHandling = DefaultValueHandling.Ignore;
-            }
+        if (property.ShouldSerialize == null && property.PropertyType != null &&
+            IsCollectionType(property.PropertyType)) {
+            property.ShouldSerialize =
+                instance => HasElements(property.ValueProvider?.GetValue(instance));
+            property.DefaultValueHandling = DefaultValueHandling.Ignore;
         }
 
         return property;
+    }
+
+    static bool IsCollectionType(Type type)
+        => type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(type);
+
+    static bool HasElements(object? value) {
+        if (value == null) {
+            return false;
+        }
+
+        if (value is ICollection col) {
+            return col.Count > 0;
+        }
+
+        if (value is IDictionary dict) {
+            return dict.Count > 0;
+        }
+
+        if (value is IEnumerable enumerable) {
+            var enumerator = enumerable.GetEnumerator();
+            using var disposable = enumerator as IDisposable;
+            return enumerator.MoveNext();
+        }
+
+        return true;
     }
 
     static bool IsNullable(MemberInfo member) {
