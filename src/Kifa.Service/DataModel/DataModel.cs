@@ -68,6 +68,8 @@ public abstract class DataModel : IEquatable<DataModel> {
     [YamlIgnore]
     public DataMetadata? Metadata { get; set; }
 
+    public bool ShouldSerializeMetadata() => Metadata?.ShouldSerialize() == true;
+
 
     [JsonIgnore]
     [YamlIgnore]

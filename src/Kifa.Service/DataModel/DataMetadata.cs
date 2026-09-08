@@ -8,6 +8,8 @@ namespace Kifa.Service;
 public class DataMetadata {
     public LinkingMetadata? Linking { get; set; }
 
+    public bool ShouldSerializeLinking() => Linking?.ShouldSerialize() == true;
+
     public DataStatus Status { get; set; } = DataStatus.OK;
 
     // Content version date (when the content was modified or ForceRefreshBefore applied).
@@ -26,11 +28,9 @@ public class DataMetadata {
     // Overrides that will apply after Fill() is called.
     public Dictionary<string, object> Overrides { get; set; } = new();
 
-    [JsonIgnore]
-    [YamlIgnore]
-    public bool IsEmpty
-        => Linking == null && Status == DataStatus.OK && Version == null && lastRefreshed == null &&
-           (Overrides == null || Overrides.Count == 0);
+    public bool ShouldSerialize()
+        => ShouldSerializeLinking() || Status != DataStatus.OK || Version != null ||
+           ShouldSerializeLastRefreshed() || Overrides.Count > 0;
 }
 
 public class LinkingMetadata {
@@ -40,8 +40,15 @@ public class LinkingMetadata {
     // If this one is the source, this field will be populated with all other instances with the data.
     public SortedSet<string>? Links { get; set; }
 
+    public bool ShouldSerializeLinks() => Links != null && Links.Count > 0;
+
     // If this one is the source, this field will be populated with all other instances with the data.
     public SortedSet<string>? VirtualLinks { get; set; }
+
+    public bool ShouldSerializeVirtualLinks() => VirtualLinks != null && VirtualLinks.Count > 0;
+
+    public bool ShouldSerialize()
+        => Target != null || ShouldSerializeLinks() || ShouldSerializeVirtualLinks();
 }
 
 public static class DataFreshnessExtensions {

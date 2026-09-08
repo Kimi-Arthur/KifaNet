@@ -218,4 +218,64 @@ public class DataModelEqualityTests {
         m1.Equals(m2).Should().BeTrue();
         m1.Clone().Equals(m1).Should().BeTrue();
     }
+
+    [Fact]
+    public void MetadataOmittedWhenNullOrEmpty() {
+        var dataNull = new FakeDataModel {
+            Id = "test1",
+            Metadata = null
+        };
+        dataNull.ToJson().Should().NotContain("$metadata");
+
+        var dataEmpty = new FakeDataModel {
+            Id = "test2",
+            Metadata = new DataMetadata()
+        };
+        dataEmpty.ToJson().Should().NotContain("$metadata");
+
+        var dataEmptyLinking = new FakeDataModel {
+            Id = "test3",
+            Metadata = new DataMetadata {
+                Linking = new LinkingMetadata()
+            }
+        };
+        dataEmptyLinking.ToJson().Should().NotContain("$metadata");
+    }
+
+    [Fact]
+    public void MetadataSerializedWhenPopulated() {
+        var dataWithLink = new FakeDataModel {
+            Id = "test_link",
+            Metadata = new DataMetadata {
+                Linking = new LinkingMetadata {
+                    Target = "target_item"
+                }
+            }
+        };
+        var jsonLink = dataWithLink.ToJson();
+        jsonLink.Should().Contain("$metadata");
+        jsonLink.Should().Contain("\"target\":\"target_item\"");
+
+        var dataWithStatus = new FakeDataModel {
+            Id = "test_status",
+            Metadata = new DataMetadata {
+                Status = DataStatus.NotFound
+            }
+        };
+        var jsonStatus = dataWithStatus.ToJson();
+        jsonStatus.Should().Contain("$metadata");
+        jsonStatus.Should().Contain("\"status\":\"not_found\"");
+
+        var dataWithOverrides = new FakeDataModel {
+            Id = "test_override",
+            Metadata = new DataMetadata {
+                Overrides = new() {
+                    { "str_prop", "overridden" }
+                }
+            }
+        };
+        var jsonOverrides = dataWithOverrides.ToJson();
+        jsonOverrides.Should().Contain("$metadata");
+        jsonOverrides.Should().Contain("\"overrides\":{\"str_prop\":\"overridden\"}");
+    }
 }

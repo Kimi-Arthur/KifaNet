@@ -311,24 +311,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     // It will also remove the parts that only make sense for the links.
     void CleanupForWriting(TDataModel data) {
         data.Id = data.RealId;
-        var linking = data.Metadata?.Linking;
-        if (linking != null) {
-            linking.Target = null;
-            if (linking.Links?.Count == 0) {
-                linking.Links = null;
-            }
-
-            if (linking.VirtualLinks?.Count == 0) {
-                linking.VirtualLinks = null;
-            }
-
-            if (linking.Links == null && linking.VirtualLinks == null) {
-                data.Metadata.Linking = null;
-            }
-        }
-
-        if (data.Metadata?.IsEmpty == true) {
-            data.Metadata = null;
+        if (data.Metadata?.Linking != null) {
+            data.Metadata.Linking.Target = null;
         }
     }
 
