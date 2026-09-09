@@ -6,19 +6,17 @@ using Kifa.Cryptography;
 
 namespace Kifa.IO.FileFormats;
 
-/// <summary>
-///     V2 file format. V2 uses counter based encryption instead of plain.
-///     Common header for v1 and onward:
-///     B0~3: 0x0123 0x1225
-///     B4~5: Version Number
-///     B6~7: Header Length (hl)
-///     B8~(hl-1): Other parts
-///     V2 header (almost the same as v1 except version):
-///     B0~3: 0x0123 0x1225
-///     B4~7: 0x0002 0x0030
-///     B8~15: File Length (int64)
-///     B16~47: SHA256 (256bit)
-/// </summary>
+// V2 file format. V2 uses counter based encryption instead of plain.
+// Common header for v1 and onward:
+// B0~3: 0x0123 0x1225
+// B4~5: Version Number
+// B6~7: Header Length (hl)
+// B8~(hl-1): Other parts
+// V2 header (almost the same as v1 except version):
+// B0~3: 0x0123 0x1225
+// B4~7: 0x0002 0x0030
+// B8~15: File Length (int64)
+// B16~47: SHA256 (256bit)
 public class KifaFileV2Format : KifaFileFormat {
     public static readonly KifaFileV2Format Instance = new();
     const byte HeaderLength = 0x30;

@@ -5,19 +5,17 @@ using Kifa.Cryptography;
 
 namespace Kifa.IO.FileFormats;
 
-/// <summary>
-///     V1 file format.
-///     Common header for v1 and onward:
-///     B0~3: 0x0123 0x1225
-///     B4~5: Version Number
-///     B6~7: Header Length (hl)
-///     B8~(hl-1): Other parts
-///     V1 header:
-///     B0~3: 0x0123 0x1225
-///     B4~7: 0x0001 0x0030
-///     B8~15: File Length (int64)
-///     B16~47: SHA256 (256bit)
-/// </summary>
+// V1 file format.
+// Common header for v1 and onward:
+// B0~3: 0x0123 0x1225
+// B4~5: Version Number
+// B6~7: Header Length (hl)
+// B8~(hl-1): Other parts
+// V1 header:
+// B0~3: 0x0123 0x1225
+// B4~7: 0x0001 0x0030
+// B8~15: File Length (int64)
+// B16~47: SHA256 (256bit)
 public class KifaFileV1Format : KifaFileFormat {
     public static readonly KifaFileV1Format Instance = new();
 

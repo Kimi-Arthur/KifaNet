@@ -112,11 +112,7 @@ public class BaiduCloudStorageClient : StorageClient {
         }
     }
 
-    /// <summary>
-    ///     Upload data from stream with the optimal method.
-    /// </summary>
-    /// <param name="path">Path for the destination file.</param>
-    /// <param name="stream">Input stream to upload.</param>
+    // Upload data from stream with the optimal method.
     public override void Write(string path, Stream stream) {
         UploadNormal(path, stream);
     }

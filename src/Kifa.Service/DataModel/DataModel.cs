@@ -50,9 +50,7 @@ public interface WithModelId<T> where T : DataModel, WithModelId<T> {
     }
 }
 
-/// <summary>
-/// When used, specify a public const string field named ModelId.
-/// </summary>
+// When used, specify a public const string field named ModelId.
 public abstract class DataModel : IEquatable<DataModel> {
     public const string VirtualItemPrefix = "/$/";
 
@@ -75,11 +73,9 @@ public abstract class DataModel : IEquatable<DataModel> {
     [YamlIgnore]
     public virtual TimeSpan? RefreshInterval => null;
 
-    /// <summary>
-    /// Forces items with a <see cref="DataMetadata.Version"/> earlier than this timestamp to be re-filled.
-    /// NOTE: This timestamp should be set at deployment/release time rather than during development
-    /// to avoid missing items updated in production prior to deployment.
-    /// </summary>
+    // Forces items with a Version earlier than this timestamp to be re-filled.
+    // NOTE: This timestamp should be set at deployment/release time rather than during development
+    // to avoid missing items updated in production prior to deployment.
     [JsonIgnore]
     [YamlIgnore]
     public virtual DataVersion? ForceRefreshBefore => null;

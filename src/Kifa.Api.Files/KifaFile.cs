@@ -578,15 +578,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return info;
     }
 
-    /// <summary>
-    /// Register the file with optional check.
-    /// </summary>
-    /// <param name="shouldCheckKnown">
-    /// If it's true, it will do a full checkup no matter what.<br/>
-    /// If it's false, it will never do a check if the file is known.<br/>
-    /// If it's null (default case), it will do a quick check for known instance.</param>
-    /// <exception cref="FileNotFoundException">The file doesn't exist.</exception>
-    /// <exception cref="FileCorruptedException">File check failed for known file.</exception>
+    // Register the file with optional check.
+    // - shouldCheckKnown == true: full checkup.
+    // - shouldCheckKnown == false: skip check for known file.
+    // - shouldCheckKnown == null (default): quick check for known instance.
     public void Add(bool? shouldCheckKnown = null, long? expectedSize = null) {
         if (expectedSize != null) {
             FileInfo ??= new FileInformation {

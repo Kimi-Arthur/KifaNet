@@ -15,10 +15,10 @@ public class GuitarChord : DataModel, WithModelId<GuitarChord> {
     public static GuitarChordServiceClient Client { get; set; } =
         new GuitarChordRestServiceClient();
 
-    /// Name of the chord. Can be like, `C`, `Cmaj7`, `Em` etc.
+    // Name of the chord. Can be like, `C`, `Cmaj7`, `Em` etc.
     public string Name { get; set; }
 
-    /// Arrangements by each finger.
+    // Arrangements by each finger.
     public List<FingerArrangement> Arrangements { get; set; }
 
     public SvgDocument GetPicture() {
@@ -122,16 +122,16 @@ public class GuitarChord : DataModel, WithModelId<GuitarChord> {
         };
 }
 
-/// Finger arrangement of one finger on one string.
+// Finger arrangement of one finger on one string.
 public class FingerArrangement {
-    /// 指, finger to use on the string, open -> 0, thumb -> 5, index -> 1, etc.
+    // 指, finger to use on the string, open -> 0, thumb -> 5, index -> 1, etc.
     public int Finger { get; set; }
 
-    /// 弦, which strings this finger is on, 1 - 6, from higher to lower pitch string.
-    /// Can contain multiple elements for `barre chord`, ordered.
+    // 弦, which strings this finger is on, 1 - 6, from higher to lower pitch string.
+    // Can contain multiple elements for `barre chord`, ordered.
     public List<int> Strings { get; set; }
 
-    /// 品, Which fret this finger should be placed onto. For open, it should be 0.
+    // 品, Which fret this finger should be placed onto. For open, it should be 0.
     public int Fret { get; set; }
 }
 

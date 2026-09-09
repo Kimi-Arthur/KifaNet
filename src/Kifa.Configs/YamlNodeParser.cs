@@ -6,9 +6,7 @@ using YamlDotNet.RepresentationModel;
 
 namespace Kifa.Configs;
 
-/// <summary>
-///     Work around to use YamlNode to deserialize. Taken from https://stackoverflow.com/a/40727087/8212226
-/// </summary>
+// Work around to use YamlNode to deserialize. Taken from https://stackoverflow.com/a/40727087/8212226
 class YamlNodeParser : IParser {
     readonly IEnumerator<ParsingEvent> enumerator;
 

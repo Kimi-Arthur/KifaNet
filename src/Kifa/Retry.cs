@@ -18,19 +18,7 @@ public static class Retry {
         }, isValid);
     }
 
-    /// <summary>
-    /// Runs action repeatedly. calls isValid when it gets a result, and calls handleException if it
-    /// gets an exception.
-    /// </summary>
-    /// <param name="action">Func to run repeatedly, it should return a value of type T</param>
-    /// <param name="handleException">Action to handle exception. It should log desired retry
-    /// messages and (re)throw if it won't succeed</param>
-    /// <param name="isValid">Func to call when a result is got. It should return true if the
-    /// result is OK, or log and return false to make it retry</param>
-    /// <typeparam name="T">Type of result to return</typeparam>
-    /// <typeparam name="TState">Type of state to be used when handling in handleException.</typeparam>
-    /// <returns>Best result of executing action</returns>
-    /// <exception cref="RetryValidationException">Validation did not pass as isValid returns false</exception>
+    // Runs action repeatedly. Calls isValid when it gets a result, and calls handleException if it gets an exception.
     public static T Run<T, TState>(Func<T> action,
         Func<Exception, TState?, TState?> handleException, Func<T, bool>? isValid = null) {
         var state = default(TState);
@@ -100,12 +88,7 @@ public static class Retry {
             return i;
         });
 
-    /// <summary>
-    /// Runs action repeatedly. calls handleException if it gets an exception.
-    /// </summary>
-    /// <param name="action">Action to run repeatedly</param>
-    /// <param name="handleException">Action to handle exception. It should log desired retry
-    /// messages and (re)throw if it won't succeed</param>
+    // Runs action repeatedly. Calls handleException if it gets an exception.
     public static void Run<TState>(Action action,
         Func<Exception, TState?, TState?> handleException) {
         var state = default(TState);
