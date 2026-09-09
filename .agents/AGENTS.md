@@ -2,6 +2,9 @@
 
 ## Baidu Cloud Migration Rules
 - During the migration of Baidu Cloud (or other PCS/Cloud APIs) from JToken-based responses to structured RPC response models, pay close attention to fields containing collections of items (like `entries` in file lists or diff lists). Some APIs return a JSON object/map (dictionary) where the keys are paths or IDs, rather than a JSON array (list). Ensure these are deserialized as `Dictionary<string, T>` and not `List<T>`.
+
+## Data Freshness & Invalidation Rules
+- When invalidating cached data using `ForceRefreshBefore` on a `DataModel` due to code logic updates, set or bump the timestamp at the time of **deployment/release** (not during development). Setting it during development causes any records refreshed or populated in production between development and deployment to have newer versions and thus bypass invalidation.
 ## Release & Git Rules
 - Strictly DO NOT update project versions, publish packages to NuGet, or perform `git commit`/`git push` unless explicitly requested by the user in that specific query; a commit/release request applies strictly to the single turn in which it was asked and NEVER carries over to subsequent turns.
 

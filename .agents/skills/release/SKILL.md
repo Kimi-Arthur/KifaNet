@@ -26,6 +26,7 @@ Automate version incrementing, git commits, and package/tool publishing followin
      * New `[Option]` attribute or new CLI flag -> **MINOR** bump (`X.Y.0`).
      * Other bug fixes, performance improvements, or refactoring -> **PATCH** bump (`X.Y.Z`).
    * Calculate target `<new_version>`.
+   * **Data Invalidation Check (`ForceRefreshBefore`)**: If the release includes parsing/scraping changes that necessitate invalidating cached data, ensure `ForceRefreshBefore` on the affected `DataModel` is updated to the current deployment/release timestamp.
 
 3. **Handle Pending Changes (Two-Commit Workflow)**:
    * **If there are pending code changes**:

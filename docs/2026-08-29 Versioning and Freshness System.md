@@ -92,11 +92,21 @@ flowchart TD
 When parsing or scraping logic changes significantly in code:
 ```csharp
 public class DwdsPage : DataModel, WithModelId<DwdsPage> {
-    public override DateTimeOffset? ForceRefreshBefore =>
+    public override DataVersion? ForceRefreshBefore =>
         new DateTimeOffset(2026, 8, 29, 0, 0, 0, TimeSpan.Zero);
 }
 ```
 Any item with `Version < ForceRefreshBefore` is treated as stale. Upon retrieval, it is automatically re-filled, and its `Version` is bumped to the current timestamp.
+
+#### Deployment-Time Setting Requirement
+> [!IMPORTANT]
+> **`ForceRefreshBefore` must be set at deployment/release time, NOT during development.**
+>
+> If a developer sets `ForceRefreshBefore` while writing the code during development:
+> 1. Any items fetched, refreshed, or saved in the production environment between the development date and the actual deployment date will have a `Version` timestamp *newer* than `ForceRefreshBefore`.
+> 2. When the new code is deployed to production, those recently modified items will evaluate `Version >= ForceRefreshBefore` and will **not** be invalidated, remaining in the database with outdated or incorrect data.
+>
+> **Guideline:** When code logic changes require data re-fetching, do not lock in the final timestamp during early development. Instead, update `ForceRefreshBefore` to the current UTC timestamp (e.g. `DateTimeOffset.UtcNow`) right at the time of release/deployment.
 
 ### 3.2 Code-Managed Refresh Interval (`RefreshInterval`)
 
