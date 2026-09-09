@@ -56,5 +56,6 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
 
     const string ArchivePrefix = "合集·";
 
-    public string GetArchiveFolder() => $"{Title.Checked().ChopPrefix(ArchivePrefix)}.{SeasonId}";
+    public string GetArchiveFolder()
+        => $"{Title.Checked().ChopPrefix(ArchivePrefix).NormalizeFileName().Choppable()}.{SeasonId}";
 }
