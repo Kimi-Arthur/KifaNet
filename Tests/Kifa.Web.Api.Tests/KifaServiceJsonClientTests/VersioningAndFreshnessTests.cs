@@ -154,8 +154,8 @@ public class VersioningAndFreshnessTests : IDisposable {
     }
 
     [Fact]
-    public void ForceRefreshBeforeUpdatesVersionEvenIfContentUnchanged() {
-        var id = nameof(ForceRefreshBeforeUpdatesVersionEvenIfContentUnchanged);
+    public void ForceRefreshBeforePreservesVersionIfContentUnchangedAndAdvancesLastRefreshed() {
+        var id = nameof(ForceRefreshBeforePreservesVersionIfContentUnchangedAndAdvancesLastRefreshed);
         var model = new TestFillDataModel {
             Id = id,
             RemoteSourceContent = "same content"
@@ -165,6 +165,7 @@ public class VersioningAndFreshnessTests : IDisposable {
 
         var firstGet = client.Get(id);
         var originalVersion = firstGet!.Metadata!.Version;
+        var originalLastRefreshed = firstGet.Metadata.LastRefreshed;
 
         Thread.Sleep(50);
 
@@ -172,14 +173,96 @@ public class VersioningAndFreshnessTests : IDisposable {
         var futureForceRefresh = (DataVersion) DateTimeOffset.UtcNow;
         TestFillDataModel.GlobalForceRefreshBefore = futureForceRefresh;
 
-        // Get() should detect NeedRefresh because Version < ForceRefreshBefore
+        // Get() should detect NeedRefresh because LastRefreshed < ForceRefreshBefore
         var secondGet = client.Get(id);
         secondGet.Should().NotBeNull();
         secondGet!.Metadata.Should().NotBeNull();
 
-        // Version must update because ForceRefreshBefore invalidated the previous version
+        // Version must NOT update because content remained unchanged
+        secondGet.Metadata!.Version.Should().Be(originalVersion);
+
+        // LastRefreshed must update past ForceRefreshBefore
+        secondGet.Metadata.LastRefreshed!.Value.Should().BeAfter(originalLastRefreshed!.Value);
+        secondGet.Metadata.LastRefreshed!.Value.Should().BeOnOrAfter(futureForceRefresh.Value);
+
+        // Subsequent Get() does not re-fill because lastChecked >= ForceRefreshBefore
+        secondGet.NeedRefresh().Should().BeFalse();
+    }
+
+    [Fact]
+    public void ForceRefreshBeforeUpdatesVersionWhenContentChanges() {
+        var id = nameof(ForceRefreshBeforeUpdatesVersionWhenContentChanges);
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "initial content"
+        };
+
+        client.Set(model);
+
+        var firstGet = client.Get(id);
+        var originalVersion = firstGet!.Metadata!.Version;
+
+        Thread.Sleep(50);
+
+        // Simulate code logic change producing new content
+        firstGet.RemoteSourceContent = "improved parsed content";
+        client.Update(firstGet);
+
+        var futureForceRefresh = (DataVersion) DateTimeOffset.UtcNow;
+        TestFillDataModel.GlobalForceRefreshBefore = futureForceRefresh;
+
+        var secondGet = client.Get(id);
+        secondGet.Should().NotBeNull();
+        secondGet!.Content.Should().Be("improved parsed content");
         secondGet.Metadata!.Version!.Value.Should().BeAfter(originalVersion!.Value);
         secondGet.Metadata.Version!.Value.Should().BeOnOrAfter(futureForceRefresh.Value);
+        secondGet.Metadata.LastRefreshed.Should().Be(secondGet.Metadata.Version);
+    }
+
+    [Fact]
+    public void UpstreamForceRefreshBeforeWithoutContentChangeDoesNotCascadeToDownstream() {
+        var upstreamId =
+            $"{nameof(UpstreamForceRefreshBeforeWithoutContentChangeDoesNotCascadeToDownstream)}_upstream";
+        var downstreamId =
+            $"{nameof(UpstreamForceRefreshBeforeWithoutContentChangeDoesNotCascadeToDownstream)}_downstream";
+
+        TestFillDataModel.UpstreamLinks[downstreamId] = upstreamId;
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.FromDays(7);
+
+        var upstream = new TestFillDataModel {
+            Id = upstreamId,
+            RemoteSourceContent = "upstream v1"
+        };
+        client.Set(upstream);
+
+        Thread.Sleep(50);
+
+        var downstream = new TestFillDataModel {
+            Id = downstreamId,
+            RemoteSourceContent = "downstream content"
+        };
+        client.Set(downstream);
+
+        var downstreamData = client.Get(downstreamId);
+        downstreamData!.UpstreamContent.Should().Be("upstream v1");
+        var downstreamVersionBefore = downstreamData.Metadata!.Version;
+
+        Thread.Sleep(50);
+
+        // Upstream gets a ForceRefreshBefore bump, but its remote content remains identical
+        var futureForceRefresh = (DataVersion) DateTimeOffset.UtcNow;
+        TestFillDataModel.GlobalForceRefreshBefore = futureForceRefresh;
+
+        // Fetch upstream, triggering upstream re-fill
+        var refreshedUpstream = client.Get(upstreamId);
+        refreshedUpstream!.Metadata!.LastRefreshed!.Value.Should().BeOnOrAfter(futureForceRefresh.Value);
+        // Upstream Version did NOT change
+        refreshedUpstream.Metadata.Version.Should().Be(upstream.Metadata!.Version);
+
+        // Refresh downstream: upstream version has not changed, so downstream skips updating upstream region
+        var refreshedDownstream = client.Get(downstreamId, refresh: true);
+        refreshedDownstream!.UpstreamContent.Should().Be("upstream v1");
+        refreshedDownstream.Metadata!.Version.Should().Be(downstreamVersionBefore);
     }
 
     [Fact]

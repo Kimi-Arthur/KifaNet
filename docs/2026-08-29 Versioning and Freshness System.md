@@ -37,12 +37,11 @@ The reworked system transitions from arbitrary integer versions and stored sched
 Metadata tracks two distinct timestamps:
 
 1. **`Version` (`DateTimeOffset?`)**:
-   - Represents the timestamp when the content was last *modified* (or when code logic changes invalidated older content).
-   - Serves as the content version.
+   - Represents the timestamp when the content was last *modified*.
+   - Serves as the true content version.
    - Only changes when:
      - The item is initially created/filled (`Version == null`).
-     - A code logic change occurs (`ForceRefreshBefore > Version`).
-     - A refresh operation produces actual content changes (`!data.Equals(original)`).
+     - A refresh or re-fill operation produces actual content changes (`!data.Equals(original)`).
 
 2. **`LastRefreshed` (`DateTimeOffset?`)**:
    - Represents the timestamp when the item was last checked/verified against its upstream sources.
@@ -198,13 +197,12 @@ When `KifaServiceJsonClient.Fill(ref data, refresh)` executes:
 
 ```csharp
 var isNewItem = data.Metadata?.Version == null;
-var isCodeLogicChange = data.ForceRefreshBefore != null &&
-                        (data.Metadata?.Version == null || data.Metadata.Version < data.ForceRefreshBefore);
-
 var originalContent = data.Clone();
 data.Fill();
 
-var contentChanged = isNewItem || isCodeLogicChange || !data.Equals(originalContent);
+var contentChanged = isNewItem ||
+                     originalContent.Metadata?.Status == DataStatus.NotFound ||
+                     !data.Equals(originalContent);
 var now = DateTimeOffset.UtcNow;
 
 data.Metadata ??= new DataMetadata();

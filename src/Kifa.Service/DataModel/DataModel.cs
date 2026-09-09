@@ -93,7 +93,8 @@ public abstract class DataModel : IEquatable<DataModel> {
             return true;
         }
 
-        if (ForceRefreshBefore != null && Metadata.Version < ForceRefreshBefore) {
+        var lastChecked = Metadata.LastRefreshed ?? Metadata.Version;
+        if (ForceRefreshBefore != null && lastChecked < ForceRefreshBefore) {
             return true;
         }
 

@@ -165,9 +165,6 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         };
 
         if (refresh || data.NeedRefresh()) {
-            var lastChecked = data.Metadata?.LastRefreshed ?? data.Metadata?.Version;
-            var isCodeLogicChange = data.ForceRefreshBefore != null &&
-                                    (lastChecked == null || lastChecked < data.ForceRefreshBefore);
             var isNewItem = data.Metadata?.Version == null;
             var originalContent = data.Clone();
             var now = DateTimeOffset.UtcNow;
@@ -210,7 +207,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                 return false;
             }
 
-            var contentChanged = isNewItem || isCodeLogicChange ||
+            var contentChanged = isNewItem ||
                                  originalContent.Metadata?.Status == DataStatus.NotFound ||
                                  !data.Equals(originalContent);
 
