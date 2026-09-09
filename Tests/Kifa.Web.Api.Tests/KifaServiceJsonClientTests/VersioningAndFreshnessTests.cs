@@ -235,6 +235,9 @@ public class VersioningAndFreshnessTests : IDisposable {
         };
         client.Set(upstream);
 
+        var originalUpstream = client.Get(upstreamId);
+        var originalUpstreamVersion = originalUpstream!.Metadata!.Version;
+
         Thread.Sleep(50);
 
         var downstream = new TestFillDataModel {
@@ -257,7 +260,7 @@ public class VersioningAndFreshnessTests : IDisposable {
         var refreshedUpstream = client.Get(upstreamId);
         refreshedUpstream!.Metadata!.LastRefreshed!.Value.Should().BeOnOrAfter(futureForceRefresh.Value);
         // Upstream Version did NOT change
-        refreshedUpstream.Metadata.Version.Should().Be(upstream.Metadata!.Version);
+        refreshedUpstream.Metadata.Version.Should().Be(originalUpstreamVersion);
 
         // Refresh downstream: upstream version has not changed, so downstream skips updating upstream region
         var refreshedDownstream = client.Get(downstreamId, refresh: true);
