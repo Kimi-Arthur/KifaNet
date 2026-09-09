@@ -7,6 +7,7 @@
 - When invalidating cached data using `ForceRefreshBefore` on a `DataModel` due to code logic updates, set or bump the timestamp at the time of **deployment/release** (not during development). Setting it during development causes any records refreshed or populated in production between development and deployment to have newer versions and thus bypass invalidation.
 ## Release & Git Rules
 - Strictly DO NOT update project versions, publish packages to NuGet, or perform `git commit`/`git push` unless explicitly requested by the user in that specific query; a commit/release request applies strictly to the single turn in which it was asked and NEVER carries over to subsequent turns.
+- When explicitly requested by the user to `commit` or `release`, the new changes/commits MUST be pushed to remote (`git push`). Do NOT push to remote when committing changes under any other circumstances.
 
 ## Configuration Management Rules
 - Strictly DO NOT modify, update, commit, or push configuration repositories or files (e.g., `Configs` repository, `/etc/kimily/`, `/var/server/Configs`) unless explicitly requested by the user. If a configuration change seems necessary, ask for explicit approval first.

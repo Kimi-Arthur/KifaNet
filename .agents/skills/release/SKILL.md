@@ -1,11 +1,11 @@
 ---
 name: release
-description: Auto-advance 3-part project versions (MAJOR for new commands, MINOR for new options/flags, PATCH for fixes/improvements), commit, and publish binaries without requiring confirmation once explicitly triggered.
+description: Auto-advance 3-part project versions (MAJOR for new commands, MINOR for new options/flags, PATCH for fixes/improvements), commit, push to remote, and publish binaries without requiring confirmation once explicitly triggered.
 ---
 
 # Release Automation Skill
 
-Automate version incrementing, git commits, and package/tool publishing following KifaNet's 3-part versioning rules (`MAJOR.MINOR.PATCH`). Once explicitly triggered by the user in a turn (e.g. `release`), execute the release workflow directly without prompting for additional confirmation.
+Automate version incrementing, git commits, pushing to remote, and package/tool publishing following KifaNet's 3-part versioning rules (`MAJOR.MINOR.PATCH`). Once explicitly triggered by the user in a turn (e.g. `release`), execute the release workflow directly without prompting for additional confirmation.
 
 ## 3-Part Versioning Rules
 
@@ -40,9 +40,10 @@ Automate version incrementing, git commits, and package/tool publishing followin
    * Follow format: `release(<tool_name> <new_version>): <detailed description of the release content/changes>`
    * Example: `release(filex 5.6.4): interactive multi-source file linking`
 
-5. **Execute Version Bump, Commit & Publish Directly**:
+5. **Execute Version Bump, Commit, Push & Publish Directly**:
    * Update `<Version>X.Y.Z</Version>` in the target `.csproj`.
    * Stage the modified `.csproj` and commit with the drafted release message (`git add <path_to_csproj> && git commit -m "..."`).
+   * Push the commit(s) to the remote repository: `git push`.
    * Run release publication script (e.g., `./scripts/publish.sh <path_to_csproj>`).
    * Verify output and report publication status.
 
@@ -53,4 +54,5 @@ Automate version incrementing, git commits, and package/tool publishing followin
      * **Change Type**: `<MAJOR | MINOR | PATCH>` (`<reason>`)
      * **Version Bump**: `<current_version>` -> `<new_version>`
      * **Commit Message**: `release(<tool_name> <new_version>): <description>`
+     * **Push Status**: Succeeded (`git push`)
      * **Publication**: Succeeded / output details

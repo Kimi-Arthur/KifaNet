@@ -1,11 +1,11 @@
 ---
 name: commit
-description: Stage a specific set of files and create an atomic git commit with a proper Conventional Commits message.
+description: Stage a specific set of files, create an atomic git commit with a proper Conventional Commits message, and push to remote.
 ---
 
 # Selective Commit Skill
 
-Stage a specific subset of files and create a focused, atomic git commit following Conventional Commits format (`<type>(<scope>): <description>`).
+Stage a specific subset of files, create a focused, atomic git commit following Conventional Commits format (`<type>(<scope>): <description>`), and push to remote.
 
 ## Workflow Steps
 
@@ -34,6 +34,9 @@ Stage a specific subset of files and create a focused, atomic git commit followi
    * Stage ONLY the specified files: `git add <file1> <file2> ...`
    * Commit with the drafted message: `git commit -m "<type>(<scope>): <description>"`
 
-5. **Verify**:
-   * Run `git status` to verify that ONLY the target files were committed and remaining files stay uncommitted.
-   * Report the commit SHA, message, and committed files to the user.
+5. **Push to Remote**:
+   * Push the commit to the remote repository: `git push`
+
+6. **Verify & Report**:
+   * Run `git status` to verify that ONLY the target files were committed and pushed, and remaining files stay uncommitted.
+   * Report the commit SHA, message, committed files, and push status to the user.
