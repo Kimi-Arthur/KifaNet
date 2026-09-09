@@ -11,7 +11,7 @@ using NLog;
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("cp", HelpText = "Copy FILE1 to FILE2. The files will be linked.")]
-class CopyCommand : KifaCommand {
+public class CopyCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Min = 2, MetaName = "FILES", MetaValue = "STRING", Required = true,
@@ -36,10 +36,10 @@ class CopyCommand : KifaCommand {
         return ById ? ExecuteById() : ExecuteLocal();
     }
 
-    int ExecuteLocal() {
+    public List<(KifaFile SourceFile, KifaFile DestinationFile)> GetLocalFileCopyPairs() {
         var destination = new KifaFile(Destination);
         var sourceItems = Sources.Select(s => new KifaFile(s)).ToList();
-        var isDestFolder = Destination.EndsWith('/') || sourceItems.Count > 1 || destination.IsFolder();
+        var isDestFolder = Destination.EndsWith('/') || sourceItems.Count > 1;
 
         var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
@@ -56,7 +56,8 @@ class CopyCommand : KifaCommand {
 
                 foreach (var childFile in childFiles) {
                     var relativePath = childFile.Id[sourceFolderId.Length..];
-                    var targetFile = new KifaFile($"{baseDestId.TrimEnd('/')}/{relativePath.TrimStart('/')}");
+                    var targetFile =
+                        new KifaFile($"{baseDestId.TrimEnd('/')}/{relativePath.TrimStart('/')}");
                     localFileCopyPairs.Add((childFile, targetFile));
                 }
             } else {
@@ -64,6 +65,12 @@ class CopyCommand : KifaCommand {
                 localFileCopyPairs.Add((sourceItem, targetFile));
             }
         }
+
+        return localFileCopyPairs;
+    }
+
+    int ExecuteLocal() {
+        var localFileCopyPairs = GetLocalFileCopyPairs();
 
         var selected = SelectMany(localFileCopyPairs,
             pair => ShowSize
@@ -84,18 +91,16 @@ class CopyCommand : KifaCommand {
         return LogSummary();
     }
 
-    int ExecuteById() {
+    public List<(string SourceId, string DestinationId)> GetIdFileCopyPairs() {
         var destinationPath = Destination.TrimEnd('/');
         var sourceIds = Sources.Select(s => s.TrimEnd('/')).ToList();
 
         if (sourceIds.Any(s => !s.StartsWith('/')) || !destinationPath.StartsWith('/')) {
             Logger.Error("You should use absolute file path for all arguments.");
-            return 1;
+            return [];
         }
 
-        var destFiles = FileInformation.Client.ListFolder(destinationPath, false);
-        var isDestFolder = Destination.EndsWith('/') || sourceIds.Count > 1 ||
-                           destFiles.Any(f => f != destinationPath);
+        var isDestFolder = Destination.EndsWith('/') || sourceIds.Count > 1;
         var idFileCopyPairs = new List<(string SourceId, string DestinationId)>();
 
         foreach (var sourceId in sourceIds) {
@@ -114,6 +119,20 @@ class CopyCommand : KifaCommand {
                 idFileCopyPairs.Add((sourceId, destinationId));
             }
         }
+
+        return idFileCopyPairs;
+    }
+
+    int ExecuteById() {
+        var destinationPath = Destination.TrimEnd('/');
+        var sourceIds = Sources.Select(s => s.TrimEnd('/')).ToList();
+
+        if (sourceIds.Any(s => !s.StartsWith('/')) || !destinationPath.StartsWith('/')) {
+            Logger.Error("You should use absolute file path for all arguments.");
+            return 1;
+        }
+
+        var idFileCopyPairs = GetIdFileCopyPairs();
 
         var selected = SelectMany(idFileCopyPairs,
             pair => $"{pair.SourceId}\n=>\t{pair.DestinationId}", "files to link");
@@ -137,7 +156,8 @@ class CopyCommand : KifaCommand {
             if (destinationFile.Exists()) {
                 if (sourceFile.IsLinked(destinationFile)) {
                     var linkResult = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
-                    if (linkResult.Status != KifaActionStatus.OK && linkResult.Status != KifaActionStatus.Skipped) {
+                    if (linkResult.Status != KifaActionStatus.OK &&
+                        linkResult.Status != KifaActionStatus.Skipped) {
                         return linkResult;
                     }
 
@@ -155,7 +175,8 @@ class CopyCommand : KifaCommand {
 
                 if (isSameContent) {
                     var linkResult = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
-                    if (linkResult.Status != KifaActionStatus.OK && linkResult.Status != KifaActionStatus.Skipped) {
+                    if (linkResult.Status != KifaActionStatus.OK &&
+                        linkResult.Status != KifaActionStatus.Skipped) {
                         return linkResult;
                     }
 

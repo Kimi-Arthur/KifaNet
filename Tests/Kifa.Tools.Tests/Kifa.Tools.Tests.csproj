@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Kifa\Kifa.csproj" />
     <ProjectReference Include="..\..\src\Kifa.Tools\Kifa.Tools.csproj" />
+    <ProjectReference Include="..\..\src\Kifa.Tools.FileUtil\Kifa.Tools.FileUtil.csproj" />
   </ItemGroup>
 
 </Project>
