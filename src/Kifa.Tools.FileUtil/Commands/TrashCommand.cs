@@ -61,7 +61,8 @@ class TrashCommand : KifaCommand {
             }
 
             var trashPath =
-                $"/Trash/{Category.Trim('/')}/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}";
+                $"/Trash/{Category.Trim('/')}/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}"
+                    .NormalizeFilePath();
 
             var selectedFiles = SelectMany(foundFiles,
                 file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),

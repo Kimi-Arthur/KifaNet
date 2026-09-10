@@ -141,5 +141,18 @@ public class PathExtensionsTests {
 
         // Safe characters mapping preserved across path segments
         "dir: 1/file? 2".NormalizeFilePath().Should().Be("dir：1/file？ 2");
+
+        // Empty segments and duplicate slashes are skipped
+        "/Trash//2026-09-10_file_reason".NormalizeFilePath()
+            .Should().Be("/Trash/2026-09-10_file_reason");
+        "/Trash/Anime/2026-09-10_file_reason".NormalizeFilePath()
+            .Should().Be("/Trash/Anime/2026-09-10_file_reason");
+        "//Trash///Anime////file.mp4".NormalizeFilePath()
+            .Should().Be("/Trash/Anime/file.mp4");
+        "Trash//file.mp4".NormalizeFilePath()
+            .Should().Be("Trash/file.mp4");
+        "".NormalizeFilePath().Should().Be("");
+        "/".NormalizeFilePath().Should().Be("/");
+        "///".NormalizeFilePath().Should().Be("/");
     }
 }

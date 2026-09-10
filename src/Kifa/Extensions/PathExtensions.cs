@@ -152,7 +152,12 @@ public static class PathExtensions {
     public static string NormalizeFilePath(this string path,
         int reservedFileBytes = 0,
         int reservedFolderBytes = 0) {
-        var segments = path.Split('/');
+        var isAbsolute = path.StartsWith('/');
+        var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (segments.Length == 0) {
+            return isAbsolute ? "/" : "";
+        }
+
         var normalizedSegments = new string[segments.Length];
         for (var i = 0; i < segments.Length - 1; i++) {
             normalizedSegments[i] =
@@ -160,13 +165,12 @@ public static class PathExtensions {
                     maxByteCount: MaxPathSegmentByteCount);
         }
 
-        if (segments.Length > 0) {
-            normalizedSegments[^1] =
-                segments[^1].NormalizeFileName(reservedBytes: reservedFileBytes,
-                    maxByteCount: MaxFileNameByteCount);
-        }
+        normalizedSegments[^1] =
+            segments[^1].NormalizeFileName(reservedBytes: reservedFileBytes,
+                maxByteCount: MaxFileNameByteCount);
 
-        return string.Join("/", normalizedSegments);
+        var joined = string.Join("/", normalizedSegments);
+        return isAbsolute ? $"/{joined}" : joined;
     }
 
     // Chops the string to fit within maxByteCount UTF-8 bytes along Rune boundaries, appending a trailing '~' (1 byte) if truncated.
