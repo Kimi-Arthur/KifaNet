@@ -173,6 +173,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     static readonly Regex NormalizedWebUriPattern = new("(http|https|ftp)://.*");
 
+    static readonly Regex ConsecutiveSlashesPattern = new("/{2,}");
+
     // Supported uri examples:
     //   - Canonical paths (conversion goal):
     //     - baidu:Pimix_1/a/b/c/d.txt.v1
@@ -185,8 +187,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     //     - ~/a.txt => local:some_home/a.txt
     //     - ../a.txt => local:some_cell/path/to/parent/a.txt
     static string NormalizeUri(string uri) {
-        if (NormalizedWebUriPattern.IsMatch(uri) || NormalizedFileUriPattern.IsMatch(uri)) {
+        if (NormalizedWebUriPattern.IsMatch(uri)) {
             return uri;
+        }
+
+        if (NormalizedFileUriPattern.IsMatch(uri)) {
+            var firstSlash = uri.IndexOf('/');
+            var host = uri[..firstSlash];
+            var path = ConsecutiveSlashesPattern.Replace(uri[firstSlash..], "/");
+            return $"{host}{path}";
         }
 
         // Local path, convert to canonical one.

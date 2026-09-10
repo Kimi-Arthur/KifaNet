@@ -50,6 +50,35 @@ public class KifaFileTests : IDisposable {
     }
 
     [Fact]
+    public void IsFolder_DirectoryWithMultipleTrailingSlashes_ReturnsTrue() {
+        var subDir = $"{tempDir}/test_folder/nested";
+        Directory.CreateDirectory(subDir);
+
+        var file = new KifaFile($"local:test_temp/test_folder/nested///", fileInfo: new FileInformation());
+        Assert.True(file.IsFolder());
+        Assert.False(file.Exists());
+        Assert.Equal("nested", file.Name);
+        Assert.Equal("/test_folder/nested", file.Path);
+        Assert.Equal("/test_folder/nested", file.Id);
+        Assert.Equal("/test_folder", file.ParentPath);
+        Assert.Equal(new[] { "test_folder", "nested" }, file.PathSegments);
+        Assert.Equal("local:test_temp/test_folder/nested", file.ToString());
+    }
+
+    [Fact]
+    public void Root_WithMultipleTrailingSlashes_NormalizesCorrectly() {
+        var root = new KifaFile("local:test_temp///", fileInfo: new FileInformation());
+        Assert.Equal("/", root.Path);
+        Assert.Equal("/", root.Id);
+        Assert.Equal("", root.Name);
+        Assert.Equal("local:test_temp/", root.ToString());
+
+        var child = root.GetFile("file.txt", fileInfo: new FileInformation());
+        Assert.Equal("/file.txt", child.Path);
+        Assert.Equal("local:test_temp/file.txt", child.ToString());
+    }
+
+    [Fact]
     public void IsFolder_File_ReturnsFalse() {
         var filePath = $"{tempDir}/test_file.txt";
         File.WriteAllText(filePath, "hello world");
@@ -97,6 +126,29 @@ public class KifaFileTests : IDisposable {
         Assert.Equal("/file.txt", child.Path);
         Assert.Equal("/file.txt", child.Id);
         Assert.Equal("local:test_temp/file.txt", child.ToString());
+    }
+
+    [Fact]
+    public void NormalizeUri_CollapsesConsecutiveSlashes_InFileUri() {
+        var file = new KifaFile("local:test_temp//folder///sub//file.txt", fileInfo: new FileInformation());
+
+        Assert.Equal("/folder/sub/file.txt", file.Path);
+        Assert.Equal("/folder/sub/file.txt", file.Id);
+        Assert.Equal("file.txt", file.Name);
+        Assert.Equal("/folder/sub", file.ParentPath);
+        Assert.Equal(new[] { "folder", "sub", "file.txt" }, file.PathSegments);
+        Assert.Equal("local:test_temp/folder/sub/file.txt", file.ToString());
+    }
+
+    [Fact]
+    public void NormalizeUri_CollapsesConsecutiveSlashes_InLocalPath() {
+        var localPath = $"{tempDir}//folder///sub//file.txt";
+        var file = new KifaFile(localPath, fileInfo: new FileInformation());
+
+        Assert.Equal("/folder/sub/file.txt", file.Path);
+        Assert.Equal("/folder/sub/file.txt", file.Id);
+        Assert.Equal("file.txt", file.Name);
+        Assert.Equal("local:test_temp/folder/sub/file.txt", file.ToString());
     }
 
     [Fact]
