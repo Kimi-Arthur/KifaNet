@@ -93,7 +93,8 @@ public partial class KifaFile {
         if (CheckedTargets.Contains(targetKey)) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
-                Message = $"Destination {destination} is already uploaded."
+                Message =
+                    $"Destination {destination} is already uploaded (check skipped as target is already checked)."
             };
         }
 
