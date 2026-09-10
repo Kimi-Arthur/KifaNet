@@ -24,7 +24,14 @@ public partial class KifaFile {
         try {
             // We don't really need to check source, but we need the sha256 and size to continue.
             Add(false);
-            Logger.Debug($"Checked source {this}: sha256={FileInfo!.Sha256}, size={FileInfo.Size}");
+            if (FileInfo?.Sha256 == null || FileInfo?.Size == null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message = $"Failed to check source {this}: Sha256 or Size is missing."
+                };
+            }
+
+            Logger.Debug($"Checked source {this}: sha256={FileInfo.Sha256}, size={FileInfo.Size}");
         } catch (IOException ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
@@ -66,6 +73,8 @@ public partial class KifaFile {
         };
     }
 
+    static readonly HashSet<(string Sha256, string Target)> CheckedTargets = new();
+
     KifaActionResult UploadOneFile(CloudTarget target, bool deleteSource, bool skipVerify,
         bool skipRegistered) {
         string destinationLocation;
@@ -75,6 +84,16 @@ public partial class KifaFile {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Failed to create location to upload {this} to {target}: {ex}"
+            };
+        }
+
+        var destination = new KifaFile(destinationLocation);
+
+        var targetKey = (FileInfo.Checked().Sha256.Checked(), target.ToString());
+        if (CheckedTargets.Contains(targetKey)) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = $"Destination {destination} is already uploaded."
             };
         }
 
@@ -90,10 +109,9 @@ public partial class KifaFile {
             }
         }
 
-        var destination = new KifaFile(destinationLocation);
-
         try {
             CheckDestination(destination, skipVerify);
+            CheckedTargets.Add(targetKey);
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
                 Message = $"Destination {destination} is already uploaded."
@@ -117,6 +135,7 @@ public partial class KifaFile {
 
         try {
             CheckDestination(destination, skipVerify);
+            CheckedTargets.Add(targetKey);
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
                 Message =
