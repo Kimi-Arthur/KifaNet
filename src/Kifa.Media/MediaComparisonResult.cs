@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kifa;
 
 namespace Kifa.Media;
 
@@ -32,43 +34,125 @@ public class MediaComparisonResult {
     public List<MetadataFieldDifference> AllDifferences { get; set; } = [];
 
     public string ToOneLineString(bool allFields = false) {
+        var sections = new List<string>();
+
+        // 1. Content / Match status
         if (IsBitExactMatch) {
-            return "Bit-Exact: Files are 100% bit-exact identical.";
-        }
-
-        var diffsToShow = IsContentMatch || allFields ? AllDifferences : [];
-        var diffSummary = diffsToShow.Count > 0
-            ? string.Join(", ", diffsToShow.Select(FormatDiff))
-            : "";
-
-        if (IsContentMatch) {
+            sections.Add("BIT-EXACT".Info());
+        } else if (IsContentMatch) {
             var levelDesc = MatchLevel switch {
-                ContentMatchLevel.BitstreamMatch => "Bitstream Match",
-                ContentMatchLevel.DecodedMatch => "Decoded Match",
-                _ => "Content Match"
+                ContentMatchLevel.BitstreamMatch => "BITSTREAM MATCH",
+                ContentMatchLevel.DecodedMatch => "DECODED MATCH",
+                _ => "CONTENT MATCH"
             };
-
-            return diffsToShow.Count > 0
-                ? $"{levelDesc}: {diffSummary}"
-                : $"{levelDesc}: All metadata fields match.";
+            sections.Add(levelDesc.Info());
+        } else {
+            var mismatched = Streams.Where(s => !s.IsMatch)
+                .Select(s => $"Stream #{s.Index} [{s.StreamType}]")
+                .ToList();
+            var mismatchDesc = mismatched.Count > 0
+                ? $"NO MATCH ({string.Join(", ", mismatched)})"
+                : "NO MATCH";
+            sections.Add(mismatchDesc.Fatal());
         }
 
-        var mismatchedStreams = Streams.Where(s => !s.IsMatch)
-            .Select(s => $"Stream #{s.Index} [{s.StreamType}]")
-            .ToList();
+        // 2. Integrity / Validity status
+        if (File1Valid && File2Valid) {
+            sections.Add("Integrity: Valid".Info());
+        } else if (!File1Valid && !File2Valid) {
+            var err1 = SummarizeErrors(File1Errors);
+            var err2 = SummarizeErrors(File2Errors);
+            var errDesc = err1 == err2 ? err1 : $"F1: {err1}; F2: {err2}";
+            sections.Add($"Integrity: Both INVALID ({errDesc})".Fatal());
+        } else if (!File1Valid) {
+            sections.Add($"Integrity: File 1 INVALID ({SummarizeErrors(File1Errors)})".Fatal());
+        } else {
+            sections.Add($"Integrity: File 2 INVALID ({SummarizeErrors(File2Errors)})".Fatal());
+        }
 
-        var mismatchDesc = mismatchedStreams.Count > 0
-            ? $"Mismatched {string.Join(", ", mismatchedStreams)}"
-            : "Media streams differ";
+        // 3. Metadata / Details status
+        if (IsBitExactMatch) {
+            sections.Add("100% bit-exact identical".Info());
+        } else if (IsContentMatch) {
+            if (AllDifferences.Count == 0) {
+                sections.Add("Metadata: Match".Info());
+            } else {
+                var diffList = AllDifferences.Take(3).Select(FormatDiffSummary).ToList();
+                var diffStr = string.Join(", ", diffList);
+                if (AllDifferences.Count > 3) {
+                    diffStr += ", ...";
+                }
 
-        return diffsToShow.Count > 0
-            ? $"No Match: {mismatchDesc}; Diffs: {diffSummary}"
-            : $"No Match: {mismatchDesc}";
+                sections.Add($"Diffs ({AllDifferences.Count}): {diffStr}".Warn());
+            }
+        } else if (allFields) {
+            if (AllDifferences.Count == 0) {
+                sections.Add("Metadata: Match".Info());
+            } else {
+                var diffList = AllDifferences.Take(3).Select(FormatDiffSummary).ToList();
+                var diffStr = string.Join(", ", diffList);
+                if (AllDifferences.Count > 3) {
+                    diffStr += ", ...";
+                }
+
+                sections.Add($"Diffs ({AllDifferences.Count}): {diffStr}".Warn());
+            }
+        }
+
+        return string.Join(" | ", sections);
     }
 
-    static string FormatDiff(MetadataFieldDifference diff) {
-        var v1 = diff.File1Value != null ? $"\"{diff.File1Value}\"" : "(missing)";
-        var v2 = diff.File2Value != null ? $"\"{diff.File2Value}\"" : "(missing)";
-        return $"{diff.FullName}: {v1} vs {v2}";
+    static string SummarizeErrors(List<string> errors) {
+        if (errors.Count == 0) {
+            return "Corrupted";
+        }
+
+        var summaries = new List<string>();
+        foreach (var err in errors) {
+            if (err.Contains("EOI", StringComparison.OrdinalIgnoreCase)) {
+                if (!summaries.Contains("Missing JPEG EOI")) {
+                    summaries.Add("Missing JPEG EOI");
+                }
+            } else if (err.Contains("CRC mismatch", StringComparison.OrdinalIgnoreCase)) {
+                if (!summaries.Contains("CRC mismatch")) {
+                    summaries.Add("CRC mismatch");
+                }
+            } else if (err.Contains("overread", StringComparison.OrdinalIgnoreCase)) {
+                if (!summaries.Contains("Truncated bitstream")) {
+                    summaries.Add("Truncated bitstream");
+                }
+            } else if (err.Contains("invalid len", StringComparison.OrdinalIgnoreCase)) {
+                if (!summaries.Contains("Invalid segment length")) {
+                    summaries.Add("Invalid segment length");
+                }
+            }
+        }
+
+        if (summaries.Count > 0) {
+            return string.Join(", ", summaries);
+        }
+
+        var first = errors[0];
+        return first.Length > 35 ? first[..32] + "..." : first;
+    }
+
+    static string FormatDiffSummary(MetadataFieldDifference diff) {
+        if (diff.File1Value == null && diff.File2Value != null) {
+            return $"{diff.Name} (missing in File 1)";
+        }
+
+        if (diff.File1Value != null && diff.File2Value == null) {
+            return $"{diff.Name} (missing in File 2)";
+        }
+
+        return $"{diff.Name} (\"{Truncate(diff.File1Value)}\" vs \"{Truncate(diff.File2Value)}\")";
+    }
+
+    static string Truncate(string? val, int maxLen = 15) {
+        if (val == null) {
+            return "";
+        }
+
+        return val.Length <= maxLen ? val : val[..(maxLen - 3)] + "...";
     }
 }

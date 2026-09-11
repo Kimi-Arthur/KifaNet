@@ -187,7 +187,7 @@ public class MediaFileComparatorTests : IDisposable {
             IsContentMatch = true,
             MatchLevel = ContentMatchLevel.BitExact
         };
-        exactResult.ToOneLineString().Should().Be("Bit-Exact: Files are 100% bit-exact identical.");
+        exactResult.ToOneLineString().Should().Be("BIT-EXACT | Integrity: Valid | 100% bit-exact identical");
 
         var bitstreamResultWithDiff = new MediaComparisonResult {
             IsBitExactMatch = false,
@@ -209,7 +209,7 @@ public class MediaFileComparatorTests : IDisposable {
             ]
         };
         bitstreamResultWithDiff.ToOneLineString().Should().Be(
-            "Bitstream Match: [Format Tags] title: (missing) vs \"NewTitle\", [Stream #0 (video)] bit_rate: \"1000\" vs \"2000\"");
+            "BITSTREAM MATCH | Integrity: Valid | Diffs (2): title (missing in File 1), bit_rate (\"1000\" vs \"2000\")");
 
         var bitstreamResultNoDiff = new MediaComparisonResult {
             IsBitExactMatch = false,
@@ -217,7 +217,18 @@ public class MediaFileComparatorTests : IDisposable {
             MatchLevel = ContentMatchLevel.BitstreamMatch,
             AllDifferences = []
         };
-        bitstreamResultNoDiff.ToOneLineString().Should().Be("Bitstream Match: All metadata fields match.");
+        bitstreamResultNoDiff.ToOneLineString().Should().Be("BITSTREAM MATCH | Integrity: Valid | Metadata: Match");
+
+        var corruptedResult = new MediaComparisonResult {
+            IsBitExactMatch = false,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.DecodedMatch,
+            File1Valid = false,
+            File1Errors = ["Missing JPEG EOI marker (0xFFD9); file is corrupted or truncated."],
+            AllDifferences = []
+        };
+        corruptedResult.ToOneLineString().Should().Be(
+            "DECODED MATCH | Integrity: File 1 INVALID (Missing JPEG EOI) | Metadata: Match");
 
         var noMatchResult = new MediaComparisonResult {
             IsBitExactMatch = false,
@@ -244,8 +255,8 @@ public class MediaFileComparatorTests : IDisposable {
                 }
             ]
         };
-        noMatchResult.ToOneLineString().Should().Be("No Match: Mismatched Stream #0 [video]");
+        noMatchResult.ToOneLineString().Should().Be("NO MATCH (Stream #0 [video]) | Integrity: Valid");
         noMatchResult.ToOneLineString(allFields: true).Should().Be(
-            "No Match: Mismatched Stream #0 [video]; Diffs: [Format Tags] title: \"Old\" vs \"New\"");
+            "NO MATCH (Stream #0 [video]) | Integrity: Valid | Diffs (1): title (\"Old\" vs \"New\")");
     }
 }
