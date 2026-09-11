@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Kifa.Tools.Tests;
 
+[Collection("FileStorageTests")]
 public class CopyCommandTests : IDisposable {
     readonly string tempDir;
     readonly FileInformationServiceClient originalClient;

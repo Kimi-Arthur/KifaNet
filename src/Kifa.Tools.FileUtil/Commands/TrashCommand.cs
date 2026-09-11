@@ -11,7 +11,7 @@ using NLog;
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("trash", HelpText = "Move the file to trash.")]
-class TrashCommand : KifaCommand {
+public class TrashCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target files to trash.")]
@@ -35,6 +35,29 @@ class TrashCommand : KifaCommand {
     public string DateString {
         get => Late.Get(field);
         set => Late.Set(ref field, value);
+    }
+
+    public static string GetMostCommonBasePath(List<KifaFile> files) {
+        if (files.Count == 0) {
+            return "";
+        }
+
+        var parentSegmentsList = files
+            .Select(f => f.ParentPath.Split('/', StringSplitOptions.RemoveEmptyEntries)).ToList();
+
+        var commonSegments = new List<string>();
+        var firstSegments = parentSegmentsList[0];
+
+        for (var i = 0; i < firstSegments.Length; i++) {
+            var segment = firstSegments[i];
+            if (parentSegmentsList.All(segments => i < segments.Length && segments[i] == segment)) {
+                commonSegments.Add(segment);
+            } else {
+                break;
+            }
+        }
+
+        return commonSegments.Count > 0 ? commonSegments[^1] : files[0].Name;
     }
 
     public override int Execute(KifaTask? task = null) {
@@ -61,7 +84,7 @@ class TrashCommand : KifaCommand {
             }
 
             var trashPath =
-                $"/Trash/{Category.Trim('/')}/{DateString}_{new KifaFile(fileNames[0]).Name}_{Reason}"
+                $"/Trash/{Category.Trim('/')}/{DateString}_{GetMostCommonBasePath(foundFiles)}_{Reason}"
                     .NormalizeFilePath();
 
             var selectedFiles = SelectMany(foundFiles,

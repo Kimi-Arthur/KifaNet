@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Kifa.Tools.Tests;
 
+[Collection("FileStorageTests")]
 public class KifaFileTests : IDisposable {
     readonly string tempDir;
 
