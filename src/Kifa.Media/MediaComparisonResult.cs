@@ -9,6 +9,12 @@ public class MediaComparisonResult {
     public long File1Size { get; set; }
     public long File2Size { get; set; }
 
+    // File validity & integrity
+    public bool File1Valid { get; set; } = true;
+    public bool File2Valid { get; set; } = true;
+    public List<string> File1Errors { get; set; } = [];
+    public List<string> File2Errors { get; set; } = [];
+
     // 0) Whether they match bit by bit
     public bool IsBitExactMatch { get; set; }
     public string? File1Sha256 { get; set; }

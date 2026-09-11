@@ -70,8 +70,34 @@ public class CompareCommand : KifaCommand {
         Console.WriteLine($"File 2: {result.File2Path} ({result.File2Size:N0} bytes)");
         Console.WriteLine();
 
-        // 0) Bit-by-bit match
-        Console.WriteLine("[0] Bit-by-Bit Match:");
+        // 0) File Integrity / Validity
+        Console.WriteLine("[0] File Integrity / Validity:");
+        if (result.File1Valid && result.File2Valid) {
+            Console.WriteLine("    VALID: Both files passed structural and decoding integrity checks.");
+        } else {
+            if (!result.File1Valid) {
+                Console.WriteLine($"    File 1 INVALID ({result.File1Errors.Count} issue(s)):");
+                foreach (var err in result.File1Errors) {
+                    Console.WriteLine($"        - {err}");
+                }
+            } else {
+                Console.WriteLine("    File 1: VALID");
+            }
+
+            if (!result.File2Valid) {
+                Console.WriteLine($"    File 2 INVALID ({result.File2Errors.Count} issue(s)):");
+                foreach (var err in result.File2Errors) {
+                    Console.WriteLine($"        - {err}");
+                }
+            } else {
+                Console.WriteLine("    File 2: VALID");
+            }
+        }
+
+        Console.WriteLine();
+
+        // 1) Bit-by-bit match
+        Console.WriteLine("[1] Bit-by-Bit Match:");
         if (result.IsBitExactMatch) {
             Console.WriteLine("    MATCH: Files are 100% bit-exact identical.");
             Console.WriteLine($"    SHA-256: {result.File1Sha256}");
@@ -83,8 +109,8 @@ public class CompareCommand : KifaCommand {
 
         Console.WriteLine();
 
-        // 1) Stream / Content match
-        Console.WriteLine("[1] Stream / Content Match:");
+        // 2) Stream / Content match
+        Console.WriteLine("[2] Stream / Content Match:");
         if (result.IsContentMatch) {
             var levelDesc = result.MatchLevel switch {
                 ContentMatchLevel.BitExact => "Bit-Exact (Identical files)",
@@ -95,6 +121,11 @@ public class CompareCommand : KifaCommand {
                 _ => "Match"
             };
             Console.WriteLine($"    MATCH: {levelDesc}");
+            if (!result.File1Valid || !result.File2Valid) {
+                Console.WriteLine(
+                    "    WARNING: Content matches, but one or more files have integrity/corruption issues (see [0]).");
+            }
+
             foreach (var stream in result.Streams) {
                 var streamDetails = stream.Details != null ? $" ({stream.Details})" : "";
                 var matchType = stream.IsBitstreamMatch ? "Bitstream" : "Decoded";
@@ -131,8 +162,8 @@ public class CompareCommand : KifaCommand {
 
         Console.WriteLine();
 
-        // 2) If they match, what fields don't
-        Console.WriteLine("[2] Differing Fields:");
+        // 3) Differing Fields
+        Console.WriteLine("[3] Differing Fields:");
         var diffsToShow = result.IsContentMatch || AllFields ? result.AllDifferences : [];
 
         if (result.IsBitExactMatch) {

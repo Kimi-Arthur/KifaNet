@@ -14,6 +14,74 @@ namespace Kifa.Media;
 public static class MediaFileComparator {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
+    public static (bool IsValid, List<string> Errors) Validate(string file)
+        => Validate(new KifaFile(file, fileInfo: new FileInformation()));
+
+    public static (bool IsValid, List<string> Errors) Validate(KifaFile file) {
+        using var context = new KifaFileLocalContext(file);
+        return ValidateLocalPath(context.LocalPath);
+    }
+
+    public static (bool IsValid, List<string> Errors) ValidateLocalPath(string localPath) {
+        var errors = new List<string>();
+
+        // 1. Direct JPEG validation
+        if (File.Exists(localPath)) {
+            try {
+                using var fs = File.OpenRead(localPath);
+                if (fs.Length >= 2) {
+                    var header = new byte[2];
+                    var read = fs.Read(header, 0, 2);
+                    if (read == 2 && header[0] == 0xFF && header[1] == 0xD8) {
+                        // JPEG file detected: verify EOI marker (0xFFD9) at the end (allowing trailing 0x00 / 0xFF padding)
+                        const int maxTailCheck = 4096;
+                        var checkLen = (int) Math.Min(fs.Length, maxTailCheck);
+                        fs.Seek(-checkLen, SeekOrigin.End);
+                        var tail = new byte[checkLen];
+                        var tailRead = fs.Read(tail, 0, checkLen);
+                        var idx = tailRead - 1;
+                        while (idx >= 0 && (tail[idx] == 0x00 || tail[idx] == 0xFF)) {
+                            idx--;
+                        }
+
+                        if (idx < 1 || tail[idx - 1] != 0xFF || tail[idx] != 0xD9) {
+                            errors.Add("Missing JPEG EOI marker (0xFFD9); file is corrupted or truncated.");
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                errors.Add($"Failed to read file: {ex.Message}");
+            }
+        }
+
+        // 2. FFmpeg deep validation with error detection and CRC checks
+        var execution = Executor.Run("ffmpeg",
+            $"-v warning -err_detect explode+crccheck+bitstream+buffer -i \"{localPath}\" -f null -");
+
+        var output = (execution.StandardError != null ? execution.StandardError : "") + "\n" +
+                     (execution.StandardOutput != null ? execution.StandardOutput : "");
+        var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var rawLine in lines) {
+            var line = rawLine.Trim();
+            if (line.Length == 0) {
+                continue;
+            }
+
+            // Filter harmless / benign warnings
+            if (line.Contains("unable to attach displaymatrix", StringComparison.OrdinalIgnoreCase) ||
+                line.Contains("deprecated pixel format used", StringComparison.OrdinalIgnoreCase)) {
+                continue;
+            }
+
+            errors.Add(line);
+        }
+
+        errors = errors.Distinct().ToList();
+        var isValid = errors.Count == 0 && execution.ExitCode == 0;
+        return (isValid, errors);
+    }
+
     public static MediaComparisonResult Compare(string file1, string file2, bool deep = false)
         => Compare(new KifaFile(file1, fileInfo: new FileInformation()),
             new KifaFile(file2, fileInfo: new FileInformation()), deep: deep);
@@ -49,6 +117,12 @@ public static class MediaFileComparator {
             result.IsBitExactMatch = true;
             result.IsContentMatch = true;
             result.MatchLevel = ContentMatchLevel.BitExact;
+            using var context = new KifaFileLocalContext(file1);
+            var (valid, errors) = ValidateLocalPath(context.LocalPath);
+            result.File1Valid = valid;
+            result.File1Errors = errors;
+            result.File2Valid = valid;
+            result.File2Errors = [..errors];
             return result;
         }
 
@@ -56,6 +130,13 @@ public static class MediaFileComparator {
 
         using var context1 = new KifaFileLocalContext(file1);
         using var context2 = new KifaFileLocalContext(file2);
+
+        var (valid1, errors1) = ValidateLocalPath(context1.LocalPath);
+        var (valid2, errors2) = ValidateLocalPath(context2.LocalPath);
+        result.File1Valid = valid1;
+        result.File1Errors = errors1;
+        result.File2Valid = valid2;
+        result.File2Errors = errors2;
 
         // Requirement 1: Stream / content comparison using ffmpeg / ffprobe
         var probe1 = ProbeFile(context1.LocalPath);

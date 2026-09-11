@@ -38,7 +38,81 @@ public class MediaFileComparatorTests : IDisposable {
         result.IsBitExactMatch.Should().BeTrue();
         result.IsContentMatch.Should().BeTrue();
         result.MatchLevel.Should().Be(ContentMatchLevel.BitExact);
+        result.File1Valid.Should().BeTrue();
+        result.File2Valid.Should().BeTrue();
         result.Differences.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CorruptedJpegComparisonTest() {
+        var validFile = Path.Combine(testDir, "valid.jpg");
+        var corruptedFile = Path.Combine(testDir, "corrupted.jpg");
+
+        var execution = Executor.Run("ffmpeg",
+            $"-v error -f lavfi -i testsrc=duration=0.1:size=160x120:rate=1 -frames:v 1 \"{validFile}\" -y");
+        execution.ExitCode.Should().Be(0);
+
+        var bytes = File.ReadAllBytes(validFile);
+        // Truncate or corrupt the last 2 bytes (the FF D9 EOI marker)
+        bytes[^1] = 0x00;
+        bytes[^2] = 0x00;
+        File.WriteAllBytes(corruptedFile, bytes);
+
+        var result = MediaFileComparator.Compare(validFile, corruptedFile);
+
+        result.IsBitExactMatch.Should().BeFalse();
+        result.IsContentMatch.Should().BeTrue();
+        result.File1Valid.Should().BeTrue();
+        result.File1Errors.Should().BeEmpty();
+        result.File2Valid.Should().BeFalse();
+        result.File2Errors.Should().NotBeEmpty();
+        result.File2Errors.Should().Contain(e => e.Contains("EOI"));
+    }
+
+    [Fact]
+    public void CorruptedPngComparisonTest() {
+        var validFile = Path.Combine(testDir, "valid.png");
+        var corruptedFile = Path.Combine(testDir, "corrupted.png");
+
+        var execution = Executor.Run("ffmpeg",
+            $"-v error -f lavfi -i testsrc=duration=0.1:size=160x120:rate=1 -frames:v 1 \"{validFile}\" -y");
+        execution.ExitCode.Should().Be(0);
+
+        var bytes = File.ReadAllBytes(validFile);
+        // Corrupt the last byte (IEND CRC)
+        bytes[^1] ^= 0xFF;
+        File.WriteAllBytes(corruptedFile, bytes);
+
+        var result = MediaFileComparator.Compare(validFile, corruptedFile);
+
+        result.IsBitExactMatch.Should().BeFalse();
+        result.IsContentMatch.Should().BeTrue();
+        result.File1Valid.Should().BeTrue();
+        result.File1Errors.Should().BeEmpty();
+        result.File2Valid.Should().BeFalse();
+        result.File2Errors.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void ValidateDirectlyTest() {
+        var validFile = Path.Combine(testDir, "valid_direct.jpg");
+        var corruptedFile = Path.Combine(testDir, "corrupted_direct.jpg");
+
+        var execution = Executor.Run("ffmpeg",
+            $"-v error -f lavfi -i testsrc=duration=0.1:size=160x120:rate=1 -frames:v 1 \"{validFile}\" -y");
+        execution.ExitCode.Should().Be(0);
+
+        var bytes = File.ReadAllBytes(validFile);
+        bytes[^1] = 0xAA;
+        File.WriteAllBytes(corruptedFile, bytes);
+
+        var (valid1, errors1) = MediaFileComparator.Validate(validFile);
+        valid1.Should().BeTrue();
+        errors1.Should().BeEmpty();
+
+        var (valid2, errors2) = MediaFileComparator.Validate(corruptedFile);
+        valid2.Should().BeFalse();
+        errors2.Should().NotBeEmpty();
     }
 
     [Fact]
