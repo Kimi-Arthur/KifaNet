@@ -30,19 +30,63 @@ public static class KifaConfigs {
         set;
     }
 
+    static readonly object ConfigLock = new();
+    static readonly HashSet<Assembly> ProcessedAssemblies = new();
+    static bool isConfiguring;
+    static bool assemblyLoadHooked;
+
+    static bool ShouldProcessAssembly(Assembly assembly) {
+        var name = assembly.GetName().Name;
+        return name != null && (name.StartsWith("Kifa") || name.StartsWith("Mito"));
+    }
+
     const string LoadPrefix = "# Load ";
 
     public static void LoadFromSystemConfigs(Assembly? assembly = null) {
-        var properties = assembly == null ? GetAllProperties() : GetProperties(assembly);
-        var assemblyName = assembly == null
-            ? string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(ass => ass.FullName))
-            : assembly.FullName;
-        Log($"Configure the following {properties.Count} properties in {assemblyName}:");
-        foreach (var property in properties) {
-            Log($"\t{property.Key}");
-        }
+        lock (ConfigLock) {
+            if (isConfiguring) {
+                return;
+            }
 
-        LoadConfig(ConfigFilePath, properties);
+            if (assembly != null && (!ShouldProcessAssembly(assembly) || ProcessedAssemblies.Contains(assembly))) {
+                return;
+            }
+
+            isConfiguring = true;
+            try {
+                while (true) {
+                    var newAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                        .Where(a => !ProcessedAssemblies.Contains(a) && ShouldProcessAssembly(a))
+                        .ToList();
+                    if (newAssemblies.Count == 0) {
+                        break;
+                    }
+
+                    foreach (var a in newAssemblies) {
+                        ProcessedAssemblies.Add(a);
+                    }
+
+                    var properties = new Dictionary<string, PropertyInfo>();
+                    foreach (var a in newAssemblies) {
+                        foreach (var property in GetProperties(a)) {
+                            properties[property.Key] = property.Value;
+                        }
+                    }
+
+                    if (properties.Count > 0) {
+                        var assemblyNames = string.Join(", ", newAssemblies.Select(ass => ass.FullName));
+                        Log($"Configure the following {properties.Count} properties in {assemblyNames}:");
+                        foreach (var property in properties) {
+                            Log($"\t{property.Key}");
+                        }
+
+                        LoadConfig(ConfigFilePath, properties);
+                    }
+                }
+            } finally {
+                isConfiguring = false;
+            }
+        }
     }
 
     static void LoadConfig(string configPath, Dictionary<string, PropertyInfo> properties) {
@@ -76,6 +120,10 @@ public static class KifaConfigs {
     public static Dictionary<string, PropertyInfo> GetAllProperties() {
         var properties = new Dictionary<string, PropertyInfo>();
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+            if (!ShouldProcessAssembly(assembly)) {
+                continue;
+            }
+
             foreach (var property in GetProperties(assembly)) {
                 properties[property.Key] = property.Value;
             }
@@ -86,11 +134,31 @@ public static class KifaConfigs {
 
     static Dictionary<string, PropertyInfo> GetProperties(Assembly assembly) {
         var properties = new Dictionary<string, PropertyInfo>();
-        foreach (var t in assembly.GetTypes()) {
+        if (!ShouldProcessAssembly(assembly)) {
+            return properties;
+        }
+
+        Type[] types;
+        try {
+            types = assembly.GetTypes();
+        } catch (ReflectionTypeLoadException ex) {
+            types = ex.Types.Where(t => t != null).ToArray()!;
+        } catch {
+            types = Type.EmptyTypes;
+        }
+
+        foreach (var t in types) {
             // TODO: Temp workaround as KifaConfigs itself cannot be properly configured.
             if ((t.Namespace?.StartsWith("Kifa") ?? false) ||
                 (t.Namespace?.StartsWith("Mito") ?? false)) {
-                foreach (var p in t.GetProperties()) {
+                PropertyInfo[] typeProperties;
+                try {
+                    typeProperties = t.GetProperties();
+                } catch {
+                    typeProperties = Array.Empty<PropertyInfo>();
+                }
+
+                foreach (var p in typeProperties) {
                     if (p.GetSetMethod()?.IsStatic == true) {
                         properties[$"{t.Namespace}.{t.Name}.{p.Name}"] = p;
                     }
@@ -159,8 +227,15 @@ public static class KifaConfigs {
         }
 
         loggingNeeded = logEvents;
-        AppDomain.CurrentDomain.AssemblyLoad += (_, eventArgs)
-            => LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+
+        lock (ConfigLock) {
+            if (!assemblyLoadHooked) {
+                AppDomain.CurrentDomain.AssemblyLoad += (_, eventArgs)
+                    => LoadFromSystemConfigs(eventArgs.LoadedAssembly);
+                assemblyLoadHooked = true;
+            }
+        }
+
         LoadFromSystemConfigs();
     }
 
