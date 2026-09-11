@@ -11,25 +11,23 @@ using YamlDotNet.Serialization;
 namespace Kifa.Configs;
 
 public static class KifaConfigs {
-    static string? configFilePath;
-
     static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .IgnoreUnmatchedProperties().Build();
 
     static string ConfigFilePath {
         get {
-            if (configFilePath == null) {
-                configFilePath = Environment.GetEnvironmentVariable("KIFA_CONFIG");
-                if (configFilePath == null) {
+            if (field == null) {
+                field = Environment.GetEnvironmentVariable("KIFA_CONFIG");
+                if (field == null) {
                     Console.WriteLine(
                         "You should specify your config either with environment variable 'KIFA_CONFIG' or via command line argument '--config'.");
                     Environment.Exit(1);
                 }
             }
 
-            return configFilePath;
+            return field;
         }
-        set => configFilePath = value;
+        set;
     }
 
     const string LoadPrefix = "# Load ";
@@ -151,7 +149,9 @@ public static class KifaConfigs {
     }
 
     public static void Init(string? configFile = null, bool logEvents = false) {
-        ConfigFilePath = configFile;
+        if (configFile != null) {
+            ConfigFilePath = configFile;
+        }
 
         // Workaround that YamlDotNet may fail to initialize Regex in TagDirective.
         if (Constants.DefaultTagDirectives.Length != 2) {
