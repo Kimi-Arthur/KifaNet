@@ -220,4 +220,31 @@ public class KifaFileTests : IDisposable {
         Assert.Contains("Path '/some/random/unconfigured/path'", ex.Message);
         Assert.Contains("test_temp", ex.Message);
     }
+
+    [Fact]
+    public void NormalizeUri_WithPwdEnvironmentVariable_ResolvesRelativeToPwd() {
+        var originalPwd = Environment.GetEnvironmentVariable("PWD");
+        try {
+            var apparentFolder = $"{tempDir}/category/Show (2024)";
+            Environment.SetEnvironmentVariable("PWD", apparentFolder);
+
+            var dotFile = new KifaFile(".", fileInfo: new FileInformation());
+            Assert.Equal("/category/Show (2024)", dotFile.Path);
+            Assert.Equal("/category/Show (2024)", dotFile.Id);
+            Assert.Equal("local:test_temp/category/Show (2024)", dotFile.ToString());
+
+            var childFile = new KifaFile("Episode 01.mkv", fileInfo: new FileInformation());
+            Assert.Equal("/category/Show (2024)/Episode 01.mkv", childFile.Path);
+            Assert.Equal("/category/Show (2024)/Episode 01.mkv", childFile.Id);
+            Assert.Equal("local:test_temp/category/Show (2024)/Episode 01.mkv", childFile.ToString());
+
+            var relativeChild = new KifaFile("./sub/extra.mkv", fileInfo: new FileInformation());
+            Assert.Equal("/category/Show (2024)/sub/extra.mkv", relativeChild.Path);
+
+            var parentRelative = new KifaFile("../OtherShow/ep1.mkv", fileInfo: new FileInformation());
+            Assert.Equal("/category/OtherShow/ep1.mkv", parentRelative.Path);
+        } finally {
+            Environment.SetEnvironmentVariable("PWD", originalPwd);
+        }
+    }
 }

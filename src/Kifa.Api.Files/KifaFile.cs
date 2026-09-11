@@ -199,7 +199,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         // Local path, convert to canonical one.
-        var fullPath = System.IO.Path.GetFullPath(uri).Replace('\\', '/');
+        var fullPath = GetLocalFullPath(uri);
         foreach (var p in FileStorageClient.ServerConfigs) {
             if (fullPath.StartsWith(p.Value.Prefix)) {
                 var canonicalPath = $"local:{p.Key}{fullPath[p.Value.Prefix.Length..]}";
@@ -210,6 +210,17 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         throw new FileNotFoundException(
             $"Path '{uri}' (resolved to '{fullPath}') is not under any configured storage server prefix in FileStorageClient.ServerConfigs. Configured prefixes: [{string.Join(", ", FileStorageClient.ServerConfigs.Select(c => $"{c.Key}: {c.Value.Prefix}"))}].");
+    }
+
+    static string GetLocalFullPath(string uri) {
+        if (!System.IO.Path.IsPathRooted(uri)) {
+            var pwd = Environment.GetEnvironmentVariable("PWD");
+            if (pwd != null && System.IO.Path.IsPathRooted(pwd)) {
+                return System.IO.Path.GetFullPath(System.IO.Path.Combine(pwd, uri)).Replace('\\', '/');
+            }
+        }
+
+        return System.IO.Path.GetFullPath(uri).Replace('\\', '/');
     }
 
     static string? GetUri(string id, HashSet<string>? allowedClients) {
