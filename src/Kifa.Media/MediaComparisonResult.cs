@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Kifa.Media;
 
@@ -23,4 +24,45 @@ public class MediaComparisonResult {
 
     // All metadata differences regardless of whether content matches
     public List<MetadataFieldDifference> AllDifferences { get; set; } = [];
+
+    public string ToOneLineString(bool allFields = false) {
+        if (IsBitExactMatch) {
+            return "Bit-Exact: Files are 100% bit-exact identical.";
+        }
+
+        var diffsToShow = IsContentMatch || allFields ? AllDifferences : [];
+        var diffSummary = diffsToShow.Count > 0
+            ? string.Join(", ", diffsToShow.Select(FormatDiff))
+            : "";
+
+        if (IsContentMatch) {
+            var levelDesc = MatchLevel switch {
+                ContentMatchLevel.BitstreamMatch => "Bitstream Match",
+                ContentMatchLevel.DecodedMatch => "Decoded Match",
+                _ => "Content Match"
+            };
+
+            return diffsToShow.Count > 0
+                ? $"{levelDesc}: {diffSummary}"
+                : $"{levelDesc}: All metadata fields match.";
+        }
+
+        var mismatchedStreams = Streams.Where(s => !s.IsMatch)
+            .Select(s => $"Stream #{s.Index} [{s.StreamType}]")
+            .ToList();
+
+        var mismatchDesc = mismatchedStreams.Count > 0
+            ? $"Mismatched {string.Join(", ", mismatchedStreams)}"
+            : "Media streams differ";
+
+        return diffsToShow.Count > 0
+            ? $"No Match: {mismatchDesc}; Diffs: {diffSummary}"
+            : $"No Match: {mismatchDesc}";
+    }
+
+    static string FormatDiff(MetadataFieldDifference diff) {
+        var v1 = diff.File1Value != null ? $"\"{diff.File1Value}\"" : "(missing)";
+        var v2 = diff.File2Value != null ? $"\"{diff.File2Value}\"" : "(missing)";
+        return $"{diff.FullName}: {v1} vs {v2}";
+    }
 }

@@ -30,6 +30,9 @@ public class CompareCommand : KifaCommand {
     [Option("json", HelpText = "Output result as JSON.")]
     public bool JsonOutput { get; set; } = false;
 
+    [Option('1', "one-line", HelpText = "Output result in a single line.")]
+    public bool OneLine { get; set; } = false;
+
     public override int Execute(KifaTask? task = null) {
         var file1 = new KifaFile(File1);
         var file2 = new KifaFile(File2);
@@ -48,6 +51,11 @@ public class CompareCommand : KifaCommand {
 
         if (JsonOutput) {
             Console.WriteLine(JsonConvert.SerializeObject(result, Formatting.Indented));
+            return 0;
+        }
+
+        if (OneLine) {
+            Console.WriteLine(result.ToOneLineString(AllFields));
             return 0;
         }
 

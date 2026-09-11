@@ -105,4 +105,73 @@ public class MediaFileComparatorTests : IDisposable {
         result.MatchLevel.Should().Be(ContentMatchLevel.BitstreamMatch);
         result.Differences.Should().Contain(d => d.Name == "title" && d.File2Value == "KifaTitle");
     }
+
+    [Fact]
+    public void ToOneLineStringTest() {
+        var exactResult = new MediaComparisonResult {
+            IsBitExactMatch = true,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.BitExact
+        };
+        exactResult.ToOneLineString().Should().Be("Bit-Exact: Files are 100% bit-exact identical.");
+
+        var bitstreamResultWithDiff = new MediaComparisonResult {
+            IsBitExactMatch = false,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.BitstreamMatch,
+            AllDifferences = [
+                new MetadataFieldDifference {
+                    Category = "Format Tags",
+                    Name = "title",
+                    File1Value = null,
+                    File2Value = "NewTitle"
+                },
+                new MetadataFieldDifference {
+                    Category = "Stream #0 (video)",
+                    Name = "bit_rate",
+                    File1Value = "1000",
+                    File2Value = "2000"
+                }
+            ]
+        };
+        bitstreamResultWithDiff.ToOneLineString().Should().Be(
+            "Bitstream Match: [Format Tags] title: (missing) vs \"NewTitle\", [Stream #0 (video)] bit_rate: \"1000\" vs \"2000\"");
+
+        var bitstreamResultNoDiff = new MediaComparisonResult {
+            IsBitExactMatch = false,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.BitstreamMatch,
+            AllDifferences = []
+        };
+        bitstreamResultNoDiff.ToOneLineString().Should().Be("Bitstream Match: All metadata fields match.");
+
+        var noMatchResult = new MediaComparisonResult {
+            IsBitExactMatch = false,
+            IsContentMatch = false,
+            MatchLevel = ContentMatchLevel.NoMatch,
+            Streams = [
+                new StreamComparisonResult {
+                    Index = 0,
+                    StreamType = "video",
+                    IsMatch = false
+                },
+                new StreamComparisonResult {
+                    Index = 1,
+                    StreamType = "audio",
+                    IsMatch = true
+                }
+            ],
+            AllDifferences = [
+                new MetadataFieldDifference {
+                    Category = "Format Tags",
+                    Name = "title",
+                    File1Value = "Old",
+                    File2Value = "New"
+                }
+            ]
+        };
+        noMatchResult.ToOneLineString().Should().Be("No Match: Mismatched Stream #0 [video]");
+        noMatchResult.ToOneLineString(allFields: true).Should().Be(
+            "No Match: Mismatched Stream #0 [video]; Diffs: [Format Tags] title: \"Old\" vs \"New\"");
+    }
 }
