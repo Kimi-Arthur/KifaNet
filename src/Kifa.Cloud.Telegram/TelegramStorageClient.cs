@@ -305,6 +305,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 await Task.Delay(TimeSpan.FromSeconds(sleepSeconds));
                 return failures;
             }
+            case RpcException {
+                Code: 401 or 406
+            } or RpcException {
+                Message: "AUTH_KEY_DUPLICATED" or "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED"
+                or "SESSION_EXPIRED"
+            }: {
+                Logger.Error(ex, $"Permanent Telegram authentication error: {ex.Message}. Failing immediately.");
+                throw ex;
+            }
             case WTException {
                 Message: "You must connect to Telegram first"
             }:

@@ -43,6 +43,8 @@ public class
 
 public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAccount>,
     TelegramAccount.ServiceClient {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     public KifaActionResult AddSession(string accountId, byte[] sessionData) {
         lock (GetLock(accountId)) {
             var account = Get(accountId).Checked();
@@ -64,28 +66,49 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
                 var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
                 // Session should already expire/be returned, otherwise RenewSession should be used.
                 if (matchedSession != null && DateTimeOffset.UtcNow >= matchedSession.Reserved) {
-                    account.RefreshIfNeeded(matchedSession);
-                    matchedSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
+                    try {
+                        account.RefreshIfNeeded(matchedSession);
+                        matchedSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
 
-                    Update(account);
-                    return matchedSession;
+                        Update(account);
+                        return matchedSession;
+                    } catch (Exception ex) {
+                        Logger.Error(ex,
+                            $"Failed to refresh requested session {sessionId} for account {accountId}. Removing dead session.");
+                        account.Sessions.Remove(matchedSession);
+                        Update(account);
+                    }
                 }
             }
 
-            var coldestSession = account.Sessions.MinBy(s => s.Reserved);
-            if (!(coldestSession?.Reserved < DateTimeOffset.UtcNow)) {
-                return new KifaActionResult<TelegramSession> {
-                    Status = KifaActionStatus.BadRequest,
-                    Message = $"All {account.Sessions.Count} sessions are reserved."
-                };
+            while (account.Sessions.Count > 0) {
+                var coldestSession = account.Sessions.MinBy(s => s.Reserved);
+                if (coldestSession == null || !(coldestSession.Reserved < DateTimeOffset.UtcNow)) {
+                    return new KifaActionResult<TelegramSession> {
+                        Status = KifaActionStatus.BadRequest,
+                        Message = $"All {account.Sessions.Count} sessions are reserved."
+                    };
+                }
+
+                try {
+                    account.RefreshIfNeeded(coldestSession);
+                    coldestSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
+                    coldestSession.Id = Random.Shared.Next();
+
+                    Update(account);
+                    return coldestSession;
+                } catch (Exception ex) {
+                    Logger.Error(ex,
+                        $"Failed to refresh session {coldestSession.Id} for account {accountId}. Removing dead session.");
+                    account.Sessions.Remove(coldestSession);
+                    Update(account);
+                }
             }
 
-            coldestSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
-            coldestSession.Id = Random.Shared.Next();
-            account.RefreshIfNeeded(coldestSession);
-
-            Update(account);
-            return coldestSession;
+            return new KifaActionResult<TelegramSession> {
+                Status = KifaActionStatus.BadRequest,
+                Message = $"No valid sessions remaining for account {accountId}."
+            };
         }
     }
 
