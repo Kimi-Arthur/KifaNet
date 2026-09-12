@@ -13,22 +13,43 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         new KifaServiceRestClient<YouTubeUploader>();
 
     public string? Name { get; set; }
-    public List<string> Videos { get; set; } = new();
-
+    public HashSet<string> NameAliases { get; set; } = [];
+    public string? ChannelId { get; set; }
+    public List<string> Videos { get; set; } = [];
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override void Fill() {
-        string url;
-        if (Id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
-            url = Id;
-        } else if (Id.StartsWith("@")) {
-            url = $"https://www.youtube.com/{Id}";
-        } else if (Id.StartsWith("UC", StringComparison.OrdinalIgnoreCase)) {
-            url = $"https://www.youtube.com/channel/{Id}";
-        } else {
-            url = $"https://www.youtube.com/@{Id}";
+    public string GetUploaderFolder()
+        => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.youtube";
+
+    public override SortedSet<string> GetVirtualItems() {
+        var items = new SortedSet<string>();
+
+        if (!string.IsNullOrEmpty(ChannelId)) {
+            items.Add(VirtualItemPrefix + ChannelId);
         }
+
+        var bareHandle = Id?.TrimStart('@');
+        if (!string.IsNullOrEmpty(bareHandle) && bareHandle != Id) {
+            items.Add(VirtualItemPrefix + bareHandle);
+        }
+
+        var allNames = new HashSet<string>(NameAliases);
+        if (Name != null) {
+            allNames.Add(Name);
+        }
+
+        foreach (var name in allNames) {
+            if (!string.IsNullOrEmpty(name) && name != Id && name != bareHandle && name != ChannelId) {
+                items.Add(VirtualItemPrefix + name);
+            }
+        }
+
+        return items;
+    }
+
+    public override void Fill() {
+        var url = GetFetchUrl(Id.Checked());
 
         var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
         var result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(url, overrideOptions: options)
@@ -47,7 +68,34 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
             }
         }
 
-        Name = result.Data.Uploader ?? result.Data.Channel ?? result.Data.Title;
-        Videos = YouTubeVideo.ExtractVideoIds(result.Data.Entries);
+        var data = result.Data;
+        ChannelId = data.ChannelID;
+
+        var fetchedName = data.Uploader ?? data.Channel ?? data.Title;
+        if (fetchedName != null) {
+            if (Name == null) {
+                Name = fetchedName;
+            } else if (Name != fetchedName) {
+                NameAliases.Add(fetchedName);
+            }
+        }
+
+        Videos = YouTubeVideo.ExtractVideoIds(data.Entries);
+    }
+
+    static string GetFetchUrl(string id) {
+        if (id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
+            return id;
+        }
+
+        if (id.StartsWith("@")) {
+            return $"https://www.youtube.com/{id}";
+        }
+
+        if (id.StartsWith("UC", StringComparison.OrdinalIgnoreCase)) {
+            return $"https://www.youtube.com/channel/{id}";
+        }
+
+        return $"https://www.youtube.com/@{id}";
     }
 }
