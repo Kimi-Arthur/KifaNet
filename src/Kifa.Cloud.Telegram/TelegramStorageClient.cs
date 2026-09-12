@@ -42,20 +42,38 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     TelegramStorageClient() {
     }
 
-    int currentHolders;
-    static TelegramCellClient? sharedCellClient;
+    class CellClientEntry {
+        public required TelegramCellClient Client { get; init; }
+        public int Holders { get; set; }
+    }
+
+    static readonly object CellClientLock = new();
+    static readonly Dictionary<string, CellClientEntry> CellClients = new();
 
     TelegramCellClient ObtainCellClient() {
-        sharedCellClient ??= Cell.CreateClient();
-        currentHolders++;
-        return sharedCellClient;
+        lock (CellClientLock) {
+            if (!CellClients.TryGetValue(CellId, out var entry)) {
+                entry = new CellClientEntry {
+                    Client = Cell.CreateClient(),
+                    Holders = 0
+                };
+                CellClients[CellId] = entry;
+            }
+
+            entry.Holders++;
+            return entry.Client;
+        }
     }
 
     void ReturnCellClient() {
-        currentHolders--;
-        if (currentHolders == 0) {
-            sharedCellClient?.Release();
-            sharedCellClient = null;
+        lock (CellClientLock) {
+            if (CellClients.TryGetValue(CellId, out var entry)) {
+                entry.Holders--;
+                if (entry.Holders <= 0) {
+                    entry.Client.Release();
+                    CellClients.Remove(CellId);
+                }
+            }
         }
     }
 
@@ -84,19 +102,24 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override long Length(string path) {
-        var document = GetDocument(path);
-        if (document == null) {
-            throw new FileNotFoundException();
-        }
+        var cellClient = ObtainCellClient();
+        try {
+            var document = GetDocument(cellClient, path);
+            if (document == null) {
+                throw new FileNotFoundException();
+            }
 
-        return document.size;
+            return document.size;
+        } finally {
+            ReturnCellClient();
+        }
     }
 
     public override void Delete(string path) {
         var cellClient = ObtainCellClient();
 
         try {
-            var message = GetMessage(path);
+            var message = GetMessage(cellClient, path);
             if (message == null) {
                 Logger.Debug($"File {path} is not found.");
                 return;
@@ -317,8 +340,16 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             case WTException {
                 Message: "You must connect to Telegram first"
             }:
-                Logger.Warn(ex, $"Create new telegram client as requested.");
-                sharedCellClient.Checked().Relogin();
+                Logger.Warn(ex, "Telegram client disconnected. Resetting cell clients.");
+                lock (CellClientLock) {
+                    foreach (var entry in CellClients.Values) {
+                        try {
+                            entry.Client.Relogin();
+                        } catch {
+                            // Best effort relogin
+                        }
+                    }
+                }
                 return failures;
             case TimeoutException or IOException or WTException or TaskCanceledException
                 or RetryValidationException: {
@@ -361,17 +392,22 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     public override Stream OpenRead(string path) {
         var cellClient = ObtainCellClient();
-        var document = GetDocument(path);
-        if (document == null) {
-            throw new FileNotFoundException(
-                $"{path} is not found in {this} because the document is not found in search.");
-        }
+        try {
+            var document = GetDocument(cellClient, path);
+            if (document == null) {
+                throw new FileNotFoundException(
+                    $"{path} is not found in {this} because the document is not found in search.");
+            }
 
-        var fileSize = document.size;
-        return new SeekableReadStream<DownloadState>(fileSize,
-            (buffer, bufferOffset, offset, count, state) => Download(cellClient, buffer, path,
-                bufferOffset, offset, count, state), new DownloadState(),
-            disposer: ReturnCellClient);
+            var fileSize = document.size;
+            return new SeekableReadStream<DownloadState>(fileSize,
+                (buffer, bufferOffset, offset, count, state) => Download(cellClient, buffer, path,
+                    bufferOffset, offset, count, state), new DownloadState(),
+                disposer: ReturnCellClient);
+        } catch {
+            ReturnCellClient();
+            throw;
+        }
     }
 
     class DownloadState {
@@ -411,7 +447,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // This solution generally works if the next loop isn't taking too long. Performance wise,
         // this should serve for quite some versions. May need to revise if the next loop finishes
         // too quick.
-        var document = GetDocument(path).Checked();
+        var document = GetDocument(cellClient, path).Checked();
         var location = document.ToFileLocation();
         var dcId = document.dc_id;
         Logger.Trace($"Getting {count} bytes from {offset} of {path}...");
@@ -483,24 +519,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public override string Type => "tele";
     public override string Id => Cell.Checked().Id;
 
-    Document? GetDocument(string path) {
-        var message = GetMessage(path);
+    Document? GetDocument(TelegramCellClient cellClient, string path) {
+        var message = GetMessage(cellClient, path);
 
         return (message?.media as MessageMediaDocument)?.document as Document;
     }
 
     static readonly TimeSpan SearchDelay = TimeSpan.FromMinutes(30);
 
-    Message? GetMessage(string path) {
-        try {
-            return GetMessageBySearch(path) ?? GetMessageByHistory(path);
-        } finally {
-            ReturnCellClient();
-        }
-    }
+    Message? GetMessage(TelegramCellClient cellClient, string path)
+        => GetMessageBySearch(cellClient, path) ?? GetMessageByHistory(cellClient, path);
 
-    Message? GetMessageByHistory(string path) {
-        var cellClient = ObtainCellClient();
+    Message? GetMessageByHistory(TelegramCellClient cellClient, string path) {
         var messages = Retry
             .Run(() => cellClient.Client.Messages_GetHistory(cellClient.Channel),
                 HandleFloodExceptionFunc).GetAwaiter().GetResult().Messages;
@@ -530,8 +560,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         return null;
     }
 
-    Message? GetMessageBySearch(string path) {
-        var cellClient = ObtainCellClient();
+    Message? GetMessageBySearch(TelegramCellClient cellClient, string path) {
         try {
             return Retry
                 .Run(
@@ -546,7 +575,5 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     public override void Dispose() {
-        sharedCellClient?.Dispose();
-        sharedCellClient = null;
     }
 }

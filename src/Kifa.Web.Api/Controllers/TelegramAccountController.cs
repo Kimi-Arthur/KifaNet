@@ -4,6 +4,7 @@ using Kifa.Cloud.Telegram;
 using Kifa.Service;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
+using TL;
 
 namespace Kifa.Web.Api.Controllers;
 
@@ -65,25 +66,28 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
             if (sessionId != null) {
                 var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
                 // Session should already expire/be returned, otherwise RenewSession should be used.
-                if (matchedSession != null && DateTimeOffset.UtcNow >= matchedSession.Reserved) {
+                if (matchedSession != null && matchedSession.Reserved <= DateTimeOffset.UtcNow) {
                     try {
                         account.RefreshIfNeeded(matchedSession);
                         matchedSession.Reserved = DateTimeOffset.UtcNow + LeaseDuration;
 
                         Update(account);
                         return matchedSession;
-                    } catch (Exception ex) {
+                    } catch (RpcException ex) when (ex.Code == 401 || ex.Message is "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED" or "SESSION_EXPIRED") {
                         Logger.Error(ex,
                             $"Failed to refresh requested session {sessionId} for account {accountId}. Removing dead session.");
                         account.Sessions.Remove(matchedSession);
                         Update(account);
+                    } catch (Exception ex) {
+                        Logger.Warn(ex,
+                            $"Failed to refresh requested session {sessionId} for account {accountId}. Retrying next available session.");
                     }
                 }
             }
 
             while (account.Sessions.Count > 0) {
                 var coldestSession = account.Sessions.MinBy(s => s.Reserved);
-                if (coldestSession == null || !(coldestSession.Reserved < DateTimeOffset.UtcNow)) {
+                if (coldestSession == null || !(coldestSession.Reserved <= DateTimeOffset.UtcNow)) {
                     return new KifaActionResult<TelegramSession> {
                         Status = KifaActionStatus.BadRequest,
                         Message = $"All {account.Sessions.Count} sessions are reserved."
@@ -97,11 +101,18 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
 
                     Update(account);
                     return coldestSession;
-                } catch (Exception ex) {
+                } catch (RpcException ex) when (ex.Code == 401 || ex.Message is "AUTH_KEY_UNREGISTERED" or "SESSION_REVOKED" or "SESSION_EXPIRED") {
                     Logger.Error(ex,
                         $"Failed to refresh session {coldestSession.Id} for account {accountId}. Removing dead session.");
                     account.Sessions.Remove(coldestSession);
                     Update(account);
+                } catch (Exception ex) {
+                    Logger.Warn(ex,
+                        $"Transient failure to refresh session {coldestSession.Id} for account {accountId}.");
+                    return new KifaActionResult<TelegramSession> {
+                        Status = KifaActionStatus.BadRequest,
+                        Message = $"Transient failure refreshing session: {ex.Message}"
+                    };
                 }
             }
 

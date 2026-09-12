@@ -20,27 +20,13 @@ public class TelegramStorageCell : DataModel, WithModelId<TelegramStorageCell> {
         set => Late.Set(ref field, value);
     }
 
-    TelegramSession? currentSession;
-    TelegramCellClient? currentClient;
-
     public TelegramCellClient CreateClient() {
-        var response = TelegramAccount.Client.ObtainSession(Account.Id, currentSession?.Id);
+        var response = TelegramAccount.Client.ObtainSession(Account.Id);
         if (response.Status != KifaActionStatus.OK) {
             throw new InsufficientStorageException(
                 $"Failed to locate a session to use: {response.Message}");
         }
 
-        var newSession = response.Value.Checked();
-
-        if (!new ReadOnlySpan<byte>(newSession.Data).SequenceEqual(currentSession?.Data)) {
-            currentClient?.Dispose();
-            currentSession = newSession;
-            currentClient = new TelegramCellClient(Account, ChannelId, currentSession);
-        }
-
-        currentSession.Checked().Id = newSession.Id;
-
-        currentClient.Checked().Reserved = true;
-        return currentClient.Checked();
+        return new TelegramCellClient(Account, ChannelId, response.Value.Checked());
     }
 }

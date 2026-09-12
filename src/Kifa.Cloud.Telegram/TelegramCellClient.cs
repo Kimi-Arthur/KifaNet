@@ -77,14 +77,12 @@ public class TelegramCellClient : IDisposable {
         while (true) {
             await Task.Delay(TimeSpan.FromMinutes(5));
 
-            if (disposed) {
+            if (disposed || !Reserved) {
                 break;
             }
 
-            if (Reserved) {
-                Logger.LogResult(TelegramAccount.Client.RenewSession(Account.Id, sessionId),
-                    $"reserving session {sessionId}", defaultLevel: LogLevel.Trace);
-            }
+            Logger.LogResult(TelegramAccount.Client.RenewSession(Account.Id, sessionId),
+                $"reserving session {sessionId}", defaultLevel: LogLevel.Trace);
         }
     }
 
@@ -99,6 +97,7 @@ public class TelegramCellClient : IDisposable {
     public void Release() {
         Reserved = false;
         TelegramAccount.Client.ReleaseSession(Account.Id, Session.Id);
+        Dispose();
     }
 
     public void Dispose() {
