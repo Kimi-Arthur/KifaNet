@@ -58,8 +58,7 @@ public static class MediaFileComparator {
         var execution = Executor.Run("ffmpeg",
             $"-v warning -err_detect explode+crccheck+bitstream+buffer -i \"{localPath}\" -f null -");
 
-        var output = (execution.StandardError != null ? execution.StandardError : "") + "\n" +
-                     (execution.StandardOutput != null ? execution.StandardOutput : "");
+        var output = (execution.StandardError ?? "") + "\n" + (execution.StandardOutput ?? "");
         var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var rawLine in lines) {
