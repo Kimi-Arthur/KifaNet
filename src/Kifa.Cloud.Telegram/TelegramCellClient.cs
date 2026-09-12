@@ -88,6 +88,9 @@ public class TelegramCellClient : IDisposable {
         }
     }
 
+    public async Task<Client> GetClientForDC(int dcId)
+        => dcId == 0 ? Client : await Client.GetClientForDC(-Math.Abs(dcId), true);
+
     public void Relogin() {
         Client.Dispose();
         CreateClient();

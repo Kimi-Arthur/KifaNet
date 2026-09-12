@@ -243,7 +243,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     }
 
     const string Failure420Key = "420";
+    const string Failure503Key = "503";
     public static int Failure420Count { get; set; } = 1000;
+    public static int Failure503Count { get; set; } = 20;
     public static int FailureOtherCount { get; set; } = 20;
 
     public static readonly Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
@@ -282,6 +284,25 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     }
                 }
 
+                return failures;
+            }
+            case RpcException {
+                Code: -503 or 503
+            } or RpcException {
+                Message: "Timeout"
+            }: {
+                var count = failures.GetValueOrDefault(Failure503Key, 0) + 1;
+                if (count > Failure503Count) {
+                    Logger.Error(
+                        $"Failed to avoid RpcException 503/Timeout after {Failure503Count} tries.");
+                    throw ex;
+                }
+
+                failures[Failure503Key] = count;
+
+                var sleepSeconds = Math.Min(Math.Pow(2, count - 1), 16);
+                Logger.Warn(ex, $"Sleeping {sleepSeconds}s for server timeout ({count})...");
+                await Task.Delay(TimeSpan.FromSeconds(sleepSeconds));
                 return failures;
             }
             case WTException {
@@ -344,10 +365,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             disposer: ReturnCellClient);
     }
 
-    const int DownloadBlockSize = 1 << 20; // 1 MiB
-
     class DownloadState {
-        public readonly byte[] LastBlock = new byte[DownloadBlockSize];
+        public readonly byte[] LastBlock = new byte[BlockSize];
         public long LastBlockStart = -1;
     }
 
@@ -361,9 +380,9 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         var totalRead = 0;
 
         if (state.LastBlockStart >= 0 && offset >= state.LastBlockStart &&
-            offset < state.LastBlockStart + DownloadBlockSize) {
+            offset < state.LastBlockStart + BlockSize) {
             // Something can be read from lastBlock.
-            var copySize = (int) Math.Min(count, state.LastBlockStart + DownloadBlockSize - offset);
+            var copySize = (int) Math.Min(count, state.LastBlockStart + BlockSize - offset);
             Array.Copy(state.LastBlock, offset - state.LastBlockStart, buffer, bufferOffset,
                 copySize);
             count -= copySize;
@@ -383,13 +402,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         // This solution generally works if the next loop isn't taking too long. Performance wise,
         // this should serve for quite some versions. May need to revise if the next loop finishes
         // too quick.
-        var location = GetDocument(path).Checked().ToFileLocation();
+        var document = GetDocument(path).Checked();
+        var location = document.ToFileLocation();
+        var dcId = document.dc_id;
         Logger.Trace($"Getting {count} bytes from {offset} of {path}...");
         while (count > 0) {
             var effectiveReadCount =
-                (int) Math.Min(count, DownloadBlockSize - offset % DownloadBlockSize);
+                (int) Math.Min(count, BlockSize - offset % BlockSize);
 
-            downloadTasks.Add(DownloadOneBlock(cellClient, location, count <= DownloadBlockSize,
+            downloadTasks.Add(DownloadOneBlock(cellClient, dcId, location, count <= BlockSize,
                 offset, effectiveReadCount, buffer, bufferOffset, state));
 
             count -= effectiveReadCount;
@@ -403,12 +424,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         return totalRead;
     }
 
-    async Task DownloadOneBlock(TelegramCellClient cellClient, InputDocumentFileLocation location,
-        bool isLastBlock, long offset, int effectiveReadCount, byte[] buffer, int bufferOffset,
-        DownloadState downloadState) {
-        var requestStart = offset.RoundDown(DownloadBlockSize);
+    async Task DownloadOneBlock(TelegramCellClient cellClient, int dcId,
+        InputDocumentFileLocation location, bool isLastBlock, long offset, int effectiveReadCount,
+        byte[] buffer, int bufferOffset, DownloadState downloadState) {
+        var requestStart = offset.RoundDown(BlockSize);
 
-        Logger.Trace($"To request {DownloadBlockSize} from {requestStart}.");
+        Logger.Trace($"To request {BlockSize} from {requestStart}.");
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
         await DownloadTaskSemaphore.WaitAsync();
@@ -416,15 +437,20 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         Logger.Trace($"Getting block from {offset}...");
 
         try {
-            // From https://core.telegram.org/api/files#downloading-files
-            // limit is at most 1 MiB and offset should align 1 MiB block boundary.
+            var client = await cellClient.GetClientForDC(dcId);
             var downloadResult = await Retry.Run(async () => {
                 Logger.Trace($"Waiting for start semaphore to download from {offset}...");
                 using (await PriorityLock.EnterScopeAsync(1)) {
                 }
 
-                return await cellClient.Client.Upload_GetFile(location, offset: requestStart,
-                    limit: DownloadBlockSize, cdn_supported: true).WaitAsync(DownloadTimeout);
+                try {
+                    return await client.Upload_GetFile(location, offset: requestStart,
+                        limit: BlockSize).WaitAsync(DownloadTimeout);
+                } catch (RpcException ex) when (ex.Code == 303 && ex.Message == "FILE_MIGRATE_X") {
+                    client = await cellClient.GetClientForDC(ex.X);
+                    return await client.Upload_GetFile(location, offset: requestStart,
+                        limit: BlockSize).WaitAsync(DownloadTimeout);
+                }
             }, HandleFloodExceptionFunc);
 
             if (downloadResult is not Upload_File uploadFile) {
