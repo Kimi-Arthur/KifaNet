@@ -13,5 +13,6 @@ class Program {
                     settings.HelpWriter = Console.Error;
                     settings.EnableDashDash = true;
                 }).ParseArguments(parameters, typeof(DownloadVideoCommand),
-                    typeof(DownloadPlaylistCommand), typeof(DownloadUploaderCommand)), args);
+                    typeof(DownloadPlaylistCommand), typeof(DownloadUploaderCommand),
+                    typeof(AddUploaderNameCommand)), args);
 }

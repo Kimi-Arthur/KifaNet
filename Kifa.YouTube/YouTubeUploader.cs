@@ -12,6 +12,36 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public static KifaServiceClient<YouTubeUploader> Client { get; set; } =
         new KifaServiceRestClient<YouTubeUploader>();
 
+    public static YouTubeUploader? Get(string id, bool refresh = false) {
+        if (string.IsNullOrEmpty(id)) {
+            return null;
+        }
+
+        var uploader = Client.Get(id, refresh: refresh);
+        if (uploader != null) {
+            uploader.Id = uploader.RealId;
+            return uploader;
+        }
+
+        if (!id.StartsWith(VirtualItemPrefix)) {
+            uploader = Client.Get(VirtualItemPrefix + id, refresh: refresh);
+            if (uploader != null) {
+                uploader.Id = uploader.RealId;
+                return uploader;
+            }
+        }
+
+        if (!id.StartsWith("@") && !id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
+            uploader = Client.Get("@" + id, refresh: refresh);
+            if (uploader != null) {
+                uploader.Id = uploader.RealId;
+                return uploader;
+            }
+        }
+
+        return null;
+    }
+
     public string? Name { get; set; }
     public HashSet<string> NameAliases { get; set; } = [];
     public string? ChannelId { get; set; }
