@@ -143,8 +143,39 @@ public class KifaBatchActionResult : KifaActionResult {
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public override KifaActionStatus Status
-        => Results.Aggregate(KifaActionStatus.OK, (status, item) => status | item.Result.Status);
+    public override KifaActionStatus Status {
+        get {
+            if (Results.Count == 0) {
+                return KifaActionStatus.Skipped;
+            }
+
+            if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.Error))) {
+                return KifaActionStatus.Error;
+            }
+
+            if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.BadRequest))) {
+                return KifaActionStatus.BadRequest;
+            }
+
+            if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.Pending))) {
+                return KifaActionStatus.Pending;
+            }
+
+            if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.Warning))) {
+                return KifaActionStatus.Warning;
+            }
+
+            if (Results.Any(r => r.Result.Status == KifaActionStatus.OK)) {
+                return KifaActionStatus.OK;
+            }
+
+            if (Results.All(r => r.Result.Status == KifaActionStatus.Skipped)) {
+                return KifaActionStatus.Skipped;
+            }
+
+            return KifaActionStatus.OK;
+        }
+    }
 
     public override string ToString(int level)
         => $"{Status} =>" + string.FormatOrEmpty($" {Message}") +

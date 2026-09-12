@@ -19,7 +19,7 @@ public class KifaActionResultTests {
             ]))
         ]);
         r.ToString().Should().Be("""
-                                 Error, Pending =>
+                                 Error =>
                                  	errorchild: Error =>
                                  		first: OK
                                  		second: Error => Unknown error
@@ -46,5 +46,40 @@ public class KifaActionResultTests {
         errorResult!.Status.Should().Be(KifaActionStatus.Error);
         errorResult.Message.Should().Be("something failed");
         errorResult.Value.Should().BeNull();
+    }
+
+    [Fact]
+    public void BatchStatusResolutionTest() {
+        new KifaBatchActionResult().Status.Should().Be(KifaActionStatus.Skipped);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Skipped()),
+            ("b", KifaActionResult.Skipped())
+        ]).Status.Should().Be(KifaActionStatus.Skipped);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Success()),
+            ("b", KifaActionResult.Skipped())
+        ]).Status.Should().Be(KifaActionStatus.OK);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Warning()),
+            ("b", KifaActionResult.Skipped())
+        ]).Status.Should().Be(KifaActionStatus.Warning);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Skipped()),
+            ("b", KifaActionResult.Error())
+        ]).Status.Should().Be(KifaActionStatus.Error);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Success()),
+            ("b", KifaActionResult.Error())
+        ]).Status.Should().Be(KifaActionStatus.Error);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Success()),
+            ("b", new KifaActionResult { Status = KifaActionStatus.Pending })
+        ]).Status.Should().Be(KifaActionStatus.Pending);
     }
 }

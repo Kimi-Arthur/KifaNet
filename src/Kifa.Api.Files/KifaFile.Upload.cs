@@ -45,7 +45,12 @@ public partial class KifaFile {
             UploadOneFile(target, deleteSource, skipVerify, skipRegistered))));
 
         if (result.IsAcceptable) {
-            CleanupFiles(deleteSource, downloadLocal);
+            if (CleanupFiles(deleteSource, downloadLocal)) {
+                result.Add("source", new KifaActionResult {
+                    Status = KifaActionStatus.OK,
+                    Message = $"Source {this} is removed."
+                });
+            }
         }
 
         return result;
@@ -171,7 +176,7 @@ public partial class KifaFile {
         destination.Add();
     }
 
-    void CleanupFiles(bool deleteSource, bool downloadLocal) {
+    bool CleanupFiles(bool deleteSource, bool downloadLocal) {
         if (!downloadLocal) {
             RemoveLocalMirrorFile();
         }
@@ -179,11 +184,14 @@ public partial class KifaFile {
         if (deleteSource) {
             if (IsCloud) {
                 Logger.Warn($"Source {this} is not removed as it's in cloud.");
-            } else {
+            } else if (Exists()) {
                 Delete();
                 FileInformation.Client.RemoveLocation(Id, ToString());
                 Logger.Debug($"Source {this} is removed since upload is successful.");
+                return true;
             }
         }
+
+        return false;
     }
 }
