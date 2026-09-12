@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Kifa;
 
-public class Date : JsonSerializable, IComparable<Date> {
+public class Date : JsonSerializable, IComparable<Date>, IEquatable<Date> {
     DateTime DateTime { get; set; }
 
     public int Year => DateTime.Year;
@@ -50,4 +50,14 @@ public class Date : JsonSerializable, IComparable<Date> {
     public override string ToString() => ToJson();
 
     public int CompareTo(Date? other) => DateTime.Date.CompareTo(other?.DateTime.Date);
+
+    public bool Equals(Date? other) => other != null && DateTime.Date == other.DateTime.Date;
+
+    public override bool Equals(object? obj) => obj is Date other && Equals(other);
+
+    public override int GetHashCode() => DateTime.Date.GetHashCode();
+
+    public static bool operator ==(Date? left, Date? right) => Equals(left, right);
+
+    public static bool operator !=(Date? left, Date? right) => !Equals(left, right);
 }

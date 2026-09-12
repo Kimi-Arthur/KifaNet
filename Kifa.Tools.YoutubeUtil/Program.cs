@@ -14,5 +14,5 @@ class Program {
                     settings.EnableDashDash = true;
                 }).ParseArguments(parameters, typeof(DownloadVideoCommand),
                     typeof(DownloadPlaylistCommand), typeof(DownloadUploaderCommand),
-                    typeof(AddUploaderNameCommand)), args);
+                    typeof(AddUploaderNameCommand), typeof(ImportVideoCommand)), args);
 }

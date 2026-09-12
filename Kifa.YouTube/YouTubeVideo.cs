@@ -4,9 +4,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using Kifa.ArchiveOrg;
 using Kifa.Html;
 using Kifa.Service;
+using Newtonsoft.Json.Linq;
 using NLog;
 using YoutubeDLSharp;
 using YoutubeDLSharp.Metadata;
@@ -240,6 +242,356 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
 
     static readonly HttpClient HttpClient = new();
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+    static readonly Regex YouTubeIdRegex = new(@"^[a-zA-Z0-9_-]{11}$", RegexOptions.Compiled);
+    static readonly Regex DurationHoursRegex =
+        new(@"(\d+)\s*h", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    static readonly Regex DurationMinRegex =
+        new(@"(\d+)\s*min", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    static readonly Regex DurationSecRegex =
+        new(@"(\d+)\s*s(?!\w)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    static readonly Regex DurationMsRegex =
+        new(@"(\d+)\s*ms", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    public static YouTubeVideo? FromMediaFile(string filePath) {
+        var result = Executor.Run("mediainfo", $"\"{filePath}\"");
+        if (result.ExitCode == 0 && !string.IsNullOrWhiteSpace(result.StandardOutput)) {
+            var video = FromMediaInfo(result.StandardOutput, filePath);
+            if (video != null) {
+                return video;
+            }
+        }
+
+        var ffprobeResult = Executor.Run("ffprobe",
+            $"-v error -show_format -of json \"{filePath}\"");
+        if (ffprobeResult.ExitCode == 0 && !string.IsNullOrWhiteSpace(ffprobeResult.StandardOutput)) {
+            return FromFfprobeJson(ffprobeResult.StandardOutput, filePath);
+        }
+
+        return null;
+    }
+
+    public static YouTubeVideo? FromMediaInfo(string mediaInfoText, string? filePath = null) {
+        if (string.IsNullOrWhiteSpace(mediaInfoText)) {
+            return null;
+        }
+
+        if (mediaInfoText.TrimStart().StartsWith('{')) {
+            return FromMediaInfoJson(mediaInfoText, filePath) ??
+                   FromFfprobeJson(mediaInfoText, filePath);
+        }
+
+        return FromMediaInfoText(mediaInfoText, filePath);
+    }
+
+    static YouTubeVideo? FromMediaInfoText(string text, string? filePath) {
+        var lines = text.Split(["\r\n", "\r", "\n"], StringSplitOptions.None);
+        var generalDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var inGeneral = false;
+
+        foreach (var line in lines) {
+            var trimmed = line.Trim();
+            if (trimmed.Length == 0) {
+                continue;
+            }
+
+            if (!trimmed.Contains(':')) {
+                if (trimmed.Equals("General", StringComparison.OrdinalIgnoreCase)) {
+                    inGeneral = true;
+                    continue;
+                }
+
+                if (inGeneral) {
+                    break;
+                }
+            }
+
+            if (inGeneral || (!text.Contains("General\n", StringComparison.OrdinalIgnoreCase) &&
+                              !text.Contains("General\r\n", StringComparison.OrdinalIgnoreCase))) {
+                var colonIndex = line.IndexOf(':');
+                if (colonIndex > 0) {
+                    var key = line[..colonIndex].Trim();
+                    var value = line[(colonIndex + 1)..].Trim();
+                    generalDict.TryAdd(key, value);
+                }
+            }
+        }
+
+        var completeName = generalDict.GetValueOrDefault("Complete name") ?? filePath;
+        var videoId = ExtractVideoId(completeName);
+        if (videoId == null) {
+            return null;
+        }
+
+        var video = new YouTubeVideo {
+            Id = videoId
+        };
+
+        if (generalDict.TryGetValue("Title", out var title) && title.Length > 0) {
+            video.Title = title;
+        }
+
+        var author = generalDict.GetValueOrDefault("Performer") ??
+                     generalDict.GetValueOrDefault("Artist") ??
+                     generalDict.GetValueOrDefault("Author") ??
+                     generalDict.GetValueOrDefault("Uploader");
+        if (author != null && author.Length > 0) {
+            video.Author = author;
+            var uploader = YouTubeUploader.Get(author);
+            if (uploader != null) {
+                video.AuthorId = uploader.Id;
+                video.Author = uploader.Name ?? video.Author;
+            }
+        }
+
+        var description = generalDict.GetValueOrDefault("Description") ??
+                          generalDict.GetValueOrDefault("Comment");
+        if (description != null && description.Length > 0) {
+            video.Description = description;
+        }
+
+        var dateStr = generalDict.GetValueOrDefault("Recorded date") ??
+                      generalDict.GetValueOrDefault("Recorded_Date") ??
+                      generalDict.GetValueOrDefault("Encoded date") ??
+                      generalDict.GetValueOrDefault("Encoded_Date") ??
+                      generalDict.GetValueOrDefault("Tagged date") ??
+                      generalDict.GetValueOrDefault("Tagged_Date") ??
+                      generalDict.GetValueOrDefault("Date");
+        var uploadDate = ParseDate(dateStr);
+        if (uploadDate != null) {
+            video.UploadDate = uploadDate;
+        }
+
+        if (generalDict.TryGetValue("Duration", out var durationStr)) {
+            video.Duration = ParseDuration(durationStr);
+        }
+
+        return video;
+    }
+
+    static YouTubeVideo? FromMediaInfoJson(string jsonText, string? filePath) {
+        try {
+            var json = JObject.Parse(jsonText);
+            var media = json["media"];
+            if (media == null) {
+                return null;
+            }
+
+            var tracks = media["track"] as JArray;
+            var general = tracks?.FirstOrDefault(t => t["@type"]?.ToString() == "General") as JObject;
+            if (general == null) {
+                return null;
+            }
+
+            var completeName = general["CompleteName"]?.ToString() ??
+                               general["FileName"]?.ToString() ?? filePath;
+            var videoId = ExtractVideoId(completeName);
+            if (videoId == null) {
+                return null;
+            }
+
+            var video = new YouTubeVideo {
+                Id = videoId
+            };
+
+            var title = general["Title"]?.ToString();
+            if (title != null && title.Length > 0) {
+                video.Title = title;
+            }
+
+            var author = general["Performer"]?.ToString() ??
+                         general["Artist"]?.ToString() ??
+                         general["Author"]?.ToString() ??
+                         general["Uploader"]?.ToString();
+            if (author != null && author.Length > 0) {
+                video.Author = author;
+                var uploader = YouTubeUploader.Get(author);
+                if (uploader != null) {
+                    video.AuthorId = uploader.Id;
+                    video.Author = uploader.Name ?? video.Author;
+                }
+            }
+
+            var description = general["Description"]?.ToString() ?? general["Comment"]?.ToString();
+            if (description != null && description.Length > 0) {
+                video.Description = description;
+            }
+
+            var dateStr = general["Recorded_Date"]?.ToString() ??
+                          general["Encoded_Date"]?.ToString() ??
+                          general["Tagged_Date"]?.ToString();
+            var uploadDate = ParseDate(dateStr);
+            if (uploadDate != null) {
+                video.UploadDate = uploadDate;
+            }
+
+            var durationStr = general["Duration"]?.ToString();
+            if (durationStr != null && durationStr.Length > 0) {
+                video.Duration = ParseDuration(durationStr);
+            }
+
+            return video;
+        } catch {
+            return null;
+        }
+    }
+
+    static YouTubeVideo? FromFfprobeJson(string jsonText, string? filePath) {
+        try {
+            var json = JObject.Parse(jsonText);
+            var format = json["format"] as JObject;
+            if (format == null) {
+                return null;
+            }
+
+            var completeName = format["filename"]?.ToString() ?? filePath;
+            var videoId = ExtractVideoId(completeName);
+            if (videoId == null) {
+                return null;
+            }
+
+            var video = new YouTubeVideo {
+                Id = videoId
+            };
+
+            var tags = format["tags"] as JObject;
+            if (tags != null) {
+                var title = tags["title"]?.ToString() ?? tags["TITLE"]?.ToString();
+                if (title != null && title.Length > 0) {
+                    video.Title = title;
+                }
+
+                var author = tags["artist"]?.ToString() ??
+                             tags["ARTIST"]?.ToString() ??
+                             tags["performer"]?.ToString() ??
+                             tags["PERFORMER"]?.ToString() ??
+                             tags["uploader"]?.ToString() ??
+                             tags["author"]?.ToString();
+                if (author != null && author.Length > 0) {
+                    video.Author = author;
+                    var uploader = YouTubeUploader.Get(author);
+                    if (uploader != null) {
+                        video.AuthorId = uploader.Id;
+                        video.Author = uploader.Name ?? video.Author;
+                    }
+                }
+
+                var description = tags["description"]?.ToString() ??
+                                  tags["DESCRIPTION"]?.ToString() ??
+                                  tags["comment"]?.ToString() ??
+                                  tags["COMMENT"]?.ToString();
+                if (description != null && description.Length > 0) {
+                    video.Description = description;
+                }
+
+                var dateStr = tags["date"]?.ToString() ??
+                              tags["DATE"]?.ToString() ??
+                              tags["creation_time"]?.ToString() ??
+                              tags["CREATION_TIME"]?.ToString();
+                var uploadDate = ParseDate(dateStr);
+                if (uploadDate != null) {
+                    video.UploadDate = uploadDate;
+                }
+            }
+
+            var durationStr = format["duration"]?.ToString();
+            if (durationStr != null && durationStr.Length > 0) {
+                video.Duration = ParseDuration(durationStr);
+            }
+
+            return video;
+        } catch {
+            return null;
+        }
+    }
+
+    public static string? ExtractVideoId(string? nameOrPath) {
+        if (nameOrPath == null || nameOrPath.Length == 0) {
+            return null;
+        }
+
+        var fileName = Path.GetFileName(nameOrPath);
+        var baseName = Path.GetFileNameWithoutExtension(fileName);
+
+        if (YouTubeIdRegex.IsMatch(baseName)) {
+            return baseName;
+        }
+
+        var parts = baseName.Split('.');
+        foreach (var part in parts.Reverse()) {
+            if (YouTubeIdRegex.IsMatch(part)) {
+                return part;
+            }
+        }
+
+        var match = Regex.Match(baseName, @"[a-zA-Z0-9_-]{11}");
+        if (match.Success) {
+            return match.Value;
+        }
+
+        return baseName;
+    }
+
+    public static TimeSpan ParseDuration(string durationStr) {
+        if (double.TryParse(durationStr, NumberStyles.Float, CultureInfo.InvariantCulture,
+                out var seconds)) {
+            return TimeSpan.FromSeconds(seconds);
+        }
+
+        var hoursMatch = DurationHoursRegex.Match(durationStr);
+        var minMatch = DurationMinRegex.Match(durationStr);
+        var secMatch = DurationSecRegex.Match(durationStr);
+        var msMatch = DurationMsRegex.Match(durationStr);
+
+        var hours = hoursMatch.Success ? int.Parse(hoursMatch.Groups[1].Value) : 0;
+        var minutes = minMatch.Success ? int.Parse(minMatch.Groups[1].Value) : 0;
+        var secs = secMatch.Success ? int.Parse(secMatch.Groups[1].Value) : 0;
+        var ms = msMatch.Success ? int.Parse(msMatch.Groups[1].Value) : 0;
+
+        if (hours > 0 || minutes > 0 || secs > 0 || ms > 0) {
+            return new TimeSpan(0, hours, minutes, secs, ms);
+        }
+
+        if (TimeSpan.TryParse(durationStr, CultureInfo.InvariantCulture, out var ts)) {
+            return ts;
+        }
+
+        return TimeSpan.Zero;
+    }
+
+    public static Date? ParseDate(string? dateStr) {
+        if (dateStr == null || dateStr.Length == 0) {
+            return null;
+        }
+
+        dateStr = dateStr.Trim();
+        if (DateTime.TryParseExact(dateStr, "yyyyMMdd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var d1)) {
+            return (Date) new DateTime(d1.Year, d1.Month, d1.Day);
+        }
+
+        if (DateTime.TryParseExact(dateStr, "yyyy-MM-dd HH:mm:ss 'UTC'",
+                CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var d2)) {
+            return (Date) new DateTime(d2.Year, d2.Month, d2.Day);
+        }
+
+        if (DateTime.TryParseExact(dateStr, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var d3)) {
+            return (Date) new DateTime(d3.Year, d3.Month, d3.Day);
+        }
+
+        if (DateTimeOffset.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out var dto)) {
+            return (Date) new DateTime(dto.Year, dto.Month, dto.Day);
+        }
+
+        if (DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None,
+                out var dt)) {
+            return (Date) new DateTime(dt.Year, dt.Month, dt.Day);
+        }
+
+        return null;
+    }
 
     public override void Fill() {
         try {

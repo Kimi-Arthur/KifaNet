@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Kifa.YouTube.Tests;
 
+[Collection("YouTubeTests")]
 public class AddUploaderNameCommandTests : IDisposable {
     class TestYouTubeUploaderServiceClient : BaseKifaServiceClient<YouTubeUploader> {
         readonly Dictionary<string, YouTubeUploader> data = new();
