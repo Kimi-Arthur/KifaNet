@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using Kifa.Api.Files;
 using Kifa.Jobs;
 using Kifa.Service;
 using Kifa.Tencent;
-using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Tools.BiliUtil.Commands;

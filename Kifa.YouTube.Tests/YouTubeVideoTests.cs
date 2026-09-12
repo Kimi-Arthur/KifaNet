@@ -3,7 +3,6 @@ using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
 using Kifa.Service;
-using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube.Tests;
 

@@ -11,7 +11,6 @@ using Kifa.Service;
 using Kifa.Subtitle.Ass;
 using Kifa.Subtitle.Srt;
 using Kifa.Tencent;
-using Newtonsoft.Json;
 using NLog;
 
 namespace Kifa.Tools.SubUtil.Commands;

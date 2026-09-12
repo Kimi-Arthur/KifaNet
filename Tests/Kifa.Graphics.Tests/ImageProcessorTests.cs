@@ -1,4 +1,3 @@
-using System.Drawing;
 using Codeuctivity.ImageSharpCompare;
 using SixLabors.ImageSharp;
 

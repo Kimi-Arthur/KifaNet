@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using CommandLine;
 using Kifa.Jobs;
 using Kifa.YouTube;

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Kifa.Service;
-using YoutubeDLSharp.Options;
 
 namespace Kifa.YouTube;
 

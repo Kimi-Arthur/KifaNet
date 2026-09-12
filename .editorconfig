@@ -41,6 +41,7 @@ csharp_prefer_braces = true:suggestion
 csharp_using_directive_placement = outside_namespace:suggestion
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
+dotnet_diagnostic.IDE0005.severity = warning
 
 # Null-checking and coalescing preferences
 csharp_style_coalesce_expression = true:suggestion

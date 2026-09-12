@@ -1,7 +1,5 @@
 using System;
 using Kifa.Service;
-using Newtonsoft.Json;
-using YamlDotNet.Serialization;
 
 namespace Kifa.Languages.Kindle;
 

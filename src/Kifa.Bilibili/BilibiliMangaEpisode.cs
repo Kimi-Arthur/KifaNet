@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Bilibili.BiliplusApi;
 using Kifa.Service;
-using NLog;
 
 namespace Kifa.Bilibili;
 

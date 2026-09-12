@@ -4,7 +4,6 @@ using System.Linq;
 using Kifa.Configs;
 using Kifa.Languages.German;
 using Kifa.Languages.Goethe;
-using Kifa.Languages.Memrise;
 using Kifa.Service;
 using NUnit.Framework;
 

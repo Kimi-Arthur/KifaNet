@@ -1,8 +1,6 @@
 using System.Drawing;
 using System.Globalization;
 using Kifa.Subtitle.Ass;
-using Kifa.Tencent.Rpcs;
-using Newtonsoft.Json;
 
 namespace Kifa.Tencent;
 

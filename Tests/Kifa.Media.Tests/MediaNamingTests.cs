@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using FluentAssertions;
-using Kifa.Media;
 using Xunit;
 
 namespace Kifa.Media.Tests;

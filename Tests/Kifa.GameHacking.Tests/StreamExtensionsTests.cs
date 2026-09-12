@@ -1,6 +1,5 @@
 using System.IO;
 using System.Text;
-using Kifa.GameHacking;
 using Xunit;
 
 namespace Kifa.GameHacking.Tests;

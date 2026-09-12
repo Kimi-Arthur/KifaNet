@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using CommandLine;
 using Kifa.Api.Files;

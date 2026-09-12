@@ -1,8 +1,6 @@
-using System.Linq;
 using FluentAssertions;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Configs;
-using Kifa;
 using Xunit;
 
 namespace Kifa.Bilibili.Tests;

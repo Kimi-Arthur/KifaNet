@@ -4,7 +4,6 @@ using FluentAssertions;
 using Kifa.Configs;
 using Kifa.Service;
 using Kifa.Tools.YoutubeUtil.Commands;
-using Xunit;
 
 namespace Kifa.YouTube.Tests;
 

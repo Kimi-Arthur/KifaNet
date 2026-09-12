@@ -1,4 +1,3 @@
-using Kifa.Service;
 
 namespace Kifa.Soccer;
 

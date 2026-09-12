@@ -1,4 +1,3 @@
-using System;
 using CommandLine;
 using Kifa.Tools.YoutubeUtil.Commands;
 
