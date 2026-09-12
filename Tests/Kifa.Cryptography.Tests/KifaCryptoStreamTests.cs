@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
@@ -117,4 +118,44 @@ public class KifaCryptoStreamTests {
             }
         }
     }
+
+    [Fact]
+    public void KifaCryptoStreamPartialReadTest() {
+        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
+                 data) {
+            var transform = aesAlgorithm.CreateEncryptor();
+
+            using var encryptStream =
+                new KifaCryptoStream(new PartialReadStream(File.OpenRead(rawFile), 1024), transform, encryptedSize, false);
+            var info = FileInformation.GetInformation(encryptStream,
+                FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
+            Assert.Equal(encryptedSize, info.Size);
+            Assert.Equal(encryptedHash, info.Sha256);
+
+            var decryptTransform = aesAlgorithm.CreateDecryptor();
+            using var decryptStream =
+                new KifaCryptoStream(new PartialReadStream(File.OpenRead(encryptedFile), 1024), decryptTransform, rawSize, true);
+            var decryptInfo = FileInformation.GetInformation(decryptStream,
+                FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
+            Assert.Equal(rawSize, decryptInfo.Size);
+            Assert.Equal(rawHash, decryptInfo.Sha256);
+        }
+    }
+}
+
+class PartialReadStream(Stream baseStream, int maxChunkSize) : Stream {
+    public override bool CanRead => baseStream.CanRead;
+    public override bool CanSeek => baseStream.CanSeek;
+    public override bool CanWrite => false;
+    public override long Length => baseStream.Length;
+    public override long Position {
+        get => baseStream.Position;
+        set => baseStream.Position = value;
+    }
+    public override void Flush() => baseStream.Flush();
+    public override int Read(byte[] buffer, int offset, int count)
+        => baseStream.Read(buffer, offset, Math.Min(count, maxChunkSize));
+    public override long Seek(long offset, SeekOrigin origin) => baseStream.Seek(offset, origin);
+    public override void SetLength(long value) => baseStream.SetLength(value);
+    public override void Write(byte[] buffer, int offset, int count) => throw new System.NotImplementedException();
 }

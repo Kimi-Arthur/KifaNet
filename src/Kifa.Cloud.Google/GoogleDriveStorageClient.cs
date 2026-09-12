@@ -118,54 +118,42 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         var buffer = new byte[BlockSize];
 
         for (long position = 0; position < size; position += BlockSize) {
-            var blockLength = input.Read(buffer, 0, BlockSize);
+            var blockLength = (int) Math.Min(BlockSize, size - position);
+            input.ReadExactly(buffer, 0, blockLength);
             var targetEndByte = position + blockLength - 1;
-            var content = new ByteArrayContent(buffer, 0, blockLength);
-            content.Headers.ContentRange =
-                new ContentRangeHeaderValue(position, targetEndByte, size);
-            content.Headers.ContentLength = blockLength;
 
-            var done = false;
+            if (targetEndByte + 1 == size) {
+                using var response = client.SendWithRetry(() => {
+                    var content = new ByteArrayContent(buffer, 0, blockLength);
+                    content.Headers.ContentRange =
+                        new ContentRangeHeaderValue(position, targetEndByte, size);
+                    content.Headers.ContentLength = blockLength;
+                    return new HttpRequestMessage(HttpMethod.Put, uploadUri) {
+                        Content = content
+                    };
+                });
+            } else {
+                using var response = client.SendWithRetry(() => {
+                    var content = new ByteArrayContent(buffer, 0, blockLength);
+                    content.Headers.ContentRange =
+                        new ContentRangeHeaderValue(position, targetEndByte, size);
+                    content.Headers.ContentLength = blockLength;
+                    return new HttpRequestMessage(HttpMethod.Put, uploadUri) {
+                        Content = content
+                    };
+                }, HttpStatusCode.PermanentRedirect);
 
-            while (!done) {
-                try {
-                    if (targetEndByte + 1 == size) {
-                        using var response = client.SendWithRetry(()
-                            => new HttpRequestMessage(HttpMethod.Put, uploadUri) {
-                                Content = content
-                            });
-                    } else {
-                        using var response = client.SendWithRetry(()
-                            => new HttpRequestMessage(HttpMethod.Put, uploadUri) {
-                                Content = content
-                            }, HttpStatusCode.PermanentRedirect);
+                var range = RangeHeaderValue.Parse(response.Headers
+                    .First(h => h.Key == "Range").Value.First());
+                var fromByte = range.Ranges.First().From;
+                var toByte = range.Ranges.First().To;
+                if (fromByte != 0) {
+                    throw new Exception($"Unexpected exception: from byte is {fromByte}");
+                }
 
-                        var range = RangeHeaderValue.Parse(response.Headers
-                            .First(h => h.Key == "Range").Value.First());
-                        var fromByte = range.Ranges.First().From;
-                        var toByte = range.Ranges.First().To;
-                        if (fromByte != 0) {
-                            throw new Exception($"Unexpected exception: from byte is {fromByte}");
-                        }
-
-                        if (toByte != targetEndByte) {
-                            throw new Exception(
-                                $"Unexpected exception: to byte is {toByte}, should be {targetEndByte}");
-                        }
-                    }
-
-                    done = true;
-                } catch (AggregateException ae) {
-                    ae.Handle(x => {
-                        if (x is HttpRequestException) {
-                            Logger.Warn(x, "Temporary upload failure [{0}, {1})", position,
-                                position + blockLength);
-                            Thread.Sleep(TimeSpan.FromSeconds(10));
-                            return true;
-                        }
-
-                        return false;
-                    });
+                if (toByte != targetEndByte) {
+                    throw new Exception(
+                        $"Unexpected exception: to byte is {toByte}, should be {targetEndByte}");
                 }
             }
         }
@@ -180,9 +168,17 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         using var stream = client.Call(new DownloadFileRpc(fileId, offset, offset + count - 1,
             () => Account.AccessToken));
 
-        var memoryStream = new MemoryStream(buffer, bufferOffset, count, true);
-        stream.CopyTo(memoryStream, count);
-        return (int) memoryStream.Position;
+        var totalRead = 0;
+        while (totalRead < count) {
+            var read = stream.Read(buffer, bufferOffset + totalRead, count - totalRead);
+            if (read == 0) {
+                break;
+            }
+
+            totalRead += read;
+        }
+
+        return totalRead;
     }
 
     static readonly Dictionary<string, long> KnownFileSizeCache = new();

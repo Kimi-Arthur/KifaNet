@@ -216,7 +216,17 @@ public class FileStorageClient(string serverId) : StorageClient {
 
         using var st = File.OpenRead(localPath);
         st.Seek(offset, SeekOrigin.Begin);
-        return st.Read(buffer, 0, count);
+        var totalRead = 0;
+        while (totalRead < count) {
+            var read = st.Read(buffer, bufferOffset + totalRead, count - totalRead);
+            if (read == 0) {
+                break;
+            }
+
+            totalRead += read;
+        }
+
+        return totalRead;
     }
 
     public override void Write(string path, Stream stream) {

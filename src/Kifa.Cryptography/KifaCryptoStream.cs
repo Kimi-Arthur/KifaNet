@@ -87,7 +87,11 @@ public class KifaCryptoStream : Stream {
             var internalToRead = (count - readCount).RoundUp(BlockSize);
 
             var internalBuffer = new byte[internalToRead];
-            var internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
+            if (stream.CanSeek) {
+                stream.Position = Position.RoundDown(BlockSize) + (needBlockAhead ? BlockSize : 0);
+            }
+
+            var internalReadCount = ReadInternal(internalBuffer, 0, internalToRead);
 
             if (internalReadCount == internalToRead) {
                 tmp = new byte[internalReadCount];
@@ -105,7 +109,7 @@ public class KifaCryptoStream : Stream {
                 stream.Position = Position.RoundDown(BlockSize);
             }
 
-            var internalReadCount = stream.Read(internalBuffer, 0, internalToRead);
+            var internalReadCount = ReadInternal(internalBuffer, 0, internalToRead);
 
             if (needBlockAhead) {
                 transform.TransformBlock(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
@@ -130,6 +134,20 @@ public class KifaCryptoStream : Stream {
         Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
 
         return count;
+    }
+
+    int ReadInternal(byte[] internalBuffer, int offset, int count) {
+        var totalRead = 0;
+        while (totalRead < count) {
+            var read = stream.Read(internalBuffer, offset + totalRead, count - totalRead);
+            if (read == 0) {
+                break;
+            }
+
+            totalRead += read;
+        }
+
+        return totalRead;
     }
 
     public override long Seek(long offset, SeekOrigin origin) {
