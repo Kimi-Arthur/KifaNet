@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,7 @@ public partial class KifaFile {
             }
 
             Logger.Debug($"Checked source {this}: sha256={FileInfo.Sha256}, size={FileInfo.Size}");
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Failed to check source {this}: {ex}"
@@ -80,7 +81,7 @@ public partial class KifaFile {
         string destinationLocation;
         try {
             destinationLocation = CreateLocation(target);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Failed to create location to upload {this} to {target}: {ex}"
@@ -119,7 +120,7 @@ public partial class KifaFile {
             };
         } catch (FileNotFoundException ex) {
             Logger.Trace(ex, $"File {destination} is not found. This is expected if not uploaded.");
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Failed to check destination {destination}: {ex}"
@@ -132,7 +133,14 @@ public partial class KifaFile {
         destination.Unregister();
         destination.Register();
 
-        Copy(destination);
+        try {
+            Copy(destination);
+        } catch (Exception ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to copy to destination {destination}: {ex}"
+            };
+        }
 
         try {
             CheckDestination(destination, skipVerify);
@@ -142,7 +150,7 @@ public partial class KifaFile {
                 Message =
                     $"Uploaded to destination {destination}{(skipVerify ? " without verification" : "")}."
             };
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
                 Message = $"Failed to check destination {destination} after uploading: {ex}"

@@ -101,21 +101,10 @@ public class SeekableReadStream : Stream {
 
             var chunkOffset = i * maxChunkSize;
             var chunkSize = Math.Min(maxChunkSize, count - chunkOffset);
-            Retry.Run(() => {
-                var readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset,
-                    chunkSize);
-                if (readCount != chunkSize) {
-                    throw new Exception($"Expected {chunkSize}, only got {readCount}");
-                }
-            }, (ex, index) => {
-                if (index >= 5) {
-                    throw ex;
-                }
-
-                Logger.Warn(ex,
-                    $"Internal failure getting {chunkSize} bytes from {Position + chunkOffset}.");
-                Thread.Sleep(TimeSpan.FromSeconds(5 * index));
-            });
+            var readCount = reader(buffer, offset + chunkOffset, Position + chunkOffset, chunkSize);
+            if (readCount != chunkSize) {
+                throw new Exception($"Expected {chunkSize}, only got {readCount}");
+            }
         });
 
         Position += count;

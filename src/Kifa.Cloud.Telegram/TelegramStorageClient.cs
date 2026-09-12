@@ -161,18 +161,24 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             Logger.Debug($"Uploading {path} with temp file id {fileId}...");
 
             var exceptions = new ConcurrentBag<Exception>();
+            using var cts = new CancellationTokenSource();
             var tasks = new Task[totalParts];
 
             Task GetUploadBlockTask(int i)
                 => UploadOneBlock(cellClient, fileId, totalParts, i, stream, i * BlockSize,
                     (int) Math.Min(size - i * BlockSize, BlockSize), exceptions,
-                    uploadInputStreamSemaphore);
+                    uploadInputStreamSemaphore, cts);
 
             for (var i = 0; (long) i * BlockSize < size; ++i) {
                 tasks[i] = GetUploadBlockTask(i);
             }
 
-            Task.WhenAll(tasks).GetAwaiter().GetResult();
+            try {
+                Task.WhenAll(tasks).GetAwaiter().GetResult();
+            } catch {
+                // Exceptions collected in exceptions bag.
+            }
+
             if (exceptions.TryPeek(out var ex)) {
                 throw ex;
             }
@@ -205,44 +211,68 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
     async Task UploadOneBlock(TelegramCellClient cellClient, long fileId, int totalParts,
         int partIndex, Stream stream, long fromPosition, int length,
-        ConcurrentBag<Exception> exceptions, SemaphoreSlim uploadInputStreamSemaphore) {
+        ConcurrentBag<Exception> exceptions, SemaphoreSlim uploadInputStreamSemaphore,
+        CancellationTokenSource cts) {
+        if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
+            return;
+        }
+
         Logger.Trace(
             $"Waiting for uploadSemaphore to uploading part {partIndex} of {totalParts} for {fileId}...");
-        await UploadTaskSemaphore.WaitAsync();
+        try {
+            await UploadTaskSemaphore.WaitAsync(cts.Token);
+        } catch (OperationCanceledException) {
+            return;
+        }
 
         try {
+            if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
+                return;
+            }
+
             var buffer = new byte[length];
 
-            await uploadInputStreamSemaphore.WaitAsync();
+            try {
+                await uploadInputStreamSemaphore.WaitAsync(cts.Token);
+            } catch (OperationCanceledException) {
+                return;
+            }
 
             try {
-                if (!exceptions.IsEmpty) {
+                if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
                     Logger.Trace("Other task already failed. Fail fast.");
                     return;
                 }
 
                 stream.Seek(fromPosition, SeekOrigin.Begin);
-                var readLength = await stream.ReadAsync(buffer);
+                var readLength = await stream.ReadAsync(buffer, cts.Token);
                 if (readLength != length) {
                     throw new FileCorruptedException(
                         $"Unexpected read length {readLength}, expecting {length}");
                 }
-            } catch (IOException ex) {
+            } catch (OperationCanceledException) {
+                return;
+            } catch (Exception ex) {
                 Logger.Error(ex,
                     $"Failed to get the input stream from {fromPosition} to upload part {partIndex} of {totalParts} for {fileId}.");
                 exceptions.Add(ex);
+                cts.Cancel();
                 return;
             } finally {
                 uploadInputStreamSemaphore.Release();
             }
 
-            if (!exceptions.IsEmpty) {
+            if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
                 Logger.Debug("Other task already failed. Fail fast.");
                 return;
             }
 
             Logger.Trace($"Uploading part {partIndex} of {totalParts} for {fileId}...");
             var partResult = await Retry.Run(async () => {
+                if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
+                    throw new OperationCanceledException();
+                }
+
                 Logger.Trace(
                     $"Waiting for start semaphore to upload part {partIndex} of {totalParts} for {fileId}...");
                 using (await PriorityLock.EnterScopeAsync(1)) {
@@ -257,9 +287,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             }
 
             Logger.Trace($"Successfully uploaded part {partIndex} of {totalParts} for {fileId}...");
+        } catch (OperationCanceledException) {
+            // Ignore cancellation
         } catch (Exception ex) {
             Logger.Error(ex, $"Failed to upload part {partIndex} of {totalParts} for {fileId}.");
             exceptions.Add(ex);
+            cts.Cancel();
         } finally {
             UploadTaskSemaphore.Release();
         }
@@ -413,10 +446,15 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     class DownloadState {
         public readonly byte[] LastBlock = new byte[BlockSize];
         public long LastBlockStart = -1;
+        public Exception? LastException;
     }
 
     int Download(TelegramCellClient cellClient, byte[] buffer, string path, int bufferOffset,
         long offset, int count, DownloadState state) {
+        if (state.LastException != null) {
+            throw state.LastException;
+        }
+
         // TODO: When will this happen?
         if (count < 0) {
             count = buffer.Length - bufferOffset;
@@ -442,6 +480,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
         }
 
         var downloadTasks = new List<Task>();
+        var exceptions = new ConcurrentBag<Exception>();
+        using var cts = new CancellationTokenSource();
 
         // Workaround for expiration of document with a bit overhead.
         // This solution generally works if the next loop isn't taking too long. Performance wise,
@@ -456,7 +496,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 (int) Math.Min(count, BlockSize - offset % BlockSize);
 
             downloadTasks.Add(DownloadOneBlock(cellClient, dcId, location, count <= BlockSize,
-                offset, effectiveReadCount, buffer, bufferOffset, state));
+                offset, effectiveReadCount, buffer, bufferOffset, state, exceptions, cts));
 
             count -= effectiveReadCount;
             offset += effectiveReadCount;
@@ -464,26 +504,52 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
             totalRead += effectiveReadCount;
         }
 
-        Task.WhenAll(downloadTasks).GetAwaiter().GetResult();
+        try {
+            Task.WhenAll(downloadTasks).GetAwaiter().GetResult();
+        } catch {
+            // Exceptions collected in exceptions bag.
+        }
+
+        if (exceptions.TryPeek(out var ex)) {
+            state.LastException = ex;
+            throw ex;
+        }
 
         return totalRead;
     }
 
     async Task DownloadOneBlock(TelegramCellClient cellClient, int dcId,
         InputDocumentFileLocation location, bool isLastBlock, long offset, int effectiveReadCount,
-        byte[] buffer, int bufferOffset, DownloadState downloadState) {
+        byte[] buffer, int bufferOffset, DownloadState downloadState,
+        ConcurrentBag<Exception> exceptions, CancellationTokenSource cts) {
+        if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
+            return;
+        }
+
         var requestStart = offset.RoundDown(BlockSize);
 
         Logger.Trace($"To request {BlockSize} from {requestStart}.");
 
         Logger.Trace($"Waiting for semaphore to get block from {offset}...");
-        await DownloadTaskSemaphore.WaitAsync();
+        try {
+            await DownloadTaskSemaphore.WaitAsync(cts.Token);
+        } catch (OperationCanceledException) {
+            return;
+        }
 
         Logger.Trace($"Getting block from {offset}...");
 
         try {
+            if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
+                return;
+            }
+
             var client = await cellClient.GetClientForDC(dcId);
             var downloadResult = await Retry.Run(async () => {
+                if (cts.IsCancellationRequested || !exceptions.IsEmpty) {
+                    throw new OperationCanceledException();
+                }
+
                 Logger.Trace($"Waiting for start semaphore to download from {offset}...");
                 using (await PriorityLock.EnterScopeAsync(1)) {
                 }
@@ -511,6 +577,12 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                 downloadState.LastBlockStart = requestStart;
                 uploadFile.bytes.CopyTo(downloadState.LastBlock, 0);
             }
+        } catch (OperationCanceledException) {
+            // Ignore cancellation
+        } catch (Exception ex) {
+            Logger.Error(ex, $"Failed to download block from {offset}.");
+            exceptions.Add(ex);
+            cts.Cancel();
         } finally {
             DownloadTaskSemaphore.Release();
         }
