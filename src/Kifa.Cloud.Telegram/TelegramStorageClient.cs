@@ -268,7 +268,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     const string Failure420Key = "420";
     const string Failure503Key = "503";
     public static int Failure420Count { get; set; } = 1000;
-    public static int Failure503Count { get; set; } = 20;
+    public static int Failure503Count { get; set; } = 3;
     public static int FailureOtherCount { get; set; } = 20;
 
     public static readonly Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
