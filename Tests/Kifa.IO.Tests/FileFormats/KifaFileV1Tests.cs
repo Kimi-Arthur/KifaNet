@@ -30,10 +30,12 @@ public class KifaFileV1Tests {
         });
         encryptionStream.CopyTo(encrypted);
         using var output = format.GetDecodeStream(encrypted, EncryptionKey);
-        var fs1 = FileInformation.GetInformation(ms, FileProperties.Size | FileProperties.Sha256);
-        var fs2 = FileInformation.GetInformation(output,
-            FileProperties.Size | FileProperties.Sha256);
-        Assert.Equal(fs1.Size, fs2.Size);
-        Assert.Equal(fs1.Sha256, fs2.Sha256);
+        var fs1 = FileInformation.GetInformation(ms, FileProperties.AllVerifiable);
+        var fs2 = FileInformation.GetInformation(output, FileProperties.AllVerifiable);
+        Assert.Equal(FileProperties.None, fs1.CompareProperties(fs2, FileProperties.AllVerifiable));
+
+        // Calculate again to test seeking.
+        fs2 = FileInformation.GetInformation(output, FileProperties.AllVerifiable);
+        Assert.Equal(FileProperties.None, fs1.CompareProperties(fs2, FileProperties.AllVerifiable));
     }
 }

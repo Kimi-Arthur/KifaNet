@@ -25,18 +25,23 @@ public class KifaFileV1Format : KifaFileFormat {
 
     public override Stream GetDecodeStream(Stream encodedStream, string? encryptionKey = null) {
         if (encryptionKey == null) {
-            // We need to get the secondary id from the stream as ":SHA256".
+            // Retrieve encryption key using the file's SHA-256 identifier.
             encodedStream.Seek(16, SeekOrigin.Begin);
             var sha256Bytes = new byte[32];
-            encodedStream.Read(sha256Bytes, 0, 32);
-            var id = ":" + sha256Bytes.ToHexString();
+            encodedStream.ReadExactly(sha256Bytes, 0, 32);
+            var sha256 = sha256Bytes.ToHexString();
 
-            encryptionKey = FileInformation.Client.Get(id).EncryptionKey;
+            encryptionKey = FileInformation.Client.Get($"/$/{sha256}")?.EncryptionKey ??
+                            FileInformation.Client.Get($":{sha256}")?.EncryptionKey;
+            if (encryptionKey == null) {
+                throw new InvalidOperationException(
+                    $"Encryption key for file with SHA-256 {sha256} not found.");
+            }
         }
 
         var sizeBytes = new byte[8];
         encodedStream.Seek(8, SeekOrigin.Begin);
-        encodedStream.Read(sizeBytes, 0, 8);
+        encodedStream.ReadExactly(sizeBytes, 0, 8);
         var size = sizeBytes.ToInt64();
 
         ICryptoTransform decoder;

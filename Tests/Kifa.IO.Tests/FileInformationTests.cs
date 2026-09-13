@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using Xunit;
@@ -68,9 +69,57 @@ public class FileInformationTests {
         Assert.Null(info.Sha1);
         Assert.Null(info.Sha256);
         Assert.Null(info.Crc32);
-        Assert.Null(info.BlockMd5);
-        Assert.Null(info.BlockSha1);
-        Assert.Null(info.BlockSha256);
+        Assert.Empty(info.BlockMd5);
+        Assert.Empty(info.BlockSha1);
+        Assert.Empty(info.BlockSha256);
         Assert.Null(info.SliceMd5);
+    }
+
+    [Fact]
+    public void GetInformationPartialReadsTest() {
+        var data = new byte[(FileInformation.BlockSize) * 2 + 1234];
+        new Random(42).NextBytes(data);
+
+        var normalInfo = FileInformation.GetInformation(new MemoryStream(data),
+            FileProperties.AllVerifiable);
+        var chunkedInfo = FileInformation.GetInformation(
+            new ChunkedStream(new MemoryStream(data), 65536), FileProperties.AllVerifiable);
+
+        Assert.Equal(FileProperties.None,
+            normalInfo.CompareProperties(chunkedInfo, FileProperties.AllVerifiable));
+        Assert.Equal(3, chunkedInfo.BlockSha256.Count);
+        Assert.Equal(3, normalInfo.BlockSha256.Count);
+    }
+
+    class ChunkedStream : Stream {
+        readonly Stream inner;
+        readonly int maxChunkSize;
+
+        public ChunkedStream(Stream inner, int maxChunkSize) {
+            this.inner = inner;
+            this.maxChunkSize = maxChunkSize;
+        }
+
+        public override bool CanRead => inner.CanRead;
+        public override bool CanSeek => inner.CanSeek;
+        public override bool CanWrite => inner.CanWrite;
+        public override long Length => inner.Length;
+
+        public override long Position {
+            get => inner.Position;
+            set => inner.Position = value;
+        }
+
+        public override void Flush() => inner.Flush();
+
+        public override int Read(byte[] buffer, int offset, int count) =>
+            inner.Read(buffer, offset, Math.Min(count, maxChunkSize));
+
+        public override long Seek(long offset, SeekOrigin origin) => inner.Seek(offset, origin);
+
+        public override void SetLength(long value) => inner.SetLength(value);
+
+        public override void Write(byte[] buffer, int offset, int count) =>
+            inner.Write(buffer, offset, count);
     }
 }

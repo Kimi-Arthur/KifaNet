@@ -216,6 +216,7 @@ public class FileStorageClient(string serverId) : StorageClient {
 
         using var st = File.OpenRead(localPath);
         st.Seek(offset, SeekOrigin.Begin);
+        // Must respect bufferOffset and loop until the requested count is read (or EOF) to avoid partial buffer corruption.
         var totalRead = 0;
         while (totalRead < count) {
             var read = st.Read(buffer, bufferOffset + totalRead, count - totalRead);

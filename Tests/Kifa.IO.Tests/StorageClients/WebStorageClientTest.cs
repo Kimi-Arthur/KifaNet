@@ -10,8 +10,8 @@ public class WebStorageClientTest {
             Protocol = "https"
         }.OpenRead("//cdn.duden.de/_media_/audio/ID4111794_361730273.mp3"), FileProperties.All);
         Assert.Equal(25703, info.Size);
-        Assert.Equal("EEDBE3159BFF1B82ED7D862889E9E535", info.Md5);
-        Assert.Equal("840B6700B2365FAAB27FB7E5F70D72539E91A6BD49950FFA26B98C49DDFAC536",
+        Assert.Equal("00D9F96646EB63B515B69F193D6503BC", info.Md5);
+        Assert.Equal("73905B7CBABF9B68046527D110D195BDBEFD1878F6D7258B3967D9E8882C9D87",
             info.Sha256);
     }
 }

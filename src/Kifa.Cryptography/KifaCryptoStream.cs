@@ -88,6 +88,7 @@ public class KifaCryptoStream : Stream {
 
             var internalBuffer = new byte[internalToRead];
             if (stream.CanSeek) {
+                // Ensure underlying seekable stream is aligned with the requested block boundary plus any lookahead block.
                 stream.Position = Position.RoundDown(BlockSize) + (needBlockAhead ? BlockSize : 0);
             }
 
@@ -136,6 +137,9 @@ public class KifaCryptoStream : Stream {
         return count;
     }
 
+    // Reads until count is satisfied or true EOF is reached. Single Stream.Read() calls on network/storage streams
+    // (especially on mobile/Termux) can return partial chunks; treating partial reads as EOF prematurely triggers
+    // TransformFinalBlock, which appends padding mid-stream and corrupts all subsequent cipher blocks.
     int ReadInternal(byte[] internalBuffer, int offset, int count) {
         var totalRead = 0;
         while (totalRead < count) {

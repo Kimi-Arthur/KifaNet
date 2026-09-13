@@ -141,6 +141,42 @@ public class KifaCryptoStreamTests {
             Assert.Equal(rawHash, decryptInfo.Sha256);
         }
     }
+
+    [Fact]
+    public void BlockChunkReadTest() {
+        foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
+                 data) {
+            var rawBytes = File.ReadAllBytes(rawFile);
+            var decryptTransform = aesAlgorithm.CreateDecryptor();
+            using var decryptStream =
+                new KifaCryptoStream(File.OpenRead(encryptedFile), decryptTransform, rawSize, true);
+
+            // Read in 100-byte chunks
+            var chunkSize = 100;
+            var buffer = new byte[chunkSize];
+            var totalRead = 0;
+            while (totalRead < rawSize) {
+                var toRead = (int) Math.Min(chunkSize, rawSize - totalRead);
+                var read = decryptStream.Read(buffer, 0, toRead);
+                Assert.Equal(toRead, read);
+                for (int i = 0; i < read; i++) {
+                    Assert.Equal(rawBytes[totalRead + i], buffer[i]);
+                }
+                totalRead += read;
+            }
+
+            // Now test seeking and reading
+            for (var offset = 0; offset < rawSize; offset += 500) {
+                decryptStream.Seek(offset, SeekOrigin.Begin);
+                var toRead = (int) Math.Min(chunkSize, rawSize - offset);
+                var read = decryptStream.Read(buffer, 0, toRead);
+                Assert.Equal(toRead, read);
+                for (int i = 0; i < read; i++) {
+                    Assert.Equal(rawBytes[offset + i], buffer[i]);
+                }
+            }
+        }
+    }
 }
 
 class PartialReadStream(Stream baseStream, int maxChunkSize) : Stream {

@@ -119,6 +119,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
         for (long position = 0; position < size; position += BlockSize) {
             var blockLength = (int) Math.Min(BlockSize, size - position);
+            // Use ReadExactly so the full block is retrieved before computing upload Content-Range headers.
             input.ReadExactly(buffer, 0, blockLength);
             var targetEndByte = position + blockLength - 1;
 
@@ -168,6 +169,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
         using var stream = client.Call(new DownloadFileRpc(fileId, offset, offset + count - 1,
             () => Account.AccessToken));
 
+        // Read in a loop directly into buffer at bufferOffset to handle partial chunk deliveries.
         var totalRead = 0;
         while (totalRead < count) {
             var read = stream.Read(buffer, bufferOffset + totalRead, count - totalRead);

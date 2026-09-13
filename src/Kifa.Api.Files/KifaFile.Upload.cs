@@ -17,9 +17,11 @@ public partial class KifaFile {
         set => Late.Set(ref field, value);
     }
 
+    public static Func<string, bool, bool>? ConfirmPrompt { get; set; }
+
     public KifaActionResult Upload(List<CloudTarget> targets, bool deleteSource = false,
         bool useCache = false, bool downloadLocal = false, bool skipVerify = false,
-        bool skipRegistered = false) {
+        bool skipRegistered = false, Func<string, bool, bool>? confirmPrompt = null) {
         UseCache = useCache | downloadLocal;
 
         try {
@@ -42,7 +44,7 @@ public partial class KifaFile {
 
         var result = new KifaBatchActionResult();
         result.AddRange(targets.Select(target => (target.ToString(),
-            UploadOneFile(target, deleteSource, skipVerify, skipRegistered))));
+            UploadOneFile(target, deleteSource, skipVerify, skipRegistered, confirmPrompt))));
 
         if (result.IsAcceptable) {
             if (CleanupFiles(deleteSource, downloadLocal)) {
@@ -82,7 +84,7 @@ public partial class KifaFile {
     static readonly HashSet<(string Sha256, string Target)> CheckedTargets = new();
 
     KifaActionResult UploadOneFile(CloudTarget target, bool deleteSource, bool skipVerify,
-        bool skipRegistered) {
+        bool skipRegistered, Func<string, bool, bool>? confirmPrompt = null) {
         string destinationLocation;
         try {
             destinationLocation = CreateLocation(target);
@@ -126,10 +128,24 @@ public partial class KifaFile {
         } catch (FileNotFoundException ex) {
             Logger.Trace(ex, $"File {destination} is not found. This is expected if not uploaded.");
         } catch (Exception ex) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Error,
-                Message = $"Failed to check destination {destination}: {ex}"
-            };
+            var prompt = confirmPrompt ?? ConfirmPrompt;
+            var confirmed = prompt?.Invoke(
+                $"Existing destination {destination} failed check ({ex.Message}). Confirm deleting it to re-upload?",
+                true) ?? false;
+            if (!confirmed) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Destination {destination} check failed ({ex.Message}), skipped."
+                };
+            }
+
+            Logger.Warn(ex,
+                $"Existing destination {destination} failed check. Deleting and re-uploading as confirmed...");
+            try {
+                destination.Delete();
+            } catch (Exception deleteEx) {
+                Logger.Warn(deleteEx, $"Failed to delete corrupted destination {destination}.");
+            }
         }
 
         // Register the destination location so that it will go to the same place if retried in

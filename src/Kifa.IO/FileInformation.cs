@@ -123,54 +123,49 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
             checkedStream.Seek(0, SeekOrigin.Begin);
         }
 
-        if (requiredProperties.HasFlag(FileProperties.SliceMd5)) {
-            readLength = checkedStream.Read(buffer, 0, SliceLength);
-            SliceMd5 = new MD5CryptoServiceProvider().ComputeHash(buffer, 0, readLength)
-                .ToHexString();
-        }
-
         if ((requiredProperties & FileProperties.AllHashes) != FileProperties.None) {
             var transformers = new List<Action<byte[], int>>();
-            HashAlgorithm? md5Hasher = null;
-            if (requiredProperties.HasFlag(FileProperties.Md5)) {
-                md5Hasher = new MD5CryptoServiceProvider();
+            using var md5Hasher =
+                requiredProperties.HasFlag(FileProperties.Md5) ? MD5.Create() : null;
+            // Use null for outputBuffer to avoid mutating the shared buffer during concurrent hashing in Parallel.ForEach.
+            if (md5Hasher != null) {
                 transformers.Add((buffer, readLength)
-                    => md5Hasher.TransformBlock(buffer, 0, readLength, buffer, 0));
+                    => md5Hasher.TransformBlock(buffer, 0, readLength, null, 0));
             }
 
-            HashAlgorithm? sha1Hasher = null;
-            if (requiredProperties.HasFlag(FileProperties.Sha1)) {
-                sha1Hasher = new SHA1CryptoServiceProvider();
+            using var sha1Hasher =
+                requiredProperties.HasFlag(FileProperties.Sha1) ? SHA1.Create() : null;
+            if (sha1Hasher != null) {
                 transformers.Add((buffer, readLength)
-                    => sha1Hasher.TransformBlock(buffer, 0, readLength, buffer, 0));
+                    => sha1Hasher.TransformBlock(buffer, 0, readLength, null, 0));
             }
 
-            HashAlgorithm? sha256Hasher = null;
-            if (requiredProperties.HasFlag(FileProperties.Sha256)) {
-                sha256Hasher = new SHA256CryptoServiceProvider();
+            using var sha256Hasher =
+                requiredProperties.HasFlag(FileProperties.Sha256) ? SHA256.Create() : null;
+            if (sha256Hasher != null) {
                 transformers.Add((buffer, readLength)
-                    => sha256Hasher.TransformBlock(buffer, 0, readLength, buffer, 0));
+                    => sha256Hasher.TransformBlock(buffer, 0, readLength, null, 0));
             }
 
-            HashAlgorithm? blockMd5Hasher;
-            if (requiredProperties.HasFlag(FileProperties.BlockMd5)) {
-                blockMd5Hasher = new MD5CryptoServiceProvider();
+            using var blockMd5Hasher =
+                requiredProperties.HasFlag(FileProperties.BlockMd5) ? MD5.Create() : null;
+            if (blockMd5Hasher != null) {
                 transformers.Add((buffer, readLength)
                     => BlockMd5.Add(blockMd5Hasher.ComputeHash(buffer, 0, readLength)
                         .ToHexString()));
             }
 
-            HashAlgorithm? blockSha1Hasher;
-            if (requiredProperties.HasFlag(FileProperties.BlockSha1)) {
-                blockSha1Hasher = new SHA1CryptoServiceProvider();
+            using var blockSha1Hasher =
+                requiredProperties.HasFlag(FileProperties.BlockSha1) ? SHA1.Create() : null;
+            if (blockSha1Hasher != null) {
                 transformers.Add((buffer, readLength)
                     => BlockSha1.Add(blockSha1Hasher.ComputeHash(buffer, 0, readLength)
                         .ToHexString()));
             }
 
-            HashAlgorithm? blockSha256Hasher;
-            if (requiredProperties.HasFlag(FileProperties.BlockSha256)) {
-                blockSha256Hasher = new SHA256CryptoServiceProvider();
+            using var blockSha256Hasher =
+                requiredProperties.HasFlag(FileProperties.BlockSha256) ? SHA256.Create() : null;
+            if (blockSha256Hasher != null) {
                 transformers.Add((buffer, readLength)
                     => BlockSha256.Add(blockSha256Hasher.ComputeHash(buffer, 0, readLength)
                         .ToHexString()));
@@ -192,14 +187,34 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
                     => adler32Hasher.TransformBytes(buffer, 0, readLength));
             }
 
+            var isFirstBlock = true;
+            if (requiredProperties.HasFlag(FileProperties.SliceMd5)) {
+                transformers.Add((buf, len) => {
+                    if (isFirstBlock) {
+                        using var sliceMd5 = MD5.Create();
+                        SliceMd5 = sliceMd5.ComputeHash(buf, 0, Math.Min(len, SliceLength))
+                            .ToHexString();
+                    }
+                });
+            }
+
             var threadCount = transformers.Count;
-            while ((readLength += checkedStream.Read(buffer, readLength, BlockSize - readLength)) !=
-                   0) {
+            int read;
+            while ((read = checkedStream.Read(buffer, readLength, BlockSize - readLength)) > 0) {
+                readLength += read;
+                if (readLength == BlockSize) {
+                    Parallel.ForEach(transformers, new ParallelOptions {
+                        MaxDegreeOfParallelism = threadCount
+                    }, transformer => transformer(buffer, readLength));
+                    isFirstBlock = false;
+                    readLength = 0;
+                }
+            }
+
+            if (readLength > 0) {
                 Parallel.ForEach(transformers, new ParallelOptions {
                     MaxDegreeOfParallelism = threadCount
                 }, transformer => transformer(buffer, readLength));
-
-                readLength = 0;
             }
 
             if (md5Hasher != null) {
@@ -220,6 +235,19 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
             Crc32 ??= crc32Hasher?.TransformFinal().GetBytes().Reverse().ToArray().ToHexString();
             Adler32 ??= adler32Hasher?.TransformFinal().GetBytes().Reverse().ToArray()
                 .ToHexString();
+        } else if (requiredProperties.HasFlag(FileProperties.SliceMd5)) {
+            readLength = 0;
+            while (readLength < SliceLength) {
+                var read = checkedStream.Read(buffer, readLength, SliceLength - readLength);
+                if (read == 0) {
+                    break;
+                }
+
+                readLength += read;
+            }
+
+            using var sliceMd5 = MD5.Create();
+            SliceMd5 = sliceMd5.ComputeHash(buffer, 0, readLength).ToHexString();
         }
 
         if (requiredProperties.HasFlag(FileProperties.EncryptionKey)) {

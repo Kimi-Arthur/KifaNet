@@ -12,12 +12,6 @@ namespace Kifa.IO;
 public class VerifiableStream : Stream {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static readonly HashAlgorithm MD5Hasher = new MD5CryptoServiceProvider();
-
-    static readonly HashAlgorithm SHA1Hasher = new SHA1CryptoServiceProvider();
-
-    static readonly HashAlgorithm SHA256Hasher = new SHA256CryptoServiceProvider();
-
     readonly FileInformation? info;
 
     byte[]? lastBlock;
@@ -73,7 +67,16 @@ public class VerifiableStream : Stream {
                 for (var i = 0; i < 5; ++i) {
                     try {
                         stream.Seek(pos, SeekOrigin.Begin);
-                        bytesRead = stream.Read(lastBlock, 0, bytesToRead);
+                        bytesRead = 0;
+                        while (bytesRead < bytesToRead) {
+                            var read = stream.Read(lastBlock, bytesRead, bytesToRead - bytesRead);
+                            if (read == 0) {
+                                break;
+                            }
+
+                            bytesRead += read;
+                        }
+
                         if (bytesRead != bytesToRead) {
                             Logger.Warn("Didn't get expected amount of data.");
                             Logger.Warn("Read {0} bytes, should be {1} bytes.", bytesRead,
@@ -181,10 +184,13 @@ public class VerifiableStream : Stream {
         int count, int blockId) {
         bool? result = null;
         string? md5 = null, sha1 = null, sha256 = null;
+        using var md5Hasher = MD5.Create();
+        using var sha1Hasher = SHA1.Create();
+        using var sha256Hasher = SHA256.Create();
         var transformers = new List<Action> {
-            () => md5 = MD5Hasher.ComputeHash(buffer, offset, count).ToHexString(),
-            () => sha1 = SHA1Hasher.ComputeHash(buffer, offset, count).ToHexString(),
-            () => sha256 = SHA256Hasher.ComputeHash(buffer, offset, count).ToHexString(),
+            () => md5 = md5Hasher.ComputeHash(buffer, offset, count).ToHexString(),
+            () => sha1 = sha1Hasher.ComputeHash(buffer, offset, count).ToHexString(),
+            () => sha256 = sha256Hasher.ComputeHash(buffer, offset, count).ToHexString(),
         };
 
         Parallel.ForEach(transformers, new ParallelOptions {
