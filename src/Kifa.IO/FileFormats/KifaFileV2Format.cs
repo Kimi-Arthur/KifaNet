@@ -47,17 +47,13 @@ public class KifaFileV2Format : KifaFileFormat {
         encodedStream.ReadExactly(sizeBytes, 0, 8);
         var size = sizeBytes.ToInt64();
 
-        // Pass aesAlgorithm ownership to CounterCryptoStream so native OpenSSL contexts remain alive during streaming.
         var aesAlgorithm = Aes.Create();
-        aesAlgorithm.Padding = PaddingMode.None;
         aesAlgorithm.Key = encryptionKey.ParseHexString();
-        aesAlgorithm.Mode = CipherMode.ECB;
-        var encoder = aesAlgorithm.CreateEncryptor();
 
         var counter = GetCounter(sha256Bytes);
         return new CounterCryptoStream(new PatchedStream(encodedStream) {
             IgnoreBefore = HeaderLength
-        }, encoder, size, counter, aesAlgorithm);
+        }, aesAlgorithm, size, counter);
     }
 
     public override long HeaderSize => 0x30;
@@ -80,16 +76,11 @@ public class KifaFileV2Format : KifaFileFormat {
         var sha256 = info.Sha256.ParseHexString();
         sha256.CopyTo(header, 16);
 
-        // Pass aesAlgorithm ownership to CounterCryptoStream so native OpenSSL contexts remain alive during streaming.
         var aesAlgorithm = Aes.Create();
-        aesAlgorithm.Padding = PaddingMode.None;
         aesAlgorithm.Key = info.EncryptionKey.ParseHexString();
-        aesAlgorithm.Mode = CipherMode.ECB;
-        var encoder = aesAlgorithm.CreateEncryptor();
 
         var counter = GetCounter(sha256);
-        return new PatchedStream(new CounterCryptoStream(rawStream, encoder, length, counter,
-            aesAlgorithm)) {
+        return new PatchedStream(new CounterCryptoStream(rawStream, aesAlgorithm, length, counter)) {
             BufferBefore = header.ToArray()
         };
     }

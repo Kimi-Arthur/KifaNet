@@ -42,16 +42,12 @@ public class KifaFileV0Format : KifaFileFormat {
         encodedStream.ReadExactly(sizeBytes, 0, 92);
         var size = long.Parse(Encoding.UTF8.GetString(sizeBytes, 0, 92));
 
-        // Pass aesAlgorithm ownership to KifaCryptoStream so native OpenSSL contexts remain alive during streaming.
         var aesAlgorithm = Aes.Create();
-        aesAlgorithm.Padding = PaddingMode.ANSIX923;
         aesAlgorithm.Key = encryptionKey.ParseHexString();
-        aesAlgorithm.Mode = CipherMode.ECB;
-        var decoder = aesAlgorithm.CreateDecryptor();
 
         return new KifaCryptoStream(new PatchedStream(encodedStream) {
             IgnoreBefore = 0x1225
-        }, decoder, size, true, aesAlgorithm);
+        }, aesAlgorithm, size, true);
     }
 
     public override Stream GetEncodeStream(Stream rawStream, FileInformation info)

@@ -5,26 +5,31 @@ using System.Security.Cryptography;
 namespace Kifa.Cryptography;
 
 public class KifaCryptoStream : Stream {
-    readonly bool needBlockAhead;
+    const int BlockSize = 16;
 
-    // Keep reference to the underlying SymmetricAlgorithm so native OpenSSL cipher contexts are not GC'd prematurely during streaming.
-    readonly IDisposable? algorithm;
-    byte[] padBuffer;
-
+    readonly Stream stream;
+    readonly Aes aes;
+    readonly bool isDecoding;
     long position;
-    Stream stream;
-    ICryptoTransform transform;
+
+    public KifaCryptoStream(Stream stream, Aes aes, long outputLength, bool isDecoding) {
+        this.stream = stream;
+        this.aes = aes;
+        this.isDecoding = isDecoding;
+        Length = outputLength;
+    }
 
     public KifaCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
         bool needBlockAhead, IDisposable? algorithm = null) {
         this.stream = stream;
+        this.isDecoding = needBlockAhead;
         Length = outputLength;
-        this.needBlockAhead = needBlockAhead;
-        this.transform = transform;
-        this.algorithm = algorithm;
+        if (algorithm is Aes a) {
+            this.aes = a;
+        } else {
+            throw new NotSupportedException("Only Aes algorithm is supported by KifaCryptoStream.");
+        }
     }
-
-    int BlockSize => transform.InputBlockSize;
 
     public override bool CanRead => stream.CanRead;
 
@@ -36,14 +41,7 @@ public class KifaCryptoStream : Stream {
 
     public override long Position {
         get => position;
-
-        set {
-            if ((value - 1) / BlockSize != (position - 1) / BlockSize) {
-                padBuffer = null;
-            }
-
-            position = value;
-        }
+        set => position = value;
     }
 
     public override void Flush() {
@@ -69,96 +67,101 @@ public class KifaCryptoStream : Stream {
             return 0;
         }
 
-        var readCount = 0;
+        return isDecoding
+            ? ReadDecrypted(buffer, offset, count)
+            : ReadEncrypted(buffer, offset, count);
+    }
 
-        byte[] tmp;
+    int ReadDecrypted(byte[] buffer, int offset, int count) {
+        var startBlock = Position.RoundDown(BlockSize);
+        var endBlock = (Position + count).RoundUp(BlockSize);
+        var totalAlignedBytes = (int) (endBlock - startBlock);
 
-        if (padBuffer != null) {
-            var leftOverCount = (int) Math.Min(Position.RoundUp(BlockSize) - Position, count);
-            Buffer.BlockCopy(padBuffer, (int) (Position % BlockSize), buffer, offset,
-                leftOverCount);
-
-            Position += leftOverCount;
-            readCount += leftOverCount;
-            if (readCount == count) {
-                return count;
-            }
-
-            if (Position % BlockSize != 0) {
-                throw new Exception("Unexpected");
-            }
-
-            var internalToRead = (count - readCount).RoundUp(BlockSize);
-
-            var internalBuffer = new byte[internalToRead];
-            if (stream.CanSeek) {
-                // Ensure underlying seekable stream is aligned with the requested block boundary plus any lookahead block.
-                stream.Position = Position.RoundDown(BlockSize) + (needBlockAhead ? BlockSize : 0);
-            }
-
-            var internalReadCount = ReadInternal(internalBuffer, 0, internalToRead);
-
-            if (internalReadCount == internalToRead) {
-                tmp = new byte[internalReadCount];
-                TransformBlockChunked(internalBuffer, 0, internalReadCount, tmp, 0);
-            } else {
-                tmp = transform.TransformFinalBlock(internalBuffer, 0, internalReadCount);
-            }
-        } else {
-            var internalToRead =
-                (int) ((Position + count - readCount).RoundUp(BlockSize) -
-                       Position.RoundDown(BlockSize)) + (needBlockAhead ? BlockSize : 0);
-            var internalBuffer = new byte[internalToRead];
-
-            if (stream.CanSeek) {
-                stream.Position = Position.RoundDown(BlockSize);
-            }
-
-            var internalReadCount = ReadInternal(internalBuffer, 0, internalToRead);
-
-            if (needBlockAhead) {
-                TransformBlockChunked(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
-            }
-
-            if (internalReadCount == internalToRead) {
-                tmp = new byte[internalReadCount - (needBlockAhead ? BlockSize : 0)];
-                TransformBlockChunked(internalBuffer, needBlockAhead ? BlockSize : 0,
-                    internalReadCount - (needBlockAhead ? BlockSize : 0), tmp, 0);
-            } else {
-                tmp = transform.TransformFinalBlock(internalBuffer, needBlockAhead ? BlockSize : 0,
-                    internalReadCount - (needBlockAhead ? BlockSize : 0));
-            }
+        if (stream.CanSeek) {
+            stream.Position = startBlock;
         }
 
-        Buffer.BlockCopy(tmp, (int) (Position % BlockSize), buffer, offset + readCount,
-            count - readCount);
+        var cipherBuffer = new byte[totalAlignedBytes];
+        var totalRead = ReadInternal(cipherBuffer, 0, totalAlignedBytes);
+        if (totalRead < totalAlignedBytes) {
+            Array.Clear(cipherBuffer, totalRead, totalAlignedBytes - totalRead);
+        }
 
-        Position += count - readCount;
-        var padCount = tmp.Length % BlockSize == 0 ? BlockSize : tmp.Length % BlockSize;
-        padBuffer = new byte[padCount];
-        Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
+        var plainBuffer = new byte[totalAlignedBytes];
+        aes.DecryptEcb(cipherBuffer, plainBuffer, PaddingMode.None);
 
+        var copyOffset = (int) (Position - startBlock);
+        Buffer.BlockCopy(plainBuffer, copyOffset, buffer, offset, count);
+
+        Position += count;
         return count;
     }
 
-    // Maximum block size per TransformBlock call. Breaking large multi-megabyte transfers into 64KB chunks
-    // prevents native OpenSSL / SIMD buffer boundary corruption on Android/ARM64 and improves CPU cache locality.
-    const int CryptoChunkSize = 64 * 1024;
+    int ReadEncrypted(byte[] buffer, int offset, int count) {
+        var startBlock = Position.RoundDown(BlockSize);
+        var endBlock = (Position + count).RoundUp(BlockSize);
+        var totalAlignedBytes = (int) (endBlock - startBlock);
 
-    void TransformBlockChunked(byte[] inputBuffer, int inputOffset, int inputCount,
-        byte[] outputBuffer, int outputOffset) {
-        var processed = 0;
-        while (processed < inputCount) {
-            var chunkSize = Math.Min(CryptoChunkSize, inputCount - processed);
-            transform.TransformBlock(inputBuffer, inputOffset + processed, chunkSize, outputBuffer,
-                outputOffset + processed);
-            processed += chunkSize;
+        var lastBlockStart = Length - BlockSize;
+        var plainBuffer = new byte[totalAlignedBytes];
+
+        if (endBlock <= lastBlockStart) {
+            // All requested blocks are full plaintext blocks before the final padded block.
+            if (stream.CanSeek) {
+                stream.Position = startBlock;
+            }
+
+            ReadInternal(plainBuffer, 0, totalAlignedBytes);
+        } else if (startBlock >= lastBlockStart) {
+            // Only the final padded block is requested.
+            var rawPlaintextSize = stream.CanSeek ? stream.Length : Length - BlockSize;
+            var lastBlockPlainCount =
+                (int) Math.Max(0, Math.Min(BlockSize, rawPlaintextSize - lastBlockStart));
+            var padCount = BlockSize - lastBlockPlainCount;
+
+            if (stream.CanSeek) {
+                stream.Position = lastBlockStart;
+            }
+
+            if (lastBlockPlainCount > 0) {
+                ReadInternal(plainBuffer, 0, lastBlockPlainCount);
+            }
+
+            // ANSIX923 padding: padCount - 1 zeros followed by padCount byte
+            Array.Clear(plainBuffer, lastBlockPlainCount, padCount - 1);
+            plainBuffer[BlockSize - 1] = (byte) padCount;
+        } else {
+            // Span across regular blocks and the final padded block.
+            var nonFinalBytes = (int) (lastBlockStart - startBlock);
+            if (stream.CanSeek) {
+                stream.Position = startBlock;
+            }
+
+            ReadInternal(plainBuffer, 0, nonFinalBytes);
+
+            var rawPlaintextSize = stream.CanSeek ? stream.Length : Length - BlockSize;
+            var lastBlockPlainCount =
+                (int) Math.Max(0, Math.Min(BlockSize, rawPlaintextSize - lastBlockStart));
+            var padCount = BlockSize - lastBlockPlainCount;
+
+            if (lastBlockPlainCount > 0) {
+                ReadInternal(plainBuffer, nonFinalBytes, lastBlockPlainCount);
+            }
+
+            Array.Clear(plainBuffer, nonFinalBytes + lastBlockPlainCount, padCount - 1);
+            plainBuffer[totalAlignedBytes - 1] = (byte) padCount;
         }
+
+        var cipherBuffer = new byte[totalAlignedBytes];
+        aes.EncryptEcb(plainBuffer, cipherBuffer, PaddingMode.None);
+
+        var copyOffset = (int) (Position - startBlock);
+        Buffer.BlockCopy(cipherBuffer, copyOffset, buffer, offset, count);
+
+        Position += count;
+        return count;
     }
 
-    // Reads until count is satisfied or true EOF is reached. Single Stream.Read() calls on network/storage streams
-    // (especially on mobile/Termux) can return partial chunks; treating partial reads as EOF prematurely triggers
-    // TransformFinalBlock, which appends padding mid-stream and corrupts all subsequent cipher blocks.
     int ReadInternal(byte[] internalBuffer, int offset, int count) {
         var totalRead = 0;
         while (totalRead < count) {
@@ -202,12 +205,8 @@ public class KifaCryptoStream : Stream {
             if (disposing) {
                 Flush();
                 stream?.Dispose();
-                transform?.Dispose();
-                algorithm?.Dispose();
             }
         } finally {
-            stream = null;
-            transform = null;
             base.Dispose(disposing);
         }
     }

@@ -8,11 +8,12 @@ using Xunit;
 namespace Kifa.Cryptography.Tests;
 
 public class KifaCryptoStreamTests {
-    readonly Aes aesAlgorithm = new AesCryptoServiceProvider {
-        Padding = PaddingMode.ANSIX923,
-        Key = "C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795".ParseHexString(),
-        Mode = CipherMode.ECB
-    };
+    readonly Aes aesAlgorithm = Aes.Create();
+
+    public KifaCryptoStreamTests() {
+        aesAlgorithm.Key =
+            "C7C37D56DD70FD6258BDD01AED083C88432EC27536DF9328D6329382183DB795".ParseHexString();
+    }
 
     readonly List<(string rawFile, long rawSize, string rawHash, string encryptedFile, long
         encryptedSize, string encryptedHash)> data = new() {
@@ -28,10 +29,8 @@ public class KifaCryptoStreamTests {
     public void KifaCryptoStreamDecryptionReadBasicTest() {
         foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
                  data) {
-            var transform = aesAlgorithm.CreateDecryptor();
-
             using var stream =
-                new KifaCryptoStream(File.OpenRead(encryptedFile), transform, rawSize, true);
+                new KifaCryptoStream(File.OpenRead(encryptedFile), aesAlgorithm, rawSize, true);
             var info = FileInformation.GetInformation(stream,
                 FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
             Assert.Equal(rawSize, info.Size);
@@ -61,10 +60,8 @@ public class KifaCryptoStreamTests {
     public void KifaCryptoStreamDecryptionReadIncompleteEndTest() {
         foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
                  data) {
-            var transform = aesAlgorithm.CreateDecryptor();
-
             using var stream =
-                new KifaCryptoStream(File.OpenRead(encryptedFile), transform, rawSize, true);
+                new KifaCryptoStream(File.OpenRead(encryptedFile), aesAlgorithm, rawSize, true);
             var baseStream = new MemoryStream();
             stream.CopyTo(baseStream);
 
@@ -90,10 +87,8 @@ public class KifaCryptoStreamTests {
     public void KifaCryptoStreamEncryptionReadBasicTest() {
         foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
                  data) {
-            var transform = aesAlgorithm.CreateEncryptor();
-
             using var stream =
-                new KifaCryptoStream(File.OpenRead(rawFile), transform, encryptedSize, false);
+                new KifaCryptoStream(File.OpenRead(rawFile), aesAlgorithm, encryptedSize, false);
             var info = FileInformation.GetInformation(stream,
                 FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
             Assert.Equal(encryptedSize, info.Size);
@@ -123,18 +118,15 @@ public class KifaCryptoStreamTests {
     public void KifaCryptoStreamPartialReadTest() {
         foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
                  data) {
-            var transform = aesAlgorithm.CreateEncryptor();
-
             using var encryptStream =
-                new KifaCryptoStream(new PartialReadStream(File.OpenRead(rawFile), 1024), transform, encryptedSize, false);
+                new KifaCryptoStream(new PartialReadStream(File.OpenRead(rawFile), 1024), aesAlgorithm, encryptedSize, false);
             var info = FileInformation.GetInformation(encryptStream,
                 FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
             Assert.Equal(encryptedSize, info.Size);
             Assert.Equal(encryptedHash, info.Sha256);
 
-            var decryptTransform = aesAlgorithm.CreateDecryptor();
             using var decryptStream =
-                new KifaCryptoStream(new PartialReadStream(File.OpenRead(encryptedFile), 1024), decryptTransform, rawSize, true);
+                new KifaCryptoStream(new PartialReadStream(File.OpenRead(encryptedFile), 1024), aesAlgorithm, rawSize, true);
             var decryptInfo = FileInformation.GetInformation(decryptStream,
                 FileProperties.Sha256 | FileProperties.Size | FileProperties.SliceMd5);
             Assert.Equal(rawSize, decryptInfo.Size);
@@ -147,9 +139,8 @@ public class KifaCryptoStreamTests {
         foreach (var (rawFile, rawSize, rawHash, encryptedFile, encryptedSize, encryptedHash) in
                  data) {
             var rawBytes = File.ReadAllBytes(rawFile);
-            var decryptTransform = aesAlgorithm.CreateDecryptor();
             using var decryptStream =
-                new KifaCryptoStream(File.OpenRead(encryptedFile), decryptTransform, rawSize, true);
+                new KifaCryptoStream(File.OpenRead(encryptedFile), aesAlgorithm, rawSize, true);
 
             // Read in 100-byte chunks
             var chunkSize = 100;
@@ -160,7 +151,9 @@ public class KifaCryptoStreamTests {
                 var read = decryptStream.Read(buffer, 0, toRead);
                 Assert.Equal(toRead, read);
                 for (int i = 0; i < read; i++) {
-                    Assert.Equal(rawBytes[totalRead + i], buffer[i]);
+                    if (rawBytes[totalRead + i] != buffer[i]) {
+                        throw new Exception($"Mismatch in {rawFile} at {totalRead + i}: expected {rawBytes[totalRead + i]}, got {buffer[i]}");
+                    }
                 }
                 totalRead += read;
             }

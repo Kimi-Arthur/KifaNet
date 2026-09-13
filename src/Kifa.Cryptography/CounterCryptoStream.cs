@@ -7,25 +7,32 @@ using System.Threading.Tasks;
 namespace Kifa.Cryptography;
 
 public class CounterCryptoStream : Stream {
+    const int BlockSize = 16;
+
     readonly byte[] initialCounter;
+    readonly Stream stream;
+    readonly Aes aes;
+    long position;
 
-    // Keep reference to the underlying SymmetricAlgorithm so native OpenSSL cipher contexts are not GC'd prematurely during streaming.
-    readonly IDisposable? algorithm;
-
-    Stream stream;
-    ICryptoTransform transform;
+    public CounterCryptoStream(Stream stream, Aes aes, long outputLength, byte[] initialCounter) {
+        this.stream = stream;
+        this.aes = aes;
+        Length = outputLength;
+        this.initialCounter = initialCounter;
+    }
 
     public CounterCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
         byte[] initialCounter, IDisposable? algorithm = null) {
         this.stream = stream;
         Length = outputLength;
         this.initialCounter = initialCounter;
-        this.transform = transform;
-        this.algorithm = algorithm;
-        blockSize = transform.InputBlockSize;
+        if (algorithm is Aes a) {
+            this.aes = a;
+        } else {
+            throw new NotSupportedException(
+                "Only Aes algorithm is supported by CounterCryptoStream.");
+        }
     }
-
-    readonly int blockSize;
 
     public override bool CanRead => stream.CanRead;
 
@@ -35,10 +42,12 @@ public class CounterCryptoStream : Stream {
 
     public override long Length { get; }
 
-    public override long Position { get; set; }
+    public override long Position {
+        get => position;
+        set => position = value;
+    }
 
     public override void Flush() {
-        stream?.Flush();
     }
 
     public override int Read(byte[] buffer, int offset, int count) {
@@ -75,29 +84,28 @@ public class CounterCryptoStream : Stream {
         }
 
         var counter = initialCounter.ToArray();
-        counter.Add(Position / blockSize);
+        counter.Add(Position / BlockSize);
 
-        var counterCount = (stream.Position.RoundDown(blockSize) - Position.RoundUp(blockSize)) /
-                           blockSize;
-        counterCount += stream.Position % blockSize > 0 ? 1 : 0;
-        counterCount += Position % blockSize > 0 ? 1 : 0;
+        var endPos = Position + totalRead;
+        var counterCount = (endPos.RoundDown(BlockSize) - Position.RoundUp(BlockSize)) / BlockSize;
+        counterCount += endPos % BlockSize > 0 ? 1 : 0;
+        counterCount += Position % BlockSize > 0 ? 1 : 0;
 
-        var counters = new byte[counterCount * blockSize];
+        var counters = new byte[counterCount * BlockSize];
         for (var i = 0; i < counterCount; i++) {
-            Buffer.BlockCopy(counter, 0, counters, i * blockSize, counter.Length);
+            Buffer.BlockCopy(counter, 0, counters, i * BlockSize, counter.Length);
             counter.Add(1);
         }
 
-        var transformed = transform.TransformFinalBlock(counters, 0, counters.Length);
+        var transformed = new byte[counters.Length];
+        aes.EncryptEcb(counters, transformed, PaddingMode.None);
 
-        var originalPosition = Position;
-        var transformedOffset = Position % blockSize;
-        var streamPosition = stream.Position;
-        Parallel.For(0, streamPosition - Position, new ParallelOptions {
+        var transformedOffset = (int) (Position % BlockSize);
+        Parallel.For(0, totalRead, new ParallelOptions {
             MaxDegreeOfParallelism = 8
         }, i => { buffer[offset + i] ^= transformed[i + transformedOffset]; });
-        Position = streamPosition;
 
+        Position += totalRead;
         return totalRead;
     }
 
@@ -130,12 +138,8 @@ public class CounterCryptoStream : Stream {
             if (disposing) {
                 Flush();
                 stream?.Dispose();
-                transform?.Dispose();
-                algorithm?.Dispose();
             }
         } finally {
-            stream = null;
-            transform = null;
             base.Dispose(disposing);
         }
     }
