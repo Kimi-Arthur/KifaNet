@@ -1,9 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using FluentAssertions;
+using Kifa.Cloud.Google;
 using Kifa.Configs;
 using Kifa.IO;
+using Kifa.IO.FileFormats;
 using Xunit;
 
 namespace Kifa.Cloud.Google.Tests;
@@ -56,7 +61,8 @@ public class GoogleDriveStorageClientTests {
     public void UploadTest() {
         var client = GetStorageClient();
         var data = new byte[34 << 20];
-        File.OpenRead("data.bin").Read(data, 0, 1 << 20);
+        using var f = File.OpenRead("data.bin");
+        f.ReadExactly(data, 0, 1 << 20);
         for (var i = 1; i < 34; ++i) {
             Array.Copy(data, 0, data, i << 20, 1 << 20);
         }

@@ -6,6 +6,9 @@ namespace Kifa.Cryptography;
 
 public class KifaCryptoStream : Stream {
     readonly bool needBlockAhead;
+
+    // Keep reference to the underlying SymmetricAlgorithm so native OpenSSL cipher contexts are not GC'd prematurely during streaming.
+    readonly IDisposable? algorithm;
     byte[] padBuffer;
 
     long position;
@@ -13,11 +16,12 @@ public class KifaCryptoStream : Stream {
     ICryptoTransform transform;
 
     public KifaCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
-        bool needBlockAhead) {
+        bool needBlockAhead, IDisposable? algorithm = null) {
         this.stream = stream;
         Length = outputLength;
         this.needBlockAhead = needBlockAhead;
         this.transform = transform;
+        this.algorithm = algorithm;
     }
 
     int BlockSize => transform.InputBlockSize;
@@ -96,7 +100,7 @@ public class KifaCryptoStream : Stream {
 
             if (internalReadCount == internalToRead) {
                 tmp = new byte[internalReadCount];
-                transform.TransformBlock(internalBuffer, 0, internalReadCount, tmp, 0);
+                TransformBlockChunked(internalBuffer, 0, internalReadCount, tmp, 0);
             } else {
                 tmp = transform.TransformFinalBlock(internalBuffer, 0, internalReadCount);
             }
@@ -113,12 +117,12 @@ public class KifaCryptoStream : Stream {
             var internalReadCount = ReadInternal(internalBuffer, 0, internalToRead);
 
             if (needBlockAhead) {
-                transform.TransformBlock(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
+                TransformBlockChunked(internalBuffer, 0, BlockSize, new byte[BlockSize], 0);
             }
 
             if (internalReadCount == internalToRead) {
                 tmp = new byte[internalReadCount - (needBlockAhead ? BlockSize : 0)];
-                transform.TransformBlock(internalBuffer, needBlockAhead ? BlockSize : 0,
+                TransformBlockChunked(internalBuffer, needBlockAhead ? BlockSize : 0,
                     internalReadCount - (needBlockAhead ? BlockSize : 0), tmp, 0);
             } else {
                 tmp = transform.TransformFinalBlock(internalBuffer, needBlockAhead ? BlockSize : 0,
@@ -135,6 +139,21 @@ public class KifaCryptoStream : Stream {
         Buffer.BlockCopy(tmp, tmp.Length - padCount, padBuffer, 0, padCount);
 
         return count;
+    }
+
+    // Maximum block size per TransformBlock call. Breaking large multi-megabyte transfers into 64KB chunks
+    // prevents native OpenSSL / SIMD buffer boundary corruption on Android/ARM64 and improves CPU cache locality.
+    const int CryptoChunkSize = 64 * 1024;
+
+    void TransformBlockChunked(byte[] inputBuffer, int inputOffset, int inputCount,
+        byte[] outputBuffer, int outputOffset) {
+        var processed = 0;
+        while (processed < inputCount) {
+            var chunkSize = Math.Min(CryptoChunkSize, inputCount - processed);
+            transform.TransformBlock(inputBuffer, inputOffset + processed, chunkSize, outputBuffer,
+                outputOffset + processed);
+            processed += chunkSize;
+        }
     }
 
     // Reads until count is satisfied or true EOF is reached. Single Stream.Read() calls on network/storage streams
@@ -184,6 +203,7 @@ public class KifaCryptoStream : Stream {
                 Flush();
                 stream?.Dispose();
                 transform?.Dispose();
+                algorithm?.Dispose();
             }
         } finally {
             stream = null;

@@ -44,17 +44,16 @@ public class KifaFileV1Format : KifaFileFormat {
         encodedStream.ReadExactly(sizeBytes, 0, 8);
         var size = sizeBytes.ToInt64();
 
-        ICryptoTransform decoder;
-        using (Aes aesAlgorithm = new AesCryptoServiceProvider()) {
-            aesAlgorithm.Padding = PaddingMode.ANSIX923;
-            aesAlgorithm.Key = encryptionKey.ParseHexString();
-            aesAlgorithm.Mode = CipherMode.ECB;
-            decoder = aesAlgorithm.CreateDecryptor();
-        }
+        // Pass aesAlgorithm ownership to KifaCryptoStream so native OpenSSL contexts remain alive during streaming.
+        var aesAlgorithm = Aes.Create();
+        aesAlgorithm.Padding = PaddingMode.ANSIX923;
+        aesAlgorithm.Key = encryptionKey.ParseHexString();
+        aesAlgorithm.Mode = CipherMode.ECB;
+        var decoder = aesAlgorithm.CreateDecryptor();
 
         return new KifaCryptoStream(new PatchedStream(encodedStream) {
             IgnoreBefore = 0x30
-        }, decoder, size, true);
+        }, decoder, size, true, aesAlgorithm);
     }
 
     public override long HeaderSize => 0x30;
@@ -71,16 +70,15 @@ public class KifaFileV1Format : KifaFileFormat {
         info.Size.Value.ToByteArray().CopyTo(header, 8);
         info.Sha256.ParseHexString().CopyTo(header, 16);
 
-        ICryptoTransform encoder;
-        using (Aes aesAlgorithm = new AesCryptoServiceProvider()) {
-            aesAlgorithm.Padding = PaddingMode.ANSIX923;
-            aesAlgorithm.Key = info.EncryptionKey.ParseHexString();
-            aesAlgorithm.Mode = CipherMode.ECB;
-            encoder = aesAlgorithm.CreateEncryptor();
-        }
+        // Pass aesAlgorithm ownership to KifaCryptoStream so native OpenSSL contexts remain alive during streaming.
+        var aesAlgorithm = Aes.Create();
+        aesAlgorithm.Padding = PaddingMode.ANSIX923;
+        aesAlgorithm.Key = info.EncryptionKey.ParseHexString();
+        aesAlgorithm.Mode = CipherMode.ECB;
+        var encoder = aesAlgorithm.CreateEncryptor();
 
         return new PatchedStream(new KifaCryptoStream(rawStream, encoder,
-            info.Size.Value.RoundDown(16) + 16, false)) {
+            info.Size.Value.RoundDown(16) + 16, false, aesAlgorithm)) {
             BufferBefore = header
         };
     }

@@ -9,15 +9,19 @@ namespace Kifa.Cryptography;
 public class CounterCryptoStream : Stream {
     readonly byte[] initialCounter;
 
+    // Keep reference to the underlying SymmetricAlgorithm so native OpenSSL cipher contexts are not GC'd prematurely during streaming.
+    readonly IDisposable? algorithm;
+
     Stream stream;
     ICryptoTransform transform;
 
     public CounterCryptoStream(Stream stream, ICryptoTransform transform, long outputLength,
-        byte[] initialCounter) {
+        byte[] initialCounter, IDisposable? algorithm = null) {
         this.stream = stream;
         Length = outputLength;
         this.initialCounter = initialCounter;
         this.transform = transform;
+        this.algorithm = algorithm;
         blockSize = transform.InputBlockSize;
     }
 
@@ -60,7 +64,15 @@ public class CounterCryptoStream : Stream {
             stream.Position = Position;
         }
 
-        var readCount = stream.Read(buffer, offset, count);
+        var totalRead = 0;
+        while (totalRead < count) {
+            var read = stream.Read(buffer, offset + totalRead, count - totalRead);
+            if (read == 0) {
+                break;
+            }
+
+            totalRead += read;
+        }
 
         var counter = initialCounter.ToArray();
         counter.Add(Position / blockSize);
@@ -86,7 +98,7 @@ public class CounterCryptoStream : Stream {
         }, i => { buffer[offset + i] ^= transformed[i + transformedOffset]; });
         Position = streamPosition;
 
-        return readCount;
+        return totalRead;
     }
 
     public override long Seek(long offset, SeekOrigin origin) {
@@ -119,6 +131,7 @@ public class CounterCryptoStream : Stream {
                 Flush();
                 stream?.Dispose();
                 transform?.Dispose();
+                algorithm?.Dispose();
             }
         } finally {
             stream = null;

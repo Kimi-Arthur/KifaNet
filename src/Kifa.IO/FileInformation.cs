@@ -345,9 +345,8 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
         => GetInformation(File.OpenRead($"{basePath}/{path}"), requiredProperties);
 
     static string GenerateEncryptionKey() {
-        using var aes = new AesCryptoServiceProvider {
-            KeySize = 256
-        };
+        using var aes = Aes.Create();
+        aes.KeySize = 256;
         return aes.Key.ToHexString();
     }
 }
