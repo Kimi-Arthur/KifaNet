@@ -62,8 +62,30 @@ public class AddUploaderNameCommandTests : IDisposable {
             return KifaActionResult.Success();
         }
 
-        public override KifaActionResult Link(string targetId, string linkId)
-            => KifaActionResult.Success();
+        public override KifaActionResult Link(string targetId, string linkId) {
+            if (!data.TryGetValue(targetId, out var target)) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"Target {targetId} doesn't exist."
+                };
+            }
+
+            var realTargetId = target.RealId;
+            data[linkId] = new YouTubeUploader {
+                Id = linkId,
+                Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
+                        Target = realTargetId
+                    }
+                }
+            };
+
+            target.Metadata ??= new DataMetadata();
+            target.Metadata.Linking ??= new LinkingMetadata();
+            target.Metadata.Linking.Links ??= new SortedSet<string>();
+            target.Metadata.Linking.Links.Add(linkId);
+            return KifaActionResult.Success();
+        }
     }
 
     readonly KifaServiceClient<YouTubeUploader> originalClient;
@@ -307,5 +329,92 @@ public class AddUploaderNameCommandTests : IDisposable {
         } finally {
             Console.SetIn(originalIn);
         }
+    }
+
+    [Fact]
+    public void AddUploaderWithHandleLinksTest() {
+        var uploader = new YouTubeUploader {
+            Id = "@JenniferLopez",
+            Name = "Jennifer Lopez"
+        };
+        YouTubeUploader.Client.Set(uploader);
+
+        var cmd = new AddUploaderNameCommand {
+            UploaderId = "@JenniferLopez",
+            Names = ["@JenniferLopezVEVO"],
+            AutoConfirmDefault = true
+        };
+
+        var result = cmd.Execute();
+        result.Should().Be(0);
+
+        var resolved = YouTubeUploader.Get("@JenniferLopezVEVO");
+        resolved.Should().NotBeNull();
+        resolved!.Id.Should().Be("@JenniferLopez");
+        resolved.Name.Should().Be("Jennifer Lopez");
+    }
+
+    [Fact]
+    public void AddUploaderWithNamesAndLinksSimultaneouslyTest() {
+        var uploader = new YouTubeUploader {
+            Id = "@JenniferLopez"
+        };
+        YouTubeUploader.Client.Set(uploader);
+
+        var cmd = new AddUploaderNameCommand {
+            UploaderId = "@JenniferLopez",
+            Names = ["Jennifer Lopez", "J.Lo", "@JenniferLopezVEVO", "UCx1f1u4XlFFr0YgqF3wB4lQ"],
+            AutoConfirmDefault = true
+        };
+
+        var result = cmd.Execute();
+        result.Should().Be(0);
+
+        var target = YouTubeUploader.Client.Get("@JenniferLopez");
+        target.Should().NotBeNull();
+        target!.Name.Should().Be("Jennifer Lopez");
+        target.NameAliases.Should().BeEquivalentTo(["J.Lo"]);
+
+        var resolvedHandle = YouTubeUploader.Get("@JenniferLopezVEVO");
+        resolvedHandle.Should().NotBeNull();
+        resolvedHandle!.Id.Should().Be("@JenniferLopez");
+
+        var resolvedChannelId = YouTubeUploader.Get("UCx1f1u4XlFFr0YgqF3wB4lQ");
+        resolvedChannelId.Should().NotBeNull();
+        resolvedChannelId!.Id.Should().Be("@JenniferLopez");
+    }
+
+    [Fact]
+    public void AddUploaderMergesStandaloneRecordWhenLinkingTest() {
+        var target = new YouTubeUploader {
+            Id = "@JenniferLopez",
+            Name = "Jennifer Lopez"
+        };
+        YouTubeUploader.Client.Set(target);
+
+        var standalone = new YouTubeUploader {
+            Id = "@JenniferLopezVEVO",
+            Name = "J.Lo VEVO",
+            NameAliases = ["JenniferLopezVEVO"]
+        };
+        YouTubeUploader.Client.Set(standalone);
+
+        var cmd = new AddUploaderNameCommand {
+            UploaderId = "@JenniferLopez",
+            Names = ["@JenniferLopezVEVO"],
+            AutoConfirmDefault = true
+        };
+
+        var result = cmd.Execute();
+        result.Should().Be(0);
+
+        var updatedTarget = YouTubeUploader.Client.Get("@JenniferLopez");
+        updatedTarget.Should().NotBeNull();
+        updatedTarget!.NameAliases.Should().Contain("J.Lo VEVO");
+        updatedTarget.NameAliases.Should().Contain("JenniferLopezVEVO");
+
+        var resolved = YouTubeUploader.Get("@JenniferLopezVEVO");
+        resolved.Should().NotBeNull();
+        resolved!.Id.Should().Be("@JenniferLopez");
     }
 }

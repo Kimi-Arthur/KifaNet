@@ -62,8 +62,30 @@ public class DownloadVideoCommandTests : IDisposable {
             return KifaActionResult.Success();
         }
 
-        public override KifaActionResult Link(string targetId, string linkId)
-            => KifaActionResult.Success();
+        public override KifaActionResult Link(string targetId, string linkId) {
+            if (!data.TryGetValue(targetId, out var target)) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.BadRequest,
+                    Message = $"Target {targetId} doesn't exist."
+                };
+            }
+
+            var realTargetId = target.RealId;
+            data[linkId] = new YouTubeUploader {
+                Id = linkId,
+                Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
+                        Target = realTargetId
+                    }
+                }
+            };
+
+            target.Metadata ??= new DataMetadata();
+            target.Metadata.Linking ??= new LinkingMetadata();
+            target.Metadata.Linking.Links ??= new SortedSet<string>();
+            target.Metadata.Linking.Links.Add(linkId);
+            return KifaActionResult.Success();
+        }
     }
 
     class TestYouTubeVideoServiceClient : BaseKifaServiceClient<YouTubeVideo> {
@@ -111,7 +133,7 @@ public class DownloadVideoCommandTests : IDisposable {
     }
 
     [Fact]
-    public void EnsureUploaderInfo_UsesCanonicalUploaderDataTest() {
+    public void EnsureUploaderInfo_UsesCanonicalUploaderDataWithoutMutatingVideoTest() {
         var uploader = new YouTubeUploader {
             Id = "@fcbayern",
             Name = "FC Bayern"
@@ -127,14 +149,50 @@ public class DownloadVideoCommandTests : IDisposable {
         YouTubeVideo.Client.Set(video);
 
         var cmd = new DownloadVideoCommand();
-        cmd.EnsureUploaderInfo(video);
+        var resolvedUploader = cmd.EnsureUploaderInfo(video);
 
-        video.Author.Should().Be("FC Bayern");
+        resolvedUploader.Should().NotBeNull();
+        resolvedUploader!.Id.Should().Be("@fcbayern");
+        resolvedUploader.Name.Should().Be("FC Bayern");
+
+        // Video fields remain original in the data model
+        video.Author.Should().Be("FC Bayern Munich");
         video.AuthorId.Should().Be("@fcbayern");
 
-        var updatedVideo = YouTubeVideo.Client.Get("vid123");
-        updatedVideo.Should().NotBeNull();
-        updatedVideo!.Author.Should().Be("FC Bayern");
+        var desiredName = video.GetDesiredName(uploader: resolvedUploader);
+        desiredName.Should().StartWith("FC Bayern.@fcbayern.youtube/");
+    }
+
+    [Fact]
+    public void EnsureUploaderInfo_LinkedUploaderResolvesCanonicalFolderTest() {
+        var target = new YouTubeUploader {
+            Id = "@JenniferLopez",
+            Name = "Jennifer Lopez"
+        };
+        YouTubeUploader.Client.Set(target);
+        YouTubeUploader.Client.Link("@JenniferLopez", "@JenniferLopezVEVO");
+
+        var video = new YouTubeVideo {
+            Id = "d7UBcv8GYUI",
+            Title = "I'm Real",
+            Author = "Jennifer Lopez",
+            AuthorId = "@JenniferLopezVEVO"
+        };
+        YouTubeVideo.Client.Set(video);
+
+        var cmd = new DownloadVideoCommand();
+        var resolvedUploader = cmd.EnsureUploaderInfo(video);
+
+        resolvedUploader.Should().NotBeNull();
+        resolvedUploader!.Id.Should().Be("@JenniferLopez");
+        resolvedUploader.Name.Should().Be("Jennifer Lopez");
+
+        // Video AuthorId remains untouched as the original upload source
+        video.AuthorId.Should().Be("@JenniferLopezVEVO");
+
+        // Folder uses the canonical target uploader
+        var desiredName = video.GetDesiredName(uploader: resolvedUploader);
+        desiredName.Should().StartWith("Jennifer Lopez.@JenniferLopez.youtube/");
     }
 
     [Fact]
@@ -154,16 +212,18 @@ public class DownloadVideoCommandTests : IDisposable {
         };
         YouTubeVideo.Client.Set(video);
 
+        using var reader = new StringReader("@fcbayern\n\n");
+        Console.SetIn(reader);
+
         var cmd = new DownloadVideoCommand();
-        cmd.EnsureUploaderInfo(video);
+        var resolvedUploader = cmd.EnsureUploaderInfo(video);
 
-        video.Author.Should().Be("FC Bayern");
+        resolvedUploader.Should().NotBeNull();
+        resolvedUploader!.Id.Should().Be("@fcbayern");
+        resolvedUploader.Name.Should().Be("FC Bayern");
+
+        video.Author.Should().Be("FC Bayern Munich");
         video.AuthorId.Should().Be("@fcbayern");
-
-        var updatedVideo = YouTubeVideo.Client.Get("vid456");
-        updatedVideo.Should().NotBeNull();
-        updatedVideo!.Author.Should().Be("FC Bayern");
-        updatedVideo.AuthorId.Should().Be("@fcbayern");
     }
 
     [Fact]
@@ -184,10 +244,17 @@ public class DownloadVideoCommandTests : IDisposable {
         YouTubeVideo.Client.Set(video);
 
         var cmd = new DownloadVideoCommand();
-        cmd.EnsureUploaderInfo(video);
+        var resolvedUploader = cmd.EnsureUploaderInfo(video);
 
-        video.Author.Should().Be("FC Bayern");
-        video.AuthorId.Should().Be("@fcbayern");
+        resolvedUploader.Should().NotBeNull();
+        resolvedUploader!.Id.Should().Be("@fcbayern");
+        resolvedUploader.Name.Should().Be("FC Bayern");
+
+        video.Author.Should().Be("Some Channel");
+        video.AuthorId.Should().Be("UCk5b0K_3ABC123");
+
+        var desiredName = video.GetDesiredName(uploader: resolvedUploader);
+        desiredName.Should().StartWith("FC Bayern.@fcbayern.youtube/");
     }
 
     [Fact]

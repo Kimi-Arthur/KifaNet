@@ -817,14 +817,15 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     const int TypeSuffixLength = 4;
 
     public string? GetDesiredName(string? formatId = null, string? alternativeFolder = null,
-        string? extraFolder = null, string? prefix = null, string? explicitSuffix = null) {
+        string? extraFolder = null, string? prefix = null, string? explicitSuffix = null,
+        YouTubeUploader? uploader = null) {
         if (Title == null || Id == null) {
             return null;
         }
 
         var title = Title.NormalizeFileName();
-        var uploaderName = Author?.NormalizeFileName();
-        var uploaderId = AuthorId?.NormalizeFileName();
+        var uploaderName = (uploader?.Name ?? Author)?.NormalizeFileName();
+        var uploaderId = (uploader?.Id ?? AuthorId)?.NormalizeFileName();
 
         var defaultFolder = string.FormatOr($"{uploaderName?.Choppable()}.{uploaderId}",
             uploaderName?.Choppable() ?? uploaderId);

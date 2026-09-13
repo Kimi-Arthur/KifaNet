@@ -30,11 +30,11 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     protected KifaActionResult Download(YouTubeVideo video, string? alternativeFolder = null,
         string? extraFolder = null) {
-        EnsureUploaderInfo(video);
+        var uploader = EnsureUploaderInfo(video);
 
         var outputFolder = BaseFolder;
         var desiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,
-            extraFolder: extraFolder, prefix: GetPrefix(video));
+            extraFolder: extraFolder, prefix: GetPrefix(video), uploader: uploader);
         if (desiredName == null) {
             throw new KifaExecutionException($"No desired name is found for {video.Id}");
         }
@@ -54,7 +54,7 @@ public abstract class DownloadCommand : YoutubeCommand {
 
             if (existingRepoFiles.Count == 1) {
                 return LinkExistingRepoFile(existingRepoFiles[0], video, alternativeFolder, extraFolder,
-                    outputFolder);
+                    outputFolder, uploader: uploader);
             }
         } else {
             var found = KifaFile.FindOne(targetFiles);
@@ -221,12 +221,14 @@ public abstract class DownloadCommand : YoutubeCommand {
         };
 
     KifaActionResult LinkExistingRepoFile(KifaFile repoFile, YouTubeVideo video,
-        string? alternativeFolder, string? extraFolder, KifaFile outputFolder) {
+        string? alternativeFolder, string? extraFolder, KifaFile outputFolder,
+        YouTubeUploader? uploader = null) {
         var explicitSuffix = repoFile.BaseName == video.Id
             ? ""
             : repoFile.BaseName[$"{video.Id}.".Length..];
         var matchedDesiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,
-            extraFolder: extraFolder, prefix: GetPrefix(video), explicitSuffix: explicitSuffix);
+            extraFolder: extraFolder, prefix: GetPrefix(video), explicitSuffix: explicitSuffix,
+            uploader: uploader);
         var matchedDesiredFile = matchedDesiredName != null
             ? outputFolder.GetFile($"{matchedDesiredName}.mp4")
             : null;
@@ -245,7 +247,7 @@ public abstract class DownloadCommand : YoutubeCommand {
             .DistinctBy(f => f.Id)
             .ToList();
 
-    public void EnsureUploaderInfo(YouTubeVideo video) {
+    public YouTubeUploader? EnsureUploaderInfo(YouTubeVideo video) {
         if (string.IsNullOrWhiteSpace(video.Author)) {
             video.Author = null;
         }
@@ -254,32 +256,13 @@ public abstract class DownloadCommand : YoutubeCommand {
             video.AuthorId = null;
         }
 
-        var originalAuthor = video.Author;
-        var originalAuthorId = video.AuthorId;
-
-        YouTubeUploader? uploader = null;
-        if (video.AuthorId != null) {
-            uploader = YouTubeUploader.Get(video.AuthorId, refresh: Refresh);
-        }
-
-        if (uploader == null && video.Author != null) {
-            uploader = YouTubeUploader.Get(video.Author, refresh: Refresh);
-        }
-
-        if (uploader != null) {
-            if (uploader.Name != null) {
-                video.Author = uploader.Name;
-            }
-
-            if (uploader.Id != null) {
-                video.AuthorId = uploader.Id;
-            }
-        }
+        var videoChanged = false;
 
         if (video.Author == null) {
             var author = Confirm($"Author is missing for video {video.Id}. Please enter author name:", "");
             if (!string.IsNullOrWhiteSpace(author)) {
                 video.Author = author.Trim();
+                videoChanged = true;
             }
         }
 
@@ -289,11 +272,21 @@ public abstract class DownloadCommand : YoutubeCommand {
                 "");
             if (!string.IsNullOrWhiteSpace(authorId)) {
                 video.AuthorId = authorId.Trim();
+                videoChanged = true;
             }
         }
 
-        if (uploader == null && video.AuthorId != null) {
+        if (videoChanged) {
+            YouTubeVideo.Client.Set(video);
+        }
+
+        YouTubeUploader? uploader = null;
+        if (video.AuthorId != null) {
             uploader = YouTubeUploader.Get(video.AuthorId, refresh: Refresh);
+        }
+
+        if (uploader == null && video.Author != null) {
+            uploader = YouTubeUploader.Get(video.Author, refresh: Refresh);
         }
 
         var uploaderChanged = false;
@@ -309,9 +302,9 @@ public abstract class DownloadCommand : YoutubeCommand {
                 uploaderChanged = true;
             }
 
-            if (uploader.ChannelId == null && originalAuthorId != null &&
-                originalAuthorId.StartsWith("UC", StringComparison.OrdinalIgnoreCase)) {
-                uploader.ChannelId = originalAuthorId;
+            if (uploader.ChannelId == null && video.AuthorId != null &&
+                video.AuthorId.StartsWith("UC", StringComparison.OrdinalIgnoreCase)) {
+                uploader.ChannelId = video.AuthorId;
                 uploaderChanged = true;
             }
         }
@@ -320,8 +313,6 @@ public abstract class DownloadCommand : YoutubeCommand {
             YouTubeUploader.Client.Set(uploader);
         }
 
-        if (video.Author != originalAuthor || video.AuthorId != originalAuthorId) {
-            YouTubeVideo.Client.Set(video);
-        }
+        return uploader;
     }
 }
