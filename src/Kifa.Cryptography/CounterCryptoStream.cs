@@ -100,7 +100,7 @@ public class CounterCryptoStream : Stream {
             counter.Add(1);
         }
 
-        Logger.Notice(() => $"CounterCryptoStream: Position [{Position}..{Position + totalRead}), counterCount={counterCount}");
+        Logger.Diagnostic(() => $"CounterCryptoStream: Position [{Position}..{Position + totalRead}), counterCount={counterCount}");
 
         var transformed = new byte[counters.Length];
         aes.EncryptEcb(counters, transformed, PaddingMode.None);

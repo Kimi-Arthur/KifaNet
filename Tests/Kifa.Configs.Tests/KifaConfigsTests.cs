@@ -137,4 +137,19 @@ public class KifaConfigsTests {
         Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.StringDictConfig", keys);
         Assert.Contains("Kifa.Configs.Tests.KifaConfigsTests.ComplexConfig", keys);
     }
+
+    [Fact]
+    public void ConfigureLoggingPropertiesTest() {
+        var properties = KifaConfigs.GetAllProperties();
+        var keys = properties.Keys.ToList();
+        Assert.Contains("Kifa.Logging.EnableNotice", keys);
+        Assert.Contains("Kifa.Logging.EnableDiagnostic", keys);
+
+        var config = @"Kifa:
+  Logging:
+    EnableDiagnostic: true";
+        KifaConfigs.LoadFromStream(new MemoryStream(Encoding.UTF8.GetBytes(config)), properties);
+        Assert.True(global::Kifa.Logging.EnableDiagnostic);
+        global::Kifa.Logging.EnableDiagnostic = false;
+    }
 }

@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
-using System.Threading;
 using Kifa.Cloud.Google.Rpcs;
 using Kifa.IO;
 using Kifa.IO.FileFormats;
@@ -127,7 +126,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             input.ReadExactly(buffer, 0, blockLength);
             var targetEndByte = position + blockLength - 1;
 
-            Logger.Notice(() => $"Uploading block {blockIndex + 1}/{totalBlocks} [{position}..{targetEndByte}] ({blockLength} bytes, SHA256={SHA256.HashData(buffer.AsSpan(0, blockLength)).ToHexString()})");
+            Logger.Diagnostic(() => $"Uploading block {blockIndex + 1}/{totalBlocks} [{position}..{targetEndByte}] ({blockLength} bytes, SHA256={SHA256.HashData(buffer.AsSpan(0, blockLength)).ToHexString()})");
 
             if (targetEndByte + 1 == size) {
                 using var response = client.SendWithRetry(() => {
@@ -172,7 +171,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             count = buffer.Length - bufferOffset;
         }
 
-        Logger.Notice(() => $"Downloading from Google Drive: fileId={fileId}, offset={offset}, count={count}");
+        Logger.Diagnostic(() => $"Downloading from Google Drive: fileId={fileId}, offset={offset}, count={count}");
 
         using var stream = client.Call(new DownloadFileRpc(fileId, offset, offset + count - 1,
             () => Account.AccessToken));
@@ -188,7 +187,7 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             totalRead += read;
         }
 
-        Logger.Notice(() => $"Downloaded from Google Drive: fileId={fileId}, offset={offset}, totalRead={totalRead}, SHA256={SHA256.HashData(buffer.AsSpan(bufferOffset, totalRead)).ToHexString()}");
+        Logger.Diagnostic(() => $"Downloaded from Google Drive: fileId={fileId}, offset={offset}, totalRead={totalRead}, SHA256={SHA256.HashData(buffer.AsSpan(bufferOffset, totalRead)).ToHexString()}");
 
         return totalRead;
     }

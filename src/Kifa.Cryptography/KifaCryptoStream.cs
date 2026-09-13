@@ -80,7 +80,7 @@ public class KifaCryptoStream : Stream {
         var endBlock = (Position + count).RoundUp(BlockSize);
         var totalAlignedBytes = (int) (endBlock - startBlock);
 
-        Logger.Notice(() => $"KifaCryptoStream Decrypt: Position [{Position}..{Position + count}), block range [{startBlock}..{endBlock}), bytes={totalAlignedBytes}");
+        Logger.Diagnostic(() => $"KifaCryptoStream Decrypt: Position [{Position}..{Position + count}), block range [{startBlock}..{endBlock}), bytes={totalAlignedBytes}");
 
         if (stream.CanSeek) {
             stream.Position = startBlock;
@@ -107,7 +107,7 @@ public class KifaCryptoStream : Stream {
         var endBlock = (Position + count).RoundUp(BlockSize);
         var totalAlignedBytes = (int) (endBlock - startBlock);
 
-        Logger.Notice(() => $"KifaCryptoStream Encrypt: Position [{Position}..{Position + count}), block range [{startBlock}..{endBlock}), bytes={totalAlignedBytes}, Length={Length}");
+        Logger.Diagnostic(() => $"KifaCryptoStream Encrypt: Position [{Position}..{Position + count}), block range [{startBlock}..{endBlock}), bytes={totalAlignedBytes}, Length={Length}");
 
         var lastBlockStart = Length - BlockSize;
         var plainBuffer = new byte[totalAlignedBytes];

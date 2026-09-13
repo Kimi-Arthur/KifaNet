@@ -49,7 +49,7 @@ public class VerifiableStream : Stream {
         var startPosition = Position.RoundDown(FileInformation.BlockSize);
         var endPosition = Math.Min((Position + count).RoundUp(FileInformation.BlockSize), Length);
 
-        Logger.Notice(()
+        Logger.Diagnostic(()
             => $"[{Position}, {Position + count}) -> [{startPosition}, {endPosition})");
 
         lastBlock ??= new byte[FileInformation.BlockSize];
@@ -59,7 +59,7 @@ public class VerifiableStream : Stream {
             var bytesToRead = (int) Math.Min(endPosition - pos, FileInformation.BlockSize);
             var bytesRead = 0;
             if (pos == lastBlockStart) {
-                Logger.Notice(() => $"[{pos}, {pos + bytesToRead}) skipped");
+                Logger.Diagnostic(() => $"[{pos}, {pos + bytesToRead}) skipped");
                 bytesRead = bytesToRead;
             } else {
                 bool? successful = null;
@@ -227,7 +227,7 @@ public class VerifiableStream : Stream {
             }
         }
 
-        Logger.Notice(() => $"Block {blockId} ({count} bytes) hash check: MD5={md5}, SHA1={sha1}, SHA256={sha256}, Valid={result}");
+        Logger.Diagnostic(() => $"Block {blockId} ({count} bytes) hash check: MD5={md5}, SHA1={sha1}, SHA256={sha256}, Valid={result}");
 
         return (result, md5, sha1, sha256);
     }
