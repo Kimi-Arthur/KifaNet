@@ -30,6 +30,8 @@ public abstract class DownloadCommand : YoutubeCommand {
 
     protected KifaActionResult Download(YouTubeVideo video, string? alternativeFolder = null,
         string? extraFolder = null) {
+        EnsureUploaderInfo(video);
+
         var outputFolder = BaseFolder;
         var desiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,
             extraFolder: extraFolder, prefix: GetPrefix(video));
@@ -242,4 +244,84 @@ public abstract class DownloadCommand : YoutubeCommand {
                         f.Extension == "mp4")
             .DistinctBy(f => f.Id)
             .ToList();
+
+    public void EnsureUploaderInfo(YouTubeVideo video) {
+        if (string.IsNullOrWhiteSpace(video.Author)) {
+            video.Author = null;
+        }
+
+        if (string.IsNullOrWhiteSpace(video.AuthorId)) {
+            video.AuthorId = null;
+        }
+
+        var originalAuthor = video.Author;
+        var originalAuthorId = video.AuthorId;
+
+        YouTubeUploader? uploader = null;
+        if (video.AuthorId != null) {
+            uploader = YouTubeUploader.Get(video.AuthorId, refresh: Refresh);
+        }
+
+        if (uploader == null && video.Author != null) {
+            uploader = YouTubeUploader.Get(video.Author, refresh: Refresh);
+        }
+
+        if (uploader != null) {
+            if (uploader.Name != null) {
+                video.Author = uploader.Name;
+            }
+
+            if (uploader.Id != null) {
+                video.AuthorId = uploader.Id;
+            }
+        }
+
+        if (video.Author == null) {
+            var author = Confirm($"Author is missing for video {video.Id}. Please enter author name:", "");
+            if (!string.IsNullOrWhiteSpace(author)) {
+                video.Author = author.Trim();
+            }
+        }
+
+        if (video.AuthorId == null) {
+            var authorId = Confirm(
+                $"Author ID is missing for video {video.Id}. Please enter author ID (handle or channel ID):",
+                "");
+            if (!string.IsNullOrWhiteSpace(authorId)) {
+                video.AuthorId = authorId.Trim();
+            }
+        }
+
+        if (uploader == null && video.AuthorId != null) {
+            uploader = YouTubeUploader.Get(video.AuthorId, refresh: Refresh);
+        }
+
+        var uploaderChanged = false;
+        if (uploader == null && video.AuthorId != null) {
+            uploader = new YouTubeUploader {
+                Id = video.AuthorId,
+                Name = video.Author
+            };
+            uploaderChanged = true;
+        } else if (uploader != null) {
+            if (uploader.Name == null && video.Author != null) {
+                uploader.Name = video.Author;
+                uploaderChanged = true;
+            }
+
+            if (uploader.ChannelId == null && originalAuthorId != null &&
+                originalAuthorId.StartsWith("UC", StringComparison.OrdinalIgnoreCase)) {
+                uploader.ChannelId = originalAuthorId;
+                uploaderChanged = true;
+            }
+        }
+
+        if (uploader != null && uploaderChanged) {
+            YouTubeUploader.Client.Set(uploader);
+        }
+
+        if (video.Author != originalAuthor || video.AuthorId != originalAuthorId) {
+            YouTubeVideo.Client.Set(video);
+        }
+    }
 }

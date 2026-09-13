@@ -410,6 +410,11 @@ public abstract partial class KifaCommand {
 
     public string? Confirm(string prefix, string suggested,
         Func<string, string?>? validation = null) {
+        if (AutoConfirmDefault) {
+            Logger.Debug($"Auto selected default '{suggested}' as enabled by -y or --yes.");
+            return suggested;
+        }
+
         while (true) {
             if (validation == null) {
                 Console.WriteLine($"{prefix}\n\n{suggested}");
