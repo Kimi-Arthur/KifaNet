@@ -22,9 +22,6 @@ public class AddUploaderNameCommand : KifaCommand {
     [Option('r', "refresh", HelpText = "Force refresh server data before adding.")]
     public bool Refresh { get; set; } = false;
 
-    // Helper for testing non-interactive confirmation
-    public bool AutoConfirmDefault { get; set; } = false;
-
     public override int Execute(KifaTask? task = null) {
         var uploader = YouTubeUploader.Get(UploaderId, refresh: Refresh);
         var originalUploader = uploader?.Clone();
@@ -134,6 +131,10 @@ public class AddUploaderNameCommand : KifaCommand {
             summaryParts.Add($"Name: '{uploader.Name}'");
         }
 
+        if (uploader.ChannelId != null) {
+            summaryParts.Add($"ChannelId: '{uploader.ChannelId}'");
+        }
+
         if (uploader.NameAliases.Count > 0) {
             summaryParts.Add($"Aliases: [{string.Join(", ", uploader.NameAliases)}]");
         }
@@ -159,7 +160,7 @@ public class AddUploaderNameCommand : KifaCommand {
         }
 
         foreach (var linkId in linksToCreate) {
-            var result = YouTubeUploader.Client.Link(uploader.Id, linkId);
+            var result = YouTubeUploader.Client.Link(uploader.Id.Checked(), linkId);
             if (result.Status == KifaActionStatus.OK) {
                 Logger.Info($"Successfully linked {linkId} -> {uploader.Id}.");
             } else {
