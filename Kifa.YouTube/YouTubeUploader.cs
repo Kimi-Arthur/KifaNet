@@ -45,8 +45,6 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public string? ChannelId { get; set; }
     public List<string> Videos { get; set; } = [];
 
-    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
-
     public string GetUploaderFolder()
         => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.youtube";
 
