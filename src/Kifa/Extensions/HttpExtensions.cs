@@ -112,7 +112,18 @@ public static class HttpExtensions {
         => Retry.Run(() => {
             var request = getRequest();
             Logger.Trace($"SendWithRetry: {request}");
-            Logger.Notice(() => $"Content: {request.Content?.ReadAsStringAsync().Result}");
+            Logger.Notice(() => {
+                if (request.Content == null) {
+                    return "Content: (null)";
+                }
+
+                if (request.Content.Headers.ContentLength > 4096 ||
+                    request.Content.Headers.ContentType?.MediaType?.StartsWith("application/octet-stream") == true) {
+                    return $"Content: <binary/large content of {request.Content.Headers.ContentLength} bytes>";
+                }
+
+                return $"Content: {request.Content.ReadAsStringAsync().Result}";
+            });
             var response = client.Send(request);
             if (expectedStatusCode != null && expectedStatusCode == response.StatusCode) {
                 return response;

@@ -116,12 +116,17 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
         var size = input.Length;
         var buffer = new byte[BlockSize];
+        var totalBlocks = (int) ((size + BlockSize - 1) / BlockSize);
+        Logger.Notice(() => $"Uploading {path} ({size} bytes) in {totalBlocks} blocks to Google Drive...");
 
         for (long position = 0; position < size; position += BlockSize) {
             var blockLength = (int) Math.Min(BlockSize, size - position);
+            var blockIndex = (int) (position / BlockSize);
             // Use ReadExactly so the full block is retrieved before computing upload Content-Range headers.
             input.ReadExactly(buffer, 0, blockLength);
             var targetEndByte = position + blockLength - 1;
+
+            Logger.Notice(() => $"Uploading block {blockIndex + 1}/{totalBlocks} [{position}..{targetEndByte}] ({blockLength} bytes, SHA256={SHA256.HashData(buffer.AsSpan(0, blockLength)).ToHexString()})");
 
             if (targetEndByte + 1 == size) {
                 using var response = client.SendWithRetry(() => {
@@ -166,6 +171,8 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
             count = buffer.Length - bufferOffset;
         }
 
+        Logger.Notice(() => $"Downloading from Google Drive: fileId={fileId}, offset={offset}, count={count}");
+
         using var stream = client.Call(new DownloadFileRpc(fileId, offset, offset + count - 1,
             () => Account.AccessToken));
 
@@ -179,6 +186,8 @@ public class GoogleDriveStorageClient : StorageClient, CanCreateStorageClient {
 
             totalRead += read;
         }
+
+        Logger.Notice(() => $"Downloaded from Google Drive: fileId={fileId}, offset={offset}, totalRead={totalRead}, SHA256={SHA256.HashData(buffer.AsSpan(bufferOffset, totalRead)).ToHexString()}");
 
         return totalRead;
     }

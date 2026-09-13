@@ -227,6 +227,8 @@ public class VerifiableStream : Stream {
             }
         }
 
+        Logger.Notice(() => $"Block {blockId} ({count} bytes) hash check: MD5={md5}, SHA1={sha1}, SHA256={sha256}, Valid={result}");
+
         return (result, md5, sha1, sha256);
     }
 

@@ -1,10 +1,13 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using NLog;
 
 namespace Kifa.Cryptography;
 
 public class KifaCryptoStream : Stream {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     const int BlockSize = 16;
 
     readonly Stream stream;
@@ -77,6 +80,8 @@ public class KifaCryptoStream : Stream {
         var endBlock = (Position + count).RoundUp(BlockSize);
         var totalAlignedBytes = (int) (endBlock - startBlock);
 
+        Logger.Notice(() => $"KifaCryptoStream Decrypt: Position [{Position}..{Position + count}), block range [{startBlock}..{endBlock}), bytes={totalAlignedBytes}");
+
         if (stream.CanSeek) {
             stream.Position = startBlock;
         }
@@ -101,6 +106,8 @@ public class KifaCryptoStream : Stream {
         var startBlock = Position.RoundDown(BlockSize);
         var endBlock = (Position + count).RoundUp(BlockSize);
         var totalAlignedBytes = (int) (endBlock - startBlock);
+
+        Logger.Notice(() => $"KifaCryptoStream Encrypt: Position [{Position}..{Position + count}), block range [{startBlock}..{endBlock}), bytes={totalAlignedBytes}, Length={Length}");
 
         var lastBlockStart = Length - BlockSize;
         var plainBuffer = new byte[totalAlignedBytes];

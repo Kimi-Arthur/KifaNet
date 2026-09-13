@@ -3,10 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using NLog;
 
 namespace Kifa.Cryptography;
 
 public class CounterCryptoStream : Stream {
+    static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
     const int BlockSize = 16;
 
     readonly byte[] initialCounter;
@@ -96,6 +99,8 @@ public class CounterCryptoStream : Stream {
             Buffer.BlockCopy(counter, 0, counters, i * BlockSize, counter.Length);
             counter.Add(1);
         }
+
+        Logger.Notice(() => $"CounterCryptoStream: Position [{Position}..{Position + totalRead}), counterCount={counterCount}");
 
         var transformed = new byte[counters.Length];
         aes.EncryptEcb(counters, transformed, PaddingMode.None);
