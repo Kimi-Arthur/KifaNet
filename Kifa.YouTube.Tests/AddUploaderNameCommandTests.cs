@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using FluentAssertions;
 using Kifa.Configs;
 using Kifa.Service;
@@ -87,7 +88,8 @@ public class AddUploaderNameCommandTests : IDisposable {
 
         var cmd = new AddUploaderNameCommand {
             UploaderId = "@fcbayern",
-            Names = ["Bayern Munich", "FCB"]
+            Names = ["Bayern Munich", "FCB"],
+            AutoConfirmDefault = true
         };
 
         var result = cmd.Execute();
@@ -110,7 +112,8 @@ public class AddUploaderNameCommandTests : IDisposable {
         // Locate using the primary canonical Name "FC Bayern Munich"
         var cmd = new AddUploaderNameCommand {
             UploaderId = "FC Bayern Munich",
-            Names = ["Bayern Munich"]
+            Names = ["Bayern Munich"],
+            AutoConfirmDefault = true
         };
 
         var result = cmd.Execute();
@@ -134,7 +137,8 @@ public class AddUploaderNameCommandTests : IDisposable {
         // Locate using an existing alias "Bayern Munich" to add another alias "FCB"
         var cmd = new AddUploaderNameCommand {
             UploaderId = "Bayern Munich",
-            Names = ["FCB"]
+            Names = ["FCB"],
+            AutoConfirmDefault = true
         };
 
         var result = cmd.Execute();
@@ -157,7 +161,8 @@ public class AddUploaderNameCommandTests : IDisposable {
         // Locate using bare handle "fcbayern" (without @)
         var cmd = new AddUploaderNameCommand {
             UploaderId = "fcbayern",
-            Names = ["Die Roten"]
+            Names = ["Die Roten"],
+            AutoConfirmDefault = true
         };
 
         var result = cmd.Execute();
@@ -181,7 +186,8 @@ public class AddUploaderNameCommandTests : IDisposable {
         var cmd = new AddUploaderNameCommand {
             UploaderId = "@fcbayern",
             Names = ["FC Bayern München", "Die Bayern"],
-            AsCanonical = true
+            AsCanonical = true,
+            AutoConfirmDefault = true
         };
 
         var result = cmd.Execute();
@@ -202,7 +208,8 @@ public class AddUploaderNameCommandTests : IDisposable {
 
         var cmd = new AddUploaderNameCommand {
             UploaderId = "@newchannel",
-            Names = ["New Channel"]
+            Names = ["New Channel"],
+            AutoConfirmDefault = true
         };
 
         var result = cmd.Execute();
@@ -212,5 +219,93 @@ public class AddUploaderNameCommandTests : IDisposable {
         updated.Should().NotBeNull();
         updated!.Name.Should().Be("New Channel");
         updated.NameAliases.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddSingleArgumentToCreateNewUploaderTest() {
+        var cmd = new AddUploaderNameCommand {
+            UploaderId = "@brandnewchannel",
+            Names = [],
+            AutoConfirmDefault = true
+        };
+
+        var result = cmd.Execute();
+        result.Should().Be(0);
+
+        var updated = YouTubeUploader.Client.Get("@brandnewchannel");
+        updated.Should().NotBeNull();
+        updated!.Id.Should().Be("@brandnewchannel");
+        updated.Name.Should().BeNull();
+        updated.NameAliases.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AddSingleArgumentToExistingUploaderTest() {
+        var uploader = new YouTubeUploader {
+            Id = "@fcbayern",
+            Name = "FC Bayern Munich"
+        };
+        YouTubeUploader.Client.Set(uploader);
+
+        var cmd = new AddUploaderNameCommand {
+            UploaderId = "@fcbayern",
+            Names = [],
+            AutoConfirmDefault = true
+        };
+
+        var result = cmd.Execute();
+        result.Should().Be(0);
+
+        var updated = YouTubeUploader.Client.Get("@fcbayern");
+        updated.Should().NotBeNull();
+        updated!.Id.Should().Be("@fcbayern");
+        updated.Name.Should().Be("FC Bayern Munich");
+    }
+
+    [Fact]
+    public void AddUploaderByNameWithPromptForIdTest() {
+        var originalIn = Console.In;
+        try {
+            using var reader = new StringReader("@fcbayern\n\ny\n");
+            Console.SetIn(reader);
+
+            var cmd = new AddUploaderNameCommand {
+                UploaderId = "FC Bayern Munich",
+                Names = ["Bayern Munich", "FCB"]
+            };
+
+            var result = cmd.Execute();
+            result.Should().Be(0);
+
+            var updated = YouTubeUploader.Client.Get("@fcbayern");
+            updated.Should().NotBeNull();
+            updated!.Id.Should().Be("@fcbayern");
+            updated.Name.Should().Be("FC Bayern Munich");
+            updated.NameAliases.Should().BeEquivalentTo(["Bayern Munich", "FCB"]);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void AddUploaderCancelledByUserTest() {
+        var originalIn = Console.In;
+        try {
+            using var reader = new StringReader("n\n");
+            Console.SetIn(reader);
+
+            var cmd = new AddUploaderNameCommand {
+                UploaderId = "@cancelledchannel",
+                Names = ["Cancelled Name"]
+            };
+
+            var result = cmd.Execute();
+            result.Should().Be(0);
+
+            var updated = YouTubeUploader.Client.Get("@cancelledchannel");
+            updated.Should().BeNull();
+        } finally {
+            Console.SetIn(originalIn);
+        }
     }
 }
