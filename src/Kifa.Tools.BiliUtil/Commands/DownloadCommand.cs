@@ -42,11 +42,18 @@ public abstract class DownloadCommand : BiliCommand {
             "Whether to include page title. Possible values: OnlyMultiplePage (default), Never, Always.")]
     public PageTitleOption IncludePageTitle { get; set; } = PageTitleOption.OnlyMultiplePage;
 
+    [Option('b', "break-on-existing",
+        HelpText = "Stop downloading when encountering an already downloaded video.")]
+    public bool BreakOnExisting { get; set; } = false;
+
+    public bool LastItemAlreadyExists { get; set; }
+
     int downloadCounter;
 
     protected KifaActionResult Download(BilibiliVideo video, int pid, string? alternativeFolder = null,
         string? extraFolder = null, BilibiliUploader? uploader = null,
         bool includeUploaderInFileTitle = false) {
+        LastItemAlreadyExists = false;
         string? extension;
         int quality;
         int codec;
@@ -96,6 +103,7 @@ public abstract class DownloadCommand : BiliCommand {
                 ? $"{found.Id} exists in the system"
                 : $"{found} exists locally";
             Logger.Info($"Found {message}.");
+            LastItemAlreadyExists = true;
             return KifaFile.LinkAll(found, targetFiles);
         }
 

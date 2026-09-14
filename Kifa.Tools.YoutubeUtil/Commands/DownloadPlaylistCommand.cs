@@ -34,6 +34,10 @@ public class DownloadPlaylistCommand : DownloadCommand {
 
         foreach (var videoId in videosToDownload) {
             ExecuteItem(videoId, () => DownloadVideo(playlist, videoId));
+            if (BreakOnExisting && LastItemAlreadyExists) {
+                Logger.Info($"Stopping early: video ({videoId}) already exists.");
+                break;
+            }
         }
 
         return LogSummary();
@@ -42,6 +46,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
     KifaActionResult DownloadVideo(YouTubePlaylist playlist, string videoId) {
         var video = YouTubeVideo.Client.Get(videoId, refresh: Refresh);
         if (video == null) {
+            LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 

@@ -24,6 +24,10 @@ public class DownloadVideoCommand : DownloadCommand {
     public override int Execute(KifaTask? task = null) {
         foreach (var aidWithPage in Aids) {
             ExecuteItem(aidWithPage, () => DownloadVideo(aidWithPage));
+            if (BreakOnExisting && LastItemAlreadyExists) {
+                Logger.Info($"Stopping early: video ({aidWithPage}) already exists.");
+                break;
+            }
         }
 
         return LogSummary();
@@ -35,6 +39,7 @@ public class DownloadVideoCommand : DownloadCommand {
 
         var video = BilibiliVideo.Client.Get(aid);
         if (video == null) {
+            LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({aid}).");
         }
 
@@ -44,13 +49,22 @@ public class DownloadVideoCommand : DownloadCommand {
                 alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null));
         }
 
+        var allPagesExisted = true;
         var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
             results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                KifaActionResult.FromAction(() => Download(video, page.Id,
-                    alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null)));
+                KifaActionResult.FromAction(() => {
+                    var result = Download(video, page.Id,
+                        alternativeFolder: UseVideoNameFolder ? $"{video.Title}.{video.Id}" : null);
+                    if (!LastItemAlreadyExists) {
+                        allPagesExisted = false;
+                    }
+
+                    return result;
+                }));
         }
 
+        LastItemAlreadyExists = allPagesExisted && video.Pages.Count > 0;
         return results;
     }
 }

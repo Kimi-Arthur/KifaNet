@@ -51,6 +51,10 @@ public class DownloadUploaderCommand : DownloadCommand {
             DownloadVideos(uploader, videos.Value);
         }
 
+        if (BreakOnExisting && LastItemAlreadyExists) {
+            return LogSummary();
+        }
+
         var removedAids = OldestFirst
             ? uploader.RemovedAids
             : Enumerable.Reverse(uploader.RemovedAids).ToList();
@@ -99,17 +103,35 @@ public class DownloadUploaderCommand : DownloadCommand {
     void DownloadVideos(BilibiliUploader uploader, List<BilibiliVideo> videos) {
         foreach (var video in videos) {
             ExecuteItem(video.Id, () => DownloadVideo(uploader, video));
+            if (BreakOnExisting && LastItemAlreadyExists) {
+                Logger.Info($"Stopping early: video ({video.Id}) already exists.");
+                break;
+            }
         }
     }
 
     KifaActionResult DownloadVideo(BilibiliUploader uploader, BilibiliVideo video) {
+        if (video.Pages == null || video.Pages.Count == 0) {
+            LastItemAlreadyExists = false;
+            return KifaActionResult.Error($"No pages found for video ({video.Id}).");
+        }
+
+        var allPagesExisted = true;
         var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
             results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                KifaActionResult.FromAction(() => Download(video, page.Id, uploader: uploader,
-                    extraFolder: InnerFolder)));
+                KifaActionResult.FromAction(() => {
+                    var result = Download(video, page.Id, uploader: uploader,
+                        extraFolder: InnerFolder);
+                    if (!LastItemAlreadyExists) {
+                        allPagesExisted = false;
+                    }
+
+                    return result;
+                }));
         }
 
+        LastItemAlreadyExists = allPagesExisted && video.Pages.Count > 0;
         return results;
     }
 }

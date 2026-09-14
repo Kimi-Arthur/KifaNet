@@ -28,6 +28,10 @@ public class DownloadPlaylistCommand : DownloadCommand {
 
         foreach (var videoId in playlist.Videos.Reverse<string>()) {
             ExecuteItem(videoId, () => DownloadVideo(playlist, videoId));
+            if (BreakOnExisting && LastItemAlreadyExists) {
+                Logger.Info($"Stopping early: video ({videoId}) already exists.");
+                break;
+            }
         }
 
         return LogSummary();
@@ -36,17 +40,27 @@ public class DownloadPlaylistCommand : DownloadCommand {
     KifaActionResult DownloadVideo(BilibiliPlaylist playlist, string videoId) {
         var video = BilibiliVideo.Client.Get(videoId);
         if (video?.Pages == null) {
+            LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
+        var allPagesExisted = true;
         var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
             results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                KifaActionResult.FromAction(() => Download(video, page.Id,
-                    alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
-                    includeUploaderInFileTitle: true)));
+                KifaActionResult.FromAction(() => {
+                    var result = Download(video, page.Id,
+                        alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}",
+                        includeUploaderInFileTitle: true);
+                    if (!LastItemAlreadyExists) {
+                        allPagesExisted = false;
+                    }
+
+                    return result;
+                }));
         }
 
+        LastItemAlreadyExists = allPagesExisted && video.Pages.Count > 0;
         return results;
     }
 }

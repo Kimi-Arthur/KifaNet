@@ -21,10 +21,7 @@ namespace Kifa.Api.Files;
 public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDisposable {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static FileInformationServiceClient? fileInfoClient;
-
-    static FileInformationServiceClient FileInfoClient
-        => (fileInfoClient ??= FileInformation.Client).Checked();
+    static FileInformationServiceClient FileInfoClient => FileInformation.Client;
 
     #region Configs
 
@@ -202,6 +199,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         var fullPath = GetLocalFullPath(uri);
         foreach (var p in FileStorageClient.ServerConfigs) {
             if (fullPath.StartsWith(p.Value.Prefix)) {
+                // Directly working on the root prefix is intentionally not normalized to avoid operating directly on the root.
                 var canonicalPath = $"local:{p.Key}{fullPath[p.Value.Prefix.Length..]}";
                 Logger.Trace($"Converted {fullPath} to {canonicalPath}");
                 return canonicalPath;

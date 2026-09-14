@@ -24,12 +24,19 @@ public abstract class DownloadCommand : YoutubeCommand {
         HelpText = "Use any existing version of the video. Throw an error if multiple versions exist.")]
     public bool PreferExisting { get; set; } = false;
 
+    [Option('b', "break-on-existing",
+        HelpText = "Stop downloading when encountering an already downloaded video.")]
+    public bool BreakOnExisting { get; set; } = false;
+
+    protected bool LastItemAlreadyExists { get; set; }
+
     KifaFile BaseFolder => OutputFolder != null ? new KifaFile(OutputFolder) : CurrentFolder;
 
     int downloadCounter;
 
     protected KifaActionResult Download(YouTubeVideo video, string? alternativeFolder = null,
         string? extraFolder = null) {
+        LastItemAlreadyExists = false;
         var uploader = EnsureUploaderInfo(video);
 
         var outputFolder = BaseFolder;
@@ -53,6 +60,7 @@ public abstract class DownloadCommand : YoutubeCommand {
             }
 
             if (existingRepoFiles.Count == 1) {
+                LastItemAlreadyExists = true;
                 return LinkExistingRepoFile(existingRepoFiles[0], video, alternativeFolder, extraFolder,
                     outputFolder, uploader: uploader);
             }
@@ -63,6 +71,7 @@ public abstract class DownloadCommand : YoutubeCommand {
                     ? $"{found.Id} exists in the system"
                     : $"{found} exists locally";
                 Logger.Info($"Found {message}.");
+                LastItemAlreadyExists = true;
                 return KifaFile.LinkAll(found, targetFiles);
             }
         }

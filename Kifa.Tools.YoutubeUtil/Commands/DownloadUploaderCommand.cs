@@ -32,6 +32,10 @@ public class DownloadUploaderCommand : DownloadCommand {
 
         foreach (var videoId in videosToDownload) {
             ExecuteItem(videoId, () => DownloadVideo(videoId));
+            if (BreakOnExisting && LastItemAlreadyExists) {
+                Logger.Info($"Stopping early: video ({videoId}) already exists.");
+                break;
+            }
         }
 
         return LogSummary();
@@ -40,6 +44,7 @@ public class DownloadUploaderCommand : DownloadCommand {
     KifaActionResult DownloadVideo(string videoId) {
         var video = YouTubeVideo.Client.Get(videoId, refresh: Refresh);
         if (video == null) {
+            LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 

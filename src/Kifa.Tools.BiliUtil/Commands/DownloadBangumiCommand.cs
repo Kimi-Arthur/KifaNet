@@ -33,13 +33,21 @@ public class DownloadBangumiCommand : DownloadCommand {
 
         foreach (var videoId in bangumi.Aids.Distinct()) {
             ExecuteItem(videoId, () => DownloadVideo(bangumi, videoId, extraFolder: null));
+            if (BreakOnExisting && LastItemAlreadyExists) {
+                Logger.Info($"Stopping early: video ({videoId}) already exists.");
+                break;
+            }
         }
 
-        if (IncludeExtras) {
+        if (IncludeExtras && !(BreakOnExisting && LastItemAlreadyExists)) {
             Logger.Info("Download extra video files.");
 
             foreach (var videoId in bangumi.ExtraAids.Distinct()) {
                 ExecuteItem(videoId, () => DownloadVideo(bangumi, videoId, extraFolder: "Extras"));
+                if (BreakOnExisting && LastItemAlreadyExists) {
+                    Logger.Info($"Stopping early: video ({videoId}) already exists.");
+                    break;
+                }
             }
         }
 
@@ -49,17 +57,27 @@ public class DownloadBangumiCommand : DownloadCommand {
     KifaActionResult DownloadVideo(BilibiliBangumi bangumi, string videoId, string? extraFolder) {
         var video = BilibiliVideo.Client.Get(videoId);
         if (video?.Pages == null) {
+            LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
+        var allPagesExisted = true;
         var results = new KifaBatchActionResult();
         foreach (var page in video.Pages) {
             results.Add($"{video.Id}p{page.Id} {video.Title} {page.Title}",
-                KifaActionResult.FromAction(() => Download(video, page.Id,
-                    alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
-                    extraFolder: extraFolder)));
+                KifaActionResult.FromAction(() => {
+                    var result = Download(video, page.Id,
+                        alternativeFolder: $"{bangumi.Title}.{bangumi.Id}",
+                        extraFolder: extraFolder);
+                    if (!LastItemAlreadyExists) {
+                        allPagesExisted = false;
+                    }
+
+                    return result;
+                }));
         }
 
+        LastItemAlreadyExists = allPagesExisted && video.Pages.Count > 0;
         return results;
     }
 }

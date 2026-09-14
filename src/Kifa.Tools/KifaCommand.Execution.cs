@@ -7,7 +7,7 @@ using NLog;
 namespace Kifa.Tools;
 
 public abstract partial class KifaCommand {
-    List<(string item, KifaActionResult result)> Results { get; set; } = new();
+    public List<(string item, KifaActionResult result)> Results { get; set; } = new();
 
     protected List<(string item, KifaActionResult result)> PopPendingResults() {
         var pendingResults = Results.Where(r => r.result.Status.HasFlag(KifaActionStatus.Pending))
