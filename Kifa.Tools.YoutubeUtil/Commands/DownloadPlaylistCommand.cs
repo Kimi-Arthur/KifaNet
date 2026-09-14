@@ -15,7 +15,7 @@ public class DownloadPlaylistCommand : DownloadCommand {
 
     [Option('f', "folder",
         HelpText =
-            "Alternate folder to use. Playlist Id will be appended as {folder}.p{id}.youtube")]
+            "Alternate folder to use. Playlist Id will be appended as {folder}.{id}.youtube")]
     public string? AlternateFolder { get; set; }
 
     [Option('l', "oldest-first", HelpText = "Download oldest video first.")]
@@ -51,6 +51,6 @@ public class DownloadPlaylistCommand : DownloadCommand {
         }
 
         return KifaActionResult.FromAction(() => Download(video,
-            alternativeFolder: $"{AlternateFolder ?? playlist.Title}.p{PlaylistId}"));
+            alternativeFolder: $"{AlternateFolder ?? playlist.Title}.{PlaylistId}"));
     }
 }
