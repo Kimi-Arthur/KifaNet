@@ -127,7 +127,7 @@ public partial class KifaFile {
             };
         } catch (FileNotFoundException ex) {
             Logger.Trace(ex, $"File {destination} is not found. This is expected if not uploaded.");
-        } catch (Exception ex) {
+        } catch (FileCorruptedException ex) {
             var prompt = confirmPrompt ?? ConfirmPrompt;
             var confirmed = prompt?.Invoke(
                 $"Existing destination {destination} failed check ({ex.Message}). Confirm deleting it to re-upload?",
@@ -140,12 +140,18 @@ public partial class KifaFile {
             }
 
             Logger.Warn(ex,
-                $"Existing destination {destination} failed check. Deleting and re-uploading as confirmed...");
+                $"Existing destination {destination} failed check ({ex.Message}). Deleting and re-uploading as confirmed...");
             try {
                 destination.Delete();
             } catch (Exception deleteEx) {
-                Logger.Warn(deleteEx, $"Failed to delete corrupted destination {destination}.");
+                Logger.Warn(deleteEx,
+                    $"Failed to delete corrupted destination {destination}: {deleteEx.Message}.");
             }
+        } catch (Exception ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to check destination {destination}: {ex}"
+            };
         }
 
         // Register the destination location so that it will go to the same place if retried in
