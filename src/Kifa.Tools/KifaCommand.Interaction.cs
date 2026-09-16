@@ -438,28 +438,63 @@ public abstract partial class KifaCommand {
         }
     }
 
-    public bool Confirm(string prefix, bool suggested = true) {
+    static readonly Dictionary<string, bool> AlwaysChoiceForConfirm = new();
+
+    public bool Confirm(string prefix, bool suggested = true, string? selectionKey = null,
+        [CallerFilePath] string callerFilePath = "", [CallerLineNumber] int callerLineNumber = 0) {
+        selectionKey = string.IsNullOrEmpty(selectionKey)
+            ? $"{callerFilePath}:{callerLineNumber}"
+            : selectionKey;
+
         if (AutoConfirmDefault) {
             Logger.Debug($"Auto selected default {suggested} as enabled by -y or --yes.");
             return suggested;
         }
 
+        if (AlwaysChoiceForConfirm.TryGetValue(selectionKey, out var alwaysChoice)) {
+            Console.WriteLine(
+                $"Automatically chose [{(alwaysChoice ? "Y" : "N").Info()}] as previously instructed.\n");
+            return alwaysChoice;
+        }
+
         while (true) {
             var suggestedOptions = suggested ? "Y/n" : "y/N";
-            Console.Write($"{prefix} [{suggestedOptions}]?");
+            Console.Write($"{prefix} [{suggestedOptions}] (Hint: 'a'/'ay'/'an' to always choose): ");
 
-            var line = Console.ReadLine()!;
+            var rawLine = Console.ReadLine();
+            if (rawLine == null) {
+                return suggested;
+            }
+
+            var line = rawLine.Trim().ToLowerInvariant();
             if (line == "") {
                 return suggested;
             }
 
-            if (line.ToLower().StartsWith("y")) {
+            if (line is "y" or "yes" or "true") {
                 return true;
             }
 
-            if (line.ToLower().StartsWith("n")) {
+            if (line is "n" or "no" or "false") {
                 return false;
             }
+
+            if (line is "a" or "all" or "always") {
+                AlwaysChoiceForConfirm[selectionKey] = suggested;
+                return suggested;
+            }
+
+            if (line is "ay" or "ya" or "a y" or "a yes" or "always yes" or "always y") {
+                AlwaysChoiceForConfirm[selectionKey] = true;
+                return true;
+            }
+
+            if (line is "an" or "na" or "a n" or "a no" or "always no" or "always n") {
+                AlwaysChoiceForConfirm[selectionKey] = false;
+                return false;
+            }
+
+            Console.WriteLine("Invalid choice. Try again:");
         }
     }
 }

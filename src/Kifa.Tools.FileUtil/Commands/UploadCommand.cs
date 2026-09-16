@@ -69,7 +69,7 @@ class UploadCommand : KifaCommand {
         foreach (var file in selected.Value.Checked()) {
             ExecuteItem(file.ToString(),
                 () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
-                    DownloadLocal, QuickMode, true, Confirm));
+                    DownloadLocal, QuickMode, true, (prompt, suggested) => Confirm(prompt, suggested)));
         }
 
         var pendingFiles = PopPendingResults().Select(item => item.item);
@@ -85,7 +85,7 @@ class UploadCommand : KifaCommand {
             foreach (var file in pendingFiles) {
                 ExecuteItem(file,
                     () => new KifaFile(file).Upload(targets, DeleteSource, UseCache, DownloadLocal,
-                        QuickMode, false, Confirm));
+                        QuickMode, false, (prompt, suggested) => Confirm(prompt, suggested)));
             }
         }
 

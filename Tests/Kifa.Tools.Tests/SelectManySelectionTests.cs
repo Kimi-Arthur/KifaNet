@@ -240,6 +240,10 @@ public class SelectManySelectionTests {
             return SelectOne(choices, s => s, selectionKey: selectionKey);
         }
 
+        public bool TestConfirm(string prefix, bool suggested, string selectionKey) {
+            return Confirm(prefix, suggested, selectionKey: selectionKey);
+        }
+
         public string? GetLoggedDefaultReply(string selectionKey)
             => GetDefaultReplyForSelectMany(selectionKey);
     }
@@ -651,6 +655,104 @@ public class SelectManySelectionTests {
             Console.SetIn(originalIn);
             Console.SetOut(originalOut);
             ConsoleColorExtensions.ForceEnabled = null;
+        }
+    }
+
+    [Fact]
+    public void Confirm_DefaultChoice() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_confirm_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("\n\n"));
+
+            var cmd = new DummyCommand();
+            Assert.True(cmd.TestConfirm("Prompt 1", true, key));
+            Assert.False(cmd.TestConfirm("Prompt 2", false, key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void Confirm_ExplicitYesAndNo() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_confirm_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("y\nno\n"));
+
+            var cmd = new DummyCommand();
+            Assert.True(cmd.TestConfirm("Prompt 1", false, key));
+            Assert.False(cmd.TestConfirm("Prompt 2", true, key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void Confirm_AlwaysDefault() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_confirm_{Guid.NewGuid()}";
+            // 'a' on first call sets always default for this key. Second call should not consume input.
+            Console.SetIn(new System.IO.StringReader("a\n"));
+
+            var cmd = new DummyCommand();
+            Assert.True(cmd.TestConfirm("Prompt 1", true, key));
+            Assert.True(cmd.TestConfirm("Prompt 2", true, key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void Confirm_AlwaysYes() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_confirm_{Guid.NewGuid()}";
+            // 'ay' forces always true even if subsequent prompt has suggested = false
+            Console.SetIn(new System.IO.StringReader("ay\n"));
+
+            var cmd = new DummyCommand();
+            Assert.True(cmd.TestConfirm("Prompt 1", false, key));
+            Assert.True(cmd.TestConfirm("Prompt 2", false, key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void Confirm_AlwaysNo() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_confirm_{Guid.NewGuid()}";
+            // 'an' forces always false even if subsequent prompt has suggested = true
+            Console.SetIn(new System.IO.StringReader("an\n"));
+
+            var cmd = new DummyCommand();
+            Assert.False(cmd.TestConfirm("Prompt 1", true, key));
+            Assert.False(cmd.TestConfirm("Prompt 2", true, key));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void Confirm_KeyIsolation() {
+        var originalIn = Console.In;
+        try {
+            var key1 = $"test_confirm_1_{Guid.NewGuid()}";
+            var key2 = $"test_confirm_2_{Guid.NewGuid()}";
+            // key1 gets 'ay' (always yes). key2 should still require its own input.
+            Console.SetIn(new System.IO.StringReader("ay\nn\n"));
+
+            var cmd = new DummyCommand();
+            Assert.True(cmd.TestConfirm("Prompt 1", false, key1));
+            // key1 auto confirms
+            Assert.True(cmd.TestConfirm("Prompt 2", false, key1));
+            // key2 uses separate input ('n')
+            Assert.False(cmd.TestConfirm("Prompt 3", true, key2));
+        } finally {
+            Console.SetIn(originalIn);
         }
     }
 }
