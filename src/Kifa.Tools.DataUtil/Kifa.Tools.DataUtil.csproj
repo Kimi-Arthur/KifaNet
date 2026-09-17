@@ -37,6 +37,7 @@
         <ProjectReference Include="..\Kifa.Music\Kifa.Music.csproj"/>
         <ProjectReference Include="..\Kifa.Service\Kifa.Service.csproj"/>
         <ProjectReference Include="..\Kifa.Tools\Kifa.Tools.csproj"/>
+        <ProjectReference Include="..\..\Kifa.YouTube\Kifa.YouTube.csproj"/>
         <ProjectReference Include="..\Kifa\Kifa.csproj"/>
     </ItemGroup>
 

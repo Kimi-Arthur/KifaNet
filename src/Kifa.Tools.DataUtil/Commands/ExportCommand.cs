@@ -25,7 +25,7 @@ public class ExportCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var file = new KifaFile(File);
-        var content = file.ReadAsString();
+        var content = file.Exists() == true ? file.ReadAsString() : "";
 
         var chef = DataChef.GetChef(Type, content);
 

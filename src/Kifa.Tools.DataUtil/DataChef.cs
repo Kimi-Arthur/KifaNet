@@ -7,12 +7,13 @@ using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
 using Kifa.Infos;
 using Kifa.IO;
+using Kifa.Languages.Biaori;
 using Kifa.Languages.German;
 using Kifa.Languages.Goethe;
-using Kifa.Languages.Biaori;
 using Kifa.Languages.Memrise;
 using Kifa.Music;
 using Kifa.Service;
+using Kifa.YouTube;
 using NLog;
 using YamlDotNet.Serialization;
 
@@ -44,7 +45,22 @@ public interface DataChef {
             TelegramStorageCell.ModelId,
             new Lazy<DataChef>(() => new DataChef<TelegramStorageCell>())
         },
-        { BiaoriJapaneseWord.ModelId, new Lazy<DataChef>(() => new DataChef<BiaoriJapaneseWord>()) }
+        { BiaoriJapaneseWord.ModelId, new Lazy<DataChef>(() => new DataChef<BiaoriJapaneseWord>()) },
+        { BilibiliUploader.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliUploader>()) }, {
+            BilibiliUploaderVideos.ModelId,
+            new Lazy<DataChef>(() => new DataChef<BilibiliUploaderVideos>())
+        },
+        { BilibiliVideo.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliVideo>()) },
+        { BilibiliPlaylist.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliPlaylist>()) },
+        { BilibiliManga.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliManga>()) },
+        { BilibiliArchive.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliArchive>()) },
+        { BilibiliBangumi.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliBangumi>()) },
+        { YouTubeUploader.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubeUploader>()) }, {
+            YouTubeUploaderVideos.ModelId,
+            new Lazy<DataChef>(() => new DataChef<YouTubeUploaderVideos>())
+        },
+        { YouTubeVideo.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubeVideo>()) },
+        { YouTubePlaylist.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubePlaylist>()) }
     };
 
     public static DataChef GetChef(string? modelId, string? content = null)
@@ -85,7 +101,8 @@ public class DataChef<TDataModel> : DataChef
         .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull |
                                         DefaultValuesHandling.OmitEmptyCollections).Build();
 
-    public List<TDataModel> Load(string data) => Deserializer.Deserialize<List<TDataModel>>(data);
+    public List<TDataModel> Load(string data)
+        => Deserializer.Deserialize<List<TDataModel>>(data) ?? [];
 
     public KifaActionResult Import(string data) {
         var items = Load(data);
@@ -102,8 +119,7 @@ public class DataChef<TDataModel> : DataChef
     }
 
     public KifaActionResult<string> Export(string data, bool getAll, bool compact) {
-        var items = Deserializer.Deserialize<List<TDataModel>>(data).Select(item => item.Id)
-            .ToList();
+        var items = Load(data).Select(item => item.Id).ToList();
 
         var updatedItems =
             getAll ? GetItemsWithExistingOrder(items, Client.List()) : Client.Get(items);
