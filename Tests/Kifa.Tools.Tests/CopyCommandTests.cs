@@ -216,8 +216,7 @@ public class CopyCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override FileInformation? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null)
+        public override FileInformation? Get(string id, KifaDataOptions? options = null)
             => data.GetValueOrDefault(id);
 
         public override KifaActionResult Set(FileInformation item) {

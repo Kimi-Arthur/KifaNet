@@ -115,15 +115,14 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }));
     }
 
-    public override TDataModel? Get(string id, bool refresh = false, bool rewrite = false,
-        KifaDataOptions? options = null) {
+    public override TDataModel? Get(string id, KifaDataOptions? options = null) {
         lock (GetLock(id)) {
             try {
                 var data = Retrieve(id);
 
-                if (Fill(ref data, id, refresh)) {
+                if (Fill(ref data, id, options)) {
                     WriteTarget(data.Clone());
-                } else if (rewrite) {
+                } else if (options?.Rewrite == true) {
                     if (data != null) {
                         var rawData = ReadRaw(data.RealId);
                         if (rawData != null) {
@@ -159,18 +158,22 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     // false -> no write needed.
     // true -> rewrite needed.
-    bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null, bool refresh = false) {
+    bool Fill([NotNullWhen(true)] ref TDataModel? data, string? id = null,
+        KifaDataOptions? options = null) {
         data ??= new TDataModel {
             Id = id
         };
 
-        if (refresh || data.NeedRefresh()) {
+        var refresh = options?.Refresh == true;
+        var deep = options?.Deep == true;
+
+        if (refresh || deep || data.NeedRefresh()) {
             var isNewItem = data.Metadata?.Version == null;
             var originalContent = data.Clone();
             var now = DateTimeOffset.UtcNow;
 
             try {
-                data.Fill();
+                data.Fill(deep: deep);
             } catch (DataIsLinkedException ex) {
                 Delete(data.Id);
                 Link(ex.TargetId, data.Id);

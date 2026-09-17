@@ -14,7 +14,9 @@ public class MemriseClientTests {
 
     public MemriseClientTests() {
         KifaConfigs.LoadFromSystemConfigs();
-        TestCourse = MemriseCourse.Client.Get("test-course", true);
+        TestCourse = MemriseCourse.Client.Get("test-course", new() {
+            Refresh = true
+        });
     }
 
     [Test]

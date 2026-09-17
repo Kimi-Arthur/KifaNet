@@ -32,7 +32,9 @@ public partial class AddCommand {
 
         foreach (var account in specs.SelectMany(ExpandAccounts)) {
             swisscomProcessor.Add(() => KifaActionResult.FromAction(() => {
-                var quota = SwisscomAccountQuota.Client.Get(account.Id, true);
+                var quota = SwisscomAccountQuota.Client.Get(account.Id, new() {
+                    Refresh = true
+                });
                 if (quota?.TotalQuota > 0) {
                     return new KifaActionResult {
                         Status = KifaActionStatus.Skipped,

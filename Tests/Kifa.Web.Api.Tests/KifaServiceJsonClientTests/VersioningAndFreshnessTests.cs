@@ -19,6 +19,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
     public static bool GlobalShouldFailFill { get; set; }
     public static bool GlobalShouldThrowFailedToFill { get; set; }
     public static int GlobalFillCount { get; set; }
+    public static bool? LastFillWasDeep { get; set; }
     public static Dictionary<string, string> UpstreamLinks { get; } = new();
 
     public string? Content { get; set; }
@@ -31,7 +32,8 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
-    public override void Fill() {
+    public override void Fill(bool deep) {
+        LastFillWasDeep = deep;
         GlobalFillCount++;
         if (GlobalShouldThrowFailedToFill || ShouldThrowFailedToFill) {
             throw new FailedToFillException($"Simulated process failure for {Id}.");
@@ -112,7 +114,9 @@ public class VersioningAndFreshnessTests : IDisposable {
         Thread.Sleep(50);
 
         // Force refresh via refresh=true
-        var secondGet = client.Get(id, refresh: true);
+        var secondGet = client.Get(id, new() {
+            Refresh = true
+        });
         secondGet.Should().NotBeNull();
         secondGet!.Metadata.Should().NotBeNull();
 
@@ -143,7 +147,9 @@ public class VersioningAndFreshnessTests : IDisposable {
         diskModel!.RemoteSourceContent = "new changed content";
         client.Update(diskModel);
 
-        var secondGet = client.Get(id, refresh: true);
+        var secondGet = client.Get(id, new() {
+            Refresh = true
+        });
         secondGet.Should().NotBeNull();
         secondGet!.Content.Should().Be("new changed content");
         secondGet.Metadata.Should().NotBeNull();
@@ -263,7 +269,9 @@ public class VersioningAndFreshnessTests : IDisposable {
         refreshedUpstream.Metadata.Version.Should().Be(originalUpstreamVersion);
 
         // Refresh downstream: upstream version has not changed, so downstream skips updating upstream region
-        var refreshedDownstream = client.Get(downstreamId, refresh: true);
+        var refreshedDownstream = client.Get(downstreamId, new() {
+            Refresh = true
+        });
         refreshedDownstream!.UpstreamContent.Should().Be("upstream v1");
         refreshedDownstream.Metadata!.Version.Should().Be(downstreamVersionBefore);
     }
@@ -321,7 +329,9 @@ public class VersioningAndFreshnessTests : IDisposable {
 
         // Downstream refreshed when upstream has NOT changed: region is skipped, version unchanged
         var downstreamVersionBefore = downstreamData.Metadata!.Version;
-        var refreshedDownstream = client.Get(downstreamId, refresh: true);
+        var refreshedDownstream = client.Get(downstreamId, new() {
+            Refresh = true
+        });
         refreshedDownstream!.UpstreamContent.Should().Be("upstream v1");
         refreshedDownstream.Metadata!.Version.Should().Be(downstreamVersionBefore);
 
@@ -331,13 +341,17 @@ public class VersioningAndFreshnessTests : IDisposable {
         var upstreamData = client.Get(upstreamId);
         upstreamData!.RemoteSourceContent = "upstream v2";
         client.Update(upstreamData);
-        client.Get(upstreamId, refresh: true);
+        client.Get(upstreamId, new() {
+            Refresh = true
+        });
 
         // Downstream NeedRefresh is false on its own (schedule managed otherwise)
         refreshedDownstream.NeedRefresh().Should().BeFalse();
 
         // When downstream is refreshed, Fill() checks NeedRefreshFrom(upstream) and updates UpstreamContent
-        var updatedDownstream = client.Get(downstreamId, refresh: true);
+        var updatedDownstream = client.Get(downstreamId, new() {
+            Refresh = true
+        });
         updatedDownstream!.UpstreamContent.Should().Be("upstream v2");
         updatedDownstream.Metadata!.Version!.Value.Should().BeAfter(downstreamVersionBefore!.Value);
     }
@@ -484,7 +498,9 @@ public class VersioningAndFreshnessTests : IDisposable {
         writtenJson.Should().NotContain("version");
 
         // Force refresh should throw NoNeedToFillException internally and not write metadata
-        var refreshed = nonUpstreamClient.Get(id, refresh: true);
+        var refreshed = nonUpstreamClient.Get(id, new() {
+            Refresh = true
+        });
         refreshed.Should().NotBeNull();
         refreshed!.Metadata.Should().BeNull();
     }
@@ -515,7 +531,9 @@ public class VersioningAndFreshnessTests : IDisposable {
 
         // If upstream becomes available, a forced refresh recovers the item
         TestFillDataModel.GlobalShouldFailFill = false;
-        var recovered = client.Get(id, refresh: true);
+        var recovered = client.Get(id, new() {
+            Refresh = true
+        });
         recovered.Should().NotBeNull();
         recovered!.Metadata!.Status.Should().Be(DataStatus.OK);
 
@@ -552,7 +570,9 @@ public class VersioningAndFreshnessTests : IDisposable {
         client.Update(firstGet);
 
         // Trigger refresh
-        var secondGet = client.Get(id, refresh: true);
+        var secondGet = client.Get(id, new() {
+            Refresh = true
+        });
         secondGet.Should().NotBeNull();
         secondGet!.Content.Should().Be("initial content");
         secondGet.Metadata.Should().NotBeNull();
@@ -658,12 +678,88 @@ public class VersioningAndFreshnessTests : IDisposable {
         data.Metadata?.Status.Should().Be(DataStatus.OK);
     }
 
+    [Fact]
+    public void NaturalRefreshCallsFillWithDeepFalse() {
+        var id = nameof(NaturalRefreshCallsFillWithDeepFalse);
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        };
+        client.Set(model);
+
+        // Initial fill
+        var data = client.Get(id);
+        data!.Content.Should().Be("v1");
+        TestFillDataModel.LastFillWasDeep.Should().BeFalse();
+
+        // Expire refresh interval
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.Zero;
+        model.RemoteSourceContent = "v2";
+        client.Set(model);
+
+        // Natural refresh triggered by NeedRefresh()
+        var refreshed = client.Get(id);
+        refreshed!.Content.Should().Be("v2");
+        TestFillDataModel.LastFillWasDeep.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ForcedRefreshCallsFillWithDeepFalse() {
+        var id = nameof(ForcedRefreshCallsFillWithDeepFalse);
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        };
+        client.Set(model);
+
+        var data = client.Get(id);
+        data!.Content.Should().Be("v1");
+
+        // Fresh data, not expired
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.FromDays(10);
+        model.RemoteSourceContent = "v2";
+        client.Set(model);
+
+        // Explicit refresh: true
+        var refreshed = client.Get(id, new() {
+            Refresh = true
+        });
+        refreshed!.Content.Should().Be("v2");
+        TestFillDataModel.LastFillWasDeep.Should().BeFalse();
+    }
+
+    [Fact]
+    public void DeepRefreshCallsFillWithDeepTrue() {
+        var id = nameof(DeepRefreshCallsFillWithDeepTrue);
+        var model = new TestFillDataModel {
+            Id = id,
+            RemoteSourceContent = "v1"
+        };
+        client.Set(model);
+
+        var data = client.Get(id);
+        data!.Content.Should().Be("v1");
+
+        // Fresh data, not expired
+        TestFillDataModel.GlobalRefreshInterval = TimeSpan.FromDays(10);
+        model.RemoteSourceContent = "v2";
+        client.Set(model);
+
+        // Explicit deep: true
+        var refreshed = client.Get(id, new KifaDataOptions {
+            Deep = true
+        });
+        refreshed!.Content.Should().Be("v2");
+        TestFillDataModel.LastFillWasDeep.Should().BeTrue();
+    }
+
     public void Dispose() {
         TestFillDataModel.GlobalRefreshInterval = null;
         TestFillDataModel.GlobalForceRefreshBefore = null;
         TestFillDataModel.GlobalShouldFailFill = false;
         TestFillDataModel.GlobalShouldThrowFailedToFill = false;
         TestFillDataModel.GlobalFillCount = 0;
+        TestFillDataModel.LastFillWasDeep = null;
         TestFillDataModel.UpstreamLinks.Clear();
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

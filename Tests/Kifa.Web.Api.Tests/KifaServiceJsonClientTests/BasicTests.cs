@@ -417,7 +417,9 @@ public class BasicTests : IDisposable {
         data.Should().NotBeNull();
         File.Exists(txtFilePath).Should().BeFalse();
 
-        data = client.Get(id, rewrite: true);
+        data = client.Get(id, new() {
+            Rewrite = true
+        });
 
         data.Should().NotBeNull();
         data.Id.Should().Be(id);

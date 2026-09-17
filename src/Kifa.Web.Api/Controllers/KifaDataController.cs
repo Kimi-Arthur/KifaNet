@@ -25,14 +25,14 @@ public class KifaDataController<TDataModel, TServiceClient> : ControllerBase
 
     // GET api/values/5
     [HttpGet("{id}")]
-    public virtual ActionResult<TDataModel?> Get(string id, bool refresh = false, bool rewrite = false,
+    public virtual ActionResult<TDataModel?> Get(string id,
         [FromQuery] KifaDataOptions? options = null) {
         id = UnescapeId(id);
         if (id.StartsWith("$")) {
             return new NotFoundResult();
         }
 
-        return Client.Get(id, refresh, rewrite, options);
+        return Client.Get(id, options);
     }
 
     // PATCH api/values/5
