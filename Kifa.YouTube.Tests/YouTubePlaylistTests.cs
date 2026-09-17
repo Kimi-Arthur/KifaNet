@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
 
@@ -44,5 +45,25 @@ public class YouTubePlaylistTests {
 
         playlist.Fill();
         playlist.Videos.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void FillIncrementalTest() {
+        var fullPlaylist = new YouTubePlaylist {
+            Id = "PLRqwX-V7Uu6ZiZxtDDRCi6uhfTH4FilpH"
+        };
+        fullPlaylist.Fill();
+        var knownVideo = fullPlaylist.Videos[60];
+
+        var incrementalPlaylist = new YouTubePlaylist {
+            Id = "PLRqwX-V7Uu6ZiZxtDDRCi6uhfTH4FilpH",
+            Videos = [knownVideo]
+        };
+
+        incrementalPlaylist.Fill();
+        incrementalPlaylist.Title.Should().Be("Coding Challenges");
+        incrementalPlaylist.Author.Should().Be("The Coding Train");
+        incrementalPlaylist.Videos.Count.Should().Be(61);
+        incrementalPlaylist.Videos.Should().Equal(fullPlaylist.Videos.Take(61));
     }
 }

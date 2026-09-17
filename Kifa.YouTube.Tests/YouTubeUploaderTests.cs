@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using FluentAssertions;
 using Kifa.Configs;
 
@@ -78,5 +79,23 @@ public class YouTubeUploaderTests {
         };
         uploaderVideos.Fill();
         uploaderVideos.Videos.Should().Contain("WUj_TgtrTJE");
+    }
+
+    [Fact]
+    public void FillIncrementalTest() {
+        var fullUploaderVideos = new YouTubeUploaderVideos {
+            Id = "@fcbayern"
+        };
+        fullUploaderVideos.Fill();
+        var knownVideo = fullUploaderVideos.Videos[60];
+
+        var incrementalVideos = new YouTubeUploaderVideos {
+            Id = "@fcbayern",
+            Videos = [knownVideo]
+        };
+
+        incrementalVideos.Fill();
+        incrementalVideos.Videos.Count.Should().Be(61);
+        incrementalVideos.Videos.Should().Equal(fullUploaderVideos.Videos.Take(61));
     }
 }

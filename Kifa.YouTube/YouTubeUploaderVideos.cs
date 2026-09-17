@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Kifa.Service;
 
 namespace Kifa.YouTube;
@@ -14,11 +15,46 @@ public class YouTubeUploaderVideos : DataModel, WithModelId<YouTubeUploaderVideo
 
     public List<string> Videos { get; set; } = [];
 
-    public override void Fill() {
+    const int BatchSize = 50;
+
+    public override void Fill(bool deep = false) {
         var uploader = YouTubeUploader.Get(Id.Checked());
         var url = YouTubeUploader.GetFetchUrl(uploader?.Id ?? Id.Checked());
 
+        if (deep || Videos.Count == 0) {
+            Videos = FetchVideos(url);
+            return;
+        }
+
+        var existingSet = Videos.ToHashSet();
+        var newVideos = new List<string>();
+        var start = 1;
+
+        while (true) {
+            var batch = FetchVideos(url, start, BatchSize);
+            if (batch.Count == 0) {
+                Videos = newVideos;
+                break;
+            }
+
+            var overlapIndex = batch.FindIndex(v => existingSet.Contains(v));
+            if (overlapIndex >= 0) {
+                newVideos.AddRange(batch.Take(overlapIndex));
+                Videos = [..newVideos, ..Videos];
+                break;
+            }
+
+            newVideos.AddRange(batch);
+            start += BatchSize;
+        }
+    }
+
+    List<string> FetchVideos(string url, int? start = null, int? count = null) {
         var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
+        if (start != null && count != null) {
+            options.PlaylistItems = $"{start}:{start + count - 1}";
+        }
+
         var result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(url, overrideOptions: options)
             .GetAwaiter().GetResult();
 
@@ -35,6 +71,6 @@ public class YouTubeUploaderVideos : DataModel, WithModelId<YouTubeUploaderVideo
             }
         }
 
-        Videos = YouTubeVideo.ExtractVideoIds(result.Data.Entries);
+        return YouTubeVideo.ExtractVideoIds(result.Data.Entries);
     }
 }
