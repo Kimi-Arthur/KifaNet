@@ -36,10 +36,14 @@ public class YouTubeUploaderTests {
 
         var uploaderVideos = new YouTubeUploaderVideos {
             Id = "@TestChannel",
-            Videos = ["vid1", "vid2"]
+            Videos = ["vid1", "vid2"],
+            Shorts = ["short1"],
+            Streams = ["stream1"]
         };
         uploaderVideos.Id.Should().Be("@TestChannel");
         uploaderVideos.Videos.Should().Equal("vid1", "vid2");
+        uploaderVideos.Shorts.Should().Equal("short1");
+        uploaderVideos.Streams.Should().Equal("stream1");
         uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));
     }
 
@@ -78,7 +82,7 @@ public class YouTubeUploaderTests {
             Id = "@fcbayern"
         };
         uploaderVideos.Fill();
-        uploaderVideos.Videos.Should().Contain("WUj_TgtrTJE");
+        uploaderVideos.Shorts.Should().Contain("WUj_TgtrTJE");
     }
 
     [Fact]

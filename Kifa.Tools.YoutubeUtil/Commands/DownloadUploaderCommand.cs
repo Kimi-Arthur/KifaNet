@@ -36,15 +36,23 @@ public class DownloadUploaderCommand : DownloadCommand {
             return 1;
         }
 
-        var videosToDownload = OldestFirst
-            ? uploaderVideos.Videos.AsEnumerable().Reverse().ToList()
-            : uploaderVideos.Videos;
+        var sections = new List<List<string>> {
+            uploaderVideos.Videos,
+            uploaderVideos.Shorts,
+            uploaderVideos.Streams
+        };
 
-        foreach (var videoId in videosToDownload) {
-            ExecuteItem(videoId, () => DownloadVideo(uploader, videoId));
-            if (BreakOnExisting && LastItemAlreadyExists) {
-                Logger.Info($"Stopping early: video ({videoId}) already exists.");
-                break;
+        foreach (var section in sections) {
+            var videosToDownload = OldestFirst
+                ? section.AsEnumerable().Reverse().ToList()
+                : section;
+
+            foreach (var videoId in videosToDownload) {
+                ExecuteItem(videoId, () => DownloadVideo(uploader, videoId));
+                if (BreakOnExisting && LastItemAlreadyExists) {
+                    Logger.Info($"Stopping early: video ({videoId}) already exists in section.");
+                    break;
+                }
             }
         }
 

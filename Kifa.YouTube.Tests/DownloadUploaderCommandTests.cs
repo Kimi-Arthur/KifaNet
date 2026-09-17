@@ -187,47 +187,118 @@ public class DownloadUploaderCommandTests : IDisposable {
     }
 
     [Fact]
-    public void DownloadUploader_BreakOnExisting_StopsEarlyWhenEncounteringExistingVideoTest() {
+    public void DownloadUploader_DownloadsFromAllSectionsTest() {
         var uploader = new YouTubeUploader {
-            Id = "@creator",
-            Name = "Creator"
+            Id = "@creator_all",
+            Name = "Creator All"
         };
         YouTubeUploader.Client.Set(uploader);
 
         var uploaderVideos = new YouTubeUploaderVideos {
-            Id = "@creator",
-            Videos = ["vid1", "vid2"]
+            Id = "@creator_all",
+            Videos = ["vid1"],
+            Shorts = ["short1"],
+            Streams = ["stream1"]
         };
         YouTubeUploaderVideos.Client.Set(uploaderVideos);
 
-        var video1 = new YouTubeVideo {
+        YouTubeVideo.Client.Set(new YouTubeVideo {
             Id = "vid1",
             Title = "Video 1",
-            Author = "Creator",
-            AuthorId = "@creator"
-        };
-        var video2 = new YouTubeVideo {
-            Id = "vid2",
-            Title = "Video 2",
-            Author = "Creator",
-            AuthorId = "@creator"
-        };
-        YouTubeVideo.Client.Set(video1);
-        YouTubeVideo.Client.Set(video2);
-
-        // Uploader videos order is vid1, vid2 (so newest first by default is vid1 in uploader list)
-        // Register vid1 canonical file as existing in the system via FileInformation
-        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/vid1.mp4");
+            Author = "Creator All",
+            AuthorId = "@creator_all"
+        });
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "short1",
+            Title = "Short 1",
+            Author = "Creator All",
+            AuthorId = "@creator_all"
+        });
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "stream1",
+            Title = "Stream 1",
+            Author = "Creator All",
+            AuthorId = "@creator_all"
+        });
 
         var cmd = new DownloadUploaderCommand {
-            UploaderId = "@creator",
+            UploaderId = "@creator_all",
+            OutputFolder = $"{tempDir}/output"
+        };
+
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/vid1.mp4");
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/short1.mp4");
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/stream1.mp4");
+
+        var exitCode = cmd.Execute();
+        exitCode.Should().Be(0);
+        cmd.Results.Should().HaveCount(3);
+        cmd.Results.Select(r => r.item).Should().Equal("vid1", "short1", "stream1");
+    }
+
+    [Fact]
+    public void DownloadUploader_BreakOnExisting_StopsEarlyPerSectionTest() {
+        var uploader = new YouTubeUploader {
+            Id = "@creator_break",
+            Name = "Creator Break"
+        };
+        YouTubeUploader.Client.Set(uploader);
+
+        var uploaderVideos = new YouTubeUploaderVideos {
+            Id = "@creator_break",
+            Videos = ["vid1", "vid2"],
+            Shorts = ["short1", "short2"],
+            Streams = ["stream1"]
+        };
+        YouTubeUploaderVideos.Client.Set(uploaderVideos);
+
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "vid1",
+            Title = "Video 1",
+            Author = "Creator Break",
+            AuthorId = "@creator_break"
+        });
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "vid2",
+            Title = "Video 2",
+            Author = "Creator Break",
+            AuthorId = "@creator_break"
+        });
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "short1",
+            Title = "Short 1",
+            Author = "Creator Break",
+            AuthorId = "@creator_break"
+        });
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "short2",
+            Title = "Short 2",
+            Author = "Creator Break",
+            AuthorId = "@creator_break"
+        });
+        YouTubeVideo.Client.Set(new YouTubeVideo {
+            Id = "stream1",
+            Title = "Stream 1",
+            Author = "Creator Break",
+            AuthorId = "@creator_break"
+        });
+
+        // Register vid1, short1, and stream1 as existing in the system via FileInformation
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/vid1.mp4");
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/short1.mp4");
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/stream1.mp4");
+
+        var cmd = new DownloadUploaderCommand {
+            UploaderId = "@creator_break",
             OutputFolder = $"{tempDir}/output",
             BreakOnExisting = true
         };
 
         var exitCode = cmd.Execute();
         exitCode.Should().Be(0);
-        cmd.Results.Should().HaveCount(1);
-        cmd.Results[0].item.Should().Be("vid1");
+        // vid1 exists -> breaks videos section (vid2 skipped).
+        // short1 exists -> breaks shorts section (short2 skipped).
+        // stream1 exists -> breaks streams section.
+        cmd.Results.Select(r => r.item).Should().Equal("vid1", "short1", "stream1");
     }
 }
