@@ -26,6 +26,14 @@ public abstract partial class KifaCommand {
         return parse(args).MapResult<KifaCommand, int>(ExecuteCommand, HandleParseFail);
     }
 
+    public static int Run(string[] args, params Type[] types)
+        => Run(
+            parameters => new Parser(settings => {
+                settings.CaseInsensitiveEnumValues = true;
+                settings.HelpWriter = Console.Error;
+                settings.EnableDashDash = true;
+            }).ParseArguments(parameters, types), args);
+
     static int ExecuteCommand(KifaCommand command) {
         KifaConfigs.Init(command.ConfigFile);
 
