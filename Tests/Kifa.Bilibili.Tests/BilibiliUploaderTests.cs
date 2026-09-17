@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using Kifa.Bilibili.BilibiliApi;
 using Kifa.Configs;
@@ -96,13 +97,49 @@ public class BilibiliUploaderTests {
     }
 
     [Fact]
-    public void FillTest() {
+    public void UploaderModelTest() {
+        var uploader = new BilibiliUploader {
+            Id = "18427691",
+            Name = "壹壹yeamusic"
+        };
+        uploader.Id.Should().Be("18427691");
+        uploader.Name.Should().Be("壹壹yeamusic");
+        uploader.RefreshInterval.Should().Be(TimeSpan.FromDays(30));
+        uploader.GetUploaderFolder().NormalizeFilePath()
+            .Should().Be("壹壹yeamusic.18427691.bilibili");
+    }
+
+    [Fact]
+    public void UploaderVideosModelTest() {
+        var uploaderVideos = new BilibiliUploaderVideos {
+            Id = "18427691",
+            Aids = ["av100", "av200"],
+            RemovedAids = ["av50"]
+        };
+        uploaderVideos.Id.Should().Be("18427691");
+        uploaderVideos.Aids.Should().Equal("av100", "av200");
+        uploaderVideos.RemovedAids.Should().Equal("av50");
+        uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));
+    }
+
+    [Fact]
+    public void UploaderFillTest() {
         var uploader = new BilibiliUploader {
             Id = "18427691"
         };
         uploader.Fill();
         uploader.Name.Should().Be("壹壹yeamusic");
-        uploader.Aids[^1].Should().Be("av561513930");
-        uploader.Aids.Should().HaveCount(104);
+        uploader.RefreshInterval.Should().Be(TimeSpan.FromDays(30));
+    }
+
+    [Fact]
+    public void UploaderVideosFillTest() {
+        var uploaderVideos = new BilibiliUploaderVideos {
+            Id = "18427691"
+        };
+        uploaderVideos.Fill();
+        uploaderVideos.Aids[^1].Should().Be("av561513930");
+        uploaderVideos.Aids.Should().HaveCount(104);
+        uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));
     }
 }

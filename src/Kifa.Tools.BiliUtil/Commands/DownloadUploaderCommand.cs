@@ -34,13 +34,19 @@ public class DownloadUploaderCommand : DownloadCommand {
             return 1;
         }
 
+        var uploaderVideos = BilibiliUploaderVideos.Client.Get(uploader.Id);
+        if (uploaderVideos == null) {
+            Logger.Fatal($"Cannot find video list for uploader ({UploaderId}). Exiting.");
+            return 1;
+        }
+
         var subfolderAids = SkipSubfolders ? GetSubfolderAids(uploader) : null;
         if (subfolderAids != null) {
             Logger.Info($"Found {subfolderAids.Count} videos in subfolders to skip.");
             Logger.Debug($"Videos to skip: {string.Join(", ", subfolderAids)}");
         }
 
-        var aids = OldestFirst ? uploader.Aids : Enumerable.Reverse(uploader.Aids).ToList();
+        var aids = OldestFirst ? uploaderVideos.Aids : Enumerable.Reverse(uploaderVideos.Aids).ToList();
         if (subfolderAids != null) {
             aids = aids.Where(aid => !subfolderAids.Contains(aid)).ToList();
         }
@@ -56,8 +62,8 @@ public class DownloadUploaderCommand : DownloadCommand {
         }
 
         var removedAids = OldestFirst
-            ? uploader.RemovedAids
-            : Enumerable.Reverse(uploader.RemovedAids).ToList();
+            ? uploaderVideos.RemovedAids
+            : Enumerable.Reverse(uploaderVideos.RemovedAids).ToList();
         if (subfolderAids != null) {
             removedAids = removedAids.Where(aid => !subfolderAids.Contains(aid)).ToList();
         }
