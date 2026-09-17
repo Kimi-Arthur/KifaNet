@@ -8,7 +8,6 @@ using Kifa.IO;
 using Kifa.IO.StorageClients;
 using Kifa.Service;
 using Kifa.Tools.YoutubeUtil.Commands;
-using Xunit;
 
 namespace Kifa.YouTube.Tests;
 
@@ -230,7 +229,7 @@ public class DownloadPlaylistCommandTests : IDisposable {
 
         // In reverse order (newest first), the iteration is vid3, vid2, vid1.
         // Register vid3 canonical file as existing in the system via FileInformation
-        testFileInfoClient.AddFile("/Downloads/YouTube/$/vid3.mp4");
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/vid3.mp4");
 
         var cmd = new DownloadPlaylistCommand {
             PlaylistId = "PL_TEST",

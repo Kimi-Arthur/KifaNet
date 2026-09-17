@@ -26,12 +26,18 @@ public class DownloadUploaderCommand : DownloadCommand {
             return 1;
         }
 
+        var uploaderVideos = YouTubeUploaderVideos.Client.Get(uploader.Id, refresh: Refresh);
+        if (uploaderVideos == null) {
+            Logger.Fatal($"Cannot find video list for uploader ({UploaderId}). Exiting.");
+            return 1;
+        }
+
         var videosToDownload = OldestFirst
-            ? uploader.Videos.AsEnumerable().Reverse().ToList()
-            : uploader.Videos;
+            ? uploaderVideos.Videos.AsEnumerable().Reverse().ToList()
+            : uploaderVideos.Videos;
 
         foreach (var videoId in videosToDownload) {
-            ExecuteItem(videoId, () => DownloadVideo(videoId));
+            ExecuteItem(videoId, () => DownloadVideo(uploader, videoId));
             if (BreakOnExisting && LastItemAlreadyExists) {
                 Logger.Info($"Stopping early: video ({videoId}) already exists.");
                 break;
@@ -41,13 +47,13 @@ public class DownloadUploaderCommand : DownloadCommand {
         return LogSummary();
     }
 
-    KifaActionResult DownloadVideo(string videoId) {
+    KifaActionResult DownloadVideo(YouTubeUploader uploader, string videoId) {
         var video = YouTubeVideo.Client.Get(videoId, refresh: Refresh);
         if (video == null) {
             LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({videoId}).");
         }
 
-        return KifaActionResult.FromAction(() => Download(video, extraFolder: InnerFolder));
+        return KifaActionResult.FromAction(() => Download(video, extraFolder: InnerFolder, uploader: uploader));
     }
 }

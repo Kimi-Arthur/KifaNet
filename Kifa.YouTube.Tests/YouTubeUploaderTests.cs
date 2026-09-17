@@ -1,3 +1,4 @@
+using System;
 using FluentAssertions;
 using Kifa.Configs;
 
@@ -14,15 +15,14 @@ public class YouTubeUploaderTests {
             Id = "@TestChannel",
             Name = "Test Channel",
             NameAliases = ["Old Channel", "Alternative Name"],
-            ChannelId = "UC1234567890abcdefghij",
-            Videos = ["vid1", "vid2"]
+            ChannelId = "UC1234567890abcdefghij"
         };
 
         uploader.Id.Should().Be("@TestChannel");
         uploader.Name.Should().Be("Test Channel");
         uploader.NameAliases.Should().Equal("Old Channel", "Alternative Name");
         uploader.ChannelId.Should().Be("UC1234567890abcdefghij");
-        uploader.Videos.Should().Equal("vid1", "vid2");
+        uploader.RefreshInterval.Should().Be(TimeSpan.FromDays(30));
         uploader.GetUploaderFolder().NormalizeFilePath()
             .Should().Be("Test Channel.@TestChannel.youtube");
         uploader.GetVirtualItems().Should().BeEquivalentTo([
@@ -32,6 +32,14 @@ public class YouTubeUploaderTests {
             "/$/Old Channel",
             "/$/Alternative Name"
         ]);
+
+        var uploaderVideos = new YouTubeUploaderVideos {
+            Id = "@TestChannel",
+            Videos = ["vid1", "vid2"]
+        };
+        uploaderVideos.Id.Should().Be("@TestChannel");
+        uploaderVideos.Videos.Should().Equal("vid1", "vid2");
+        uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));
     }
 
     [Fact]
@@ -44,8 +52,13 @@ public class YouTubeUploaderTests {
         uploader.Name.Should().Be("Google");
         uploader.ChannelId.Should().Be("UCK8sQmJBp8GCxrOtXWBpyEA");
         uploader.GetUploaderFolder().NormalizeFilePath().Should().Be("Google.@Google.youtube");
-        uploader.Videos.Count.Should().BeGreaterThanOrEqualTo(2000);
-        uploader.Videos.Should().Contain("bSp-foRDH5M");
+
+        var uploaderVideos = new YouTubeUploaderVideos {
+            Id = "@Google"
+        };
+        uploaderVideos.Fill();
+        uploaderVideos.Videos.Count.Should().BeGreaterThanOrEqualTo(2000);
+        uploaderVideos.Videos.Should().Contain("bSp-foRDH5M");
     }
 
     [Fact]
@@ -59,6 +72,11 @@ public class YouTubeUploaderTests {
         uploader.ChannelId.Should().Be("UCZkcxFIsqW5htimoUQKA0iA");
         uploader.GetUploaderFolder().NormalizeFilePath()
             .Should().Be("FC Bayern Munich.@fcbayern.youtube");
-        uploader.Videos.Should().Contain("WUj_TgtrTJE");
+
+        var uploaderVideos = new YouTubeUploaderVideos {
+            Id = "@fcbayern"
+        };
+        uploaderVideos.Fill();
+        uploaderVideos.Videos.Should().Contain("WUj_TgtrTJE");
     }
 }

@@ -40,10 +40,11 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         return null;
     }
 
+    public override TimeSpan? RefreshInterval => TimeSpan.FromDays(30);
+
     public string? Name { get; set; }
     public HashSet<string> NameAliases { get; set; } = [];
     public string? ChannelId { get; set; }
-    public List<string> Videos { get; set; } = [];
 
     public string GetUploaderFolder()
         => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.youtube";
@@ -78,6 +79,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         var url = GetFetchUrl(Id.Checked());
 
         var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);
+        options.PlaylistItems = "0";
         var result = YouTubeVideo.YoutubeDL.RunVideoDataFetch(url, overrideOptions: options)
             .GetAwaiter().GetResult();
 
@@ -90,7 +92,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
 
             if (!result.Success || result.Data == null) {
                 throw new DataNotFoundException(
-                    $"Failed to retrieve videos for uploader ({Id}): {string.Join("\n", result.ErrorOutput)}");
+                    $"Failed to retrieve metadata for uploader ({Id}): {string.Join("\n", result.ErrorOutput)}");
             }
         }
 
@@ -105,11 +107,9 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
                 NameAliases.Add(fetchedName);
             }
         }
-
-        Videos = YouTubeVideo.ExtractVideoIds(data.Entries);
     }
 
-    static string GetFetchUrl(string id) {
+    internal static string GetFetchUrl(string id) {
         if (id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
             return id;
         }

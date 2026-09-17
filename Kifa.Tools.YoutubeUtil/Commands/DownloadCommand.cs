@@ -35,9 +35,9 @@ public abstract class DownloadCommand : YoutubeCommand {
     int downloadCounter;
 
     protected KifaActionResult Download(YouTubeVideo video, string? alternativeFolder = null,
-        string? extraFolder = null) {
+        string? extraFolder = null, YouTubeUploader? uploader = null) {
         LastItemAlreadyExists = false;
-        var uploader = EnsureUploaderInfo(video);
+        uploader ??= EnsureUploaderInfo(video);
 
         var outputFolder = BaseFolder;
         var desiredName = video.GetDesiredName(alternativeFolder: alternativeFolder,

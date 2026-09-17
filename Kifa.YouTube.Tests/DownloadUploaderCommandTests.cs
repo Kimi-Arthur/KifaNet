@@ -8,7 +8,6 @@ using Kifa.IO;
 using Kifa.IO.StorageClients;
 using Kifa.Service;
 using Kifa.Tools.YoutubeUtil.Commands;
-using Xunit;
 
 namespace Kifa.YouTube.Tests;
 
@@ -59,6 +58,34 @@ public class DownloadUploaderCommandTests : IDisposable {
         }
 
         public override KifaActionResult Update(YouTubeUploader item)
+            => Set(item);
+
+        public override KifaActionResult Delete(string id) {
+            data.Remove(id);
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Link(string targetId, string linkId)
+            => KifaActionResult.Success();
+    }
+
+    class TestYouTubeUploaderVideosServiceClient : BaseKifaServiceClient<YouTubeUploaderVideos> {
+        readonly Dictionary<string, YouTubeUploaderVideos> data = new();
+
+        public override SortedDictionary<string, YouTubeUploaderVideos> List(string folder = "",
+            bool recursive = true, KifaDataOptions? options = null)
+            => new(data);
+
+        public override YouTubeUploaderVideos? Get(string id, bool refresh = false, bool rewrite = false,
+            KifaDataOptions? options = null)
+            => data.TryGetValue(id, out var item) ? item.Clone() : null;
+
+        public override KifaActionResult Set(YouTubeUploaderVideos item) {
+            data[item.Id!] = item.Clone();
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Update(YouTubeUploaderVideos item)
             => Set(item);
 
         public override KifaActionResult Delete(string id) {
@@ -126,6 +153,7 @@ public class DownloadUploaderCommandTests : IDisposable {
     readonly string tempDir;
     readonly KifaServiceClient<YouTubeVideo> originalVideoClient;
     readonly KifaServiceClient<YouTubeUploader> originalUploaderClient;
+    readonly KifaServiceClient<YouTubeUploaderVideos> originalUploaderVideosClient;
     readonly FileInformationServiceClient originalFileInfoClient;
     readonly TestFileInformationServiceClient testFileInfoClient;
 
@@ -140,10 +168,12 @@ public class DownloadUploaderCommandTests : IDisposable {
 
         originalVideoClient = YouTubeVideo.Client;
         originalUploaderClient = YouTubeUploader.Client;
+        originalUploaderVideosClient = YouTubeUploaderVideos.Client;
         originalFileInfoClient = FileInformation.Client;
 
         YouTubeVideo.Client = new TestYouTubeVideoServiceClient();
         YouTubeUploader.Client = new TestYouTubeUploaderServiceClient();
+        YouTubeUploaderVideos.Client = new TestYouTubeUploaderVideosServiceClient();
         testFileInfoClient = new TestFileInformationServiceClient();
         FileInformation.Client = testFileInfoClient;
     }
@@ -151,6 +181,7 @@ public class DownloadUploaderCommandTests : IDisposable {
     public void Dispose() {
         YouTubeVideo.Client = originalVideoClient;
         YouTubeUploader.Client = originalUploaderClient;
+        YouTubeUploaderVideos.Client = originalUploaderVideosClient;
         FileInformation.Client = originalFileInfoClient;
         FileStorageClient.ServerConfigs.Remove("yt_up_test_temp");
 
@@ -163,10 +194,15 @@ public class DownloadUploaderCommandTests : IDisposable {
     public void DownloadUploader_BreakOnExisting_StopsEarlyWhenEncounteringExistingVideoTest() {
         var uploader = new YouTubeUploader {
             Id = "@creator",
-            Name = "Creator",
-            Videos = ["vid1", "vid2"]
+            Name = "Creator"
         };
         YouTubeUploader.Client.Set(uploader);
+
+        var uploaderVideos = new YouTubeUploaderVideos {
+            Id = "@creator",
+            Videos = ["vid1", "vid2"]
+        };
+        YouTubeUploaderVideos.Client.Set(uploaderVideos);
 
         var video1 = new YouTubeVideo {
             Id = "vid1",
@@ -185,7 +221,7 @@ public class DownloadUploaderCommandTests : IDisposable {
 
         // Uploader videos order is vid1, vid2 (so newest first by default is vid1 in uploader list)
         // Register vid1 canonical file as existing in the system via FileInformation
-        testFileInfoClient.AddFile("/Downloads/YouTube/$/vid1.mp4");
+        testFileInfoClient.AddFile($"{YoutubeCommand.RepoPath}/vid1.mp4");
 
         var cmd = new DownloadUploaderCommand {
             UploaderId = "@creator",
