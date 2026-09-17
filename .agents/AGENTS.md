@@ -32,6 +32,6 @@
 - Automatically apply code edits and file modifications directly without prompting for pre-approval. The user reviews changes with external tools.
 
 ## Documentation Rules
-- Maintain planning, architecture, and reasoning documents in a `docs/` folder located inside the relevant project's `.csproj` directory (e.g., `src/Kifa.Web.Api/docs/`, `src/Kifa.Service/docs/`).
+- Only create planning, architecture, or reasoning documents when explicitly requested by the user. Do NOT automatically create documentation files for small or routine changes. When requested, maintain them in a `docs/` folder located inside the relevant project's `.csproj` directory (e.g., `src/Kifa.Web.Api/docs/`, `src/Kifa.Service/docs/`).
 - Do NOT use triple-slash (`///`) formal docstrings or XML documentation comments in code. Use simple comments (`//`) for code documentation to stay simple.
 

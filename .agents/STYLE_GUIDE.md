@@ -110,7 +110,7 @@ This style guide documents the formatting, syntax, structure, and design convent
   * Use simple single-line `//` comments for code explanations and section markers.
   * Do **NOT** use triple-slash (`///`) XML documentation comments or docstrings in code.
 * **Doc Location**:
-  * Project-level reasoning, planning, and architecture documents belong in a `docs/` folder located inside the relevant project's directory (e.g., `src/Kifa.Web.Api/docs/`).
+  * Only create planning, architecture, or reasoning documents when explicitly requested by the user. Do not create doc files for small or routine changes. When requested, place them in a `docs/` folder located inside the relevant project's directory (e.g., `src/Kifa.Web.Api/docs/`).
 
 ---
 
