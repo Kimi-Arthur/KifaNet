@@ -31,7 +31,9 @@ public class DownloadVideoCommand : DownloadCommand {
     }
 
     KifaActionResult DownloadVideo(string id) {
-        var video = YouTubeVideo.Client.Get(id, refresh: Refresh);
+        var video = YouTubeVideo.Client.Get(id, new() {
+            Refresh = Refresh
+        });
         if (video == null) {
             LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({id}).");

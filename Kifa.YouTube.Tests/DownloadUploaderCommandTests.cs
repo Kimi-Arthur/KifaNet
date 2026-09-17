@@ -20,8 +20,7 @@ public class DownloadUploaderCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override YouTubeVideo? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null)
+        public override YouTubeVideo? Get(string id, KifaDataOptions? options = null)
             => data.TryGetValue(id, out var item) ? item.Clone() : null;
 
         public override KifaActionResult Set(YouTubeVideo item) {
@@ -48,8 +47,7 @@ public class DownloadUploaderCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override YouTubeUploader? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null)
+        public override YouTubeUploader? Get(string id, KifaDataOptions? options = null)
             => data.TryGetValue(id, out var item) ? item.Clone() : null;
 
         public override KifaActionResult Set(YouTubeUploader item) {
@@ -76,8 +74,7 @@ public class DownloadUploaderCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override YouTubeUploaderVideos? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null)
+        public override YouTubeUploaderVideos? Get(string id, KifaDataOptions? options = null)
             => data.TryGetValue(id, out var item) ? item.Clone() : null;
 
         public override KifaActionResult Set(YouTubeUploaderVideos item) {
@@ -114,8 +111,7 @@ public class DownloadUploaderCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override FileInformation? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null)
+        public override FileInformation? Get(string id, KifaDataOptions? options = null)
             => data.GetValueOrDefault(id);
 
         public override KifaActionResult Set(FileInformation item) {

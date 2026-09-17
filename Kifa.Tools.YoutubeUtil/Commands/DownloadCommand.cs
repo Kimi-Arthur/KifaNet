@@ -291,11 +291,15 @@ public abstract class DownloadCommand : YoutubeCommand {
 
         YouTubeUploader? uploader = null;
         if (video.AuthorId != null) {
-            uploader = YouTubeUploader.Get(video.AuthorId, refresh: Refresh);
+            uploader = YouTubeUploader.Get(video.AuthorId, new() {
+                Refresh = Refresh
+            });
         }
 
         if (uploader == null && video.Author != null) {
-            uploader = YouTubeUploader.Get(video.Author, refresh: Refresh);
+            uploader = YouTubeUploader.Get(video.Author, new() {
+                Refresh = Refresh
+            });
         }
 
         var uploaderChanged = false;

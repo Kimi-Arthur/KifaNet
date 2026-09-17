@@ -17,8 +17,7 @@ public class DownloadVideoCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override YouTubeUploader? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null) {
+        public override YouTubeUploader? Get(string id, KifaDataOptions? options = null) {
             if (!data.TryGetValue(id, out var item)) {
                 return null;
             }
@@ -95,8 +94,7 @@ public class DownloadVideoCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override YouTubeVideo? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null)
+        public override YouTubeVideo? Get(string id, KifaDataOptions? options = null)
             => data.TryGetValue(id, out var item) ? item.Clone() : null;
 
         public override KifaActionResult Set(YouTubeVideo item) {

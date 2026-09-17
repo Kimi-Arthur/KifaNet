@@ -22,7 +22,9 @@ public class DownloadPlaylistCommand : DownloadCommand {
     public bool OldestFirst { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var playlist = YouTubePlaylist.Client.Get(PlaylistId, refresh: Refresh);
+        var playlist = YouTubePlaylist.Client.Get(PlaylistId, new() {
+            Refresh = Refresh
+        });
         if (playlist == null) {
             Logger.Fatal($"Cannot find playlist ({PlaylistId}). Exiting.");
             return 1;
@@ -44,7 +46,9 @@ public class DownloadPlaylistCommand : DownloadCommand {
     }
 
     KifaActionResult DownloadVideo(YouTubePlaylist playlist, string videoId) {
-        var video = YouTubeVideo.Client.Get(videoId, refresh: Refresh);
+        var video = YouTubeVideo.Client.Get(videoId, new() {
+            Refresh = Refresh
+        });
         if (video == null) {
             LastItemAlreadyExists = false;
             return KifaActionResult.Error($"Cannot find video ({videoId}).");

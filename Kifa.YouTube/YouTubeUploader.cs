@@ -10,19 +10,19 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public static KifaServiceClient<YouTubeUploader> Client { get; set; } =
         new KifaServiceRestClient<YouTubeUploader>();
 
-    public static YouTubeUploader? Get(string id, bool refresh = false) {
+    public static YouTubeUploader? Get(string id, KifaDataOptions? options = null) {
         if (string.IsNullOrEmpty(id)) {
             return null;
         }
 
-        var uploader = Client.Get(id, refresh: refresh);
+        var uploader = Client.Get(id, options);
         if (uploader != null) {
             uploader.Id = uploader.RealId;
             return uploader;
         }
 
         if (!id.StartsWith(VirtualItemPrefix)) {
-            uploader = Client.Get(VirtualItemPrefix + id, refresh: refresh);
+            uploader = Client.Get(VirtualItemPrefix + id, options);
             if (uploader != null) {
                 uploader.Id = uploader.RealId;
                 return uploader;
@@ -30,7 +30,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         }
 
         if (!id.StartsWith("@") && !id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) {
-            uploader = Client.Get("@" + id, refresh: refresh);
+            uploader = Client.Get("@" + id, options);
             if (uploader != null) {
                 uploader.Id = uploader.RealId;
                 return uploader;
@@ -75,7 +75,7 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
         return items;
     }
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var url = GetFetchUrl(Id.Checked());
 
         var options = YouTubeVideo.GetOptionSet(flatPlaylist: true);

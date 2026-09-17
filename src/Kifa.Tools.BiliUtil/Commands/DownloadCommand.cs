@@ -66,7 +66,9 @@ public abstract class DownloadCommand : BiliCommand {
                 pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec, region: GetRegion());
         } catch (BilibiliVideoNotFoundException ex1) {
             Logger.Warn(ex1, "Video not found. Maybe data needs to be updated.");
-            video = BilibiliVideo.Client.Get(video.Id.Checked(), true).Checked();
+            video = BilibiliVideo.Client.Get(video.Id.Checked(), new() {
+                Refresh = true
+            }).Checked();
             try {
                 (extension, quality, codec, videoStreamGetter, audioStreamGetters) =
                     video.GetStreams(pid, maxQuality: MaxQuality, preferredCodec: PreferredCodec,

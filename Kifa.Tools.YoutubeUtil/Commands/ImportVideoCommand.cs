@@ -47,7 +47,9 @@ public class ImportVideoCommand : KifaCommand {
             return KifaActionResult.Error($"Failed to extract YouTube video metadata from '{localPath}'.");
         }
 
-        var existing = YouTubeVideo.Client.Get(imported.Id, refresh: Refresh) ?? new YouTubeVideo {
+        var existing = YouTubeVideo.Client.Get(imported.Id, new() {
+            Refresh = Refresh
+        }) ?? new YouTubeVideo {
             Id = imported.Id
         };
 

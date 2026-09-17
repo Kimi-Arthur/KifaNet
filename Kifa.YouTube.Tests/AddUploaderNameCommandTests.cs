@@ -17,8 +17,7 @@ public class AddUploaderNameCommandTests : IDisposable {
             bool recursive = true, KifaDataOptions? options = null)
             => new(data);
 
-        public override YouTubeUploader? Get(string id, bool refresh = false, bool rewrite = false,
-            KifaDataOptions? options = null) {
+        public override YouTubeUploader? Get(string id, KifaDataOptions? options = null) {
             if (!data.TryGetValue(id, out var item)) {
                 return null;
             }
