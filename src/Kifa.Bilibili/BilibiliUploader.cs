@@ -13,8 +13,6 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
 
     public static string ModelId => "bilibili/uploaders";
 
-    public bool ForceFullRefresh { get; set; } = false;
-
     public static KifaServiceClient<BilibiliUploader> Client { get; set; } =
         new KifaServiceRestClient<BilibiliUploader>();
 
@@ -26,7 +24,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         => $"{Name.Checked().NormalizeFileName().Choppable()}.{Id}.bilibili".NormalizeFileName(
             reservedBytes: 0, maxByteCount: PathExtensions.MaxPathSegmentByteCount);
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var info = HttpClients.GetBilibiliClient().Call(new UploaderInfoWebRpc(Id));
         if (info == null) {
             throw new DataNotFoundException(
@@ -34,7 +32,7 @@ public class BilibiliUploader : DataModel, WithModelId<BilibiliUploader> {
         }
 
         Name = info.Space.Info.Name;
-        var list = ForceFullRefresh ? GetAllVideos() : MergeVideos(GetNewVideos(), Aids);
+        var list = deep ? GetAllVideos() : MergeVideos(GetNewVideos(), Aids);
         var removed = RemovedAids.ToHashSet();
         removed.UnionWith(Aids);
         removed.ExceptWith(list);
