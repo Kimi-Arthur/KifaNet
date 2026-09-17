@@ -43,7 +43,7 @@ public class MemriseLevel : DataModel, WithModelId<MemriseLevel> {
     public string? Title { get; set; }
     public List<string> Words { get; set; } = new();
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var rendered = HttpClient.Call(new GetLevelRpc(DatabaseUrl, LevelId)).Rendered;
 
         if (rendered == null) {

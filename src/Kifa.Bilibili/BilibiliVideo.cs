@@ -105,7 +105,7 @@ public class BilibiliVideo : DataModel, WithModelId<BilibiliVideo> {
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         try {
             FillWithBilibili();
             return;

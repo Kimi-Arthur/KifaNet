@@ -20,7 +20,7 @@ public class BilibiliArchive : DataModel, WithModelId<BilibiliArchive> {
     public List<string> Videos { get; set; } = new();
 
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var ids = Id.Split("/");
         AuthorId = ids[0];
         SeasonId = ids[1];

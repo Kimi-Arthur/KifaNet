@@ -48,7 +48,7 @@ public class ZeroAvenueBook : DataModel, WithModelId<ZeroAvenueBook> {
         }
     }
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var content = HttpClient.SendWithRetry(Url).GetString();
         var doc = new HtmlDocument();
         doc.LoadHtml(content);

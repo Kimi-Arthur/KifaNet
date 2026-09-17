@@ -47,7 +47,7 @@ public class GoetheGermanWord : DataModel, WithModelId<GoetheGermanWord> {
     [YamlIgnore]
     public string RootWord => RootWordPattern.Match(Id).Groups[2].Value;
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var word = GermanWord.Client.Get(RootWord);
 
         if (word == null) {

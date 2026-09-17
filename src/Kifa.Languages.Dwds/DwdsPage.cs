@@ -34,7 +34,7 @@ public class DwdsPage : DataModel, WithModelId<DwdsPage> {
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         FillPageContent();
         FillNeighbouringPages();
     }

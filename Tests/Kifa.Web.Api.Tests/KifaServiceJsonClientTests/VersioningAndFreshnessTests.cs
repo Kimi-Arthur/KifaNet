@@ -32,7 +32,7 @@ public class TestFillDataModel : DataModel, WithModelId<TestFillDataModel> {
 
     public override DataVersion? ForceRefreshBefore => GlobalForceRefreshBefore;
 
-    public override void Fill(bool deep) {
+    public override void Fill(bool deep = false) {
         LastFillWasDeep = deep;
         GlobalFillCount++;
         if (GlobalShouldThrowFailedToFill || ShouldThrowFailedToFill) {

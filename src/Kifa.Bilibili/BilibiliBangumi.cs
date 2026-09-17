@@ -21,7 +21,7 @@ public class BilibiliBangumi : DataModel, WithModelId<BilibiliBangumi> {
     public List<string> ExtraAids { get; set; } = new();
 
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var mediaData = HttpClients.GetBilibiliClient().Call(new MediaRpc(Id))?.Result;
         SeasonId = $"ss{mediaData.Media.SeasonId}";
         Title = mediaData.Media.Title.Trim();

@@ -38,7 +38,7 @@ public class BaiduAccount : OAuthAccount, WithModelId<BaiduAccount> {
 
     public override TimeSpan? RefreshInterval => TokenValidDuration;
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var response = HttpClient.FetchJToken(() => Rpcs.OauthRefresh.GetRequest(
             ("client_id", ClientId), ("client_secret", ClientSecret),
             ("refresh_token", RefreshToken), ("scope", Scope)));

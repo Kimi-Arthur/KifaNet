@@ -17,7 +17,7 @@ public class BilibiliPlaylist : DataModel, WithModelId<BilibiliPlaylist> {
     public List<string> Videos { get; set; }
 
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var data = HttpClients.GetBilibiliClient().Call(new PlaylistRpc(Id))?.Data;
         if (data == null) {
             throw new DataNotFoundException($"Failed to find playlist ({Id}).");

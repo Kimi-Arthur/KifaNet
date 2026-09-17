@@ -87,7 +87,7 @@ public class MemriseCourse : DataModel, WithModelId<MemriseCourse> {
         }
     }
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         FillHeaders();
         FillWords();
         FillLevels();

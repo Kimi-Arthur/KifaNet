@@ -64,7 +64,7 @@ public class SkyLiveProgram : DataModel, WithModelId<SkyLiveProgram> {
     static DateTime lastFilled = DateTime.MinValue;
 
     // Should not be called frequently.
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         if (Title != null) {
             return;
         }

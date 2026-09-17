@@ -133,7 +133,7 @@ public class GermanWord : DataModel, WithModelId<GermanWord> {
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         FillWithData(GetWords());
     }
 

@@ -105,16 +105,7 @@ public abstract class DataModel : IEquatable<DataModel> {
         return upstreamVersion > Metadata.Version;
     }
 
-    public virtual void Fill() {
-        if (GetType().GetMethod(nameof(Fill), [typeof(bool)])?.DeclaringType != typeof(DataModel)) {
-            Fill(deep: false);
-            return;
-        }
-
-        throw new NoNeedToFillException();
-    }
-
-    public virtual void Fill(bool deep) => Fill();
+    public virtual void Fill(bool deep = false) => throw new NoNeedToFillException();
 
     public virtual SortedSet<string> GetVirtualItems() => new();
     public bool IsVirtualItem() => Id.StartsWith(VirtualItemPrefix);

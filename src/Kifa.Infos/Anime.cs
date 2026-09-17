@@ -132,7 +132,7 @@ public class Anime : DataModel, WithModelId<Anime>, Formattable, WithFormatInfo,
     string GetBaseFolder(string? version = null)
         => $"/Anime/{Title} ({AirDate.Checked().Year}){string.FormatOrEmpty($" [{version}]")}";
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         if (TmdbId == null) {
             throw new FailedToFillException($"Not enough info to fill Anime (TmdbId = {TmdbId})");
         }

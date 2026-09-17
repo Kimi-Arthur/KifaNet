@@ -593,7 +593,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
         return null;
     }
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         try {
             FillWithYoutubeDl();
             return;

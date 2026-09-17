@@ -33,7 +33,7 @@ public class CambridgePage : DataModel, WithModelId<CambridgePage> {
 
     public override TimeSpan? RefreshInterval => TimeSpan.FromDays(365);
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         FillPageContent();
         FillNeighbouringPages();
     }

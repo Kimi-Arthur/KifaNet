@@ -14,7 +14,7 @@ public class DwdsGermanWord : DataModel, WithModelId<DwdsGermanWord> {
     public HashSet<string> AudioLinks { get; set; } = new();
     public List<string> Etymology { get; set; } = new();
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var page = DwdsPage.Client.Get(Id);
         if (page?.PageContent == null) {
             return;

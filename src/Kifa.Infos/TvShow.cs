@@ -50,7 +50,7 @@ public class TvShow : DataModel, WithModelId<TvShow>, Formattable, WithFormatInf
     public int? SeasonIdWidth { get; set; }
     public int? EpisodeIdWidth { get; set; }
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var oldEpisodeCount = Seasons?.Select(s => s.Episodes?.Count ?? 0).Sum() ??
                               0 + Specials?.Count ?? 0;
 

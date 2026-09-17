@@ -58,7 +58,7 @@ public class SwisscomAccount : DataModel, WithModelId<SwisscomAccount> {
     public override TimeSpan? RefreshInterval => TokenValidDuration;
 
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         if (Username == null || Password == null) {
             throw new FailedToFillException($"No account info provided for {Id}.");
         }

@@ -60,7 +60,7 @@ public class SwisscomAccountQuota : DataModel, WithModelId<SwisscomAccountQuota>
     readonly HttpClient httpClient = new();
 
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var account = SwisscomAccount.Client.Get(Id);
         if (account == null) {
             throw new DataNotFoundException($"Account {Id} is missing.");

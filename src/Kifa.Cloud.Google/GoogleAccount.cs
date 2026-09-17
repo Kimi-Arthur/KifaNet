@@ -49,7 +49,7 @@ public class GoogleAccount : OAuthAccount, WithModelId<GoogleAccount> {
     public override TimeSpan? RefreshInterval => TokenValidDuration;
 
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         if (string.IsNullOrEmpty(RefreshToken)) {
             throw new DataNotFoundException("No refresh token found.");
         }

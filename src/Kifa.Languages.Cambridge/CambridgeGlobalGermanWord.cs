@@ -23,7 +23,7 @@ public class CambridgeGlobalGermanWord : DataModel, WithModelId<CambridgeGlobalG
 
     const string PagePrefix = "german-english";
 
-    public override void Fill() {
+    public override void Fill(bool deep = false) {
         var page = CambridgePage.Client.Get($"{PagePrefix}/{Id}");
         if (page?.PageContent == null) {
             Logger.Error($"Raw page not found {PagePrefix}/{Id}.");
