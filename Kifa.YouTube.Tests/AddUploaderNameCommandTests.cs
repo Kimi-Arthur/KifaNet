@@ -347,7 +347,7 @@ public class AddUploaderNameCommandTests : IDisposable {
         var result = cmd.Execute();
         result.Should().Be(0);
 
-        var resolved = YouTubeUploader.Get("@JenniferLopezVEVO");
+        var resolved = YouTubeUploader.Resolve("@JenniferLopezVEVO");
         resolved.Should().NotBeNull();
         resolved!.Id.Should().Be("@JenniferLopez");
         resolved.Name.Should().Be("Jennifer Lopez");
@@ -374,11 +374,11 @@ public class AddUploaderNameCommandTests : IDisposable {
         target!.Name.Should().Be("Jennifer Lopez");
         target.NameAliases.Should().BeEquivalentTo(["J.Lo"]);
 
-        var resolvedHandle = YouTubeUploader.Get("@JenniferLopezVEVO");
+        var resolvedHandle = YouTubeUploader.Resolve("@JenniferLopezVEVO");
         resolvedHandle.Should().NotBeNull();
         resolvedHandle!.Id.Should().Be("@JenniferLopez");
 
-        var resolvedChannelId = YouTubeUploader.Get("UCx1f1u4XlFFr0YgqF3wB4lQ");
+        var resolvedChannelId = YouTubeUploader.Resolve("UCx1f1u4XlFFr0YgqF3wB4lQ");
         resolvedChannelId.Should().NotBeNull();
         resolvedChannelId!.Id.Should().Be("@JenniferLopez");
     }
@@ -412,7 +412,7 @@ public class AddUploaderNameCommandTests : IDisposable {
         updatedTarget!.NameAliases.Should().Contain("J.Lo VEVO");
         updatedTarget.NameAliases.Should().Contain("JenniferLopezVEVO");
 
-        var resolved = YouTubeUploader.Get("@JenniferLopezVEVO");
+        var resolved = YouTubeUploader.Resolve("@JenniferLopezVEVO");
         resolved.Should().NotBeNull();
         resolved!.Id.Should().Be("@JenniferLopez");
     }

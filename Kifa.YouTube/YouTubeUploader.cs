@@ -10,10 +10,14 @@ public class YouTubeUploader : DataModel, WithModelId<YouTubeUploader> {
     public static KifaServiceClient<YouTubeUploader> Client { get; set; } =
         new KifaServiceRestClient<YouTubeUploader>();
 
-    public static YouTubeUploader? Get(string id, KifaDataOptions? options = null) {
+    public static YouTubeUploader? Resolve(string id, bool refresh = false) {
         if (string.IsNullOrEmpty(id)) {
             return null;
         }
+
+        var options = refresh ? new KifaDataOptions {
+            Refresh = true
+        } : null;
 
         var uploader = Client.Get(id, options);
         if (uploader != null) {

@@ -18,7 +18,7 @@ public class YouTubeUploaderVideos : DataModel, WithModelId<YouTubeUploaderVideo
     public List<string> Streams { get; set; } = [];
 
     public override void Fill(bool deep = false) {
-        var uploader = YouTubeUploader.Get(Id.Checked());
+        var uploader = YouTubeUploader.Resolve(Id.Checked());
         var baseUrl = YouTubeUploader.GetFetchUrl(uploader?.Id ?? Id.Checked()).TrimEnd('/');
 
         Videos = FetchSection($"{baseUrl}/videos", Videos, deep);

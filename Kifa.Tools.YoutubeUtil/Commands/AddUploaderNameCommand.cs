@@ -23,9 +23,7 @@ public class AddUploaderNameCommand : KifaCommand {
     public bool Refresh { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var uploader = YouTubeUploader.Get(UploaderId, new() {
-            Refresh = Refresh
-        });
+        var uploader = YouTubeUploader.Resolve(UploaderId, refresh: Refresh);
         var originalUploader = uploader?.Clone();
 
         var rawItems = Names.ToList();
@@ -65,9 +63,7 @@ public class AddUploaderNameCommand : KifaCommand {
 
             actualId = NormalizeId(actualId);
 
-            uploader = YouTubeUploader.Get(actualId, new() {
-                Refresh = Refresh
-            });
+            uploader = YouTubeUploader.Resolve(actualId, refresh: Refresh);
             if (uploader == null) {
                 uploader = new YouTubeUploader {
                     Id = actualId,

@@ -337,7 +337,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
                      generalDict.GetValueOrDefault("Uploader");
         if (author != null && author.Length > 0) {
             video.Author = author;
-            var uploader = YouTubeUploader.Get(author);
+            var uploader = YouTubeUploader.Resolve(author);
             if (uploader != null) {
                 video.AuthorId = uploader.Id;
                 video.Author = uploader.Name ?? video.Author;
@@ -405,7 +405,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
                          general["Uploader"]?.ToString();
             if (author != null && author.Length > 0) {
                 video.Author = author;
-                var uploader = YouTubeUploader.Get(author);
+                var uploader = YouTubeUploader.Resolve(author);
                 if (uploader != null) {
                     video.AuthorId = uploader.Id;
                     video.Author = uploader.Name ?? video.Author;
@@ -469,7 +469,7 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
                              tags["author"]?.ToString();
                 if (author != null && author.Length > 0) {
                     video.Author = author;
-                    var uploader = YouTubeUploader.Get(author);
+                    var uploader = YouTubeUploader.Resolve(author);
                     if (uploader != null) {
                         video.AuthorId = uploader.Id;
                         video.Author = uploader.Name ?? video.Author;
