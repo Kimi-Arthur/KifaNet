@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,11 +26,37 @@ public class TelegramCellClient : IDisposable {
 
     static Logger? wTelegramLogger;
 
+    static readonly object ActiveClientsLock = new();
+    static readonly HashSet<TelegramCellClient> ActiveClients = [];
+
+    static TelegramCellClient() {
+        KifaShutdown.RegisterCleanup(ReleaseAll);
+    }
+
+    public static void ReleaseAll() {
+        List<TelegramCellClient> clients;
+        lock (ActiveClientsLock) {
+            clients = [.. ActiveClients];
+        }
+
+        foreach (var client in clients) {
+            try {
+                client.Release();
+            } catch (Exception ex) {
+                Logger.Warn(ex, $"Failed to release client with session {client.Session.Id}.");
+            }
+        }
+    }
+
     public TelegramCellClient(TelegramAccount account, string channelId, TelegramSession session) {
         Logger.Trace($"Create client with session id {session.Id}.");
         Account = account;
         ChannelId = channelId;
         Session = session;
+
+        lock (ActiveClientsLock) {
+            ActiveClients.Add(this);
+        }
 
         // Race condition should be OK here. Calling twice the clause shouldn't have visible
         // caveats.
@@ -95,14 +122,31 @@ public class TelegramCellClient : IDisposable {
     }
 
     public void Release() {
+        if (!Reserved && disposed) {
+            return;
+        }
+
         Reserved = false;
-        TelegramAccount.Client.ReleaseSession(Account.Id, Session.Id);
+        try {
+            TelegramAccount.Client.ReleaseSession(Account.Id, Session.Id);
+        } catch (Exception ex) {
+            Logger.Warn(ex, $"Failed to release session {Session.Id} for account {Account.Id}.");
+        }
+
         Dispose();
     }
 
     public void Dispose() {
         disposed = true;
+        lock (ActiveClientsLock) {
+            ActiveClients.Remove(this);
+        }
+
         Logger.Trace($"Client with session id {Session.Id} is disposed.");
-        Client.Dispose();
+        try {
+            Client?.Dispose();
+        } catch (Exception ex) {
+            Logger.Trace(ex, "Exception disposing client.");
+        }
     }
 }

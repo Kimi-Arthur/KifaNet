@@ -45,8 +45,10 @@ public abstract partial class KifaCommand {
                 Logger.Warn(
                     "Stop requested. Completing current item before exiting... (Press Ctrl-C again to force quit)");
             } else {
-                Logger.Warn("Forced exit requested.");
-                e.Cancel = false;
+                Logger.Warn("Forced exit requested. Cleaning up...");
+                e.Cancel = true;
+                KifaShutdown.RunCleanups();
+                Environment.Exit(130);
             }
         };
 
