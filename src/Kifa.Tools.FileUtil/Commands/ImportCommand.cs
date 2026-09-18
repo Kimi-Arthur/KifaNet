@@ -48,7 +48,7 @@ class ImportCommand : KifaFileCommand {
 
         var foundFiles = FindFileInfos(FileNames, ById);
         if (foundFiles.Count == 0) {
-            Logger.Error("No files found. Action canceled.");
+            Logger.Error("No files found. Action cancelled.");
             return 1;
         }
 
@@ -179,10 +179,7 @@ class ImportCommand : KifaFileCommand {
         var targetFileName = $"{SoccerShow.FromFileName(file)}.{ext}";
         targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
         if (targetFileName == null) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = "Import cancelled by user."
-            };
+            return KifaActionResult.Cancelled("Import cancelled by user.");
         }
 
         return FileInformation.Client.Link(file, targetFileName);
@@ -201,10 +198,7 @@ class ImportCommand : KifaFileCommand {
                 : $"{folder}/{baseName}/{baseName}.{ext}";
         targetFileName = Confirm($"Confirm importing {file} as:", targetFileName);
         if (targetFileName == null) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = "Import cancelled by user."
-            };
+            return KifaActionResult.Cancelled("Import cancelled by user.");
         }
 
         return FileInformation.Client.Link(file, targetFileName);
@@ -230,10 +224,7 @@ class ImportCommand : KifaFileCommand {
             if (special || part != null) {
                 var newName = Confirm($"Confirm linking {file} to:", targetPath);
                 if (newName == null) {
-                    return new KifaActionResult {
-                        Status = KifaActionStatus.Skipped,
-                        Message = "Import cancelled by user."
-                    };
+                    return KifaActionResult.Cancelled("Import cancelled by user.");
                 }
 
                 targetPath = newName;

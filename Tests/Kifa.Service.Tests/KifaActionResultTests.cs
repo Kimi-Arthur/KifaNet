@@ -81,5 +81,28 @@ public class KifaActionResultTests {
             ("a", KifaActionResult.Success()),
             ("b", new KifaActionResult { Status = KifaActionStatus.Pending })
         ]).Status.Should().Be(KifaActionStatus.Pending);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Cancelled()),
+            ("b", KifaActionResult.Skipped())
+        ]).Status.Should().Be(KifaActionStatus.Cancelled);
+
+        new KifaBatchActionResult([
+            ("a", KifaActionResult.Success()),
+            ("b", KifaActionResult.Cancelled())
+        ]).Status.Should().Be(KifaActionStatus.Cancelled);
+    }
+
+    [Fact]
+    public void CancelledPropertiesTest() {
+        var res = KifaActionResult.Cancelled("cancelled by user");
+        res.Status.Should().Be(KifaActionStatus.Cancelled);
+        res.Message.Should().Be("cancelled by user");
+        res.IsAcceptable.Should().BeFalse();
+        res.IsRetryable.Should().BeTrue();
+
+        var resT = KifaActionResult<string>.Cancelled("cancelled");
+        resT.Status.Should().Be(KifaActionStatus.Cancelled);
+        resT.Message.Should().Be("cancelled");
     }
 }

@@ -46,10 +46,7 @@ public class DownloadSubcatCommand : KifaCommand {
             videoFile.GetSubtitleFile().BaseName);
 
         if (searchBaseName == null) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = $"Search cancelled for {videoFile}."
-            };
+            return KifaActionResult.Cancelled($"Search cancelled for {videoFile}.");
         }
 
         var expandedChoices = SubcatClient.FindSubtitles(searchBaseName);

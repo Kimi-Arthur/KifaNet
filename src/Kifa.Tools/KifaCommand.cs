@@ -34,7 +34,24 @@ public abstract partial class KifaCommand {
                 settings.EnableDashDash = true;
             }).ParseArguments(parameters, types), args);
 
+    public bool StopRequested { get; set; }
+
     static int ExecuteCommand(KifaCommand command) {
+        command.StopRequested = false;
+        ConsoleCancelEventHandler cancelHandler = (sender, e) => {
+            if (!command.StopRequested) {
+                command.StopRequested = true;
+                e.Cancel = true;
+                Logger.Warn(
+                    "Stop requested. Completing current item before exiting... (Press Ctrl-C again to force quit)");
+            } else {
+                Logger.Warn("Forced exit requested.");
+                e.Cancel = false;
+            }
+        };
+
+        Console.CancelKeyPress += cancelHandler;
+
         KifaConfigs.Init(command.ConfigFile);
 
         if (command.Verbose) {
@@ -56,6 +73,8 @@ public abstract partial class KifaCommand {
             }
 
             return 1;
+        } finally {
+            Console.CancelKeyPress -= cancelHandler;
         }
     }
 

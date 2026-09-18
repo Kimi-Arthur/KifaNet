@@ -16,7 +16,8 @@ public class KifaActionResult {
 
     [JsonIgnore]
     [YamlIgnore]
-    public bool IsRetryable => Status is KifaActionStatus.Pending or KifaActionStatus.Error;
+    public bool IsRetryable
+        => Status is KifaActionStatus.Pending or KifaActionStatus.Error or KifaActionStatus.Cancelled;
 
     [JsonIgnore]
     [YamlIgnore]
@@ -32,6 +33,12 @@ public class KifaActionResult {
     public static KifaActionResult Skipped(string? message = null)
         => new() {
             Status = KifaActionStatus.Skipped,
+            Message = message
+        };
+
+    public static KifaActionResult Cancelled(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Cancelled,
             Message = message
         };
 
@@ -161,6 +168,10 @@ public class KifaBatchActionResult : KifaActionResult {
                 return KifaActionStatus.Pending;
             }
 
+            if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.Cancelled))) {
+                return KifaActionStatus.Cancelled;
+            }
+
             if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.Warning))) {
                 return KifaActionStatus.Warning;
             }
@@ -171,6 +182,10 @@ public class KifaBatchActionResult : KifaActionResult {
 
             if (Results.All(r => r.Result.Status == KifaActionStatus.Skipped)) {
                 return KifaActionStatus.Skipped;
+            }
+
+            if (Results.All(r => r.Result.Status is KifaActionStatus.Cancelled or KifaActionStatus.Skipped)) {
+                return KifaActionStatus.Cancelled;
             }
 
             return KifaActionStatus.OK;
@@ -212,6 +227,12 @@ public class KifaActionResult<TValue> : KifaActionResult {
     public static new KifaActionResult<TValue> Skipped(string? message = null)
         => new() {
             Status = KifaActionStatus.Skipped,
+            Message = message
+        };
+
+    public static new KifaActionResult<TValue> Cancelled(string? message = null)
+        => new() {
+            Status = KifaActionStatus.Cancelled,
             Message = message
         };
 
@@ -260,9 +281,11 @@ public static class KifaActionResultLogger {
         => status.HasFlag(KifaActionStatus.Error) || status.HasFlag(KifaActionStatus.BadRequest)
             ?
             LogLevel.Error
-            : status.HasFlag(KifaActionStatus.Warning)
+            : status.HasFlag(KifaActionStatus.Cancelled)
                 ? LogLevel.Warn
-                : status.HasFlag(KifaActionStatus.Pending)
-                    ? LogLevel.Debug
-                    : defaultLevel ?? LogLevel.Trace;
+                : status.HasFlag(KifaActionStatus.Warning)
+                    ? LogLevel.Warn
+                    : status.HasFlag(KifaActionStatus.Pending)
+                        ? LogLevel.Debug
+                        : defaultLevel ?? LogLevel.Trace;
 }

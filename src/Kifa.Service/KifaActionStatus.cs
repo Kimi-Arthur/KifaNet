@@ -15,5 +15,7 @@ public enum KifaActionStatus {
     // No real action actaully happened.
     Skipped = 8,
     // The final state is yet to be determined.
-    Pending = 16
+    Pending = 16,
+    // The action was cancelled before completion.
+    Cancelled = 32
 }

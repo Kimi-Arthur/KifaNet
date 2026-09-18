@@ -31,7 +31,7 @@ public class DeleteCommand : KifaCommand {
         }
 
         if (!Confirm($"Confirming deleting the {ids.Count} items above from {Type}")) {
-            Logger.Info("Canceled.");
+            Logger.Info("Cancelled.");
             return 0;
         }
 

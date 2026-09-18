@@ -20,6 +20,14 @@ public abstract partial class KifaCommand {
     }
 
     protected void ExecuteItem(string item, Action action, bool throwIfError = false) {
+        if (StopRequested) {
+            Results.Add((item, new KifaActionResult {
+                Status = KifaActionStatus.Cancelled,
+                Message = "Cancelled as stop was requested by user."
+            }));
+            return;
+        }
+
         Logger.Info($"{item}:");
         Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
@@ -30,6 +38,14 @@ public abstract partial class KifaCommand {
 
     protected void ExecuteItem(string item, Func<KifaActionResult> action,
         bool throwIfError = false) {
+        if (StopRequested) {
+            Results.Add((item, new KifaActionResult {
+                Status = KifaActionStatus.Cancelled,
+                Message = "Cancelled as stop was requested by user."
+            }));
+            return;
+        }
+
         Logger.Info($"{item}:");
         Results.Add((item,
             Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
@@ -57,6 +73,15 @@ public abstract partial class KifaCommand {
             }
 
             Logger.Info($"Skipped the {skippedItems.Count} items above.\n");
+        }
+
+        var cancelledItems = Results.Where(item => item.result.Status == KifaActionStatus.Cancelled).ToList();
+        if (cancelledItems.Count > 0) {
+            foreach (var (item, result) in cancelledItems) {
+                Logger.LogResult(result, item, LogLevel.Info);
+            }
+
+            Logger.Warn($"Cancelled the {cancelledItems.Count} items above.\n");
         }
 
         var warningItems = Results.Where(item => item.result.Status == KifaActionStatus.Warning).ToList();
@@ -112,6 +137,7 @@ public abstract partial class KifaCommand {
     void LogBreakdown() {
         var okCount = Results.Count(item => item.result.Status == KifaActionStatus.OK);
         var skippedCount = Results.Count(item => item.result.Status == KifaActionStatus.Skipped);
+        var cancelledCount = Results.Count(item => item.result.Status == KifaActionStatus.Cancelled);
         var warningCount = Results.Count(item => item.result.Status == KifaActionStatus.Warning);
         var pendingCount = Results.Count(item => item.result.Status == KifaActionStatus.Pending);
         var badRequestCount = Results.Count(item => item.result.Status == KifaActionStatus.BadRequest);
@@ -123,6 +149,9 @@ public abstract partial class KifaCommand {
         }
         if (skippedCount > 0) {
             Logger.Info($"    Skipped: {skippedCount}");
+        }
+        if (cancelledCount > 0) {
+            Logger.Warn($"    Cancelled: {cancelledCount}");
         }
         if (warningCount > 0) {
             Logger.Warn($"    Warning: {warningCount}");

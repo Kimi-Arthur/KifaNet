@@ -94,7 +94,7 @@ class RemoveCommand : KifaFileCommand {
 
             if (Force && !Confirm(
                     "Since --force is specified, files of the only version will automatically be removed!\nIt will truly remove files from everywhere!!! Do you want to continue?")) {
-                Logger.Warn("Action canceled.");
+                Logger.Warn("Action cancelled.");
                 return 2;
             }
 
@@ -127,7 +127,7 @@ class RemoveCommand : KifaFileCommand {
 
             if (!Confirm(
                     $"Confirm deleting the {phantomFiles.Count} phantom files above{removalText}?")) {
-                Logger.Info("Action canceled.");
+                Logger.Info("Action cancelled.");
                 return 2;
             }
 

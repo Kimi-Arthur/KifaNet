@@ -108,7 +108,7 @@ public class TrashCommand : KifaCommand {
 
             var confirmedTrashPath = Confirm("Confirm target folder to trash:", trashPath);
             if (confirmedTrashPath == null) {
-                Logger.Warn("Action canceled.");
+                Logger.Warn("Action cancelled.");
                 return 2;
             }
 

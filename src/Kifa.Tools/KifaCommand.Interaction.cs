@@ -94,7 +94,17 @@ public abstract partial class KifaCommand {
         Console.Write(messages.JoinBy("\n"));
 
         while (true) {
+            if (StopRequested) {
+                return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+                    .Cancelled("Cancelled by user.");
+            }
+
             var rawLine = (Console.ReadLine() ?? "").Trim();
+            if (StopRequested) {
+                return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+                    .Cancelled("Cancelled by user.");
+            }
+
             if (rawLine == "^") {
                 return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
                     .Skipped("Ignored by user.");
@@ -201,6 +211,11 @@ public abstract partial class KifaCommand {
         string? firstFilter = null;
 
         while (true) {
+            if (StopRequested) {
+                chosenIndexes = [];
+                return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
+            }
+
             var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
             HashSet<int>? initialChosenIndices = null;
             if (isFirstPrompt) {
@@ -251,6 +266,11 @@ public abstract partial class KifaCommand {
             }
 
             var line = (Console.ReadLine() ?? "").Trim();
+
+            if (StopRequested) {
+                chosenIndexes = [];
+                return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
+            }
 
             if (line == "?") {
                 chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
@@ -416,6 +436,10 @@ public abstract partial class KifaCommand {
         }
 
         while (true) {
+            if (StopRequested) {
+                return null;
+            }
+
             if (validation == null) {
                 Console.WriteLine($"{prefix}\n\n{suggested}");
             } else {
@@ -423,6 +447,10 @@ public abstract partial class KifaCommand {
             }
 
             var line = Console.ReadLine() ?? "";
+            if (StopRequested) {
+                return null;
+            }
+
             if (line == "") {
                 var validationResult = validation?.Invoke(suggested);
                 if (validationResult != null) {
@@ -458,10 +486,18 @@ public abstract partial class KifaCommand {
         }
 
         while (true) {
+            if (StopRequested) {
+                return false;
+            }
+
             var suggestedOptions = suggested ? "Y/n" : "y/N";
             Console.Write($"{prefix} [{suggestedOptions}] (Hint: 'a'/'ay'/'an' to always choose): ");
 
             var rawLine = Console.ReadLine();
+            if (StopRequested) {
+                return false;
+            }
+
             if (rawLine == null) {
                 return suggested;
             }
