@@ -36,17 +36,25 @@ public abstract partial class KifaCommand {
 
     public bool StopRequested { get; set; }
 
+    public bool IsPrompting { get; set; }
+
     static int ExecuteCommand(KifaCommand command) {
         command.StopRequested = false;
+        command.IsPrompting = false;
         ConsoleCancelEventHandler cancelHandler = (sender, e) => {
+            e.Cancel = true;
+            if (command.IsPrompting) {
+                Logger.Warn("Exit requested. Cleaning up...");
+                KifaShutdown.RunCleanups();
+                Environment.Exit(130);
+            }
+
             if (!command.StopRequested) {
                 command.StopRequested = true;
-                e.Cancel = true;
                 Logger.Warn(
                     "Stop requested. Completing current item before exiting... (Press Ctrl-C again to force quit)");
             } else {
                 Logger.Warn("Forced exit requested. Cleaning up...");
-                e.Cancel = true;
                 KifaShutdown.RunCleanups();
                 Environment.Exit(130);
             }

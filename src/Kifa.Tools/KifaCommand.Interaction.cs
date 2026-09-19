@@ -93,68 +93,73 @@ public abstract partial class KifaCommand {
         messages.Add($"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
         Console.Write(messages.JoinBy("\n"));
 
-        while (true) {
-            if (StopRequested) {
-                return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
-                    .Cancelled("Cancelled by user.");
+        try {
+            IsPrompting = true;
+            while (true) {
+                if (StopRequested) {
+                    return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+                        .Cancelled("Cancelled by user.");
+                }
+
+                var rawLine = (Console.ReadLine() ?? "").Trim();
+                if (StopRequested) {
+                    return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+                        .Cancelled("Cancelled by user.");
+                }
+
+                if (rawLine == "^") {
+                    return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
+                        .Skipped("Ignored by user.");
+                }
+
+                var match = SingleChoiceRegex.Match(rawLine);
+                if (!match.Success) {
+                    Console.WriteLine("Invalid choice. Try again:");
+                    Console.Write(
+                        $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
+                    continue;
+                }
+
+                var always = match.Groups[1].Value == "a";
+                var choiceText = match.Groups[2].Value;
+                var partText = match.Groups[3].Value;
+                var special = match.Groups[4].Value == "s";
+
+                int? part = string.IsNullOrEmpty(partText) ? null : int.Parse(partText);
+                var chosenIndex = string.IsNullOrEmpty(choiceText)
+                    ? defaultIndex
+                    : int.Parse(choiceText) - startingIndex;
+
+                if (chosenIndex < 0 || chosenIndex >= choices.Count) {
+                    Console.WriteLine("Invalid choice. Try again:");
+                    Console.Write(
+                        $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
+                    continue;
+                }
+
+                if (specialHelpText == null && special) {
+                    Console.WriteLine("Special is not supported. Try again:");
+                    Console.Write(
+                        $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
+                    continue;
+                }
+
+                if (partHelpText == null && part.HasValue) {
+                    Console.WriteLine("Part selection is not supported. Try again:");
+                    Console.Write(
+                        $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
+                    continue;
+                }
+
+                if (always) {
+                    AlwaysDefaultForSelectOne[selectionKey] = true;
+                }
+
+                DefaultIndexForSelectOne[selectionKey] = chosenIndex;
+                return (choices[chosenIndex], part, chosenIndex, special);
             }
-
-            var rawLine = (Console.ReadLine() ?? "").Trim();
-            if (StopRequested) {
-                return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
-                    .Cancelled("Cancelled by user.");
-            }
-
-            if (rawLine == "^") {
-                return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
-                    .Skipped("Ignored by user.");
-            }
-
-            var match = SingleChoiceRegex.Match(rawLine);
-            if (!match.Success) {
-                Console.WriteLine("Invalid choice. Try again:");
-                Console.Write(
-                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
-                continue;
-            }
-
-            var always = match.Groups[1].Value == "a";
-            var choiceText = match.Groups[2].Value;
-            var partText = match.Groups[3].Value;
-            var special = match.Groups[4].Value == "s";
-
-            int? part = string.IsNullOrEmpty(partText) ? null : int.Parse(partText);
-            var chosenIndex = string.IsNullOrEmpty(choiceText)
-                ? defaultIndex
-                : int.Parse(choiceText) - startingIndex;
-
-            if (chosenIndex < 0 || chosenIndex >= choices.Count) {
-                Console.WriteLine("Invalid choice. Try again:");
-                Console.Write(
-                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
-                continue;
-            }
-
-            if (specialHelpText == null && special) {
-                Console.WriteLine("Special is not supported. Try again:");
-                Console.Write(
-                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
-                continue;
-            }
-
-            if (partHelpText == null && part.HasValue) {
-                Console.WriteLine("Part selection is not supported. Try again:");
-                Console.Write(
-                    $"Default is [{($"{defaultIndex + startingIndex}").Info()}] ({choiceStrings[defaultIndex].Info()}): ");
-                continue;
-            }
-
-            if (always) {
-                AlwaysDefaultForSelectOne[selectionKey] = true;
-            }
-
-            DefaultIndexForSelectOne[selectionKey] = chosenIndex;
-            return (choices[chosenIndex], part, chosenIndex, special);
+        } finally {
+            IsPrompting = false;
         }
     }
 
@@ -210,153 +215,158 @@ public abstract partial class KifaCommand {
         var filterRounds = 0;
         string? firstFilter = null;
 
-        while (true) {
-            if (StopRequested) {
-                chosenIndexes = [];
-                return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
-            }
-
-            var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
-            HashSet<int>? initialChosenIndices = null;
-            if (isFirstPrompt) {
-                try {
-                    initialChosenIndices = (effectiveDefault == "*"
-                        ? Enumerable.Range(0, choices.Count)
-                        : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)).ToHashSet();
-                } catch {
-                    initialChosenIndices = Enumerable.Range(0, choices.Count).ToHashSet();
-                }
-            }
-
-            if (reverse) {
-                for (var i = selectedChoices.Count - 1; i >= 0; i--) {
-                    var isChosen = isFirstPrompt ? initialChosenIndices!.Contains(i) : true;
-                    var choiceLine = $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}";
-                    Console.WriteLine(isChosen ? choiceLine.Info() : choiceLine);
-                }
-            } else {
-                for (var i = 0; i < selectedChoices.Count; i++) {
-                    var isChosen = isFirstPrompt ? initialChosenIndices!.Contains(i) : true;
-                    var choiceLine = $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}";
-                    Console.WriteLine(isChosen ? choiceLine.Info() : choiceLine);
-                }
-            }
-
-            Console.WriteLine();
-            if (isFirstPrompt) {
-                var defaultCountSummary = effectiveDefault == "*"
-                    ? $"{choices.Count} items"
-                    : $"{ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex).Count} items";
-
-                var messages = new[] {
-                    $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
-                    $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
-                    "\t'?' to restart, '*' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
-                    $"Default is [{defaultDisplay.Info()}] ({defaultCountSummary.Info()}): "
-                };
-
-                Console.Write(messages.JoinBy("\n"));
-            } else {
-                var countText = $"{selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} selected".Info();
-                var rangeText = selectedChoices.Count > 0
-                    ? $" [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}]"
-                    : "";
-                Console.Write(
-                    $"{countText}{rangeText}. Press Enter to confirm, or enter further filter ('?' to restart, '^' to cancel): ");
-            }
-
-            var line = (Console.ReadLine() ?? "").Trim();
-
-            if (StopRequested) {
-                chosenIndexes = [];
-                return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
-            }
-
-            if (line == "?") {
-                chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
-                isFirstPrompt = true;
-                filterRounds = 0;
-                firstFilter = null;
-                DefaultReplyForSelectMany[selectionKey] = null;
-                effectiveDefault = defaultReply ?? "*";
-                defaultDisplay = effectiveDefault;
-                continue;
-            }
-
-            var flags = "";
-            if (line.StartsWith('a')) {
-                flags = "a";
-                line = line[1..].Trim();
-            }
-
-            if (line == "^") {
-                chosenIndexes = [];
-                return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
-            }
-
-            var isDefaultReply = false;
-            if (line == "") {
-                if (flags.Contains('a')) {
-                    AlwaysDefaultForSelectMany[selectionKey] = true;
+        try {
+            IsPrompting = true;
+            while (true) {
+                if (StopRequested) {
+                    chosenIndexes = [];
+                    return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
                 }
 
+                var selectedChoices = chosenIndexes.Select(index => choices[index]).ToList();
+                HashSet<int>? initialChosenIndices = null;
                 if (isFirstPrompt) {
-                    line = effectiveDefault;
-                    isDefaultReply = true;
+                    try {
+                        initialChosenIndices = (effectiveDefault == "*"
+                            ? Enumerable.Range(0, choices.Count)
+                            : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)).ToHashSet();
+                    } catch {
+                        initialChosenIndices = Enumerable.Range(0, choices.Count).ToHashSet();
+                    }
+                }
+
+                if (reverse) {
+                    for (var i = selectedChoices.Count - 1; i >= 0; i--) {
+                        var isChosen = isFirstPrompt ? initialChosenIndices!.Contains(i) : true;
+                        var choiceLine = $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}";
+                        Console.WriteLine(isChosen ? choiceLine.Info() : choiceLine);
+                    }
                 } else {
-                    DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
-                    Logger.Debug(
-                        $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
-                    return selectedChoices;
-                }
-            }
-
-            if (line == "*") {
-                if (!isDefaultReply) {
-                    DefaultReplyForSelectMany[selectionKey] = "*";
+                    for (var i = 0; i < selectedChoices.Count; i++) {
+                        var isChosen = isFirstPrompt ? initialChosenIndices!.Contains(i) : true;
+                        var choiceLine = $"[{i + startingIndex}]\t{choiceItemString(selectedChoices[i])}";
+                        Console.WriteLine(isChosen ? choiceLine.Info() : choiceLine);
+                    }
                 }
 
-                if (flags.Contains('a')) {
-                    AlwaysDefaultForSelectMany[selectionKey] = true;
+                Console.WriteLine();
+                if (isFirstPrompt) {
+                    var defaultCountSummary = effectiveDefault == "*"
+                        ? $"{choices.Count} items"
+                        : $"{ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex).Count} items";
+
+                    var messages = new[] {
+                        $"Choose 0 or more from the {choiceSummaryString?.Get(selectedChoices) ?? "items"} above [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}].",
+                        $"Hint: Prefix 'a' to always choose, prefix '^' to invert, '-' for inclusive range, ',' for combination (e.g. '{startingIndex}', '-{startingIndex + 3}', '^{startingIndex + 2}').",
+                        "\t'?' to restart, '*' for all items, '/<glob>' (e.g. '/*EP[0-9]*.mp4') or '^/<glob>' to include or exclude choices, '^' to ignore.",
+                        $"Default is [{defaultDisplay.Info()}] ({defaultCountSummary.Info()}): "
+                    };
+
+                    Console.Write(messages.JoinBy("\n"));
+                } else {
+                    var countText = $"{selectedChoices.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} selected".Info();
+                    var rangeText = selectedChoices.Count > 0
+                        ? $" [{startingIndex} - {selectedChoices.Count - 1 + startingIndex}]"
+                        : "";
+                    Console.Write(
+                        $"{countText}{rangeText}. Press Enter to confirm, or enter further filter ('?' to restart, '^' to cancel): ");
                 }
 
-                Logger.Debug(
-                    $"Selected {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
-                return choices;
-            }
+                var line = (Console.ReadLine() ?? "").Trim();
 
-            try {
-                var newIndexes =
-                    ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
-                chosenIndexes = newIndexes.Select(i => chosenIndexes[i]).ToList();
-                filterRounds++;
-                if (filterRounds == 1 && !isDefaultReply) {
-                    firstFilter = line;
+                if (StopRequested) {
+                    chosenIndexes = [];
+                    return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
                 }
 
-                if (isDefaultReply || flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
+                if (line == "?") {
+                    chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
+                    isFirstPrompt = true;
+                    filterRounds = 0;
+                    firstFilter = null;
+                    DefaultReplyForSelectMany[selectionKey] = null;
+                    effectiveDefault = defaultReply ?? "*";
+                    defaultDisplay = effectiveDefault;
+                    continue;
+                }
+
+                var flags = "";
+                if (line.StartsWith('a')) {
+                    flags = "a";
+                    line = line[1..].Trim();
+                }
+
+                if (line == "^") {
+                    chosenIndexes = [];
+                    return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
+                }
+
+                var isDefaultReply = false;
+                if (line == "") {
                     if (flags.Contains('a')) {
                         AlwaysDefaultForSelectMany[selectionKey] = true;
                     }
 
-                    if (!isDefaultReply) {
+                    if (isFirstPrompt) {
+                        line = effectiveDefault;
+                        isDefaultReply = true;
+                    } else {
                         DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
+                        Logger.Debug(
+                            $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
+                        return selectedChoices;
+                    }
+                }
+
+                if (line == "*") {
+                    if (!isDefaultReply) {
+                        DefaultReplyForSelectMany[selectionKey] = "*";
+                    }
+
+                    if (flags.Contains('a')) {
+                        AlwaysDefaultForSelectMany[selectionKey] = true;
                     }
 
                     Logger.Debug(
-                        $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
-                    return chosenIndexes.Select(i => choices[i]).ToList();
+                        $"Selected {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
+                    return choices;
                 }
 
-                isFirstPrompt = false;
-            } catch (Exception) {
-                Console.WriteLine("Invalid choice. Try again:");
-                if (isDefaultReply) {
-                    effectiveDefault = "*";
-                    defaultDisplay = "*";
-                    DefaultReplyForSelectMany[selectionKey] = null;
+                try {
+                    var newIndexes =
+                        ParseSelection(line, selectedChoices, choiceItemString, startingIndex);
+                    chosenIndexes = newIndexes.Select(i => chosenIndexes[i]).ToList();
+                    filterRounds++;
+                    if (filterRounds == 1 && !isDefaultReply) {
+                        firstFilter = line;
+                    }
+
+                    if (isDefaultReply || flags.Contains('a') || AlwaysDefaultForSelectMany[selectionKey]) {
+                        if (flags.Contains('a')) {
+                            AlwaysDefaultForSelectMany[selectionKey] = true;
+                        }
+
+                        if (!isDefaultReply) {
+                            DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
+                        }
+
+                        Logger.Debug(
+                            $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
+                        return chosenIndexes.Select(i => choices[i]).ToList();
+                    }
+
+                    isFirstPrompt = false;
+                } catch (Exception) {
+                    Console.WriteLine("Invalid choice. Try again:");
+                    if (isDefaultReply) {
+                        effectiveDefault = "*";
+                        defaultDisplay = "*";
+                        DefaultReplyForSelectMany[selectionKey] = null;
+                    }
                 }
             }
+        } finally {
+            IsPrompting = false;
         }
     }
 
@@ -435,34 +445,39 @@ public abstract partial class KifaCommand {
             return suggested;
         }
 
-        while (true) {
-            if (StopRequested) {
-                return null;
-            }
-
-            if (validation == null) {
-                Console.WriteLine($"{prefix}\n\n{suggested}");
-            } else {
-                Console.WriteLine($"{prefix}\n\n{suggested} ({validation(suggested) ?? "OK"})");
-            }
-
-            var line = Console.ReadLine() ?? "";
-            if (StopRequested) {
-                return null;
-            }
-
-            if (line == "") {
-                var validationResult = validation?.Invoke(suggested);
-                if (validationResult != null) {
-                    Console.WriteLine(
-                        $"Current value {suggested} is invalid, will return null instead: {validationResult}");
+        try {
+            IsPrompting = true;
+            while (true) {
+                if (StopRequested) {
                     return null;
                 }
 
-                return suggested;
-            }
+                if (validation == null) {
+                    Console.WriteLine($"{prefix}\n\n{suggested}");
+                } else {
+                    Console.WriteLine($"{prefix}\n\n{suggested} ({validation(suggested) ?? "OK"})");
+                }
 
-            suggested = line;
+                var line = Console.ReadLine() ?? "";
+                if (StopRequested) {
+                    return null;
+                }
+
+                if (line == "") {
+                    var validationResult = validation?.Invoke(suggested);
+                    if (validationResult != null) {
+                        Console.WriteLine(
+                            $"Current value {suggested} is invalid, will return null instead: {validationResult}");
+                        return null;
+                    }
+
+                    return suggested;
+                }
+
+                suggested = line;
+            }
+        } finally {
+            IsPrompting = false;
         }
     }
 
@@ -485,52 +500,57 @@ public abstract partial class KifaCommand {
             return alwaysChoice;
         }
 
-        while (true) {
-            if (StopRequested) {
-                return false;
+        try {
+            IsPrompting = true;
+            while (true) {
+                if (StopRequested) {
+                    return false;
+                }
+
+                var suggestedOptions = suggested ? "Y/n" : "y/N";
+                Console.Write($"{prefix} [{suggestedOptions}] (Hint: 'a'/'ay'/'an' to always choose): ");
+
+                var rawLine = Console.ReadLine();
+                if (StopRequested) {
+                    return false;
+                }
+
+                if (rawLine == null) {
+                    return suggested;
+                }
+
+                var line = rawLine.Trim().ToLowerInvariant();
+                if (line == "") {
+                    return suggested;
+                }
+
+                if (line is "y" or "yes" or "true") {
+                    return true;
+                }
+
+                if (line is "n" or "no" or "false") {
+                    return false;
+                }
+
+                if (line is "a" or "all" or "always") {
+                    AlwaysChoiceForConfirm[selectionKey] = suggested;
+                    return suggested;
+                }
+
+                if (line is "ay" or "ya" or "a y" or "a yes" or "always yes" or "always y") {
+                    AlwaysChoiceForConfirm[selectionKey] = true;
+                    return true;
+                }
+
+                if (line is "an" or "na" or "a n" or "a no" or "always no" or "always n") {
+                    AlwaysChoiceForConfirm[selectionKey] = false;
+                    return false;
+                }
+
+                Console.WriteLine("Invalid choice. Try again:");
             }
-
-            var suggestedOptions = suggested ? "Y/n" : "y/N";
-            Console.Write($"{prefix} [{suggestedOptions}] (Hint: 'a'/'ay'/'an' to always choose): ");
-
-            var rawLine = Console.ReadLine();
-            if (StopRequested) {
-                return false;
-            }
-
-            if (rawLine == null) {
-                return suggested;
-            }
-
-            var line = rawLine.Trim().ToLowerInvariant();
-            if (line == "") {
-                return suggested;
-            }
-
-            if (line is "y" or "yes" or "true") {
-                return true;
-            }
-
-            if (line is "n" or "no" or "false") {
-                return false;
-            }
-
-            if (line is "a" or "all" or "always") {
-                AlwaysChoiceForConfirm[selectionKey] = suggested;
-                return suggested;
-            }
-
-            if (line is "ay" or "ya" or "a y" or "a yes" or "always yes" or "always y") {
-                AlwaysChoiceForConfirm[selectionKey] = true;
-                return true;
-            }
-
-            if (line is "an" or "na" or "a n" or "a no" or "always no" or "always n") {
-                AlwaysChoiceForConfirm[selectionKey] = false;
-                return false;
-            }
-
-            Console.WriteLine("Invalid choice. Try again:");
+        } finally {
+            IsPrompting = false;
         }
     }
 }
