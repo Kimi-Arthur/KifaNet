@@ -170,8 +170,7 @@ public class CopyCommand : KifaCommand {
 
                 var destinationSha256 = destinationFile.FileInfo?.Sha256 ??
                                         destinationFile.CalculateInfo(FileProperties.Sha256).Sha256;
-                var isSameContent = sourceFile.FileInfo?.Sha256 != null &&
-                                    destinationSha256 == sourceFile.FileInfo.Sha256;
+                var isSameContent = destinationSha256 == sourceFile.FileInfo.Checked().Sha256;
 
                 if (isSameContent) {
                     var linkResult = FileInformation.Client.Link(sourceFile.Id, destinationFile.Id);
@@ -201,7 +200,32 @@ public class CopyCommand : KifaCommand {
                 return result;
             }
 
-            sourceFile.Copy(destinationFile);
+            var info = sourceFile.FileInfo.Checked();
+            var linkedLocally = false;
+            if (!sourceFile.IsCompatible(destinationFile)) {
+                foreach (var (location, verifyTime) in info.Locations) {
+                    if (verifyTime != null) {
+                        var linkSource = new KifaFile(location, fileInfo: info);
+                        if (linkSource.IsLocal && linkSource.IsCompatible(destinationFile) &&
+                            linkSource.Exists()) {
+                            try {
+                                linkSource.Add();
+                            } catch (Exception ex) {
+                                Logger.Warn(ex, $"Quick check failed for {linkSource}.");
+                                continue;
+                            }
+
+                            linkSource.Copy(destinationFile);
+                            linkedLocally = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!linkedLocally) {
+                sourceFile.Copy(destinationFile);
+            }
 
             // Skip the full check if the linking is from local file and in the same cell.
             // Caveat: It's only inferred that it used hard linking.
