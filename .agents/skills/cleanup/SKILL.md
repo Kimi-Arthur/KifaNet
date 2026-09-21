@@ -38,6 +38,7 @@ The cleanup skill can be invoked with a specified scope:
   * Replace `obj != null ? obj.Prop : null` with `obj?.Prop`.
 * **Important**: Respect KifaNet explicit null rules:
   * Do **not** replace `!= null` with `!string.IsNullOrEmpty(...)` or `!string.IsNullOrWhiteSpace(...)` when `null` explicitly represents the default/unset state. Prefer explicit null checks (`== null` or `!= null`).
+  * Never use null-suppression member access (`!.`). Either use null-conditional access (`?.`) or `.Checked()`.
 
 ### 3. Code Organization & Member Placement
 * **Constants and Helper Statics**:
