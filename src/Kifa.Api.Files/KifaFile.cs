@@ -229,13 +229,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {
                 var file = new KifaFile(location, fileInfo: info);
-                if (file.Client is FileStorageClient && file.Exists()) {
-                    return location;
-                }
 
                 // Ignore clients not allowed.
                 if (allowedClients != null && !allowedClients.Contains(file.Client.Type)) {
                     continue;
+                }
+
+                if (file.Client is FileStorageClient && file.Exists()) {
+                    return location;
                 }
 
                 var score = file.Client switch {
@@ -348,9 +349,9 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
         => IgnoredExtensions.Any(ext => logicalPath.EndsWith($".{ext}")) ||
-           IgnoredPrefixes.Any(prefix
+           (logicalPath.StartsWith(pathPrefix) && IgnoredPrefixes.Any(prefix
                => logicalPath[pathPrefix.Length..].Split("/")
-                   .Any(segment => segment.StartsWith(prefix))) ||
+                   .Any(segment => segment.StartsWith(prefix)))) ||
            IgnoredFiles.IsMatch(logicalPath);
 
     // KifaFile.FileInfo is filled for items returned.
@@ -540,9 +541,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     // 1. Local hard linking (if an existing compatible instance is found on the same cell/storage).
     // 2. Local copying (if an instance is found on another local storage/cell).
     // 3. Remote downloading (from cloud storage providers).
-    public KifaActionResult GetFile(bool lightweightOnly = false,
-        HashSet<string>? allowedClients = null, IEnumerable<string>? ignoreLocations = null,
-        FileInformation? info = null) {
+    public KifaActionResult GetFile(HashSet<string>? allowedClients = null,
+        IEnumerable<string>? ignoreLocations = null, FileInformation? info = null) {
         try {
             Add();
             return new KifaActionResult {
@@ -598,10 +598,10 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             }
         }
 
-        if (lightweightOnly) {
+        if (allowedClients != null && allowedClients.Count == 0) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
-                Message = "Not getting file, which requires downloading."
+                Message = "Not getting file, which requires copying/downloading."
             };
         }
 
@@ -619,7 +619,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         // Method 2 & 3: Local copying or remote downloading.
         // GetUri preferentially selects local FileStorageClient instances before cloud storage.
-        var source = new KifaFile(fileInfo: info, allowedClients: allowedClients);
+        var sourceUri = GetUri(Id, allowedClients, info);
+        if (sourceUri == null) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "No matching allowed source found to get the file."
+            };
+        }
+
+        var source = new KifaFile(sourceUri, fileInfo: info);
         source.Add();
 
         source.Copy(this);
