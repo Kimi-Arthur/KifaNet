@@ -124,7 +124,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
                     $"At least one of uri, id, fileInfo.Id should be non-null.");
             }
 
-            uri = GetUri(id, allowedClients) ??
+            uri = GetUri(id, allowedClients, fileInfo) ??
                   throw new FileNotFoundException($"Unable to infer an available uri for {id}.");
         }
 
@@ -221,10 +221,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         return System.IO.Path.GetFullPath(uri).Replace('\\', '/');
     }
 
-    static string? GetUri(string id, HashSet<string>? allowedClients) {
+    static string? GetUri(string id, HashSet<string>? allowedClients,
+        FileInformation? info = null) {
         string? candidate = null;
         var bestScore = int.MinValue;
-        var info = FileInfoClient.Get(id);
+        info ??= FileInfoClient.Get(id);
         if (info != null) {
             foreach (var (location, verifyTime) in info.Locations) {
                 var file = new KifaFile(location, fileInfo: info);
@@ -532,6 +533,110 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             Logger.Trace("No way to link, will copy via read/write.");
             using var stream = OpenRead();
             destination.Write(stream);
+        }
+    }
+
+    // Retrieves/materializes the file to this location using:
+    // 1. Local hard linking (if an existing compatible instance is found on the same cell/storage).
+    // 2. Local copying (if an instance is found on another local storage/cell).
+    // 3. Remote downloading (from cloud storage providers).
+    public KifaActionResult GetFile(bool lightweightOnly = false,
+        HashSet<string>? allowedClients = null, IEnumerable<string>? ignoreLocations = null,
+        FileInformation? info = null) {
+        try {
+            Add();
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "Already got!"
+            };
+        } catch (FileNotFoundException) {
+            if (Registered) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Error,
+                    Message =
+                        "File is unexpectedly missing. Check again or use `filex rm` to remove phantom files."
+                };
+            }
+            // File expected to be not found.
+        } catch (FileCorruptedException ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Target exists, but doesn't match: {ex}"
+            };
+        }
+
+        Unregister();
+
+        info ??= FileInfo ?? FileInfoClient.Get(Id);
+
+        if (info == null || info.Locations.Count == 0) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = "No instance exists."
+            };
+        }
+
+        // Method 1: Local hard linking.
+        foreach (var (location, verifyTime) in info.Locations) {
+            if (verifyTime != null) {
+                var linkSource = new KifaFile(location, fileInfo: info);
+                if (linkSource.IsLocal && linkSource.IsCompatible(this) && linkSource.Exists()) {
+                    try {
+                        linkSource.Add();
+                    } catch (Exception ex) {
+                        Logger.Warn(ex, $"Quick check failed for {linkSource}.");
+                        continue;
+                    }
+
+                    linkSource.Copy(this);
+                    Register(true);
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.OK,
+                        Message = $"Successfully got file through hard linking to {linkSource}."
+                    };
+                }
+            }
+        }
+
+        if (lightweightOnly) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Skipped,
+                Message = "Not getting file, which requires downloading."
+            };
+        }
+
+        if (ignoreLocations != null) {
+            var foundInstanceInIgnoredLocations = info.Locations.FirstOrDefault(l
+                => l.Value != null && ignoreLocations.Any(u => l.Key.StartsWith(u))).Key;
+
+            if (foundInstanceInIgnoredLocations != null) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"File already exists in {foundInstanceInIgnoredLocations}."
+                };
+            }
+        }
+
+        // Method 2 & 3: Local copying or remote downloading.
+        // GetUri preferentially selects local FileStorageClient instances before cloud storage.
+        var source = new KifaFile(fileInfo: info, allowedClients: allowedClients);
+        source.Add();
+
+        source.Copy(this);
+
+        try {
+            Logger.Debug($"Verify destination {this}...");
+            Add();
+            source.Register(true);
+            return new KifaActionResult {
+                Status = KifaActionStatus.OK,
+                Message = $"Successfully got file from {source}!"
+            };
+        } catch (IOException ex) {
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Failed to get destination: {ex}"
+            };
         }
     }
 

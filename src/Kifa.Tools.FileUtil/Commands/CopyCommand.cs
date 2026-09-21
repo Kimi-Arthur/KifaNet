@@ -200,38 +200,7 @@ public class CopyCommand : KifaCommand {
                 return result;
             }
 
-            var info = sourceFile.FileInfo.Checked();
-            var linkedLocally = false;
-            if (!sourceFile.IsCompatible(destinationFile)) {
-                foreach (var (location, verifyTime) in info.Locations) {
-                    if (verifyTime != null) {
-                        var linkSource = new KifaFile(location, fileInfo: info);
-                        if (linkSource.IsLocal && linkSource.IsCompatible(destinationFile) &&
-                            linkSource.Exists()) {
-                            try {
-                                linkSource.Add();
-                            } catch (Exception ex) {
-                                Logger.Warn(ex, $"Quick check failed for {linkSource}.");
-                                continue;
-                            }
-
-                            linkSource.Copy(destinationFile);
-                            linkedLocally = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!linkedLocally) {
-                sourceFile.Copy(destinationFile);
-            }
-
-            // Skip the full check if the linking is from local file and in the same cell.
-            // Caveat: It's only inferred that it used hard linking.
-            destinationFile.Register(true);
-            destinationFile.Add();
-            return KifaActionResult.Success();
+            return destinationFile.GetFile(info: sourceFile.FileInfo);
         });
 
     static KifaActionResult LinkFileEntry(string sourceId, string destinationId) {
