@@ -7,6 +7,7 @@
 - When invalidating cached data using `ForceRefreshBefore` on a `DataModel` due to code logic updates, set or bump the timestamp at the time of **deployment/release** (not during development). Setting it during development causes any records refreshed or populated in production between development and deployment to have newer versions and thus bypass invalidation.
 ## Release & Git Rules
 - Strictly DO NOT update project versions, publish packages to NuGet, or perform `git commit`/`git push` unless explicitly requested by the user in that specific query; a commit/release request applies strictly to the single turn in which it was asked and NEVER carries over to subsequent turns.
+- If a commit/release operation is interrupted, cancelled (e.g. by Escape/stop), or followed by an intervening question, discussion, or clarification, any previous commit request is immediately voided and cancelled. NEVER resume or execute a commit automatically after providing explanations or making follow-up changes; a fresh, explicit `commit` request from the user is strictly required.
 - When explicitly requested by the user to `commit` or `release`, the new changes/commits MUST be pushed to remote (`git push`). Do NOT push to remote when committing changes under any other circumstances.
 
 ## Configuration Management Rules
