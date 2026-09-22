@@ -53,6 +53,11 @@ public sealed class UploaderVideoRpc : KifaJsonParameterizedRpc<UploaderVideoRpc
         public ModuleInteraction ModuleInteraction { get; set; }
         public ModuleMore ModuleMore { get; set; }
         public ModuleStat ModuleStat { get; set; }
+        public ModuleTag ModuleTag { get; set; }
+    }
+
+    public class ModuleTag {
+        public string Text { get; set; }
     }
 
     public class PurpleModuleAuthor {

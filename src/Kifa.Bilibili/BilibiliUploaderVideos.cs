@@ -30,20 +30,18 @@ public class BilibiliUploaderVideos : DataModel, WithModelId<BilibiliUploaderVid
             }
         }
 
-        var list = deep ? GetAllVideos() : MergeVideos(GetNewVideos(), Aids);
-        var removed = RemovedAids.ToHashSet();
-        removed.UnionWith(Aids);
-        removed.ExceptWith(list);
+        if (deep || Aids.Count == 0) {
+            var allVideos = GetAllVideos();
+            var removed = RemovedAids.ToHashSet();
+            removed.UnionWith(Aids);
+            removed.ExceptWith(allVideos);
 
-        RemovedAids = removed.OrderBy(v => long.Parse(v[2..])).ToList();
-        Aids = list;
-        Aids.Reverse();
-    }
-
-    static List<string> MergeVideos(List<string> newVideos, List<string> oldVideos) {
-        var newHashes = new HashSet<string>(newVideos);
-        return newVideos.Concat(oldVideos.Reverse<string>()
-            .Where(video => !newHashes.Contains(video))).ToList();
+            RemovedAids = removed.OrderBy(v => long.Parse(v[2..])).ToList();
+            Aids = allVideos;
+        } else {
+            var newVideos = GetNewVideos();
+            Aids.AddRange(newVideos);
+        }
     }
 
     List<string> GetAllVideos() {
@@ -52,7 +50,7 @@ public class BilibiliUploaderVideos : DataModel, WithModelId<BilibiliUploaderVid
             throw new DataNotFoundException($"Cannot find videos uploaded by {Id}.");
         }
 
-        var list = GetAids(data).ToList();
+        var list = GetVideoItems(data).ToList();
 
         while (data.HasMore) {
             Thread.Sleep(TimeSpan.FromSeconds(5));
@@ -63,43 +61,68 @@ public class BilibiliUploaderVideos : DataModel, WithModelId<BilibiliUploaderVid
                     $"Cannot find videos uploaded by {Id} after {list.Count} videos.");
             }
 
-            list.AddRange(GetAids(data));
+            list.AddRange(GetVideoItems(data));
         }
 
-        return list;
+        return list.DistinctBy(v => v.Aid)
+            .OrderBy(v => v.PubTs)
+            .ThenBy(v => long.Parse(v.Aid[2..]))
+            .Select(v => v.Aid)
+            .ToList();
     }
 
-    // Gets new videos, may contain duplicates.
+    // Gets new videos, sorted oldest to newest.
     List<string> GetNewVideos() {
         var data = HttpClients.GetBilibiliClient().Call(new UploaderVideoRpc(Id.Checked()))?.Data;
         if (data == null) {
             throw new DataNotFoundException($"Cannot find videos uploaded by {Id}.");
         }
 
-        var list = GetAids(data).ToList();
-        if (Aids.Contains(list.Last())) {
-            return list;
-        }
+        var existingSet = Aids.ToHashSet();
+        var newVideos = new List<(string Aid, long PubTs, bool IsPinned)>();
 
-        while (data.HasMore) {
+        while (true) {
+            var overlapFound = false;
+
+            foreach (var item in GetVideoItems(data)) {
+                if (existingSet.Contains(item.Aid)) {
+                    if (item.IsPinned) {
+                        continue;
+                    }
+
+                    overlapFound = true;
+                    break;
+                }
+
+                newVideos.Add(item);
+            }
+
+            if (overlapFound || !data.HasMore) {
+                break;
+            }
+
             Thread.Sleep(TimeSpan.FromSeconds(5));
             data = HttpClients.GetBilibiliClient().Call(new UploaderVideoRpc(Id.Checked(), data.Offset))
                 ?.Data;
             if (data == null) {
                 throw new DataNotFoundException(
-                    $"Cannot find videos uploaded by {Id} after {list.Count} videos.");
-            }
-
-            list.AddRange(GetAids(data));
-            if (Aids.Contains(list.Last())) {
-                return list;
+                    $"Cannot find videos uploaded by {Id} after {newVideos.Count} new videos.");
             }
         }
 
-        return list;
+        return newVideos.DistinctBy(v => v.Aid)
+            .OrderBy(v => v.PubTs)
+            .ThenBy(v => long.Parse(v.Aid[2..]))
+            .Select(v => v.Aid)
+            .ToList();
     }
 
-    static IEnumerable<string> GetAids(UploaderVideoRpc.Data data)
-        => data.Items.Select(item => item.Modules.ModuleDynamic.Major?.Archive).ExceptNull()
-            .Select(archive => $"av{archive.Aid}");
+    static IEnumerable<(string Aid, long PubTs, bool IsPinned)> GetVideoItems(
+        UploaderVideoRpc.Data data)
+        => data.Items.Where(item => item.Modules.ModuleDynamic.Major?.Archive != null)
+            .Select(item => (
+                Aid: $"av{item.Modules.ModuleDynamic.Major?.Archive?.Aid}",
+                PubTs: item.Modules.ModuleAuthor?.PubTs ?? 0,
+                IsPinned: item.Modules.ModuleTag?.Text == "置顶"
+            ));
 }

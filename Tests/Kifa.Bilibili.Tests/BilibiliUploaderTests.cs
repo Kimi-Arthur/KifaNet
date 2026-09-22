@@ -142,4 +142,15 @@ public class BilibiliUploaderTests {
         uploaderVideos.Aids.Should().HaveCount(104);
         uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));
     }
+
+    [Fact]
+    public void UploaderVideosDeepFillTest() {
+        var uploaderVideos = new BilibiliUploaderVideos {
+            Id = "18427691"
+        };
+        uploaderVideos.Fill(deep: true);
+        uploaderVideos.Aids[^1].Should().Be("av561513930");
+        uploaderVideos.Aids.Should().HaveCount(104);
+        uploaderVideos.RefreshInterval.Should().Be(TimeSpan.FromDays(1));
+    }
 }
