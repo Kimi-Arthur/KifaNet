@@ -13,7 +13,7 @@ namespace Kifa.Tools.FileUtil.Commands;
 [Verb("uniq",
     HelpText =
         "Make the files the only conceptual items by removing duplicate info entries within the given list.")]
-class UniqCommand : KifaFileCommand {
+public class UniqCommand : KifaFileCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to process.")]
@@ -28,19 +28,36 @@ class UniqCommand : KifaFileCommand {
     [Option('S', "show-size", HelpText = "Show size for each file and total size.")]
     public bool ShowSize { get; set; } = false;
 
-    public override int Execute(KifaTask? task = null) {
-        if (ById) {
-            if (PreferredFolder != null && !PreferredFolder.StartsWith('/')) {
-                throw new ArgumentException(
-                    $"Logical ID '{PreferredFolder}' must start with '/'.",
-                    nameof(PreferredFolder));
+    public static string? GetDefaultKeepReply(List<FileInformation> fileList,
+        string? preferredFolderId) {
+        if (preferredFolderId == null) {
+            return null;
+        }
+
+        var folderPrefix = $"{preferredFolderId}/";
+        var matchingIndexes = new List<int>();
+        for (var i = 0; i < fileList.Count; i++) {
+            var fileId = fileList[i].Id.Checked();
+            if (fileId == preferredFolderId || fileId.StartsWith(folderPrefix)) {
+                matchingIndexes.Add(i + 1);
             }
-        } else {
-            var localFiles = KifaFile.FindExistingFiles(FileNames);
+        }
+
+        return matchingIndexes.Count > 0 ? string.Join(",", matchingIndexes) : null;
+    }
+
+    public override int Execute(KifaTask? task = null) {
+        var fileNames = FileNames.ToList();
+        var preferredFolder = PreferredFolder ?? (fileNames.Count >= 2 ? fileNames[0] : null);
+        var preferredFolderId =
+            preferredFolder != null ? GetLogicalId(preferredFolder, ById) : null;
+
+        if (!ById) {
+            var localFiles = KifaFile.FindExistingFiles(fileNames);
             RegisterUnregisteredFiles(localFiles, ShowSize, "making unique");
         }
 
-        var infos = FindFileInfos(FileNames, ById);
+        var infos = FindFileInfos(fileNames, ById);
         if (infos.Count == 0) {
             Logger.Warn("No files found.");
             return 1;
@@ -72,13 +89,14 @@ class UniqCommand : KifaFileCommand {
             var fileList = sameFiles.ToList();
             var sha = fileList[0].Sha256.Checked();
             ExecuteItem(fileList.Count == 1 ? fileList[0].Id.Checked() : $"info entries for group {sha}",
-                () => DeduplicateGroup(fileList));
+                () => DeduplicateGroup(fileList, preferredFolderId));
         }
 
         return LogSummary();
     }
 
-    KifaActionResult DeduplicateGroup(List<FileInformation> fileList) {
+    public KifaActionResult DeduplicateGroup(List<FileInformation> fileList,
+        string? preferredFolderId = null) {
         if (fileList.Count == 0) {
             return KifaActionResult.Skipped("No file entries.");
         }
@@ -94,22 +112,7 @@ class UniqCommand : KifaFileCommand {
             return KifaActionResult.Skipped("No duplicate info entries.");
         }
 
-        string? defaultReply = null;
-        if (PreferredFolder != null) {
-            var preferredFolderId = ById ? PreferredFolder : new KifaFile(PreferredFolder).Id;
-            var folderPrefix = preferredFolderId.TrimEnd('/') + "/";
-            var matchingIndexes = new List<int>();
-            for (var i = 0; i < fileList.Count; i++) {
-                var fileId = fileList[i].Id.Checked();
-                if (fileId == preferredFolderId.TrimEnd('/') || fileId.StartsWith(folderPrefix)) {
-                    matchingIndexes.Add(i + 1);
-                }
-            }
-
-            if (matchingIndexes.Count > 0) {
-                defaultReply = string.Join(",", matchingIndexes);
-            }
-        }
+        var defaultReply = GetDefaultKeepReply(fileList, preferredFolderId);
 
         var confirmedKeep = SelectMany(fileList, f => f.Id.Checked(),
             $"info entries to keep for group {sha}", defaultReply: defaultReply);

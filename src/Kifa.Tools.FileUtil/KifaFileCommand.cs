@@ -37,6 +37,19 @@ public abstract class KifaFileCommand : KifaCommand {
                     Id = f.Id
                 }).DistinctBy(f => f.Id).OrderBy(f => f.Id.Checked().GetNaturalSortKey()).ToList();
 
+    public static string GetLogicalId(string source, bool byId = false) {
+        if (byId) {
+            if (!source.StartsWith('/')) {
+                throw new ArgumentException($"Logical ID '{source}' must start with '/'.",
+                    nameof(source));
+            }
+
+            return source.TrimEnd('/');
+        }
+
+        return new KifaFile(source).Id.TrimEnd('/');
+    }
+
     public List<KifaFile> RegisterUnregisteredFiles(List<KifaFile> files, bool showSize = false,
         string actionVerb = "processing") {
         var notRegisteredFiles = files.Where(f => !f.Registered).ToList();

@@ -10,7 +10,7 @@ using NLog;
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("upload", HelpText = "Upload file to a cloud location.")]
-class UploadCommand : KifaCommand {
+public class UploadCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static List<string> DefaultTargets { get; set; }
