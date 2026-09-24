@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
@@ -246,5 +248,135 @@ public class KifaFileTests : IDisposable {
         } finally {
             Environment.SetEnvironmentVariable("PWD", originalPwd);
         }
+    }
+
+    [Fact]
+    public void CalculateInfo_SizeOnly_ReturnsSize() {
+        var filePath = $"{tempDir}/info_size_test.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation());
+        var info = file.CalculateInfo(FileProperties.Size);
+
+        Assert.Equal(12, info.Size);
+        Assert.Null(info.Md5);
+        Assert.Null(info.Sha256);
+    }
+
+    [Fact]
+    public void CalculateInfo_Md5_ReturnsMd5() {
+        var filePath = $"{tempDir}/info_md5_test.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation());
+        var info = file.CalculateInfo(FileProperties.Md5);
+
+        Assert.Equal("ED076287532E86365E841E92BFC50D8C", info.Md5);
+        Assert.Equal(12, info.Size);
+        Assert.Null(info.Sha256);
+    }
+
+    [Fact]
+    public void CalculateInfo_SizeAndMd5_ReturnsBoth() {
+        var filePath = $"{tempDir}/info_both_test.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation());
+        var info = file.CalculateInfo(FileProperties.Size | FileProperties.Md5);
+
+        Assert.Equal(12, info.Size);
+        Assert.Equal("ED076287532E86365E841E92BFC50D8C", info.Md5);
+        Assert.Null(info.Sha256);
+    }
+
+    [Fact]
+    public void List_PreservesSizeAndMd5() {
+        var prevClient = FileInformation.Client;
+        try {
+            FileInformation.Client = new FakeFileInformationServiceClient();
+            var subDir = $"{tempDir}/list_test_dir";
+            Directory.CreateDirectory(subDir);
+            File.WriteAllText($"{subDir}/file1.txt", "Hello World!");
+
+            var dir = new KifaFile(subDir, fileInfo: new FileInformation());
+            var listed = dir.List().ToList();
+
+            Assert.Single(listed);
+            Assert.NotNull(listed[0].FileInfo);
+            Assert.Equal(12, listed[0].FileInfo!.Size);
+        } finally {
+            FileInformation.Client = prevClient;
+        }
+    }
+
+    class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
+        FileInformationServiceClient {
+        readonly Dictionary<string, FileInformation> data = new();
+
+        public override SortedDictionary<string, FileInformation> List(string folder = "",
+            bool recursive = true, KifaDataOptions? options = null)
+            => new(data);
+
+        public override List<FileInformation?> Get(List<string> ids, KifaDataOptions? options = null)
+            => ids.Select(id => data.GetValueOrDefault(id)?.Clone()).ToList();
+
+        public override FileInformation? Get(string id, KifaDataOptions? options = null)
+            => data.GetValueOrDefault(id)?.Clone();
+
+        public override KifaActionResult Set(FileInformation item) {
+            data[item.Id!] = item;
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Update(FileInformation item) {
+            data[item.Id!] = item;
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Delete(string id) {
+            data.Remove(id);
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Link(string targetId, string linkId) {
+            if (data.TryGetValue(targetId, out var target)) {
+                data[linkId] = target;
+                return KifaActionResult.Success();
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Target {targetId} not found"
+            };
+        }
+
+        public KifaActionResult AddLocation(string id, string location, bool verify = false) {
+            if (data.TryGetValue(id, out var info)) {
+                info.Locations[location] = DateTime.UtcNow;
+                return KifaActionResult.Success();
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"File {id} not found"
+            };
+        }
+
+        public KifaActionResult RemoveLocation(string id, string location) {
+            if (data.TryGetValue(id, out var info)) {
+                info.Locations.Remove(location);
+                return KifaActionResult.Success();
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"File {id} not found"
+            };
+        }
+
+        public List<FolderInfo> GetFolder(string folder, List<string> targets) => [];
+
+        public List<string> ListFolder(string folder, bool recursive = false)
+            => data.Keys.Where(k => k.StartsWith(folder)).ToList();
     }
 }

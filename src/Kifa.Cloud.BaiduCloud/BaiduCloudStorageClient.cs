@@ -14,10 +14,7 @@ using NLog;
 
 namespace Kifa.Cloud.BaiduCloud;
 
-public class BaiduCloudStorageClient : StorageClient {
-    const long MaxBlockCount = 1L << 10;
-    const long MaxBlockSize = 2L << 30;
-    const long MinBlockSize = 32L << 20;
+public class BaiduCloudStorageClient : StorageClient, CanCreateStorageClient {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static string RemotePathPrefix { get; set; }
@@ -35,6 +32,32 @@ public class BaiduCloudStorageClient : StorageClient {
     public override string Type => "baidu";
 
     public override string Id => AccountId;
+
+    public static StorageClient Create(string spec)
+        => new BaiduCloudStorageClient {
+            AccountId = spec
+        };
+
+    public override FileInformation? GetQuickInfo(string path) {
+        try {
+            var responseObject =
+                client.Call(new GetFileInfoRpc(RemotePathPrefix, path, Account.AccessToken));
+            if (responseObject == null || responseObject.Errno != 0 || responseObject.List == null ||
+                responseObject.List.Count == 0) {
+                return null;
+            }
+
+            var item = responseObject.List[0];
+            return new FileInformation {
+                Id = path,
+                Size = item.Size,
+                Md5 = item.Md5?.ToUpperInvariant()
+            };
+        } catch (Exception ex) {
+            Logger.Debug(ex, $"Failed to get quick info for {path}.");
+            return null;
+        }
+    }
 
     int Download(byte[] buffer, string path, int bufferOffset = 0, long offset = 0,
         int count = -1) {
@@ -375,7 +398,7 @@ public class BaiduCloudStorageClient : StorageClient {
                 yield return new FileInformation {
                     Id = id,
                     Size = file.Size,
-                    Md5 = file.Md5?.ToUpper()
+                    Md5 = file.Md5?.ToUpperInvariant()
                 };
             }
         }
@@ -471,6 +494,10 @@ public class BaiduCloudStorageClient : StorageClient {
             throw;
         }
     }
+
+    const long MaxBlockCount = 1L << 10;
+    const long MaxBlockSize = 2L << 30;
+    const long MinBlockSize = 32L << 20;
 
     static int GetBlockSize(long size) {
         var blockSize = MinBlockSize;

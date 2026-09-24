@@ -45,6 +45,8 @@ public abstract class StorageClient : IDisposable {
 
     public virtual FileIdInfo? GetFileIdInfo(string path) => null;
 
+    public virtual FileInformation? GetQuickInfo(string path) => null;
+
     public virtual ulong? GetFileRefCount(string path) => null;
 
     public abstract string Type { get; }

@@ -126,6 +126,14 @@ public class BaiduCloudStorageClientTests : IDisposable {
         client.Exists("/Test/2015-11-25.bin").Should().BeFalse();
     }
 
+    [Fact]
+    public void CreateClientTest() {
+        var client = BaiduCloudStorageClient.Create("PimixC");
+        client.Should().BeOfType<BaiduCloudStorageClient>();
+        client.Id.Should().Be("PimixC");
+        client.Type.Should().Be("baidu");
+    }
+
     public static void ClassClenaup() => DataCleanup();
 
     static void DataCleanup() {

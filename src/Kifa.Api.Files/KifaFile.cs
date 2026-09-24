@@ -341,10 +341,15 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         var fileInfos = FileInfoClient.Get(files.Select(f => f.Id).ToList());
-        return files.Zip(fileInfos).Select(item => new KifaFile(Host + item.First.Id,
-            fileInfo: item.Second ?? new FileInformation {
-                Id = item.First.Id
-            }));
+        return files.Zip(fileInfos).Select(item => {
+            var fileInfo = item.Second ?? item.First;
+            if (item.Second != null && item.First != null) {
+                fileInfo.Size ??= item.First.Size;
+                fileInfo.Md5 ??= item.First.Md5;
+            }
+
+            return new KifaFile(Host + item.First.Id, fileInfo: fileInfo);
+        });
     }
 
     static bool ShouldIgnore(string logicalPath, string pathPrefix)
@@ -703,6 +708,31 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         info.RemoveProperties(
             (FileProperties.AllVerifiable & properties) | FileProperties.Locations);
 
+        if ((properties & ~FileProperties.Size) == FileProperties.None) {
+            info.Size = Length;
+            return info;
+        }
+
+        if (FileFormat is RawFileFormat &&
+            (properties & ~(FileProperties.Size | FileProperties.Md5)) == FileProperties.None) {
+            var quickInfo = Client.GetQuickInfo(Path);
+            if (quickInfo != null) {
+                var canSatisfy = (!properties.HasFlag(FileProperties.Size) || quickInfo.Size != null) &&
+                                 (!properties.HasFlag(FileProperties.Md5) || quickInfo.Md5 != null);
+                if (canSatisfy) {
+                    if (properties.HasFlag(FileProperties.Size)) {
+                        info.Size = quickInfo.Size;
+                    }
+
+                    if (properties.HasFlag(FileProperties.Md5)) {
+                        info.Md5 = quickInfo.Md5;
+                    }
+
+                    return info;
+                }
+            }
+        }
+
         using var stream = OpenRead();
         info.AddProperties(stream, properties);
 
@@ -973,9 +1003,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         switch (specs[0]) {
             case "baidu":
-                return new BaiduCloudStorageClient {
-                    AccountId = specs[1]
-                };
+                return BaiduCloudStorageClient.Create(specs[1]);
             case "google":
                 return GoogleDriveStorageClient.Create(specs[1]);
             case "mega":

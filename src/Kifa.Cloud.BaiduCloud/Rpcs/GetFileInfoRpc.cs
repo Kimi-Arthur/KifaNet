@@ -15,6 +15,7 @@ public sealed class GetFileInfoRpc : KifaJsonParameterizedRpc<GetFileInfoRpc.Res
         public int Isdir { get; set; }
         public int Ifhassubdir { get; set; }
         public string Path { get; set; } = "";
+        public string? Md5 { get; set; }
     }
 
     protected override string Url
