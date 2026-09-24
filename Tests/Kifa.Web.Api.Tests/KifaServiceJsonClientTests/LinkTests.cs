@@ -266,6 +266,31 @@ public class LinkTests : IDisposable {
             });
     }
 
+    [Fact]
+    public void FixVirtualLinksTest() {
+        var id = nameof(FixVirtualLinksTest);
+        var rawPath = $"{folder}/link_tests/{id}.json";
+        Directory.CreateDirectory(Path.GetDirectoryName(rawPath)!);
+        File.WriteAllText(rawPath, new TestDataModelWithVirtualLinks {
+            Id = id,
+            Data = "raw data"
+        }.ToJson());
+
+        client.Get("/$/raw data").Should().BeNull();
+        var rawInitial = client.Get(id);
+        rawInitial.Metadata?.Linking?.VirtualLinks.Should().BeNull();
+
+        var result = client.FixVirtualLinks(new FixOptions());
+        result.Status.Should().Be(KifaActionStatus.OK);
+
+        var virtualItem = client.Get("/$/raw data");
+        virtualItem.Should().NotBeNull();
+        virtualItem!.Metadata.Linking.Target.Should().Be(id);
+
+        var updatedItem = client.Get(id);
+        updatedItem!.Metadata.Linking.VirtualLinks.Should().HaveCount(1).And.Contain("/$/raw data");
+    }
+
     public void Dispose() {
         if (Directory.Exists(folder)) {
             Directory.Delete(folder, true);

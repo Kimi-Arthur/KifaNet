@@ -17,9 +17,17 @@ public partial class KifaServiceJsonClient<TDataModel> {
         options ??= new FixOptions();
         var overallResult = new KifaBatchActionResult();
         foreach (var item in List().Values) {
+            if (item.Metadata?.Linking?.Target != null) {
+                overallResult.Add(item.Id, new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Item {item.Id} is a link to {item.RealId}."
+                });
+                continue;
+            }
+
             overallResult.Add(item.Id, KifaActionResult.FromAction(() => {
                 try {
-                    WriteVirtualItems(item, new SortedSet<string>());
+                    WriteTarget(item);
                 } catch (VirtualItemAlreadyLinkedException ex) {
                     Logger.Debug(ex,
                         $"Item {item.Id} ({item.RealId})'s virtual link is already linked.");
@@ -41,21 +49,21 @@ public partial class KifaServiceJsonClient<TDataModel> {
                             case "Id":
                                 continue;
                             case "Metadata": {
-                                var newMetadata =
-                                    (property.GetValue(item) as DataMetadata).Checked();
-                                var oldMetadata = (property.GetValue(targetItem) as DataMetadata)
-                                    .Checked();
-                                oldMetadata.Linking.Checked().Links ??= new SortedSet<string>();
-                                oldMetadata.Linking.Checked().Links.Checked().Add(item.Id);
-                                if (newMetadata.Linking.Checked().Links?.Count > 0) {
-                                    foreach (var link in newMetadata.Linking.Checked().Links
-                                                 .Checked()) {
-                                        oldMetadata.Linking.Checked().Links.Checked().Add(link);
+                                    var newMetadata =
+                                        (property.GetValue(item) as DataMetadata).Checked();
+                                    var oldMetadata = (property.GetValue(targetItem) as DataMetadata)
+                                        .Checked();
+                                    oldMetadata.Linking.Checked().Links ??= new SortedSet<string>();
+                                    oldMetadata.Linking.Checked().Links.Checked().Add(item.Id);
+                                    if (newMetadata.Linking.Checked().Links?.Count > 0) {
+                                        foreach (var link in newMetadata.Linking.Checked().Links
+                                                     .Checked()) {
+                                            oldMetadata.Linking.Checked().Links.Checked().Add(link);
+                                        }
                                     }
-                                }
 
-                                continue;
-                            }
+                                    continue;
+                                }
                         }
 
                         var newValue = property.GetValue(item);
