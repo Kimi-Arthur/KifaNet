@@ -122,4 +122,23 @@ public class FileInformationTests {
         public override void Write(byte[] buffer, int offset, int count) =>
             inner.Write(buffer, offset, count);
     }
+
+    [Fact]
+    public void GetVirtualItemsTest() {
+        var info = new FileInformation();
+        Assert.Empty(info.GetVirtualItems());
+
+        info.Sha256 = "8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F";
+        Assert.Equal(["/$/8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F"],
+            info.GetVirtualItems());
+
+        info.Md5 = "E1B849F9631FFC1829B2E31402373E3C";
+        Assert.Equal([
+            "/$/8A863B145DC6E4ED7AC41C08F7536C476EBAC7509E028ED2B49F8BD5A3562B9F",
+            "/$/E1B849F9631FFC1829B2E31402373E3C"
+        ], info.GetVirtualItems());
+
+        info.Sha256 = null;
+        Assert.Equal(["/$/E1B849F9631FFC1829B2E31402373E3C"], info.GetVirtualItems());
+    }
 }

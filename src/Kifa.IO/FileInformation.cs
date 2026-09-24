@@ -70,12 +70,18 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
     public SortedDictionary<string, DateTime?> Locations { get; set; } = new();
 
-    public override SortedSet<string> GetVirtualItems()
-        => Sha256 != null
-            ? new SortedSet<string> {
-                VirtualItemPrefix + Sha256
-            }
-            : new SortedSet<string>();
+    public override SortedSet<string> GetVirtualItems() {
+        var items = new SortedSet<string>();
+        if (Sha256 != null) {
+            items.Add(VirtualItemPrefix + Sha256);
+        }
+
+        if (Md5 != null) {
+            items.Add(VirtualItemPrefix + Md5);
+        }
+
+        return items;
+    }
 
     [JsonIgnore]
     public bool Exists => Size > 0;
