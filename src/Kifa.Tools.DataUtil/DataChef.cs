@@ -63,29 +63,38 @@ public interface DataChef {
         { YouTubePlaylist.ModelId, new Lazy<DataChef>(() => new DataChef<YouTubePlaylist>()) }
     };
 
-    public static DataChef GetChef(string? modelId, string? content = null)
-        => Chefs[modelId ?? GetYamlType(content!)].Value;
+    public static DataChef? GetChef(string? modelId, string? content = null) {
+        var key = modelId ?? (content != null ? GetYamlType(content) : null);
+        return key != null && Chefs.TryGetValue(key, out var chef) ? chef.Value : null;
+    }
 
-    static string GetYamlType(string s)
-        => s == null || !s.StartsWith("#")
-            ? null
-            : s[1..s.IndexOf("\n", StringComparison.Ordinal)].Trim();
+    static string? GetYamlType(string s) {
+        if (!s.StartsWith('#')) {
+            return null;
+        }
+
+        var newlineIndex = s.IndexOf('\n');
+        return newlineIndex < 0 ? s[1..].Trim() : s[1..newlineIndex].Trim();
+    }
 
     string ModelId { get; }
     KifaActionResult Import(string data);
     KifaActionResult<string> Export(string data, bool getAll, bool compact);
     KifaActionResult Link(string target, string link);
     KifaActionResult Delete(List<string> ids);
+    KifaActionResult Call(string action, string? data = null);
 }
 
 public class DataChef<TDataModel> : DataChef
     where TDataModel : DataModel, WithModelId<TDataModel>, new() {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    static KifaServiceClient<TDataModel> client;
+    static KifaServiceClient<TDataModel>? client;
 
-    static KifaServiceClient<TDataModel> Client
-        => client ??= new KifaServiceRestClient<TDataModel>();
+    public static KifaServiceClient<TDataModel> Client {
+        get => client ??= new KifaServiceRestClient<TDataModel>();
+        set => client = value;
+    }
 
     // TODO: Should not rely on implementation detail. 
     public string ModelId => Client.ModelId;
@@ -130,6 +139,18 @@ public class DataChef<TDataModel> : DataChef
 
     public KifaActionResult Link(string target, string link) => Client.Link(target, link);
     public KifaActionResult Delete(List<string> ids) => Client.Delete(ids);
+
+    public KifaActionResult Call(string action, string? data = null) {
+        var param = string.IsNullOrWhiteSpace(data) ? null : Deserializer.Deserialize<object>(data);
+        if (Client is KifaRpcClient rpcClient) {
+            return rpcClient.Call(action, param);
+        }
+
+        return new KifaActionResult {
+            Status = KifaActionStatus.BadRequest,
+            Message = $"Client for {ModelId} does not support RPC call."
+        };
+    }
 
     static List<TDataModel> GetItemsWithExistingOrder(IEnumerable<string> items,
         SortedDictionary<string, TDataModel> list)

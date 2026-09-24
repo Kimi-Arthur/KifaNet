@@ -36,7 +36,8 @@ public class KifaServiceRestClient {
     public static string? ClientCertPassword { get; set; }
 }
 
-public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataModel>
+public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataModel>,
+    KifaRpcClient
     where TDataModel : DataModel, WithModelId<TDataModel> {
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => Retry.Run(() => {

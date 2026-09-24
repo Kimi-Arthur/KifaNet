@@ -23,6 +23,11 @@ public interface KifaServiceClient<TDataModel>
     KifaActionResult Link(string targetId, string linkId);
 }
 
+public interface KifaRpcClient {
+    KifaActionResult Call(string action, object? parameters = null);
+    TResponse? Call<TResponse>(string action, object? parameters = null);
+}
+
 public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDataModel>
     where TDataModel : DataModel, WithModelId<TDataModel> {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
