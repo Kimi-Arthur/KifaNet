@@ -32,6 +32,142 @@ public class MediaComparisonResult {
     // All metadata differences regardless of whether content matches
     public List<MetadataFieldDifference> AllDifferences { get; set; } = [];
 
+    public string ToMultiLineString(bool allFields = false) {
+        var lines = new List<string>();
+        lines.Add("Media Comparison Result");
+        lines.Add("=======================");
+        lines.Add($"File 1: {File1Path} ({File1Size:N0} bytes)");
+        lines.Add($"File 2: {File2Path} ({File2Size:N0} bytes)");
+        lines.Add("");
+
+        // 0) File Integrity / Validity
+        lines.Add("[0] File Integrity / Validity:");
+        if (File1Valid && File2Valid) {
+            lines.Add($"    {"VALID".Info()}: Both files passed structural and decoding integrity checks.");
+        } else {
+            if (!File1Valid) {
+                lines.Add($"    {"File 1 INVALID".Fatal()} ({File1Errors.Count} issue(s)):");
+                foreach (var err in File1Errors) {
+                    lines.Add($"        - {err.Fatal()}");
+                }
+            } else {
+                lines.Add($"    File 1: {"VALID".Info()}");
+            }
+
+            if (!File2Valid) {
+                lines.Add($"    {"File 2 INVALID".Fatal()} ({File2Errors.Count} issue(s)):");
+                foreach (var err in File2Errors) {
+                    lines.Add($"        - {err.Fatal()}");
+                }
+            } else {
+                lines.Add($"    File 2: {"VALID".Info()}");
+            }
+        }
+
+        lines.Add("");
+
+        // 1) Bit-by-bit match
+        lines.Add("[1] Bit-by-Bit Match:");
+        if (IsBitExactMatch) {
+            lines.Add($"    {"MATCH".Info()}: Files are 100% bit-exact identical.");
+            lines.Add($"    SHA-256: {File1Sha256}");
+        } else {
+            lines.Add($"    {"NO MATCH".Warn()}: File binary hashes differ.");
+            lines.Add($"    File 1 SHA-256: {File1Sha256}");
+            lines.Add($"    File 2 SHA-256: {File2Sha256}");
+        }
+
+        lines.Add("");
+
+        // 2) Stream / Content match
+        lines.Add("[2] Stream / Content Match:");
+        if (IsContentMatch) {
+            var levelDesc = MatchLevel switch {
+                ContentMatchLevel.BitExact => "Bit-Exact (Identical files)",
+                ContentMatchLevel.BitstreamMatch =>
+                    "Bitstream Match (Compressed media bitstreams are identical; container/metadata differs)",
+                ContentMatchLevel.DecodedMatch =>
+                    "Decoded Match (Decoded frames/samples are identical)",
+                _ => "Match"
+            };
+            lines.Add($"    {"MATCH".Info()}: {levelDesc}");
+            if (!File1Valid || !File2Valid) {
+                lines.Add(
+                    $"    {"WARNING".Warn()}: Content matches, but one or more files have integrity/corruption issues (see [0]).");
+            }
+
+            foreach (var stream in Streams) {
+                var streamDetails = stream.Details != null ? $" ({stream.Details})" : "";
+                var matchType = stream.IsBitstreamMatch ? "Bitstream" : "Decoded";
+                var hash = stream.IsBitstreamMatch
+                    ? stream.File1BitstreamHash
+                    : stream.File1DecodedHash;
+                lines.Add(
+                    $"    - Stream #{stream.Index} [{stream.StreamType}]{streamDetails}: {"MATCH".Info()} ({matchType} SHA-256: {hash})");
+            }
+        } else {
+            lines.Add($"    {"NO MATCH".Fatal()}: Media streams or content differ.");
+            foreach (var stream in Streams) {
+                var streamDetails = stream.Details != null ? $" ({stream.Details})" : "";
+                var status = stream.IsMatch ? "MATCH".Info() : "MISMATCH".Fatal();
+                lines.Add(
+                    $"    - Stream #{stream.Index} [{stream.StreamType}]{streamDetails}: {status}");
+                if (!stream.IsMatch) {
+                    if (stream.File1BitstreamHash != null || stream.File2BitstreamHash != null) {
+                        lines.Add(
+                            $"        File 1 Bitstream: {stream.File1BitstreamHash ?? "(n/a)"}");
+                        lines.Add(
+                            $"        File 2 Bitstream: {stream.File2BitstreamHash ?? "(n/a)"}");
+                    }
+
+                    if (stream.File1DecodedHash != null || stream.File2DecodedHash != null) {
+                        lines.Add(
+                            $"        File 1 Decoded:   {stream.File1DecodedHash ?? "(n/a)"}");
+                        lines.Add(
+                            $"        File 2 Decoded:   {stream.File2DecodedHash ?? "(n/a)"}");
+                    }
+                }
+            }
+        }
+
+        lines.Add("");
+
+        // 3) Differing Fields
+        lines.Add("[3] Differing Fields:");
+        var diffsToShow = IsContentMatch || allFields ? AllDifferences : [];
+
+        if (IsBitExactMatch) {
+            lines.Add($"    {"None".Info()}. All metadata and binary fields are identical.");
+        } else if (!IsContentMatch && !allFields) {
+            lines.Add(
+                "    Content does not match. (Use --all-fields / -a to see all metadata differences anyway).");
+        } else if (diffsToShow.Count == 0) {
+            lines.Add($"    {"None".Info()}. All metadata fields match.");
+        } else {
+            lines.Add($"    Found {$"{diffsToShow.Count} differing field(s)".Warn()}:");
+            lines.Add("");
+            var grouped = diffsToShow.GroupBy(d => d.Category).OrderBy(g => g.Key);
+            foreach (var group in grouped) {
+                lines.Add($"    • {group.Key} ({group.Count()}):");
+                foreach (var diff in group) {
+                    var v1 = diff.File1Value != null ? $"\"{diff.File1Value}\"" : "(missing)".Trace();
+                    var v2 = diff.File2Value != null ? $"\"{diff.File2Value}\"" : "(missing)".Trace();
+                    lines.Add($"        {diff.Name}:");
+                    lines.Add($"            File 1: {v1}");
+                    lines.Add($"            File 2: {v2}");
+                }
+
+                lines.Add("");
+            }
+
+            if (lines.Count > 0 && lines[^1] == "") {
+                lines.RemoveAt(lines.Count - 1);
+            }
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
     public string ToOneLineString(bool allFields = false) {
         var sections = new List<string>();
 

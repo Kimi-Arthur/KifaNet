@@ -259,4 +259,148 @@ public class MediaFileComparatorTests : IDisposable {
         noMatchResult.ToOneLineString(allFields: true).Should().Be(
             "NO MATCH (Stream #0 [video]) | Integrity: Valid | Diffs (1): title (\"Old\" vs \"New\")");
     }
+
+    [Fact]
+    public void ToMultiLineStringTest() {
+        var exactResult = new MediaComparisonResult {
+            File1Path = "file1.mp4",
+            File2Path = "file2.mp4",
+            File1Size = 1000,
+            File2Size = 1000,
+            IsBitExactMatch = true,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.BitExact,
+            File1Sha256 = "abc123"
+        };
+        var exactOutput = exactResult.ToMultiLineString();
+        exactOutput.Should().Contain("VALID: Both files passed structural and decoding integrity checks.");
+        exactOutput.Should().Contain("MATCH: Files are 100% bit-exact identical.");
+        exactOutput.Should().Contain("None. All metadata and binary fields are identical.");
+
+        var bitstreamWithDiffResult = new MediaComparisonResult {
+            File1Path = "file1.mp4",
+            File2Path = "file2.mp4",
+            File1Size = 1000,
+            File2Size = 1050,
+            IsBitExactMatch = false,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.BitstreamMatch,
+            File1Sha256 = "hash1",
+            File2Sha256 = "hash2",
+            Streams = [
+                new StreamComparisonResult {
+                    Index = 0,
+                    StreamType = "video",
+                    IsMatch = true,
+                    IsBitstreamMatch = true,
+                    File1BitstreamHash = "vhash"
+                }
+            ],
+            AllDifferences = [
+                new MetadataFieldDifference {
+                    Category = "Format Tags",
+                    Name = "title",
+                    File1Value = null,
+                    File2Value = "NewTitle"
+                }
+            ]
+        };
+        var bitstreamOutput = bitstreamWithDiffResult.ToMultiLineString();
+        bitstreamOutput.Should().Contain("NO MATCH: File binary hashes differ.");
+        bitstreamOutput.Should().Contain("MATCH: Bitstream Match");
+        bitstreamOutput.Should().Contain("Found 1 differing field(s):");
+        bitstreamOutput.Should().Contain("File 1: (missing)");
+        bitstreamOutput.Should().Contain("File 2: \"NewTitle\"");
+
+        var corruptedResult = new MediaComparisonResult {
+            File1Path = "valid.jpg",
+            File2Path = "corrupted.jpg",
+            IsBitExactMatch = false,
+            IsContentMatch = true,
+            MatchLevel = ContentMatchLevel.DecodedMatch,
+            File1Valid = true,
+            File2Valid = false,
+            File2Errors = ["Missing JPEG EOI marker"]
+        };
+        var corruptedOutput = corruptedResult.ToMultiLineString();
+        corruptedOutput.Should().Contain("File 1: VALID");
+        corruptedOutput.Should().Contain("File 2 INVALID (1 issue(s)):");
+        corruptedOutput.Should().Contain("- Missing JPEG EOI marker");
+        corruptedOutput.Should().Contain("WARNING: Content matches, but one or more files have integrity/corruption issues");
+
+        var noMatchResult = new MediaComparisonResult {
+            File1Path = "file1.mp4",
+            File2Path = "file2.mp4",
+            IsBitExactMatch = false,
+            IsContentMatch = false,
+            MatchLevel = ContentMatchLevel.NoMatch,
+            Streams = [
+                new StreamComparisonResult {
+                    Index = 0,
+                    StreamType = "video",
+                    IsMatch = false,
+                    File1BitstreamHash = "hashA",
+                    File2BitstreamHash = "hashB"
+                }
+            ]
+        };
+        var noMatchOutput = noMatchResult.ToMultiLineString();
+        noMatchOutput.Should().Contain("NO MATCH: Media streams or content differ.");
+        noMatchOutput.Should().Contain("Stream #0 [video]: MISMATCH");
+        noMatchOutput.Should().Contain("Content does not match. (Use --all-fields / -a to see all metadata differences anyway).");
+    }
+
+    [Fact]
+    public void ColoringTest() {
+        ConsoleColorExtensions.ForceEnabled = true;
+        try {
+            var exactResult = new MediaComparisonResult {
+                File1Path = "file1.mp4",
+                File2Path = "file2.mp4",
+                IsBitExactMatch = true,
+                IsContentMatch = true,
+                MatchLevel = ContentMatchLevel.BitExact
+            };
+            var exactOutput = exactResult.ToMultiLineString();
+            // \u001b[32m is green (Info)
+            exactOutput.Should().Contain("\u001b[32mVALID\u001b[0m");
+            exactOutput.Should().Contain("\u001b[32mMATCH\u001b[0m");
+            exactOutput.Should().Contain("\u001b[32mNone\u001b[0m");
+
+            var noMatchResult = new MediaComparisonResult {
+                File1Path = "file1.mp4",
+                File2Path = "file2.mp4",
+                IsBitExactMatch = false,
+                IsContentMatch = false,
+                MatchLevel = ContentMatchLevel.NoMatch,
+                Streams = [
+                    new StreamComparisonResult {
+                        Index = 0,
+                        StreamType = "video",
+                        IsMatch = false
+                    }
+                ],
+                AllDifferences = [
+                    new MetadataFieldDifference {
+                        Category = "Format Tags",
+                        Name = "title",
+                        File1Value = null,
+                        File2Value = "New"
+                    }
+                ]
+            };
+            var noMatchOutput = noMatchResult.ToMultiLineString(allFields: true);
+            // \u001b[31m is red (Fatal), \u001b[33m is yellow (Warn), \u001b[37m is gray (Trace)
+            noMatchOutput.Should().Contain("\u001b[31mNO MATCH\u001b[0m");
+            noMatchOutput.Should().Contain("\u001b[31mMISMATCH\u001b[0m");
+            noMatchOutput.Should().Contain("\u001b[33m1 differing field(s)\u001b[0m");
+            noMatchOutput.Should().Contain("\u001b[37m(missing)\u001b[0m");
+
+            var oneLineNoMatch = noMatchResult.ToOneLineString();
+            oneLineNoMatch.Should().Contain("\u001b[31mNO MATCH (Stream #0 [video])\u001b[0m");
+        } finally {
+            ConsoleColorExtensions.ForceEnabled = null;
+        }
+    }
 }
+
