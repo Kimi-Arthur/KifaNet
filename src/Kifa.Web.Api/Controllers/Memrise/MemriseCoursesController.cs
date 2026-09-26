@@ -26,7 +26,7 @@ public class MemriseCourseJsonServiceClient : KifaServiceJsonClient<MemriseCours
 
     public KifaActionResult RemoveWord(string courseId, MemriseWord word) {
         return KifaActionResult.FromAction(() => {
-            lock (GetLock(courseId)) {
+            using (AcquireLock(courseId)) {
                 var course = Get(courseId).Checked();
                 course.Words.Remove(word.Data[course.Columns["German"]]);
                 MemriseWord.Client.Delete(word.Id);

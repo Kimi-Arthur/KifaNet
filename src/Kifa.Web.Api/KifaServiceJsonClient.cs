@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using Kifa.Service;
 using Newtonsoft.Json;
 using NLog;
@@ -57,6 +59,31 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     static ConcurrentDictionary<string, Link<TDataModel>> Locks = new();
 
     protected static Link<TDataModel> GetLock(string id) => Locks.GetOrAdd(id, key => key);
+
+    protected static LockScope AcquireLock(string id, [CallerMemberName] string caller = "") {
+        Logger.Trace($"Waiting for lock on {TDataModel.ModelId}/{id} in {caller}...");
+        var lockObj = GetLock(id);
+        Monitor.Enter(lockObj);
+        Logger.Trace($"Acquired lock on {TDataModel.ModelId}/{id} in {caller}.");
+        return new LockScope(lockObj, id, caller);
+    }
+
+    protected readonly struct LockScope : IDisposable {
+        readonly object lockObj;
+        readonly string id;
+        readonly string caller;
+
+        public LockScope(object lockObj, string id, string caller) {
+            this.lockObj = lockObj;
+            this.id = id;
+            this.caller = caller;
+        }
+
+        public void Dispose() {
+            Monitor.Exit(lockObj);
+            Logger.Trace($"Released lock on {TDataModel.ModelId}/{id} in {caller}.");
+        }
+    }
 
     public override SortedDictionary<string, TDataModel> List(string folder = "",
         bool recursive = true, KifaDataOptions? options = null) {
@@ -116,7 +143,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override TDataModel? Get(string id, KifaDataOptions? options = null) {
-        lock (GetLock(id)) {
+        using (AcquireLock(id)) {
             try {
                 var data = Retrieve(id);
 
@@ -248,7 +275,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     public override KifaActionResult Set(TDataModel data)
         => KifaActionResult.FromAction(() => {
-            lock (GetLock(data.Id)) {
+            using (AcquireLock(data.Id)) {
                 Logger.Trace($"Set {ModelId}/{data.Id}");
                 Logger.Notice(() => data.ToString());
                 data = data.Clone();
@@ -297,7 +324,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
     public override KifaActionResult Update(TDataModel data)
         => KifaActionResult.FromAction(() => {
-            lock (GetLock(data.Id)) {
+            using (AcquireLock(data.Id)) {
                 Logger.Trace($"Update {ModelId}/{data.Id}");
                 Logger.Notice(() => data.ToString());
                 // If it's new data, we should try Fill it.
@@ -325,7 +352,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override KifaActionResult Delete(string id) {
-        lock (GetLock(id)) {
+        using (AcquireLock(id)) {
             var item = Retrieve(id);
             if (item == null) {
                 return LogAndReturn(new KifaActionResult {
@@ -385,8 +412,8 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
     }
 
     public override KifaActionResult Link(string targetId, string linkId) {
-        lock (GetLock(linkId)) {
-            lock (GetLock(targetId)) {
+        using (AcquireLock(linkId)) {
+            using (AcquireLock(targetId)) {
                 var target = Retrieve(targetId);
                 var link = Retrieve(linkId);
 
@@ -399,7 +426,7 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
 
                 var realTargetId = target.RealId;
 
-                lock (GetLock(realTargetId)) {
+                using (AcquireLock(realTargetId)) {
                     if (link != null) {
                         var realLinkId = link.RealId;
                         if (realLinkId == realTargetId) {

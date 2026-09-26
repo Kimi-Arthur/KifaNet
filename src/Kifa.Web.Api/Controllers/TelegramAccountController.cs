@@ -47,7 +47,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public KifaActionResult AddSession(string accountId, byte[] sessionData) {
-        lock (GetLock(accountId)) {
+        using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             account.Sessions.Add(new TelegramSession {
                 Id = Random.Shared.Next(),
@@ -61,7 +61,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(10);
 
     public KifaActionResult<TelegramSession> ObtainSession(string accountId, int? sessionId) {
-        lock (GetLock(accountId)) {
+        using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             if (sessionId != null) {
                 var matchedSession = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
@@ -124,7 +124,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     }
 
     public KifaActionResult RenewSession(string accountId, int sessionId) {
-        lock (GetLock(accountId)) {
+        using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
             if (session == null || session.Reserved < DateTimeOffset.UtcNow) {
@@ -145,7 +145,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     }
 
     public KifaActionResult ReleaseSession(string accountId, int sessionId) {
-        lock (GetLock(accountId)) {
+        using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
             if (session == null) {
@@ -168,7 +168,7 @@ public class TelegramAccountJsonServiceClient : KifaServiceJsonClient<TelegramAc
     }
 
     public KifaActionResult UpdateSession(string accountId, int sessionId, byte[] sessionData) {
-        lock (GetLock(accountId)) {
+        using (AcquireLock(accountId)) {
             var account = Get(accountId).Checked();
             var session = account.Sessions.FirstOrDefault(s => s.Id == sessionId);
             if (session == null) {

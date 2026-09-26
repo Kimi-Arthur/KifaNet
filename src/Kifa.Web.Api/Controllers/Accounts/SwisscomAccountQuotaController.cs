@@ -46,7 +46,7 @@ public class SwisscomAccountQuotaJsonServiceClient : KifaServiceJsonClient<Swiss
     }
 
     public KifaActionResult ReserveQuota(string id, string path, long length) {
-        lock (GetLock(id)) {
+        using (AcquireLock(id)) {
             var data = Get(id);
 
             // The given reservation should not already included.
