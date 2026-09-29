@@ -356,8 +356,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 failures[Failure503Key] = count;
 
-                var sleepSeconds = Math.Min(Math.Pow(2, count - 1), 16);
-                Logger.Warn(ex, $"Sleeping {sleepSeconds}s for server timeout ({count})...");
+                var sleepSeconds = 30 * Math.Pow(2, count - 1) + Random.Shared.NextDouble() * 10;
+                Logger.Warn(ex, $"Sleeping {sleepSeconds:F2}s for server timeout ({count})...");
                 await Task.Delay(TimeSpan.FromSeconds(sleepSeconds));
                 return failures;
             }
@@ -408,19 +408,18 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static async Task<Dictionary<string, int>?> HandleMergeExceptions(Exception ex,
         Dictionary<string, int>? failures, Func<int, Task> getUploadBlockTask) {
         if (ex is RpcException {
-                Code: 400,
-                Message: "FILE_PART_X_MISSING",
-                X: >= 0
-            } rpcException) {
+            Code: 400,
+            Message: "FILE_PART_X_MISSING",
+            X: >= 0
+        } rpcException) {
             var missingPart = rpcException.X;
             Logger.Warn(ex, $"Retry uploading block {missingPart}.");
             var task = getUploadBlockTask(missingPart);
             await task;
-        } else {
-            await HandleFloodException(ex, failures);
+            return failures;
         }
 
-        return failures;
+        return await HandleFloodException(ex, failures);
     }
 
     public override Stream OpenRead(string path) {
