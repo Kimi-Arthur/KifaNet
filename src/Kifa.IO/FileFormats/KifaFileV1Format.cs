@@ -31,8 +31,7 @@ public class KifaFileV1Format : KifaFileFormat {
             encodedStream.ReadExactly(sha256Bytes, 0, 32);
             var sha256 = sha256Bytes.ToHexString();
 
-            encryptionKey = FileInformation.Client.Get($"/$/{sha256}")?.EncryptionKey ??
-                            FileInformation.Client.Get($":{sha256}")?.EncryptionKey;
+            encryptionKey = FileInformation.Client.GetBySha256(sha256)?.EncryptionKey;
             if (encryptionKey == null) {
                 throw new InvalidOperationException(
                     $"Encryption key for file with SHA-256 {sha256} not found.");

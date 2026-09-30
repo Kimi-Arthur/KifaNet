@@ -181,7 +181,7 @@ public class CleanCommandTests : IDisposable {
 
         public override FileInformation? Get(string id, KifaDataOptions? options = null) {
             if (id.StartsWith("/$/")) {
-                var sha256 = id[3..];
+                var sha256 = id.Split('/').Last();
                 return data.Values.FirstOrDefault(f => f.Sha256 == sha256);
             }
 

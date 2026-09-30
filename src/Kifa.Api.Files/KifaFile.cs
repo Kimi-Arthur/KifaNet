@@ -837,7 +837,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         // info.Sha256 is for sure available now.
-        var sha256Info = FileInfoClient.Get($"/$/{info.Sha256}");
+        var sha256Info = FileInfoClient.GetBySha256(info.Sha256);
 
         if (sha256Info != null) {
             if (sha256Info.Sha256 == info.Sha256) {
@@ -892,7 +892,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         if (FileInfo?.Sha256 == null) {
-            var sha256Info = FileInfoClient.Get($"/$/{existingIdInfo.Sha256}");
+            var sha256Info = FileInfoClient.GetBySha256(existingIdInfo.Sha256);
 
             // FileInfo is unknown. Just link it.
             if (sha256Info != null) {

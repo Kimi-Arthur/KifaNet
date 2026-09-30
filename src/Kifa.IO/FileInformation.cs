@@ -70,14 +70,20 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
     public SortedDictionary<string, DateTime?> Locations { get; set; } = new();
 
+    public static string GetSha256VirtualId(string sha256)
+        => $"{VirtualItemPrefix}sha256/{sha256[..2]}/{sha256[2..4]}/{sha256}";
+
+    public static string GetMd5VirtualId(string md5)
+        => $"{VirtualItemPrefix}md5/{md5[..2]}/{md5[2..4]}/{md5}";
+
     public override SortedSet<string> GetVirtualItems() {
         var items = new SortedSet<string>();
         if (Sha256 != null) {
-            items.Add(VirtualItemPrefix + Sha256);
+            items.Add(GetSha256VirtualId(Sha256));
         }
 
         if (Md5 != null) {
-            items.Add(VirtualItemPrefix + Md5);
+            items.Add(GetMd5VirtualId(Md5));
         }
 
         return items;
@@ -98,7 +104,19 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
             return null;
         }
 
-        return fileMatch.Groups[1].Value;
+        var rawId = fileMatch.Groups[1].Value;
+        if (rawId.StartsWith(VirtualItemPrefix)) {
+            var subPath = rawId[VirtualItemPrefix.Length..];
+            if (subPath.Length == 64 && !subPath.Contains('/')) {
+                return GetSha256VirtualId(subPath);
+            }
+
+            if (subPath.Length == 32 && !subPath.Contains('/')) {
+                return GetMd5VirtualId(subPath);
+            }
+        }
+
+        return rawId;
     }
 
     public void AddProperties(FileInformation other) {
@@ -365,6 +383,12 @@ public interface FileInformationServiceClient : KifaServiceClient<FileInformatio
     List<string> ListFolder(string folder, bool recursive = false);
     KifaActionResult AddLocation(string id, string location, bool verified = false);
     KifaActionResult RemoveLocation(string id, string location);
+
+    public FileInformation? GetBySha256(string? sha256)
+        => sha256 == null ? null : Get(FileInformation.GetSha256VirtualId(sha256));
+
+    public FileInformation? GetByMd5(string? md5)
+        => md5 == null ? null : Get(FileInformation.GetMd5VirtualId(md5));
 }
 
 public class FileInformationRestServiceClient : KifaServiceRestClient<FileInformation>,
