@@ -286,27 +286,35 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             }
         });
 
-    void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks) {
+    void WriteVirtualItems(TDataModel data, SortedSet<string> originalVirtualLinks,
+        bool checkAllVirtualLinks = false) {
         var virtualLinks = data.GetVirtualItems();
         if (virtualLinks.Count == 0 && originalVirtualLinks.Count == 0) {
             return;
         }
 
-        var toAddLinks = virtualLinks.Except(originalVirtualLinks).ToList();
         var toRemoveLinks = originalVirtualLinks.Except(virtualLinks);
-
         toRemoveLinks.ForEach(Remove);
 
+        IEnumerable<string> linksToCheck = checkAllVirtualLinks
+            ? virtualLinks
+            : virtualLinks.Except(originalVirtualLinks);
+
         // We should make sure each virtual link only links to one item.
-        var alreadyLinkedItems = toAddLinks
-            .Select(item => (Item: item, Read(item)?.Metadata?.Linking?.Target))
+        var alreadyLinkedItems = linksToCheck
+            .Select(item => (Item: item, Target: Read(item)?.Metadata?.Linking?.Target))
             .Where(item => item.Target != null && item.Target != data.RealId).ToList();
         if (alreadyLinkedItems.Count > 0) {
             throw new VirtualItemAlreadyLinkedException(
                 $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
         }
 
-        toAddLinks.ForEach(item => Write(new TDataModel {
+        var toWriteLinks = checkAllVirtualLinks
+            ? virtualLinks.Where(item => Read(item)?.Metadata?.Linking?.Target != data.RealId)
+                .ToList()
+            : virtualLinks.Except(originalVirtualLinks).ToList();
+
+        toWriteLinks.ForEach(item => Write(new TDataModel {
             Id = item,
             Metadata = new DataMetadata {
                 Linking = new LinkingMetadata {
@@ -516,10 +524,12 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         File.WriteAllText(path, content);
     }
 
-    void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null) {
+    void WriteTarget(TDataModel data, SortedSet<string>? originalVirtualLinks = null,
+        bool checkAllVirtualLinks = false) {
         WriteVirtualItems(data,
             originalVirtualLinks ??
-            data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>());
+            data.Metadata?.Linking?.VirtualLinks ?? new SortedSet<string>(),
+            checkAllVirtualLinks);
         CleanupForWriting(data);
         WriteExternalProperties(data);
         Write(data);

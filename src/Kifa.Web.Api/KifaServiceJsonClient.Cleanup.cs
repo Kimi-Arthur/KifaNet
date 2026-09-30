@@ -27,15 +27,16 @@ public partial class KifaServiceJsonClient<TDataModel> {
 
             overallResult.Add(item.Id, KifaActionResult.FromAction(() => {
                 try {
-                    WriteTarget(item);
+                    WriteTarget(item, checkAllVirtualLinks: true);
                 } catch (VirtualItemAlreadyLinkedException ex) {
                     Logger.Debug(ex,
                         $"Item {item.Id} ({item.RealId})'s virtual link is already linked.");
                     var virtualLinks = item.GetVirtualItems();
-                    var targetItem = Get(virtualLinks.First()).Checked();
-                    foreach (var virtualLink in virtualLinks.Skip(1)) {
-                        var nextItem = Get(virtualLink).Checked();
-                        if (targetItem.RealId != nextItem.RealId) {
+                    var targetItem = virtualLinks.Select(v => Get(v))
+                        .FirstOrDefault(v => v != null).Checked();
+                    foreach (var virtualLink in virtualLinks) {
+                        var nextItem = Get(virtualLink);
+                        if (nextItem != null && targetItem.RealId != nextItem.RealId) {
                             throw new DataCorruptedException(
                                 $"Virtually linked items should point to the same item {targetItem.RealId} != {nextItem.RealId}.");
                         }
@@ -55,7 +56,7 @@ public partial class KifaServiceJsonClient<TDataModel> {
                                         .Checked();
                                     oldMetadata.Linking.Checked().Links ??= new SortedSet<string>();
                                     oldMetadata.Linking.Checked().Links.Checked().Add(item.Id);
-                                    if (newMetadata.Linking.Checked().Links?.Count > 0) {
+                                    if (newMetadata.Linking?.Links?.Count > 0) {
                                         foreach (var link in newMetadata.Linking.Checked().Links
                                                      .Checked()) {
                                             oldMetadata.Linking.Checked().Links.Checked().Add(link);
@@ -104,7 +105,7 @@ public partial class KifaServiceJsonClient<TDataModel> {
                             $"{item.RealId} and {targetItem.RealId} have conflicting values for {property.Name}: {newValue} vs {oldValue}");
                     }
 
-                    WriteTarget(targetItem);
+                    WriteTarget(targetItem, checkAllVirtualLinks: true);
 
                     Write(new TDataModel {
                         Id = item.Id,

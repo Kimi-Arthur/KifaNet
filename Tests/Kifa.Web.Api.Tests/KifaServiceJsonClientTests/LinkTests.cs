@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FluentAssertions;
 using Kifa.Service;
 using Xunit;
@@ -11,6 +12,10 @@ public class TestDataModelWithVirtualLinks : DataModel, WithModelId<TestDataMode
     public static string ModelId => "link_tests";
 
     public string? Data { get; set; }
+
+    public Dictionary<string, string>? ExtraDict { get; set; }
+
+    public string? OtherProp { get; set; }
 
     public override SortedSet<string> GetVirtualItems()
         => Data == null
@@ -289,6 +294,108 @@ public class LinkTests : IDisposable {
 
         var updatedItem = client.Get(id);
         updatedItem!.Metadata.Linking.VirtualLinks.Should().HaveCount(1).And.Contain("/$/raw data");
+    }
+
+    [Fact]
+    public void FixVirtualLinksRecreatesMissingVirtualLinkTest() {
+        var id = nameof(FixVirtualLinksRecreatesMissingVirtualLinkTest);
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = id,
+            Data = "raw data"
+        });
+
+        var virtualPath = $"{folder}/link_tests/$/raw data.json";
+        File.Exists(virtualPath).Should().BeTrue();
+        File.Delete(virtualPath);
+        File.Exists(virtualPath).Should().BeFalse();
+
+        var result = client.FixVirtualLinks(new FixOptions());
+        result.Status.Should().Be(KifaActionStatus.OK);
+
+        File.Exists(virtualPath).Should().BeTrue();
+        var virtualItem = client.Get("/$/raw data");
+        virtualItem.Should().NotBeNull();
+        virtualItem!.Metadata.Linking.Target.Should().Be(id);
+    }
+
+    [Fact]
+    public void FixVirtualLinksDetectsCollisionAndFailsOnConflictingPropertiesTest() {
+        var id1 = $"{nameof(FixVirtualLinksDetectsCollisionAndFailsOnConflictingPropertiesTest)}_1";
+        var id2 = $"{nameof(FixVirtualLinksDetectsCollisionAndFailsOnConflictingPropertiesTest)}_2";
+
+        // Item 1 set first, creates virtual link
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = id1,
+            Data = "shared data",
+            OtherProp = "val1"
+        });
+
+        // Item 2 written directly with virtual link metadata to simulate out-of-band / existing data
+        var rawPath = $"{folder}/link_tests/{id2}.json";
+        File.WriteAllText(rawPath, new TestDataModelWithVirtualLinks {
+            Id = id2,
+            Data = "shared data",
+            OtherProp = "val2",
+            Metadata = new DataMetadata {
+                Linking = new LinkingMetadata {
+                    VirtualLinks = ["/$/shared data"]
+                }
+            }
+        }.ToJson());
+
+        var result = client.FixVirtualLinks(new FixOptions());
+        result.Status.Should().Be(KifaActionStatus.Error);
+
+        var batchResult = result as KifaBatchActionResult;
+        batchResult.Should().NotBeNull();
+        batchResult!.Results.First(r => r.Item == id1).Result.Status.Should()
+            .Be(KifaActionStatus.OK);
+        var item2Result = batchResult.Results.First(r => r.Item == id2).Result;
+        item2Result.Status.Should().Be(KifaActionStatus.Error);
+        item2Result.Message.Should().Contain("conflicting values for OtherProp");
+    }
+
+    [Fact]
+    public void FixVirtualLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest() {
+        var id1 = $"{nameof(FixVirtualLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest)}_1";
+        var id2 = $"{nameof(FixVirtualLinksMergesItemsSuccessfullyWhenFieldsToMergeMatchesTest)}_2";
+
+        client.Set(new TestDataModelWithVirtualLinks {
+            Id = id1,
+            Data = "shared data",
+            ExtraDict = new Dictionary<string, string> {
+                { "key1", "val1" }
+            }
+        });
+
+        var rawPath = $"{folder}/link_tests/{id2}.json";
+        File.WriteAllText(rawPath, new TestDataModelWithVirtualLinks {
+            Id = id2,
+            Data = "shared data",
+            ExtraDict = new Dictionary<string, string> {
+                { "key2", "val2" }
+            },
+            Metadata = new DataMetadata {
+                Linking = new LinkingMetadata {
+                    VirtualLinks = ["/$/shared data"]
+                }
+            }
+        }.ToJson());
+
+        var result = client.FixVirtualLinks(new FixOptions {
+            FieldsToMerge = ["ExtraDict"]
+        });
+        result.Status.Should().Be(KifaActionStatus.OK);
+
+        var item1 = client.Get(id1);
+        item1.Should().NotBeNull();
+        item1!.ExtraDict.Should().ContainKey("key1").WhoseValue.Should().Be("val1");
+        item1.ExtraDict.Should().ContainKey("key2").WhoseValue.Should().Be("val2");
+        item1.Metadata.Linking.Links.Should().Contain(id2);
+
+        var item2 = client.Get(id2);
+        item2.Should().NotBeNull();
+        item2!.Metadata.Linking.Target.Should().Be(id1);
     }
 
     public void Dispose() {
