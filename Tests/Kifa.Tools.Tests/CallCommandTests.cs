@@ -110,4 +110,31 @@ public class CallCommandTests : IDisposable {
         var exitCode = command.Execute();
         exitCode.Should().Be(1);
     }
+
+    [Fact]
+    public void CallCommandExecuteTest_BatchErrorSurfacesNonZeroExitCode() {
+        fakeClient.ResultToReturn = new KifaBatchActionResult([
+            ("file1", KifaActionResult.Success()),
+            ("file2", KifaActionResult.Error("conflicting values for Locations"))
+        ]);
+
+        var command = new CallCommand {
+            Target = "files.fix"
+        };
+
+        var exitCode = command.Execute();
+        exitCode.Should().Be((int) KifaActionStatus.Error);
+    }
+
+    [Fact]
+    public void CallCommandExecuteTest_SimpleErrorSurfacesNonZeroExitCode() {
+        fakeClient.ResultToReturn = KifaActionResult.Error("Something failed");
+
+        var command = new CallCommand {
+            Target = "files.fix"
+        };
+
+        var exitCode = command.Execute();
+        exitCode.Should().Be((int) KifaActionStatus.Error);
+    }
 }

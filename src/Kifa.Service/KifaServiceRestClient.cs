@@ -56,7 +56,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     Content = new StringContent(data.ToJson(), Encoding.UTF8, "application/json")
                 };
 
-                return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
+                return KifaServiceRestClient.Client.GetObject<KifaBatchActionResult>(request) ??
                        KifaActionResult.UnknownError();
             },
             (ex, i) => HandleException(ex, i,
@@ -80,7 +80,7 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     Content = new StringContent(data.ToJson(), Encoding.UTF8, "application/json")
                 };
 
-                return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
+                return KifaServiceRestClient.Client.GetObject<KifaBatchActionResult>(request) ??
                        KifaActionResult.UnknownError();
                 ;
             },
@@ -157,14 +157,25 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
                     Content = new StringContent(ids.ToJson(), Encoding.UTF8, "application/json")
                 };
 
-                return KifaServiceRestClient.Client.GetObject<KifaActionResult>(request) ??
+                return KifaServiceRestClient.Client.GetObject<KifaBatchActionResult>(request) ??
                        KifaActionResult.UnknownError();
             },
             (ex, i) => HandleException(ex, i,
                 $"Failure in DELETE {ModelId}({string.Join(", ", ids)})")));
 
     public KifaActionResult Call(string action, object? parameters = null)
-        => KifaActionResult.FromAction(() => Call<object>(action, parameters));
+        => KifaActionResult.FromAction(() => Retry.Run(() => {
+                var request = new HttpRequestMessage(HttpMethod.Post, GetUrl($"${action}"));
+
+                if (parameters != null) {
+                    request.Content = new StringContent(parameters.ToJson(), Encoding.UTF8,
+                        "application/json");
+                }
+
+                return KifaServiceRestClient.Client.GetObject<KifaBatchActionResult>(request) ??
+                       KifaActionResult.UnknownError();
+            },
+            (ex, i) => HandleException(ex, i, $"Failure in CALL {ModelId}.{action}")));
 
     public TResponse? Call<TResponse>(string action, object? parameters = null) {
         return Retry.Run(() => {

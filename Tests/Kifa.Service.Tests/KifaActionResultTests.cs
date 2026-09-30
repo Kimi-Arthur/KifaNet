@@ -49,6 +49,46 @@ public class KifaActionResultTests {
     }
 
     [Fact]
+    public void BatchSerializationTest() {
+        var batch = new KifaBatchActionResult([
+            ("file1", KifaActionResult.Success()),
+            ("file2", KifaActionResult.Error("conflicting values for Locations"))
+        ]);
+
+        var json = batch.ToJson();
+        json.Should().Contain("\"item\":\"file1\"");
+        json.Should().Contain("\"item\":\"file2\"");
+
+        var deserialized = json.FromJson<KifaBatchActionResult>();
+        deserialized.Should().NotBeNull();
+        deserialized!.Status.Should().Be(KifaActionStatus.Error);
+        deserialized.Results.Should().HaveCount(2);
+        deserialized.Results[0].Item.Should().Be("file1");
+        deserialized.Results[0].Result.Status.Should().Be(KifaActionStatus.OK);
+        deserialized.Results[1].Item.Should().Be("file2");
+        deserialized.Results[1].Result.Status.Should().Be(KifaActionStatus.Error);
+        deserialized.Results[1].Result.Message.Should().Be("conflicting values for Locations");
+
+        deserialized.ToString().Should().Be("""
+                                            Error =>
+                                            	file1: OK
+                                            	file2: Error => conflicting values for Locations
+                                            """);
+    }
+
+    [Fact]
+    public void BatchEmptyResultsToStringTest() {
+        var emptyBatch = new KifaBatchActionResult();
+        emptyBatch.ToString().Should().Be("Skipped");
+
+        var batchWithMessage = new KifaBatchActionResult {
+            Status = KifaActionStatus.OK,
+            Message = "Done"
+        };
+        batchWithMessage.ToString().Should().Be("OK => Done");
+    }
+
+    [Fact]
     public void BatchStatusResolutionTest() {
         new KifaBatchActionResult().Status.Should().Be(KifaActionStatus.Skipped);
 

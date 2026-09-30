@@ -49,12 +49,12 @@ public abstract class BaseKifaServiceClient<TDataModel> : KifaServiceClient<TDat
     public abstract KifaActionResult Set(TDataModel data);
 
     public virtual KifaActionResult Set(List<TDataModel> data)
-        => new KifaBatchActionResult().AddRange(data.Select(item => (item.Id, Set(item))));
+        => new KifaBatchActionResult().AddRange(data.Select(item => (item.Id.Checked(), Set(item))));
 
     public abstract KifaActionResult Update(TDataModel data);
 
     public virtual KifaActionResult Update(List<TDataModel> data)
-        => new KifaBatchActionResult().AddRange(data.Select(item => (item.Id, Update(item))));
+        => new KifaBatchActionResult().AddRange(data.Select(item => (item.Id.Checked(), Update(item))));
 
     public abstract KifaActionResult Delete(string id);
 

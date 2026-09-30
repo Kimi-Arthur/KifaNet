@@ -125,27 +125,56 @@ public class KifaActionResult {
         => string.IsNullOrEmpty(Message) ? $"{Status}" : $"{Status} => {Message}";
 }
 
-public class KifaBatchActionResult : KifaActionResult {
-    List<(string Item, KifaActionResult Result)> Results { get; set; } = [];
+public class BatchActionResultItem {
+    public string Item { get; set; } = "";
+    public KifaActionResult Result { get; set; } = new();
 
-    public KifaBatchActionResult(
-        IEnumerable<(string item, KifaActionResult result)>? results = null) {
-        if (results != null) {
-            AddRange(results);
-        }
+    public void Deconstruct(out string item, out KifaActionResult result) {
+        item = Item;
+        result = Result;
+    }
+
+    public static implicit operator BatchActionResultItem((string Item, KifaActionResult Result) tuple)
+        => new() {
+            Item = tuple.Item,
+            Result = tuple.Result
+        };
+
+    public static implicit operator (string Item, KifaActionResult Result)(BatchActionResultItem item)
+        => (item.Item, item.Result);
+}
+
+public class KifaBatchActionResult : KifaActionResult {
+    public List<BatchActionResultItem> Results { get; set; } = [];
+
+    public KifaBatchActionResult() {
+        Status = KifaActionStatus.Skipped;
+    }
+
+    public KifaBatchActionResult(IEnumerable<BatchActionResultItem> results) {
+        Status = KifaActionStatus.Skipped;
+        Results.AddRange(results);
     }
 
     public KifaBatchActionResult Add(string item, KifaActionResult moreResult) {
-        Results.Add((item, moreResult));
+        Results.Add(new BatchActionResultItem {
+            Item = item,
+            Result = moreResult
+        });
         return this;
     }
 
     public KifaBatchActionResult AddRange(
         IEnumerable<(string item, KifaActionResult result)> moreResults) {
-        foreach (var result in moreResults) {
-            Results.Add((result.item, result.result));
+        foreach (var (item, result) in moreResults) {
+            Add(item, result);
         }
 
+        return this;
+    }
+
+    public KifaBatchActionResult AddRange(IEnumerable<BatchActionResultItem> moreResults) {
+        Results.AddRange(moreResults);
         return this;
     }
 
@@ -153,7 +182,7 @@ public class KifaBatchActionResult : KifaActionResult {
     public override KifaActionStatus Status {
         get {
             if (Results.Count == 0) {
-                return KifaActionStatus.Skipped;
+                return base.Status;
             }
 
             if (Results.Any(r => r.Result.Status.HasFlag(KifaActionStatus.Error))) {
@@ -190,11 +219,17 @@ public class KifaBatchActionResult : KifaActionResult {
 
             return KifaActionStatus.OK;
         }
+        set => base.Status = value;
     }
 
-    public override string ToString(int level)
-        => $"{Status} =>" + string.FormatOrEmpty($" {Message}") +
-           $"\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
+    public override string ToString(int level) {
+        if (Results.Count == 0) {
+            return base.ToString(level);
+        }
+
+        return $"{Status} =>" + string.FormatOrEmpty($" {Message}") +
+               $"\n{string.Join("\n", Results.Select(r => new string('\t', level + 1) + $"{r.Item}: {r.Result.ToString(level + 1)}"))}";
+    }
 }
 
 public class KifaActionResult<TValue> : KifaActionResult {
