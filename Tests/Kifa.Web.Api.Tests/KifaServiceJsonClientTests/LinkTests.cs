@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kifa.Service;
 using Xunit;
@@ -396,6 +398,31 @@ public class LinkTests : IDisposable {
         var item2 = client.Get(id2);
         item2.Should().NotBeNull();
         item2!.Metadata.Linking.Target.Should().Be(id1);
+    }
+
+    [Fact]
+    public void ConcurrentVirtualLinkWriteTest() {
+        var items = Enumerable.Range(0, 10).Select(i => new TestDataModelWithVirtualLinks {
+            Id = $"item_{i}",
+            Data = $"shared_virtual_item_{i % 2}"
+        }).ToList();
+
+        var successCount = 0;
+        var conflictCount = 0;
+
+        Parallel.ForEach(items, item => {
+            var res = client.Set(item);
+            if (res.Status == KifaActionStatus.OK) {
+                Interlocked.Increment(ref successCount);
+            } else if (res.Message?.Contains(nameof(VirtualItemAlreadyLinkedException)) == true) {
+                Interlocked.Increment(ref conflictCount);
+            }
+        });
+
+        // Exactly 2 items (one for shared_virtual_item_0, one for shared_virtual_item_1) should succeed
+        // and 8 items should fail cleanly with VirtualItemAlreadyLinkedException due to locking.
+        successCount.Should().Be(2);
+        conflictCount.Should().Be(8);
     }
 
     public void Dispose() {

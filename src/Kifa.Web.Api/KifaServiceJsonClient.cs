@@ -68,6 +68,17 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         return new LockScope(lockObj, id, caller);
     }
 
+    protected static IDisposable AcquireLocks(IEnumerable<string> ids,
+        [CallerMemberName] string caller = "") {
+        var sortedIds = ids.Distinct().OrderBy(id => id).ToList();
+        var scopes = new List<LockScope>(sortedIds.Count);
+        foreach (var id in sortedIds) {
+            scopes.Add(AcquireLock(id, caller));
+        }
+
+        return new MultiLockScope(scopes);
+    }
+
     protected readonly struct LockScope : IDisposable {
         readonly object lockObj;
         readonly string id;
@@ -82,6 +93,20 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
         public void Dispose() {
             Monitor.Exit(lockObj);
             Logger.Trace($"Released lock on {TDataModel.ModelId}/{id} in {caller}.");
+        }
+    }
+
+    protected readonly struct MultiLockScope : IDisposable {
+        readonly List<LockScope> scopes;
+
+        public MultiLockScope(List<LockScope> scopes) {
+            this.scopes = scopes;
+        }
+
+        public void Dispose() {
+            for (var i = scopes.Count - 1; i >= 0; i--) {
+                scopes[i].Dispose();
+            }
         }
     }
 
@@ -293,40 +318,42 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
             return;
         }
 
-        var toRemoveLinks = originalVirtualLinks.Except(virtualLinks);
-        toRemoveLinks.ForEach(Remove);
+        using (AcquireLocks(virtualLinks.Union(originalVirtualLinks))) {
+            var toRemoveLinks = originalVirtualLinks.Except(virtualLinks);
+            toRemoveLinks.ForEach(Remove);
 
-        IEnumerable<string> linksToCheck = checkAllVirtualLinks
-            ? virtualLinks
-            : virtualLinks.Except(originalVirtualLinks);
+            IEnumerable<string> linksToCheck = checkAllVirtualLinks
+                ? virtualLinks
+                : virtualLinks.Except(originalVirtualLinks);
 
-        // We should make sure each virtual link only links to one item.
-        var alreadyLinkedItems = linksToCheck
-            .Select(item => (Item: item, Target: Read(item)?.Metadata?.Linking?.Target))
-            .Where(item => item.Target != null && item.Target != data.RealId).ToList();
-        if (alreadyLinkedItems.Count > 0) {
-            throw new VirtualItemAlreadyLinkedException(
-                $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
-        }
-
-        var toWriteLinks = checkAllVirtualLinks
-            ? virtualLinks.Where(item => Read(item)?.Metadata?.Linking?.Target != data.RealId)
-                .ToList()
-            : virtualLinks.Except(originalVirtualLinks).ToList();
-
-        toWriteLinks.ForEach(item => Write(new TDataModel {
-            Id = item,
-            Metadata = new DataMetadata {
-                Linking = new LinkingMetadata {
-                    Target = data.RealId
-                }
+            // We should make sure each virtual link only links to one item.
+            var alreadyLinkedItems = linksToCheck
+                .Select(item => (Item: item, Target: Read(item)?.Metadata?.Linking?.Target))
+                .Where(item => item.Target != null && item.Target != data.RealId).ToList();
+            if (alreadyLinkedItems.Count > 0) {
+                throw new VirtualItemAlreadyLinkedException(
+                    $"Some virtual links already exist, but not for {data.RealId}: {alreadyLinkedItems.Select(item => $"{item.Item} => {item.Target}").JoinBy(", ")}");
             }
-        }));
 
-        if (virtualLinks.Count > 0) {
-            data.Metadata ??= new DataMetadata();
-            data.Metadata.Linking ??= new LinkingMetadata();
-            data.Metadata.Linking.VirtualLinks = virtualLinks;
+            var toWriteLinks = checkAllVirtualLinks
+                ? virtualLinks.Where(item => Read(item)?.Metadata?.Linking?.Target != data.RealId)
+                    .ToList()
+                : virtualLinks.Except(originalVirtualLinks).ToList();
+
+            toWriteLinks.ForEach(item => Write(new TDataModel {
+                Id = item,
+                Metadata = new DataMetadata {
+                    Linking = new LinkingMetadata {
+                        Target = data.RealId
+                    }
+                }
+            }));
+
+            if (virtualLinks.Count > 0) {
+                data.Metadata ??= new DataMetadata();
+                data.Metadata.Linking ??= new LinkingMetadata();
+                data.Metadata.Linking.VirtualLinks = virtualLinks;
+            }
         }
     }
 
@@ -403,8 +430,11 @@ public partial class KifaServiceJsonClient<TDataModel> : BaseKifaServiceClient<T
                         }
                     } else {
                         // All real items are gone. So virtual items should go too.
-                        foreach (var link in linking.VirtualLinks!) {
-                            Remove(link);
+                        var virtualLinks = linking.VirtualLinks ?? new SortedSet<string>();
+                        using (AcquireLocks(virtualLinks)) {
+                            foreach (var link in virtualLinks) {
+                                Remove(link);
+                            }
                         }
                     }
                 } else {
