@@ -19,7 +19,8 @@ public abstract partial class KifaCommand {
         return pendingResults;
     }
 
-    protected void ExecuteItem(string item, Action action, bool throwIfError = false) {
+    protected void ExecuteItem(string item, Action action, bool throwIfError = false,
+        bool silent = false) {
         if (StopRequested) {
             Results.Add((item, new KifaActionResult {
                 Status = KifaActionStatus.Cancelled,
@@ -28,16 +29,25 @@ public abstract partial class KifaCommand {
             return;
         }
 
-        Logger.Info($"{item}:");
-        Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
-                throwIfError: throwIfError)));
-        // To space out between tasks, and also before final result.
-        Console.WriteLine();
+        if (silent) {
+            var result = KifaActionResult.FromAction(action);
+            Results.Add((item, result));
+            if (throwIfError && (result.Status.HasFlag(KifaActionStatus.Error) ||
+                                 result.Status.HasFlag(KifaActionStatus.BadRequest))) {
+                throw new KifaActionFailedException(result);
+            }
+        } else {
+            Logger.Info($"{item}:");
+            Results.Add((item,
+                Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
+                    throwIfError: throwIfError)));
+            // To space out between tasks, and also before final result.
+            Console.WriteLine();
+        }
     }
 
     protected void ExecuteItem(string item, Func<KifaActionResult> action,
-        bool throwIfError = false) {
+        bool throwIfError = false, bool silent = false) {
         if (StopRequested) {
             Results.Add((item, new KifaActionResult {
                 Status = KifaActionStatus.Cancelled,
@@ -46,12 +56,21 @@ public abstract partial class KifaCommand {
             return;
         }
 
-        Logger.Info($"{item}:");
-        Results.Add((item,
-            Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
-                throwIfError: throwIfError)));
-        // To space out between tasks, and also before final result.
-        Console.WriteLine();
+        if (silent) {
+            var result = KifaActionResult.FromAction(action);
+            Results.Add((item, result));
+            if (throwIfError && (result.Status.HasFlag(KifaActionStatus.Error) ||
+                                 result.Status.HasFlag(KifaActionStatus.BadRequest))) {
+                throw new KifaActionFailedException(result);
+            }
+        } else {
+            Logger.Info($"{item}:");
+            Results.Add((item,
+                Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
+                    throwIfError: throwIfError)));
+            // To space out between tasks, and also before final result.
+            Console.WriteLine();
+        }
     }
 
     public int LogSummary() {
