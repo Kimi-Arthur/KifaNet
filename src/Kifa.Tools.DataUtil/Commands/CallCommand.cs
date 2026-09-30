@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using CommandLine;
 using Kifa.Jobs;
 using Kifa.Service;
@@ -41,7 +42,12 @@ public class CallCommand : KifaCommand {
             ? File.ReadAllText(ParametersFile)
             : Parameters;
 
-        return (int) Logger.LogResult(chef.Call(action, paramContent), $"calling {type}.{action}",
-            LogLevel.Info).Status;
+        var result = chef.Call(action, paramContent);
+        if (result is KifaBatchActionResult batchResult) {
+            Results.AddRange(batchResult.Results.Select(r => ((string, KifaActionResult)) r));
+            return LogSummary();
+        }
+
+        return (int) Logger.LogResult(result, $"calling {type}.{action}", LogLevel.Info).Status;
     }
 }

@@ -59,29 +59,41 @@ public abstract partial class KifaCommand {
 
         var okItems = Results.Where(item => item.result.Status == KifaActionStatus.OK).ToList();
         if (okItems.Count > 0) {
-            foreach (var (item, result) in okItems) {
-                Logger.LogResult(result, item, LogLevel.Info);
-            }
+            if (!NonVerbose) {
+                foreach (var (item, result) in okItems) {
+                    Logger.LogResult(result, item, LogLevel.Info);
+                }
 
-            Logger.Info($"Successfully processed the {okItems.Count} items above.\n");
+                Logger.Info($"Successfully processed the {okItems.Count} items above.\n");
+            } else {
+                Logger.Info($"Successfully processed {okItems.Count} items.\n");
+            }
         }
 
         var skippedItems = Results.Where(item => item.result.Status == KifaActionStatus.Skipped).ToList();
         if (skippedItems.Count > 0) {
-            foreach (var (item, result) in skippedItems) {
-                Logger.LogResult(result, item, LogLevel.Info);
-            }
+            if (!NonVerbose) {
+                foreach (var (item, result) in skippedItems) {
+                    Logger.LogResult(result, item, LogLevel.Info);
+                }
 
-            Logger.Info($"Skipped the {skippedItems.Count} items above.\n");
+                Logger.Info($"Skipped the {skippedItems.Count} items above.\n");
+            } else {
+                Logger.Info($"Skipped {skippedItems.Count} items.\n");
+            }
         }
 
         var cancelledItems = Results.Where(item => item.result.Status == KifaActionStatus.Cancelled).ToList();
         if (cancelledItems.Count > 0) {
-            foreach (var (item, result) in cancelledItems) {
-                Logger.LogResult(result, item, LogLevel.Info);
-            }
+            if (!NonVerbose) {
+                foreach (var (item, result) in cancelledItems) {
+                    Logger.LogResult(result, item, LogLevel.Info);
+                }
 
-            Logger.Warn($"Cancelled the {cancelledItems.Count} items above.\n");
+                Logger.Warn($"Cancelled the {cancelledItems.Count} items above.\n");
+            } else {
+                Logger.Warn($"Cancelled {cancelledItems.Count} items.\n");
+            }
         }
 
         var warningItems = Results.Where(item => item.result.Status == KifaActionStatus.Warning).ToList();
