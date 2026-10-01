@@ -25,6 +25,10 @@ public class UniqCommand : KifaFileCommand {
     [Option('p', "preferred-folder", HelpText = "Preferred folder to keep instances in.")]
     public string? PreferredFolder { get; set; }
 
+    [Option('u', "unuploaded",
+        HelpText = "Allow making unique without requiring files to be uploaded to cloud.")]
+    public bool Unuploaded { get; set; } = false;
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size.")]
     public bool ShowSize { get; set; } = false;
 
@@ -191,6 +195,16 @@ public class UniqCommand : KifaFileCommand {
     }
 
     KifaActionResult CheckCloud(List<FileInformation> fileList) {
+        if (Unuploaded) {
+            var missingFiles = fileList.Where(f => !f.ExistsSomewhere()).ToList();
+            if (missingFiles.Count > 0) {
+                return KifaActionResult.Error(
+                    $"Files not found in any location: {missingFiles.Select(f => f.Id).JoinBy(", ")}.");
+            }
+
+            return KifaActionResult.Success();
+        }
+
         var sha = fileList[0].Sha256.Checked();
 
         var defaultTargets = (UploadCommand.DefaultTargets ?? []).Select(CloudTarget.Parse).ToList();

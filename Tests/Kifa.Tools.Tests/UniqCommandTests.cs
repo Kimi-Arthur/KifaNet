@@ -46,7 +46,7 @@ public class UniqCommandTests : IDisposable {
     [Fact]
     public void CommandLineParser_ParsesListFileNamesCorrectly() {
         var parsed = CommandLine.Parser.Default.ParseArguments<UniqCommand>(new[] {
-            "path1", "path2", "-i", "-p", "/Anime/Preferred"
+            "path1", "path2", "-i", "-p", "/Anime/Preferred", "-u"
         });
 
         Assert.IsType<CommandLine.Parsed<UniqCommand>>(parsed);
@@ -54,6 +54,7 @@ public class UniqCommandTests : IDisposable {
         Assert.Equal(new List<string> { "path1", "path2" }, cmd.FileNames);
         Assert.True(cmd.ById);
         Assert.Equal("/Anime/Preferred", cmd.PreferredFolder);
+        Assert.True(cmd.Unuploaded);
     }
 
     [Fact]
@@ -365,6 +366,130 @@ public class UniqCommandTests : IDisposable {
         // File 1 in preferred folder Show1 kept, file 2 in Show2 removed
         Assert.NotNull(testClient.Get("/Anime/Show1/01.mp4"));
         Assert.Null(testClient.Get("/Anime/Show2/01.mp4"));
+    }
+
+    [Fact]
+    public void Execute_UnuploadedFlag_BothFilesExistSomewhere_SucceedsWithoutCloud() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var file1 = $"{folder1}/SampleVideo_01.mp4";
+        var file2 = $"{folder1}/SampleVideo_01-extra.mp4";
+        File.WriteAllText(file1, "duplicate content");
+        File.WriteAllText(file2, "duplicate content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01.mp4",
+            Sha256 = "dummy_sha256_unuploaded",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01-extra.mp4",
+            Sha256 = "dummy_sha256_unuploaded",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01-extra.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            Unuploaded = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(0, exitCode);
+
+        // Shorter subsequence file kept, extra removed
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01.mp4"));
+        Assert.Null(testClient.Get("/Anime/Show1/SampleVideo_01-extra.mp4"));
+    }
+
+    [Fact]
+    public void Execute_UnuploadedFlag_OneFileMissingLocation_Fails() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var file1 = $"{folder1}/SampleVideo_01.mp4";
+        var file2 = $"{folder1}/SampleVideo_01-extra.mp4";
+        File.WriteAllText(file1, "duplicate content");
+        File.WriteAllText(file2, "duplicate content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01.mp4",
+            Sha256 = "dummy_sha256_unuploaded_missing",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01-extra.mp4",
+            Sha256 = "dummy_sha256_unuploaded_missing",
+            Size = 17,
+            Locations = new()
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            Unuploaded = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+
+        // Neither file should be removed
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01.mp4"));
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01-extra.mp4"));
+    }
+
+    [Fact]
+    public void Execute_WithoutUnuploadedFlag_NoCloud_Fails() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var file1 = $"{folder1}/SampleVideo_01.mp4";
+        var file2 = $"{folder1}/SampleVideo_01-extra.mp4";
+        File.WriteAllText(file1, "duplicate content");
+        File.WriteAllText(file2, "duplicate content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01.mp4",
+            Sha256 = "dummy_sha256_nocloud",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01-extra.mp4",
+            Sha256 = "dummy_sha256_nocloud",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01-extra.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            Unuploaded = false,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+
+        // Neither file should be removed because cloud check failed
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01.mp4"));
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01-extra.mp4"));
     }
 
     class TestFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,

@@ -90,11 +90,11 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
     }
 
-    public bool Registered => FileInfo?.Locations.GetValueOrDefault(ToString(), null) != null;
+    public bool Registered => FileInfo?.Locations?.GetValueOrDefault(ToString(), null) != null;
 
-    public bool Allocated => FileInfo?.Locations.ContainsKey(ToString()) ?? false;
+    public bool Allocated => FileInfo?.Locations?.ContainsKey(ToString()) ?? false;
 
-    public bool HasEntry => FileInfo?.Locations.ContainsKey(ToString()) == true;
+    public bool HasEntry => FileInfo?.Locations?.ContainsKey(ToString()) == true;
 
     bool UseCache { get; set; }
 
