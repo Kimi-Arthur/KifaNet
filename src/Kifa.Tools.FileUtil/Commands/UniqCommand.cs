@@ -30,20 +30,63 @@ public class UniqCommand : KifaFileCommand {
 
     public static string? GetDefaultKeepReply(List<FileInformation> fileList,
         string? preferredFolderId) {
-        if (preferredFolderId == null) {
-            return null;
-        }
+        if (preferredFolderId != null) {
+            var folderPrefix = $"{preferredFolderId}/";
+            var matchingIndexes = new List<int>();
+            for (var i = 0; i < fileList.Count; i++) {
+                var fileId = fileList[i].Id.Checked();
+                if (fileId == preferredFolderId || fileId.StartsWith(folderPrefix)) {
+                    matchingIndexes.Add(i + 1);
+                }
+            }
 
-        var folderPrefix = $"{preferredFolderId}/";
-        var matchingIndexes = new List<int>();
-        for (var i = 0; i < fileList.Count; i++) {
-            var fileId = fileList[i].Id.Checked();
-            if (fileId == preferredFolderId || fileId.StartsWith(folderPrefix)) {
-                matchingIndexes.Add(i + 1);
+            if (matchingIndexes.Count > 0) {
+                return string.Join(",", matchingIndexes);
             }
         }
 
-        return matchingIndexes.Count > 0 ? string.Join(",", matchingIndexes) : null;
+        if (fileList.Count < 2) {
+            return null;
+        }
+
+        for (var i = 0; i < fileList.Count; i++) {
+            var candidateId = fileList[i].Id.Checked();
+            var isWinner = true;
+            for (var j = 0; j < fileList.Count; j++) {
+                if (i == j) {
+                    continue;
+                }
+
+                if (!IsSubsequence(candidateId, fileList[j].Id.Checked())) {
+                    isWinner = false;
+                    break;
+                }
+            }
+
+            if (isWinner) {
+                return (i + 1).ToString();
+            }
+        }
+
+        return null;
+    }
+
+    static bool IsSubsequence(string shorter, string longer) {
+        if (shorter.Length >= longer.Length) {
+            return false;
+        }
+
+        var i = 0;
+        var j = 0;
+        while (i < shorter.Length && j < longer.Length) {
+            if (shorter[i] == longer[j]) {
+                i++;
+            }
+
+            j++;
+        }
+
+        return i == shorter.Length;
     }
 
     public override int Execute(KifaTask? task = null) {

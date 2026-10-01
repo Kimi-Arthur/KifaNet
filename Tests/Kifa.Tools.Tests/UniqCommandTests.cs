@@ -113,6 +113,63 @@ public class UniqCommandTests : IDisposable {
     }
 
     [Fact]
+    public void GetDefaultKeepReply_NoPreferredFolder_SubsequencePath_ReturnsShorterFileIndex() {
+        var files = new List<FileInformation> {
+            new() { Id = "/Anime/Show/SampleVideo_01.mp4" },
+            new() { Id = "/Anime/Show/SampleVideo_01-fe5374986d21.mp4" }
+        };
+
+        var result = UniqCommand.GetDefaultKeepReply(files, null);
+        Assert.Equal("1", result);
+    }
+
+    [Fact]
+    public void GetDefaultKeepReply_NoPreferredFolder_SubsequencePathSecondItem_ReturnsSecondIndex() {
+        var files = new List<FileInformation> {
+            new() { Id = "/Anime/Show/SampleVideo_01-fe5374986d21.mp4" },
+            new() { Id = "/Anime/Show/SampleVideo_01.mp4" }
+        };
+
+        var result = UniqCommand.GetDefaultKeepReply(files, null);
+        Assert.Equal("2", result);
+    }
+
+    [Fact]
+    public void GetDefaultKeepReply_NoPreferredFolder_CaseSensitiveMismatch_ReturnsNull() {
+        var files = new List<FileInformation> {
+            new() { Id = "/Anime/Show/samplevideo_01.mp4" },
+            new() { Id = "/Anime/Show/SampleVideo_01-fe5374986d21.mp4" }
+        };
+
+        var result = UniqCommand.GetDefaultKeepReply(files, null);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void GetDefaultKeepReply_NoPreferredFolder_MultipleFilesSubsequence_ReturnsWinner() {
+        var files = new List<FileInformation> {
+            new() { Id = "/Anime/Show/01.mp4" },
+            new() { Id = "/Anime/Show/Show 01.mp4" },
+            new() { Id = "/Anime/Show/[Group] Show 01.mp4" }
+        };
+
+        var result = UniqCommand.GetDefaultKeepReply(files, null);
+        Assert.Equal("1", result);
+    }
+
+    [Fact]
+    public void GetDefaultKeepReply_NoPreferredFolder_AmbiguousSubsequences_ReturnsNull() {
+        var files = new List<FileInformation> {
+            new() { Id = "/Anime/Show/A.mp4" },
+            new() { Id = "/Anime/Show/B.mp4" },
+            new() { Id = "/Anime/Show/A_and_B.mp4" }
+        };
+
+        var result = UniqCommand.GetDefaultKeepReply(files, null);
+        Assert.Null(result);
+    }
+
+    [Fact]
     public void GetLogicalId_ById_ValidLogicalId_ReturnsTrimmed() {
         var result = KifaFileCommand.GetLogicalId("/Anime/Show1/", byId: true);
         Assert.Equal("/Anime/Show1", result);
