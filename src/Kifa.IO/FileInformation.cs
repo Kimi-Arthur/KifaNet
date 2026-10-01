@@ -70,8 +70,6 @@ public class FileInformation : DataModel, WithModelId<FileInformation> {
 
     public SortedDictionary<string, DateTime?> Locations { get; set; } = new();
 
-    public bool ExistsSomewhere() => Locations?.Values.Any(v => v != null) == true;
-
     public static string GetSha256VirtualId(string sha256)
         => $"{VirtualItemPrefix}sha256/{sha256[..2]}/{sha256[2..4]}/{sha256}";
 

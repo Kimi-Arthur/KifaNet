@@ -15,10 +15,10 @@ public class CloudTargetTests {
     }
 
     [Fact]
-    public void ParseSwissV2_ReturnsCorrectTarget() {
-        var target = CloudTarget.Parse("swiss.v2");
-        Assert.Equal(CloudServiceType.Swiss, target.ServiceType);
+    public void ParseTeleV2_ReturnsCorrectTarget() {
+        var target = CloudTarget.Parse("tele.v2");
+        Assert.Equal(CloudServiceType.Tele, target.ServiceType);
         Assert.Equal(KifaFileV2Format.Instance, target.FormatType);
-        Assert.Equal("swiss.v2", target.ToString());
+        Assert.Equal("tele.v2", target.ToString());
     }
 }

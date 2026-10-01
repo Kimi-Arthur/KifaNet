@@ -77,9 +77,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     KifaFileFormat FileFormat { get; }
 
+    static readonly Regex Sha256Pattern = new("^[0-9a-fA-F]{64}$");
+
     public bool IsCloud
-        => Client is BaiduCloudStorageClient or GoogleDriveStorageClient or MegaNzStorageClient &&
-           FileFormat is KifaFileV1Format or KifaFileV2Format;
+        => Client is GoogleDriveStorageClient or TelegramStorageClient &&
+           FileFormat is KifaFileV1Format or KifaFileV2Format &&
+           Sha256Pattern.IsMatch(BaseName);
 
     public bool IsLocal => Client is FileStorageClient;
 
@@ -281,13 +284,45 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     public override string ToString() => $"{Host}{Path}";
 
     public bool Exists(long? expectedLength = null) {
-        var expected = expectedLength ?? FileInfo?.Size;
-        return expected != null && FileFormat is RawFileFormat
-            ? Client.Exists(Path, expected.Value)
-            : Client.Exists(Path);
+        try {
+            var expected = expectedLength ?? FileInfo?.Size;
+            return expected != null && FileFormat is RawFileFormat
+                ? Client.Exists(Path, expected.Value)
+                : Client.Exists(Path);
+        } catch (Exception) {
+            return false;
+        }
     }
 
-    public bool ExistsSomewhere() => FileInfo?.Locations.Values.Any(v => v != null) == true;
+    public bool ExistsSomewhere() => ExistsSomewhere(FileInfo ?? FileInfoClient.Get(Id));
+
+    public static bool ExistsSomewhere(FileInformation? info) {
+        if (info?.Locations == null || info.Locations.Count == 0) {
+            return false;
+        }
+
+        foreach (var (location, registeredTime) in info.Locations) {
+            if (registeredTime == null) {
+                continue;
+            }
+
+            try {
+                var candidateId = FileInformation.GetId(location);
+                var candidate = new KifaFile(location, id: candidateId,
+                    fileInfo: candidateId == info.Id ? info : new FileInformation {
+                        Id = candidateId,
+                        Size = info.Size
+                    });
+                if ((candidate.IsCloud || candidate.Path == info.Id) && candidate.Exists()) {
+                    return true;
+                }
+            } catch (Exception ex) {
+                Logger.Trace(ex, $"Failed to check existence for location {location}.");
+            }
+        }
+
+        return false;
+    }
 
     public bool IsFolder() {
         if (IsLocal) {
@@ -1053,4 +1088,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     }
 
     static string SlashToEmpty(string path) => path == "/" ? "" : path;
+}
+
+public static class FileInformationExtensions {
+    public static bool ExistsSomewhere(this FileInformation? info) => KifaFile.ExistsSomewhere(info);
 }

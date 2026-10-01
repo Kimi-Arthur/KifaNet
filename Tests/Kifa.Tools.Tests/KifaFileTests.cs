@@ -13,6 +13,7 @@ namespace Kifa.Tools.Tests;
 [Collection("FileStorageTests")]
 public class KifaFileTests : IDisposable {
     readonly string tempDir;
+    readonly FakeFileInformationServiceClient fakeClient;
 
     public KifaFileTests() {
         tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"kifa_test_{Guid.NewGuid()}")).Replace('\\', '/');
@@ -20,6 +21,8 @@ public class KifaFileTests : IDisposable {
         FileStorageClient.ServerConfigs["test_temp"] = new ServerConfig {
             Prefix = tempDir
         };
+        fakeClient = new FakeFileInformationServiceClient();
+        FileInformation.Client = fakeClient;
     }
 
     public void Dispose() {
@@ -27,6 +30,8 @@ public class KifaFileTests : IDisposable {
         if (Directory.Exists(tempDir)) {
             Directory.Delete(tempDir, recursive: true);
         }
+
+        FileInformation.Client = new FileInformationRestServiceClient();
     }
 
     [Fact]
@@ -214,6 +219,119 @@ public class KifaFileTests : IDisposable {
         var result = KifaFile.LinkAll(source, [source]);
         Assert.Equal(KifaActionStatus.Skipped, result.Status);
         Assert.Equal("No files to link locally.", result.Message);
+    }
+
+    [Fact]
+    public void ExistsSomewhere_LocalFile_ExistsOnDisk_ReturnsTrue() {
+        var filePath = $"{tempDir}/valid_file.txt";
+        File.WriteAllText(filePath, "hello");
+
+        var file = new KifaFile("local:test_temp/valid_file.txt", fileInfo: new FileInformation {
+            Id = "/valid_file.txt",
+            Locations = new() {
+                ["local:test_temp/valid_file.txt"] = DateTime.UtcNow
+            }
+        });
+
+        Assert.True(file.ExistsSomewhere());
+    }
+
+    [Fact]
+    public void ExistsSomewhere_LocalFile_DeletedServer_ReturnsFalse() {
+        var file = new KifaFile("local:test_temp/ghost_file.txt", fileInfo: new FileInformation {
+            Id = "/ghost_file.txt",
+            Locations = new() {
+                ["local:deleted_server/ghost_file.txt"] = DateTime.UtcNow
+            }
+        });
+
+        Assert.False(file.ExistsSomewhere());
+    }
+
+    [Fact]
+    public void ExistsSomewhere_LocalFile_DeletedFromDisk_ReturnsFalse() {
+        var file = new KifaFile("local:test_temp/missing_on_disk.txt", fileInfo: new FileInformation {
+            Id = "/missing_on_disk.txt",
+            Locations = new() {
+                ["local:test_temp/missing_on_disk.txt"] = DateTime.UtcNow
+            }
+        });
+
+        Assert.False(file.ExistsSomewhere());
+    }
+
+    [Fact]
+    public void ExistsSomewhere_EmptyLocations_ReturnsFalse() {
+        var file = new KifaFile("local:test_temp/empty_locs.txt", fileInfo: new FileInformation {
+            Id = "/empty_locs.txt",
+            Locations = new()
+        });
+
+        Assert.False(file.ExistsSomewhere());
+    }
+
+    [Fact]
+    public void ExistsSomewhere_UnregisteredLocation_EvenIfExistsOnDisk_ReturnsFalse() {
+        var filePath = $"{tempDir}/unregistered_file.txt";
+        File.WriteAllText(filePath, "hello");
+
+        var file = new KifaFile("local:test_temp/unregistered_file.txt", fileInfo: new FileInformation {
+            Id = "/unregistered_file.txt",
+            Locations = new() {
+                ["local:test_temp/unregistered_file.txt"] = null
+            }
+        });
+
+        Assert.False(file.ExistsSomewhere());
+    }
+
+    [Fact]
+    public void IsCloud_ValidGoogleDriveSha256V1_ReturnsTrue() {
+        var file = new KifaFile("google:account/$/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.v1",
+            fileInfo: new FileInformation());
+        Assert.True(file.IsCloud);
+    }
+
+    [Fact]
+    public void IsCloud_ValidTelegramSha256V2_ReturnsTrue() {
+        var file = new KifaFile("tele:cell/$/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.v2",
+            fileInfo: new FileInformation());
+        Assert.True(file.IsCloud);
+    }
+
+    [Fact]
+    public void IsCloud_Swisscom_ReturnsFalse() {
+        var file = new KifaFile("swiss:account/$/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.v2",
+            fileInfo: new FileInformation());
+        Assert.False(file.IsCloud);
+    }
+
+    [Fact]
+    public void IsCloud_Baidu_ReturnsFalse() {
+        var file = new KifaFile("baidu:account/$/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.v1",
+            fileInfo: new FileInformation());
+        Assert.False(file.IsCloud);
+    }
+
+    [Fact]
+    public void IsCloud_InvalidHashPattern_ReturnsFalse() {
+        var file = new KifaFile("google:account/$/not_a_valid_hash.v1",
+            fileInfo: new FileInformation());
+        Assert.False(file.IsCloud);
+    }
+
+    [Fact]
+    public void IsCloud_RawFileFormat_ReturnsFalse() {
+        var file = new KifaFile("google:account/$/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.mp4",
+            fileInfo: new FileInformation());
+        Assert.False(file.IsCloud);
+    }
+
+    [Fact]
+    public void IsCloud_LocalFile_ReturnsFalse() {
+        var file = new KifaFile("local:test_temp/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.v1",
+            fileInfo: new FileInformation());
+        Assert.False(file.IsCloud);
     }
 
     [Fact]

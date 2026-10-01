@@ -451,6 +451,90 @@ public class UniqCommandTests : IDisposable {
     }
 
     [Fact]
+    public void Execute_UnuploadedFlag_OneFileDeletedServer_Fails() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var file1 = $"{folder1}/SampleVideo_01.mp4";
+        var file2 = $"{folder1}/SampleVideo_01-extra.mp4";
+        File.WriteAllText(file1, "duplicate content");
+        File.WriteAllText(file2, "duplicate content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01.mp4",
+            Sha256 = "dummy_sha256_unuploaded_del_srv",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01-extra.mp4",
+            Sha256 = "dummy_sha256_unuploaded_del_srv",
+            Size = 17,
+            Locations = new() {
+                ["local:deleted_server/Anime/Show1/SampleVideo_01-extra.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            Unuploaded = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+
+        // Neither file should be removed
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01.mp4"));
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01-extra.mp4"));
+    }
+
+    [Fact]
+    public void Execute_UnuploadedFlag_OneFileDeletedFromDisk_Fails() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var file1 = $"{folder1}/SampleVideo_01.mp4";
+        var file2 = $"{folder1}/SampleVideo_01-extra.mp4";
+        File.WriteAllText(file1, "duplicate content");
+        // file2 is deleted/never created on disk
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01.mp4",
+            Sha256 = "dummy_sha256_unuploaded_del_disk",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/SampleVideo_01-extra.mp4",
+            Sha256 = "dummy_sha256_unuploaded_del_disk",
+            Size = 17,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/SampleVideo_01-extra.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            Unuploaded = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+
+        // Neither file should be removed
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01.mp4"));
+        Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01-extra.mp4"));
+    }
+
+    [Fact]
     public void Execute_WithoutUnuploadedFlag_NoCloud_Fails() {
         var folder1 = $"{tempDir}/Anime/Show1";
         Directory.CreateDirectory(folder1);

@@ -27,7 +27,7 @@ public class UploadCommand : KifaCommand {
 
     [Option('t', "targets",
         HelpText =
-            "Targets to upload to, in the format of 'google.v1', 'swiss.v2' or combined 'google.v1,swiss.v2' etc.")]
+            "Targets to upload to, in the format of 'google.v1', 'tele.v2' or combined 'google.v1,tele.v2' etc.")]
     public string Targets { get; set; } = "";
 
     [Option('c', "use-cache", HelpText = "Use cache to help upload.")]
