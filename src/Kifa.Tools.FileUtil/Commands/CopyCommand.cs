@@ -44,8 +44,8 @@ public class CopyCommand : KifaCommand {
         var localFileCopyPairs = new List<(KifaFile SourceFile, KifaFile DestinationFile)>();
 
         foreach (var sourceItem in sourceItems) {
-            var childFiles = KifaFile.FindExistingFiles([sourceItem.ToString()], recursive: true,
-                ignoreFiles: !IncludeAll);
+            var childFiles = KifaFile.FindExistingFiles([sourceItem.ToString()], recursive: true)
+                .Where(f => IncludeAll || !f.ShouldIgnore() || f.Registered).ToList();
 
             if (!sourceItem.Exists() && childFiles.Count > 0) {
                 var sourceFolderId =

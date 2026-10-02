@@ -62,7 +62,9 @@ public class TrashCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var fileNames = FileNames.ToList();
-        var foundFiles = KifaFile.FindAllFiles(fileNames);
+        var foundFiles = KifaFile.FindAllFiles(fileNames)
+            .Where(f => !f.ShouldIgnore() || f.Registered)
+            .ToList();
         DateString = DateTime.UtcNow.ToString("yyyy-MM-dd_HH.mm.ss.ffffff");
 
         if (Restore) {

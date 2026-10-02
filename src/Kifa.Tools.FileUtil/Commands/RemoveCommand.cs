@@ -103,7 +103,9 @@ class RemoveCommand : KifaFileCommand {
             return LogSummary();
         }
 
-        var localFiles = KifaFile.FindExistingFiles(FileNames);
+        var localFiles = KifaFile.FindExistingFiles(FileNames)
+            .Where(f => !f.ShouldIgnore() || f.Registered)
+            .ToList();
 
         if (localFiles.Count > 0) {
             var selected = SelectMany(localFiles,

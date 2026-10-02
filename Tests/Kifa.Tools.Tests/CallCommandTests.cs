@@ -123,7 +123,7 @@ public class CallCommandTests : IDisposable {
         };
 
         var exitCode = command.Execute();
-        exitCode.Should().Be((int) KifaActionStatus.Error);
+        exitCode.Should().Be(1);
     }
 
     [Fact]

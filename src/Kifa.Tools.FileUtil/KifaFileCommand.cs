@@ -29,7 +29,7 @@ public abstract class KifaFileCommand : KifaCommand {
     }
 
     public static List<FileInformation> FindFileInfos(IEnumerable<string> sources,
-        bool byId = false, bool recursive = true, string pattern = "*", bool ignoreFiles = true)
+        bool byId = false, bool recursive = true, string pattern = "*", bool ignoreFiles = false)
         => byId
             ? FindFileInfosByIds(sources, recursive)
             : KifaFile.FindPotentialFiles(sources, recursive, pattern, ignoreFiles).Select(f

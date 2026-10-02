@@ -28,9 +28,6 @@ public class GetCommand : KifaCommand {
         HelpText = "Only get files from local sources (no internet downloading).")]
     public bool NoDownloading { get; set; } = false;
 
-    [Option('a', "include-all", HelpText = "Include all files already registered.")]
-    public bool IncludeAll { get; set; } = false;
-
     [Option('i', "ignore",
         HelpText =
             "Ignores files that are already located in the given locations. Locations are given as prefixes and separated by '|'.")]
@@ -47,7 +44,7 @@ public class GetCommand : KifaCommand {
             : IgnoreAlreadyThere.Split("|").ToList();
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindPotentialFiles(FileNames, ignoreFiles: !IncludeAll);
+        var files = KifaFile.FindPotentialFiles(FileNames);
         var selected = SelectMany(files, file => ShowSize ? $"{file} ({file.FileInfo?.Size.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
                 => $"files{(ShowSize ? $" ({choices.Sum(c => c.FileInfo?.Size ?? 0).ToSizeString()})" : "")} to get"));
