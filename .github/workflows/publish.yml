@@ -1,0 +1,58 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/**/*.csproj'
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Path to .csproj file to publish (leave empty to pack all packable tools)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+            8.0.x
+
+      - name: NuGet login (Trusted Publishing OIDC)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: Kimi-Arthur
+
+      - name: Pack and Push NuGet Packages
+        run: |
+          mkdir -p publish_out
+          if [ -n "${{ inputs.project }}" ]; then
+            echo "Packing specified project: ${{ inputs.project }}"
+            dotnet pack -o publish_out -c Release --include-symbols "${{ inputs.project }}"
+          else
+            echo "Packing all tool projects with PackAsTool=true..."
+            for proj in $(grep -rl "<PackAsTool>true</PackAsTool>" src/); do
+              echo "Packing $proj..."
+              dotnet pack -o publish_out -c Release --include-symbols "$proj"
+            done
+          fi
+
+          echo "Pushing packages to nuget.org..."
+          dotnet nuget push publish_out/*.nupkg -s https://api.nuget.org/v3/index.json -k "${{ steps.login.outputs.NUGET_API_KEY }}" --skip-duplicate

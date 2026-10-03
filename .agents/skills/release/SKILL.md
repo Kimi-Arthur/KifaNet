@@ -1,11 +1,11 @@
 ---
 name: release
-description: Auto-advance 3-part project versions (MAJOR for new commands, MINOR for new options/flags, PATCH for fixes/improvements), commit, push to remote, and publish binaries without requiring confirmation once explicitly triggered.
+description: Auto-advance 3-part project versions (MAJOR for new commands, MINOR for new options/flags, PATCH for fixes/improvements), commit, and push to remote (triggering automated GitHub Actions NuGet Trusted Publishing) without requiring confirmation once explicitly triggered.
 ---
 
 # Release Automation Skill
 
-Automate version incrementing, git commits, pushing to remote, and package/tool publishing following KifaNet's 3-part versioning rules (`MAJOR.MINOR.PATCH`). Once explicitly triggered by the user in a turn (e.g. `release`), execute the release workflow directly without prompting for additional confirmation.
+Automate version incrementing, git commits, and pushing to remote following KifaNet's 3-part versioning rules (`MAJOR.MINOR.PATCH`). Pushing to remote triggers GitHub Actions to automatically publish packages to NuGet via Trusted Publishing. Once explicitly triggered by the user in a turn (e.g. `release`), execute the release workflow directly without prompting for additional confirmation.
 
 ## 3-Part Versioning Rules
 
@@ -40,12 +40,11 @@ Automate version incrementing, git commits, pushing to remote, and package/tool 
    * Follow format: `release(<tool_name> <new_version>): <detailed description of the release content/changes>`
    * Example: `release(filex 5.6.4): interactive multi-source file linking`
 
-5. **Execute Version Bump, Commit, Push & Publish Directly**:
+5. **Execute Version Bump, Commit & Push Directly**:
    * Update `<Version>X.Y.Z</Version>` in the target `.csproj`.
    * Stage the modified `.csproj` and commit with the drafted release message (`git add <path_to_csproj> && git commit -m "..."`).
-   * Push the commit(s) to the remote repository: `git push`.
-   * Run release publication script (e.g., `./scripts/publish.sh <path_to_csproj>`).
-   * Verify output and report publication status.
+   * Push the commit(s) to the remote repository: `git push`. Pushing to remote automatically triggers GitHub Actions to publish packages to NuGet via Trusted Publishing (local `./scripts/publish.sh` is kept as a backup only).
+   * Inspect output and exit codes of `git push`. If the push operation fails or produces errors/warnings (e.g. rejected push), capture and prominently highlight the exact error.
 
 6. **Report Release Summary to User**:
    * Present release summary formatted as **one information item per line**:
@@ -54,5 +53,5 @@ Automate version incrementing, git commits, pushing to remote, and package/tool 
      * **Change Type**: `<MAJOR | MINOR | PATCH>` (`<reason>`)
      * **Version Bump**: `<current_version>` -> `<new_version>`
      * **Commit Message**: `release(<tool_name> <new_version>): <description>`
-     * **Push Status**: Succeeded (`git push`)
-     * **Publication**: Succeeded / output details
+     * **Push Status**: Succeeded (`git push`) OR **Failed** (clearly highlight error details)
+

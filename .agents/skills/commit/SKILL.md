@@ -43,8 +43,9 @@ Clean up files, stage a specific subset of files, create a focused, atomic git c
    * Commit with the drafted message: `git commit -m "<type>(<scope>): <description>"`
 
 6. **Push to Remote**:
-   * Push the commit to the remote repository: `git push`
+   * Push the commit to the remote repository: `git push`.
+   * Check the output and exit code. If `git push` fails (e.g., remote rejected, non-fast-forward, authentication error), do not ignore it—capture and highlight the error clearly.
 
 7. **Verify & Report**:
    * Run `git status` to verify that ONLY the target files were committed and pushed, and remaining files stay uncommitted.
-   * Report the commit SHA, message, committed files, and push status to the user.
+   * Report the commit SHA, message, committed files, and push status to the user (highlighting any push error prominently if it failed).
