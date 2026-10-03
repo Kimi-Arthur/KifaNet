@@ -92,14 +92,9 @@ class RemoveCommand : KifaFileCommand {
                 return LogSummary();
             }
 
-            if (Force && !Confirm(
-                    "Since --force is specified, files of the only version will automatically be removed!\nIt will truly remove files from everywhere!!! Do you want to continue?")) {
-                Logger.Warn("Action cancelled.");
-                return 2;
-            }
-
             selected.Value.ForEach(f => ExecuteItem(f.Id.Checked(),
-                () => KifaFile.RemoveLogical(f.Id, RemoveLinkOnly, Force)));
+                () => KifaFile.RemoveLogical(f.Id, RemoveLinkOnly, Force,
+                    (prompt, suggested) => Confirm(prompt, suggested))));
             return LogSummary();
         }
 
@@ -115,7 +110,8 @@ class RemoveCommand : KifaFileCommand {
 
             if (selected.Status == KifaActionStatus.OK) {
                 selected.Value.ForEach(f => ExecuteItem(f.ToString(),
-                    () => f.RemoveInstance(RemoveLinkOnly)));
+                    () => f.RemoveInstance(RemoveLinkOnly, Force,
+                        (prompt, suggested) => Confirm(prompt, suggested))));
             } else {
                 ExecuteItem("local files to delete", () => selected);
             }
@@ -134,7 +130,8 @@ class RemoveCommand : KifaFileCommand {
             }
 
             phantomFiles.ForEach(f => ExecuteItem(f.ToString(),
-                () => f.RemoveInstance(RemoveLinkOnly)));
+                () => f.RemoveInstance(RemoveLinkOnly, Force,
+                    (prompt, suggested) => Confirm(prompt, suggested))));
         }
 
         return LogSummary();

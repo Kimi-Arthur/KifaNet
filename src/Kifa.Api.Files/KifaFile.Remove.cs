@@ -1,22 +1,63 @@
+using System;
 using System.Linq;
 using Kifa.Service;
 
 namespace Kifa.Api.Files;
 
 public partial class KifaFile {
-    public KifaActionResult RemoveInstance(bool removeLinkOnly = false, bool force = false) {
+    public KifaActionResult RemoveInstance(bool removeLinkOnly = false, bool force = false,
+        Func<string, bool, bool>? confirmPrompt = null) {
         var result = new KifaBatchActionResult();
 
         var info = FileInfoClient.Get(Id);
         var otherLocations =
             info?.Locations.Count(kv => kv.Key != ToString() && kv.Value != null) ?? 0;
 
-        if (otherLocations == 0 && !force) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message =
-                    $"Since {this} is the last instance and force is not specified, we skipped removing it."
-            };
+        if (otherLocations == 0) {
+            var prompt = confirmPrompt ?? ConfirmPrompt;
+            if (prompt != null) {
+                if (!force) {
+                    var firstConfirmed = prompt.Invoke(
+                        $"File {this} is the only instance. Confirm removing it completely?",
+                        false);
+                    if (!firstConfirmed) {
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.Skipped,
+                            Message =
+                                $"Since {this} is the last instance and force is not specified, we skipped removing it."
+                        };
+                    }
+
+                    var secondConfirmed = prompt.Invoke(
+                        $"File {this} will be permanently lost. Are you sure you want to proceed?",
+                        true);
+                    if (!secondConfirmed) {
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.Skipped,
+                            Message =
+                                $"Skipped removing {this} after second confirmation was declined."
+                        };
+                    }
+
+                    force = true;
+                } else {
+                    var confirmed = prompt.Invoke(
+                        $"File {this} is the only instance. Confirm removing it completely?",
+                        true);
+                    if (!confirmed) {
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.Skipped,
+                            Message = $"Skipped removing {this} on user confirmation."
+                        };
+                    }
+                }
+            } else if (!force) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message =
+                        $"Since {this} is the last instance and force is not specified, we skipped removing it."
+                };
+            }
         }
 
         var fileExists = Exists();
@@ -63,11 +104,12 @@ public partial class KifaFile {
         return result;
     }
 
-    public KifaActionResult RemoveLogical(bool removeLinkOnly = false, bool force = false)
-        => RemoveLogical(Id, removeLinkOnly, force);
+    public KifaActionResult RemoveLogical(bool removeLinkOnly = false, bool force = false,
+        Func<string, bool, bool>? confirmPrompt = null)
+        => RemoveLogical(Id, removeLinkOnly, force, confirmPrompt);
 
     public static KifaActionResult RemoveLogical(string? id, bool removeLinkOnly = false,
-        bool force = false) {
+        bool force = false, Func<string, bool, bool>? confirmPrompt = null) {
         if (string.IsNullOrEmpty(id)) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
@@ -92,19 +134,98 @@ public partial class KifaFile {
             var otherLocations = info.Locations.Count(kv
                 => new KifaFile(kv.Key).Id != info.Id && kv.Value != null);
             if (otherLocations == 0) {
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Skipped,
-                    Message =
-                        $"{info.Id} has no other instances other than the one linked. This will result in effective loss of the file."
-                };
+                var prompt = confirmPrompt ?? ConfirmPrompt;
+                if (prompt != null) {
+                    if (!force) {
+                        var firstConfirmed = prompt.Invoke(
+                            $"File {info.Id} has no other instances other than the one linked. Confirm removing it?",
+                            false);
+                        if (!firstConfirmed) {
+                            return new KifaActionResult {
+                                Status = KifaActionStatus.Skipped,
+                                Message =
+                                    $"{info.Id} has no other instances other than the one linked. This will result in effective loss of the file."
+                            };
+                        }
+
+                        var secondConfirmed = prompt.Invoke(
+                            $"File {info.Id} will be permanently lost. Are you sure you want to proceed?",
+                            true);
+                        if (!secondConfirmed) {
+                            return new KifaActionResult {
+                                Status = KifaActionStatus.Skipped,
+                                Message =
+                                    $"Skipped removing {info.Id} after second confirmation was declined."
+                            };
+                        }
+
+                        force = true;
+                    } else {
+                        var confirmed = prompt.Invoke(
+                            $"File {info.Id} has no other instances other than the one linked. Confirm removing it?",
+                            true);
+                        if (!confirmed) {
+                            return new KifaActionResult {
+                                Status = KifaActionStatus.Skipped,
+                                Message = $"Skipped removing {info.Id} on user confirmation."
+                            };
+                        }
+                    }
+                } else if (!force) {
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Skipped,
+                        Message =
+                            $"{info.Id} has no other instances other than the one linked. This will result in effective loss of the file."
+                    };
+                }
             }
         }
 
-        if (onlyFile && !force) {
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = $"Since {info.Id} is the last instance and force is not specified, we skipped removing it."
-            };
+        if (onlyFile) {
+            var prompt = confirmPrompt ?? ConfirmPrompt;
+            if (prompt != null) {
+                if (!force) {
+                    var firstConfirmed = prompt.Invoke(
+                        $"File {info.Id} is the only version. Confirm removing it completely?",
+                        false);
+                    if (!firstConfirmed) {
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.Skipped,
+                            Message =
+                                $"Since {info.Id} is the last instance and force is not specified, we skipped removing it."
+                        };
+                    }
+
+                    var secondConfirmed = prompt.Invoke(
+                        $"File {info.Id} will be permanently lost. Are you sure you want to proceed?",
+                        true);
+                    if (!secondConfirmed) {
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.Skipped,
+                            Message =
+                                $"Skipped removing {info.Id} after second confirmation was declined."
+                        };
+                    }
+
+                    force = true;
+                } else {
+                    var confirmed = prompt.Invoke(
+                        $"File {info.Id} is the only version. Confirm removing it completely?",
+                        true);
+                    if (!confirmed) {
+                        return new KifaActionResult {
+                            Status = KifaActionStatus.Skipped,
+                            Message = $"Skipped removing {info.Id} on user confirmation."
+                        };
+                    }
+                }
+            } else if (!force) {
+                return new KifaActionResult {
+                    Status = KifaActionStatus.Skipped,
+                    Message =
+                        $"Since {info.Id} is the last instance and force is not specified, we skipped removing it."
+                };
+            }
         }
 
         if (!removeLinkOnly) {

@@ -427,6 +427,261 @@ public class KifaFileTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void RemoveLogical_OnlyInstance_WithoutForce_FirstPromptRejected_Skips() {
+        var filePath = $"{tempDir}/only_file_reject1.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/only_file_reject1.txt",
+            Locations = new() {
+                [$"local:test_temp/only_file_reject1.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = KifaFile.RemoveLogical("/only_file_reject1.txt", force: false,
+            confirmPrompt: (prompt, suggested) => {
+                prompts.Add((prompt, suggested));
+                return false;
+            });
+
+        Assert.Single(prompts);
+        Assert.False(prompts[0].suggested);
+        Assert.Contains("/only_file_reject1.txt", prompts[0].prompt);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.True(File.Exists(filePath));
+        Assert.NotNull(fakeClient.Get("/only_file_reject1.txt"));
+    }
+
+    [Fact]
+    public void RemoveLogical_OnlyInstance_WithoutForce_SecondPromptRejected_Skips() {
+        var filePath = $"{tempDir}/only_file_reject2.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/only_file_reject2.txt",
+            Locations = new() {
+                [$"local:test_temp/only_file_reject2.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = KifaFile.RemoveLogical("/only_file_reject2.txt", force: false,
+            confirmPrompt: (prompt, suggested) => {
+                prompts.Add((prompt, suggested));
+                return prompts.Count == 1; // True for 1st prompt, false for 2nd
+            });
+
+        Assert.Equal(2, prompts.Count);
+        Assert.False(prompts[0].suggested);
+        Assert.True(prompts[1].suggested);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.True(File.Exists(filePath));
+        Assert.NotNull(fakeClient.Get("/only_file_reject2.txt"));
+    }
+
+    [Fact]
+    public void RemoveLogical_OnlyInstance_WithoutForce_BothPromptsConfirmed_RemovesFile() {
+        var filePath = $"{tempDir}/only_file_confirm.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/only_file_confirm.txt",
+            Locations = new() {
+                [$"local:test_temp/only_file_confirm.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = KifaFile.RemoveLogical("/only_file_confirm.txt", force: false,
+            confirmPrompt: (prompt, suggested) => {
+                prompts.Add((prompt, suggested));
+                return true;
+            });
+
+        Assert.Equal(2, prompts.Count);
+        Assert.False(prompts[0].suggested);
+        Assert.True(prompts[1].suggested);
+        Assert.Equal(KifaActionStatus.OK, result.Status);
+        Assert.False(File.Exists(filePath));
+        Assert.Null(fakeClient.Get("/only_file_confirm.txt"));
+    }
+
+    [Fact]
+    public void RemoveLogical_OnlyInstance_WithForce_PromptConfirmed_RemovesFile() {
+        var filePath = $"{tempDir}/only_file_force_confirm.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/only_file_force_confirm.txt",
+            Locations = new() {
+                [$"local:test_temp/only_file_force_confirm.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = KifaFile.RemoveLogical("/only_file_force_confirm.txt", force: true,
+            confirmPrompt: (prompt, suggested) => {
+                prompts.Add((prompt, suggested));
+                return true;
+            });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Equal(KifaActionStatus.OK, result.Status);
+        Assert.False(File.Exists(filePath));
+        Assert.Null(fakeClient.Get("/only_file_force_confirm.txt"));
+    }
+
+    [Fact]
+    public void RemoveLogical_OnlyInstance_WithForce_PromptRejected_Skips() {
+        var filePath = $"{tempDir}/only_file_force_reject.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/only_file_force_reject.txt",
+            Locations = new() {
+                [$"local:test_temp/only_file_force_reject.txt"] = DateTime.UtcNow
+            }
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = KifaFile.RemoveLogical("/only_file_force_reject.txt", force: true,
+            confirmPrompt: (prompt, suggested) => {
+                prompts.Add((prompt, suggested));
+                return false;
+            });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.True(File.Exists(filePath));
+        Assert.NotNull(fakeClient.Get("/only_file_force_reject.txt"));
+    }
+
+    [Fact]
+    public void RemoveInstance_LastInstance_WithoutForce_FirstPromptRejected_Skips() {
+        var filePath = $"{tempDir}/single_instance_reject1.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/single_instance_reject1.txt",
+            Locations = new() {
+                [$"local:test_temp/single_instance_reject1.txt"] = DateTime.UtcNow
+            }
+        });
+        var file = new KifaFile(filePath);
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = file.RemoveInstance(force: false, confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return false;
+        });
+
+        Assert.Single(prompts);
+        Assert.False(prompts[0].suggested);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.True(File.Exists(filePath));
+        Assert.NotNull(fakeClient.Get("/single_instance_reject1.txt"));
+    }
+
+    [Fact]
+    public void RemoveInstance_LastInstance_WithoutForce_SecondPromptRejected_Skips() {
+        var filePath = $"{tempDir}/single_instance_reject2.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/single_instance_reject2.txt",
+            Locations = new() {
+                [$"local:test_temp/single_instance_reject2.txt"] = DateTime.UtcNow
+            }
+        });
+        var file = new KifaFile(filePath);
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = file.RemoveInstance(force: false, confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return prompts.Count == 1; // True for 1st prompt, false for 2nd
+        });
+
+        Assert.Equal(2, prompts.Count);
+        Assert.False(prompts[0].suggested);
+        Assert.True(prompts[1].suggested);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.True(File.Exists(filePath));
+        Assert.NotNull(fakeClient.Get("/single_instance_reject2.txt"));
+    }
+
+    [Fact]
+    public void RemoveInstance_LastInstance_WithoutForce_BothPromptsConfirmed_RemovesFile() {
+        var filePath = $"{tempDir}/single_instance_confirm.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/single_instance_confirm.txt",
+            Locations = new() {
+                [$"local:test_temp/single_instance_confirm.txt"] = DateTime.UtcNow
+            }
+        });
+        var file = new KifaFile(filePath);
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = file.RemoveInstance(force: false, confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return true;
+        });
+
+        Assert.Equal(2, prompts.Count);
+        Assert.False(prompts[0].suggested);
+        Assert.True(prompts[1].suggested);
+        Assert.Equal(KifaActionStatus.OK, result.Status);
+        Assert.False(File.Exists(filePath));
+        Assert.Null(fakeClient.Get("/single_instance_confirm.txt"));
+    }
+
+    [Fact]
+    public void RemoveInstance_LastInstance_WithForce_PromptConfirmed_RemovesFile() {
+        var filePath = $"{tempDir}/single_instance_force_confirm.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/single_instance_force_confirm.txt",
+            Locations = new() {
+                [$"local:test_temp/single_instance_force_confirm.txt"] = DateTime.UtcNow
+            }
+        });
+        var file = new KifaFile(filePath);
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = file.RemoveInstance(force: true, confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return true;
+        });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Equal(KifaActionStatus.OK, result.Status);
+        Assert.False(File.Exists(filePath));
+        Assert.Null(fakeClient.Get("/single_instance_force_confirm.txt"));
+    }
+
+    [Fact]
+    public void RemoveInstance_LastInstance_WithForce_PromptRejected_Skips() {
+        var filePath = $"{tempDir}/single_instance_force_reject.txt";
+        File.WriteAllText(filePath, "content");
+        fakeClient.Set(new FileInformation {
+            Id = "/single_instance_force_reject.txt",
+            Locations = new() {
+                [$"local:test_temp/single_instance_force_reject.txt"] = DateTime.UtcNow
+            }
+        });
+        var file = new KifaFile(filePath);
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        var result = file.RemoveInstance(force: true, confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return false;
+        });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Equal(KifaActionStatus.Skipped, result.Status);
+        Assert.True(File.Exists(filePath));
+        Assert.NotNull(fakeClient.Get("/single_instance_force_reject.txt"));
+    }
+
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();
