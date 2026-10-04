@@ -372,6 +372,10 @@ public abstract partial class KifaCommand {
 
     public static List<int> ParseSelection<TChoice>(string line, List<TChoice> selectedChoices,
         Func<TChoice, string> choiceItemString, int startingIndex = 1) {
+        if (string.IsNullOrWhiteSpace(line)) {
+            return [];
+        }
+
         var tokens = line.Split(',',
             StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         HashSet<int>? currentSelection = null;
@@ -432,7 +436,7 @@ public abstract partial class KifaCommand {
         }
 
         if (currentSelection == null) {
-            throw new InvalidOperationException("No valid selection tokens.");
+            return [];
         }
 
         return currentSelection.OrderBy(x => x).ToList();

@@ -165,6 +165,42 @@ public class ExtractCommandTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void RemoveArchiveFilesIfRequested_AllRegistered_DefaultEmptyInput_RemovesNothing() {
+        var originalIn = Console.In;
+        try {
+            // Press Enter to accept empty default
+            Console.SetIn(new StringReader("\n"));
+
+            var filePath = $"{tempDir}/registered_only.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("test.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.WriteLine("test content");
+            }
+
+            fakeClient.Set(new FileInformation {
+                Id = "/registered_only.zip",
+                Locations = new() {
+                    [$"local:extract_test_temp/registered_only.zip"] = DateTime.UtcNow
+                }
+            });
+
+            var cmd = new ExtractCommand {
+                DeleteSource = true
+            };
+
+            using var archive = SharpCompress.Archives.ArchiveFactory.OpenArchive(filePath);
+            var results = cmd.RemoveArchiveFilesIfRequested(archive, filePath).ToList();
+
+            Assert.Empty(results);
+            Assert.NotNull(fakeClient.Get("/registered_only.zip"));
+            Assert.True(File.Exists(filePath));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();

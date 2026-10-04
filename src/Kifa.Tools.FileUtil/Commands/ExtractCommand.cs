@@ -210,7 +210,7 @@ public class ExtractCommand : KifaCommand {
             $"Removal of file info {tempFile.Id}");
     }
 
-    IEnumerable<(string item, KifaActionResult result)> RemoveArchiveFilesIfRequested(
+    public IEnumerable<(string item, KifaActionResult result)> RemoveArchiveFilesIfRequested(
         IArchive archive, string archiveFile) {
         var volumeFiles = archive.Volumes.Select(v => v.FileName).ToList();
 
