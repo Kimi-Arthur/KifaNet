@@ -46,7 +46,7 @@ public class UniqCommandTests : IDisposable {
     [Fact]
     public void CommandLineParser_ParsesListFileNamesCorrectly() {
         var parsed = CommandLine.Parser.Default.ParseArguments<UniqCommand>(new[] {
-            "path1", "path2", "-i", "-p", "/Anime/Preferred", "-u"
+            "path1", "path2", "-i", "-p", "/Anime/Preferred", "-u", "-x"
         });
 
         Assert.IsType<CommandLine.Parsed<UniqCommand>>(parsed);
@@ -55,6 +55,7 @@ public class UniqCommandTests : IDisposable {
         Assert.True(cmd.ById);
         Assert.Equal("/Anime/Preferred", cmd.PreferredFolder);
         Assert.True(cmd.Unuploaded);
+        Assert.True(cmd.CrossOnly);
     }
 
     [Fact]
@@ -574,6 +575,164 @@ public class UniqCommandTests : IDisposable {
         // Neither file should be removed because cloud check failed
         Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01.mp4"));
         Assert.NotNull(testClient.Get("/Anime/Show1/SampleVideo_01-extra.mp4"));
+    }
+
+    [Fact]
+    public void Execute_CrossOnly_ProcessesOnlyFilesPresentInBothGroups() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        var folder2 = $"{tempDir}/Anime/Show2";
+        Directory.CreateDirectory(folder1);
+        Directory.CreateDirectory(folder2);
+
+        var file1Common = $"{folder1}/01.mp4";
+        var file1Unique = $"{folder1}/Unique1.mp4";
+        var file2Common = $"{folder2}/01.mp4";
+        var file2Unique = $"{folder2}/Unique2.mp4";
+
+        File.WriteAllText(file1Common, "shared content");
+        File.WriteAllText(file1Unique, "unique 1 content");
+        File.WriteAllText(file2Common, "shared content");
+        File.WriteAllText(file2Unique, "unique 2 content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/01.mp4",
+            Sha256 = "dummy_sha256_shared",
+            Size = 14,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/Unique1.mp4",
+            Sha256 = "dummy_sha256_u1",
+            Size = 16,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/Unique1.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/01.mp4",
+            Sha256 = "dummy_sha256_shared",
+            Size = 14,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show2/01.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/Unique2.mp4",
+            Sha256 = "dummy_sha256_u2",
+            Size = 16,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show2/Unique2.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+
+        try {
+            var cmd = new UniqCommand {
+                FileNames = [folder1, folder2],
+                CrossOnly = true,
+                Unuploaded = true,
+                AutoConfirmDefault = true
+            };
+
+            var exitCode = cmd.Execute();
+            Assert.Equal(0, exitCode);
+
+            // Group 1 common file is kept, Group 2 common file is removed
+            Assert.NotNull(testClient.Get("/Anime/Show1/01.mp4"));
+            Assert.Null(testClient.Get("/Anime/Show2/01.mp4"));
+
+            // Unique files in both groups are untouched
+            Assert.NotNull(testClient.Get("/Anime/Show1/Unique1.mp4"));
+            Assert.NotNull(testClient.Get("/Anime/Show2/Unique2.mp4"));
+
+            var output = stringWriter.ToString();
+            Assert.Contains("The following 2 file(s) will NOT be processed (not cross-group duplicates):", output);
+            Assert.Contains("/Anime/Show1/Unique1.mp4", output);
+            Assert.Contains("/Anime/Show2/Unique2.mp4", output);
+        } finally {
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [Fact]
+    public void Execute_CrossOnly_NoCrossGroupDuplicates_ReturnsZero() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        var folder2 = $"{tempDir}/Anime/Show2";
+        Directory.CreateDirectory(folder1);
+        Directory.CreateDirectory(folder2);
+
+        var file1Unique = $"{folder1}/Unique1.mp4";
+        var file2Unique = $"{folder2}/Unique2.mp4";
+        File.WriteAllText(file1Unique, "unique 1");
+        File.WriteAllText(file2Unique, "unique 2");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/Unique1.mp4",
+            Sha256 = "dummy_sha256_u1",
+            Size = 8,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/Unique1.mp4"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/Unique2.mp4",
+            Sha256 = "dummy_sha256_u2",
+            Size = 8,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show2/Unique2.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1, folder2],
+            CrossOnly = true,
+            Unuploaded = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(0, exitCode);
+
+        // Neither file is touched
+        Assert.NotNull(testClient.Get("/Anime/Show1/Unique1.mp4"));
+        Assert.NotNull(testClient.Get("/Anime/Show2/Unique2.mp4"));
+    }
+
+    [Fact]
+    public void Execute_CrossOnly_SingleFolderWithoutPreferredFolder_Fails() {
+        var folder1 = $"{tempDir}/Anime/Show1";
+        Directory.CreateDirectory(folder1);
+
+        var file1 = $"{folder1}/01.mp4";
+        File.WriteAllText(file1, "content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/01.mp4",
+            Sha256 = "dummy_sha256_single",
+            Size = 7,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/01.mp4"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1],
+            CrossOnly = true,
+            Unuploaded = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+        Assert.NotNull(testClient.Get("/Anime/Show1/01.mp4"));
     }
 
     class TestFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,

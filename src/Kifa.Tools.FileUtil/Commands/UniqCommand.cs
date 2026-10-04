@@ -32,6 +32,10 @@ public class UniqCommand : KifaFileCommand {
     [Option('S', "show-size", HelpText = "Show size for each file and total size.")]
     public bool ShowSize { get; set; } = false;
 
+    [Option('x', "cross-only",
+        HelpText = "Only process duplicate files that appear across different input groups / preferred folder.")]
+    public bool CrossOnly { get; set; } = false;
+
     public static string? GetDefaultKeepReply(List<FileInformation> fileList,
         string? preferredFolderId) {
         if (preferredFolderId != null) {
@@ -93,6 +97,15 @@ public class UniqCommand : KifaFileCommand {
         return i == shorter.Length;
     }
 
+    static bool IsInFolder(FileInformation file, string? folderId) {
+        if (folderId == null) {
+            return false;
+        }
+
+        var fileId = file.Id.Checked();
+        return fileId == folderId || fileId.StartsWith($"{folderId}/");
+    }
+
     public override int Execute(KifaTask? task = null) {
         var fileNames = FileNames.ToList();
         var preferredFolder = PreferredFolder ?? (fileNames.Count >= 2 ? fileNames[0] : null);
@@ -110,6 +123,57 @@ public class UniqCommand : KifaFileCommand {
             return 1;
         }
 
+        var filesWithoutSha = infos.Where(f => f.Sha256 == null).ToList();
+        if (filesWithoutSha.Count > 0) {
+            foreach (var file in filesWithoutSha) {
+                ExecuteItem(file.Id.Checked(),
+                    () => KifaActionResult.Error("No SHA256 calculated."));
+            }
+
+            return LogSummary();
+        }
+
+        if (CrossOnly) {
+            if (preferredFolderId == null) {
+                Logger.Error("Cross-only mode requires a preferred folder or at least two folders.");
+                return 1;
+            }
+
+            var allGroups = infos.GroupBy(f => f.Sha256.Checked()).ToList();
+            var activeInfos = new List<FileInformation>();
+            var ignoredInfos = new List<FileInformation>();
+
+            foreach (var group in allGroups) {
+                var groupFiles = group.ToList();
+                var isCrossGroup = groupFiles.Any(f => IsInFolder(f, preferredFolderId)) &&
+                                   groupFiles.Any(f => !IsInFolder(f, preferredFolderId));
+                if (isCrossGroup) {
+                    activeInfos.AddRange(groupFiles);
+                } else {
+                    ignoredInfos.AddRange(groupFiles);
+                }
+            }
+
+            if (ignoredInfos.Count > 0) {
+                Console.WriteLine(
+                    $"The following {ignoredInfos.Count} file(s){(ShowSize ? $" ({ignoredInfos.Sum(f => f.Size ?? 0).ToSizeString()})" : "")} will NOT be processed (not cross-group duplicates):");
+                foreach (var file in ignoredInfos) {
+                    Console.WriteLine(ShowSize
+                        ? $"  {file.Id.Checked()} ({file.Size.ToSizeString()})"
+                        : $"  {file.Id.Checked()}");
+                }
+
+                Console.WriteLine();
+            }
+
+            if (activeInfos.Count == 0) {
+                Logger.Info("No duplicate files found across groups.");
+                return 0;
+            }
+
+            infos = activeInfos;
+        }
+
         var selected = SelectMany(infos,
             info => ShowSize ? $"{info.Id} ({info.Size.ToSizeString()})" : info.Id.Checked(),
             new Func<List<FileInformation>, string>(choices
@@ -121,16 +185,6 @@ public class UniqCommand : KifaFileCommand {
         }
 
         infos = selected.Value;
-
-        var filesWithoutSha = infos.Where(f => f.Sha256 == null).ToList();
-        if (filesWithoutSha.Count > 0) {
-            foreach (var file in filesWithoutSha) {
-                ExecuteItem(file.Id.Checked(),
-                    () => KifaActionResult.Error("No SHA256 calculated."));
-            }
-
-            return LogSummary();
-        }
 
         foreach (var sameFiles in infos.GroupBy(f => f.Sha256)) {
             var fileList = sameFiles.ToList();
