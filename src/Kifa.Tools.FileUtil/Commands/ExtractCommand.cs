@@ -249,8 +249,10 @@ public class ExtractCommand : KifaCommand {
                 .ToList();
 
             var defaultReply = nonRegisteredIndices.Count == files.Count
-                ? "*"
-                : string.Join(",", nonRegisteredIndices);
+                ? AllChoices
+                : nonRegisteredIndices.Count == 0
+                    ? EmptyChoice
+                    : string.Join(",", nonRegisteredIndices);
 
             var toBeRemoved = SelectMany(files,
                 f => f.Registered ? f.Id : f.ToString(),

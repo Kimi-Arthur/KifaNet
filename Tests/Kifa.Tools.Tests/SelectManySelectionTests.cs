@@ -573,6 +573,7 @@ public class SelectManySelectionTests {
         var items = new List<string> { "item0", "item1", "item2" };
         Assert.Empty(KifaCommand.ParseSelection("", items, s => s));
         Assert.Empty(KifaCommand.ParseSelection("   ", items, s => s));
+        Assert.Empty(KifaCommand.ParseSelection(KifaCommand.EmptyChoice, items, s => s));
     }
 
     [Fact]
@@ -585,6 +586,22 @@ public class SelectManySelectionTests {
             var cmd = new DummyCommand();
             var res = cmd.TestSelectMany(new List<string> { "item1", "item2", "item3" }, key,
                 defaultReply: "");
+            Assert.Empty(res.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_DynamicDefault_CaretDefaultSelectsNothing() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            Console.SetIn(new System.IO.StringReader("\n"));
+
+            var cmd = new DummyCommand();
+            var res = cmd.TestSelectMany(new List<string> { "item1", "item2", "item3" }, key,
+                defaultReply: KifaCommand.EmptyChoice);
             Assert.Empty(res.Value.Checked());
         } finally {
             Console.SetIn(originalIn);
