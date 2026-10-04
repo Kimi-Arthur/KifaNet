@@ -37,3 +37,7 @@
 - Only create planning, architecture, or reasoning documents when explicitly requested by the user. Do NOT automatically create documentation files for small or routine changes. When requested, maintain them in a `docs/` folder located inside the relevant project's `.csproj` directory (e.g., `src/Kifa.Web.Api/docs/`, `src/Kifa.Service/docs/`).
 - Do NOT use triple-slash (`///`) formal docstrings or XML documentation comments in code. Use simple comments (`//`) for code documentation to stay simple.
 
+## Test Execution Rules
+- Limit test execution strictly to only the necessary and relevant test projects, classes, or test cases (e.g. `dotnet test Tests/Kifa.Tools.Tests/Kifa.Tools.Tests.csproj`). Do NOT run all tests across the entire solution (`dotnet test`) unless explicitly requested by the user.
+
+
