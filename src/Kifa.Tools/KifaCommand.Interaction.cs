@@ -64,6 +64,9 @@ public abstract partial class KifaCommand {
             ? choices.Select(c => c?.ToString() ?? "").ToList()
             : choices.Select(choiceToString).ToList();
 
+        Logger.Trace(
+            $"Available {choiceName} (default: [{defaultIndex + startingIndex}] {choiceStrings[defaultIndex]}):\n{string.Join("\n", choiceStrings.Select((c, i) => $"  [{i + startingIndex}] {c}"))}");
+
         if (reverse) {
             for (var i = choices.Count - 1; i >= 0; i--) {
                 var line = $"[{i + startingIndex}]\t{choiceStrings[i]}";
@@ -77,8 +80,8 @@ public abstract partial class KifaCommand {
         }
 
         if (AlwaysDefaultForSelectOne[selectionKey]) {
-            Console.WriteLine(
-                $"Automatically chose [{($"{defaultIndex + startingIndex}").Info()}] as previously instructed.\n");
+            Logger.Info(
+                $"Automatically chose [{defaultIndex + startingIndex}] {choiceStrings[defaultIndex]} for {choiceName} as previously instructed.");
             return (choices[defaultIndex], null, defaultIndex, false);
         }
 
@@ -103,17 +106,20 @@ public abstract partial class KifaCommand {
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
+                    Logger.Debug($"Cancelled selection for {choiceName}.");
                     return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
                         .Cancelled("Cancelled by user.");
                 }
 
                 var rawLine = (Console.ReadLine() ?? "").Trim();
                 if (StopRequested) {
+                    Logger.Debug($"Cancelled selection for {choiceName}.");
                     return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
                         .Cancelled("Cancelled by user.");
                 }
 
                 if (rawLine == EmptyChoice) {
+                    Logger.Debug($"Skipped selection for {choiceName}.");
                     return KifaActionResult<(TChoice Choice, int? Part, int Index, bool Special)>
                         .Skipped("Ignored by user.");
                 }
@@ -162,6 +168,8 @@ public abstract partial class KifaCommand {
                 }
 
                 DefaultIndexForSelectOne[selectionKey] = chosenIndex;
+                Logger.Debug(
+                    $"Selected [{chosenIndex + startingIndex}] {choiceStrings[chosenIndex]} (part: {part}, special: {special}) for {choiceName}.");
                 return (choices[chosenIndex], part, chosenIndex, special);
             }
         } finally {
@@ -207,13 +215,17 @@ public abstract partial class KifaCommand {
         var effectiveDefault = loggedDefault ?? defaultReply ?? AllChoices;
         var defaultDisplay = effectiveDefault;
 
+        Logger.Trace(
+            $"Available {choiceSummaryString?.Get(choices) ?? "items"} (default: [{effectiveDefault}]):\n{string.Join("\n", choices.Select((c, i) => $"  [{i + startingIndex}] {choiceItemString(c)}"))}");
+
         if (AlwaysDefaultForSelectMany[selectionKey]) {
-            Console.WriteLine(
-                $"Automatically chose [{defaultDisplay.Info()}] as previously instructed.\n");
-            return effectiveDefault == AllChoices
+            var autoChosen = effectiveDefault == AllChoices
                 ? choices
                 : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)
                     .Select(i => choices[i]).ToList();
+            Logger.Info(
+                $"Automatically chose [{defaultDisplay}] ({autoChosen.Count} {choiceSummaryString?.Get(choices) ?? "items"}) as previously instructed: [{string.Join(", ", autoChosen.Select(choiceItemString))}].");
+            return autoChosen;
         }
 
         var chosenIndexes = Enumerable.Range(0, choices.Count).ToList();
@@ -226,6 +238,8 @@ public abstract partial class KifaCommand {
             while (true) {
                 if (StopRequested) {
                     chosenIndexes = [];
+                    Logger.Debug(
+                        $"Cancelled selection for {choiceSummaryString?.Get(choices) ?? "items"}.");
                     return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
                 }
 
@@ -282,6 +296,8 @@ public abstract partial class KifaCommand {
 
                 if (StopRequested) {
                     chosenIndexes = [];
+                    Logger.Debug(
+                        $"Cancelled selection for {choiceSummaryString?.Get(choices) ?? "items"}.");
                     return KifaActionResult<List<TChoice>>.Cancelled("Cancelled by user.");
                 }
 
@@ -304,6 +320,8 @@ public abstract partial class KifaCommand {
 
                 if (line == EmptyChoice) {
                     chosenIndexes = [];
+                    Logger.Debug(
+                        $"Skipped selection for {choiceSummaryString?.Get(choices) ?? "items"}.");
                     return KifaActionResult<List<TChoice>>.Skipped("Ignored by user.");
                 }
 
@@ -319,7 +337,7 @@ public abstract partial class KifaCommand {
                     } else {
                         DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
                         Logger.Debug(
-                            $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(selectedChoices) ?? "items"} above.");
+                            $"Selected {selectedChoices.Count} {choiceSummaryString?.Get(choices) ?? "items"}: [{string.Join(", ", selectedChoices.Select(choiceItemString))}].");
                         return selectedChoices;
                     }
                 }
@@ -334,7 +352,7 @@ public abstract partial class KifaCommand {
                     }
 
                     Logger.Debug(
-                        $"Selected {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
+                        $"Selected all {choices.Count} {choiceSummaryString?.Get(choices) ?? "items"}: [{string.Join(", ", choices.Select(choiceItemString))}].");
                     return choices;
                 }
 
@@ -356,9 +374,10 @@ public abstract partial class KifaCommand {
                             DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
                         }
 
+                        var finalChosen = chosenIndexes.Select(i => choices[i]).ToList();
                         Logger.Debug(
-                            $"Selected {chosenIndexes.Count} {choiceSummaryString?.Get(choices) ?? "items"} above.");
-                        return chosenIndexes.Select(i => choices[i]).ToList();
+                            $"Selected {finalChosen.Count} {choiceSummaryString?.Get(choices) ?? "items"}: [{string.Join(", ", finalChosen.Select(choiceItemString))}].");
+                        return finalChosen;
                     }
 
                     isFirstPrompt = false;
@@ -455,8 +474,10 @@ public abstract partial class KifaCommand {
 
     public string? Confirm(string prefix, string suggested,
         Func<string, string?>? validation = null) {
+        Logger.Trace($"Confirm prompt: \"{prefix}\", suggested: \"{suggested}\"");
         if (AutoConfirmDefault) {
-            Logger.Debug($"Auto selected default '{suggested}' as enabled by -y or --yes.");
+            Logger.Info(
+                $"Automatically chose default '{suggested}' for \"{prefix}\" as enabled by -y or --yes.");
             return suggested;
         }
 
@@ -464,6 +485,7 @@ public abstract partial class KifaCommand {
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
+                    Logger.Debug($"Cancelled confirmation for \"{prefix}\".");
                     return null;
                 }
 
@@ -475,6 +497,7 @@ public abstract partial class KifaCommand {
 
                 var line = Console.ReadLine() ?? "";
                 if (StopRequested) {
+                    Logger.Debug($"Cancelled confirmation for \"{prefix}\".");
                     return null;
                 }
 
@@ -483,9 +506,12 @@ public abstract partial class KifaCommand {
                     if (validationResult != null) {
                         Console.WriteLine(
                             $"Current value {suggested} is invalid, will return null instead: {validationResult}");
+                        Logger.Debug(
+                            $"Current value \"{suggested}\" is invalid ({validationResult}), returned null for \"{prefix}\".");
                         return null;
                     }
 
+                    Logger.Debug($"Confirmed \"{suggested}\" for \"{prefix}\".");
                     return suggested;
                 }
 
@@ -504,14 +530,17 @@ public abstract partial class KifaCommand {
             ? $"{callerFilePath}:{callerLineNumber}"
             : selectionKey;
 
+        Logger.Trace($"Confirm prompt: \"{prefix}\", suggested: {suggested}");
+
         if (AutoConfirmDefault) {
-            Logger.Debug($"Auto selected default {suggested} as enabled by -y or --yes.");
+            Logger.Info(
+                $"Automatically chose default {suggested} for \"{prefix}\" as enabled by -y or --yes.");
             return suggested;
         }
 
         if (AlwaysChoiceForConfirm.TryGetValue(selectionKey, out var alwaysChoice)) {
-            Console.WriteLine(
-                $"Automatically chose [{(alwaysChoice ? "Y" : "N").Info()}] as previously instructed.\n");
+            Logger.Info(
+                $"Automatically chose {(alwaysChoice ? "yes" : "no")} for \"{prefix}\" as previously instructed.");
             return alwaysChoice;
         }
 
@@ -519,6 +548,7 @@ public abstract partial class KifaCommand {
             IsPrompting = true;
             while (true) {
                 if (StopRequested) {
+                    Logger.Debug($"Cancelled confirmation for \"{prefix}\".");
                     return false;
                 }
 
@@ -527,38 +557,46 @@ public abstract partial class KifaCommand {
 
                 var rawLine = Console.ReadLine();
                 if (StopRequested) {
+                    Logger.Debug($"Cancelled confirmation for \"{prefix}\".");
                     return false;
                 }
 
                 if (rawLine == null) {
+                    Logger.Debug($"Confirmed {suggested} (default) for \"{prefix}\".");
                     return suggested;
                 }
 
                 var line = rawLine.Trim().ToLowerInvariant();
                 if (line == "") {
+                    Logger.Debug($"Confirmed {suggested} (default) for \"{prefix}\".");
                     return suggested;
                 }
 
                 if (line is "y" or "yes" or "true") {
+                    Logger.Debug($"Confirmed true for \"{prefix}\".");
                     return true;
                 }
 
                 if (line is "n" or "no" or "false") {
+                    Logger.Debug($"Confirmed false for \"{prefix}\".");
                     return false;
                 }
 
                 if (line is "a" or "all" or "always") {
                     AlwaysChoiceForConfirm[selectionKey] = suggested;
+                    Logger.Debug($"Confirmed {suggested} (always) for \"{prefix}\".");
                     return suggested;
                 }
 
                 if (line is "ay" or "ya" or "a y" or "a yes" or "always yes" or "always y") {
                     AlwaysChoiceForConfirm[selectionKey] = true;
+                    Logger.Debug($"Confirmed true (always) for \"{prefix}\".");
                     return true;
                 }
 
                 if (line is "an" or "na" or "a n" or "a no" or "always no" or "always n") {
                     AlwaysChoiceForConfirm[selectionKey] = false;
+                    Logger.Debug($"Confirmed false (always) for \"{prefix}\".");
                     return false;
                 }
 
