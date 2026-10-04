@@ -10,7 +10,7 @@ using NLog;
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("add", HelpText = "Add file entry.")]
-class AddCommand : KifaCommand {
+public class AddCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target file(s) to upload.")]
@@ -29,11 +29,14 @@ class AddCommand : KifaCommand {
     [Option('k', "keep-mirror", HelpText = "Keep the mirror version after checking.")]
     public bool KeepMirror { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('S', "show-size", HelpText = "Show size for each file and total size (can be slow).")]
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames, ignoreFiles: true);
+        var files = KifaFile.FindExistingFiles(FileNames, ignoreFiles: !IncludeAll);
         var selected = SelectMany(files,
             file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
