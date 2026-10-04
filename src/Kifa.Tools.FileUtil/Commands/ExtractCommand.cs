@@ -15,7 +15,7 @@ using SharpCompress.Readers;
 namespace Kifa.Tools.FileUtil.Commands;
 
 [Verb("extract", HelpText = "Extract files and add to system.")]
-class ExtractCommand : KifaCommand {
+public class ExtractCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     [Value(0, Required = true, HelpText = "Target archive file(s) to extract.")]
@@ -86,28 +86,28 @@ class ExtractCommand : KifaCommand {
             File: folder.GetFile(ArchiveNameSeparator != null
                 ? $"{archiveFile.BaseName}{ArchiveNameSeparator}{entry.Key.Checked()}"
                 : entry.Key.Checked()))).Where(entry => {
-            Logger.Notice(()
-                => $"File:\t{entry.File} {entry.File.ExistsSomewhere()}, {entry.File.Exists(entry.Entry.Size)}");
-            Logger.Notice(()
-                => $"Expected:\tsize={entry.Entry.Size}, crc32={entry.Entry.GetCrc32InHex()}");
-            Logger.Notice(()
-                => $"Found:\tsize={entry.File.FileInfo?.Size}, crc32={entry.File.FileInfo?.Crc32}");
+                    Logger.Notice(()
+                        => $"File:\t{entry.File} {entry.File.ExistsSomewhere()}, {entry.File.Exists(entry.Entry.Size)}");
+                    Logger.Notice(()
+                        => $"Expected:\tsize={entry.Entry.Size}, crc32={entry.Entry.GetCrc32InHex()}");
+                    Logger.Notice(()
+                        => $"Found:\tsize={entry.File.FileInfo?.Size}, crc32={entry.File.FileInfo?.Crc32}");
 
-            if (entry.File.ExistsSomewhere() && entry.File.FileInfo?.Size == entry.Entry.Size &&
-                (entry.Entry.GetCrc32InHex() == null ||
-                 entry.File.FileInfo?.Crc32 == entry.Entry.GetCrc32InHex())) {
-                Logger.Debug(
-                    $"File {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.GetCrc32InHex()}). Skipped.");
-                return false;
-            }
+                    if (entry.File.ExistsSomewhere() && entry.File.FileInfo?.Size == entry.Entry.Size &&
+                        (entry.Entry.GetCrc32InHex() == null ||
+                         entry.File.FileInfo?.Crc32 == entry.Entry.GetCrc32InHex())) {
+                        Logger.Debug(
+                            $"File {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.GetCrc32InHex()}). Skipped.");
+                        return false;
+                    }
 
-            if (entry.File.Exists(entry.Entry.Size)) {
-                Logger.Debug($"File {entry.Entry.Key} already exists locally. Skipped.");
-                return false;
-            }
+                    if (entry.File.Exists(entry.Entry.Size)) {
+                        Logger.Debug($"File {entry.Entry.Key} already exists locally. Skipped.");
+                        return false;
+                    }
 
-            return true;
-        }).ToList();
+                    return true;
+                }).ToList();
 
         var selected = SelectMany(entries,
             entry
@@ -222,32 +222,64 @@ class ExtractCommand : KifaCommand {
         }
 
         if (DeleteSource) {
-            var toBeRemoved = SelectMany(volumeFiles, f => f, "source archive files to remove");
+            var files = new List<KifaFile>();
+            var seen = new HashSet<string>();
+
+            foreach (var v in volumeFiles) {
+                var file = new KifaFile(v);
+                if (file.Registered) {
+                    foreach (var link in file.FileInfo.Checked().GetAllLinks()) {
+                        if (seen.Add(link)) {
+                            files.Add(link == file.Id
+                                ? file
+                                : new KifaFile(file.ToString(), id: link));
+                        }
+                    }
+                } else {
+                    if (seen.Add(file.ToString())) {
+                        files.Add(file);
+                    }
+                }
+            }
+
+            var nonRegisteredIndices = files
+                .Select((f, index) => (f, index))
+                .Where(x => !x.f.Registered)
+                .Select(x => (x.index + 1).ToString())
+                .ToList();
+
+            var defaultReply = nonRegisteredIndices.Count == files.Count
+                ? "*"
+                : string.Join(",", nonRegisteredIndices);
+
+            var toBeRemoved = SelectMany(files,
+                f => f.Registered ? f.Id : f.ToString(),
+                choiceSummaryString: "source archive files to remove",
+                defaultReply: defaultReply);
 
             if (toBeRemoved.Status != KifaActionStatus.OK) {
                 return [("source archive files to remove", toBeRemoved)];
             }
 
-            return toBeRemoved.Value.Select(v
-                => ($"Remove {v}", RemoveOneArchiveFile(new KifaFile(v))));
+            return toBeRemoved.Value.Checked().Select(f
+                => ($"Remove {(f.Registered ? f.Id : f)}", RemoveOneArchiveFile(f)));
         }
 
         return [];
     }
 
-    KifaActionResult RemoveOneArchiveFile(KifaFile file) {
+    public KifaActionResult RemoveOneArchiveFile(KifaFile file) {
         if (file.Registered) {
-            if (Confirm($"File {file} is already registerd. Confirm removing it completely?")) {
+            if (!Confirm(
+                    $"File {file.Id} is already registered. Confirm removing it completely?",
+                    suggested: false)) {
                 return new KifaActionResult {
-                    Status = KifaActionStatus.BadRequest,
-                    Message = "Should not remove a registered archive file as of now."
+                    Status = KifaActionStatus.Skipped,
+                    Message = $"Registered file {file.Id} is asked to be skipped."
                 };
             }
 
-            return new KifaActionResult {
-                Status = KifaActionStatus.Skipped,
-                Message = "Registered file is asked to be skipped."
-            };
+            return file.RemoveLogical(force: true);
         }
 
         return KifaActionResult.FromAction(file.Delete);
