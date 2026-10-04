@@ -795,4 +795,68 @@ public class SelectManySelectionTests {
             Console.SetIn(originalIn);
         }
     }
+
+    [Fact]
+    public void SelectMany_NoCacheSelectionKey_DoesNotRememberSelection() {
+        var originalIn = Console.In;
+        try {
+            // First call chooses "1", second call enters empty string (Enter)
+            Console.SetIn(new System.IO.StringReader("1\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" },
+                KifaCommand.NoCacheSelectionKey);
+            Assert.Equal(new[] { "a" }, res1.Value);
+
+            // Second call with NoCacheSelectionKey should not use "1" as logged default;
+            // with defaultReply = null, it defaults to all choices.
+            var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" },
+                KifaCommand.NoCacheSelectionKey);
+            Assert.Equal(new[] { "x", "y", "z" }, res2.Value);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_NoCacheSelectionKey_UsesExplicitDefaultReply() {
+        var originalIn = Console.In;
+        try {
+            // Enter empty string (Enter) on both calls
+            Console.SetIn(new System.IO.StringReader("\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" },
+                KifaCommand.NoCacheSelectionKey, defaultReply: KifaCommand.EmptyChoice);
+            Assert.Empty(res1.Value.Checked());
+
+            var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" },
+                KifaCommand.NoCacheSelectionKey, defaultReply: "2");
+            Assert.Equal(new[] { "y" }, res2.Value);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_NoCacheSelectionKey_DoesNotRememberSelection() {
+        var originalIn = Console.In;
+        try {
+            // First call chooses "2", second call enters empty string (Enter)
+            Console.SetIn(new System.IO.StringReader("2\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" },
+                KifaCommand.NoCacheSelectionKey);
+            Assert.Equal("b", res1.Value.Choice);
+
+            // Second call with NoCacheSelectionKey should not remember index 1 ("b"),
+            // but should default to index 0 ("x").
+            var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" },
+                KifaCommand.NoCacheSelectionKey);
+            Assert.Equal("x", res2.Value.Choice);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
 }

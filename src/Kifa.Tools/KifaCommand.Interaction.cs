@@ -13,6 +13,7 @@ public abstract partial class KifaCommand {
     public const string AllChoices = "*";
     public const string EmptyChoice = "^";
     public const string RestartChoice = "?";
+    public const string NoCacheSelectionKey = "*";
     public const char AlwaysPrefix = 'a';
     public const char InvertPrefix = '^';
 
@@ -48,17 +49,20 @@ public abstract partial class KifaCommand {
                 $"No {choiceName} available to select from.");
         }
 
-        DefaultIndexForSelectOne.TryAdd(selectionKey, 0);
-        AlwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
+        var isNoCache = selectionKey == NoCacheSelectionKey;
+        if (!isNoCache) {
+            DefaultIndexForSelectOne.TryAdd(selectionKey, 0);
+            AlwaysDefaultForSelectOne.TryAdd(selectionKey, AutoConfirmDefault);
 
-        if (DefaultIndexForSelectOne[selectionKey] >= choices.Count) {
-            DefaultIndexForSelectOne[selectionKey] = 0;
+            if (DefaultIndexForSelectOne[selectionKey] >= choices.Count) {
+                DefaultIndexForSelectOne[selectionKey] = 0;
 
-            // Cancel alwaysDefault when the value is updated.
-            AlwaysDefaultForSelectOne[selectionKey] = false;
+                // Cancel alwaysDefault when the value is updated.
+                AlwaysDefaultForSelectOne[selectionKey] = false;
+            }
         }
 
-        var defaultIndex = DefaultIndexForSelectOne[selectionKey];
+        var defaultIndex = !isNoCache ? DefaultIndexForSelectOne[selectionKey] : 0;
 
         var choiceStrings = choiceToString == null
             ? choices.Select(c => c?.ToString() ?? "").ToList()
@@ -79,7 +83,8 @@ public abstract partial class KifaCommand {
             }
         }
 
-        if (AlwaysDefaultForSelectOne[selectionKey]) {
+        var alwaysDefault = !isNoCache ? AlwaysDefaultForSelectOne[selectionKey] : AutoConfirmDefault;
+        if (alwaysDefault) {
             Logger.Info(
                 $"Automatically chose [{defaultIndex + startingIndex}] {choiceStrings[defaultIndex]} for {choiceName} as previously instructed.");
             return (choices[defaultIndex], null, defaultIndex, false);
@@ -163,11 +168,13 @@ public abstract partial class KifaCommand {
                     continue;
                 }
 
-                if (always) {
-                    AlwaysDefaultForSelectOne[selectionKey] = true;
-                }
+                if (!isNoCache) {
+                    if (always) {
+                        AlwaysDefaultForSelectOne[selectionKey] = true;
+                    }
 
-                DefaultIndexForSelectOne[selectionKey] = chosenIndex;
+                    DefaultIndexForSelectOne[selectionKey] = chosenIndex;
+                }
                 Logger.Debug(
                     $"Selected [{chosenIndex + startingIndex}] {choiceStrings[chosenIndex]} (part: {part}, special: {special}) for {choiceName}.");
                 return (choices[chosenIndex], part, chosenIndex, special);
@@ -199,16 +206,20 @@ public abstract partial class KifaCommand {
                 $"No {choiceSummaryString?.Get(choices) ?? "items"} available to select from.");
         }
 
-        AlwaysDefaultForSelectMany.TryAdd(selectionKey, AutoConfirmDefault);
+        var isNoCache = selectionKey == NoCacheSelectionKey;
+        string? loggedDefault = null;
+        if (!isNoCache) {
+            AlwaysDefaultForSelectMany.TryAdd(selectionKey, AutoConfirmDefault);
 
-        var loggedDefault = DefaultReplyForSelectMany.GetValueOrDefault(selectionKey);
-        if (loggedDefault != null && loggedDefault != AllChoices) {
-            try {
-                ParseSelection(loggedDefault, choices, choiceItemString, startingIndex);
-            } catch {
-                DefaultReplyForSelectMany[selectionKey] = null;
-                AlwaysDefaultForSelectMany[selectionKey] = false;
-                loggedDefault = null;
+            loggedDefault = DefaultReplyForSelectMany.GetValueOrDefault(selectionKey);
+            if (loggedDefault != null && loggedDefault != AllChoices) {
+                try {
+                    ParseSelection(loggedDefault, choices, choiceItemString, startingIndex);
+                } catch {
+                    DefaultReplyForSelectMany[selectionKey] = null;
+                    AlwaysDefaultForSelectMany[selectionKey] = false;
+                    loggedDefault = null;
+                }
             }
         }
 
@@ -218,7 +229,8 @@ public abstract partial class KifaCommand {
         Logger.Trace(
             $"Available {choiceSummaryString?.Get(choices) ?? "items"} (default: [{effectiveDefault}]):\n{string.Join("\n", choices.Select((c, i) => $"  [{i + startingIndex}] {choiceItemString(c)}"))}");
 
-        if (AlwaysDefaultForSelectMany[selectionKey]) {
+        var alwaysDefault = !isNoCache ? AlwaysDefaultForSelectMany[selectionKey] : AutoConfirmDefault;
+        if (alwaysDefault) {
             var autoChosen = effectiveDefault == AllChoices
                 ? choices
                 : ParseSelection(effectiveDefault, choices, choiceItemString, startingIndex)
@@ -306,7 +318,10 @@ public abstract partial class KifaCommand {
                     isFirstPrompt = true;
                     filterRounds = 0;
                     firstFilter = null;
-                    DefaultReplyForSelectMany[selectionKey] = null;
+                    if (!isNoCache) {
+                        DefaultReplyForSelectMany[selectionKey] = null;
+                    }
+
                     effectiveDefault = defaultReply ?? AllChoices;
                     defaultDisplay = effectiveDefault;
                     continue;
@@ -327,7 +342,7 @@ public abstract partial class KifaCommand {
 
                 var isDefaultReply = false;
                 if (line == "") {
-                    if (flags.Contains(AlwaysPrefix)) {
+                    if (!isNoCache && flags.Contains(AlwaysPrefix)) {
                         AlwaysDefaultForSelectMany[selectionKey] = true;
                     }
 
@@ -335,7 +350,11 @@ public abstract partial class KifaCommand {
                         line = effectiveDefault;
                         isDefaultReply = true;
                     } else {
-                        DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
+                        if (!isNoCache) {
+                            DefaultReplyForSelectMany[selectionKey] =
+                                filterRounds == 1 ? firstFilter : null;
+                        }
+
                         Logger.Debug(
                             $"Selected {selectedChoices.Count} {choiceSummaryString?.Get(choices) ?? "items"}: [{string.Join(", ", selectedChoices.Select(choiceItemString))}].");
                         return selectedChoices;
@@ -343,12 +362,14 @@ public abstract partial class KifaCommand {
                 }
 
                 if (line == AllChoices) {
-                    if (!isDefaultReply) {
-                        DefaultReplyForSelectMany[selectionKey] = AllChoices;
-                    }
+                    if (!isNoCache) {
+                        if (!isDefaultReply) {
+                            DefaultReplyForSelectMany[selectionKey] = AllChoices;
+                        }
 
-                    if (flags.Contains(AlwaysPrefix)) {
-                        AlwaysDefaultForSelectMany[selectionKey] = true;
+                        if (flags.Contains(AlwaysPrefix)) {
+                            AlwaysDefaultForSelectMany[selectionKey] = true;
+                        }
                     }
 
                     Logger.Debug(
@@ -365,13 +386,17 @@ public abstract partial class KifaCommand {
                         firstFilter = line;
                     }
 
-                    if (isDefaultReply || flags.Contains(AlwaysPrefix) || AlwaysDefaultForSelectMany[selectionKey]) {
-                        if (flags.Contains(AlwaysPrefix)) {
-                            AlwaysDefaultForSelectMany[selectionKey] = true;
-                        }
+                    if (isDefaultReply || flags.Contains(AlwaysPrefix) ||
+                        (!isNoCache && AlwaysDefaultForSelectMany[selectionKey])) {
+                        if (!isNoCache) {
+                            if (flags.Contains(AlwaysPrefix)) {
+                                AlwaysDefaultForSelectMany[selectionKey] = true;
+                            }
 
-                        if (!isDefaultReply) {
-                            DefaultReplyForSelectMany[selectionKey] = filterRounds == 1 ? firstFilter : null;
+                            if (!isDefaultReply) {
+                                DefaultReplyForSelectMany[selectionKey] =
+                                    filterRounds == 1 ? firstFilter : null;
+                            }
                         }
 
                         var finalChosen = chosenIndexes.Select(i => choices[i]).ToList();
@@ -386,7 +411,9 @@ public abstract partial class KifaCommand {
                     if (isDefaultReply) {
                         effectiveDefault = AllChoices;
                         defaultDisplay = AllChoices;
-                        DefaultReplyForSelectMany[selectionKey] = null;
+                        if (!isNoCache) {
+                            DefaultReplyForSelectMany[selectionKey] = null;
+                        }
                     }
                 }
             }

@@ -242,22 +242,13 @@ public class ExtractCommand : KifaCommand {
                 }
             }
 
-            var nonRegisteredIndices = files
-                .Select((f, index) => (f, index))
-                .Where(x => !x.f.Registered)
-                .Select(x => (x.index + 1).ToString())
-                .ToList();
-
-            var defaultReply = nonRegisteredIndices.Count == files.Count
-                ? AllChoices
-                : nonRegisteredIndices.Count == 0
-                    ? EmptyChoice
-                    : string.Join(",", nonRegisteredIndices);
+            var defaultReply = files.Any(f => f.Registered) ? EmptyChoice : AllChoices;
 
             var toBeRemoved = SelectMany(files,
                 f => f.Registered ? f.Id : f.ToString(),
                 choiceSummaryString: "source archive files to remove",
-                defaultReply: defaultReply);
+                defaultReply: defaultReply,
+                selectionKey: NoCacheSelectionKey);
 
             if (toBeRemoved.Status != KifaActionStatus.OK) {
                 return [("source archive files to remove", toBeRemoved)];
