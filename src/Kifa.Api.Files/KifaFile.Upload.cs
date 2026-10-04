@@ -17,8 +17,6 @@ public partial class KifaFile {
         set => Late.Set(ref field, value);
     }
 
-    public static Func<string, bool, bool>? ConfirmPrompt { get; set; }
-
     public KifaActionResult Upload(List<CloudTarget> targets, bool deleteSource = false,
         bool useCache = false, bool downloadLocal = false, bool skipVerify = false,
         bool skipRegistered = false, Func<string, bool, bool>? confirmPrompt = null) {
@@ -26,7 +24,7 @@ public partial class KifaFile {
 
         try {
             // We don't really need to check source, but we need the sha256 and size to continue.
-            Add(false);
+            Add(false, confirmPrompt: confirmPrompt);
             if (FileInfo?.Sha256 == null || FileInfo?.Size == null) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Error,
@@ -119,7 +117,7 @@ public partial class KifaFile {
         }
 
         try {
-            CheckDestination(destination, skipVerify);
+            CheckDestination(destination, skipVerify, confirmPrompt);
             CheckedTargets.Add(targetKey);
             return new KifaActionResult {
                 Status = KifaActionStatus.Skipped,
@@ -128,8 +126,7 @@ public partial class KifaFile {
         } catch (FileNotFoundException ex) {
             Logger.Trace(ex, $"File {destination} is not found. This is expected if not uploaded.");
         } catch (FileCorruptedException ex) {
-            var prompt = confirmPrompt ?? ConfirmPrompt;
-            var confirmed = prompt?.Invoke(
+            var confirmed = confirmPrompt?.Invoke(
                 $"Existing destination {destination} failed check ({ex.Message}). Confirm deleting it to re-upload?",
                 true) ?? false;
             if (!confirmed) {
@@ -170,7 +167,7 @@ public partial class KifaFile {
         }
 
         try {
-            CheckDestination(destination, skipVerify);
+            CheckDestination(destination, skipVerify, confirmPrompt);
             CheckedTargets.Add(targetKey);
             return new KifaActionResult {
                 Status = KifaActionStatus.OK,
@@ -185,7 +182,8 @@ public partial class KifaFile {
         }
     }
 
-    static void CheckDestination(KifaFile destination, bool skipVerify) {
+    static void CheckDestination(KifaFile destination, bool skipVerify,
+        Func<string, bool, bool>? confirmPrompt = null) {
         // We still need to check whether file exists or not even if we skipVerify.
         if (!destination.Exists()) {
             throw new FileNotFoundException($"Unable to find destination {destination}.");
@@ -195,7 +193,7 @@ public partial class KifaFile {
             return;
         }
 
-        destination.Add();
+        destination.Add(confirmPrompt: confirmPrompt);
     }
 
     bool CleanupFiles(bool deleteSource, bool downloadLocal) {

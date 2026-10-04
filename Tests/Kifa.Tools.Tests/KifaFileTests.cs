@@ -23,6 +23,7 @@ public class KifaFileTests : IDisposable {
         };
         fakeClient = new FakeFileInformationServiceClient();
         FileInformation.Client = fakeClient;
+        FileIdInfo.Client = new FakeFileIdInfoServiceClient();
     }
 
     public void Dispose() {
@@ -32,6 +33,7 @@ public class KifaFileTests : IDisposable {
         }
 
         FileInformation.Client = new FileInformationRestServiceClient();
+        FileIdInfo.Client = new KifaServiceRestClient<FileIdInfo>();
     }
 
     [Fact]
@@ -682,6 +684,152 @@ public class KifaFileTests : IDisposable {
         Assert.NotNull(fakeClient.Get("/single_instance_force_reject.txt"));
     }
 
+    [Fact]
+    public void Add_WithQuickInfoMd5_Confirmed_LinksAndRegistersWithoutReadingFile() {
+        var filePath = $"{tempDir}/quick_md5_confirm.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        fakeClient.Set(new FileInformation {
+            Id = "/target_existing.txt",
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "DUMMY_SHA256_FOR_LINK"
+        });
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C"
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        file.Add(confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return true;
+        });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.Equal(
+            $"Confirm linking local:test_temp/quick_md5_confirm.txt to /target_existing.txt based on MD5 ED076287532E86365E841E92BFC50D8C?",
+            prompts[0].prompt);
+        Assert.True(file.Registered);
+        Assert.Equal("DUMMY_SHA256_FOR_LINK", file.FileInfo?.Sha256);
+        Assert.NotNull(fakeClient.Get("/quick_md5_confirm.txt"));
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_Declined_FallsBackToFullCheck() {
+        var filePath = $"{tempDir}/quick_md5_decline.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        fakeClient.Set(new FileInformation {
+            Id = "/target_existing2.txt",
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "DUMMY_SHA256_FOR_LINK"
+        });
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C"
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        file.Add(confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return false;
+        });
+
+        Assert.Single(prompts);
+        Assert.True(prompts[0].suggested);
+        Assert.True(file.Registered);
+        // Full check calculates the actual SHA256 of "Hello World!"
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            file.FileInfo?.Sha256);
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_NoPrompt_FallsBackToFullCheck() {
+        var filePath = $"{tempDir}/quick_md5_noprompt.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        fakeClient.Set(new FileInformation {
+            Id = "/target_existing3.txt",
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "DUMMY_SHA256_FOR_LINK"
+        });
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C"
+        });
+
+        file.Add();
+
+        Assert.True(file.Registered);
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            file.FileInfo?.Sha256);
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_SizeMismatch_FallsBackToFullCheck() {
+        var filePath = $"{tempDir}/quick_md5_sizemismatch.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        fakeClient.Set(new FileInformation {
+            Id = "/target_existing4.txt",
+            Size = 999, // Mismatched size
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "DUMMY_SHA256_FOR_LINK"
+        });
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C"
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        file.Add(confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return true;
+        });
+
+        Assert.Empty(prompts);
+        Assert.True(file.Registered);
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            file.FileInfo?.Sha256);
+    }
+
+    [Fact]
+    public void Add_WithQuickInfoMd5_ForceRecheck_SkipsQuickInfo() {
+        var filePath = $"{tempDir}/quick_md5_force.txt";
+        File.WriteAllText(filePath, "Hello World!");
+
+        fakeClient.Set(new FileInformation {
+            Id = "/target_existing5.txt",
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C",
+            Sha256 = "DUMMY_SHA256_FOR_LINK"
+        });
+
+        var file = new KifaFile(filePath, fileInfo: new FileInformation {
+            Size = 12,
+            Md5 = "ED076287532E86365E841E92BFC50D8C"
+        });
+
+        var prompts = new List<(string prompt, bool suggested)>();
+        file.Add(shouldCheckKnown: true, confirmPrompt: (prompt, suggested) => {
+            prompts.Add((prompt, suggested));
+            return true;
+        });
+
+        Assert.Empty(prompts);
+        Assert.True(file.Registered);
+        Assert.Equal("7F83B1657FF1FC53B92DC18148A1D65DFC2D4B1FA3D677284ADDD200126D9069",
+            file.FileInfo?.Sha256);
+    }
+
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();
@@ -693,8 +841,27 @@ public class KifaFileTests : IDisposable {
         public override List<FileInformation?> Get(List<string> ids, KifaDataOptions? options = null)
             => ids.Select(id => data.GetValueOrDefault(id)?.Clone()).ToList();
 
-        public override FileInformation? Get(string id, KifaDataOptions? options = null)
-            => data.GetValueOrDefault(id)?.Clone();
+        public override FileInformation? Get(string id, KifaDataOptions? options = null) {
+            if (data.TryGetValue(id, out var info)) {
+                return info.Clone();
+            }
+
+            if (id.StartsWith(FileInformation.VirtualItemPrefix + "md5/")) {
+                var md5 = id.Split('/').Last();
+                var found = data.Values.FirstOrDefault(f =>
+                    string.Equals(f.Md5, md5, StringComparison.OrdinalIgnoreCase));
+                return found?.Clone();
+            }
+
+            if (id.StartsWith(FileInformation.VirtualItemPrefix + "sha256/")) {
+                var sha256 = id.Split('/').Last();
+                var found = data.Values.FirstOrDefault(f =>
+                    string.Equals(f.Sha256, sha256, StringComparison.OrdinalIgnoreCase));
+                return found?.Clone();
+            }
+
+            return null;
+        }
 
         public override KifaActionResult Set(FileInformation item) {
             data[item.Id!] = item;
@@ -725,6 +892,7 @@ public class KifaFileTests : IDisposable {
 
         public KifaActionResult AddLocation(string id, string location, bool verify = false) {
             if (data.TryGetValue(id, out var info)) {
+                info.Locations ??= new();
                 info.Locations[location] = DateTime.UtcNow;
                 return KifaActionResult.Success();
             }
@@ -737,7 +905,7 @@ public class KifaFileTests : IDisposable {
 
         public KifaActionResult RemoveLocation(string id, string location) {
             if (data.TryGetValue(id, out var info)) {
-                info.Locations.Remove(location);
+                info.Locations?.Remove(location);
                 return KifaActionResult.Success();
             }
 
@@ -751,5 +919,43 @@ public class KifaFileTests : IDisposable {
 
         public List<string> ListFolder(string folder, bool recursive = false)
             => data.Keys.Where(k => k.StartsWith(folder)).ToList();
+    }
+
+    class FakeFileIdInfoServiceClient : BaseKifaServiceClient<FileIdInfo> {
+        readonly Dictionary<string, FileIdInfo> data = new();
+
+        public override SortedDictionary<string, FileIdInfo> List(string folder = "",
+            bool recursive = true, KifaDataOptions? options = null)
+            => new(data);
+
+        public override FileIdInfo? Get(string id, KifaDataOptions? options = null)
+            => data.GetValueOrDefault(id)?.Clone();
+
+        public override KifaActionResult Set(FileIdInfo item) {
+            data[item.Id!] = item;
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Update(FileIdInfo item) {
+            data[item.Id!] = item;
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Delete(string id) {
+            data.Remove(id);
+            return KifaActionResult.Success();
+        }
+
+        public override KifaActionResult Link(string targetId, string linkId) {
+            if (data.TryGetValue(targetId, out var target)) {
+                data[linkId] = target;
+                return KifaActionResult.Success();
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Error,
+                Message = $"Target {targetId} not found"
+            };
+        }
     }
 }

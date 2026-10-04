@@ -14,10 +14,9 @@ public partial class KifaFile {
             info?.Locations.Count(kv => kv.Key != ToString() && kv.Value != null) ?? 0;
 
         if (otherLocations == 0) {
-            var prompt = confirmPrompt ?? ConfirmPrompt;
-            if (prompt != null) {
+            if (confirmPrompt != null) {
                 if (!force) {
-                    var firstConfirmed = prompt.Invoke(
+                    var firstConfirmed = confirmPrompt.Invoke(
                         $"File {this} is the only instance. Confirm removing it completely?",
                         false);
                     if (!firstConfirmed) {
@@ -28,7 +27,7 @@ public partial class KifaFile {
                         };
                     }
 
-                    var secondConfirmed = prompt.Invoke(
+                    var secondConfirmed = confirmPrompt.Invoke(
                         $"File {this} will be permanently lost. Are you sure you want to proceed?",
                         true);
                     if (!secondConfirmed) {
@@ -41,7 +40,7 @@ public partial class KifaFile {
 
                     force = true;
                 } else {
-                    var confirmed = prompt.Invoke(
+                    var confirmed = confirmPrompt.Invoke(
                         $"File {this} is the only instance. Confirm removing it completely?",
                         true);
                     if (!confirmed) {
@@ -134,10 +133,9 @@ public partial class KifaFile {
             var otherLocations = info.Locations.Count(kv
                 => new KifaFile(kv.Key).Id != info.Id && kv.Value != null);
             if (otherLocations == 0) {
-                var prompt = confirmPrompt ?? ConfirmPrompt;
-                if (prompt != null) {
+                if (confirmPrompt != null) {
                     if (!force) {
-                        var firstConfirmed = prompt.Invoke(
+                        var firstConfirmed = confirmPrompt.Invoke(
                             $"File {info.Id} has no other instances other than the one linked. Confirm removing it?",
                             false);
                         if (!firstConfirmed) {
@@ -148,7 +146,7 @@ public partial class KifaFile {
                             };
                         }
 
-                        var secondConfirmed = prompt.Invoke(
+                        var secondConfirmed = confirmPrompt.Invoke(
                             $"File {info.Id} will be permanently lost. Are you sure you want to proceed?",
                             true);
                         if (!secondConfirmed) {
@@ -161,7 +159,7 @@ public partial class KifaFile {
 
                         force = true;
                     } else {
-                        var confirmed = prompt.Invoke(
+                        var confirmed = confirmPrompt.Invoke(
                             $"File {info.Id} has no other instances other than the one linked. Confirm removing it?",
                             true);
                         if (!confirmed) {
@@ -182,10 +180,9 @@ public partial class KifaFile {
         }
 
         if (onlyFile) {
-            var prompt = confirmPrompt ?? ConfirmPrompt;
-            if (prompt != null) {
+            if (confirmPrompt != null) {
                 if (!force) {
-                    var firstConfirmed = prompt.Invoke(
+                    var firstConfirmed = confirmPrompt.Invoke(
                         $"File {info.Id} is the only version. Confirm removing it completely?",
                         false);
                     if (!firstConfirmed) {
@@ -196,7 +193,7 @@ public partial class KifaFile {
                         };
                     }
 
-                    var secondConfirmed = prompt.Invoke(
+                    var secondConfirmed = confirmPrompt.Invoke(
                         $"File {info.Id} will be permanently lost. Are you sure you want to proceed?",
                         true);
                     if (!secondConfirmed) {
@@ -209,7 +206,7 @@ public partial class KifaFile {
 
                     force = true;
                 } else {
-                    var confirmed = prompt.Invoke(
+                    var confirmed = confirmPrompt.Invoke(
                         $"File {info.Id} is the only version. Confirm removing it completely?",
                         true);
                     if (!confirmed) {

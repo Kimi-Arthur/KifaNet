@@ -780,7 +780,8 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
     // - shouldCheckKnown == true: full checkup.
     // - shouldCheckKnown == false: skip check for known file.
     // - shouldCheckKnown == null (default): quick check for known instance.
-    public void Add(bool? shouldCheckKnown = null, long? expectedSize = null) {
+    public void Add(bool? shouldCheckKnown = null, long? expectedSize = null,
+        Func<string, bool, bool>? confirmPrompt = null) {
         if (expectedSize != null) {
             FileInfo ??= new FileInformation {
                 Id = Id,
@@ -856,6 +857,14 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         if (shouldCheckKnown != true && file.CheckedByFileId()) {
             Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
             Register(true);
+            return;
+        }
+
+        if (shouldCheckKnown != true && file.CheckedByQuickInfo(confirmPrompt)) {
+            Logger.Debug(
+                $"Skipping check for {file} as it's confirmed and linked by quick info.");
+            Register(true);
+            RegisterFileIdInfo();
             return;
         }
 
@@ -954,6 +963,60 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
         Logger.Debug(
             $"File of file_id {FileId} is already checked with SHA256 of {existingIdInfo.Sha256}.");
+        return true;
+    }
+
+    bool CheckedByQuickInfo(Func<string, bool, bool>? confirmPrompt = null) {
+        if (FileFormat is not RawFileFormat) {
+            return false;
+        }
+
+        var quickInfo = Client.GetQuickInfo(Path) ?? FileInfo;
+        if (quickInfo?.Md5 == null) {
+            return false;
+        }
+
+        var md5Info = FileInfoClient.GetByMd5(quickInfo.Md5);
+        if (md5Info == null) {
+            Logger.Trace($"No file with MD5 {quickInfo.Md5} is found.");
+            return false;
+        }
+
+        if (quickInfo.CompareProperties(md5Info, FileProperties.AllVerifiable) !=
+            FileProperties.None) {
+            Logger.Warn(
+                $"File found by MD5 {quickInfo.Md5} differs in quick info properties: expected {md5Info}, got {quickInfo}.");
+            return false;
+        }
+
+        if (FileInfo != null &&
+            FileInfo.CompareProperties(md5Info, FileProperties.AllVerifiable) != FileProperties.None) {
+            Logger.Warn(
+                $"Existing file info differs from file found by MD5 {quickInfo.Md5}: expected {md5Info}, got {FileInfo}.");
+            return false;
+        }
+
+        if (confirmPrompt == null) {
+            Logger.Debug($"Confirm prompt is not available to confirm linking {this} by MD5.");
+            return false;
+        }
+
+        if (!confirmPrompt.Invoke($"Confirm linking {this} to {md5Info.Id} based on MD5 {quickInfo.Md5}?",
+                true)) {
+            Logger.Debug(
+                $"User declined linking {this} to {md5Info.Id} based on MD5 {quickInfo.Md5}.");
+            return false;
+        }
+
+        if (md5Info.RealId != (FileInfo?.RealId ?? Id)) {
+            Logger.LogResult(FileInfoClient.Link(md5Info.Id, Id),
+                $"linking file from {md5Info.Id} to {Id} due to common MD5 value",
+                defaultLevel: LogLevel.Debug, throwIfError: true);
+        } else {
+            Logger.Trace($"File {Id} already linked to {md5Info.Id}");
+        }
+
+        FileInfo = FileInfoClient.Get(Id);
         return true;
     }
 

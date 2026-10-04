@@ -66,7 +66,8 @@ public abstract class KifaFileCommand : KifaCommand {
 
         if (toRegister.Status == KifaActionStatus.OK) {
             foreach (var f in toRegister.Value) {
-                ExecuteItem($"register {f}", () => f.Add());
+                ExecuteItem($"register {f}",
+                    () => f.Add(confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested)));
             }
         } else {
             ExecuteItem("files to register", () => toRegister);

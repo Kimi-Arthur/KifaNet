@@ -81,7 +81,8 @@ public class AddCommand : KifaCommand {
 
     void AddFile(KifaFile file) {
         Logger.Info($"Add {file}");
-        file.Add(QuickMode ? null : ForceRecheck);
+        file.Add(QuickMode ? null : ForceRecheck,
+            confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
         if (MirrorHost != null && !KeepMirror) {
             file.RemoveLocalMirrorFile();
         }
