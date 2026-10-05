@@ -97,12 +97,13 @@ public class ExtractCommand : KifaCommand {
                         (entry.Entry.GetCrc32InHex() == null ||
                          entry.File.FileInfo?.Crc32 == entry.Entry.GetCrc32InHex())) {
                         Logger.Debug(
-                            $"File {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.GetCrc32InHex()}). Skipped.");
+                            $"Target file {entry.File} for {entry.Entry.Key} already exists and has the same size ({entry.Entry.Size}) and crc32 ({entry.Entry.GetCrc32InHex()}). Skipped.");
                         return false;
                     }
 
                     if (entry.File.Exists(entry.Entry.Size)) {
-                        Logger.Debug($"File {entry.Entry.Key} already exists locally. Skipped.");
+                        Logger.Debug(
+                            $"Target file {entry.File} for {entry.Entry.Key} already exists locally. Skipped.");
                         return false;
                     }
 
