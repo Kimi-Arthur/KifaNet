@@ -22,6 +22,9 @@ public class UniqCommand : KifaFileCommand {
     [Option('i', "id", HelpText = "Treat input files as logical ids.")]
     public bool ById { get; set; } = false;
 
+    [Option('a', "include-all", HelpText = "Include all files already registered or ignored.")]
+    public bool IncludeAll { get; set; } = false;
+
     [Option('p', "preferred-folder", HelpText = "Preferred folder to keep instances in.")]
     public string? PreferredFolder { get; set; }
 
@@ -113,11 +116,11 @@ public class UniqCommand : KifaFileCommand {
             preferredFolder != null ? GetLogicalId(preferredFolder, ById) : null;
 
         if (!ById) {
-            var localFiles = KifaFile.FindExistingFiles(fileNames);
+            var localFiles = KifaFile.FindExistingFiles(fileNames, ignoreFiles: !IncludeAll);
             RegisterUnregisteredFiles(localFiles, ShowSize, "making unique");
         }
 
-        var infos = FindFileInfos(fileNames, ById);
+        var infos = FindFileInfos(fileNames, ById, ignoreFiles: !IncludeAll);
         if (infos.Count == 0) {
             Logger.Warn("No files found.");
             return 1;

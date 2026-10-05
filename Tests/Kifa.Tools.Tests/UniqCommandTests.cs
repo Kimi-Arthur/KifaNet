@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Kifa.Api.Files;
 using Kifa.IO;
 using Kifa.IO.StorageClients;
 using Kifa.Service;
@@ -14,6 +15,7 @@ namespace Kifa.Tools.Tests;
 [Collection("FileStorageTests")]
 public class UniqCommandTests : IDisposable {
     readonly string tempDir;
+    readonly string originalIgnoredPattern;
     readonly FileInformationServiceClient originalClient;
     readonly KifaServiceClient<FileIdInfo> originalFileIdInfoClient;
     readonly List<string> originalDefaultTargets;
@@ -25,6 +27,7 @@ public class UniqCommandTests : IDisposable {
         FileStorageClient.ServerConfigs["uniq_test_temp"] = new ServerConfig {
             Prefix = tempDir
         };
+        originalIgnoredPattern = KifaFile.IgnoredPattern;
         originalClient = FileInformation.Client;
         FileInformation.Client = new TestFileInformationServiceClient();
         originalFileIdInfoClient = FileIdInfo.Client;
@@ -34,6 +37,7 @@ public class UniqCommandTests : IDisposable {
     }
 
     public void Dispose() {
+        KifaFile.IgnoredPattern = originalIgnoredPattern;
         UploadCommand.DefaultTargets = originalDefaultTargets;
         FileInformation.Client = originalClient;
         FileIdInfo.Client = originalFileIdInfoClient;
@@ -56,6 +60,158 @@ public class UniqCommandTests : IDisposable {
         Assert.Equal("/Anime/Preferred", cmd.PreferredFolder);
         Assert.True(cmd.Unuploaded);
         Assert.True(cmd.CrossOnly);
+    }
+
+    [Fact]
+    public void CommandLineParser_ParsesIncludeAllOption() {
+        var parsed = CommandLine.Parser.Default.ParseArguments<UniqCommand>(new[] {
+            "path1", "-a"
+        });
+
+        Assert.IsType<CommandLine.Parsed<UniqCommand>>(parsed);
+        var cmd = ((CommandLine.Parsed<UniqCommand>) parsed).Value;
+        Assert.True(cmd.IncludeAll);
+    }
+
+    [Fact]
+    public void Execute_WithIgnoredPattern_ExcludesIgnoredFilesByDefault() {
+        KifaFile.IgnoredPattern = @"^/Anime/.*\.(xml|ass|srt)$";
+
+        var folder1 = $"{tempDir}/Anime/Show1";
+        var folder2 = $"{tempDir}/Anime/Show2";
+        Directory.CreateDirectory(folder1);
+        Directory.CreateDirectory(folder2);
+        Directory.CreateDirectory($"{tempDir}/$");
+
+        var file1 = $"{folder1}/01.xml";
+        var file2 = $"{folder2}/01.xml";
+        var cloudFile = $"{tempDir}/$/dummy_sha256_xml.v1";
+        File.WriteAllText(file1, "xml content");
+        File.WriteAllText(file2, "xml content");
+        File.WriteAllText(cloudFile, "cloud content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/01.xml",
+            Sha256 = "dummy_sha256_xml",
+            Size = 11,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/01.xml"] = DateTime.UtcNow,
+                ["local:uniq_test_temp/$/dummy_sha256_xml.v1"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/01.xml",
+            Sha256 = "dummy_sha256_xml",
+            Size = 11,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show2/01.xml"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1, folder2],
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(1, exitCode);
+        Assert.NotNull(testClient.Get("/Anime/Show1/01.xml"));
+        Assert.NotNull(testClient.Get("/Anime/Show2/01.xml"));
+    }
+
+    [Fact]
+    public void Execute_WithIgnoredPattern_IncludeAll_ProcessesIgnoredFiles() {
+        KifaFile.IgnoredPattern = @"^/Anime/.*\.(xml|ass|srt)$";
+
+        var folder1 = $"{tempDir}/Anime/Show1";
+        var folder2 = $"{tempDir}/Anime/Show2";
+        Directory.CreateDirectory(folder1);
+        Directory.CreateDirectory(folder2);
+        Directory.CreateDirectory($"{tempDir}/$");
+
+        var file1 = $"{folder1}/01.xml";
+        var file2 = $"{folder2}/01.xml";
+        var cloudFile = $"{tempDir}/$/dummy_sha256_xml_all.v1";
+        File.WriteAllText(file1, "xml content");
+        File.WriteAllText(file2, "xml content");
+        File.WriteAllText(cloudFile, "cloud content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/01.xml",
+            Sha256 = "dummy_sha256_xml_all",
+            Size = 11,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show1/01.xml"] = DateTime.UtcNow,
+                ["local:uniq_test_temp/$/dummy_sha256_xml_all.v1"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/01.xml",
+            Sha256 = "dummy_sha256_xml_all",
+            Size = 11,
+            Locations = new() {
+                ["local:uniq_test_temp/Anime/Show2/01.xml"] = DateTime.UtcNow
+            }
+        });
+
+        var cmd = new UniqCommand {
+            FileNames = [folder1, folder2],
+            IncludeAll = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmd.Execute();
+        Assert.Equal(0, exitCode);
+        Assert.NotNull(testClient.Get("/Anime/Show1/01.xml"));
+        Assert.Null(testClient.Get("/Anime/Show2/01.xml"));
+    }
+
+    [Fact]
+    public void Execute_ById_WithIgnoredPattern_RespectsIgnoredAndIncludeAll() {
+        KifaFile.IgnoredPattern = @"^/Anime/.*\.(xml|ass|srt)$";
+
+        Directory.CreateDirectory($"{tempDir}/$");
+        var cloudFile = $"{tempDir}/$/dummy_sha256_byid.v1";
+        File.WriteAllText(cloudFile, "cloud content");
+
+        var testClient = (TestFileInformationServiceClient) FileInformation.Client;
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show1/01.xml",
+            Sha256 = "dummy_sha256_byid",
+            Size = 11,
+            Locations = new() {
+                ["local:uniq_test_temp/$/dummy_sha256_byid.v1"] = DateTime.UtcNow
+            }
+        });
+        testClient.Set(new FileInformation {
+            Id = "/Anime/Show2/01.xml",
+            Sha256 = "dummy_sha256_byid",
+            Size = 11,
+            Locations = new()
+        });
+
+        var cmdIgnored = new UniqCommand {
+            FileNames = ["/Anime/Show1", "/Anime/Show2"],
+            ById = true,
+            AutoConfirmDefault = true
+        };
+
+        var exitCode = cmdIgnored.Execute();
+        Assert.Equal(1, exitCode);
+
+        var cmdIncludeAll = new UniqCommand {
+            FileNames = ["/Anime/Show1", "/Anime/Show2"],
+            ById = true,
+            IncludeAll = true,
+            AutoConfirmDefault = true
+        };
+
+        exitCode = cmdIncludeAll.Execute();
+        Assert.Equal(0, exitCode);
+        Assert.NotNull(testClient.Get("/Anime/Show1/01.xml"));
+        Assert.Null(testClient.Get("/Anime/Show2/01.xml"));
     }
 
     [Fact]

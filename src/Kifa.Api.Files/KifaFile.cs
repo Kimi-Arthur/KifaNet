@@ -42,7 +42,13 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     public static HashSet<string> IgnoredExtensions { get; set; } = new();
 
-    public static string IgnoredPattern { get; set; } = "$^";
+    public static string IgnoredPattern {
+        get;
+        set {
+            field = value;
+            ignoredFiles = null;
+        }
+    } = "$^";
 
     static Regex? ignoredFiles;
 
