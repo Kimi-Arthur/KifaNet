@@ -231,13 +231,15 @@ public class SelectManySelectionTests {
         public override int Execute(KifaTask? task = null) => 0;
 
         public KifaActionResult<List<string>> TestSelectMany(List<string> choices, string selectionKey,
-            string? defaultReply = null) {
-            return SelectMany(choices, s => s, selectionKey: selectionKey, defaultReply: defaultReply);
+            string? defaultReply = null, bool rememberSelection = true) {
+            return SelectMany(choices, s => s, selectionKey: selectionKey,
+                defaultReply: defaultReply, rememberSelection: rememberSelection);
         }
 
         public KifaActionResult<(string Choice, int? Part, int Index, bool Special)> TestSelectOne(
-            List<string> choices, string selectionKey) {
-            return SelectOne(choices, s => s, selectionKey: selectionKey);
+            List<string> choices, string selectionKey, bool rememberSelection = true) {
+            return SelectOne(choices, s => s, selectionKey: selectionKey,
+                rememberSelection: rememberSelection);
         }
 
         public bool TestConfirm(string prefix, bool suggested, string selectionKey) {
@@ -854,6 +856,100 @@ public class SelectManySelectionTests {
             // but should default to index 0 ("x").
             var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" },
                 KifaCommand.NoCacheSelectionKey);
+            Assert.Equal("x", res2.Value.Choice);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_RememberSelectionFalse_DoesNotRememberSelectionAcrossRounds() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // First call chooses "1", second call enters empty string (Enter)
+            Console.SetIn(new System.IO.StringReader("1\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectMany(new List<string> { "a", "b", "c" }, key,
+                rememberSelection: false);
+            Assert.Equal(new[] { "a" }, res1.Value.Checked());
+
+            // Second call should not remember "1" as logged default; with defaultReply = null, defaults to all.
+            var res2 = cmd.TestSelectMany(new List<string> { "x", "y", "z" }, key,
+                rememberSelection: false);
+            Assert.Equal(new[] { "x", "y", "z" }, res2.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectMany_RememberSelectionFalse_AlwaysFlagAutoSelectsSubsequentDynamicDefaults() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // User types "a\n" on the first prompt to enable always default
+            Console.SetIn(new System.IO.StringReader("a\n"));
+
+            var cmd = new DummyCommand();
+            // Call 1: dynamic default chooses "item1"
+            var res1 = cmd.TestSelectMany(new List<string> { "item1", "item2" }, key,
+                defaultReply: "1", rememberSelection: false);
+            Assert.Equal(new[] { "item1" }, res1.Value.Checked());
+
+            // Call 2: dynamic default chooses "itemB" - auto-selected without prompt
+            var res2 = cmd.TestSelectMany(new List<string> { "itemA", "itemB" }, key,
+                defaultReply: "2", rememberSelection: false);
+            Assert.Equal(new[] { "itemB" }, res2.Value.Checked());
+
+            // Call 3: dynamic default is EmptyChoice - auto-selected as empty without prompt
+            var res3 = cmd.TestSelectMany(new List<string> { "alpha", "beta" }, key,
+                defaultReply: KifaCommand.EmptyChoice, rememberSelection: false);
+            Assert.Empty(res3.Value.Checked());
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_RememberSelectionFalse_DoesNotRememberSelectionAcrossRounds() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // First call chooses "2", second call enters empty string (Enter)
+            Console.SetIn(new System.IO.StringReader("2\n\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key,
+                rememberSelection: false);
+            Assert.Equal("b", res1.Value.Choice);
+
+            // Second call should not remember index 1 ("b"), but defaults to index 0 ("x")
+            var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" }, key,
+                rememberSelection: false);
+            Assert.Equal("x", res2.Value.Choice);
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void SelectOne_RememberSelectionFalse_AlwaysFlagAutoSelectsDefaultIndex() {
+        var originalIn = Console.In;
+        try {
+            var key = $"test_key_{Guid.NewGuid()}";
+            // First call chooses "a" (always default)
+            Console.SetIn(new System.IO.StringReader("a\n"));
+
+            var cmd = new DummyCommand();
+            var res1 = cmd.TestSelectOne(new List<string> { "a", "b", "c" }, key,
+                rememberSelection: false);
+            Assert.Equal("a", res1.Value.Choice);
+
+            // Second call auto-confirms default index 0 ("x") without prompt
+            var res2 = cmd.TestSelectOne(new List<string> { "x", "y", "z" }, key,
+                rememberSelection: false);
             Assert.Equal("x", res2.Value.Choice);
         } finally {
             Console.SetIn(originalIn);

@@ -260,7 +260,7 @@ public class ExtractCommand : KifaCommand {
             item => item.Display,
             choiceSummaryString: "source archive files to remove",
             defaultReply: defaultReply,
-            selectionKey: NoCacheSelectionKey);
+            rememberSelection: false);
 
         if (toBeRemoved.Status != KifaActionStatus.OK) {
             return [("source archive files to remove", toBeRemoved)];

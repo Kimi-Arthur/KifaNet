@@ -39,6 +39,7 @@ public abstract partial class KifaCommand {
     public bool IsPrompting { get; set; }
 
     static int ExecuteCommand(KifaCommand command) {
+        ResetInteractionState();
         command.StopRequested = false;
         command.IsPrompting = false;
         ConsoleCancelEventHandler cancelHandler = (sender, e) => {

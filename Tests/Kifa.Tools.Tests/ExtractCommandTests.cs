@@ -17,6 +17,7 @@ public class ExtractCommandTests : IDisposable {
     readonly FakeFileInformationServiceClient fakeClient;
 
     public ExtractCommandTests() {
+        KifaCommand.ResetInteractionState();
         tempDir = Path.GetFullPath(Path.Combine(Path.GetTempPath(), $"kifa_extract_test_{Guid.NewGuid()}"))
             .Replace('\\', '/');
         Directory.CreateDirectory(tempDir);
@@ -28,6 +29,7 @@ public class ExtractCommandTests : IDisposable {
     }
 
     public void Dispose() {
+        KifaCommand.ResetInteractionState();
         FileStorageClient.ServerConfigs.Remove("extract_test_temp");
         if (Directory.Exists(tempDir)) {
             Directory.Delete(tempDir, recursive: true);
@@ -265,6 +267,73 @@ public class ExtractCommandTests : IDisposable {
             Assert.Null(fakeClient.Get("/registered_multi_link.zip"));
             Assert.NotNull(fakeClient.Get("/linked_multi_link.zip"));
             Assert.False(File.Exists(filePath));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void RemoveArchiveFilesIfRequested_MultipleArchives_AlwaysFlagAutoConfirmsDefaultsAcrossRounds() {
+        var originalIn = Console.In;
+        try {
+            // First archive: 'a' enables always default
+            Console.SetIn(new StringReader("a\n"));
+
+            var filePath1 = $"{tempDir}/multi_archive_1.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath1, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("test1.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.WriteLine("test 1");
+            }
+
+            var filePath2 = $"{tempDir}/multi_archive_2.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath2, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("test2.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.WriteLine("test 2");
+            }
+
+            var filePath3 = $"{tempDir}/multi_archive_3_registered.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath3, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("test3.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.WriteLine("test 3");
+            }
+
+            fakeClient.Set(new FileInformation {
+                Id = "/multi_archive_3_registered.zip",
+                Locations = new() {
+                    [$"local:extract_test_temp/multi_archive_3_registered.zip"] = DateTime.UtcNow
+                }
+            });
+
+            var cmd = new ExtractCommand {
+                DeleteSource = true
+            };
+
+            // Round 1: non-registered, user answered 'a' -> deleted
+            using (var archive1 = SharpCompress.Archives.ArchiveFactory.OpenArchive(filePath1)) {
+                var results1 = cmd.RemoveArchiveFilesIfRequested(archive1, filePath1).ToList();
+                Assert.Single(results1);
+                Assert.Equal(KifaActionStatus.OK, results1[0].result.Status);
+                Assert.False(File.Exists(filePath1));
+            }
+
+            // Round 2: non-registered, auto-confirmed default '*' -> deleted
+            using (var archive2 = SharpCompress.Archives.ArchiveFactory.OpenArchive(filePath2)) {
+                var results2 = cmd.RemoveArchiveFilesIfRequested(archive2, filePath2).ToList();
+                Assert.Single(results2);
+                Assert.Equal(KifaActionStatus.OK, results2[0].result.Status);
+                Assert.False(File.Exists(filePath2));
+            }
+
+            // Round 3: registered, auto-confirmed default '^' -> kept
+            using (var archive3 = SharpCompress.Archives.ArchiveFactory.OpenArchive(filePath3)) {
+                var results3 = cmd.RemoveArchiveFilesIfRequested(archive3, filePath3).ToList();
+                Assert.Empty(results3);
+                Assert.True(File.Exists(filePath3));
+                Assert.NotNull(fakeClient.Get("/multi_archive_3_registered.zip"));
+            }
         } finally {
             Console.SetIn(originalIn);
         }
