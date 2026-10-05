@@ -116,11 +116,11 @@ public class UniqCommand : KifaFileCommand {
             preferredFolder != null ? GetLogicalId(preferredFolder, ById) : null;
 
         if (!ById) {
-            var localFiles = KifaFile.FindExistingFiles(fileNames, ignoreFiles: !IncludeAll);
+            var localFiles = KifaFile.FindExistingFiles(fileNames, shouldIgnoreFiles: !IncludeAll);
             RegisterUnregisteredFiles(localFiles, ShowSize, "making unique");
         }
 
-        var infos = FindFileInfos(fileNames, ById, ignoreFiles: !IncludeAll);
+        var infos = FindFileInfos(fileNames, ById, shouldIgnoreFiles: !IncludeAll);
         if (infos.Count == 0) {
             Logger.Warn("No files found.");
             return 1;

@@ -74,7 +74,7 @@ public class AddCommandTests : IDisposable {
             IncludeAll = false
         };
 
-        var files = KifaFile.FindExistingFiles(cmd.FileNames, ignoreFiles: !cmd.IncludeAll);
+        var files = KifaFile.FindExistingFiles(cmd.FileNames, shouldIgnoreFiles: !cmd.IncludeAll);
         files.Select(f => f.Name).Should().Equal("normal.txt");
     }
 
@@ -90,7 +90,7 @@ public class AddCommandTests : IDisposable {
             IncludeAll = true
         };
 
-        var files = KifaFile.FindExistingFiles(cmd.FileNames, ignoreFiles: !cmd.IncludeAll);
+        var files = KifaFile.FindExistingFiles(cmd.FileNames, shouldIgnoreFiles: !cmd.IncludeAll);
         files.Select(f => f.Name).Should().BeEquivalentTo("@ignored.txt", "normal.txt");
     }
 

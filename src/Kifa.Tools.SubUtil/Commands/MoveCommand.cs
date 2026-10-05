@@ -27,7 +27,7 @@ public class MoveCommand : KifaCommand {
 
     public override int Execute(KifaTask? task = null) {
         var existingFiles =
-            KifaFile.FindExistingFiles(FileNames, recursive: true, ignoreFiles: false);
+            KifaFile.FindExistingFiles(FileNames, recursive: true, shouldIgnoreFiles: false);
         var subtitleFiles = existingFiles.Where(file
             => file.Extension != null &&
                Common.SubtitleExtensions.Contains(file.Extension.ToLower())).ToList();

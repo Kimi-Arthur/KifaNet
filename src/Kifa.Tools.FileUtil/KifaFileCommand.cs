@@ -12,7 +12,7 @@ public abstract class KifaFileCommand : KifaCommand {
     static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     public static List<FileInformation> FindFileInfosByIds(IEnumerable<string> sources,
-        bool recursive = true, bool ignoreFiles = false) {
+        bool recursive = true, bool shouldIgnoreFiles = false) {
         var sourceList = sources.ToList();
         var invalid = sourceList.FirstOrDefault(s => !s.StartsWith('/'));
         if (invalid != null) {
@@ -21,7 +21,7 @@ public abstract class KifaFileCommand : KifaCommand {
         }
 
         var fileIds = sourceList.SelectMany(f => FileInformation.Client.ListFolder(f, recursive)
-                .Where(id => !ignoreFiles || !KifaFile.ShouldIgnore(id, f)))
+                .Where(id => !shouldIgnoreFiles || !KifaFile.IsIgnored(id, f)))
             .Distinct().OrderBy(f => f.GetNaturalSortKey()).ToList();
         var infos = FileInformation.Client.Get(fileIds);
         return fileIds.Zip(infos).Select(item => item.Second ?? new FileInformation {
@@ -30,10 +30,10 @@ public abstract class KifaFileCommand : KifaCommand {
     }
 
     public static List<FileInformation> FindFileInfos(IEnumerable<string> sources,
-        bool byId = false, bool recursive = true, string pattern = "*", bool ignoreFiles = false)
+        bool byId = false, bool recursive = true, string pattern = "*", bool shouldIgnoreFiles = false)
         => byId
-            ? FindFileInfosByIds(sources, recursive, ignoreFiles)
-            : KifaFile.FindPotentialFiles(sources, recursive, pattern, ignoreFiles).Select(f
+            ? FindFileInfosByIds(sources, recursive, shouldIgnoreFiles)
+            : KifaFile.FindPotentialFiles(sources, recursive, pattern, shouldIgnoreFiles).Select(f
                 => f.FileInfo ?? new FileInformation {
                     Id = f.Id
                 }).DistinctBy(f => f.Id).OrderBy(f => f.Id.Checked().GetNaturalSortKey()).ToList();

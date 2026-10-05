@@ -51,7 +51,7 @@ public class UploadCommand : KifaCommand {
         var targets = (targetsFromFlag.Count == 0 ? DefaultTargets : targetsFromFlag)
             .Select(CloudTarget.Parse).ToList();
 
-        var files = KifaFile.FindExistingFiles(FileNames, ignoreFiles: !IncludeAll);
+        var files = KifaFile.FindExistingFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
 
         var verifyText = QuickMode ? " without verification" : "";
         var downloadText = DownloadLocal ? " and download to local" : "";

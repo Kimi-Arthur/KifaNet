@@ -36,7 +36,7 @@ public class AddCommand : KifaCommand {
     public bool ShowSize { get; set; } = false;
 
     public override int Execute(KifaTask? task = null) {
-        var files = KifaFile.FindExistingFiles(FileNames, ignoreFiles: !IncludeAll);
+        var files = KifaFile.FindExistingFiles(FileNames, shouldIgnoreFiles: !IncludeAll);
         var selected = SelectMany(files,
             file => ShowSize ? $"{file} ({file.Length.ToSizeString()})" : file.ToString(),
             new Func<List<KifaFile>, string>(choices
