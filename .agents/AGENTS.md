@@ -32,6 +32,7 @@
 
 ## Code Modification Rules
 - Automatically apply code edits and file modifications directly without prompting for pre-approval. The user reviews changes with external tools.
+- Strictly avoid unrelated formatting, whitespace, style cleanups, or unnecessary refactoring across the codebase. Keep edits minimal and strictly focused on the requested change so code review diffs remain clean and easy to inspect.
 
 ## Documentation Rules
 - Only create planning, architecture, or reasoning documents when explicitly requested by the user. Do NOT automatically create documentation files for small or routine changes. When requested, maintain them in a `docs/` folder located inside the relevant project's `.csproj` directory (e.g., `src/Kifa.Web.Api/docs/`, `src/Kifa.Service/docs/`).
