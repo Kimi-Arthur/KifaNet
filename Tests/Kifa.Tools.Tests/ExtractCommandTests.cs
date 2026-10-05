@@ -201,6 +201,74 @@ public class ExtractCommandTests : IDisposable {
         }
     }
 
+    [Fact]
+    public void RemoveArchiveFilesIfRequested_NonRegistered_DefaultInput_DeletesFile() {
+        var originalIn = Console.In;
+        try {
+            // Press Enter to accept '*' default for non-registered files
+            Console.SetIn(new StringReader("\n"));
+
+            var filePath = $"{tempDir}/non_registered_source.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("test.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.WriteLine("test content");
+            }
+
+            var cmd = new ExtractCommand {
+                DeleteSource = true
+            };
+
+            using var archive = SharpCompress.Archives.ArchiveFactory.OpenArchive(filePath);
+            var results = cmd.RemoveArchiveFilesIfRequested(archive, filePath).ToList();
+
+            Assert.Single(results);
+            Assert.Equal(KifaActionStatus.OK, results[0].result.Status);
+            Assert.False(File.Exists(filePath));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
+    [Fact]
+    public void RemoveArchiveFilesIfRequested_RegisteredWithLinks_SelectFile_RemovesTargetKeepsLinkedFileInfo() {
+        var originalIn = Console.In;
+        try {
+            // Select all (*), then confirm 2 prompts (y\n\n)
+            Console.SetIn(new StringReader("*\ny\n\n"));
+
+            var filePath = $"{tempDir}/registered_multi_link.zip";
+            using (var zipArchive = System.IO.Compression.ZipFile.Open(filePath, System.IO.Compression.ZipArchiveMode.Create)) {
+                var entry = zipArchive.CreateEntry("test.txt");
+                using var writer = new StreamWriter(entry.Open());
+                writer.WriteLine("test content");
+            }
+
+            fakeClient.Set(new FileInformation {
+                Id = "/registered_multi_link.zip",
+                Locations = new() {
+                    [$"local:extract_test_temp/registered_multi_link.zip"] = DateTime.UtcNow
+                }
+            });
+            fakeClient.Link("/registered_multi_link.zip", "/linked_multi_link.zip");
+
+            var cmd = new ExtractCommand {
+                DeleteSource = true
+            };
+
+            using var archive = SharpCompress.Archives.ArchiveFactory.OpenArchive(filePath);
+            var results = cmd.RemoveArchiveFilesIfRequested(archive, filePath).ToList();
+
+            Assert.Single(results);
+            Assert.Equal(KifaActionStatus.OK, results[0].result.Status);
+            Assert.Null(fakeClient.Get("/registered_multi_link.zip"));
+            Assert.NotNull(fakeClient.Get("/linked_multi_link.zip"));
+            Assert.False(File.Exists(filePath));
+        } finally {
+            Console.SetIn(originalIn);
+        }
+    }
+
     class FakeFileInformationServiceClient : BaseKifaServiceClient<FileInformation>,
         FileInformationServiceClient {
         readonly Dictionary<string, FileInformation> data = new();

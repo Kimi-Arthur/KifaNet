@@ -146,9 +146,11 @@ public class ExtractCommand : KifaCommand {
             if (valid && reader.Entry.Key == enumerator.Current.Entry.Key) {
                 var current = enumerator.Current;
                 results.Add(reader.Entry.Key.Checked(), KifaActionResult.FromAction(() => {
+                    Logger.Info($"Extracting {reader.Entry.Key} to {current.File}...");
                     ExtractOneEntry(current.Entry, current.File,
                         targetPath => reader.WriteEntryTo(targetPath));
                     extractedCount++;
+                    Logger.Info($"Extracted {reader.Entry.Key} to {current.File}.");
                 }));
 
                 valid = enumerator.MoveNext();
@@ -172,7 +174,9 @@ public class ExtractCommand : KifaCommand {
         foreach (var (entry, file) in selected) {
             results.Add(entry.Key.Checked(),
                 KifaActionResult.FromAction(() => {
+                    Logger.Info($"Extracting {entry.Key} to {file}...");
                     ExtractOneEntry(entry, file, targetPath => entry.WriteToFile(targetPath));
+                    Logger.Info($"Extracted {entry.Key} to {file}.");
                 }));
         }
 
@@ -212,6 +216,10 @@ public class ExtractCommand : KifaCommand {
 
     public IEnumerable<(string item, KifaActionResult result)> RemoveArchiveFilesIfRequested(
         IArchive archive, string archiveFile) {
+        if (!DeleteSource) {
+            return [];
+        }
+
         var volumeFiles = archive.Volumes.Select(v => v.FileName).ToList();
 
         // The check is needed due to https://github.com/adamhathcock/sharpcompress/issues/1331.
@@ -221,61 +229,76 @@ public class ExtractCommand : KifaCommand {
             volumeFiles = [archiveFile];
         }
 
-        if (DeleteSource) {
-            var files = new List<KifaFile>();
-            var seen = new HashSet<string>();
+        var items = new List<(string Display, string? LogicalId, KifaFile? LocalFile)>();
+        var seenLogicalIds = new HashSet<string>();
+        var seenLocalFiles = new HashSet<string>();
 
-            foreach (var v in volumeFiles) {
-                var file = new KifaFile(v);
-                if (file.Registered) {
-                    foreach (var link in file.FileInfo.Checked().GetAllLinks()) {
-                        if (seen.Add(link)) {
-                            files.Add(link == file.Id
-                                ? file
-                                : new KifaFile(file.ToString(), id: link));
-                        }
+        foreach (var v in volumeFiles) {
+            var file = new KifaFile(v);
+            if (file.Registered) {
+                if (seenLogicalIds.Add(file.Id)) {
+                    var otherLinks = file.FileInfo.Checked().GetAllLinks();
+                    otherLinks.Remove(file.Id);
+                    if (otherLinks.Count > 0) {
+                        Logger.Info(
+                            $"Source archive {file.Id} has other linked FileInfo entries that will be kept: [{otherLinks.JoinBy(", ")}].");
                     }
-                } else {
-                    if (seen.Add(file.ToString())) {
-                        files.Add(file);
-                    }
+
+                    items.Add((file.Id, file.Id, null));
+                }
+            } else {
+                if (seenLocalFiles.Add(file.ToString())) {
+                    items.Add((file.ToString(), null, file));
                 }
             }
-
-            var defaultReply = files.Any(f => f.Registered) ? EmptyChoice : AllChoices;
-
-            var toBeRemoved = SelectMany(files,
-                f => f.Registered ? f.Id : f.ToString(),
-                choiceSummaryString: "source archive files to remove",
-                defaultReply: defaultReply,
-                selectionKey: NoCacheSelectionKey);
-
-            if (toBeRemoved.Status != KifaActionStatus.OK) {
-                return [("source archive files to remove", toBeRemoved)];
-            }
-
-            return toBeRemoved.Value.Checked().Select(f
-                => ($"Remove {(f.Registered ? f.Id : f)}", RemoveOneArchiveFile(f)));
         }
 
-        return [];
+        var defaultReply = items.Any(item => item.LogicalId != null) ? EmptyChoice : AllChoices;
+
+        var toBeRemoved = SelectMany(items,
+            item => item.Display,
+            choiceSummaryString: "source archive files to remove",
+            defaultReply: defaultReply,
+            selectionKey: NoCacheSelectionKey);
+
+        if (toBeRemoved.Status != KifaActionStatus.OK) {
+            return [("source archive files to remove", toBeRemoved)];
+        }
+
+        var selectedItems = toBeRemoved.Value.Checked();
+        Logger.Info(
+            $"Confirmed removing {selectedItems.Count} source archive items for {archiveFile}: [{selectedItems.Select(i => i.Display).JoinBy(", ")}]");
+
+        return selectedItems.Select(item => {
+            Logger.Info($"Removing source archive item {item.Display}...");
+            var result = RemoveOneArchiveItem(item);
+            Logger.LogResult(result, $"removal of source archive item {item.Display}");
+            return ($"Remove {item.Display}", result);
+        }).ToList();
+    }
+
+    public KifaActionResult RemoveOneArchiveItem(
+        (string Display, string? LogicalId, KifaFile? LocalFile) item) {
+        if (item.LogicalId != null) {
+            return KifaFile.RemoveLogical(item.LogicalId, removeLinkOnly: false, force: false,
+                confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
+        }
+
+        if (item.LocalFile != null) {
+            return RemoveOneArchiveFile(item.LocalFile);
+        }
+
+        return KifaActionResult.Skipped("No archive file to remove.");
     }
 
     public KifaActionResult RemoveOneArchiveFile(KifaFile file) {
         if (file.Registered) {
-            if (!Confirm(
-                    $"File {file.Id} is already registered. Confirm removing it completely?",
-                    suggested: false)) {
-                return new KifaActionResult {
-                    Status = KifaActionStatus.Skipped,
-                    Message = $"Registered file {file.Id} is asked to be skipped."
-                };
-            }
-
-            return file.RemoveLogical(force: true);
+            return KifaFile.RemoveLogical(file.Id, removeLinkOnly: false, force: false,
+                confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
         }
 
-        return KifaActionResult.FromAction(file.Delete);
+        return file.RemoveInstance(removeLinkOnly: false, force: false,
+            confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
     }
 }
 

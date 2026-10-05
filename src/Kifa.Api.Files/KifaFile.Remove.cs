@@ -63,6 +63,7 @@ public partial class KifaFile {
         if (!Registered) {
             if (removeLinkOnly) {
                 if (Allocated) {
+                    Logger.Info($"Removing unverified file link {this} from {Id}...");
                     FileInfoClient.RemoveLocation(Id, ToString());
                     return new KifaActionResult {
                         Status = KifaActionStatus.Warning,
@@ -76,27 +77,37 @@ public partial class KifaFile {
                 };
             }
 
-            return fileExists
-                ? KifaActionResult.FromAction(Delete)
-                : new KifaActionResult {
-                    Status = KifaActionStatus.Warning,
-                    Message = $"File {this} deleted, no entry found though."
-                };
+            if (fileExists) {
+                Logger.Info($"Deleting file {this}...");
+                Delete();
+                return KifaActionResult.Success();
+            }
+
+            return new KifaActionResult {
+                Status = KifaActionStatus.Warning,
+                Message = $"File {this} deleted, no entry found though."
+            };
         }
 
         if (!removeLinkOnly) {
-            result.Add($"Remove {this}", fileExists
-                ? KifaActionResult.FromAction(Delete)
-                : new KifaActionResult {
+            if (fileExists) {
+                Logger.Info($"Deleting file instance {this}...");
+                Delete();
+                result.Add($"Remove {this}", KifaActionResult.Success());
+            } else {
+                result.Add($"Remove {this}", new KifaActionResult {
                     Status = KifaActionStatus.Warning,
                     Message = $"File {this} not found."
                 });
+            }
         }
 
+        Logger.Info($"Removing location {this} from {Id}...");
         result.Add(ToString(), FileInfoClient.RemoveLocation(Id, ToString()));
 
         var updatedInfo = FileInfoClient.Get(Id);
         if (updatedInfo != null && updatedInfo.Locations.Count == 0) {
+            Logger.Info($"Removing empty registry entry {Id} from Kifa service...");
             result.Add($"Remove empty registry entry {Id}", FileInfoClient.Delete(Id));
         }
 
@@ -130,6 +141,8 @@ public partial class KifaFile {
         var onlyFile = links.Count == 0;
 
         if (!onlyFile) {
+            Logger.Info(
+                $"File info {info.Id} has other linked FileInfo entries that are kept: [{links.JoinBy(", ")}].");
             var otherLocations = info.Locations.Count(kv
                 => new KifaFile(kv.Key).Id != info.Id && kv.Value != null);
             if (otherLocations == 0) {
@@ -236,28 +249,37 @@ public partial class KifaFile {
 
                 if (toRemove) {
                     if (file.Exists()) {
+                        Logger.Info($"Deleting file instance {file}...");
                         file.Delete();
                         result.Add($"Removal of file instance {file}", new KifaActionResult {
                             Status = KifaActionStatus.OK,
                             Message = $"File {file} deleted."
                         });
                     } else {
+                        Logger.Info($"File instance {file} not found on disk.");
                         result.Add($"Removal of file instance {file}", new KifaActionResult {
                             Status = KifaActionStatus.Warning,
                             Message = $"File {file} not found."
                         });
                     }
 
+                    Logger.Info($"Removing location {location} from file info {info.Id}...");
                     result.Add($"Removal of location {location}",
                         FileInfoClient.RemoveLocation(info.Id, location));
                 } else {
-                    Logger.Debug(
-                        $"File {file} is not removed as there are other file entries, like {links.FirstOrDefault()}");
+                    Logger.Info(
+                        $"File instance {file} is not removed as it belongs to other file entries: [{links.JoinBy(", ")}]");
                 }
             }
         }
 
+        Logger.Info($"Removing file info {info.Id} from Kifa service...");
         result.Add($"Removal of file info {info.Id}", FileInfoClient.Delete(info.Id));
+        if (!onlyFile) {
+            Logger.Info(
+                $"Removed file info {info.Id}, while keeping other linked FileInfo entries: [{links.JoinBy(", ")}].");
+        }
+
         return result;
     }
 }
