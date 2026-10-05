@@ -297,8 +297,7 @@ public class ExtractCommand : KifaCommand {
                 confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
         }
 
-        return file.RemoveInstance(removeLinkOnly: false, force: false,
-            confirmPrompt: (prompt, suggested) => Confirm(prompt, suggested));
+        return file.RemoveInstance(removeLinkOnly: false, force: true);
     }
 }
 

@@ -122,10 +122,10 @@ public class ExtractCommandTests : IDisposable {
             });
             fakeClient.Link("/registered_target_reject.zip", "/linked_target_reject.zip");
 
-            var linkedFile = new KifaFile(filePath, id: "/linked_target_reject.zip");
+            var file = new KifaFile(filePath);
 
             var cmd = new ExtractCommand();
-            var result = cmd.RemoveOneArchiveFile(linkedFile);
+            var result = cmd.RemoveOneArchiveFile(file);
 
             Assert.Equal(KifaActionStatus.Skipped, result.Status);
             Assert.True(File.Exists(filePath));
@@ -140,8 +140,8 @@ public class ExtractCommandTests : IDisposable {
     public void RemoveOneArchiveFile_RegisteredLinked_PromptConfirmed_RemovesLogically() {
         var originalIn = Console.In;
         try {
-            // Prompt: 'y'
-            Console.SetIn(new StringReader("y\n"));
+            // Prompt: 'y' for first prompt, enter (suggested true) for second prompt
+            Console.SetIn(new StringReader("y\n\n"));
 
             var filePath = $"{tempDir}/registered_target_confirm.zip";
             File.WriteAllText(filePath, "dummy zip content");
@@ -153,13 +153,14 @@ public class ExtractCommandTests : IDisposable {
             });
             fakeClient.Link("/registered_target_confirm.zip", "/linked_target_confirm.zip");
 
-            var linkedFile = new KifaFile(filePath, id: "/linked_target_confirm.zip");
+            var file = new KifaFile(filePath);
 
             var cmd = new ExtractCommand();
-            var result = cmd.RemoveOneArchiveFile(linkedFile);
+            var result = cmd.RemoveOneArchiveFile(file);
 
             Assert.Equal(KifaActionStatus.OK, result.Status);
-            Assert.Null(fakeClient.Get("/linked_target_confirm.zip"));
+            Assert.Null(fakeClient.Get("/registered_target_confirm.zip"));
+            Assert.NotNull(fakeClient.Get("/linked_target_confirm.zip"));
         } finally {
             Console.SetIn(originalIn);
         }
