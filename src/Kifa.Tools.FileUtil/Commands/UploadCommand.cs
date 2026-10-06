@@ -74,20 +74,69 @@ public class UploadCommand : KifaCommand {
                     DownloadLocal, QuickMode, true, (prompt, suggested) => Confirm(prompt, suggested)));
         }
 
-        var pendingFiles = PopPendingResults().Select(item => item.item);
+        var pendingResults = PopPendingResults();
         if (SkipPotentiallyUploadFiles) {
-            foreach (var file in pendingFiles) {
-                ExecuteItem(file, () => new KifaActionResult {
-                    Status = KifaActionStatus.Skipped,
-                    Message = "File skipped as it's uploaded, though not verified."
+            foreach (var (file, result) in pendingResults) {
+                ExecuteItem(file, () => {
+                    if (result is KifaBatchActionResult batchResult) {
+                        foreach (var item in batchResult.Results) {
+                            if (item.Result.Status.HasFlag(KifaActionStatus.Pending)) {
+                                item.Result = new KifaActionResult {
+                                    Status = KifaActionStatus.Skipped,
+                                    Message = "File skipped as it's uploaded, though not verified."
+                                };
+                            }
+                        }
+
+                        if (batchResult.IsAcceptable && DownloadLocal) {
+                            batchResult.Add("local", new KifaFile(file).LocalMirrorFile.GetFile());
+                        }
+
+                        return batchResult;
+                    }
+
+                    return new KifaActionResult {
+                        Status = KifaActionStatus.Skipped,
+                        Message = "File skipped as it's uploaded, though not verified."
+                    };
                 });
             }
         } else {
             // TODO: batch get FileInformation.
-            foreach (var file in pendingFiles) {
-                ExecuteItem(file,
-                    () => new KifaFile(file).Upload(targets, DeleteSource, UseCache, DownloadLocal,
-                        QuickMode, false, (prompt, suggested) => Confirm(prompt, suggested)));
+            foreach (var (file, result) in pendingResults) {
+                ExecuteItem(file, () => {
+                    if (result is KifaBatchActionResult batchResult) {
+                        var pendingTargetNames = batchResult.Results
+                            .Where(r => r.Result.Status.HasFlag(KifaActionStatus.Pending))
+                            .Select(r => r.Item).ToHashSet();
+                        var pendingTargets = targets
+                            .Where(t => pendingTargetNames.Contains(t.ToString())).ToList();
+
+                        var pass2Result = new KifaFile(file).Upload(
+                            pendingTargets.Count > 0 ? pendingTargets : targets, DeleteSource,
+                            UseCache, DownloadLocal, QuickMode, false,
+                            (prompt, suggested) => Confirm(prompt, suggested));
+
+                        if (pass2Result is KifaBatchActionResult pass2BatchResult) {
+                            foreach (var (item, itemResult) in pass2BatchResult.Results) {
+                                var existing = batchResult.Results.FirstOrDefault(r => r.Item == item);
+                                if (existing != null) {
+                                    existing.Result = itemResult;
+                                } else {
+                                    batchResult.Add(item, itemResult);
+                                }
+                            }
+
+                            return batchResult;
+                        }
+
+                        return pass2Result;
+                    }
+
+                    return new KifaFile(file).Upload(targets, DeleteSource, UseCache,
+                        DownloadLocal, QuickMode, false,
+                        (prompt, suggested) => Confirm(prompt, suggested));
+                });
             }
         }
 
