@@ -45,6 +45,10 @@ public partial class KifaFile {
             UploadOneFile(target, deleteSource, skipVerify, skipRegistered, confirmPrompt))));
 
         if (result.IsAcceptable) {
+            if (downloadLocal) {
+                result.Add("local", LocalMirrorFile.GetFile());
+            }
+
             if (CleanupFiles(deleteSource, downloadLocal)) {
                 result.Add("source", new KifaActionResult {
                     Status = KifaActionStatus.OK,
@@ -107,7 +111,7 @@ public partial class KifaFile {
         Logger.Debug($"Will upload {this} to {destinationLocation}.");
 
         if (!deleteSource && skipRegistered) {
-            if (new KifaFile(destinationLocation).Registered) {
+            if (destination.Registered) {
                 return new KifaActionResult {
                     Status = KifaActionStatus.Pending,
                     Message = $"Skipped uploading of {this} to {destinationLocation} for now " +

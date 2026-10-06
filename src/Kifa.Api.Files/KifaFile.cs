@@ -116,7 +116,7 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
 
     // Note that if it exists in this server, this may differ from itself as it's using `Id` not
     // its actual `Path`. But normally it's for remote files.
-    public KifaFile? LocalMirrorFile => new($"{MirrorHost}{Id}", fileInfo: FileInfo);
+    public KifaFile LocalMirrorFile => new($"{MirrorHost}{Id}", fileInfo: FileInfo);
 
     FileIdInfo? idInfo;
 
@@ -854,12 +854,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             return;
         }
 
-        if (UseCache) {
-            MirrorFileToLocal();
-            file = LocalMirrorFile;
-            Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
-        }
-
         if (shouldCheckKnown != true && file.CheckedByFileId()) {
             Logger.Debug($"Skipping check for {file} as it's already checked by file_id.");
             Register(true);
@@ -872,6 +866,12 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             Register(true);
             RegisterFileIdInfo();
             return;
+        }
+
+        if (UseCache) {
+            MirrorFileToLocal();
+            file = LocalMirrorFile;
+            Logger.Debug($"Since file is mirrored to {file}, use that instead now.");
         }
 
         Logger.Debug($"Full check is requested for {file}.");

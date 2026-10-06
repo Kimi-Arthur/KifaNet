@@ -67,6 +67,8 @@ public class UploadCommand : KifaCommand {
         }
 
         foreach (var file in selected.Value.Checked()) {
+            // Re-instantiate KifaFile so the latest FileInfo is fetched from server, avoiding
+            // duplicate uploads if earlier items in the batch updated or linked file information.
             ExecuteItem(file.ToString(),
                 () => new KifaFile(file.ToString()).Upload(targets, DeleteSource, UseCache,
                     DownloadLocal, QuickMode, true, (prompt, suggested) => Confirm(prompt, suggested)));
