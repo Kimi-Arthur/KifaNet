@@ -38,9 +38,9 @@ Since `FileIdInfo` is not a strong indication, any failure will just be warned a
 
 ### Situation 0.5: Quick Info MD5 is found and confirmed.
 
-If quick info provides a hash (such as `MD5` from Baidu Cloud), and a `FileInformation` matching the MD5 and size is found in the system:
+If the file is unknown (`FileInfo?.Sha256 == null`), quick info provides a hash (such as `MD5` from Baidu Cloud), and a `FileInformation` matching the MD5 and size is found in the system:
 - Check if properties match and do not conflict.
-- If prompt is available, prompt the user for confirmation to link by MD5 without reading the file.
+- If prompt is available, prompt the user for confirmation to link by MD5 and size without reading the file.
 - If confirmed: link to the target `FileInformation` (if different ID) and `Register(true)`.
 - If declined, prompt is unavailable, or properties conflict: continue to Situation 1.
 

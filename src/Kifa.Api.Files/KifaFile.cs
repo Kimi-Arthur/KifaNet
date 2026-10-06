@@ -756,26 +756,6 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             return info;
         }
 
-        if (FileFormat is RawFileFormat &&
-            (properties & ~(FileProperties.Size | FileProperties.Md5)) == FileProperties.None) {
-            var quickInfo = Client.GetQuickInfo(Path);
-            if (quickInfo != null) {
-                var canSatisfy = (!properties.HasFlag(FileProperties.Size) || quickInfo.Size != null) &&
-                                 (!properties.HasFlag(FileProperties.Md5) || quickInfo.Md5 != null);
-                if (canSatisfy) {
-                    if (properties.HasFlag(FileProperties.Size)) {
-                        info.Size = quickInfo.Size;
-                    }
-
-                    if (properties.HasFlag(FileProperties.Md5)) {
-                        info.Md5 = quickInfo.Md5;
-                    }
-
-                    return info;
-                }
-            }
-        }
-
         using var stream = OpenRead();
         info.AddProperties(stream, properties);
 
@@ -977,14 +957,23 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
             return false;
         }
 
+        if (FileInfo?.Sha256 != null) {
+            return false;
+        }
+
         var quickInfo = Client.GetQuickInfo(Path) ?? FileInfo;
-        if (quickInfo?.Md5 == null) {
+        if (quickInfo?.Md5 == null || quickInfo.Size == null) {
             return false;
         }
 
         var md5Info = FileInfoClient.GetByMd5(quickInfo.Md5);
         if (md5Info == null) {
             Logger.Trace($"No file with MD5 {quickInfo.Md5} is found.");
+            return false;
+        }
+
+        if (md5Info.Size == null) {
+            Logger.Warn($"File found by MD5 {quickInfo.Md5} has no size information.");
             return false;
         }
 
@@ -1003,23 +992,28 @@ public partial class KifaFile : IComparable<KifaFile>, IEquatable<KifaFile>, IDi
         }
 
         if (confirmPrompt == null) {
-            Logger.Debug($"Confirm prompt is not available to confirm linking {this} by MD5.");
+            Logger.Debug($"Confirm prompt is not available to confirm linking {this} by MD5 and size.");
             return false;
         }
 
-        if (!confirmPrompt.Invoke($"Confirm linking {this} to {md5Info.Id} based on MD5 {quickInfo.Md5}?",
+        var targetDisplay = md5Info.RealId != null && md5Info.RealId != md5Info.Id
+            ? $"{md5Info.Id} ({md5Info.RealId})"
+            : md5Info.Id;
+
+        if (!confirmPrompt.Invoke(
+                $"Confirm linking {this} to {targetDisplay} based on MD5 {quickInfo.Md5} and size {quickInfo.Size}?",
                 true)) {
             Logger.Debug(
-                $"User declined linking {this} to {md5Info.Id} based on MD5 {quickInfo.Md5}.");
+                $"User declined linking {this} to {targetDisplay} based on MD5 {quickInfo.Md5} and size {quickInfo.Size}.");
             return false;
         }
 
         if (md5Info.RealId != (FileInfo?.RealId ?? Id)) {
             Logger.LogResult(FileInfoClient.Link(md5Info.Id, Id),
-                $"linking file from {md5Info.Id} to {Id} due to common MD5 value",
+                $"linking file from {targetDisplay} to {Id} due to common MD5 value and size",
                 defaultLevel: LogLevel.Debug, throwIfError: true);
         } else {
-            Logger.Trace($"File {Id} already linked to {md5Info.Id}");
+            Logger.Trace($"File {Id} already linked to {targetDisplay}");
         }
 
         FileInfo = FileInfoClient.Get(Id);
