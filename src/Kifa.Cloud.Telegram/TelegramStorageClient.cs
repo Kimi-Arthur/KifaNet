@@ -323,7 +323,8 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
 
                 failures[Failure420Key] = count;
 
-                var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X);
+                var extraWait = 1 + Random.Shared.NextDouble() * 15;
+                var nextRequest = DateTime.Now + TimeSpan.FromSeconds(rpcException.X + extraWait);
                 using (await PriorityLock.EnterScopeAsync(0)) {
                     var toSleep = nextRequest - DateTime.Now;
 
