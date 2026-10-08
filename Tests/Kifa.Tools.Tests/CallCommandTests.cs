@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Kifa.IO;
 using Kifa.Service;
@@ -9,6 +13,7 @@ using Xunit;
 
 namespace Kifa.Tools.Tests;
 
+[Collection("DataChefTests")]
 public class CallCommandTests : IDisposable {
     class FakeRpcFileServiceClient : BaseKifaServiceClient<FileInformation>, KifaRpcClient {
         public string? LastAction { get; private set; }
@@ -33,14 +38,30 @@ public class CallCommandTests : IDisposable {
         public TResponse? Call<TResponse>(string action, object? parameters = null) => default;
     }
 
+    class TestMessageHandler : HttpMessageHandler {
+        protected override HttpResponseMessage Send(HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => new(HttpStatusCode.NotFound) {
+                Content = new StringContent("{\"message\":\"Not found\"}")
+            };
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => Task.FromResult(Send(request, cancellationToken));
+    }
+
     readonly FakeRpcFileServiceClient fakeClient = new();
+    readonly HttpClient originalClient;
 
     public CallCommandTests() {
+        originalClient = KifaServiceRestClient.Client;
+        KifaServiceRestClient.Client = new HttpClient(new TestMessageHandler());
         DataChef<FileInformation>.Client = fakeClient;
     }
 
     public void Dispose() {
         DataChef<FileInformation>.Client = new KifaServiceRestClient<FileInformation>();
+        KifaServiceRestClient.Client = originalClient;
     }
 
     [Fact]

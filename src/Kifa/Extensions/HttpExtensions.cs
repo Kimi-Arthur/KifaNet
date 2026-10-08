@@ -27,7 +27,8 @@ public static class HttpExtensions {
         if (!response.IsSuccessStatusCode) {
             response.Dispose();
             throw new HttpRequestException(
-                $"Response status code does not indicate success: {(int) response.StatusCode} ({response.ReasonPhrase}). Response content: {data}");
+                $"Response status code does not indicate success: {(int) response.StatusCode} ({response.ReasonPhrase}). Response content: {data}",
+                null, response.StatusCode);
         }
 
         response.Dispose();

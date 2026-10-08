@@ -13,10 +13,10 @@ using NLog;
 namespace Kifa.Service;
 
 public class KifaServiceRestClient {
-    internal static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    public static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-    internal static HttpClient Client
-        => field ??= ClientCertPath != null
+    public static HttpClient Client {
+        get => field ??= ClientCertPath != null
             ? new HttpClient(new HttpClientHandler {
                 ClientCertificates = {
                     new X509Certificate2(ClientCertPath, ClientCertPassword)
@@ -25,6 +25,8 @@ public class KifaServiceRestClient {
                 Timeout = TimeSpan.FromMinutes(10)
             }
             : new HttpClient();
+        set => field = value;
+    }
 
     // Should probably be ending with `/api`.
     public static string ServerAddress { get; set; } = "http://www.kifa.ga/api";
@@ -34,6 +36,39 @@ public class KifaServiceRestClient {
 
     // pfx cert password.
     public static string? ClientCertPassword { get; set; }
+
+    public static string FormatUrl(string modelId, string path,
+        IEnumerable<(string Key, object? Value)>? parameters = null,
+        KifaDataOptions? options = null) {
+        var paramList = parameters?.Where(p => p.Value != null)
+            .Select(p => $"{p.Key}={FormatValue(p.Value!)}").ToList() ?? [];
+        if (options != null) {
+            paramList.AddRange(options.GetUrlParameters().Where(p => p.Value != null)
+                .Select(p => $"{p.Key}={FormatValue(p.Value!)}"));
+        }
+
+        return $"{ServerAddress}/{modelId}/" + path + (paramList.Count > 0
+            ? $"?{string.Join("&", paramList)}"
+            : "");
+    }
+
+    public static string FormatValue(object value)
+        => Uri.EscapeDataString(value.ToString()!);
+
+    public static void HandleException(Exception ex, int index, string message) {
+        if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException {
+                InnerException: SocketException {
+                    Message: "Device not configured"
+                }
+            } || ex is HttpRequestException {
+                StatusCode: HttpStatusCode.NotFound
+            }) {
+            throw ex;
+        }
+
+        Logger.Warn(ex, $"{message} ({index})");
+        Thread.Sleep(TimeSpan.FromSeconds(5));
+    }
 }
 
 public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataModel>,
@@ -199,36 +234,11 @@ public class KifaServiceRestClient<TDataModel> : BaseKifaServiceClient<TDataMode
     }
 
     string GetUrl(string path, IEnumerable<(string Key, object? Value)>? parameters = null,
-        KifaDataOptions? options = null) {
-        var paramList = parameters?.Where(p => p.Value != null)
-            .Select(p => $"{p.Key}={FormatValue(p.Value!)}").ToList() ?? [];
-        if (options != null) {
-            paramList.AddRange(options.GetUrlParameters().Where(p => p.Value != null)
-                .Select(p => $"{p.Key}={FormatValue(p.Value!)}"));
-        }
+        KifaDataOptions? options = null)
+        => KifaServiceRestClient.FormatUrl(ModelId, path, parameters, options);
 
-        return $"{KifaServiceRestClient.ServerAddress}/{ModelId}/" + path + (paramList.Count > 0
-            ? $"?{string.Join("&", paramList)}"
-            : "");
-    }
-
-    static string FormatValue(object value)
-        => Uri.EscapeDataString(value.ToString()!);
-
-    static void HandleException(Exception ex, int index, string message) {
-        if (index >= 5 || ex is KifaActionFailedException || ex is HttpRequestException {
-                InnerException: SocketException {
-                    Message: "Device not configured"
-                }
-            } || ex is HttpRequestException {
-                StatusCode: HttpStatusCode.NotFound
-            }) {
-            throw ex;
-        }
-
-        KifaServiceRestClient.Logger.Warn(ex, $"{message} ({index})");
-        Thread.Sleep(TimeSpan.FromSeconds(5));
-    }
+    static void HandleException(Exception ex, int index, string message)
+        => KifaServiceRestClient.HandleException(ex, index, message);
 
     static CacheControlHeaderValue GetCacheHeaderValue(bool? refresh)
         => CacheControlHeaderValue.Parse(refresh == true ? "no-cache" :

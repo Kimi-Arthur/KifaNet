@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NLog;
@@ -67,6 +69,8 @@ public class KifaActionResult {
             action.Invoke();
         } catch (KifaActionFailedException ex) {
             return ex.ActionResult;
+        } catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest) {
+            return BadRequest(ex.Message);
         } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
@@ -89,6 +93,10 @@ public class KifaActionResult {
     public static KifaActionResult FromAction(Func<KifaActionResult> action) {
         try {
             return action.Invoke();
+        } catch (KifaActionFailedException ex) {
+            return ex.ActionResult;
+        } catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest) {
+            return BadRequest(ex.Message);
         } catch (Exception ex) {
             return new KifaActionResult {
                 Status = KifaActionStatus.Error,
@@ -279,6 +287,16 @@ public class KifaActionResult<TValue> : KifaActionResult {
     public static KifaActionResult<TValue> FromAction(Func<TValue> action) {
         try {
             return new KifaActionResult<TValue>(action.Invoke());
+        } catch (KifaActionFailedException ex) {
+            return new KifaActionResult<TValue> {
+                Status = ex.ActionResult.Status,
+                Message = ex.ActionResult.Message
+            };
+        } catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest) {
+            return new KifaActionResult<TValue> {
+                Status = KifaActionStatus.BadRequest,
+                Message = ex.Message
+            };
         } catch (Exception ex) {
             return new KifaActionResult<TValue> {
                 Status = KifaActionStatus.Error,

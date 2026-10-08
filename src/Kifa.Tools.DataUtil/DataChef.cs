@@ -17,6 +17,17 @@ using YamlDotNet.Serialization;
 namespace Kifa.Tools.DataUtil;
 
 public interface DataChef {
+    static readonly IDeserializer Deserializer =
+        new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
+
+    static readonly ISerializer CompactSerializer = new SerializerBuilder().WithIndentedSequences()
+        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).WithEventEmitter(next
+            => new FlowStyleScalarSequenceEmitter(next)).Build();
+
+    static readonly ISerializer Serializer = new SerializerBuilder().WithIndentedSequences()
+        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull |
+                                        DefaultValuesHandling.OmitEmptyCollections).Build();
+
     static readonly Dictionary<string, Lazy<DataChef>> Chefs = new() {
         { FileInformation.ModelId, new Lazy<DataChef>(() => new DataChef<FileInformation>()) },
         { GuitarChord.ModelId, new Lazy<DataChef>(() => new DataChef<GuitarChord>()) },
@@ -100,7 +111,9 @@ public interface DataChef {
                 }
             }
 
-            return null;
+            var remoteChef = new RemoteDataChef(key);
+            Chefs[key] = new Lazy<DataChef>(() => remoteChef);
+            return remoteChef;
         }
     }
 
@@ -135,19 +148,8 @@ public class DataChef<TDataModel> : DataChef
     // TODO: Should not rely on implementation detail. 
     public string ModelId => Client.ModelId;
 
-    static readonly IDeserializer Deserializer =
-        new DeserializerBuilder().IgnoreUnmatchedProperties().Build();
-
-    static readonly ISerializer CompactSerializer = new SerializerBuilder().WithIndentedSequences()
-        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull).WithEventEmitter(next
-            => new FlowStyleScalarSequenceEmitter(next)).Build();
-
-    static readonly ISerializer Serializer = new SerializerBuilder().WithIndentedSequences()
-        .ConfigureDefaultValuesHandling(DefaultValuesHandling.OmitNull |
-                                        DefaultValuesHandling.OmitEmptyCollections).Build();
-
     public List<TDataModel> Load(string data)
-        => Deserializer.Deserialize<List<TDataModel>>(data) ?? [];
+        => DataChef.Deserializer.Deserialize<List<TDataModel>>(data) ?? [];
 
     public KifaActionResult Import(string data) {
         var items = Load(data);
@@ -157,7 +159,7 @@ public class DataChef<TDataModel> : DataChef
     }
 
     public string Save(List<TDataModel> items, bool compact) {
-        var serializer = compact ? CompactSerializer : Serializer;
+        var serializer = compact ? DataChef.CompactSerializer : DataChef.Serializer;
 
         return
             $"# {ModelId}\n{string.Join("\n", items.Select(item => serializer.Serialize(new List<TDataModel> { item })))}";
@@ -177,7 +179,7 @@ public class DataChef<TDataModel> : DataChef
     public KifaActionResult Delete(List<string> ids) => Client.Delete(ids);
 
     public KifaActionResult Call(string action, string? data = null) {
-        var param = string.IsNullOrWhiteSpace(data) ? null : Deserializer.Deserialize<object>(data);
+        var param = string.IsNullOrWhiteSpace(data) ? null : DataChef.Deserializer.Deserialize<object>(data);
         if (Client is KifaRpcClient rpcClient) {
             return rpcClient.Call(action, param);
         }
