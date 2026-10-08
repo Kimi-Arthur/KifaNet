@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Kifa.Apps.MomentCounter;
 using Kifa.Bilibili;
 using Kifa.Cloud.Swisscom;
 using Kifa.Cloud.Telegram;
 using Kifa.Infos;
 using Kifa.IO;
-using Kifa.Languages.Biaori;
-using Kifa.Languages.German;
-using Kifa.Languages.Goethe;
-using Kifa.Languages.Memrise;
 using Kifa.Music;
 using Kifa.Service;
 using Kifa.YouTube;
@@ -22,10 +19,6 @@ namespace Kifa.Tools.DataUtil;
 public interface DataChef {
     static readonly Dictionary<string, Lazy<DataChef>> Chefs = new() {
         { FileInformation.ModelId, new Lazy<DataChef>(() => new DataChef<FileInformation>()) },
-        { MemriseCourse.ModelId, new Lazy<DataChef>(() => new DataChef<MemriseCourse>()) },
-        { GoetheGermanWord.ModelId, new Lazy<DataChef>(() => new DataChef<GoetheGermanWord>()) },
-        { GoetheWordList.ModelId, new Lazy<DataChef>(() => new DataChef<GoetheWordList>()) },
-        { GermanWord.ModelId, new Lazy<DataChef>(() => new DataChef<GermanWord>()) },
         { GuitarChord.ModelId, new Lazy<DataChef>(() => new DataChef<GuitarChord>()) },
         { TvShow.ModelId, new Lazy<DataChef>(() => new DataChef<TvShow>()) },
         { Anime.ModelId, new Lazy<DataChef>(() => new DataChef<Anime>()) },
@@ -45,7 +38,6 @@ public interface DataChef {
             TelegramStorageCell.ModelId,
             new Lazy<DataChef>(() => new DataChef<TelegramStorageCell>())
         },
-        { BiaoriJapaneseWord.ModelId, new Lazy<DataChef>(() => new DataChef<BiaoriJapaneseWord>()) },
         { BilibiliUploader.ModelId, new Lazy<DataChef>(() => new DataChef<BilibiliUploader>()) }, {
             BilibiliUploaderVideos.ModelId,
             new Lazy<DataChef>(() => new DataChef<BilibiliUploaderVideos>())
@@ -65,7 +57,51 @@ public interface DataChef {
 
     public static DataChef? GetChef(string? modelId, string? content = null) {
         var key = modelId ?? (content != null ? GetYamlType(content) : null);
-        return key != null && Chefs.TryGetValue(key, out var chef) ? chef.Value : null;
+        if (key == null) {
+            return null;
+        }
+
+        if (Chefs.TryGetValue(key, out var chef)) {
+            return chef.Value;
+        }
+
+        return FindChef(key);
+    }
+
+    static DataChef? FindChef(string key) {
+        lock (Chefs) {
+            if (Chefs.TryGetValue(key, out var existing)) {
+                return existing.Value;
+            }
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                Type[] types;
+                try {
+                    types = assembly.GetExportedTypes();
+                } catch {
+                    continue;
+                }
+
+                foreach (var type in types) {
+                    if (type is { IsClass: true, IsAbstract: false } &&
+                        typeof(DataModel).IsAssignableFrom(type) &&
+                        type.GetConstructor(Type.EmptyTypes) != null) {
+                        var iface = typeof(WithModelId<>).MakeGenericType(type);
+                        if (iface.IsAssignableFrom(type)) {
+                            var modelIdProp = type.GetProperty("ModelId", BindingFlags.Public | BindingFlags.Static);
+                            if (modelIdProp?.GetValue(null) is string modelId && modelId == key) {
+                                var chefType = typeof(DataChef<>).MakeGenericType(type);
+                                var newChef = (DataChef) Activator.CreateInstance(chefType)!;
+                                Chefs[key] = new Lazy<DataChef>(() => newChef);
+                                return newChef;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 
     static string? GetYamlType(string s) {
