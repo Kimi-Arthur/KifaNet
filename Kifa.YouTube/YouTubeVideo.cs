@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Kifa.ArchiveOrg;
 using Kifa.Html;
 using Kifa.Service;
@@ -100,31 +101,39 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     public static OptionSet OptionSet => GetOptionSet();
 
     public static void DownloadVideo(string videoId, string? filePath = null,
-        string? outputFolder = null, string? outputFileTemplate = null) {
-        var ytdl = YoutubeDL;
-        if (filePath != null) {
-            ytdl.OutputFolder = Path.GetDirectoryName(filePath);
-            ytdl.OutputFileTemplate = $"{Path.GetFileNameWithoutExtension(filePath)}.%(ext)s";
-        }
+        string? outputFolder = null, string? outputFileTemplate = null)
+        => Retry.Run(() => {
+            var ytdl = YoutubeDL;
+            if (filePath != null) {
+                ytdl.OutputFolder = Path.GetDirectoryName(filePath);
+                ytdl.OutputFileTemplate = $"{Path.GetFileNameWithoutExtension(filePath)}.%(ext)s";
+            }
 
-        if (outputFolder != null) {
-            ytdl.OutputFolder = outputFolder;
-        }
+            if (outputFolder != null) {
+                ytdl.OutputFolder = outputFolder;
+            }
 
-        if (outputFileTemplate != null) {
-            ytdl.OutputFileTemplate = outputFileTemplate;
-        }
+            if (outputFileTemplate != null) {
+                ytdl.OutputFileTemplate = outputFileTemplate;
+            }
 
-        var downloadResult = ytdl.RunVideoDownload(
-                videoId, mergeFormat: DownloadMergeFormat.Mp4, overrideOptions: OptionSet)
-            .GetAwaiter()
-            .GetResult();
+            var downloadResult = ytdl.RunVideoDownload(
+                    videoId, mergeFormat: DownloadMergeFormat.Mp4, overrideOptions: OptionSet)
+                .GetAwaiter()
+                .GetResult();
 
-        if (!downloadResult.Success) {
-            throw new Exception(
-                $"Failed to download video {videoId}: {string.Join("\n", downloadResult.ErrorOutput)}");
-        }
-    }
+            if (!downloadResult.Success) {
+                throw new Exception(
+                    $"Failed to download video {videoId}: {string.Join("\n", downloadResult.ErrorOutput)}");
+            }
+        }, (ex, index) => {
+            if (index >= 5) {
+                throw ex;
+            }
+
+            Logger.Warn(ex, $"Failed to download video {videoId} ({index}). Retrying...");
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        });
 
     public static OptionSet GetTrackDownloadOptionSet(string parentFolder, string basePrefix,
         YouTubeVideo? video = null) {
@@ -148,80 +157,88 @@ public class YouTubeVideo : DataModel, WithModelId<YouTubeVideo> {
     }
 
     public static (List<string> TrackPaths, string? CoverPath) DownloadTracks(string videoId,
-        string targetPath, YouTubeVideo? video = null) {
-        var parentFolder = Path.GetFullPath(Path.GetDirectoryName(targetPath) ?? ".");
-        var basePrefix = Path.GetFileNameWithoutExtension(targetPath);
+        string targetPath, YouTubeVideo? video = null)
+        => Retry.Run(() => {
+            var parentFolder = Path.GetFullPath(Path.GetDirectoryName(targetPath) ?? ".");
+            var basePrefix = Path.GetFileNameWithoutExtension(targetPath);
 
-        Directory.CreateDirectory(parentFolder);
+            Directory.CreateDirectory(parentFolder);
 
-        foreach (var file in Directory.GetFiles(parentFolder, $"{basePrefix}.*")) {
-            try {
-                File.Delete(file);
-            } catch {
-            }
-        }
-
-        var ytdl = YoutubeDL;
-        ytdl.OutputFolder = parentFolder;
-
-        var options = GetTrackDownloadOptionSet(parentFolder, basePrefix, video);
-
-        var result = ytdl.RunVideoDownload(videoId, overrideOptions: options).GetAwaiter()
-            .GetResult();
-        if (!result.Success) {
-            throw new Exception(
-                $"Failed to download video tracks for {videoId}: {string.Join("\n", result.ErrorOutput)}");
-        }
-
-        var downloadedFiles = Directory.GetFiles(parentFolder);
-        var trackPaths = new List<string>();
-
-        List<string> formatIds = [];
-        if (video?.FormatId != null) {
-            formatIds = video.FormatId.Split("+").ToList();
-        }
-
-        if (formatIds.Count > 0) {
-            foreach (var fId in formatIds) {
-                var match = downloadedFiles.FirstOrDefault(f
-                    => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.{fId}");
-                if (match != null) {
-                    trackPaths.Add(match);
-                }
-            }
-        }
-
-        if (trackPaths.Count == 0 || (formatIds.Count > 0 && trackPaths.Count < formatIds.Count)) {
-            trackPaths = downloadedFiles.Where(f => {
-                var name = Path.GetFileNameWithoutExtension(f);
-                return name.StartsWith($"{basePrefix}.") && !name.EndsWith(".c");
-            }).OrderBy(f => f).ToList();
-        }
-
-        if (trackPaths.Count == 0) {
-            throw new Exception(
-                $"No downloaded tracks found for {videoId} with prefix {basePrefix} in {parentFolder}.");
-        }
-
-        var coverPath = downloadedFiles.FirstOrDefault(f
-            => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.c");
-        if (coverPath != null && Path.GetExtension(coverPath)
-                .Equals(".webp", StringComparison.OrdinalIgnoreCase)) {
-            var pngCover = Path.Combine(parentFolder, $"{basePrefix}.c.png");
-            var convertResult = Executor.Run("ffmpeg",
-                $"-i \"{coverPath}\" -update 1 -bitexact -y \"{pngCover}\"");
-            if (convertResult.ExitCode == 0) {
+            foreach (var file in Directory.GetFiles(parentFolder, $"{basePrefix}.*")) {
                 try {
-                    File.Delete(coverPath);
+                    File.Delete(file);
                 } catch {
                 }
-
-                coverPath = pngCover;
             }
-        }
 
-        return (trackPaths, coverPath);
-    }
+            var ytdl = YoutubeDL;
+            ytdl.OutputFolder = parentFolder;
+
+            var options = GetTrackDownloadOptionSet(parentFolder, basePrefix, video);
+
+            var result = ytdl.RunVideoDownload(videoId, overrideOptions: options).GetAwaiter()
+                .GetResult();
+            if (!result.Success) {
+                throw new Exception(
+                    $"Failed to download video tracks for {videoId}: {string.Join("\n", result.ErrorOutput)}");
+            }
+
+            var downloadedFiles = Directory.GetFiles(parentFolder);
+            var trackPaths = new List<string>();
+
+            List<string> formatIds = [];
+            if (video?.FormatId != null) {
+                formatIds = video.FormatId.Split("+").ToList();
+            }
+
+            if (formatIds.Count > 0) {
+                foreach (var fId in formatIds) {
+                    var match = downloadedFiles.FirstOrDefault(f
+                        => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.{fId}");
+                    if (match != null) {
+                        trackPaths.Add(match);
+                    }
+                }
+            }
+
+            if (trackPaths.Count == 0 || (formatIds.Count > 0 && trackPaths.Count < formatIds.Count)) {
+                trackPaths = downloadedFiles.Where(f => {
+                    var name = Path.GetFileNameWithoutExtension(f);
+                    return name.StartsWith($"{basePrefix}.") && !name.EndsWith(".c");
+                }).OrderBy(f => f).ToList();
+            }
+
+            if (trackPaths.Count == 0) {
+                throw new Exception(
+                    $"No downloaded tracks found for {videoId} with prefix {basePrefix} in {parentFolder}.");
+            }
+
+            var coverPath = downloadedFiles.FirstOrDefault(f
+                => Path.GetFileNameWithoutExtension(f) == $"{basePrefix}.c");
+            if (coverPath != null && Path.GetExtension(coverPath)
+                    .Equals(".webp", StringComparison.OrdinalIgnoreCase)) {
+                var pngCover = Path.Combine(parentFolder, $"{basePrefix}.c.png");
+                var convertResult = Executor.Run("ffmpeg",
+                    $"-i \"{coverPath}\" -update 1 -bitexact -y \"{pngCover}\"");
+                if (convertResult.ExitCode == 0) {
+                    try {
+                        File.Delete(coverPath);
+                    } catch {
+                    }
+
+                    coverPath = pngCover;
+                }
+            }
+
+            return (trackPaths, coverPath);
+        }, (ex, index) => {
+            if (index >= 5) {
+                throw ex;
+            }
+
+            Logger.Warn(ex, $"Failed to download video tracks for {videoId} ({index}). Retrying...");
+            Thread.Sleep(TimeSpan.FromSeconds(5));
+        });
 
     public string? Title { get; set; }
     public string? Author { get; set; }
