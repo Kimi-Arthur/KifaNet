@@ -10,73 +10,110 @@ public abstract partial class KifaCommand {
     public List<(string item, KifaActionResult result)> Results { get; set; } = new();
 
     protected List<(string item, KifaActionResult result)> PopPendingResults() {
-        var pendingResults = Results.Where(r => r.result.Status.HasFlag(KifaActionStatus.Pending))
-            .ToList();
-        foreach (var r in pendingResults) {
-            Results.Remove(r);
-        }
+        lock (Results) {
+            var pendingResults = Results.Where(r => r.result.Status.HasFlag(KifaActionStatus.Pending))
+                .ToList();
+            foreach (var r in pendingResults) {
+                Results.Remove(r);
+            }
 
-        return pendingResults;
+            return pendingResults;
+        }
     }
 
     protected void ExecuteItem(string item, Action action, bool throwIfError = false,
         bool silent = false) {
+        WaitIfPaused(item);
+
         if (StopRequested) {
-            Results.Add((item, new KifaActionResult {
-                Status = KifaActionStatus.Cancelled,
-                Message = "Cancelled as stop was requested by user."
-            }));
+            lock (Results) {
+                Results.Add((item, new KifaActionResult {
+                    Status = KifaActionStatus.Cancelled,
+                    Message = "Cancelled as stop was requested by user."
+                }));
+            }
             return;
         }
 
-        if (silent) {
-            var result = KifaActionResult.FromAction(action);
-            Results.Add((item, result));
-            if (throwIfError && (result.Status.HasFlag(KifaActionStatus.Error) ||
-                                 result.Status.HasFlag(KifaActionStatus.BadRequest))) {
-                throw new KifaActionFailedException(result);
+        CurrentItem = item;
+        try {
+            if (silent) {
+                var result = KifaActionResult.FromAction(action);
+                lock (Results) {
+                    Results.Add((item, result));
+                }
+
+                if (throwIfError && (result.Status.HasFlag(KifaActionStatus.Error) ||
+                                     result.Status.HasFlag(KifaActionStatus.BadRequest))) {
+                    throw new KifaActionFailedException(result);
+                }
+            } else {
+                Logger.Info($"{item}:");
+                var result = Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
+                    throwIfError: throwIfError);
+                lock (Results) {
+                    Results.Add((item, result));
+                }
+
+                // To space out between tasks, and also before final result.
+                Console.WriteLine();
             }
-        } else {
-            Logger.Info($"{item}:");
-            Results.Add((item,
-                Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
-                    throwIfError: throwIfError)));
-            // To space out between tasks, and also before final result.
-            Console.WriteLine();
+        } finally {
+            CurrentItem = null;
         }
     }
 
     protected void ExecuteItem(string item, Func<KifaActionResult> action,
         bool throwIfError = false, bool silent = false) {
+        WaitIfPaused(item);
+
         if (StopRequested) {
-            Results.Add((item, new KifaActionResult {
-                Status = KifaActionStatus.Cancelled,
-                Message = "Cancelled as stop was requested by user."
-            }));
+            lock (Results) {
+                Results.Add((item, new KifaActionResult {
+                    Status = KifaActionStatus.Cancelled,
+                    Message = "Cancelled as stop was requested by user."
+                }));
+            }
             return;
         }
 
-        if (silent) {
-            var result = KifaActionResult.FromAction(action);
-            Results.Add((item, result));
-            if (throwIfError && (result.Status.HasFlag(KifaActionStatus.Error) ||
-                                 result.Status.HasFlag(KifaActionStatus.BadRequest))) {
-                throw new KifaActionFailedException(result);
+        CurrentItem = item;
+        try {
+            if (silent) {
+                var result = KifaActionResult.FromAction(action);
+                lock (Results) {
+                    Results.Add((item, result));
+                }
+
+                if (throwIfError && (result.Status.HasFlag(KifaActionStatus.Error) ||
+                                     result.Status.HasFlag(KifaActionStatus.BadRequest))) {
+                    throw new KifaActionFailedException(result);
+                }
+            } else {
+                Logger.Info($"{item}:");
+                var result = Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
+                    throwIfError: throwIfError);
+                lock (Results) {
+                    Results.Add((item, result));
+                }
+
+                // To space out between tasks, and also before final result.
+                Console.WriteLine();
             }
-        } else {
-            Logger.Info($"{item}:");
-            Results.Add((item,
-                Logger.LogResult(KifaActionResult.FromAction(action), item, LogLevel.Info,
-                    throwIfError: throwIfError)));
-            // To space out between tasks, and also before final result.
-            Console.WriteLine();
+        } finally {
+            CurrentItem = null;
         }
     }
 
     public int LogSummary() {
-        LogBreakdown();
+        List<(string item, KifaActionResult result)> results;
+        lock (Results) {
+            results = Results.ToList();
+        }
 
-        var okItems = Results.Where(item => item.result.Status == KifaActionStatus.OK).ToList();
+        LogBreakdown(results);
+
+        var okItems = results.Where(item => item.result.Status == KifaActionStatus.OK).ToList();
         if (okItems.Count > 0) {
             if (!NonVerbose) {
                 foreach (var (item, result) in okItems) {
@@ -89,7 +126,7 @@ public abstract partial class KifaCommand {
             }
         }
 
-        var skippedItems = Results.Where(item => item.result.Status == KifaActionStatus.Skipped).ToList();
+        var skippedItems = results.Where(item => item.result.Status == KifaActionStatus.Skipped).ToList();
         if (skippedItems.Count > 0) {
             if (!NonVerbose) {
                 foreach (var (item, result) in skippedItems) {
@@ -102,7 +139,7 @@ public abstract partial class KifaCommand {
             }
         }
 
-        var cancelledItems = Results.Where(item => item.result.Status == KifaActionStatus.Cancelled).ToList();
+        var cancelledItems = results.Where(item => item.result.Status == KifaActionStatus.Cancelled).ToList();
         if (cancelledItems.Count > 0) {
             if (!NonVerbose) {
                 foreach (var (item, result) in cancelledItems) {
@@ -115,7 +152,7 @@ public abstract partial class KifaCommand {
             }
         }
 
-        var warningItems = Results.Where(item => item.result.Status == KifaActionStatus.Warning).ToList();
+        var warningItems = results.Where(item => item.result.Status == KifaActionStatus.Warning).ToList();
         if (warningItems.Count > 0) {
             foreach (var (item, result) in warningItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
@@ -124,7 +161,7 @@ public abstract partial class KifaCommand {
             Logger.Warn($"Processed the {warningItems.Count} items above with warnings.\n");
         }
 
-        var pendingItems = Results.Where(item => item.result.Status == KifaActionStatus.Pending).ToList();
+        var pendingItems = results.Where(item => item.result.Status == KifaActionStatus.Pending).ToList();
         if (pendingItems.Count > 0) {
             foreach (var (item, result) in pendingItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
@@ -133,7 +170,7 @@ public abstract partial class KifaCommand {
             Logger.Error($"The final state of the {pendingItems.Count} items above is pending.\n");
         }
 
-        var badRequestItems = Results.Where(item => item.result.Status == KifaActionStatus.BadRequest).ToList();
+        var badRequestItems = results.Where(item => item.result.Status == KifaActionStatus.BadRequest).ToList();
         if (badRequestItems.Count > 0) {
             foreach (var (item, result) in badRequestItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
@@ -142,7 +179,7 @@ public abstract partial class KifaCommand {
             Logger.Error($"Failed to process the {badRequestItems.Count} items above due to bad requests.\n");
         }
 
-        var errorItems = Results.Where(item => item.result.Status == KifaActionStatus.Error).ToList();
+        var errorItems = results.Where(item => item.result.Status == KifaActionStatus.Error).ToList();
         if (errorItems.Count > 0) {
             foreach (var (item, result) in errorItems) {
                 Logger.LogResult(result, item, LogLevel.Info);
@@ -159,22 +196,22 @@ public abstract partial class KifaCommand {
             }
         }
 
-        LogBreakdown();
+        LogBreakdown(results);
 
-        var hasFailed = Results.Any(item => !item.result.IsAcceptable);
+        var hasFailed = results.Any(item => !item.result.IsAcceptable);
         return hasFailed ? 1 : 0;
     }
 
-    void LogBreakdown() {
-        var okCount = Results.Count(item => item.result.Status == KifaActionStatus.OK);
-        var skippedCount = Results.Count(item => item.result.Status == KifaActionStatus.Skipped);
-        var cancelledCount = Results.Count(item => item.result.Status == KifaActionStatus.Cancelled);
-        var warningCount = Results.Count(item => item.result.Status == KifaActionStatus.Warning);
-        var pendingCount = Results.Count(item => item.result.Status == KifaActionStatus.Pending);
-        var badRequestCount = Results.Count(item => item.result.Status == KifaActionStatus.BadRequest);
-        var errorCount = Results.Count(item => item.result.Status == KifaActionStatus.Error);
+    void LogBreakdown(List<(string item, KifaActionResult result)> results) {
+        var okCount = results.Count(item => item.result.Status == KifaActionStatus.OK);
+        var skippedCount = results.Count(item => item.result.Status == KifaActionStatus.Skipped);
+        var cancelledCount = results.Count(item => item.result.Status == KifaActionStatus.Cancelled);
+        var warningCount = results.Count(item => item.result.Status == KifaActionStatus.Warning);
+        var pendingCount = results.Count(item => item.result.Status == KifaActionStatus.Pending);
+        var badRequestCount = results.Count(item => item.result.Status == KifaActionStatus.BadRequest);
+        var errorCount = results.Count(item => item.result.Status == KifaActionStatus.Error);
 
-        Logger.Info($"Finished processing of {Results.Count} items:");
+        Logger.Info($"Finished processing of {results.Count} items:");
         if (okCount > 0) {
             Logger.Info($"    OK: {okCount}");
         }
