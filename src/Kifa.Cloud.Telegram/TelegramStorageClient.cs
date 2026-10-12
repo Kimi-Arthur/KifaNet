@@ -303,6 +303,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
     public static int Failure420Count { get; set; } = 1000;
     public static int Failure503Count { get; set; } = 3;
     public static int FailureOtherCount { get; set; } = 20;
+    public static TimeSpan FloodWarnThreshold { get; set; } = TimeSpan.FromSeconds(50);
 
     public static readonly Func<Exception, Dictionary<string, int>?, Task<Dictionary<string, int>?>>
         HandleFloodExceptionFunc = HandleFloodException;
@@ -331,7 +332,7 @@ public class TelegramStorageClient : StorageClient, CanCreateStorageClient {
                     if (toSleep > TimeSpan.Zero) {
                         var message =
                             $"Sleep {toSleep.TotalSeconds:F2}s from now as was requested to sleep {rpcException.X}s ({count}).";
-                        if (toSleep > TimeSpan.FromSeconds(30) || count % 100 == 0) {
+                        if (toSleep > FloodWarnThreshold || count % 100 == 0) {
                             Logger.Warn(ex, message);
                         } else {
                             Logger.Trace(ex, message);
